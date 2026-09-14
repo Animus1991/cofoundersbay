@@ -391,12 +391,12 @@ html {
   }
 
   @media (max-width: 639.98px) {
-    h1.text-base, h2.text-base, h3.text-base { font-size: 0.9506rem; }
-    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.04803650rem; }
-    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.16448500rem; }
-    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.39738200rem; }
-    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.70294286rem; }
-    h1.text-4xl,  h2.text-4xl                { font-size: 2.04390407rem; }
+    h1.text-base, h2.text-base, h3.text-base { font-size: 0.941094rem; }
+    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.03755613rem; }
+    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.15284015rem; }
+    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.38340818rem; }
+    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.68591343rem; }
+    h1.text-4xl,  h2.text-4xl                { font-size: 2.02346503rem; }
   }
 
   body {
@@ -739,7 +739,7 @@ html {
     border-radius: var(--radius);
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    font-size: 0.8575rem;
+    font-size: 0.866075rem;
     font-weight: 600;
     white-space: nowrap;
     outline: 2px solid hsl(var(--ring));
@@ -1000,10 +1000,10 @@ html {
     font-size: max(11px, 0.67375rem, 0.85em);
   }
 
-  /* Hold the 11px floor when html is 82% on desktop (0.67375rem → 8.84px). */
+  /* Hold the 11px floor when html is 82% on desktop (0.6804875rem → 8.93px). */
   .text-2xs {
-    font-size: max(0.67375rem, 11px);
-    line-height: max(1rem, 16px);
+    font-size: max(0.6804875rem, 11px);
+    line-height: max(1.01rem, 16px);
   }
 
   /* `text-xs` needed the same floor and did not have it. 0.735rem against the 82%
@@ -1011,8 +1011,8 @@ html {
      text nodes on the founder dashboard alone were rendering below the
      documented 11px minimum on every desktop. */
   .text-xs {
-    font-size: max(0.735rem, 11px);
-    line-height: max(1rem, 16px);
+    font-size: max(0.74235rem, 11px);
+    line-height: max(1.01rem, 16px);
   }
 
   /* ── Phone/tablet type scale: −2% pass, then −2% again on the display half ──
@@ -1023,35 +1023,44 @@ html {
      `text-lg` and up then took a second x0.98 — see the web view block below
      for what that pass was for; the phone scale takes it too so a stat card
      does not change proportion when the viewport crosses `lg`.
+     Latest pass pulls the ladder's two ends toward each other: the steps below
+     `base` (2xs, xs, sm) went x1.01 and `base` and everything above went x0.99,
+     so adjacent steps sit closer without losing the gaps between them. `base`
+     travels with the larger half on purpose — `text-sm` is what the product's
+     body copy actually uses (~1,870 sites against base's ~250), so `base` is a
+     title-adjacent step and closing sm→base from x1.142 to x1.120 fixes the
+     last disproportionate gap in the lower half, while base→lg keeps its x1.036.
+     The 11px legibility floor does not move: it is a minimum, not a size, and
+     the rem intent above it still rose — `2xs` simply stays floor-bound.
      The `min-width: 1024px` block further down still wins on desktop — same
      layer, same specificity, later source order. */
-  .text-sm  { font-size: 0.8575rem; }
-  .text-base { font-size: 0.98rem; }
-  .text-lg  { font-size: 1.08045000rem; }
-  .text-xl  { font-size: 1.20050000rem; }
-  .text-2xl { font-size: 1.44060000rem; }
-  .text-3xl { font-size: 1.54864500rem; }
-  .text-4xl { font-size: 1.73448240rem; }
-  .text-5xl { font-size: 1.94262029rem; }
-  .text-6xl { font-size: 2.17573472rem; }
-  .text-7xl { font-size: 2.43682289rem; }
+  .text-sm  { font-size: 0.866075rem; }
+  .text-base { font-size: 0.9702rem; }
+  .text-lg  { font-size: 1.0696455rem; }
+  .text-xl  { font-size: 1.188495rem; }
+  .text-2xl { font-size: 1.426194rem; }
+  .text-3xl { font-size: 1.53315855rem; }
+  .text-4xl { font-size: 1.71713758rem; }
+  .text-5xl { font-size: 1.92319409rem; }
+  .text-6xl { font-size: 2.15397737rem; }
+  .text-7xl { font-size: 2.41245466rem; }
 
   /* Same pass for the responsive variants while the desktop block is inactive:
      `sm:`/`md:` utilities match at 640px+ / 768px+, which still includes phones
      in landscape and every tablet up to `lg`. */
   @media (max-width: 1023.98px) {
-    .sm\:text-xs  { font-size: max(0.735rem, 11px); }
-    .sm\:text-sm  { font-size: 0.8575rem; }
-    .sm\:text-lg  { font-size: 1.08045000rem; }
-    .sm\:text-xl  { font-size: 1.20050000rem; }
-    .sm\:text-2xl { font-size: 1.44060000rem; }
-    .sm\:text-4xl { font-size: 1.73448240rem; }
-    .sm\:text-5xl { font-size: 1.94262029rem; }
-    .sm\:text-6xl { font-size: 2.17573472rem; }
-    .md\:text-lg  { font-size: 1.08045000rem; }
-    .md\:text-xl  { font-size: 1.20050000rem; }
-    .md\:text-2xl { font-size: 1.44060000rem; }
-    .md\:text-6xl { font-size: 2.17573472rem; }
+    .sm\:text-xs  { font-size: max(0.74235rem, 11px); }
+    .sm\:text-sm  { font-size: 0.866075rem; }
+    .sm\:text-lg  { font-size: 1.0696455rem; }
+    .sm\:text-xl  { font-size: 1.188495rem; }
+    .sm\:text-2xl { font-size: 1.426194rem; }
+    .sm\:text-4xl { font-size: 1.71713758rem; }
+    .sm\:text-5xl { font-size: 1.92319409rem; }
+    .sm\:text-6xl { font-size: 2.15397737rem; }
+    .md\:text-lg  { font-size: 1.0696455rem; }
+    .md\:text-xl  { font-size: 1.188495rem; }
+    .md\:text-2xl { font-size: 1.426194rem; }
+    .md\:text-6xl { font-size: 2.15397737rem; }
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
@@ -1114,25 +1123,25 @@ html {
      own parent, so it follows whichever side of the threshold that parent is
      on. */
   @media (min-width: 1024px) {
-    /* ── below the threshold: x1.1251926, then x0.98 ── */
+    /* ── below the threshold: x1.1251926, then x0.98, then x1.01 ── */
     .text-2xs {
-      font-size: max(0.82080672rem, 13.13290832px);
-      line-height: max(1.21826608rem, 19.49225726px);
+      font-size: max(0.82901479rem, 13.2642374px);
+      line-height: max(1.23044874rem, 19.68717983px);
     }
 
     .text-xs {
-      font-size: max(0.89542557rem, 13.13290832px);
-      line-height: max(1.21826608rem, 19.49225726px);
+      font-size: max(0.90437983rem, 13.2642374px);
+      line-height: max(1.23044874rem, 19.68717983px);
     }
 
     .text-sm {
-      font-size: 1.04466316rem;
-      line-height: 1.52283260rem;
+      font-size: 1.05510979rem;
+      line-height: 1.53806093rem;
     }
 
     .text-base {
-      font-size: 1.19390076rem;
-      line-height: 1.82739912rem;
+      font-size: 1.18196175rem;
+      line-height: 1.80912513rem;
     }
 
     /* ── the two steps that had fallen under body: interpolated back in ──
@@ -1140,13 +1149,13 @@ html {
        1.4 for `xl`), so the leading travels with the size instead of staying
        pinned to the 1.6807rem both had been sharing. */
     .text-lg {
-      font-size: 1.23726119rem;
-      line-height: 1.96390665rem;
+      font-size: 1.22488858rem;
+      line-height: 1.94426758rem;
     }
 
     .text-xl {
-      font-size: 1.30836367rem;
-      line-height: 1.86909096rem;
+      font-size: 1.29528003rem;
+      line-height: 1.85040005rem;
     }
 
     /* ── the display steps: x0.9604, then x0.98, then evened out ──────────
@@ -1178,32 +1187,42 @@ html {
        on every dashboard without evening anything. The four steps above it are
        26 call sites, nearly all marketing headlines, and they carried the whole
        disproportion. The phone scale takes the same two ratios against its own
-       100% root, so a heading keeps its proportion across `lg`. */
+       100% root, so a heading keeps its proportion across `lg`.
+
+       Then the ends were drawn one notch closer: every step above `base` took
+       x0.99 and the three below it took x1.01 (see the phone-scale comment for
+       why `base` rides with the top half). On desktop the rendered ladder is
+       now: 13.26 (2xs/xs share the floor) · 13.84 sm · 15.51 base · 16.07 lg ·
+       16.99 xl · 17.97 2xl · 19.32 3xl · 21.64 4xl · 24.23 5xl · 27.14 6xl ·
+       30.40 7xl. Adjacent ratios run x1.036 to x1.120 — every gap distinct,
+       none disproportionate. The 13.2642px floor moved with the steps because
+       on this root it IS the rendered size of `2xs`/`xs`, not a minimum:
+       leaving it would have meant the two most-used sizes never changed. */
     .text-2xl {
-      font-size: 1.38355224rem;
-      line-height: 1.88238400rem;
+      font-size: 1.36971672rem;
+      line-height: 1.86356016rem;
     }
 
     .text-3xl {
-      font-size: 1.48731866rem;
-      line-height: 1.82153917rem;
+      font-size: 1.47244547rem;
+      line-height: 1.80332378rem;
     }
 
     .text-4xl {
-      font-size: 1.66579690rem;
-      line-height: 1.88883026rem;
+      font-size: 1.64913893rem;
+      line-height: 1.86994196rem;
     }
 
     .text-5xl {
-      font-size: 1.86569252rem;
+      font-size: 1.84703559rem;
     }
 
     .text-6xl {
-      font-size: 2.08957563rem;
+      font-size: 2.06867987rem;
     }
 
     .text-7xl {
-      font-size: 2.34032470rem;
+      font-size: 2.31692145rem;
     }
 
     /* ── Responsive variants ──────────────────────────────────────────────
@@ -1228,79 +1247,79 @@ html {
        the product actually uses are listed; `typeScaleOrder.test.ts` fails if a
        component starts using one that is missing here. */
     .sm\:text-xs {
-      font-size: max(0.89542557rem, 13.13290832px);
-      line-height: max(1.21826608rem, 19.49225726px);
+      font-size: max(0.90437983rem, 13.2642374px);
+      line-height: max(1.23044874rem, 19.68717983px);
     }
 
     .sm\:text-sm {
-      font-size: 1.04466316rem;
-      line-height: 1.52283260rem;
+      font-size: 1.05510979rem;
+      line-height: 1.53806093rem;
     }
 
     .sm\:text-lg {
-      font-size: 1.23726119rem;
-      line-height: 1.96390665rem;
+      font-size: 1.22488858rem;
+      line-height: 1.94426758rem;
     }
 
     .sm\:text-xl {
-      font-size: 1.30836367rem;
-      line-height: 1.86909096rem;
+      font-size: 1.29528003rem;
+      line-height: 1.85040005rem;
     }
 
     .sm\:text-2xl {
-      font-size: 1.38355224rem;
-      line-height: 1.88238400rem;
+      font-size: 1.36971672rem;
+      line-height: 1.86356016rem;
     }
 
     .sm\:text-4xl {
-      font-size: 1.66579690rem;
-      line-height: 1.88883026rem;
+      font-size: 1.64913893rem;
+      line-height: 1.86994196rem;
     }
 
     /* Marketing hero sizes: `/` and `/t/[slug]` headlines, `/pricing`,
        `/themes/alliance`. Line height is left alone -- the display steps carry
        `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
     .sm\:text-5xl {
-      font-size: 1.86569252rem;
+      font-size: 1.84703559rem;
     }
 
     .sm\:text-6xl {
-      font-size: 2.08957563rem;
+      font-size: 2.06867987rem;
     }
 
     .md\:text-lg {
-      font-size: 1.23726119rem;
-      line-height: 1.96390665rem;
+      font-size: 1.22488858rem;
+      line-height: 1.94426758rem;
     }
 
     .md\:text-xl {
-      font-size: 1.30836367rem;
-      line-height: 1.86909096rem;
+      font-size: 1.29528003rem;
+      line-height: 1.85040005rem;
     }
 
     .md\:text-2xl {
-      font-size: 1.38355224rem;
-      line-height: 1.88238400rem;
+      font-size: 1.36971672rem;
+      line-height: 1.86356016rem;
     }
 
     .md\:text-6xl {
-      font-size: 2.08957563rem;
+      font-size: 2.06867987rem;
     }
 
     /* `lg:text-xs` — the Network Velocity labels, which step up from `text-2xs`
        when that card stacks into rows at `lg` and has the width for it. Takes
        the same value as the unprefixed step, declared after it so it wins. */
     .lg\:text-xs {
-      font-size: max(0.89542557rem, 13.13290832px);
-      line-height: max(1.21826608rem, 19.49225726px);
+      font-size: max(0.90437983rem, 13.2642374px);
+      line-height: max(1.23044874rem, 19.68717983px);
     }
 
     .lg\:text-6xl {
-      font-size: 2.08957563rem;
+      font-size: 2.06867987rem;
     }
 
     .lg\:text-7xl {
-      font-size: 2.34032470rem;
+      font-size: 2.31692145rem;
     }
 
     /* The sidebar's uppercase section headings run the other way: they take the
