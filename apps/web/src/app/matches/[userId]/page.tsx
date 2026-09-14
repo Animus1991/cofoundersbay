@@ -229,12 +229,14 @@ function DonutScore({ score }: { score: number }) {
           strokeLinecap="round"
           style={{ transformOrigin: '50px 50px', transition: 'stroke-dasharray 1s ease' }} />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      {/* `gap-1.5` on the column, and the label loses its `mt-0.5`: the two
+          lines inside this ring were 1.6px apart. */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
         <span className="font-extrabold tabular-nums leading-none"
           style={{ color: 'hsl(var(--status-info-fg))', fontSize: 22, fontFamily: 'var(--font-mono)' }}>
           {score}%
         </span>
-        <span className="uppercase tracking-wider mt-0.5"
+        <span className="uppercase tracking-wider"
           style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600,
             fontFamily: 'var(--font-mono)' }}>
           MATCH

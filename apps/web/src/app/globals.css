@@ -1030,11 +1030,11 @@ html {
   .text-lg  { font-size: 1.08045000rem; }
   .text-xl  { font-size: 1.20050000rem; }
   .text-2xl { font-size: 1.44060000rem; }
-  .text-3xl { font-size: 1.75561120rem; }
-  .text-4xl { font-size: 2.10711760rem; }
-  .text-5xl { font-size: 2.80917000rem; }
-  .text-6xl { font-size: 3.51122240rem; }
-  .text-7xl { font-size: 4.21423520rem; }
+  .text-3xl { font-size: 1.54864500rem; }
+  .text-4xl { font-size: 1.73448240rem; }
+  .text-5xl { font-size: 1.94262029rem; }
+  .text-6xl { font-size: 2.17573472rem; }
+  .text-7xl { font-size: 2.43682289rem; }
 
   /* Same pass for the responsive variants while the desktop block is inactive:
      `sm:`/`md:` utilities match at 640px+ / 768px+, which still includes phones
@@ -1045,13 +1045,13 @@ html {
     .sm\:text-lg  { font-size: 1.08045000rem; }
     .sm\:text-xl  { font-size: 1.20050000rem; }
     .sm\:text-2xl { font-size: 1.44060000rem; }
-    .sm\:text-4xl { font-size: 2.10711760rem; }
-    .sm\:text-5xl { font-size: 2.80917000rem; }
-    .sm\:text-6xl { font-size: 3.51122240rem; }
+    .sm\:text-4xl { font-size: 1.73448240rem; }
+    .sm\:text-5xl { font-size: 1.94262029rem; }
+    .sm\:text-6xl { font-size: 2.17573472rem; }
     .md\:text-lg  { font-size: 1.08045000rem; }
     .md\:text-xl  { font-size: 1.20050000rem; }
     .md\:text-2xl { font-size: 1.44060000rem; }
-    .md\:text-6xl { font-size: 3.51122240rem; }
+    .md\:text-6xl { font-size: 2.17573472rem; }
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
@@ -1149,32 +1149,61 @@ html {
       line-height: 1.86909096rem;
     }
 
-    /* ── the display steps: x0.9604, then x0.98, the anchor and above ── */
+    /* ── the display steps: x0.9604, then x0.98, then evened out ──────────
+       `2xl` is the anchor and does not move; `3xl` and up were rebuilt from it
+       on a fixed ratio, because the ladder's own steps had drifted far apart at
+       the top while staying almost flat at the bottom:
+
+                    before            after
+         xs  → sm   1.044 (both floored)   unchanged
+         sm  → base 1.142                  unchanged
+         base→ lg   1.036                  unchanged
+         lg  → xl   1.058                  unchanged
+         xl  → 2xl  1.057                  unchanged
+         2xl → 3xl  1.219  22.12px         1.075  19.51px
+         3xl → 4xl  1.200  26.55px         1.120  21.86px
+         4xl → 5xl  1.333  35.39px         1.120  24.48px
+         5xl → 6xl  1.250  44.24px         1.120  27.42px
+         6xl → 7xl  1.200  53.10px         1.120  30.71px
+
+       So a step at the top of the scale now differs from its neighbour by
+       about as much as one at the bottom does, and every size sits closer to
+       body copy — the request was to leave the small steps alone and bring the
+       large ones down toward them, not to flatten the ladder: 1.075 and 1.120
+       still separate two adjacent levels plainly at these sizes (1.4px and
+       2.4px), which is what a heading needs over its body and no more.
+
+       `2xl` holds because it is where the app's own hierarchy tops out — stat
+       numerals are `text-xl sm:text-2xl` — so moving it would move the figures
+       on every dashboard without evening anything. The four steps above it are
+       26 call sites, nearly all marketing headlines, and they carried the whole
+       disproportion. The phone scale takes the same two ratios against its own
+       100% root, so a heading keeps its proportion across `lg`. */
     .text-2xl {
       font-size: 1.38355224rem;
       line-height: 1.88238400rem;
     }
 
     .text-3xl {
-      font-size: 1.68608880rem;
-      line-height: 2.06497564rem;
+      font-size: 1.48731866rem;
+      line-height: 1.82153917rem;
     }
 
     .text-4xl {
-      font-size: 2.02367613rem;
-      line-height: 2.29462590rem;
+      font-size: 1.66579690rem;
+      line-height: 1.88883026rem;
     }
 
     .text-5xl {
-      font-size: 2.69792687rem;
+      font-size: 1.86569252rem;
     }
 
     .text-6xl {
-      font-size: 3.37217761rem;
+      font-size: 2.08957563rem;
     }
 
     .text-7xl {
-      font-size: 4.04735129rem;
+      font-size: 2.34032470rem;
     }
 
     /* ── Responsive variants ──────────────────────────────────────────────
@@ -1224,19 +1253,19 @@ html {
     }
 
     .sm\:text-4xl {
-      font-size: 2.02367613rem;
-      line-height: 2.29462590rem;
+      font-size: 1.66579690rem;
+      line-height: 1.88883026rem;
     }
 
     /* Marketing hero sizes: `/` and `/t/[slug]` headlines, `/pricing`,
        `/themes/alliance`. Line height is left alone -- the display steps carry
        `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
     .sm\:text-5xl {
-      font-size: 2.69792687rem;
+      font-size: 1.86569252rem;
     }
 
     .sm\:text-6xl {
-      font-size: 3.37217761rem;
+      font-size: 2.08957563rem;
     }
 
     .md\:text-lg {
@@ -1255,7 +1284,7 @@ html {
     }
 
     .md\:text-6xl {
-      font-size: 3.37217761rem;
+      font-size: 2.08957563rem;
     }
 
     /* `lg:text-xs` — the Network Velocity labels, which step up from `text-2xs`
@@ -1267,11 +1296,11 @@ html {
     }
 
     .lg\:text-6xl {
-      font-size: 3.37217761rem;
+      font-size: 2.08957563rem;
     }
 
     .lg\:text-7xl {
-      font-size: 4.04735129rem;
+      font-size: 2.34032470rem;
     }
 
     /* The sidebar's uppercase section headings run the other way: they take the

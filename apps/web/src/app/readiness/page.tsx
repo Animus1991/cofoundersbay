@@ -832,12 +832,21 @@ export default function ReadinessPage() {
             <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
               <div className="relative">
                 <ScoreRing score={overallScore} size={140} />
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold tabular-nums">
+                {/* The block was already centred on the ring to the pixel —
+                    measured dx=0, dy=0 — so centring was never the fault. What
+                    was wrong is that `mt-0.5` put 1.64px between the figure and
+                    its tier label, under a 27px line box, and the two read as
+                    one crushed lump. There are 62.7px of clear space inside the
+                    112px ring, so the gap can be spent freely: `gap-1.5` is
+                    4.9px, and `leading-none` on the figure takes the dead space
+                    out of its own line box so the pair sits together as one
+                    optical unit rather than two lines pushed apart. */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                  <span className="text-3xl font-bold leading-none tabular-nums">
                     {overallScore}
                     <span className="text-sm font-medium text-muted-foreground">/100</span>
                   </span>
-                  <span className={cn('mt-0.5 text-xs font-semibold', overallColors.text)}>
+                  <span className={cn('text-xs font-semibold leading-none', overallColors.text)}>
                     <BilingualText en={overallLabel.en} el={overallLabel.el} compact />
                   </span>
                 </div>

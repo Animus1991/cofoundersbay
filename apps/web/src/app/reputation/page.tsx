@@ -268,8 +268,11 @@ function ScoreRing({ score, maxScore, size = 'lg' }: { score: number; maxScore: 
           className={getScoreColor(percentage)}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn('font-bold', textSize, getScoreColor(percentage))}>
+      {/* `gap-1` rather than nothing between the score and its denominator:
+          the two lines were touching, and a ring has the room to separate
+          them. Same correction as /readiness and the founder gauge. */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+        <span className={cn('font-bold leading-none', textSize, getScoreColor(percentage))}>
           {score}
         </span>
         {size === 'lg' && (

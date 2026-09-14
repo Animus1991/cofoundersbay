@@ -355,9 +355,12 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     className={readinessClasses(data.overallStatus).text}
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold">{data.overallScore}</span>
-                  <span className="text-xs text-muted-foreground">/ 100</span>
+                {/* `gap-1.5`, as on /readiness: the score and its
+                    denominator were sharing a line box with no space between
+                    them. */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                  <span className="text-3xl font-bold leading-none">{data.overallScore}</span>
+                  <span className="text-xs leading-none text-muted-foreground">/ 100</span>
                 </div>
               </div>
               <Badge className={cn('mt-4', getStatusColor(data.overallStatus))}>

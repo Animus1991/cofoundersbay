@@ -45,17 +45,29 @@ function RadialGauge({ score }: { score: number }) {
 
   return (
     <div
-      /* 80px, stated. `h-20` is 80px everywhere but the desktop app, where the
-         82% root renders it 65.6px — and the tier label centred inside it
-         ("Πρώιμη") had no room left and was clipped by the ring. */
-      className="relative h-20 w-20 shrink-0 lg:h-[80px] lg:w-[80px]"
+      /* 88px, stated in px so one root cannot render it differently from
+         another: `h-20` is 80px at a 100% root and 65.6px at the desktop app's
+         82%, which is why this used to need an `lg:` override to stop the tier
+         label being clipped by the stroke.
+         
+         Why 88 and not 80. Measured inside the 80px ring: 62.2px of clear
+         space for a 45.1px block — 8.5px above the figure and 8.5px below the
+         label, which is what made the pair look pressed against the stroke.
+         The figure's line box is 24px whatever `leading-none` asks for, because
+         the type scale sets a line-height on `.text-base` and wins on source
+         order, so the block cannot be made shorter without shrinking the type
+         past the 11px floor. 88px puts the clear space at 68.4px, which pays
+         for a real gap between the two lines and still leaves 10.8px around
+         them. The gauge is `shrink-0` beside a text column that stacks below
+         `sm`, so the 8px costs no layout. */
+      className="relative h-[88px] w-[88px] shrink-0"
       role="img"
       aria-label={bilingualAria(
         `Venture readiness ${score} out of 100 — ${labelEn}`,
         `Ετοιμότητα εγχειρήματος ${score} στα 100 — ${labelEl}`,
       )}
     >
-      <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90 lg:h-[80px] lg:w-[80px]" aria-hidden="true">
+      <svg viewBox="0 0 36 36" className="h-[88px] w-[88px] -rotate-90" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
         <circle
           cx="18" cy="18" r="15.5"
@@ -65,15 +77,18 @@ function RadialGauge({ score }: { score: number }) {
           strokeLinecap="round"
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" aria-hidden="true">
         <span className="text-base font-bold leading-none text-foreground tabular-nums">
           {score}
           <span className="text-xs font-medium text-muted-foreground">/100</span>
         </span>
-        {/* The tier label is a single Greek or English word inside an 80px
-            ring; centred and clipped rather than allowed to spill, so a longer
-            tier name shortens instead of crossing the stroke. */}
-        <span className={cn('mt-0.5 max-w-full truncate px-1 text-center text-2xs font-medium', color)}>
+        {/* The tier label is a single Greek or English word inside the ring;
+            centred and clipped rather than allowed to spill, so a longer tier
+            name shortens instead of crossing the stroke. The 1.64px `mt-0.5`
+            it used to carry is now a 3.3px `gap` on the column, so the figure
+            and the label are separated by the container rather than by a margin
+            that the first line's own leading was already eating. */}
+        <span className={cn('max-w-full truncate px-1 text-center text-2xs font-medium', color)}>
           {tierLabel}
         </span>
       </div>
