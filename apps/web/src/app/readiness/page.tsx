@@ -414,7 +414,7 @@ function DimensionCard({
                     ? <CheckCircle2 className={cn('mt-0.5 icon-sm shrink-0', STATUS.success.icon)} />
                     : <AlertCircle className="mt-0.5 icon-sm shrink-0 text-muted-foreground/50" />}
                   <span className={cn('min-w-0 flex-1 leading-snug', c.completed && 'text-muted-foreground line-through')}>
-                    <BilingualText en={c.name} el={c.nameEl} compact />
+                    <BilingualText en={c.name} el={c.nameEl} compact wrap />
                   </span>
                   <span className="shrink-0 pt-0.5 text-xs tabular-nums text-muted-foreground">{c.weight}%</span>
                 </button>
@@ -847,7 +847,7 @@ export default function ReadinessPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold"><BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} compact /></p>
+                  <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} compact wrap /></p>
                 </div>
               </div>
               <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
@@ -881,7 +881,7 @@ export default function ReadinessPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold"><BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} compact /></p>
+                  <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} compact wrap /></p>
                 </div>
               </div>
               <div className="flex flex-wrap items-end gap-x-3 gap-y-1">

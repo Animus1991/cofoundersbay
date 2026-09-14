@@ -779,8 +779,8 @@ export default function MatchesPage() {
               {/* Tier filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
-                    <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact />
+                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+                    <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact wrap />
                   </p>
                   {TIER_TABS.map(tab => {
                     const isActive = activeFilter === tab.key;
@@ -854,8 +854,8 @@ export default function MatchesPage() {
               {/* Availability */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
-                    <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact />
+                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+                    <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
                   </p>
                   {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
                     const isOn = availFilter.has(key);
@@ -863,13 +863,13 @@ export default function MatchesPage() {
                       <button key={key} onClick={() => setAvailFilter(prev => {
                         const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
                       })}
-                        className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                        className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
                           isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                        <span className={cn('h-3.5 w-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
+                        <span className={cn('mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border-2 transition-colors',
                           isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
                           {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
                         </span>
-                        <BilingualText en={labelEn} el={labelEl} compact />
+                        <BilingualText en={labelEn} el={labelEl} compact wrap />
                       </button>
                     );
                   })}
@@ -879,8 +879,8 @@ export default function MatchesPage() {
               {/* Sort */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
-                    <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact />
+                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+                    <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
                   </p>
                   {([
                     { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
@@ -888,10 +888,10 @@ export default function MatchesPage() {
                     { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
                   ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
                     <button key={key} onClick={() => setSortBy(key)}
-                      className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                      className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
                         sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                      <Icon className="icon-sm shrink-0" />
-                      <BilingualText en={labelEn} el={labelEl} compact />
+                      <Icon className="mt-0.5 icon-sm shrink-0" />
+                      <BilingualText en={labelEn} el={labelEl} compact wrap />
                     </button>
                   ))}
                 </CardContent>

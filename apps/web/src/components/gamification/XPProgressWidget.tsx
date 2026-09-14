@@ -30,7 +30,7 @@ export function XPProgressWidget() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <CfbGlyph name="award" className="icon-md text-primary-accessible" />
-            <BilingualText en="Progress & XP" el="Πρόοδος & XP" compact />
+            <BilingualText en="Progress & XP" el="Πρόοδος & XP" compact wrap />
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -48,7 +48,7 @@ export function XPProgressWidget() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <CfbGlyph name="award" className="icon-md text-primary-accessible" />
-          <BilingualText en="Progress & XP" el="Πρόοδος & XP" compact />
+          <BilingualText en="Progress & XP" el="Πρόοδος & XP" compact wrap />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">

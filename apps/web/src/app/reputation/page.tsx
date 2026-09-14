@@ -435,8 +435,6 @@ export default function ReputationPage() {
 
   return (
     <AppShell
-      title="Reputation Score"
-      description="Your trust and credibility on CoFounderBay"
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" className="sm:hidden" aria-label="My Profile" asChild>

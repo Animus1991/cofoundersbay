@@ -364,10 +364,7 @@ export default function ReferralsPage() {
   });
 
   return (
-    <AppShell
-      title="Referral Program"
-      description="Invite friends and earn rewards when they join CoFounderBay"
-    >
+    <AppShell>
       <div className="space-y-6 pb-10">
 
         {/* Stats */}

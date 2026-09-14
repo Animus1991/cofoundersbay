@@ -527,6 +527,63 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Πόροι',
   },
 
+  // ── Ten routes whose English header had no Greek half ──
+  //    «Επιταχυντής» and «θερμοκοιτίδα» are what the Greek ecosystem calls an
+  //    accelerator and an incubator; «bootcamp» is used untranslated, as it is
+  //    in practice. A referral is «σύσταση» here in its networking sense — the
+  //    same word endorsements use, which is correct: both are one person
+  //    vouching for another.
+  '/activity': {
+    title: 'Ροή δραστηριότητας',
+    description: 'Παρακολουθήστε τη δραστηριότητα του δικτύου σας, τις ειδοποιήσεις και τις εκδηλώσεις.',
+    section: 'Λογαριασμός',
+  },
+  '/ai': {
+    title: 'Βοηθός AI',
+    description: 'Συνδεθείτε για να διαβάσει ο βοηθός το δίκτυό σας και να δράσει πάνω του.',
+    section: 'Εργασία',
+  },
+  '/compare': {
+    title: 'Σύγκριση προφίλ',
+    description: 'Σύγκριση δίπλα-δίπλα για να βρείτε την καλύτερη αντιστοίχιση. Συμβουλή: αποθηκεύστε ένα URL /matches/compare με ids προφίλ για να το μοιραστείτε.',
+    section: 'Εξερεύνηση',
+  },
+  '/expert-reviews': {
+    title: 'Αξιολογήσεις ειδικών',
+    description: 'Δομημένη ανατροφοδότηση για το pitch, τα οικονομικά και τη στρατηγική σας από ειδικούς του κλάδου.',
+    section: 'Πόροι',
+  },
+  '/invite': {
+    title: 'Προσκλήσεις',
+    description: 'Μεγαλώστε το δίκτυό σας προσκαλώντας συνιδρυτές, μέντορες και επενδυτές.',
+    section: 'Κοινότητα',
+  },
+  '/members': {
+    title: 'Κατάλογος μελών',
+    description: 'Ανακαλύψτε και συνδεθείτε με μέλη από όλη την πλατφόρμα.',
+    section: 'Εξερεύνηση',
+  },
+  '/programs': {
+    title: 'Προγράμματα',
+    description: 'Επιταχυντές, θερμοκοιτίδες, bootcamps και διαγωνισμοί για να μεγαλώσετε το startup σας.',
+    section: 'Πόροι',
+  },
+  '/referrals': {
+    title: 'Πρόγραμμα συστάσεων',
+    description: 'Προσκαλέστε γνωστούς σας και κερδίστε ανταμοιβές όταν εγγραφούν στο CoFounderBay.',
+    section: 'Κοινότητα',
+  },
+  '/reputation': {
+    title: 'Βαθμολογία φήμης',
+    description: 'Η αξιοπιστία σας στο CoFounderBay.',
+    section: 'Λογαριασμός',
+  },
+  '/saved-searches': {
+    title: 'Αποθηκευμένες αναζητήσεις',
+    description: 'Διαχειριστείτε τα αποθηκευμένα φίλτρα και ειδοποιηθείτε για νέες αντιστοιχίσεις.',
+    section: 'Εξερεύνηση',
+  },
+
   // ── Programs, jobs, marketplace, community ──
   '/jobs': {
     title: 'Θέσεις εργασίας',

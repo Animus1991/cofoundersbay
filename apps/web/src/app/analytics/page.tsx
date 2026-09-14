@@ -565,8 +565,11 @@ export default function AnalyticsPage() {
                           </Badge>
                         </div>
                         <h3 className="mb-1 text-xl font-bold">{metricValue(metric)}</h3>
+                        {/* `wrap`: at 1024px these are 76px wide and the
+                            label is "Avg. Response Time · Μέσος χρόνος
+                            απάντησης". */}
                         <p className="text-xs leading-snug text-muted-foreground">
-                          <BilingualText en={metric.label} el={metric.labelEl} compact />
+                          <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
                         </p>
                         {sparkValues.length > 0 && (
                           <div className="mt-3 opacity-60">

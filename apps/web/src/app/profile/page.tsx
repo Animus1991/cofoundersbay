@@ -93,16 +93,18 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
           {items.map((item) => (
             <div
               key={item.labelEn}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs ${
+              className={`flex items-start gap-1.5 rounded-lg px-2.5 py-1.5 text-xs leading-snug ${
                 item.done
                   ? 'bg-primary/10 text-primary-accessible'
                   : 'bg-secondary/60 text-muted-foreground'
               }`}
             >
               {item.done
-                ? <CheckCircle className="icon-sm shrink-0" />
-                : <AlertCircle className="icon-sm shrink-0" />}
-              <BilingualText en={item.labelEn} el={item.labelEl} compact />
+                ? <CheckCircle className="mt-0.5 icon-sm shrink-0" />
+                : <AlertCircle className="mt-0.5 icon-sm shrink-0" />}
+              {/* `wrap`: two chips per row in a 320px rail leaves about 100px of
+                  text, and "Display name · Εμφανιζόμενο όνομα" is 130px. */}
+              <BilingualText en={item.labelEn} el={item.labelEl} compact wrap />
             </div>
           ))}
         </div>
@@ -133,26 +135,30 @@ function VerificationCard({ email }: { email?: string | null }) {
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
         {items.map(({ labelEn, labelEl, verified, icon: Icon }) => (
-          <div key={labelEn} className="flex items-center gap-2.5 text-xs">
+          /* The status sits under the label, not beside it. On one line, in a
+             320px rail, the label yielded (`min-w-0`) to a `shrink-0` status
+             that is itself bilingual — "Not connected · Μη συνδεδεμένο" is
+             about 170px — and "LinkedIn connected · LinkedIn συνδεδεμένο" was
+             left 17px to render 119px of text, losing 86% of itself. Stacked,
+             both read in full at any width this card ever takes. */
+          <div key={labelEn} className="flex items-start gap-2.5 text-xs">
             <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
               <Icon className={`icon-sm ${verified ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
             </div>
-            {/* min-w-0 so the label yields before the row does: this line is
-                `text-xs`, which now holds an 11px floor rather than shrinking to
-                9.84px with the 82% desktop root, and the extra width pushed the
-                card 10px past a 1024px viewport. */}
-            <span className={`min-w-0 ${verified ? 'text-foreground' : 'text-muted-foreground'}`}>
-              <BilingualText en={labelEn} el={labelEl} compact />
-            </span>
-            {verified
-              ? <CheckCircle className="ml-auto icon-sm text-primary-accessible" />
-              : /* No /60 here: an alpha modifier on a text colour composites toward
-                   the surface, and muted-foreground at 0.6 measures 3.27:1 on the
-                   card -- under AA. Below 0.80 alpha this token always fails;
-                   status text needs the token at full strength. */
-                <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                  <BilingualText en={profileEn('not_connected')} el={profileEl('not_connected')} />
-                </span>}
+            <div className="min-w-0 flex-1">
+              <span className={`block leading-snug ${verified ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <BilingualText en={labelEn} el={labelEl} compact wrap />
+              </span>
+              {/* No /60 on the muted token: an alpha modifier on a text colour
+                  composites toward the surface, and muted-foreground at 0.6
+                  measures 3.27:1 on the card — under AA. */}
+              {!verified && (
+                <span className="mt-0.5 block text-2xs leading-snug text-muted-foreground">
+                  <BilingualText en={profileEn('not_connected')} el={profileEl('not_connected')} compact wrap />
+                </span>
+              )}
+            </div>
+            {verified && <CheckCircle className="mt-0.5 shrink-0 icon-sm text-primary-accessible" />}
           </div>
         ))}
       </CardContent>
@@ -726,9 +732,11 @@ export default function ProfilePage() {
                       content, so a bilingual uppercase label with wide tracking
                       could exceed the ~128px tile -- it went 5px past the card
                       once the web-view type scale grew. Bounded here so it wraps
-                      inside the tile instead. */}
-                  <span className="mt-1 min-w-0 max-w-full text-center text-2xs font-medium uppercase tracking-wider text-muted-foreground">
-                    <BilingualText en={labelEn} el={labelEl} compact />
+                      inside the tile instead — and `wrap` is what actually makes
+                      it wrap: a `compact` label truncates by default, so
+                      "Endorsements" was rendering as "ENDO…" in 56px. */}
+                  <span className="mt-1 min-w-0 max-w-full text-center text-2xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
+                    <BilingualText en={labelEn} el={labelEl} compact wrap />
                   </span>
                 </div>
               ))}

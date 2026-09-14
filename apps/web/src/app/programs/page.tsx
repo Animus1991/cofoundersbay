@@ -373,8 +373,6 @@ export default function ProgramsPage() {
 
   return (
     <AppShell
-      title="Programs"
-      description="Accelerators, incubators, bootcamps, and competitions to grow your startup"
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
           {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}

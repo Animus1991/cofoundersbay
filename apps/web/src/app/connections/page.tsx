@@ -342,8 +342,11 @@ export default function ConnectionsPage() {
                       pushed the page 166px sideways at 640-1024px. */}
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      <BilingualText en={s.labelEn} el={s.labelEl} compact />
+                    {/* `wrap`: a quarter-width stat tile leaves this label
+                        about 100px, and the bilingual pair is longer than that
+                        in every one of the four. */}
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                      <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
                     </p>
                   </div>
                 </CardContent>

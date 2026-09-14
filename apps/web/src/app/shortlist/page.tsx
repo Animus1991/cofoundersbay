@@ -409,7 +409,8 @@ export default function ShortlistPage() {
               />
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-              <SelectTrigger className="h-9 w-44 text-sm">
+              {/* w-44 is 176px, and "Newest first · Νεότερα πρώτα" is 76px past that. */}
+              <SelectTrigger className="h-9 w-auto min-w-[11rem] text-sm">
                 <ArrowUpDown className="mr-1.5 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>

@@ -172,9 +172,9 @@ function StatCard({
             <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
             <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
             {trend && (
-              <p className={cn('text-[11px] font-medium sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
+              <p className={cn('text-[11px] font-medium leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%{' '}
-                <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} compact />
+                <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} compact wrap />
               </p>
             )}
           </div>
@@ -441,19 +441,19 @@ export default function FounderDashboardContent() {
                       <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/readiness" className="w-full">
                           <CfbGlyph name="chart" className="icon-sm" />
-                          <BilingualText en="Full report" el="Πλήρης αναφορά" compact />
+                          <BilingualText en="Full report" el="Πλήρης αναφορά" compact wrap />
                         </Link>
                       </Button>
                       <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/builder" className="w-full">
                           <CfbGlyph name="builder" className="icon-sm" />
-                          <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact />
+                          <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact wrap />
                         </Link>
                       </Button>
                       <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/expert-reviews" className="w-full">
                           <CfbGlyph name="award" className="icon-sm" />
-                          <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact />
+                          <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact wrap />
                         </Link>
                       </Button>
                     </div>
@@ -607,11 +607,12 @@ export default function FounderDashboardContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[11px] leading-snug text-muted-foreground">
                   <BilingualText
                     en="Sample timeline — manage live items on Milestones."
                     el="Δείγμα χρονοδιαγράμματος — διαχειριστείτε τα πραγματικά στα Ορόσημα."
                     compact
+                    wrap
                   />
                 </p>
                 {DEMO_MILESTONES.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
@@ -783,8 +784,12 @@ export default function FounderDashboardContent() {
                           <CfbGlyph name="calendar" className={cn('icon-sm', cfg.icon)} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">
-                            <BilingualText en={event.titleEn} el={event.titleEl} compact />
+                          {/* Two lines rather than an ellipsis: in a 381px
+                              rail "Mentor Session — Dr. Sarah Chen" lost 37% of
+                              itself, and which mentor it is with is most of the
+                              information in the row. */}
+                          <p className="text-xs font-medium leading-snug text-foreground">
+                            <BilingualText en={event.titleEn} el={event.titleEl} compact wrap />
                           </p>
                           <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
                             <span className="text-xs text-muted-foreground">

@@ -114,6 +114,15 @@ export function AppShellFrame({
 type AppShellProps = {
   title?: string;
   description?: string;
+  /**
+   * Greek heading, for the rare page whose header cannot be a constant — a
+   * count folded into the sentence, say. Everywhere else the pair lives in the
+   * page registry and neither of these is passed: `resolvePageHeader` already
+   * took overrides for them, but there was no prop to supply one, so a page
+   * with a dynamic English description had no way to make the Greek match.
+   */
+  titleEl?: string;
+  descriptionEl?: string;
   actions?: ReactNode;
   children: ReactNode;
   /** Show contextual help from page registry when available */
@@ -141,6 +150,8 @@ type AppShellProps = {
 export function AppShell({
   title,
   description,
+  titleEl,
+  descriptionEl,
   actions,
   children,
   showHelp = false,
@@ -150,7 +161,7 @@ export function AppShell({
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
-  const resolved = resolvePageHeader(pathname, { title, description });
+  const resolved = resolvePageHeader(pathname, { title, description, titleEl, descriptionEl });
   const pageTitle = resolved.title;
   const pageTitleEl = resolved.titleEl;
   const pageDescription = resolved.description;

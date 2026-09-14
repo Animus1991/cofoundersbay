@@ -385,8 +385,13 @@ export function MembersPageClient() {
 
   return (
     <AppShell
+      /* The count belongs in both halves. Leaving `descriptionEl` to the
+         registry would pair "…with 1,240 members" against a Greek line with no
+         number in it, which reads as two different sentences rather than one
+         sentence twice. */
       title="Member Directory"
       description={`Discover and connect with ${total.toLocaleString('en-GB')} members`}
+      descriptionEl={`Ανακαλύψτε και συνδεθείτε με ${total.toLocaleString('el-GR')} μέλη`}
     >
       <div className="space-y-4 pb-10">
 

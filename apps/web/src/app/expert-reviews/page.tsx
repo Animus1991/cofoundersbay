@@ -453,10 +453,7 @@ export default function ExpertReviewsPage() {
     : null;
 
   return (
-    <AppShell
-      title="Expert Reviews"
-      description="Get structured feedback on your pitch, financials, strategy, and more from domain experts"
-    >
+    <AppShell>
       <div className="space-y-6 pb-10">
 
         {/* Stats */}

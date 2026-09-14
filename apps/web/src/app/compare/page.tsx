@@ -324,10 +324,7 @@ export default function ComparePage() {
   };
 
   return (
-    <AppShell
-      title="Compare Profiles"
-      description="Side-by-side comparison to find your best match. Tip: bookmark a /matches/compare URL with profile ids to share."
-    >
+    <AppShell>
       <div className="space-y-6 pb-10">
         {/* Header */}
         <div className="flex items-center justify-between">

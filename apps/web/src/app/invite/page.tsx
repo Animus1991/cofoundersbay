@@ -158,10 +158,7 @@ export default function InvitePage() {
   };
 
   return (
-    <AppShell
-      title="Invite People"
-      description="Grow your network by inviting co-founders, mentors, and investors"
-    >
+    <AppShell>
       <div className="w-full space-y-6 pb-10">
         {/* Stats row */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

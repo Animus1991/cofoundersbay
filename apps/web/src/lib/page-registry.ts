@@ -164,6 +164,24 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Provider sub-pages ──
   { path: '/provider/listings', title: 'My listings', description: 'Manage services you offer to startups on the marketplace.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+
+  // ── Ten routes that shipped without an entry here ──
+  //    Each passes its own `title`/`description` to AppShell, so the header
+  //    rendered — but `getPageMeta` returned undefined for the path, and with
+  //    it went the Greek half: `getPageMetaEl` is only consulted for a route
+  //    the registry knows. Ten founder-reachable pages therefore had an
+  //    English-only heading on a bilingual product, and the help and
+  //    assistant surfaces that read this registry could not see them at all.
+  { path: '/activity', title: 'Activity Feed', description: 'Track your network activity, notifications, and events.', section: 'Account', status: 'complete' },
+  { path: '/ai', title: 'AI Assistant', description: 'Sign in to let the copilot read your graph and act on it.', section: 'Work', priority: 'critical', status: 'complete' },
+  { path: '/compare', title: 'Compare Profiles', description: 'Side-by-side comparison to find your best match. Tip: bookmark a /matches/compare URL with profile ids to share.', section: 'Explore', status: 'complete' },
+  { path: '/expert-reviews', title: 'Expert Reviews', description: 'Structured feedback on your pitch, financials, and strategy from domain experts.', section: 'Resources', status: 'complete' },
+  { path: '/invite', title: 'Invite People', description: 'Grow your network by inviting co-founders, mentors, and investors.', section: 'Community', status: 'complete' },
+  { path: '/members', title: 'Member Directory', description: 'Discover and connect with members across the platform.', section: 'Explore', status: 'complete' },
+  { path: '/programs', title: 'Programs', description: 'Accelerators, incubators, bootcamps, and competitions to grow your startup.', section: 'Resources', status: 'complete' },
+  { path: '/referrals', title: 'Referral Program', description: 'Invite friends and earn rewards when they join CoFounderBay.', section: 'Community', status: 'complete' },
+  { path: '/reputation', title: 'Reputation Score', description: 'Your trust and credibility on CoFounderBay.', section: 'Account', status: 'complete' },
+  { path: '/saved-searches', title: 'Saved Searches', description: 'Manage your saved search filters and get notified of new matches.', section: 'Explore', status: 'complete' },
 ];
 
 const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & { path?: string } }> = [

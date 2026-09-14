@@ -257,8 +257,10 @@ export default function DiscoverPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
+                    {/* `wrap`: "Επιτυχείς αντιστοιχίσεις" is 112px in a tile
+                        that gives the label about 96px. */}
                     <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground sm:text-xs">
-                      <BilingualText en={s.labelEn} el={s.labelEl} compact />
+                      <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
                     </p>
                   </div>
                 </CardContent>
@@ -382,8 +384,11 @@ export default function DiscoverPage() {
                       {h.displayName?.charAt(0) ?? '?'}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate max-w-[100px]">{h.displayName}</p>
-                      <p className="text-xs text-muted-foreground truncate max-w-[100px]">{h.role}</p>
+                      {/* 100px cut "Elena Papadopoulos" by a fifth. These
+                          chips sit in a horizontal scroller, so a wider one
+                          costs nothing but a little scroll. */}
+                      <p className="max-w-[150px] truncate text-xs font-medium text-foreground">{h.displayName}</p>
+                      <p className="max-w-[150px] truncate text-xs text-muted-foreground">{h.role}</p>
                     </div>
                     {h.matchScore !== undefined && (
                       <span className={cn(

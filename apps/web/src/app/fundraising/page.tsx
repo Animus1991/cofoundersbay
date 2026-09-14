@@ -696,8 +696,11 @@ export default function FundraisingPage() {
                     measured 122px past the viewport at 640-1024px without it. */}
                 <div className="min-w-0">
                   <p className="text-lg font-bold tabular-nums">{s.value}</p>
-                  <p className="text-2xs text-muted-foreground">
-                    <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact />
+                  {/* The note above is only half the story: `min-w-0` lets the
+                      label truncate, and truncating is not what a 104px label in
+                      a 100px box should do. `wrap` gives it the second line. */}
+                  <p className="text-2xs leading-snug text-muted-foreground">
+                    <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact wrap />
                   </p>
                 </div>
               </CardContent>
