@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -82,28 +83,11 @@ const RESPONSE_STYLES = [
   { value: 'formal', label: 'Formal', desc: 'Professional, business-like' },
 ];
 
+/** The product's switch, with this page's prop names. See the note on the same
+    wrapper in `settings/page.tsx`: the hand-rolled copy this replaces had a
+    square track, so `rounded-full` drew a circle. */
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => !disabled && onChange(!checked)}
-      className={cn(
-        'relative inline-flex h-11 w-[2.75rem] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors tap-target focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        checked ? 'bg-primary' : 'bg-secondary',
-        disabled && 'opacity-50 cursor-not-allowed'
-      )}
-    >
-      <span
-        className={cn(
-          'pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
-          checked ? 'translate-x-5' : 'translate-x-0.5'
-        )}
-      />
-    </button>
-  );
+  return <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />;
 }
 
 export default function AISettingsPage() {

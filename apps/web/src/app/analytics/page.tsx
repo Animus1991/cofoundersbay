@@ -186,13 +186,23 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
        kept its natural height, leaving 122px of empty page under it. */
     <Card className="flex h-full min-w-0 flex-col rounded-xl border-primary/20 bg-primary/[0.03]">
       <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
-        <div className="mb-4 flex min-w-0 items-center gap-2.5">
-          <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
-          <span className="min-w-0 truncate text-sm font-semibold">
-            <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact />
-          </span>
-          <Badge variant="secondary" className="ml-auto shrink-0 text-2xs">
-            <BilingualText en={analyticsEn('vs_prev')} el={analyticsEl('vs_prev')} compact />
+        {/* The period badge sits under the title, not beside it. Bilingual,
+            "vs prev period · vs προηγ. περίοδο" is about 210px wide; in the
+            340px this card gets at `lg` that left the title 100px and it
+            truncated to "Netw… · Ταχύ…". It is metadata about the numbers
+            below, not a peer of the heading, so it reads correctly on its own
+            line and the title gets the full width. */}
+        <div className="mb-4 min-w-0">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
+            <span className="min-w-0 text-sm font-semibold">
+              <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact wrap />
+            </span>
+          </div>
+          <Badge variant="secondary" className="mt-1.5 max-w-full text-2xs">
+            <span className="truncate">
+              <BilingualText en={analyticsEn('vs_prev')} el={analyticsEl('vs_prev')} compact />
+            </span>
           </Badge>
         </div>
         {/* Two layouts for two shapes of box. Full width on a phone, three
