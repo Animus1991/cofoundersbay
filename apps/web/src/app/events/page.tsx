@@ -120,7 +120,9 @@ export default function EventsPage() {
     >
       <div className="space-y-6 pb-10">
       {/* Stats bar */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Four across waits for `md`, as on /connections: at 640px each tile
+          is 145px and a bilingual label has about 80px to live in. */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { labelEn: 'Total Events', labelEl: 'Συνολικές εκδηλώσεις', value: events.length || '40+', icon: Calendar, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
           { labelEn: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-status-success', bg: 'bg-status-success-bg' },
@@ -136,8 +138,8 @@ export default function EventsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    <BilingualText en={s.labelEn} el={s.labelEl} compact />
+                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
                   </p>
                 </div>
               </CardContent>

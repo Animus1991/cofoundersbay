@@ -527,16 +527,18 @@ export default function ProfilePage() {
                 <CardContent className="grid gap-4 sm:grid-cols-2 pt-5">
                   {cards.map(({ icon: Icon, labelEn, labelEl, value }) => (
                     <div key={labelEn} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
-                      <div className="flex items-center gap-2.5 mb-2">
+                      <div className="mb-2 flex items-start gap-2.5">
                         <div className="shrink-0 p-1.5 rounded-md bg-primary/10 text-primary-accessible">
                           <Icon className="icon-sm" />
                         </div>
-                        {/* min-w-0: uppercase + tracking-wider makes this label far
-                            wider than it reads, and without it the flex item could
-                            not shrink, so `compact`'s truncation never applied and
-                            the card pushed the page sideways at 640px. */}
-                        <span className="min-w-0 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          <BilingualText en={labelEn} el={labelEl} compact />
+                        {/* min-w-0 lets this flex item shrink — without it the card
+                            pushed the page sideways at 640px. `wrap` is what it
+                            does once it has shrunk: "Startup stage · Στάδιο
+                            νεοφυούς επιχείρησης" is 185px in the 41px two of these
+                            cards leave at 1024px, and uppercase with wide tracking
+                            makes the label wider than it reads. */}
+                        <span className="min-w-0 text-xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+                          <BilingualText en={labelEn} el={labelEl} compact wrap />
                         </span>
                       </div>
                       <p className="text-sm font-medium text-foreground pl-1">{value}</p>

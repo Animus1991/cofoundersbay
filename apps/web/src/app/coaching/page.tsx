@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   BrainCircuit, Calendar, Clock, CheckCircle2, XCircle, AlertTriangle,
@@ -56,6 +57,19 @@ interface CoachProfile {
   availability: string;
   isVerified: boolean;
 }
+
+/* Why the two disabled controls are disabled, in both languages. Stated as
+   constants because each is used in two places and a `title` that disagreed
+   with its `aria-label` would read differently to a mouse and a screen
+   reader. */
+const JOIN_HINT = bilingualAria(
+  'Meeting links arrive when coaching sessions are live',
+  'Οι σύνδεσμοι συνεδρίας θα είναι διαθέσιμοι όταν ενεργοποιηθεί το coaching',
+);
+const RATE_HINT = bilingualAria(
+  'Rating opens when coaching sessions are live',
+  'Η βαθμολόγηση θα είναι διαθέσιμη όταν ενεργοποιηθεί το coaching',
+);
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
@@ -275,17 +289,24 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex gap-2">
             {session.status === 'scheduled' && session.meetingUrl && (
-              <Button size="sm" className="gap-1">
-                <Video className="icon-sm" /> Join session
+              <Button size="sm" className="gap-1" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
+                <Video className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
               </Button>
             )}
             {session.status === 'completed' && !session.rating && (
-              <Button size="sm" variant="outline" className="gap-1">
-                <Star className="icon-sm" /> Rate session
+              <Button size="sm" variant="outline" className="gap-1" disabled title={RATE_HINT} aria-label={RATE_HINT}>
+                <Star className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="gap-1">
-              <MessageCircle className="icon-sm" /> Message coach
+            {/* Messaging is real, and it lives with the mentors a founder can
+                actually reach today. */}
+            <Button size="sm" variant="ghost" className="gap-1" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Find a mentor" el="Εύρεση μέντορα" compact wrap />
+              </Link>
             </Button>
           </div>
           <button
@@ -380,12 +401,21 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
             </span>
           </div>
 
+          {/* These coaches are constants with demo ids, so neither booking nor
+              a conversation can be opened with them. `/mentoring` is the same
+              offer against real people. */}
           <div className="mt-3 flex gap-2">
-            <Button size="sm" className="gap-1 flex-1">
-              <Calendar className="icon-sm" /> Book session
+            <Button size="sm" className="flex-1 gap-1" asChild>
+              <Link href="/mentoring">
+                <Calendar className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Book with a mentor" el="Κράτηση με μέντορα" compact wrap />
+              </Link>
             </Button>
-            <Button size="sm" variant="outline" className="gap-1">
-              <MessageCircle className="icon-sm" /> Message
+            <Button size="sm" variant="outline" className="gap-1" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+              </Link>
             </Button>
           </div>
         </div>
@@ -399,7 +429,11 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState('sessions');
   const { showDemoData } = useDemoData();
+  const [specialtyFilter, setSpecialtyFilter] = useState<SessionType | null>(null);
   const sessions = showDemoData ? DEMO_SESSIONS : [];
+  const visibleCoaches = specialtyFilter
+    ? DEMO_COACHES.filter((c) => c.specialties.includes(specialtyFilter))
+    : DEMO_COACHES;
   const upcoming = sessions.filter((s) => s.status === 'scheduled' || s.status === 'in_progress');
   const completed = sessions.filter((s) => s.status === 'completed');
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);
@@ -446,8 +480,9 @@ export default function CoachingPage() {
                 </p>
               </div>
               {upcoming[0].meetingUrl && (
-                <Button size="sm" className="gap-1.5 shrink-0">
-                  <Video className="icon-sm" /> <BilingualText en="Join" el="Σύνδεση" compact />
+                <Button size="sm" className="shrink-0 gap-1.5" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
+                  <Video className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Join" el="Σύνδεση" compact wrap />
                 </Button>
               )}
             </div>
@@ -462,8 +497,11 @@ export default function CoachingPage() {
               <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
               <TabsTrigger value="insights" className="text-xs"><BilingualText en="Insights" el="Αναλύσεις" compact /></TabsTrigger>
             </TabsList>
-            <Button size="sm" className="h-8 gap-1.5 text-xs">
-              <Plus className="icon-sm" /> <BilingualText en="Book session" el="Κράτηση συνεδρίας" compact />
+            <Button size="sm" className="h-8 gap-1.5 text-xs" asChild>
+              <Link href="/mentoring">
+                <Plus className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Book a session" el="Κράτηση συνεδρίας" compact wrap />
+              </Link>
             </Button>
           </div>
 
@@ -501,23 +539,52 @@ export default function CoachingPage() {
           {/* Find a Coach */}
           <TabsContent value="find" className="mt-4 space-y-4">
             {/* Session type filter chips */}
+            {/* Filtering needs no server — the list is right here. These chips
+                looked like filters and did nothing; now they are filters. */}
             <div className="flex flex-wrap gap-2">
-              {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => (
-                <button key={key} className={cn('flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80', cfg.color)}>
-                  <cfg.icon className="icon-sm" />{cfg.label}
-                </button>
-              ))}
+              {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
+                const on = specialtyFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setSpecialtyFilter((prev) => (prev === key ? null : key))}
+                    className={cn(
+                      'flex min-h-11 items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80 md:min-h-0',
+                      cfg.color,
+                      on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
+                    )}
+                  >
+                    <cfg.icon className="icon-sm" aria-hidden="true" />{cfg.label}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="space-y-3">
-              {DEMO_COACHES.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
+              {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
+              {visibleCoaches.length === 0 && (
+                <p className="rounded-xl border border-dashed border-border/60 py-10 text-center text-sm text-muted-foreground">
+                  <BilingualText
+                    en="No coaches with that specialty. Clear the filter to see all of them."
+                    el="Κανένας coach με αυτή την ειδίκευση. Καθαρίστε το φίλτρο για να τους δείτε όλους."
+                  />
+                </p>
+              )}
             </div>
 
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
               <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
               <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
-              <Button variant="outline" size="sm"><BilingualText en="Apply as coach" el="Αίτηση ως coach" compact /></Button>
+              {/* Mentor signup is the real version of this — the form exists
+                  and is wired. */}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/mentor/profile-setup">
+                  <BilingualText en="Apply as coach" el="Αίτηση ως coach" compact wrap />
+                </Link>
+              </Button>
             </div>
           </TabsContent>
 

@@ -152,11 +152,14 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="font-semibold text-sm truncate">{provider.providerName}</p>
+                <p className="text-sm font-semibold leading-snug">{provider.providerName}</p>
                 {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" />}
                 {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
               </div>
-              <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
+              {/* "Growth Marketing Strategist" is 170px against the 102px
+                  this column gives it at 1024px — the trade an ellipsis makes
+                  here is the whole specialism for one line. */}
+              <p className="text-xs leading-snug text-muted-foreground">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
                 <Star className="icon-sm fill-status-warning text-amber-400" />
                 <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>

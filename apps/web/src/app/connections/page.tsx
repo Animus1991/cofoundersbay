@@ -322,7 +322,14 @@ export default function ConnectionsPage() {
       <div className="space-y-5 pb-10">
       {/* Stats bar */}
       {!isLoading && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        /* Four across waits for `md`. At 640px `sm:grid-cols-4` gave each tile
+           145px, which leaves a bilingual label about 80px — less than
+           "Σύνολο αλληλεπιδράσεων" can break to, and the page scrolled 20px
+           sideways because of it. Two columns hold to 768px.
+           A JS comment, not a JSX one: this is the single child of a `&&`
+           expression, where a braced JSX comment would be a second child and a
+           syntax error. */
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
             { labelEn: connectionsEn('stat_connected'), labelEl: connectionsEl('stat_connected'), value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, tone: 'accent' as const },
             { labelEn: connectionsEn('stat_intro_requests'), labelEl: connectionsEl('stat_intro_requests'), value: introCount, icon: Handshake, tone: 'warning' as const },

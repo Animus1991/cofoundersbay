@@ -166,8 +166,16 @@ function StatCard({
 }) {
   const content = (
     <Card className="relative h-full overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
-      <CardContent className="p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3">
+      {/* `h-full` continues onto the content, and the row centres inside it.
+          Two of these four cards carry a trend line and two do not, so the
+          row is as tall as the tallest: the card stretched to 148px while the
+          content of the trendless pair stopped at 101px, leaving a 46px band
+          of empty card under "Unread messages" and "Milestones". The band was
+          real — measured, not inferred. Centring spends it evenly above and
+          below the figure, which is how a stat tile is meant to sit in a row
+          of unequal tiles, and it invents no caption to fill the space. */}
+      <CardContent className="flex h-full items-center p-4 sm:p-5">
+        <div className="flex w-full items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
             <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
             <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
@@ -238,7 +246,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">
-            <BilingualText en={milestone.titleEn} el={milestone.titleEl} compact />
+            <BilingualText en={milestone.titleEn} el={milestone.titleEl} compact wrap />
           </p>
           {/* 'warning', not 'destructive': high priority is not an error state, and
               reserving red for overdue/failure keeps the colour meaningful.
@@ -491,6 +499,7 @@ export default function FounderDashboardContent() {
                       en="Sample pipeline — live tracker is on Fundraising."
                       el="Δείγμα pipeline — η ζωντανή παρακολούθηση είναι στη Χρηματοδότηση."
                       compact
+                      wrap
                     />
                   </p>
                   <div className="flex items-end justify-between gap-3">

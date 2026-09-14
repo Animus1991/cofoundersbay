@@ -260,8 +260,8 @@ function ProjectCard({
 
         <Button className="w-full rounded-xl" asChild>
           <Link href={`/projects/${project.id}`}>
-            <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact />
-            <ChevronRight className="icon-sm ml-1" />
+            <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
+            <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
           </Link>
         </Button>
       </CardContent>
@@ -460,8 +460,11 @@ export default function ProjectsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
-                  <p className="mt-0.5 truncate text-2xs text-muted-foreground">
-                    <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact />
+                  {/* `truncate` on the wrapper *and* a truncating label: at
+                      1024px these tiles give the label about 54px and
+                      "Active / building · Ενεργά / κατασκευή" needs 97px. */}
+                  <p className="mt-0.5 text-2xs leading-snug text-muted-foreground">
+                    <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
                   </p>
                 </div>
               </CardContent>

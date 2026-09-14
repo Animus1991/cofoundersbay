@@ -713,7 +713,7 @@ export default function MatchesPage() {
                   <div className="min-w-0">
                     <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
                     <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
-                      <BilingualText en={labelEn} el={labelEl} compact />
+                      <BilingualText en={labelEn} el={labelEl} compact wrap />
                     </p>
                   </div>
                 </CardContent>

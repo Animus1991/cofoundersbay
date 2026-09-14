@@ -6,7 +6,7 @@ import {
   Star, Clock, CheckCircle2, XCircle, AlertTriangle, FileText,
   Plus, ChevronRight, TrendingUp, Award, MessageCircle, Eye,
   BarChart3, Lightbulb, DollarSign, Scale, Palette, Code2,
-  Target, Search, Filter, RefreshCw, ExternalLink,
+  Target, Search, RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,15 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
+import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+
+/** Why the one disabled control is disabled, in both languages. */
+const MESSAGE_HINT = bilingualAria(
+  'A conversation opens once expert reviews are live',
+  'Η συνομιλία θα είναι διαθέσιμη όταν ενεργοποιηθούν οι αξιολογήσεις ειδικών',
+);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -286,14 +295,24 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
             <div className="mt-3 flex items-center justify-between">
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                  <MessageCircle className="icon-sm" /> Message expert
+                {/* A review carries the expert's name but no user id, so there
+                    is no conversation to open. Disabled and labelled beats a
+                    button that looks live. */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1 text-xs"
+                  disabled
+                  title={MESSAGE_HINT}
+                  aria-label={MESSAGE_HINT}
+                >
+                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
                 </Button>
-                {review.status === 'submitted' && (
-                  <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                    <ExternalLink className="icon-sm" /> View full review
-                  </Button>
-                )}
+                {/* "View full review" is gone rather than wired: the control
+                    immediately to its right — "See feedback" — already expands
+                    the full review in place, and did so while this one did
+                    nothing. Two buttons for one action is the defect. */}
               </div>
               {review.strengthsJson || review.improvementsJson ? (
                 <button
@@ -415,12 +434,21 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             </span>
           </div>
 
+          {/* These experts are constants. Mentors are real, bookable and
+              messageable, and a structured review is one of the things they
+              do — so that is where both buttons lead. */}
           <div className="mt-3 flex gap-2">
-            <Button size="sm" className="h-7 gap-1 text-xs flex-1">
-              <Plus className="icon-sm" /> Request review
+            <Button size="sm" className="h-auto min-h-7 flex-1 gap-1 py-1 text-xs leading-snug" asChild>
+              <Link href="/mentoring">
+                <Plus className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
+              </Link>
             </Button>
-            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-              <MessageCircle className="icon-sm" /> Message
+            <Button size="sm" variant="outline" className="h-auto min-h-7 gap-1 py-1 text-xs leading-snug" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+              </Link>
             </Button>
           </div>
         </div>
@@ -562,9 +590,21 @@ export default function ExpertReviewsPage() {
             {/* CTA for becoming an expert */}
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
               <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1">Are you a domain expert?</p>
-              <p className="text-xs text-muted-foreground mb-3">Join as an expert reviewer and earn while helping founders.</p>
-              <Button variant="outline" size="sm">Apply as expert</Button>
+              <p className="mb-1 text-sm font-medium text-foreground">
+                <BilingualText en="Are you a domain expert?" el="Είστε ειδικός στον τομέα σας;" />
+              </p>
+              <p className="mb-3 text-xs leading-snug text-muted-foreground">
+                <BilingualText
+                  en="Join as an expert reviewer and earn while helping founders."
+                  el="Γίνετε αξιολογητής και κερδίστε βοηθώντας ιδρυτές."
+                />
+              </p>
+              {/* Mentor signup is the form that exists and is wired. */}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/mentor/profile-setup">
+                  <BilingualText en="Apply as expert" el="Αίτηση ως ειδικός" compact wrap />
+                </Link>
+              </Button>
             </div>
           </TabsContent>
 

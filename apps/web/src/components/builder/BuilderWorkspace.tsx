@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -494,8 +495,8 @@ export function BuilderWorkspace() {
           <CardContent className="p-3 text-center sm:p-4">
             <CfbGlyphWell name="builder" size="sm" className="mx-auto mb-2" />
             <div className="text-xl font-bold text-foreground sm:text-2xl">{overallCompletion}%</div>
-            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact />
+            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact wrap />
             </div>
             <Progress value={overallCompletion} className="mt-2 h-1.5" />
           </CardContent>
@@ -507,8 +508,8 @@ export function BuilderWorkspace() {
             <div className={cn('text-xl font-bold sm:text-2xl', dimensionColor(overallReadiness))}>
               {assessingReadiness ? <Loader2 className="icon-lg mx-auto animate-spin" /> : `${overallReadiness}%`}
             </div>
-            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact />
+            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact wrap />
             </div>
             <Progress value={overallReadiness} className="mt-2 h-1.5" />
           </CardContent>
@@ -518,8 +519,8 @@ export function BuilderWorkspace() {
           <CardContent className="p-3 text-center sm:p-4">
             <CfbGlyphWell name="flag" size="sm" className="mx-auto mb-2" />
             <div className={cn('text-xl font-bold sm:text-2xl', completedDocs > 0 ? STATUS.success.text : 'text-foreground')}>{completedDocs}</div>
-            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact />
+            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact wrap />
             </div>
             <div className="mt-1.5 text-xs text-muted-foreground">
               {inProgressDocs}{' '}
@@ -532,8 +533,8 @@ export function BuilderWorkspace() {
           <CardContent className="p-3 text-center sm:p-4">
             <CfbGlyphWell name="people" size="sm" className="mx-auto mb-2" />
             <div className="text-xl font-bold text-primary-accessible sm:text-2xl">{collaborators.length}</div>
-            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact />
+            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact wrap />
             </div>
             <div className="mt-2 -space-x-1.5 flex min-h-5 justify-center">
               {collaborators.slice(0, 4).map(c => (
@@ -591,15 +592,17 @@ export function BuilderWorkspace() {
         {/* ── Overview Tab ──────────────────────────────────────────────── */}
         <TabsContent value="overview" className="mt-4 space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Progress card */}
-            <Card className="min-w-0">
+            {/* Progress card. The flex column continues onto the content so
+                the footer below can reach the bottom of whatever height this
+                card is given by the taller card beside it. */}
+            <Card className="flex min-w-0 flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <CfbGlyph name="flag" className="icon-sm" />
                   <BilingualText en={builderEn('startup_progress')} el={builderEl('startup_progress')} compact />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="flex flex-1 flex-col space-y-4">
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
@@ -610,7 +613,14 @@ export function BuilderWorkspace() {
                   <Progress value={overallCompletion} className="h-2" />
                 </div>
 
-                {readinessDimensions.slice(0, 4).map(dim => (
+                {/* Every dimension, not the first four. This card sits beside
+                    Quick Actions in a two-column row, so it stretched to that
+                    card's height and ended 166px early — and the content that
+                    would have filled the gap was already fetched and then
+                    sliced away. The reader now sees the whole assessment, and
+                    the same figures no longer disagree with /readiness, which
+                    has always listed all of them. */}
+                {readinessDimensions.map(dim => (
                   <div key={dim.dimension} className="space-y-1">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
@@ -627,6 +637,20 @@ export function BuilderWorkspace() {
                     <Loader2 className="icon-sm animate-spin" />
                     <BilingualText en={builderEn('assessing')} el={builderEl('assessing')} compact />
                   </div>
+                )}
+
+                {/* `mt-auto` puts this at the foot of whatever height the row
+                    gives the card, so the 76px still left after un-slicing the
+                    dimensions carries a way out of the card instead of air —
+                    and the two surfaces that score the same venture, Builder
+                    and /readiness, are finally linked from this side too. */}
+                {readinessDimensions.length > 0 && (
+                  <Button asChild variant="ghost" size="sm" className="mt-auto w-full justify-between gap-1.5">
+                    <Link href="/readiness">
+                      <BilingualText en={builderEn('full_readiness_report')} el={builderEl('full_readiness_report')} compact />
+                      <ArrowRight className="icon-sm" />
+                    </Link>
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -660,12 +684,17 @@ export function BuilderWorkspace() {
                         }
                       }}
                     >
-                      <span className="flex min-w-0 items-center gap-2 text-left">
-                        <CfbGlyph name={docGlyph(type)} className="icon-sm shrink-0 text-muted-foreground" />
+                      {/* The verb and the document name are one phrase, and
+                          "Επεξεργασία Επιχειρηματικό μοντέλο" is 128px in a row
+                          that gives it 79px at 1024px. Two lines rather than
+                          "Edit Business Mo…". */}
+                      <span className="flex min-w-0 items-start gap-2 text-left leading-snug">
+                        <CfbGlyph name={docGlyph(type)} className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
                         <BilingualText
                           en={`${existing ? builderEn('edit') : builderEn('start')} ${labelEn}`}
                           el={`${existing ? builderEl('edit') : builderEl('start')} ${labelEl}`}
                           compact
+                          wrap
                         />
                       </span>
                       {existing ? (

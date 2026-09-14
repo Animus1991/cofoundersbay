@@ -593,7 +593,7 @@ export default function AnalyticsPage() {
                   <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact /></p>
+                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact wrap /></p>
                         <p className="text-base font-semibold sm:text-lg">
                           {weeklySummary.mostActiveDay
                             ? <BilingualText en={weeklySummary.mostActiveDay} el={WEEKDAY_EL[weeklySummary.mostActiveDay] ?? weeklySummary.mostActiveDay} compact />
@@ -601,15 +601,15 @@ export default function AnalyticsPage() {
                         </p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('peak_hour')} el={analyticsEl('peak_hour')} compact /></p>
+                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('peak_hour')} el={analyticsEl('peak_hour')} compact wrap /></p>
                         <p className="text-base font-semibold sm:text-lg">{weeklySummary.peakHour || '—'}</p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('avg_response')} el={analyticsEl('avg_response')} compact /></p>
+                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('avg_response')} el={analyticsEl('avg_response')} compact wrap /></p>
                         <p className="text-base font-semibold sm:text-lg">{weeklySummary.avgResponseTime || '—'}</p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('total_interactions')} el={analyticsEl('total_interactions')} compact /></p>
+                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('total_interactions')} el={analyticsEl('total_interactions')} compact wrap /></p>
                         <p className="text-base font-semibold sm:text-lg">{weeklySummary.totalInteractions ?? '—'}</p>
                       </div>
                     </div>

@@ -18,6 +18,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { REFERRALS_STRINGS, referralsEn, referralsEl } from '@/lib/i18n/strings-referrals';
 
 type ReferralStatus = 'pending' | 'signed_up' | 'active' | 'rewarded' | 'expired';
 
@@ -33,56 +36,71 @@ type Referral = {
   rewardAmount?: number;
 };
 
+type ReferralKey = keyof typeof REFERRALS_STRINGS;
+
+/** A perk is a key plus, where the copy has one, the number it carries. */
+type Perk = { key: ReferralKey; n?: number };
+
 type ReferralTier = {
-  name: string;
+  key: ReferralKey;
   icon: typeof Crown;
   minReferrals: number;
   rewardMultiplier: number;
-  perks: string[];
+  perks: Perk[];
   color: string;
 };
 
+function fill(key: ReferralKey, vars: Record<string, string | number>): { en: string; el: string } {
+  let en = referralsEn(key);
+  let el = referralsEl(key);
+  for (const [k, v] of Object.entries(vars)) {
+    en = en.replace(`{${k}}`, String(v));
+    el = el.replace(`{${k}}`, String(v));
+  }
+  return { en, el };
+}
+
 const REFERRAL_TIERS: ReferralTier[] = [
   {
-    name: 'Starter',
+    key: 'tier_starter',
     icon: Star,
     minReferrals: 0,
     rewardMultiplier: 1,
-    perks: ['€10 credit per referral'],
+    perks: [{ key: 'perk_credit', n: 10 }],
     color: 'text-muted-foreground',
   },
   {
-    name: 'Connector',
+    key: 'tier_connector',
     icon: Zap,
     minReferrals: 5,
     rewardMultiplier: 1.5,
-    perks: ['€15 credit per referral', 'Priority support'],
+    perks: [{ key: 'perk_credit', n: 15 }, { key: 'perk_priority_support' }],
     color: 'text-status-info',
   },
   {
-    name: 'Ambassador',
+    key: 'tier_ambassador',
     icon: Trophy,
     minReferrals: 15,
     rewardMultiplier: 2,
-    perks: ['€20 credit per referral', 'Priority support', 'Exclusive events'],
+    perks: [{ key: 'perk_credit', n: 20 }, { key: 'perk_priority_support' }, { key: 'perk_exclusive_events' }],
     color: 'text-status-warning',
   },
   {
-    name: 'Champion',
+    key: 'tier_champion',
     icon: Crown,
     minReferrals: 30,
     rewardMultiplier: 2.5,
-    perks: ['€25 credit per referral', 'Priority support', 'Exclusive events', 'Featured profile'],
+    perks: [{ key: 'perk_credit', n: 25 }, { key: 'perk_priority_support' }, { key: 'perk_exclusive_events' }, { key: 'perk_featured_profile' }],
     color: 'text-status-accent',
   },
 ];
 
-const STATUS_CONFIG: Record<ReferralStatus, { label: string; color: string; icon: typeof Clock }> = {
-  pending: { label: 'Pending', color: 'bg-status-warning-bg text-status-warning', icon: Clock },
-  signed_up: { label: 'Signed Up', color: 'bg-status-info-bg text-status-info', icon: CheckCircle },
-  active: { label: 'Active', color: 'bg-status-success-bg text-status-success', icon: Users },
-  rewarded: { label: 'Rewarded', color: 'bg-status-accent-bg text-status-accent', icon: Gift },
-  expired: { label: 'Expired', color: 'bg-slate-500/10 text-muted-foreground', icon: XCircle },
+const STATUS_CONFIG: Record<ReferralStatus, { key: ReferralKey; color: string; icon: typeof Clock }> = {
+  pending: { key: 'status_pending', color: 'bg-status-warning-bg text-status-warning', icon: Clock },
+  signed_up: { key: 'status_signed_up', color: 'bg-status-info-bg text-status-info', icon: CheckCircle },
+  active: { key: 'status_active', color: 'bg-status-success-bg text-status-success', icon: Users },
+  rewarded: { key: 'status_rewarded', color: 'bg-status-accent-bg text-status-accent', icon: Gift },
+  expired: { key: 'status_expired', color: 'bg-slate-500/10 text-muted-foreground', icon: XCircle },
 };
 
 const DEMO_REFERRALS: Referral[] = [
@@ -128,17 +146,22 @@ const DEMO_REFERRALS: Referral[] = [
 
 function ReferralLink({ code }: { code: string }) {
   const { success } = useToast();
+  const { primary } = useLanguagePreference();
   const referralUrl = `https://cofounderbay.com/join?ref=${code}`;
+  /* The toast and the share body are written *by* the reader to someone else,
+     so they go out in one language — theirs — rather than as a bilingual pair
+     the recipient would have to read twice. */
+  const t = (key: ReferralKey) => (primary === 'el' ? referralsEl(key) : referralsEn(key));
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralUrl);
-    success('Referral link copied!');
+    success(t('copied'));
   };
 
   const shareVia = (platform: 'email' | 'twitter' | 'linkedin') => {
-    const text = "Join me on CoFounderBay - the platform to find your perfect co-founder!";
+    const text = t('share_text');
     const urls: Record<string, string> = {
-      email: `mailto:?subject=Join CoFounderBay&body=${encodeURIComponent(text + '\n\n' + referralUrl)}`,
+      email: `mailto:?subject=${encodeURIComponent(t('share_subject'))}&body=${encodeURIComponent(text + '\n\n' + referralUrl)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(referralUrl)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralUrl)}`,
     };
@@ -149,11 +172,11 @@ function ReferralLink({ code }: { code: string }) {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Share2 className="icon-md text-primary-accessible" />
-          Your Referral Link
+          <Share2 className="icon-md shrink-0 text-primary-accessible" />
+          <BilingualText en={referralsEn('link_title')} el={referralsEl('link_title')} compact wrap />
         </CardTitle>
         <CardDescription>
-          Share this link with friends and earn rewards when they join
+          <BilingualText en={referralsEn('link_description')} el={referralsEl('link_description')} />
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -164,15 +187,15 @@ function ReferralLink({ code }: { code: string }) {
             className="font-mono text-sm"
           />
           <Button onClick={copyLink}>
-            <Copy className="icon-sm mr-1" />
-            Copy
+            <Copy className="icon-sm mr-1 shrink-0" aria-hidden="true" />
+            <BilingualText en={referralsEn('copy')} el={referralsEl('copy')} compact wrap />
           </Button>
         </div>
 
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => shareVia('email')}>
-            <Mail className="icon-sm mr-1" />
-            Email
+            <Mail className="icon-sm mr-1 shrink-0" aria-hidden="true" />
+            {referralsEn('share_email')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('twitter')}>
             <ExternalLink className="icon-sm mr-1" />
@@ -201,8 +224,8 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Award className="icon-md text-primary-accessible" />
-          Your Tier
+          <Award className="icon-md shrink-0 text-primary-accessible" />
+          <BilingualText en={referralsEn('tier_title')} el={referralsEl('tier_title')} compact wrap />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -211,9 +234,11 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
             <CurrentIcon className={cn('icon-xl', currentTier.color)} />
           </div>
           <div>
-            <h3 className={cn('text-xl font-bold', currentTier.color)}>{currentTier.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              {currentTier.rewardMultiplier}x reward multiplier
+            <h3 className={cn('text-xl font-bold leading-snug', currentTier.color)}>
+              <BilingualText en={referralsEn(currentTier.key)} el={referralsEl(currentTier.key)} compact />
+            </h3>
+            <p className="text-sm leading-snug text-muted-foreground">
+              <BilingualText {...fill('multiplier', { n: currentTier.rewardMultiplier })} compact wrap />
             </p>
           </div>
         </div>
@@ -221,23 +246,35 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
         {nextTier && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Progress to {nextTier.name}</span>
+              <span className="min-w-0 text-muted-foreground">
+                <BilingualText
+                  en={fill('progress_to', { tier: referralsEn(nextTier.key) }).en}
+                  el={fill('progress_to', { tier: referralsEl(nextTier.key) }).el}
+                  compact
+                  wrap
+                />
+              </span>
               <span className="font-medium">{referrals}/{nextTier.minReferrals}</span>
             </div>
             <Progress value={progress} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {nextTier.minReferrals - referrals} more referrals to unlock {nextTier.name}
+            <p className="text-xs leading-snug text-muted-foreground">
+              <BilingualText
+                en={fill('more_to_unlock', { n: nextTier.minReferrals - referrals, tier: referralsEn(nextTier.key) }).en}
+                el={fill('more_to_unlock', { n: nextTier.minReferrals - referrals, tier: referralsEl(nextTier.key) }).el}
+                compact
+                wrap
+              />
             </p>
           </div>
         )}
 
         <div className="pt-2 border-t">
-          <p className="text-sm font-medium mb-2">Your Perks</p>
+          <p className="mb-2 text-sm font-medium"><BilingualText en={referralsEn('perks_title')} el={referralsEl('perks_title')} compact wrap /></p>
           <ul className="space-y-1">
             {currentTier.perks.map((perk) => (
-              <li key={perk} className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle className="icon-sm text-status-success" />
-                {perk}
+              <li key={perk.key} className="flex items-start gap-2 text-sm leading-snug text-muted-foreground">
+                <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
+                <BilingualText {...fill(perk.key, perk.n === undefined ? {} : { n: perk.n })} compact wrap />
               </li>
             ))}
           </ul>
@@ -280,8 +317,8 @@ function ReferralCard({ referral }: { referral: Referral }) {
           </Badge>
         )}
         <Badge className={cn('gap-1', config.color)}>
-          <StatusIcon className="icon-sm" />
-          {config.label}
+          <StatusIcon className="icon-sm shrink-0" aria-hidden="true" />
+          <BilingualText en={referralsEn(config.key)} el={referralsEl(config.key)} compact />
         </Badge>
       </div>
     </div>
@@ -303,7 +340,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
           </div>
           <div>
             <p className="text-xl font-bold">{totalInvited}</p>
-            <p className="text-xs text-muted-foreground">Invited</p>
+            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_invited')} el={referralsEl('stat_invited')} compact wrap /></p>
           </div>
         </div>
       </Card>
@@ -314,7 +351,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
           </div>
           <div>
             <p className="text-xl font-bold">{signedUp}</p>
-            <p className="text-xs text-muted-foreground">Signed Up</p>
+            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_signed_up')} el={referralsEl('stat_signed_up')} compact wrap /></p>
           </div>
         </div>
       </Card>
@@ -325,7 +362,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
           </div>
           <div>
             <p className="text-xl font-bold">{rewarded}</p>
-            <p className="text-xs text-muted-foreground">Rewarded</p>
+            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_rewarded')} el={referralsEl('stat_rewarded')} compact wrap /></p>
           </div>
         </div>
       </Card>
@@ -336,7 +373,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
           </div>
           <div>
             <p className="text-xl font-bold">€{totalEarned}</p>
-            <p className="text-xs text-muted-foreground">Earned</p>
+            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_earned')} el={referralsEl('stat_earned')} compact wrap /></p>
           </div>
         </div>
       </Card>
@@ -380,12 +417,12 @@ export default function ReferralsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Your Referrals</CardTitle>
+                  <CardTitle><BilingualText en={referralsEn('list_title')} el={referralsEl('list_title')} compact wrap /></CardTitle>
                   <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
                     <TabsList className="h-8">
-                      <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                      <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
-                      <TabsTrigger value="rewarded" className="text-xs">Rewarded</TabsTrigger>
+                      <TabsTrigger value="all" className="text-xs"><BilingualText en={referralsEn('tab_all')} el={referralsEl('tab_all')} compact /></TabsTrigger>
+                      <TabsTrigger value="pending" className="text-xs"><BilingualText en={referralsEn('tab_pending')} el={referralsEl('tab_pending')} compact /></TabsTrigger>
+                      <TabsTrigger value="rewarded" className="text-xs"><BilingualText en={referralsEn('tab_rewarded')} el={referralsEl('tab_rewarded')} compact /></TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -394,7 +431,7 @@ export default function ReferralsPage() {
                 {filteredReferrals.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No referrals in this category</p>
+                    <p><BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact /></p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -415,42 +452,42 @@ export default function ReferralsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="icon-md text-primary-accessible" />
-                  How It Works
+                  <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+                  <BilingualText en={referralsEn('how_title')} el={referralsEl('how_title')} compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ol className="space-y-4">
-                  <li className="flex gap-3">
+                  <li className="flex min-w-0 gap-3">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary-accessible text-sm font-bold flex items-center justify-center">
                       1
                     </div>
-                    <div>
-                      <p className="font-medium">Share your link</p>
-                      <p className="text-sm text-muted-foreground">
-                        Send your unique referral link to friends
+                    <div className="min-w-0">
+                      <p className="font-medium leading-snug"><BilingualText en={referralsEn('step1_title')} el={referralsEl('step1_title')} compact wrap /></p>
+                      <p className="text-sm leading-snug text-muted-foreground">
+                        <BilingualText en={referralsEn('step1_body')} el={referralsEl('step1_body')} compact wrap />
                       </p>
                     </div>
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex min-w-0 gap-3">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary-accessible text-sm font-bold flex items-center justify-center">
                       2
                     </div>
-                    <div>
-                      <p className="font-medium">They sign up</p>
-                      <p className="text-sm text-muted-foreground">
-                        Your friend creates an account using your link
+                    <div className="min-w-0">
+                      <p className="font-medium leading-snug"><BilingualText en={referralsEn('step2_title')} el={referralsEl('step2_title')} compact wrap /></p>
+                      <p className="text-sm leading-snug text-muted-foreground">
+                        <BilingualText en={referralsEn('step2_body')} el={referralsEl('step2_body')} compact wrap />
                       </p>
                     </div>
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex min-w-0 gap-3">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary-accessible text-sm font-bold flex items-center justify-center">
                       3
                     </div>
-                    <div>
-                      <p className="font-medium">Both get rewarded</p>
-                      <p className="text-sm text-muted-foreground">
-                        You both receive credits when they become active
+                    <div className="min-w-0">
+                      <p className="font-medium leading-snug"><BilingualText en={referralsEn('step3_title')} el={referralsEl('step3_title')} compact wrap /></p>
+                      <p className="text-sm leading-snug text-muted-foreground">
+                        <BilingualText en={referralsEn('step3_body')} el={referralsEl('step3_body')} compact wrap />
                       </p>
                     </div>
                   </li>

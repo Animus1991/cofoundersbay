@@ -289,9 +289,13 @@ function AskAiButton({
 }) {
   const { open } = usePopupChat();
   return (
-    <Button type="button" variant={variant} size="sm" className={cn('gap-1.5', className)} onClick={() => open()}>
-      <CfbGlyph name="spark" className="icon-sm" />
-      <BilingualText en={labelEn ?? readinessEn('ask_ai')} el={labelEl ?? readinessEl('ask_ai')} compact />
+    <Button type="button" variant={variant} size="sm" className={cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className)} onClick={() => open()}>
+      <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
+      {/* The label can be a whole request — "Ask AI for a readiness plan ·
+          Ρωτήστε το AI για πλάνο ετοιμότητας" is 108px in a 88px footer at
+          1024px, and it was losing 46% of itself. The button grows instead:
+          `h-auto` with `min-h-9` keeps the target floor. */}
+      <BilingualText en={labelEn ?? readinessEn('ask_ai')} el={labelEl ?? readinessEl('ask_ai')} compact wrap />
     </Button>
   );
 }
@@ -361,7 +365,7 @@ function DimensionCard({
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex min-w-0 items-center gap-2">
                 <h3 className="text-sm font-semibold">
-                  <BilingualText en={dim.labelEn} el={dim.labelEl} compact />
+                  <BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap />
                 </h3>
                 <TooltipProvider>
                   <Tooltip>
@@ -406,7 +410,16 @@ function DimensionCard({
                   disabled={!canToggle || isMutating}
                   onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
-                    'flex min-h-11 w-full items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm transition-colors',
+                    // The 10px this row pads itself with, to give the hover
+                    // state room, was also indenting its content: the tick
+                    // landed 10px right of the heading and progress bar above
+                    // it, and the label 36px right, so the body of the card
+                    // stepped away from its own title. The negative margin
+                    // spends that padding outward into the card's own padding
+                    // instead — the background still bleeds past the text on
+                    // both sides, and the tick column now starts on the
+                    // heading's left edge.
+                    '-mx-2.5 flex min-h-11 w-[calc(100%+1.25rem)] items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm transition-colors',
                     canToggle ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
                   )}
                 >
@@ -423,11 +436,20 @@ function DimensionCard({
                 <button
                   type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="min-h-11 pl-7 text-xs text-primary-accessible transition-colors hover:underline"
+                  // Aligned to the criteria labels by borrowing their
+                  // structure — an empty tick-sized box and the same gap —
+                  // rather than by a hand-computed indent. The scale sets the
+                  // root font size below 16px, so `pl-7` (28px nominal) landed
+                  // at neither the heading's edge nor the labels'; a spacer
+                  // tracks the real icon whatever the scale does to it.
+                  className="-mx-2.5 flex min-h-11 w-[calc(100%+1.25rem)] items-center gap-2.5 rounded-lg px-2.5 text-left text-xs text-primary-accessible transition-colors hover:bg-secondary/60"
                 >
-                  {expanded
-                    ? <BilingualText en={readinessEn('show_less')} el={readinessEl('show_less')} compact />
-                    : <BilingualText en={`+${hiddenCount} ${readinessEn('show_n_more').toLowerCase()}`} el={`+${hiddenCount} ${readinessEl('show_n_more').toLowerCase()}`} compact />}
+                  <span className="icon-sm shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    {expanded
+                      ? <BilingualText en={readinessEn('show_less')} el={readinessEl('show_less')} compact />
+                      : <BilingualText en={`+${hiddenCount} ${readinessEn('show_n_more').toLowerCase()}`} el={`+${hiddenCount} ${readinessEl('show_n_more').toLowerCase()}`} compact />}
+                  </span>
                 </button>
               )}
             </div>
@@ -864,7 +886,7 @@ export default function ReadinessPage() {
                 <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
-                <Link href="/programs"><CfbGlyph name="award" className="icon-sm mr-1.5" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></Link>
+                <Link href="/programs"><CfbGlyph name="award" className="icon-sm mr-1.5 shrink-0" aria-hidden="true" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact wrap /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -898,7 +920,7 @@ export default function ReadinessPage() {
                 <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
-                <Link href="/investors"><CfbGlyph name="discover" className="icon-sm mr-1.5" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact /></Link>
+                <Link href="/investors"><CfbGlyph name="discover" className="icon-sm mr-1.5 shrink-0" aria-hidden="true" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact wrap /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -954,7 +976,7 @@ export default function ReadinessPage() {
             </Card>
             <Card className="rounded-xl">
               <CardContent className="p-4">
-                <p className="mb-2.5 text-xs text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact /></p>
+                <p className="mb-2.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact wrap /></p>
                 {isDemo ? <>
                 <div className="flex items-end gap-2.5">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>

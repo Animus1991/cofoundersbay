@@ -88,6 +88,7 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
     el: 'Τρέξτε αξιολόγηση για να δείτε τις βαθμολογίες ετοιμότητας',
   },
   overall_readiness_line: { en: 'Overall readiness', el: 'Συνολική ετοιμότητα' },
+  full_readiness_report: { en: 'Full readiness report', el: 'Πλήρης αναφορά ετοιμότητας' },
   status_completed: { en: 'Completed', el: 'Ολοκληρωμένο' },
   status_in_progress: { en: 'In Progress', el: 'Σε εξέλιξη' },
   status_reviewed: { en: 'Under Review', el: 'Υπό αξιολόγηση' },

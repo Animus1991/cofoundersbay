@@ -23,35 +23,47 @@ import {
   type InviteItem,
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { INVITE_STRINGS, inviteEn, inviteEl } from '@/lib/i18n/strings-invite';
 
-const STATUS_CONFIG: Record<InviteItem['status'], { label: string; color: string }> = {
-  pending:   { label: 'Pending',   color: 'bg-status-warning-bg text-status-warning ' },
-  accepted:  { label: 'Accepted',  color: 'bg-status-success-bg text-status-success ' },
-  expired:   { label: 'Expired',   color: 'bg-muted text-muted-foreground' },
-  cancelled: { label: 'Cancelled', color: 'bg-muted text-muted-foreground' },
+type InviteKey = keyof typeof INVITE_STRINGS;
+
+const STATUS_CONFIG: Record<InviteItem['status'], { key: InviteKey; color: string }> = {
+  pending:   { key: 'status_pending',   color: 'bg-status-warning-bg text-status-warning ' },
+  accepted:  { key: 'status_accepted',  color: 'bg-status-success-bg text-status-success ' },
+  expired:   { key: 'status_expired',   color: 'bg-muted text-muted-foreground' },
+  cancelled: { key: 'status_cancelled', color: 'bg-muted text-muted-foreground' },
 };
 
 function StatCard({
   icon: Icon,
-  label,
+  labelKey,
   value,
-  description,
+  descriptionKey,
   accent = false,
 }: {
   icon: React.ElementType;
-  label: string;
+  labelKey: InviteKey;
   value: number | string;
-  description?: string;
+  descriptionKey?: InviteKey;
   accent?: boolean;
 }) {
   return (
     <Card className={cn('', accent && 'border-primary/30 bg-primary/5')}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
-            <p className={cn('text-3xl font-bold mt-1', accent ? 'text-primary-accessible' : 'text-foreground')}>{value}</p>
-            {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
+              <BilingualText en={inviteEn(labelKey)} el={inviteEl(labelKey)} compact />
+            </p>
+            <p className={cn('mt-1 text-3xl font-bold tabular-nums', accent ? 'text-primary-accessible' : 'text-foreground')}>{value}</p>
+            {descriptionKey && (
+              <p className="mt-1 text-xs leading-snug text-muted-foreground">
+                <BilingualText en={inviteEn(descriptionKey)} el={inviteEl(descriptionKey)} compact wrap />
+              </p>
+            )}
           </div>
           <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', accent ? 'bg-primary/15' : 'bg-secondary')}>
             <Icon className={cn('icon-sm', accent ? 'text-primary-accessible' : 'text-muted-foreground')} />
@@ -74,13 +86,25 @@ function InviteRow({ invite, onCancel, cancelling }: {
         <Mail className="icon-sm text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">{invite.email}</p>
-        <p className="text-xs text-muted-foreground">
-          Sent {new Date(invite.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
-          {invite.acceptedAt && ` · Joined ${new Date(invite.acceptedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`}
+        <p className="truncate text-sm font-medium text-foreground">{invite.email}</p>
+        {/* Dates stay pinned to UTC, as everywhere else on the platform, so a
+            rendered day cannot shift under the reader's clock. */}
+        <p className="text-xs leading-snug text-muted-foreground">
+          <BilingualText
+            en={[inviteEn('sent_on').replace('{date}', new Date(invite.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })),
+                invite.acceptedAt ? inviteEn('joined_on').replace('{date}', new Date(invite.acceptedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })) : null]
+              .filter(Boolean).join(' · ')}
+            el={[inviteEl('sent_on').replace('{date}', new Date(invite.createdAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })),
+                invite.acceptedAt ? inviteEl('joined_on').replace('{date}', new Date(invite.acceptedAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })) : null]
+              .filter(Boolean).join(' · ')}
+            compact
+            wrap
+          />
         </p>
       </div>
-      <Badge className={cn('shrink-0 text-xs', cfg.color)}>{cfg.label}</Badge>
+      <Badge className={cn('shrink-0 text-xs', cfg.color)}>
+        <BilingualText en={inviteEn(cfg.key)} el={inviteEl(cfg.key)} compact />
+      </Badge>
       {invite.status === 'pending' && (
         <Button
           variant="ghost"
@@ -88,8 +112,9 @@ function InviteRow({ invite, onCancel, cancelling }: {
           className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive-accessible"
           onClick={() => onCancel(invite.id)}
           disabled={cancelling}
+          aria-label={bilingualAria(inviteEn('cancel_invite'), inviteEl('cancel_invite'))}
         >
-          <X className="icon-sm" />
+          <X className="icon-sm" aria-hidden="true" />
         </Button>
       )}
     </div>
@@ -99,6 +124,10 @@ function InviteRow({ invite, onCancel, cancelling }: {
 export default function InvitePage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const { primary } = useLanguagePreference();
+  /* Toasts are one line of transient feedback, so they speak the reader's own
+     language rather than stacking both into a notification that disappears. */
+  const t = (key: InviteKey) => (primary === 'el' ? inviteEl(key) : inviteEn(key));
 
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -122,12 +151,12 @@ export default function InvitePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invites'] });
       queryClient.invalidateQueries({ queryKey: ['invite-stats'] });
-      success('Invitation sent!', `${email.trim()} will receive an invite to join CoFounderBay.`);
+      success(t('sent_title'), t('sent_body').replace('{email}', email.trim()));
       setEmail('');
       setMessage('');
     },
     onError: (err) => {
-      showError('Could not send invite', err instanceof Error ? err.message : 'Please try again');
+      showError(t('send_failed'), err instanceof Error ? err.message : t('try_again'));
     },
   });
 
@@ -137,11 +166,11 @@ export default function InvitePage() {
       queryClient.invalidateQueries({ queryKey: ['invites'] });
       queryClient.invalidateQueries({ queryKey: ['invite-stats'] });
       setCancellingId(null);
-      success('Invite cancelled', 'The invitation has been revoked.');
+      success(t('cancelled_title'), t('cancelled_body'));
     },
     onError: () => {
       setCancellingId(null);
-      showError('Could not cancel', 'Please try again');
+      showError(t('cancel_failed'), t('try_again'));
     },
   });
 
@@ -168,9 +197,9 @@ export default function InvitePage() {
             ))
           ) : (
             <>
-              <StatCard icon={Send} label="Sent" value={stats?.total ?? 0} />
-              <StatCard icon={UserCheck} label="Joined" value={stats?.accepted ?? 0} description="Accepted your invite" accent />
-              <StatCard icon={Gift} label="Remaining" value={stats?.remaining ?? 0} description="Invites left" />
+              <StatCard icon={Send} labelKey="stat_sent" value={stats?.total ?? 0} />
+              <StatCard icon={UserCheck} labelKey="stat_joined" value={stats?.accepted ?? 0} descriptionKey="stat_joined_hint" accent />
+              <StatCard icon={Gift} labelKey="stat_remaining" value={stats?.remaining ?? 0} descriptionKey="stat_remaining_hint" />
             </>
           )}
         </div>
@@ -179,25 +208,27 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="icon-md text-primary-accessible" />
-              Send an Invitation
+              <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+              <BilingualText en={inviteEn('form_title')} el={inviteEl('form_title')} compact wrap />
             </CardTitle>
             <CardDescription>
-              Invite someone to join CoFounderBay and expand your network.
+              <BilingualText en={inviteEn('form_description')} el={inviteEl('form_description')} />
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!canInvite && (
               <div className="flex items-center gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3">
                 <Trophy className="icon-sm shrink-0 text-status-warning" />
-                <p className="text-sm text-foreground">
-                  You&apos;ve used all your invites for now. They refresh periodically.
+                <p className="min-w-0 text-sm leading-snug text-foreground">
+                  <BilingualText en={inviteEn('quota_spent')} el={inviteEl('quota_spent')} />
                 </p>
               </div>
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="invite-email">Email address <span className="text-destructive-accessible">*</span></Label>
+              <Label htmlFor="invite-email">
+                <BilingualText en={inviteEn('email_label')} el={inviteEl('email_label')} compact /> <span className="text-destructive-accessible">*</span>
+              </Label>
               <Input
                 id="invite-email"
                 type="email"
@@ -209,10 +240,13 @@ export default function InvitePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="invite-message">Personal message (optional)</Label>
+              <Label htmlFor="invite-message"><BilingualText en={inviteEn('message_label')} el={inviteEl('message_label')} compact /></Label>
               <Textarea
                 id="invite-message"
-                placeholder="Hey! I've been using CoFounderBay to find collaborators — thought you'd find it useful too…"
+                /* A placeholder is read inside the box it sits in, so it takes
+                   the reader's language rather than both at once — the
+                   bilingual join would truncate and read as neither. */
+                placeholder={t('message_placeholder')}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
@@ -232,12 +266,12 @@ export default function InvitePage() {
                 ) : (
                   <Mail className="icon-sm" />
                 )}
-                {createMutation.isPending ? 'Sending…' : 'Send Invitation'}
+                {createMutation.isPending ? <BilingualText en={inviteEn('sending')} el={inviteEl('sending')} compact /> : <BilingualText en={inviteEn('send')} el={inviteEl('send')} compact wrap />}
               </Button>
 
               <Button variant="outline" className="gap-2" onClick={handleCopyLink}>
                 {copied ? <Check className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
-                {copied ? 'Copied!' : 'Copy link'}
+                {copied ? <BilingualText en={inviteEn('copied')} el={inviteEl('copied')} compact /> : <BilingualText en={inviteEn('copy_link')} el={inviteEl('copy_link')} compact wrap />}
               </Button>
             </div>
           </CardContent>
@@ -247,8 +281,8 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Clock className="icon-md text-muted-foreground" />
-              Invite History
+              <Clock className="icon-md shrink-0 text-muted-foreground" />
+              <BilingualText en={inviteEn('history_title')} el={inviteEl('history_title')} compact wrap />
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0">
@@ -269,9 +303,9 @@ export default function InvitePage() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
                   <Users className="icon-lg text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-foreground">No invitations yet</p>
-                <p className="text-xs text-muted-foreground max-w-xs">
-                  Invite co-founders, mentors, or investors to grow your network.
+                <p className="text-sm font-medium text-foreground"><BilingualText en={inviteEn('empty_title')} el={inviteEl('empty_title')} compact /></p>
+                <p className="max-w-sm text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={inviteEn('empty_hint')} el={inviteEl('empty_hint')} />
                 </p>
               </div>
             ) : (

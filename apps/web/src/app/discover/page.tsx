@@ -387,8 +387,13 @@ export default function DiscoverPage() {
                       {/* 100px cut "Elena Papadopoulos" by a fifth. These
                           chips sit in a horizontal scroller, so a wider one
                           costs nothing but a little scroll. */}
-                      <p className="max-w-[150px] truncate text-xs font-medium text-foreground">{h.displayName}</p>
-                      <p className="max-w-[150px] truncate text-xs text-muted-foreground">{h.role}</p>
+                      {/* No cap and no ellipsis: these chips sit in a
+                          horizontal scroller and are already `shrink-0`, so a
+                          full name costs a little scroll and nothing else.
+                          Capped at 100px, "Elena Papadopoulos" lost two
+                          thirds of itself. */}
+                      <p className="whitespace-nowrap text-xs font-medium text-foreground">{h.displayName}</p>
+                      <p className="whitespace-nowrap text-xs text-muted-foreground">{h.role}</p>
                     </div>
                     {h.matchScore !== undefined && (
                       <span className={cn(

@@ -312,7 +312,11 @@ export default function ActivityPage() {
       <div className="space-y-5">
 
         {/* Stats bar */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* Four across waits for `md`. At 640px `sm:grid-cols-4` gave each
+            tile 145px, which leaves a bilingual label about 80px — less than
+            "Σύνολο αλληλεπιδράσεων" can break to, and the page scrolled 20px
+            sideways because of it. Two columns hold to 768px. */}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {([
             { key: 'stat_today', value: todayCount, icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
             { key: 'stat_unread', value: unreadCount, icon: Bell, color: 'text-status-info', bg: 'bg-status-info-bg' },

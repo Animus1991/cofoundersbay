@@ -131,11 +131,11 @@ function ProfileCardInner({
               </Avatar>
             </Link>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  // tap-target-y + inline-flex: the name link measured 23px tall, a hair under the 24px target minimum, and `truncate` already forces it out of the inline flow so SC 2.5.8's inline-link exception does not apply.
-                  className="inline-flex tap-target-y items-center truncate font-semibold text-foreground transition-colors hover:text-primary-accessible"
+                  // tap-target-y + inline-flex: the name link measured 23px tall, a hair under the 24px target minimum, and inline-flex already takes it out of the inline flow so SC 2.5.8's inline-link exception does not apply.
+                  className="inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>
@@ -358,10 +358,14 @@ function ProfileCardInner({
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
+              {/* The name wraps rather than truncating. It shares this row with
+                  a role badge, and at 1024px "Elena Papadopoulos" was left 46px
+                  of the 141px it needs — two thirds of a person's name gone, in
+                  a card whose whole purpose is to introduce that person. */}
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="inline-flex tap-target-y items-center truncate font-semibold text-foreground transition-colors hover:text-primary-accessible"
+                  className="inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>

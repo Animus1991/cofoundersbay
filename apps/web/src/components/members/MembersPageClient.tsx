@@ -457,7 +457,7 @@ export function MembersPageClient() {
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
-                    <p className="text-2xs text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
+                    <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
                   <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />
                 </div>
