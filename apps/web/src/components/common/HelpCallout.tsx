@@ -105,28 +105,24 @@ export function HelpCallout({
           <X className="icon-sm" aria-hidden="true" />
         </button>
       </div>
-      {/* Columns, rather than one column of 90ch with 413px of empty banner
-          beside it.
+      {/* One column, the full width of the banner.
+          
+          This replaced both a 90ch measure that left 413px of empty banner
+          beside it and the two- and three-column split that filled that space
+          by folding the text. Columns were the wrong trade here: a notice of
+          two short paragraphs does not need a fold, and the fold cost the
+          reader a vertical jump back to the top for the second column.
 
-          The 90ch cap is not arbitrary — past roughly ninety characters a line
-          the eye loses the return sweep, and the full content width here is
-          1155px, about 175 characters. So the answer to the empty half is not
-          a wider measure but a second column: the banner now uses its whole
-          width, each column stays inside a readable measure, and the block is
-          about a third shorter, which matters for a notice that pushes the
-          page down.
+          Across the full width each of those paragraphs sets on a single line,
+          so the block is shorter than either earlier version — which is the
+          point of a dismissible notice that pushes the page down. The measure
+          is long at 1440px and above, and that is the accepted cost: it applies
+          to two lines of supporting text, read once and then dismissed, not to
+          body copy anyone reads at length.
 
-          The split starts at `xl`, not `lg`: with the sidebar taking its share,
-          1024px leaves the body 741px, and two columns of that are 339px — about
-          49 characters, too narrow to read comfortably. One column of 741px is
-          86ch, already inside the cap, so `lg` needs no help. A third column
-          from `2xl`, because at 1920px two columns are 787px each, about 119
-          characters, back past the limit the cap exists to hold.
-
-          `break-inside-avoid` keeps a paragraph whole instead of splitting it
-          across the fold, and the margin moves onto the children because
-          `space-y` would put a gap at the top of the second column. */}
-      <div className="max-w-[90ch] space-y-2 pl-9 text-muted-foreground xl:max-w-none xl:columns-2 2xl:columns-3 xl:gap-x-10 xl:space-y-0 xl:[&>*]:mb-2 xl:[&>*]:break-inside-avoid [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
+          `pl-9` holds the body under the title's text rather than under its
+          icon, so the block has one left edge. */}
+      <div className="space-y-1.5 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
         {children}
       </div>
     </div>

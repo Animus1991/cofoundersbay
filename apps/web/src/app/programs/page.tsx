@@ -44,6 +44,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { PROGRAMS_STRINGS, programsEn, programsEl } from '@/lib/i18n/strings-programs';
+import type { BilingualPair } from '@/lib/i18n/types';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import {
@@ -80,6 +85,21 @@ function typeLabel(t: string) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
+/**
+ * Status and programme type arrive from the API as slugs (`open`,
+ * `accelerator`). These map them onto the catalogue so a badge reads in the
+ * reader's language, and fall back to the capitalised slug when the API sends
+ * a value this build does not know — an unrecognised status should still be
+ * shown as it came, not swallowed into a blank badge.
+ */
+function badgeStatus(status: string): BilingualPair {
+  return PROGRAMS_STRINGS[`badge_${status}`] ?? { en: typeLabel(status), el: typeLabel(status) };
+}
+
+function badgeType(programType: string): BilingualPair {
+  return PROGRAMS_STRINGS[`type_${programType}`] ?? { en: typeLabel(programType), el: typeLabel(programType) };
+}
+
 function formatDate(d: string | null) {
   if (!d) return null;
   return new Date(d).toLocaleDateString('en-US', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
@@ -106,6 +126,10 @@ function ApplyModal({
   isApplying: boolean;
 }) {
   const [note, setNote] = useState('');
+  // A placeholder is one attribute and cannot hold both languages the way a
+  // label can, so it follows the reader's primary language.
+  const { primary } = useLanguagePreference();
+  const t = (key: Parameters<typeof programsEn>[0]) => (primary === 'el' ? programsEl(key) : programsEn(key));
   if (!program) return null;
   const TypeIcon = TYPE_ICONS[program.programType] ?? Award;
   return (
@@ -114,35 +138,63 @@ function ApplyModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TypeIcon className="icon-md text-primary-accessible" />
-            Apply to {program.title}
+            <BilingualText
+              en={`${programsEn('apply_to')} ${program.title}`}
+              el={`${programsEl('apply_to')} ${program.title}`}
+              compact
+              wrap
+            />
           </DialogTitle>
           <DialogDescription>
-            Submit your application to {program.organization?.name}. Include a brief note about why you are a great fit.
+            <BilingualText
+              en={`${program.organization?.name ?? ''} — ${programsEn('apply_intro')}`.trim()}
+              el={`${program.organization?.name ?? ''} — ${programsEl('apply_intro')}`.trim()}
+              wrap
+            />
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="rounded-lg bg-secondary/40 p-3 space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Program type</span>
-              <span className="font-medium capitalize">{program.programType}</span>
+            <div className="flex justify-between gap-3">
+              <span className="text-muted-foreground">
+                <BilingualText en={programsEn('program_type')} el={programsEl('program_type')} compact />
+              </span>
+              <span className="font-medium capitalize">
+                <BilingualText en={badgeType(program.programType).en} el={badgeType(program.programType).el} compact />
+              </span>
             </div>
             {program.applicationDeadline && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Application deadline</span>
+              <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">
+                  <BilingualText en={programsEn('application_deadline')} el={programsEl('application_deadline')} compact />
+                </span>
                 <span className="font-medium">{formatDate(program.applicationDeadline)}</span>
               </div>
             )}
             {program.capacity && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Capacity</span>
-                <span className="font-medium">{program.participantCount}/{program.capacity} spots taken</span>
+              <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">
+                  <BilingualText en={programsEn('capacity')} el={programsEl('capacity')} compact />
+                </span>
+                <span className="font-medium">
+                  <BilingualText
+                    en={`${program.participantCount}/${program.capacity} ${programsEn('spots_taken')}`}
+                    el={`${program.participantCount}/${program.capacity} ${programsEl('spots_taken')}`}
+                    compact
+                  />
+                </span>
               </div>
             )}
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Why are you a good fit? <span className="text-muted-foreground">(optional)</span></label>
+            <label className="text-sm font-medium">
+              <BilingualText en={programsEn('fit_label')} el={programsEl('fit_label')} compact />{' '}
+              <span className="text-muted-foreground">
+                <BilingualText en={programsEn('optional')} el={programsEl('optional')} compact />
+              </span>
+            </label>
             <Textarea
-              placeholder="Describe your startup, stage, and why this program is the right fit..."
+              placeholder={t('fit_placeholder')}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={4}
@@ -151,10 +203,12 @@ function ApplyModal({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isApplying}>Cancel</Button>
+          <Button variant="outline" onClick={onClose} disabled={isApplying}>
+            <BilingualText en={programsEn('cancel')} el={programsEl('cancel')} compact />
+          </Button>
           <Button onClick={() => onApply(note)} disabled={isApplying}>
             {isApplying ? <Loader2 className="icon-sm animate-spin mr-2" /> : <Zap className="icon-sm mr-2" />}
-            Submit Application
+            <BilingualText en={programsEn('submit_application')} el={programsEl('submit_application')} compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -195,7 +249,8 @@ function ProgramCard({
                   <h3 className="font-semibold truncate">{program.title}</h3>
                   {isEnrolled && (
                     <Badge variant="outline" className="text-xs bg-primary/10 text-primary-accessible border-primary/30 gap-1">
-                      <CheckCircle2 className="icon-sm" />Applied
+                      <CheckCircle2 className="icon-sm" aria-hidden="true" />
+                      <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
                     </Badge>
                   )}
                 </div>
@@ -206,10 +261,10 @@ function ProgramCard({
               </div>
               <div className="flex flex-wrap gap-1.5 items-center">
                 <Badge variant="outline" className={cn('text-xs capitalize border', STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'].chip)}>
-                  {program.status === 'open' ? 'Open' : typeLabel(program.status)}
+                  <BilingualText en={badgeStatus(program.status).en} el={badgeStatus(program.status).el} compact />
                 </Badge>
                 <Badge variant="outline" className="text-xs capitalize text-muted-foreground">
-                  {typeLabel(program.programType)}
+                  <BilingualText en={badgeType(program.programType).en} el={badgeType(program.programType).el} compact />
                 </Badge>
               </div>
             </div>
@@ -267,12 +322,14 @@ function ProgramCard({
             <div className="flex items-center gap-2 mt-4">
               {program.status === 'open' && !isEnrolled && !isFull && (
                 <Button size="sm" onClick={(e) => { e.preventDefault(); onApply(program); }}>
-                  <Zap className="icon-sm mr-1.5" />Apply Now
+                  <Zap className="icon-sm mr-1.5" aria-hidden="true" />
+                  <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
                 </Button>
               )}
               {isEnrolled && (
                 <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40">
-                  <CheckCircle2 className="icon-sm mr-1.5" />Applied
+                  <CheckCircle2 className="icon-sm mr-1.5" aria-hidden="true" />
+                  <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
                 </Button>
               )}
               <Button size="sm" variant="ghost" asChild>
@@ -312,6 +369,11 @@ function ProgramSkeleton() {
 export default function ProgramsPage() {
   const { success, error: toastError } = useToast();
   const qc = useQueryClient();
+  // Placeholders, `title` attributes and tab labels are single-attribute or
+  // single-line surfaces, so they follow the reader's primary language; every
+  // full label on the page renders both.
+  const { primary } = useLanguagePreference();
+  const t = (key: Parameters<typeof programsEn>[0]) => (primary === 'el' ? programsEl(key) : programsEn(key));
   const [search, setSearch] = useState('');
   const [programType, setProgramType] = useState('all');
   const [status, setStatus] = useState('all');
@@ -411,7 +473,7 @@ export default function ProgramsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder="Search programs, organizations, industries..."
+              placeholder={t('search_placeholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -419,39 +481,41 @@ export default function ProgramsPage() {
             {search && (
               <button
                 onClick={() => setSearch('')}
+                aria-label={bilingualAria('Clear search', 'Καθαρισμός αναζήτησης')}
                 className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
               >
-                <X className="icon-sm" />
+                {/* Decorative: the button is named by its aria-label. */}
+                <X className="icon-sm" aria-hidden="true" />
               </button>
             )}
           </div>
           <Select value={programType} onValueChange={setProgramType}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Program Type" />
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label={bilingualAria(programsEn('filter_program_type'), programsEl('filter_program_type'))}>
+              <SelectValue placeholder={t('filter_program_type')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="accelerator">Accelerator</SelectItem>
-              <SelectItem value="incubator">Incubator</SelectItem>
-              <SelectItem value="bootcamp">Bootcamp</SelectItem>
-              <SelectItem value="competition">Competition</SelectItem>
-              <SelectItem value="cohort">Cohort</SelectItem>
+              <SelectItem value="all">{t('type_all')}</SelectItem>
+              <SelectItem value="accelerator">{t('type_accelerator')}</SelectItem>
+              <SelectItem value="incubator">{t('type_incubator')}</SelectItem>
+              <SelectItem value="bootcamp">{t('type_bootcamp')}</SelectItem>
+              <SelectItem value="competition">{t('type_competition')}</SelectItem>
+              <SelectItem value="cohort">{t('type_cohort')}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label={bilingualAria(programsEn('filter_status'), programsEl('filter_status'))}>
+              <SelectValue placeholder={t('filter_status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="open">Open Now</SelectItem>
-              <SelectItem value="upcoming">Upcoming</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="all">{t('status_all')}</SelectItem>
+              <SelectItem value="open">{t('status_open')}</SelectItem>
+              <SelectItem value="upcoming">{t('status_upcoming')}</SelectItem>
+              <SelectItem value="active">{t('status_active')}</SelectItem>
+              <SelectItem value="closed">{t('status_closed')}</SelectItem>
             </SelectContent>
           </Select>
           {hasFilters && (
-            <Button variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title="Clear filters">
+            <Button variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title={t('clear_filters')} aria-label={bilingualAria(programsEn('clear_filters'), programsEl('clear_filters'))}>
               <X className="icon-sm" />
             </Button>
           )}
@@ -461,7 +525,8 @@ export default function ProgramsPage() {
         {featuredPrograms.length > 0 && !hasFilters && (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Zap className="icon-sm text-primary-accessible" />Featured &amp; Closing Soon
+              <Zap className="icon-sm text-primary-accessible" aria-hidden="true" />
+              <BilingualText en={programsEn('featured')} el={programsEl('featured')} compact />
             </p>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {featuredPrograms.slice(0, 4).map((p) => {
@@ -473,10 +538,12 @@ export default function ProgramsPage() {
                     <div className="mt-2 flex items-center justify-between">
                       {d !== null && d >= 0 ? (
                         <span className={cn('text-2xs font-medium', d <= 3 ? cn(STATUS.danger.icon) : cn(STATUS.warning.icon))}>
-                          {d === 0 ? 'Today!' : `${d}d left`}
+                          {d === 0
+                            ? <BilingualText en="Today!" el="Σήμερα!" compact />
+                            : <BilingualText en={`${d}d left`} el={`${d} ημ. ακόμη`} compact />}
                         </span>
                       ) : <span />}
-                      <Badge variant="outline" className={cn('text-2xs px-1.5 capitalize border', STATUS[PROGRAM_STATUS_TONE[p.status] ?? 'neutral'].chip)}>{p.status}</Badge>
+                      <Badge variant="outline" className={cn('text-2xs px-1.5 capitalize border', STATUS[PROGRAM_STATUS_TONE[p.status] ?? 'neutral'].chip)}><BilingualText en={badgeStatus(p.status).en} el={badgeStatus(p.status).el} compact /></Badge>
                     </div>
                   </div>
                 );
@@ -489,9 +556,15 @@ export default function ProgramsPage() {
         <Tabs defaultValue="all">
           <div className="flex items-center justify-between">
             <TabsList>
-              <TabsTrigger value="all">All Programs {filtered.length > 0 && `(${filtered.length})`}</TabsTrigger>
-              <TabsTrigger value="open">Open {openPrograms.length > 0 && `(${openPrograms.length})`}</TabsTrigger>
-              <TabsTrigger value="mine">My Applications {myPrograms.length > 0 && `(${myPrograms.length})`}</TabsTrigger>
+              <TabsTrigger value="all">
+                {t('tab_all')} {filtered.length > 0 && `(${filtered.length})`}
+              </TabsTrigger>
+              <TabsTrigger value="open">
+                {t('tab_open')} {openPrograms.length > 0 && `(${openPrograms.length})`}
+              </TabsTrigger>
+              <TabsTrigger value="mine">
+                {t('tab_mine')} {myPrograms.length > 0 && `(${myPrograms.length})`}
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -505,8 +578,8 @@ export default function ProgramsPage() {
               <Card>
                 <CardContent className="py-16 text-center">
                   <Award className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-                  <p className="font-medium text-lg">No programs found</p>
-                  <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search terms</p>
+                  <p className="font-medium text-lg"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
+                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_found_hint')} el={programsEl('none_found_hint')} wrap /></p>
                   {hasFilters && (
                     <Button variant="outline" size="sm" className="mt-4" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }}>
                       Clear Filters
@@ -530,8 +603,8 @@ export default function ProgramsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Zap className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium">No open programs right now</p>
-                  <p className="text-sm text-muted-foreground mt-1">Check back soon — new programs open regularly</p>
+                  <p className="font-medium"><BilingualText en={programsEn('none_open')} el={programsEl('none_open')} compact /></p>
+                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_open_hint')} el={programsEl('none_open_hint')} wrap /></p>
                 </CardContent>
               </Card>
             ) : (
@@ -549,8 +622,8 @@ export default function ProgramsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <BookmarkCheck className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium">No applications yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">Apply to open programs above to track them here</p>
+                  <p className="font-medium"><BilingualText en={programsEn('none_applied')} el={programsEl('none_applied')} compact /></p>
+                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_applied_hint')} el={programsEl('none_applied_hint')} wrap /></p>
                 </CardContent>
               </Card>
             ) : (
