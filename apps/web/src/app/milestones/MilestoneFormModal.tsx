@@ -16,6 +16,7 @@ import {
   useMilestonePrimaryText,
   MILESTONE_CATEGORY_KEYS,
   MILESTONE_STATUS_KEYS,
+  MILESTONE_STATUS_ONE_KEYS,
   MILESTONE_PRIORITY_KEYS,
 } from '@/lib/i18n/strings-milestones';
 import type { Milestone, MilestoneStatus, MilestonePriority } from '@/lib/api';
@@ -226,7 +227,8 @@ export function MilestoneFormModal({
                 className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
               >
                 {STATUSES.map((s) => (
-                  <option key={s} value={s}>{t(milestoneEn(MILESTONE_STATUS_KEYS[s]), milestoneEl(MILESTONE_STATUS_KEYS[s]))}</option>
+                  /* Singular: the select sets the status of one milestone. */
+                  <option key={s} value={s}>{t(milestoneEn(MILESTONE_STATUS_ONE_KEYS[s] ?? MILESTONE_STATUS_KEYS[s]), milestoneEl(MILESTONE_STATUS_ONE_KEYS[s] ?? MILESTONE_STATUS_KEYS[s]))}</option>
                 ))}
               </select>
             </div>

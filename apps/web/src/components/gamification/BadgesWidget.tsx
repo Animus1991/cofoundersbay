@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 export function BadgesWidget() {
   const { data: badges, isLoading } = useMyBadges();
@@ -43,7 +43,7 @@ export function BadgesWidget() {
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center text-muted-foreground">
-            <CfbGlyphWell name="award" size="lg" className="mx-auto mb-3 opacity-70" />
+            <CfbGlyph name="award" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
             <p className="text-sm">
               <BilingualText en="No badges earned yet" el="Δεν έχετε εμβλήματα ακόμα" />
             </p>
@@ -71,16 +71,18 @@ export function BadgesWidget() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-normal text-muted-foreground">
+              {/* Greek verbs agree in number: "1 αποκτήθηκαν" is wrong. */}
               <BilingualText
                 en={`${badges.length} earned`}
-                el={`${badges.length} αποκτήθηκαν`}
+                el={`${badges.length} ${badges.length === 1 ? 'αποκτήθηκε' : 'αποκτήθηκαν'}`}
                 compact
               />
             </span>
             {unseenCount > 0 && (
               <BadgeUI variant="secondary" className="gap-1">
                 <CfbGlyph name="spark" className="icon-sm" />
-                <BilingualText en={`${unseenCount} new`} el={`${unseenCount} νέα`} compact />
+                {/* Neuter: το έμβλημα → "1 νέο", "2 νέα". */}
+                <BilingualText en={`${unseenCount} new`} el={`${unseenCount} ${unseenCount === 1 ? 'νέο' : 'νέα'}`} compact />
               </BadgeUI>
             )}
           </div>
@@ -92,9 +94,8 @@ export function BadgesWidget() {
             <div
               key={badge.id}
               className={cn(
-                'relative flex flex-col items-center rounded-xl border p-3 transition-all hover:shadow-md',
-                getRarityStyles(badge.rarity),
-                !badge.seenAt && 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background',
+                'relative flex flex-col items-center rounded-lg p-2.5 transition-colors hover:bg-muted/40',
+                !badge.seenAt && 'ring-1 ring-primary/30',
               )}
             >
               {!badge.seenAt && (
@@ -105,10 +106,12 @@ export function BadgesWidget() {
                 className={cn('mb-1 icon-lg', getRarityIconColor(badge.rarity))}
               />
               <div className="line-clamp-2 text-center text-xs font-medium">
-                {badge.name}
+                {BADGE_NAME_EL[badge.name]
+                  ? <BilingualText en={badge.name} el={BADGE_NAME_EL[badge.name]} wrap />
+                  : badge.name}
               </div>
               <div className="mt-1 text-2xs capitalize text-muted-foreground">
-                {badge.rarity}
+                <BilingualText en={badge.rarity} el={RARITY_EL[badge.rarity] ?? badge.rarity} compact />
               </div>
             </div>
           ))}
@@ -118,20 +121,19 @@ export function BadgesWidget() {
   );
 }
 
-function getRarityStyles(rarity: string): string {
-  switch (rarity) {
-    case 'legendary':
-      return cn(STATUS.warning.bg, STATUS.warning.border, 'border');
-    case 'epic':
-      return cn(STATUS.accent.bg, STATUS.accent.border, 'border');
-    case 'rare':
-      return cn(STATUS.info.bg, STATUS.info.border, 'border');
-    case 'uncommon':
-      return cn(STATUS.success.bg, STATUS.success.border, 'border');
-    default:
-      return 'border-border bg-muted/50';
-  }
-}
+/** Greek for the preview badges seeded by `lib/preview-api.ts`, keyed by exact name. */
+const BADGE_NAME_EL: Record<string, string> = {
+  'Early adopter': 'Πρώιμος υποστηρικτής',
+};
+
+/** API rarities are lowercase English; the tile showed them raw ("common"). */
+const RARITY_EL: Record<string, string> = {
+  common: 'Κοινό',
+  uncommon: 'Ασυνήθιστο',
+  rare: 'Σπάνιο',
+  epic: 'Επικό',
+  legendary: 'Θρυλικό',
+};
 
 function getRarityIconColor(rarity: string): string {
   switch (rarity) {

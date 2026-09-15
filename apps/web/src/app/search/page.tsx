@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Search, X, Filter, Users, Briefcase, Calendar, MessageCircle,
-  GraduationCap, Building2, FileText, Sparkles, ChevronDown,
-  MapPin, Clock, ArrowRight, Loader2, History, Command,
+  Search, X, Users, Briefcase, Calendar,
+  GraduationCap, Building2, FileText, Sparkles,
+  MapPin, Clock, ArrowRight, History,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -16,11 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { bilingualAria } from '@/lib/i18n/format';
 import {
   searchEn,
   searchEl,
@@ -70,6 +69,52 @@ type SearchResponse = {
 const RECENT_SEARCHES_KEY = 'cfb:recent-searches';
 const MAX_RECENT_SEARCHES = 6;
 
+const EMPTY_CATEGORIES = {
+  people: 0,
+  jobs: 0,
+  events: 0,
+  groups: 0,
+  mentors: 0,
+  opportunities: 0,
+};
+
+function normalizeHit(raw: unknown): SearchResult | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const row = raw as Record<string, unknown>;
+  if (typeof row.href === 'string' && typeof row.title === 'string') {
+    return {
+      id: String(row.id ?? row.href),
+      type: (row.type as SearchResult['type']) || 'user',
+      title: row.title,
+      subtitle: typeof row.subtitle === 'string' ? row.subtitle : undefined,
+      description: typeof row.description === 'string' ? row.description : undefined,
+      imageUrl: typeof row.imageUrl === 'string' ? row.imageUrl : undefined,
+      href: row.href,
+      meta: (row.meta as SearchResult['meta']) ?? undefined,
+      tags: Array.isArray(row.tags) ? row.tags.filter((t): t is string => typeof t === 'string') : undefined,
+      highlight: typeof row.highlight === 'string' ? row.highlight : undefined,
+    };
+  }
+  if (typeof row.displayName === 'string') {
+    const userId = String(row.userId ?? row.id ?? '');
+    if (!userId) return null;
+    return {
+      id: userId,
+      type: 'user',
+      title: row.displayName,
+      subtitle: typeof row.headline === 'string' ? row.headline : undefined,
+      description: typeof row.bio === 'string' ? row.bio : undefined,
+      imageUrl: typeof row.avatarUrl === 'string' ? row.avatarUrl : undefined,
+      href: `/profiles/${userId}`,
+      meta: typeof row.location === 'string' ? { location: row.location } : undefined,
+      tags: Array.isArray(row.skillNames)
+        ? row.skillNames.filter((t): t is string => typeof t === 'string')
+        : undefined,
+    };
+  }
+  return null;
+}
+
 async function performSearch(
   query: string,
   category: SearchCategory,
@@ -81,7 +126,14 @@ async function performSearch(
     page: String(page),
     limit: '20',
   });
-  return apiRequest<SearchResponse>(`/api/v1/search?${params}`);
+  const payload = await apiRequest<SearchResponse & { hits?: unknown[] }>(`/api/v1/search?${params}`);
+  const raw = (payload.results?.length ? payload.results : payload.hits) ?? [];
+  const results = raw.map(normalizeHit).filter((row): row is SearchResult => Boolean(row?.href));
+  return {
+    results,
+    total: payload.total ?? results.length,
+    categories: payload.categories ?? EMPTY_CATEGORIES,
+  };
 }
 
 const CATEGORY_CONFIG: Record<
@@ -127,7 +179,10 @@ function ResultCard({ result }: { result: SearchResult }) {
   const Icon = config.icon;
 
   return (
-    <Link href={result.href}>
+    <Link
+      href={result.href}
+      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
       <Card className="group hover:border-primary/50 transition-all duration-150">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
@@ -156,6 +211,8 @@ function ResultCard({ result }: { result: SearchResult }) {
                   <BilingualText
                     en={resultTypeEn(result.type as SearchResultTypeKey)}
                     el={resultTypeEl(result.type as SearchResultTypeKey)}
+                    compact
+                    secondaryFrom="lg"
                   />
                 </Badge>
               </div>
@@ -216,47 +273,63 @@ function ResultCard({ result }: { result: SearchResult }) {
 }
 
 function EmptyState({ query, category }: { query: string; category: SearchCategory }) {
+  const idle = !query;
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-        <Search className="h-7 w-7 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center py-10 text-center sm:py-12">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <Search className="icon-lg text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">
-        <BilingualText en={searchEn('empty_title')} el={searchEl('empty_title')} />
+      <h3 className="mb-2 text-lg font-semibold text-foreground">
+        <BilingualText
+          en={idle ? searchEn('idle_title') : searchEn('empty_title')}
+          el={idle ? searchEl('idle_title') : searchEl('empty_title')}
+          stacked
+          wrap
+          secondaryFrom="lg"
+        />
       </h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="mb-6 max-w-sm text-sm text-muted-foreground">
         {query ? (
           <BilingualText
             en={noMatchMessageEn(query, category)}
             el={noMatchMessageEl(query, category)}
+            stacked
+            wrap
+            secondaryFrom="lg"
           />
         ) : (
-          <BilingualText en={searchEn('empty_hint')} el={searchEl('empty_hint')} />
+          <BilingualText
+            en={searchEn('empty_hint')}
+            el={searchEl('empty_hint')}
+            stacked
+            wrap
+            secondaryFrom="lg"
+          />
         )}
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/discover">
             <Users className="icon-sm" />
-            <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} />
+            <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} compact secondaryFrom="lg" />
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/jobs">
             <Briefcase className="icon-sm" />
-            <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} />
+            <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} compact secondaryFrom="lg" />
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/events">
             <Calendar className="icon-sm" />
-            <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} />
+            <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} compact secondaryFrom="lg" />
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href={`/ai?q=${encodeURIComponent(query ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.` : 'Help me search the network for a complementary cofounder.')}`}>
-            <Sparkles className="h-4 w-4 text-violet-500" />
-            Ask AI
+            <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+            <BilingualText en={searchEn('ask_ai')} el={searchEl('ask_ai')} compact secondaryFrom="lg" />
           </Link>
         </Button>
       </div>
@@ -289,13 +362,16 @@ export default function SearchPage() {
     } catch {}
   }, []);
 
-  // Cmd/Ctrl+K shortcut to focus search
+  // `/` focuses the field. Ctrl+K is the command palette — this page must not steal it.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        inputRef.current?.focus();
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
       }
+      e.preventDefault();
+      inputRef.current?.focus();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -352,9 +428,11 @@ export default function SearchPage() {
     <AppShell>
       <div className="">
         {/* Search Input */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-4 -mx-4 px-4 pt-2">
+        <div
+          className="sticky z-10 -mx-4 bg-background/95 px-4 pb-4 pt-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 top-[calc(var(--banner-network,0px)+var(--banner-demo,0px)+3rem)] sm:top-[calc(var(--banner-network,0px)+var(--banner-demo,0px))]"
+        >
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               ref={inputRef}
               type="text"
@@ -363,17 +441,18 @@ export default function SearchPage() {
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setInputFocused(true)}
               onBlur={() => setTimeout(() => setInputFocused(false), 150)}
-              className="pl-10 pr-20 h-11"
+              className="h-11 pl-10 pr-16"
               autoFocus
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
               {!query && (
-                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground font-mono">
-                  <Command className="h-2.5 w-2.5" />K
+                <kbd className="hidden items-center rounded border border-border/60 bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground sm:flex">
+                  /
                 </kbd>
               )}
               {query && (
                 <button
+                  type="button"
                   onClick={() => setQuery('')}
                   className="text-muted-foreground hover:text-foreground"
                   aria-label={bilingualAria(searchEn('clear_search'), searchEl('clear_search'))}
@@ -382,11 +461,10 @@ export default function SearchPage() {
                 </button>
               )}
             </div>
-          </div>
 
           {/* Recent searches dropdown */}
           {inputFocused && !query && recentSearches.length > 0 && (
-            <div className="absolute left-4 right-4 top-full mt-1 z-50 rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
+            <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-border/60 bg-popover shadow-lg">
               <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                   <History className="icon-sm" />
@@ -426,6 +504,7 @@ export default function SearchPage() {
               ))}
             </div>
           )}
+          </div>
 
           {/* Category Tabs */}
           <div className="mt-3 overflow-x-auto scrollbar-hide">
@@ -448,7 +527,12 @@ export default function SearchPage() {
                       )}
                     >
                       <Icon className="icon-sm" />
-                      <BilingualText en={config.labelEn} el={config.labelEl} />
+                      <BilingualText
+                        en={config.labelEn}
+                        el={config.labelEl}
+                        compact
+                        secondaryFrom="lg"
+                      />
                       {debouncedQuery.length >= 2 && count > 0 && (
                         <Badge
                           variant={isActive ? 'secondary' : 'outline'}
@@ -514,8 +598,14 @@ export default function SearchPage() {
         {/* Quick Links */}
         {debouncedQuery.length < 2 && (
           <div className="mt-8">
-            <h3 className="text-sm font-semibold text-foreground mb-4">
-              <BilingualText en={searchEn('quick_links')} el={searchEl('quick_links')} />
+            <h3 className="mb-4 text-sm font-semibold text-foreground">
+              <BilingualText
+                en={searchEn('quick_links')}
+                el={searchEl('quick_links')}
+                stacked
+                wrap
+                secondaryFrom="lg"
+              />
             </h3>
             <div className="grid gap-3 sm:grid-cols-2">
               <Link href="/discover" className="group">

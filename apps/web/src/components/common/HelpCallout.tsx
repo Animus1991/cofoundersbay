@@ -22,7 +22,7 @@ export function HelpCallout({
   titleEl,
   children,
   badge,
-  defaultOpen = true,
+  defaultOpen = false,
   compact = false,
   className,
 }: {
@@ -54,24 +54,70 @@ export function HelpCallout({
     }
   };
 
-  if (!open) {
+  const trigger = (
+    <button
+      type="button"
+      onClick={() => persist(!open)}
+      aria-expanded={open}
+      aria-label={bilingualAria(title, titleEl)}
+      className={cn(
+        'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
+        compact && 'h-11 w-11 justify-center p-0 md:h-9 md:w-9 lg:h-[36px] lg:w-[36px]',
+      )}
+    >
+      <CfbGlyph name="book" className="icon-sm" />
+      <span className={cn(compact && 'sr-only')}>
+        <BilingualText en={title} el={titleEl} compact />
+      </span>
+    </button>
+  );
+
+  const body = (
+    <div className="space-y-1.5 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
+      {children}
+    </div>
+  );
+
+  if (compact) {
     return (
-      <button
-        type="button"
-        onClick={() => persist(true)}
-        aria-label={bilingualAria(title, titleEl)}
-        className={cn(
-          'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
-          compact && 'h-8 w-8 justify-center p-0',
-          className,
+      <div className={cn('relative', className)}>
+        {trigger}
+        {open && (
+          <div
+            role="note"
+            aria-label={bilingualAria(title, titleEl)}
+            className="absolute right-0 top-full z-50 mt-2 w-[min(28rem,calc(100vw-2rem))] rounded-2xl border border-primary/20 bg-background p-4 text-sm leading-relaxed shadow-lg"
+          >
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 font-semibold text-primary-accessible">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
+                  <CfbGlyph name="book" className="icon-sm" />
+                </span>
+                <BilingualText en={title} el={titleEl} />
+                {badge && (
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary-accessible">
+                    {badge}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => persist(false)}
+                aria-label={bilingualAria('Dismiss help', 'Απόρριψη βοήθειας')}
+                className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                <X className="icon-sm" aria-hidden="true" />
+              </button>
+            </div>
+            {body}
+          </div>
         )}
-      >
-        <CfbGlyph name="book" className="icon-sm" />
-        <span className={cn(compact && 'sr-only')}>
-          <BilingualText en={title} el={titleEl} compact />
-        </span>
-      </button>
+      </div>
     );
+  }
+
+  if (!open) {
+    return <div className={className}>{trigger}</div>;
   }
 
   return (
@@ -122,9 +168,7 @@ export function HelpCallout({
 
           `pl-9` holds the body under the title's text rather than under its
           icon, so the block has one left edge. */}
-      <div className="space-y-1.5 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
-        {children}
-      </div>
+      {body}
     </div>
   );
 }

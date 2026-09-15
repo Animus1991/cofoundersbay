@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import {
@@ -719,8 +720,7 @@ export default function FeedPage() {
 
   return (
     <AppShell
-      title="Feed"
-      description="Stay updated with your network"
+      showHelp
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
@@ -829,13 +829,15 @@ export default function FeedPage() {
                 <CardHeader className="pb-3 border-b border-border/50">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Settings className="icon-sm" />
-                    Feed Preferences
+                    <BilingualText en={feedEn('preferences')} el={feedEl('preferences')} compact />
                   </h3>
                 </CardHeader>
                 <CardContent className="pt-4">
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Content Types</label>
+                      <label className="text-sm font-medium mb-2 block">
+                        <BilingualText en={feedEn('content_types')} el={feedEl('content_types')} compact />
+                      </label>
                       <div className="flex flex-wrap gap-1">
                         {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
                           <Badge
@@ -856,7 +858,9 @@ export default function FeedPage() {
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Topics of Interest</label>
+                      <label className="text-sm font-medium mb-2 block">
+                        <BilingualText en={feedEn('topics')} el={feedEl('topics')} compact />
+                      </label>
                       <div className="flex flex-wrap gap-1">
                         {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
                           <Badge

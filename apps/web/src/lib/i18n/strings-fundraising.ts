@@ -171,3 +171,11 @@ export const DOC_CATEGORY_KEYS: Record<string, keyof typeof FUNDRAISING_STRINGS>
   Team: 'cat_team',
   Traction: 'cat_traction',
 };
+
+export const INVESTOR_TYPE_EL: Record<string, string> = {
+  Angel: 'Angel',
+  VC: 'VC',
+  Syndicate: 'Κοινοπραξία',
+  Scout: 'Scout',
+  'Family Office': 'Family office',
+};

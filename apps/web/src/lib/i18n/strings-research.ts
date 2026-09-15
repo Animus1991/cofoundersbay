@@ -169,19 +169,37 @@ export const RESEARCH_TEMPLATE_I18N: Record<string, { name: BilingualPair; descr
     },
   },
   'mentorship-session': {
-    name: { en: 'Mentorship Session', el: 'Συνεδρία mentorship' },
+    name: { en: 'Mentorship Session', el: 'Συνεδρία καθοδήγησης' },
     description: {
       en: 'Prepare for and document mentorship sessions',
-      el: 'Προετοιμάστε και καταγράψτε συνεδρίες mentorship',
+      el: 'Προετοιμάστε και καταγράψτε συνεδρίες καθοδήγησης',
     },
   },
   'due-diligence': {
-    name: { en: 'Due Diligence', el: 'Due diligence' },
+    name: { en: 'Due Diligence', el: 'Δέουσα επιμέλεια' },
     description: {
       en: 'Comprehensive due diligence checklist',
-      el: 'Ολοκληρωμένη λίστα ελέγχου due diligence',
+      el: 'Ολοκληρωμένη λίστα ελέγχου δέουσας επιμέλειας',
     },
   },
+};
+
+export const RESEARCH_TAG_EL: Record<string, string> = {
+  validation: 'επικύρωση',
+  research: 'έρευνα',
+  startup: 'startup',
+  team: 'ομάδα',
+  cofounder: 'συνιδρυτής',
+  evaluation: 'αξιολόγηση',
+  'market-analysis': 'ανάλυση αγοράς',
+  strategy: 'στρατηγική',
+  funding: 'χρηματοδότηση',
+  investor: 'επενδυτής',
+  'pitch-deck': 'pitch deck',
+  'mentor-notes': 'σημειώσεις μέντορα',
+  guidance: 'καθοδήγηση',
+  learning: 'μάθηση',
+  'due-diligence': 'δέουσα επιμέλεια',
 };
 
 export const RESEARCH_NODE_CATEGORY_EL: Record<string, string> = {
@@ -261,7 +279,7 @@ export const RESEARCH_NODE_LABEL_EL: Record<string, string> = {
   survey: 'Έρευνα',
   data: 'Δεδομένα / φύλλο',
   report: 'Αναφορά',
-  due_diligence: 'Due diligence',
+  due_diligence: 'Δέουσα επιμέλεια',
   investor_update: 'Ενημέρωση επενδυτών',
   data_room: 'Data room',
   valuation: 'Αποτίμηση',

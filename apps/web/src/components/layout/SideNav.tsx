@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PanelLeftClose, PanelLeftOpen, Bot } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Bot, Keyboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
@@ -10,7 +10,6 @@ import { useSidebar } from './SidebarContext';
 import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { NAV_LINK_DESCRIPTIONS } from '@/lib/nav-descriptions';
 import {
@@ -22,10 +21,19 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
-import { NavIcon } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
+import { useOpenCommandPalette } from './CommandPaletteHost';
+import { NotificationsBell } from './NotificationsBell';
+import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
+import { DemoDataToggle } from '@/components/common/DemoDataToggle';
+import { UserMenu } from './UserMenu';
+import { PreviewDemoBadge } from './TopBar';
+import { Button } from '@/components/ui/button';
 
 export function SideNav() {
   const pathname = usePathname();
@@ -37,6 +45,7 @@ export function SideNav() {
   const primaryRole = role?.primaryRole;
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
+  const setCommandOpen = useOpenCommandPalette();
 
   // Between `sm` and `lg` the aside is a fixed 68px rail, so it renders its
   // collapsed contents regardless of the stored preference; the preference
@@ -63,7 +72,7 @@ export function SideNav() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('cfb:sidebar-mode', newMode);
     }
-  }, []);
+  }, [setMode]);
 
   // primaryRole comes from RoleContext (root-level, API-backed — the single source
   // of truth per docs/AI_PLATFORM_UPGRADE_PLAN.md §1.2). user?.role is a coarser
@@ -93,11 +102,6 @@ export function SideNav() {
     return 0;
   };
 
-  const initials =
-    user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
-    user?.email?.slice(0, 2).toUpperCase() ||
-    'ME';
-
   return (
     <TooltipProvider delayDuration={400}>
       <aside
@@ -116,7 +120,7 @@ export function SideNav() {
         {/* ── Logo header ── */}
         <div
           className={cn(
-            'flex h-14 flex-shrink-0 items-center border-b border-border/60',
+            'flex h-12 flex-shrink-0 items-center border-b border-border/60',
             showLabels ? 'justify-between px-4' : 'justify-center px-0',
           )}
         >
@@ -144,14 +148,14 @@ export function SideNav() {
         <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={showLabels} />
 
         {/* ── Navigation ── */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide">
           {sections.map(({ section, links }) => (
-            <div key={section} className="mb-1.5">
+            <div key={section} className="mb-0.5">
               {/* nav-section-label, not plain text-xs: these uppercase headings
                   take the display steps' -2% per pass while the links under them
                   take the +2% of the body scale (see globals.css). */}
               {showLabels ? (
-                <p className="nav-section-label mx-3 mb-1.5 mt-4 text-xs text-muted-foreground/80 first:mt-1">
+                <p className="nav-section-label mx-3 mb-1 mt-2.5 text-xs text-muted-foreground/80 first:mt-1">
                   <BilingualText
                     en={section}
                     el={getNavSectionEl(section)}
@@ -163,7 +167,7 @@ export function SideNav() {
               ) : (
                 <div className="mx-3 my-2 h-px bg-border/50" />
               )}
-              <ul className="space-y-1 px-2">
+              <ul className="space-y-0.5 px-2">
                 {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
                   const active =
                     pathname === href || (href !== '/' && pathname?.startsWith(href));
@@ -191,7 +195,7 @@ export function SideNav() {
                       }
                       className={cn(
                         'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
-                        showLabels ? 'gap-2.5 px-2.5 py-2' : 'justify-center p-2.5',
+                        showLabels ? 'gap-2 px-2 py-1.5' : 'justify-center p-2',
                         active
                           ? 'bg-primary/8 text-primary-accessible font-medium'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
@@ -266,47 +270,58 @@ export function SideNav() {
           ))}
         </nav>
 
-        {/* ── User profile footer ── */}
-        <div className="flex-shrink-0 border-t border-border/60 p-2.5">
-          {user && mounted ? (
-            <OptimizedLink
-              href="/profile"
-              title={!showLabels ? (user.displayName ?? 'Profile') : undefined}
-              className={cn(
-                'flex items-center rounded-lg transition-colors hover:bg-secondary/60',
-                showLabels ? 'gap-2.5 px-2 py-2' : 'justify-center p-2',
-              )}
+        {/* ── Tools + user. Relocated TopBar controls; none are dropped. ── */}
+        <div className={cn('flex-shrink-0 border-t border-border/60', showLabels ? 'space-y-1 p-2' : 'space-y-0.5 p-1.5')}>
+          <div className={cn(showLabels ? 'grid grid-cols-4 gap-0.5' : 'flex flex-col items-center gap-0.5')}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-muted-foreground"
+              onClick={() => router.push('/search')}
+              aria-label={bilingualAria('Search', 'Αναζήτηση')}
             >
-              <Avatar className="h-7 w-7 flex-shrink-0">
-                <AvatarImage src={user.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              {showLabels && (
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium leading-tight text-foreground">
-                    {user.displayName ?? 'User'}
-                  </p>
-                  {user.role && (
-                    <p className="truncate text-xs capitalize leading-tight text-muted-foreground">
-                      {user.role}
-                    </p>
-                  )}
-                </div>
-              )}
-            </OptimizedLink>
+              <CfbGlyph name="discover" className="icon-sm" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-muted-foreground"
+              onClick={() => setCommandOpen(true)}
+              aria-label={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
+            >
+              <Keyboard className="icon-sm" />
+            </Button>
+            <NotificationsBell className="h-8 w-8" />
+            {showLabels ? (
+              <>
+                <DemoDataToggle iconOnly className="h-8 w-8 min-w-8 px-0" />
+                <LanguagePreferenceToggle className="h-8 w-8" />
+                <LanguageSwitcher iconOnly className="h-8 w-8" />
+                <ThemeSwitcher className="h-8 w-8" />
+              </>
+            ) : null}
+          </div>
+          {showLabels && <PreviewDemoBadge className="max-w-full justify-start" />}
+          {mounted ? (
+            <UserMenu variant="sidebar" />
           ) : (
             <div className={cn('rounded-lg bg-secondary/40', showLabels ? 'h-10' : 'h-9 w-9 mx-auto')} />
           )}
+          {!showLabels && (
+            <div className="flex flex-col items-center gap-0.5">
+              <DemoDataToggle iconOnly className="h-8 w-8 min-w-8 px-0" />
+              <LanguagePreferenceToggle className="h-8 w-8" />
+              <LanguageSwitcher iconOnly className="h-8 w-8" />
+              <ThemeSwitcher className="h-8 w-8" />
+            </div>
+          )}
 
-          {/* Expand button when collapsed */}
-          {/* No expand affordance in the rail window: the 240px drawer does not
-              fit there, and the width is locked by CSS rather than by state. */}
           {!showLabels && mounted && !isRail && (
             <button
               onClick={toggle}
-              className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
+              className="mt-0.5 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
               aria-label={bilingualAria(commonEn('expand_sidebar'), commonEl('expand_sidebar'))}
             >
               <PanelLeftOpen className="icon-sm" />

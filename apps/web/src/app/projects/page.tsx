@@ -28,7 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -71,6 +71,22 @@ const STAGE_PILLS: { value: string; glyph: CfbGlyphName; labelKey: keyof typeof 
 
 type TabId = 'discover' | 'mine' | 'joined' | 'starred';
 
+const ROLE_TITLE_EL: Record<string, string> = {
+  'Backend Engineer': 'Backend μηχανικός',
+  'Growth Lead': 'Growth Lead',
+  'Full-stack Developer': 'Full-stack developer',
+  Marketing: 'Marketing',
+  'Technical Co-founder': 'Τεχνικός συνιδρυτής',
+  'Mobile Developer': 'Mobile developer',
+  'Data Scientist': 'Data scientist',
+};
+
+function roleLabel(title: string) {
+  return ROLE_TITLE_EL[title]
+    ? <BilingualText en={title} el={ROLE_TITLE_EL[title]} compact />
+    : title;
+}
+
 function StageBadge({ status }: { status: ProjectStatus }) {
   const key = PROJECT_STAGE_FULL_KEYS[status];
   return (
@@ -107,7 +123,11 @@ function ProjectCard({
                 <StageBadge status={project.status} />
                 {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
               </div>
-              <p className="line-clamp-1 text-sm text-muted-foreground">{project.description}</p>
+              <p className="line-clamp-1 text-sm text-muted-foreground">
+                {project.descriptionEl
+                  ? <BilingualText en={project.description} el={project.descriptionEl} compact />
+                  : project.description}
+              </p>
             </div>
             <div className="flex shrink-0 items-center gap-6">
               <div className="flex -space-x-2">
@@ -126,7 +146,7 @@ function ProjectCard({
               <div className="flex max-w-[200px] flex-wrap gap-1">
                 {project.rolesNeeded.slice(0, 2).map((role) => (
                   <Badge key={role.title} variant="secondary" className="rounded-full text-2xs">
-                    {role.title}
+                    {roleLabel(role.title)}
                   </Badge>
                 ))}
               </div>
@@ -190,7 +210,11 @@ function ProjectCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="line-clamp-2 text-sm text-muted-foreground">{project.description}</p>
+        <p className="line-clamp-2 text-sm text-muted-foreground">
+          {project.descriptionEl
+            ? <BilingualText en={project.description} el={project.descriptionEl} wrap />
+            : project.description}
+        </p>
 
         <div className="flex flex-wrap gap-1.5">
           {project.tags.slice(0, 4).map((tag) => (
@@ -250,7 +274,7 @@ function ProjectCard({
               <div className="flex flex-wrap gap-1">
                 {project.rolesNeeded.map((role) => (
                   <Badge key={role.title} variant="outline" className="rounded-full bg-primary/5 text-2xs text-primary-accessible border-primary/20">
-                    {role.title}
+                    {roleLabel(role.title)}
                   </Badge>
                 ))}
               </div>
@@ -287,7 +311,7 @@ function EmptyState({
   return (
     <Card className="rounded-xl border-dashed">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        <CfbGlyphWell name={glyph} size="lg" className="mb-4" />
+        <CfbGlyph name={glyph} className="mb-4 icon-lg text-muted-foreground/50" />
         <h3 className="mb-1 text-sm font-semibold text-foreground">
           <BilingualText en={titleEn} el={titleEl} />
         </h3>
@@ -411,18 +435,9 @@ export default function ProjectsPage() {
 
   return (
     <AppShell
-      title="Projects"
-      description="Discover startup projects or create your own to find co-founders"
       showHelp
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
-            <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={projectEn('ask_ai')} el={projectEl('ask_ai')} compact />
-          </Button>
-          {createCta}
-        </div>
-      }
+      askAi="Projects is still sample data. Help me find collaborators from matches and shortlist instead of treating these cards as live."
+      actions={createCta}
     >
       <div className="space-y-4">
         <SampleDataNotice
@@ -433,9 +448,9 @@ export default function ProjectsPage() {
         <button
           type="button"
           onClick={() => openAskAi()}
-          className="flex w-full items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-left transition-colors hover:bg-primary/10"
+          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
         >
-          <CfbGlyphWell name="spark" size="sm" />
+          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-medium text-foreground">
               <BilingualText en={projectEn('ask_ai_plan')} el={projectEl('ask_ai_plan')} stacked />

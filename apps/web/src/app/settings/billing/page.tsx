@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  CreditCard, Crown, ExternalLink, AlertTriangle, CheckCircle2,
-  Clock, XCircle, Download, FileText, ChevronRight, Loader2,
-  Shield, Zap, Users, Building2, RefreshCw,
+  Download, FileText, Loader2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -18,20 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import {
-  getBillingSubscription, getUserInvoices, createBillingPortal, createBillingCheckout,
+  getBillingSubscription, getUserInvoices, createBillingPortal,
   getBillingContact, upsertBillingContact, type BillingInvoice, type BillingContact,
 } from '@/lib/api';
-import { formatCents, STATUS_COLORS } from '@/lib/billing';
+import { formatCents } from '@/lib/billing';
+import { HairlineMeter } from '@/components/ui/hairline-meter';
+import { SettingsRow } from '@/components/ui/settings-row';
 import { cn } from '@/lib/utils';
-
-const PLAN_ICONS: Record<string, React.ElementType> = {
-  free: Zap,
-  premium: Crown,
-  individual_premium: Crown,
-  team: Users,
-  organization: Building2,
-  enterprise: Shield,
-};
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -143,171 +134,145 @@ export default function UserBillingPage() {
   const sub = subData?.subscription;
   const invoices = invoicesData?.invoices ?? [];
 
-  const PlanIcon = PLAN_ICONS[sub?.plan?.name ?? 'free'] ?? Crown;
-
-  const statusIconMap: Record<string, React.ReactElement> = {
-    active: <CheckCircle2 className="icon-sm text-status-success" />,
-    trialing: <Clock className="icon-sm text-status-info" />,
-    past_due: <AlertTriangle className="icon-sm text-status-warning" />,
-    canceled: <XCircle className="icon-sm text-muted-foreground" />,
-    incomplete: <AlertTriangle className="icon-sm text-status-warning" />,
-    incomplete_expired: <XCircle className="icon-sm text-muted-foreground" />,
-    paused: <Clock className="icon-sm text-muted-foreground" />,
-    unpaid: <AlertTriangle className="icon-sm text-status-danger" />,
-  };
-  const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="icon-sm text-muted-foreground" />;
-
   return (
     <AppShell
       actions={
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2 hidden sm:flex" asChild>
-            <Link href="/settings">
-              <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2" asChild>
-            <Link href="/pricing">
-              View plans
-              <ChevronRight className="icon-sm" />
-            </Link>
-          </Button>
-        </div>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/settings">
+            <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
+          </Link>
+        </Button>
       }
     >
       <div className="space-y-6 pb-10">
 
-        {/* Current Plan */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="pb-3 border-b border-border/50">
-            <CardTitle className="text-base">Current Plan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {subLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="icon-sm animate-spin" />
-                <span className="text-sm">Loading subscription…</span>
-              </div>
-            ) : sub ? (
-              <>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <PlanIcon className="icon-lg text-primary-accessible" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold">{sub.plan?.displayName ?? 'Unknown Plan'}</span>
-                      <Badge
-                        variant="outline"
-                        className={cn('text-xs capitalize gap-1', STATUS_COLORS[sub.status] ?? '')}
-                      >
-                        {statusIcon}
-                        {sub.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {sub.billingCycle} billing
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="border-border/50 shadow-none">
+            <CardHeader className="pb-2">
+              <p className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
+                <BilingualText en="Current plan" el="Τρέχον πλάνο" />
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {subLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="icon-sm animate-spin" />
+                  <span className="text-sm">Loading subscription…</span>
+                </div>
+              ) : sub ? (
+                <>
+                  <div>
+                    <p className="text-lg font-semibold">{sub.plan?.displayName ?? 'Unknown Plan'}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
+                      /{sub.billingCycle === 'annual' ? 'year' : 'mo'}
                       {sub.currentPeriodEnd && (
                         <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</>
                       )}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold">
-                      {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">/{sub.billingCycle === 'annual' ? 'year' : 'month'}</p>
-                  </div>
-                </div>
-
-                {sub.cancelAtPeriodEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
-                    <AlertTriangle className="icon-sm shrink-0" />
-                    Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.
-                    Reactivate in the billing portal to continue.
-                  </div>
-                )}
-
-                {sub.status === 'trialing' && sub.trialEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-status-info-bg border border-status-info-border p-3 text-sm text-status-info">
-                    <Clock className="icon-sm shrink-0" />
-                    Free trial ends {new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}. Add a payment method to continue.
-                  </div>
-                )}
-
-                {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
-                    <AlertTriangle className="icon-sm shrink-0" />
-                    Payment failed. Please update your payment method to avoid service interruption.
-                  </div>
-                )}
-
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-2"
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-primary-accessible hover:underline"
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="icon-sm animate-spin" /> : <CreditCard className="icon-sm" />}
-                    Manage payment &amp; billing
-                    <ExternalLink className="icon-sm" />
-                  </Button>
-                  {(sub.plan?.name === 'free' || !sub) && (
-                    <Button size="sm" className="gap-2" asChild>
-                      <Link href="/pricing">
-                        <Crown className="icon-sm" />
-                        Upgrade plan
-                      </Link>
-                    </Button>
-                  )}
+                    {portalLoading ? 'Opening…' : 'Adjust plan'}
+                  </button>
+                </>
+              ) : (
+                <div>
+                  <p className="text-lg font-semibold">Free</p>
+                  <p className="text-sm text-muted-foreground">$0/mo</p>
                 </div>
-              </>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">You are on the free plan.</p>
-                <Button size="sm" className="gap-2" asChild>
-                  <Link href="/pricing">
-                    <Crown className="icon-sm" />
-                    Upgrade to Pro
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Plan features */}
+          {(sub?.plan?.name === 'free' || !sub) && (
+            <Card className="border-primary/20 bg-primary/[0.04] shadow-none">
+              <CardHeader className="pb-2">
+                <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
+                  <BilingualText en="Upgrade available" el="Διαθέσιμη αναβάθμιση" />
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-lg font-semibold">Pro</p>
+                  <p className="text-sm text-muted-foreground">
+                    Unlock more usage on matching, messages, and mentor booking.
+                  </p>
+                </div>
+                <Button size="sm" asChild>
+                  <Link href="/pricing">Upgrade</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {sub?.cancelAtPeriodEnd && (
+          <p className="text-sm text-status-warning">
+            Subscription cancels on {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.
+          </p>
+        )}
+        {sub?.status === 'trialing' && sub.trialEnd && (
+          <p className="text-sm text-status-info">
+            Free trial ends {new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.
+          </p>
+        )}
+        {sub?.status === 'past_due' && (
+          <p className="text-sm text-status-danger">Payment failed. Update the payment method in Adjust plan.</p>
+        )}
+
         {sub?.plan?.features && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Your plan includes</CardTitle>
+          <Card className="border-border/50 shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Included</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.entries(sub.plan.features as Record<string, unknown>)
-                  .filter(([, v]) => Boolean(v))
-                  .map(([k, v]) => (
-                    <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="icon-sm text-status-success shrink-0" />
-                      <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
-                    </div>
-                  ))}
-              </div>
+            <CardContent className="space-y-4">
+              {Object.entries(sub.plan.features as Record<string, unknown>)
+                .filter(([, v]) => Boolean(v))
+                .map(([k, v]) => (
+                  <HairlineMeter
+                    key={k}
+                    label={k.replace(/([A-Z])/g, ' $1').trim()}
+                    caption={typeof v === 'string' ? String(v) : undefined}
+                    percent={v === true || v === 'Unlimited' ? 0 : 0}
+                    trailing={v === true ? 'Included' : typeof v === 'string' ? String(v) : undefined}
+                  />
+                ))}
             </CardContent>
           </Card>
         )}
 
+        <Card className="border-border/50 shadow-none">
+          <CardContent className="pt-2">
+            <SettingsRow
+              label="Payment method"
+              helper="Opens the Stripe billing portal."
+            >
+              <button
+                type="button"
+                className="text-sm font-medium text-primary-accessible hover:underline"
+                onClick={() => openPortal(undefined)}
+                disabled={portalLoading}
+              >
+                {portalLoading ? 'Opening…' : 'Manage'}
+              </button>
+            </SettingsRow>
+          </CardContent>
+        </Card>
+
         {/* Billing Contact */}
-        <Card className="shadow-sm border-border/50">
+        <Card className="border-border/50 shadow-none">
           <CardHeader className="pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-base">Billing Contact</CardTitle>
                 <CardDescription className="text-xs mt-0.5">Used on invoices and for tax compliance.</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
+              <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
                 {showContactForm ? 'Cancel' : (contactData as { billingContact?: BillingContact | null })?.billingContact ? 'Edit' : 'Add'}
               </Button>
             </div>
@@ -407,7 +372,7 @@ export default function UserBillingPage() {
         </Card>
 
         {/* Invoice history */}
-        <Card className="shadow-sm border-border/50">
+        <Card className="border-border/50 shadow-none">
           <CardHeader className="pb-3 border-b border-border/50">
             <CardTitle className="text-base">Invoice History</CardTitle>
           </CardHeader>

@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
-import { BuilderAskAiButton } from '@/components/builder/BuilderStageChrome';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -69,7 +68,7 @@ function ApplicationsPageContent() {
   }
 
   return (
-    <AppShell showHelp actions={<BuilderAskAiButton />}>
+    <AppShell showHelp askAi="Draft YC, Techstars, university, or grant answers from Idea Core, Market, and Pitch.">
       <div className="space-y-6">
         {error && (
           <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">

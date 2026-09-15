@@ -15,7 +15,7 @@ import { createMilestone, type MilestoneStatus, type MilestonePriority } from '@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import {
@@ -99,7 +99,7 @@ export default function NewMilestonePage() {
         <Card className="rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <CfbGlyphWell name="flag" size="md" />
+              <CfbGlyph name="flag" className="icon-md shrink-0 text-muted-foreground" />
               <div>
                 <CardTitle>
                   <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />

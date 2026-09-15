@@ -11,14 +11,10 @@ import {
   Search,
   Plus,
   ExternalLink,
-  X,
   Loader2,
   AlertCircle,
   Star,
-  DollarSign,
-  Clock,
   Filter,
-  TrendingUp,
   Code2,
   Megaphone,
   Palette,
@@ -26,8 +22,6 @@ import {
   BarChart3,
   Users,
   Sparkles,
-  ArrowRight,
-  BadgeCheck,
   Zap,
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
@@ -41,21 +35,30 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const ROLE_FILTERS = [
-  { value: 'all',         label: 'All',          icon: Briefcase },
-  { value: 'engineering', label: 'Engineering',   icon: Code2     },
-  { value: 'marketing',   label: 'Marketing',    icon: Megaphone },
-  { value: 'design',      label: 'Design',       icon: Palette   },
-  { value: 'legal',       label: 'Legal',        icon: Scale     },
-  { value: 'analytics',   label: 'Analytics',    icon: BarChart3 },
-  { value: 'operations',  label: 'Operations',   icon: Users     },
+  { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
+  { value: 'engineering', labelKey: 'role_engineering' as const, icon: Code2     },
+  { value: 'marketing',   labelKey: 'role_marketing' as const,   icon: Megaphone },
+  { value: 'design',      labelKey: 'role_design' as const,      icon: Palette   },
+  { value: 'legal',       labelKey: 'role_legal' as const,       icon: Scale     },
+  { value: 'analytics',   labelKey: 'role_analytics' as const,   icon: BarChart3 },
+  { value: 'operations',  labelKey: 'role_operations' as const,  icon: Users     },
 ] as const;
 type RoleFilter = typeof ROLE_FILTERS[number]['value'];
 
-const EMPLOYMENT_TYPES = ['All', 'Full-time', 'Part-time', 'Contract', 'Co-founder', 'Advisor'] as const;
+const EMPLOYMENT_TYPES = [
+  { value: 'all',       labelKey: 'emp_all' as const },
+  { value: 'full-time', labelKey: 'emp_full_time' as const },
+  { value: 'part-time', labelKey: 'emp_part_time' as const },
+  { value: 'contract',  labelKey: 'emp_contract' as const },
+  { value: 'cofounder', labelKey: 'emp_cofounder' as const },
+  { value: 'advisor',   labelKey: 'emp_advisor' as const },
+] as const;
 
 function JobCard({ job, featured = false }: { job: JobPostingView; featured?: boolean }) {
   return (
@@ -88,9 +91,13 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 {job.role && (
                   <Badge variant="secondary" className="text-xs">{job.role}</Badge>
                 )}
+                {job.type && (
+                  <Badge variant="outline" className="text-xs">{job.type}</Badge>
+                )}
                 {job.isRemote && (
                   <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
-                    <Wifi className="mr-1 icon-sm" />Remote
+                    <Wifi className="mr-1 icon-sm" />
+                    <BilingualText en={jobsEn('remote')} el={jobsEl('remote')} compact />
                   </Badge>
                 )}
               </div>
@@ -101,30 +108,20 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 <span className="flex items-center gap-1"><MapPin className="icon-sm" />{job.location}</span>
               )}
               {!job.location && !job.isRemote && (
-                <span className="flex items-center gap-1"><Building2 className="icon-sm" />Location not specified</span>
+                <span className="flex items-center gap-1">
+                  <Building2 className="icon-sm" />
+                  <BilingualText en={jobsEn('location_unknown')} el={jobsEl('location_unknown')} compact />
+                </span>
               )}
-              <span className="flex items-center gap-1"><Clock className="icon-sm" />Full-time</span>
-              <span className="flex items-center gap-1 text-status-success">
-                <DollarSign className="icon-sm" />Equity available
-              </span>
             </div>
           </div>
 
-          <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8" asChild>
-            <Link href={job.href ?? `/jobs`} className="shrink-0">
-              <ExternalLink className="icon-sm" />View
+          <Button variant="ghost" size="sm" className="gap-1 shrink-0" asChild>
+            <Link href={job.href ?? `/jobs`}>
+              <ExternalLink className="icon-sm" />
+              <BilingualText en={jobsEn('view')} el={jobsEl('view')} compact />
             </Link>
           </Button>
-        </div>
-
-        {/* Skills footer */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
-          <div className="flex flex-wrap gap-1.5">
-            {['React', 'TypeScript', 'Node.js'].slice(0, 3).map((skill) => (
-              <span key={skill} className="rounded-md bg-muted px-2 py-0.5 text-2xs text-muted-foreground">{skill}</span>
-            ))}
-          </div>
-          <span className="text-2xs text-muted-foreground">Posted today</span>
         </div>
       </CardContent>
     </Card>
@@ -160,7 +157,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
         isRemote: form.isRemote,
       }),
     onSuccess: () => {
-      success('Job posted!', 'Your opportunity is now live.');
+      success(jobsEn('posted'), jobsEn('posted_body'));
       onCreated();
       onClose();
     },
@@ -171,11 +168,15 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Post a job</DialogTitle>
+          <DialogTitle>
+            <BilingualText en={jobsEn('dialog_title')} el={jobsEl('dialog_title')} compact />
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Job title *</label>
+            <label className="text-sm font-medium">
+              <BilingualText en={jobsEn('field_title')} el={jobsEl('field_title')} compact /> *
+            </label>
             <Input
               placeholder="e.g. Full-Stack Engineer (equity)"
               value={form.title}
@@ -185,7 +186,9 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Role / function</label>
+            <label className="text-sm font-medium">
+              <BilingualText en={jobsEn('field_role')} el={jobsEl('field_role')} compact />
+            </label>
             <Input
               placeholder="e.g. Engineering, Marketing, Design"
               value={form.role}
@@ -194,7 +197,9 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Location</label>
+            <label className="text-sm font-medium">
+              <BilingualText en={jobsEn('field_location')} el={jobsEl('field_location')} compact />
+            </label>
             <Input
               placeholder="e.g. Athens, GR"
               value={form.location}
@@ -210,17 +215,19 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
               onChange={(e) => set('isRemote', e.target.checked)}
               className="h-4 w-4 rounded border-border accent-primary"
             />
-            Remote position
+            <BilingualText en={jobsEn('field_remote')} el={jobsEl('field_remote')} compact />
           </label>
         <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>
+              <BilingualText en={jobsEn('cancel')} el={jobsEl('cancel')} compact />
+            </Button>
             <Button
               className="gap-2"
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
               {mutation.isPending ? <Loader2 className="icon-sm animate-spin" /> : <Briefcase className="icon-sm" />}
-              Post job
+              <BilingualText en={jobsEn('submit')} el={jobsEl('submit')} compact />
             </Button>
         </DialogFooter>
         </div>
@@ -233,7 +240,7 @@ export default function JobsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
-  const [employmentType, setEmploymentType] = useState<string>('All');
+  const [employmentType, setEmploymentType] = useState<(typeof EMPLOYMENT_TYPES)[number]['value']>('all');
   const [showPostForm, setShowPostForm] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -252,7 +259,13 @@ export default function JobsPage() {
       j.creator.displayName.toLowerCase().includes(search.toLowerCase()) ||
       j.location?.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === 'all' || j.role?.toLowerCase().includes(roleFilter);
-    return matchSearch && matchRole;
+    const typeSlug = (j.type ?? '').toLowerCase().replace(/\s+/g, '-');
+    const roleSlug = (j.role ?? '').toLowerCase();
+    const matchEmp =
+      employmentType === 'all' ||
+      typeSlug === employmentType ||
+      (employmentType === 'cofounder' && (roleSlug.includes('co-founder') || roleSlug.includes('cofounder') || typeSlug.includes('cofounder')));
+    return matchSearch && matchRole && matchEmp;
   });
 
   const remoteJobs = filtered.filter((j) => j.isRemote);
@@ -268,12 +281,11 @@ export default function JobsPage() {
       />
     )}
     <AppShell
-      title="Jobs & Roles"
-      description="Equity & early-stage opportunities from startups in the CoFounderBay ecosystem"
+      showHelp
       actions={
         <Button className="gap-2" onClick={() => setShowPostForm(true)}>
           <Plus className="icon-sm" />
-          Post a Role
+          <BilingualText en={jobsEn('post')} el={jobsEl('post')} compact />
         </Button>
       }
     >
@@ -281,20 +293,22 @@ export default function JobsPage() {
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Open Roles', value: jobs.length || '25+', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          { label: 'Remote-First', value: remoteJobs.length || '12+', icon: Wifi, color: 'text-status-success', bg: 'bg-status-success-bg' },
-          { label: 'Startups Hiring', value: new Set(jobs.map((j) => j.creator.displayName)).size || '8+', icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+          { labelEn: jobsEn('stat_open'), labelEl: jobsEl('stat_open'), value: jobs.length || '—', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+          { labelEn: jobsEn('stat_remote'), labelEl: jobsEl('stat_remote'), value: remoteJobs.length || '—', icon: Wifi, color: 'text-status-success', bg: 'bg-status-success-bg' },
+          { labelEn: jobsEn('stat_hiring'), labelEl: jobsEl('stat_hiring'), value: new Set(jobs.map((j) => j.creator.displayName)).size || '—', icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
         ].map((s) => {
           const SIcon = s.icon;
           return (
-            <Card key={s.label} className="shadow-sm border-border/50">
+            <Card key={s.labelEn} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">
+                    <BilingualText en={s.labelEn} el={s.labelEl} compact />
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -307,7 +321,7 @@ export default function JobsPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search jobs, roles, companies…"
+            placeholder={bilingualInline(jobsEn('search'), jobsEl('search'))}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -330,7 +344,8 @@ export default function JobsPage() {
                     : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
                 )}
               >
-                <RIcon className="icon-sm" />{rf.label}
+                <RIcon className="icon-sm" />
+                <BilingualText en={jobsEn(rf.labelKey)} el={jobsEl(rf.labelKey)} compact />
               </button>
             );
           })}
@@ -339,15 +354,17 @@ export default function JobsPage() {
         <div className="flex flex-wrap gap-2">
           {EMPLOYMENT_TYPES.map((t) => (
             <button
-              key={t}
-              onClick={() => setEmploymentType(t)}
+              key={t.value}
+              onClick={() => setEmploymentType(t.value)}
               className={cn(
                 'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                employmentType === t
+                employmentType === t.value
                   ? 'border-primary bg-primary/15 text-primary-accessible'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
               )}
-            >{t}</button>
+            >
+              <BilingualText en={jobsEn(t.labelKey)} el={jobsEl(t.labelKey)} compact />
+            </button>
           ))}
         </div>
       </div>
@@ -355,8 +372,12 @@ export default function JobsPage() {
       {isError ? (
         <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
           <AlertCircle className="icon-xl text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Failed to load jobs. Please check your connection.</p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />
+          </p>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            <BilingualText en={jobsEn('try_again')} el={jobsEl('try_again')} compact />
+          </Button>
         </CardContent></Card>
       ) : isLoading ? (
         <div className="space-y-3">
@@ -367,11 +388,11 @@ export default function JobsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           illustration="rocket"
-          title={search ? 'No jobs match your search' : 'No jobs posted yet'}
+          title={search ? jobsEn('empty_search') : jobsEn('empty')}
           description={
             search
-              ? 'Try a different keyword or clear the search.'
-              : 'Be the first to post an opportunity for the community.'
+              ? jobsEn('empty_search_hint')
+              : jobsEn('empty_hint')
           }
           askAiPrompt={
             search
@@ -380,13 +401,13 @@ export default function JobsPage() {
           }
           action={
             !search ? (
-              <Button className="gap-2" onClick={() => {}}>
+              <Button className="gap-2" onClick={() => setShowPostForm(true)}>
                 <Plus className="icon-sm" />
-                Post a job
+                <BilingualText en={jobsEn('post_job')} el={jobsEl('post_job')} compact />
               </Button>
             ) : (
               <Button variant="secondary" onClick={() => setSearch('')}>
-                Clear search
+                <BilingualText en={jobsEn('clear_search')} el={jobsEl('clear_search')} compact />
               </Button>
             )
           }
@@ -394,8 +415,10 @@ export default function JobsPage() {
       ) : (
         <div className="space-y-6">
           <p className="text-xs text-muted-foreground">
-            {filtered.length} role{filtered.length !== 1 ? 's' : ''} found
-            {remoteJobs.length > 0 && ` · ${remoteJobs.length} remote`}
+            {filtered.length === 1
+              ? jobsEn('found_one')
+              : jobsEn('found_many').replace('{n}', String(filtered.length))}
+            {remoteJobs.length > 0 && ` · ${jobsEn('remote_suffix').replace('{n}', String(remoteJobs.length))}`}
           </p>
 
           {/* Featured strip */}
@@ -403,7 +426,9 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="icon-sm text-primary-accessible" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Roles</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
+                </h2>
               </div>
               {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured />)}
             </section>
@@ -414,7 +439,9 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <Wifi className="icon-sm text-status-success" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Remote Opportunities</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
+                </h2>
               </div>
               {remoteJobs.map((job) => <JobCard key={job.id} job={job} />)}
             </section>
@@ -424,7 +451,9 @@ export default function JobsPage() {
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <MapPin className="icon-sm text-status-info" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">On-site / Hybrid</h2>
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
+                </h2>
               </div>
               {onsiteJobs.map((job) => <JobCard key={job.id} job={job} />)}
             </section>

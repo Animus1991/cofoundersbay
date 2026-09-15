@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import {
@@ -27,6 +27,7 @@ import {
   milestoneEl,
   useMilestonePrimaryText,
   MILESTONE_CATEGORY_KEYS,
+  MILESTONE_STATUS_ONE_KEYS,
 } from '@/lib/i18n/strings-milestones';
 import {
   listMilestones,
@@ -65,6 +66,27 @@ const PRIORITY_DOT: Record<StatusTone, string> = {
 };
 
 const CATEGORY_ORDER = ['all', 'product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
+
+/**
+ * Greek for the twelve preview milestones (`PREVIEW_MILESTONES` in
+ * `lib/preview-api.ts`). Real milestones are user data and render as typed;
+ * the demo ones were the only English block left on a Greek-primary page.
+ * Keyed by the exact English title, same pattern as the Builder preview hints.
+ */
+const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?: string }> = {
+  'Launch beta to first 20 users': { title: 'Κυκλοφορία beta στους πρώτους 20 χρήστες', description: 'Πρόσκληση από τη λίστα αναμονής, μέτρηση ένταξης, συλλογή ποιοτικών σχολίων.' },
+  'Hire first engineer': { title: 'Πρόσληψη πρώτου μηχανικού', description: 'Φύλλο αξιολόγησης, τρεις φιναλίστ, πρόταση σε αναμονή.' },
+  'File trademark': { title: 'Κατοχύρωση εμπορικού σήματος' },
+  'Close seed round': { title: 'Κλείσιμο γύρου seed', description: 'Ελήφθη φύλλο όρων, ενημερωμένο data room, 8 ραντεβού κλεισμένα.' },
+  'Ship onboarding checklist': { title: 'Παράδοση λίστας ένταξης', description: 'Ο ιδρυτής ολοκληρώνει τη ρύθμιση χωρίς κλήση.' },
+  'Sign university MoU': { title: 'Υπογραφή μνημονίου με πανεπιστήμιο', description: 'Πιλοτικός κύκλος 12 ομάδων.' },
+  'Publish landing page': { title: 'Δημοσίευση σελίδας προορισμού' },
+  'First mentor office hours': { title: 'Πρώτες ώρες γραφείου με μέντορα' },
+  'BMC v1 in Builder': { title: 'Καμβάς μοντέλου v1 στον Builder' },
+  'Pitch deck outline': { title: 'Δομή pitch deck' },
+  'Readiness score above 40': { title: 'Βαθμός ετοιμότητας πάνω από 40' },
+  'Intro call with first accelerator': { title: 'Γνωριμία με τον πρώτο επιταχυντή' },
+};
 
 function formatMilestoneDate(iso: string | null, lang: 'en' | 'el'): string {
   if (!iso) return '—';
@@ -123,6 +145,7 @@ function MilestoneCard({
   const overdue = isOverdue(item.dueDate, item.status);
   const dueSoon = isDueSoon(item.dueDate);
   const catKey = item.category ? MILESTONE_CATEGORY_KEYS[item.category] : null;
+  const previewEl = PREVIEW_MILESTONE_EL[item.title];
 
   return (
     <div
@@ -162,7 +185,7 @@ function MilestoneCard({
                   item.status === 'completed' ? 'line-through text-muted-foreground' : 'text-foreground',
                 )}
               >
-                {item.title}
+                {previewEl ? <BilingualText en={item.title} el={previewEl.title} wrap /> : item.title}
               </h3>
               {/* Actions */}
               <div className="relative shrink-0">
@@ -217,7 +240,11 @@ function MilestoneCard({
             </div>
 
             {item.description && (
-              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                {previewEl?.description
+                  ? <BilingualText en={item.description} el={previewEl.description} wrap />
+                  : item.description}
+              </p>
             )}
 
             {/* Progress bar */}
@@ -244,7 +271,12 @@ function MilestoneCard({
                 variant="outline"
                 className={cn('h-5 gap-1 rounded-full px-2 text-2xs font-medium border', statusColors.chip)}
               >
-                <BilingualText en={milestoneEn(status.statusKey)} el={milestoneEl(status.statusKey)} compact />
+                {/* Singular: this chip describes one milestone, not the set. */}
+                <BilingualText
+                  en={milestoneEn(MILESTONE_STATUS_ONE_KEYS[item.status] ?? status.statusKey)}
+                  el={milestoneEl(MILESTONE_STATUS_ONE_KEYS[item.status] ?? status.statusKey)}
+                  compact
+                />
               </Badge>
 
               <div className="flex items-center gap-1 text-2xs text-muted-foreground">
@@ -428,25 +460,20 @@ export default function MilestonesPage() {
   return (
     <AppShell
       showHelp
+      askAi="Help me pick the next milestone from Builder, the pitch deck, and what is already overdue."
       actions={
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
-            <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
-          </Button>
-          <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => setCreateOpen(true)}>
-            <Plus className="icon-sm" /> <BilingualText en={milestoneEn('new_milestone')} el={milestoneEl('new_milestone')} compact />
-          </Button>
-        </div>
+        <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => setCreateOpen(true)}>
+          <Plus className="icon-sm" /> <BilingualText en={milestoneEn('new_milestone')} el={milestoneEl('new_milestone')} compact />
+        </Button>
       }
     >
       <div className="space-y-4">
         <button
           type="button"
           onClick={() => openAskAi()}
-          className="flex w-full items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-left transition-colors hover:bg-primary/10"
+          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
         >
-          <CfbGlyphWell name="spark" size="sm" />
+          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-medium text-foreground">
               <BilingualText en={milestoneEn('ask_ai_plan')} el={milestoneEl('ask_ai_plan')} stacked />
@@ -536,7 +563,7 @@ export default function MilestonesPage() {
 
           {/* Priority + View + Refresh */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-secondary/30 px-3 py-1.5">
+            <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-border/50 bg-secondary/30 px-3 py-1.5">
               <CfbGlyph name="sliders" className="icon-sm text-muted-foreground" />
               <select
                 value={priorityFilter}
@@ -578,7 +605,7 @@ export default function MilestonesPage() {
         {/* List */}
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
-            <CfbGlyphWell name="target" size="lg" />
+            <CfbGlyph name="target" className="icon-lg text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground"><BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} /></p>
             <Button variant="secondary" size="sm" className="rounded-xl" onClick={() => refetch()}>
               <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
@@ -590,7 +617,7 @@ export default function MilestonesPage() {
           </div>
         ) : milestones.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
-            <CfbGlyphWell name="flag" size="lg" />
+            <CfbGlyph name="flag" className="icon-lg text-muted-foreground/50" />
             <div>
               <p className="font-medium text-foreground">
                 {showFilteredEmpty

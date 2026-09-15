@@ -656,13 +656,97 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const q = params.get('q')?.toLowerCase() ?? '';
     const location = params.get('location')?.toLowerCase() ?? '';
-    const hits = PEOPLE.filter((p) => {
+    const category = params.get('category') ?? 'all';
+    const people = PEOPLE.filter((p) => {
       const blob = `${p.displayName} ${p.headline} ${p.bio} ${p.skillNames.join(' ')} ${p.lookingFor} ${p.role}`.toLowerCase();
       const qOk = !q || q.split(/\s+/).every((token) => blob.includes(token) || p.location.toLowerCase().includes(token));
       const locOk = !location || p.location.toLowerCase().includes(location) || blob.includes(location);
       return qOk && locOk;
     });
-    return { hits, results: hits, total: hits.length };
+    const peopleHits = people.map((p) => ({
+      id: p.userId,
+      type: 'user' as const,
+      title: p.displayName,
+      subtitle: p.headline,
+      description: p.bio,
+      href: `/profiles/${p.userId}`,
+      meta: { location: p.location },
+      tags: p.skillNames,
+    }));
+    const mentors = peopleHits.filter((_, i) => people[i]?.role === 'mentor');
+    const jobs = [
+      {
+        id: 'job-fullstack',
+        type: 'job' as const,
+        title: 'Technical cofounder',
+        subtitle: 'Harbor · Full-time',
+        description: 'Ship the founder OS. TypeScript, Next.js, Nest.',
+        href: '/jobs',
+        meta: { location: 'Athens / Remote' },
+        tags: ['TypeScript', 'Next.js'],
+      },
+    ].filter((j) => !q || `${j.title} ${j.description} ${j.subtitle}`.toLowerCase().includes(q));
+    const events = [
+      {
+        id: 'event-mixer',
+        type: 'event' as const,
+        title: 'Startup Networking Mixer',
+        subtitle: 'Athens',
+        description: 'Founders, mentors, and angels — one evening.',
+        href: '/events',
+        meta: { location: 'Athens' },
+      },
+    ].filter((e) => !q || `${e.title} ${e.description}`.toLowerCase().includes(q));
+    const groups = [
+      {
+        id: 'group-founders',
+        type: 'group' as const,
+        title: 'Mediterranean Founders',
+        subtitle: 'Community',
+        description: 'Early-stage founders across GR / CY / the Med.',
+        href: '/groups',
+      },
+    ].filter((g) => !q || `${g.title} ${g.description}`.toLowerCase().includes(q));
+    const opportunities = [
+      {
+        id: 'opp-seed',
+        type: 'opportunity' as const,
+        title: 'Pre-seed office hours',
+        subtitle: 'Harbor Angels',
+        description: '15-minute intro slots for Mediterranean B2B SaaS.',
+        href: '/opportunities',
+      },
+    ].filter((o) => !q || `${o.title} ${o.description}`.toLowerCase().includes(q));
+
+    const results = category === 'all'
+      ? [...peopleHits, ...jobs, ...events, ...groups, ...opportunities]
+      : category === 'mentors'
+        ? mentors
+        : category === 'people'
+          ? peopleHits
+          : category === 'jobs'
+            ? jobs
+            : category === 'events'
+              ? events
+              : category === 'groups'
+                ? groups
+                : category === 'opportunities'
+                  ? opportunities
+                  : peopleHits;
+
+    return {
+      hits: people,
+      results,
+      total: results.length,
+      categories: {
+        people: peopleHits.length,
+        jobs: jobs.length,
+        events: events.length,
+        groups: groups.length,
+        mentors: mentors.length,
+        opportunities: opportunities.length,
+      },
+    };
   }
   // The match detail page (/matches/[userId]) reads this one, and it has to come
   // before the generic /api/recommendations branch below or it never matches.

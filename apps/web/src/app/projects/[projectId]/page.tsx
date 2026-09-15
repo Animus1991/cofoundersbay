@@ -23,7 +23,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
@@ -68,7 +68,7 @@ export default function ProjectDetailPage() {
     return (
       <AppShell showHelp>
         <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
-          <CfbGlyphWell name="briefcase" size="lg" />
+          <CfbGlyph name="briefcase" className="icon-lg text-muted-foreground/50" />
           <div>
             <p className="font-medium text-foreground">
               <BilingualText en={projectEn('missing_title')} el={projectEl('missing_title')} />
@@ -168,7 +168,7 @@ export default function ProjectDetailPage() {
           >
             <ArrowLeft className="icon-md" />
           </Button>
-          <CfbGlyphWell name="briefcase" size="md" />
+          <CfbGlyph name="briefcase" className="mt-2 icon-md shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-xl font-semibold text-foreground">{project.name}</h2>
@@ -177,7 +177,11 @@ export default function ProjectDetailPage() {
                 {stageKey ? <BilingualText en={projectEn(stageKey)} el={projectEl(stageKey)} compact /> : project.status}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{project.tagline}</p>
+            <p className="text-sm text-muted-foreground">
+              {project.taglineEl
+                ? <BilingualText en={project.tagline} el={project.taglineEl} wrap />
+                : project.tagline}
+            </p>
           </div>
         </div>
 
@@ -198,9 +202,17 @@ export default function ProjectDetailPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {project.description.split('\n\n').map((p, i) => (
-                        <p key={i} className="text-muted-foreground">{p}</p>
-                      ))}
+                      {/* Seed projects carry a Greek translation with the same
+                          paragraph structure; pair paragraphs by index. User
+                          projects have no `descriptionEl` and render as typed. */}
+                      {(() => {
+                        const elParas = project.descriptionEl?.split('\n\n') ?? [];
+                        return project.description.split('\n\n').map((p, i) => (
+                          <p key={i} className="text-muted-foreground">
+                            {elParas[i] ? <BilingualText en={p} el={elParas[i]} wrap /> : p}
+                          </p>
+                        ));
+                      })()}
                     </div>
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {project.tags.map((tag) => (

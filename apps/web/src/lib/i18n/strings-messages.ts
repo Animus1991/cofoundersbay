@@ -162,3 +162,17 @@ export function useMessagesPrimaryText() {
   const { primary, showSecondary } = useLanguagePreference();
   return (en: string, el: string) => resolveBilingualPair(en, el, primary, showSecondary).primaryText;
 }
+
+/** Demo thread bodies from `lib/preview-api.ts`, keyed by exact English text. */
+export const PREVIEW_MESSAGE_EL: Record<string, string> = {
+  'Want to compare notes on the research canvas this week?':
+    'Θέλεις να συγκρίνουμε σημειώσεις στον πίνακα έρευνας αυτή την εβδομάδα;',
+  'Loved your Harbor update — the founder OS angle is sharp.':
+    'Μου άρεσε το update του Harbor — η γωνία founder OS είναι κοφτερή.',
+  'I sketched a Next.js + Nest starter we can reuse.':
+    'Έφτιαξα ένα starter Next.js + Nest που μπορούμε να ξαναχρησιμοποιήσουμε.',
+  'Would love to swap intros in the Athens founder circle.':
+    'Θα ήθελα να ανταλλάξουμε γνωριμίες στον κύκλο ιδρυτών της Αθήνας.',
+  'Marcus Chen is a 88% skill complement.':
+    'Ο Marcus Chen συμπληρώνει τις δεξιότητες κατά 88%.',
+};

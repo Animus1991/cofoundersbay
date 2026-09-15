@@ -435,10 +435,11 @@ export default function ProgramsPage() {
 
   return (
     <AppShell
+      showHelp
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
           {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}
-          Refresh
+          <BilingualText en={programsEn('refresh')} el={programsEl('refresh')} compact />
         </Button>
       }
     >
@@ -448,19 +449,21 @@ export default function ProgramsPage() {
         {!isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Programs', value: data?.total ?? 0, icon: Award, tone: 'accent' as const },
-              { label: 'Open Applications', value: openPrograms.length, icon: Zap, tone: 'success' as const },
-              { label: 'Applied To', value: myPrograms.length, icon: CheckCircle2, tone: 'info' as const },
-              { label: 'Remote Options', value: filtered.filter((p) => p.isRemote).length, icon: Globe, tone: 'accent' as const },
-            ].map(({ label, value, icon: Icon, tone }) => (
-              <Card key={label}>
+              { labelEn: programsEn('stat_total'), labelEl: programsEl('stat_total'), value: data?.total ?? 0, icon: Award, tone: 'accent' as const },
+              { labelEn: programsEn('stat_open'), labelEl: programsEl('stat_open'), value: openPrograms.length, icon: Zap, tone: 'success' as const },
+              { labelEn: programsEn('stat_applied'), labelEl: programsEl('stat_applied'), value: myPrograms.length, icon: CheckCircle2, tone: 'info' as const },
+              { labelEn: programsEn('stat_remote'), labelEl: programsEl('stat_remote'), value: filtered.filter((p) => p.isRemote).length, icon: Globe, tone: 'accent' as const },
+            ].map(({ labelEn, labelEl, value, icon: Icon, tone }) => (
+              <Card key={labelEn}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="rounded-lg p-2 bg-secondary">
                     <Icon className={cn('icon-sm', STATUS[tone].icon)} />
                   </div>
                   <div>
                     <p className="text-lg font-bold tabular-nums">{value}</p>
-                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText en={labelEn} el={labelEl} compact />
+                    </p>
                   </div>
                 </CardContent>
               </Card>

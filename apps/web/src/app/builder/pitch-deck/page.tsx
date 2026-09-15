@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
-import { BuilderAskAiButton } from '@/components/builder/BuilderStageChrome';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { Button } from '@/components/ui/button';
@@ -94,7 +93,7 @@ function PitchDeckPageContent() {
   }
 
   return (
-    <AppShell showHelp contentClassName="overflow-x-clip" actions={<BuilderAskAiButton />}>
+    <AppShell showHelp contentClassName="overflow-x-clip" askAi={askPrompt}>
       <div className="min-w-0 space-y-6 overflow-x-clip">
         {error && (
           <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">

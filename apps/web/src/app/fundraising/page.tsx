@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
@@ -33,6 +33,7 @@ import {
   ROUND_STATUS_KEYS,
   DOC_STATUS_KEYS,
   DOC_CATEGORY_KEYS,
+  INVESTOR_TYPE_EL,
 } from '@/lib/i18n/strings-fundraising';
 import {
   FUNDRAISING_SEED_DOCS,
@@ -220,12 +221,12 @@ function RoundCard({
   const roundKey = ROUND_STATUS_KEYS[round.status];
 
   return (
-    <Card className="rounded-xl border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+    <Card className="rounded-xl">
       <CardContent className="p-4">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <CfbGlyphWell name="wallet" size="sm" />
+              <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
               <h2 className="text-xl font-bold">{round.name}</h2>
               <Badge variant="outline" className={cn('rounded-full border', STATUS[ROUND_TONE[round.status]].chip)}>
                 {roundKey ? <BilingualText en={fundraisingEn(roundKey)} el={fundraisingEl(roundKey)} compact /> : round.status}
@@ -337,6 +338,13 @@ function PipelineView({
                       <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                         <CfbGlyph name="wallet" className="icon-sm" />{lead.checkSize}
                       </div>
+                      {lead.notes && (
+                        <p className="line-clamp-2 text-2xs text-muted-foreground">
+                          {lead.notesEl
+                            ? <BilingualText en={lead.notes} el={lead.notesEl} wrap />
+                            : lead.notes}
+                        </p>
+                      )}
                       {lead.lastContact && (
                         <p className="flex items-center gap-1 text-2xs text-muted-foreground">
                           <Clock className="icon-sm" />
@@ -384,7 +392,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
 
   return (
     <div className="space-y-4">
-      <Card className="rounded-xl border-primary/20 bg-primary/[0.03]">
+      <Card className="rounded-xl">
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -448,12 +456,16 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             return (
               <Card key={doc.id} className="rounded-xl transition-colors hover:border-primary/20">
                 <CardContent className="flex items-center gap-3 p-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
-                    <CfbGlyph name="book" className="icon-sm text-muted-foreground" />
+                  <div className="shrink-0 text-muted-foreground">
+                    <CfbGlyph name="book" className="icon-sm" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-medium">{doc.name}</p>
+                      <p className="truncate text-sm font-medium">
+                        {doc.nameEl
+                          ? <BilingualText en={doc.name} el={doc.nameEl} compact />
+                          : doc.name}
+                      </p>
                       {doc.isRequired && (
                         <Badge variant="secondary" size="sm" className={cn('rounded-full', STATUS.danger.chip)}>
                           <BilingualText en={fundraisingEn('required')} el={fundraisingEl('required')} compact />
@@ -526,11 +538,19 @@ function InvestorListView({
                     <p className="text-sm font-semibold">{lead.name}</p>
                     {lead.isVerified && <CfbGlyph name="award" className={cn('icon-sm', STATUS.info.icon)} />}
                   </div>
-                  <p className="text-2xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
-                  {/* Two lines, not one — a note is prose, and `truncate` cut a
-                      44-character note down to "Interes…". line-clamp keeps it
-                      readable and still bounds the row height. */}
-                  {lead.notes && <p className="mt-0.5 line-clamp-2 text-2xs text-muted-foreground">{lead.notes}</p>}
+                  <p className="text-2xs text-muted-foreground">
+                    {lead.firm ? `${lead.firm} · ` : ''}
+                    <BilingualText en={lead.type} el={INVESTOR_TYPE_EL[lead.type] ?? lead.type} compact />
+                    {' · '}
+                    {lead.checkSize}
+                  </p>
+                  {lead.notes && (
+                    <p className="mt-0.5 line-clamp-2 text-2xs text-muted-foreground">
+                      {lead.notesEl
+                        ? <BilingualText en={lead.notes} el={lead.notesEl} wrap />
+                        : lead.notes}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-3 sm:justify-end">
@@ -617,15 +637,10 @@ export default function FundraisingPage() {
 
   return (
     <AppShell
-      title="Fundraising"
-      description="Track your round, manage investor pipeline, and organize your data room"
       showHelp
+      askAi="Fundraising is still sample data. Based on my graph, what should I do next toward a real round — profile, matches, or builder?"
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
-            <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={fundraisingEn('ask_ai')} el={fundraisingEl('ask_ai')} compact />
-          </Button>
           <Button size="sm" className="gap-1.5 rounded-xl" asChild>
             <Link href="/investors">
               <CfbGlyph name="discover" className="icon-sm" />
@@ -643,9 +658,9 @@ export default function FundraisingPage() {
         <button
           type="button"
           onClick={() => openAskAi()}
-          className="flex w-full items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-left transition-colors hover:bg-primary/10"
+          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
         >
-          <CfbGlyphWell name="spark" size="sm" />
+          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-medium text-foreground">
               <BilingualText en={fundraisingEn('ask_ai_plan')} el={fundraisingEl('ask_ai_plan')} stacked />
@@ -669,7 +684,7 @@ export default function FundraisingPage() {
         ) : (
           <Card className="rounded-xl border-dashed">
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <CfbGlyphWell name="wallet" size="lg" />
+              <CfbGlyph name="wallet" className="icon-lg text-muted-foreground/50" />
               <p className="font-medium"><BilingualText en={fundraisingEn('empty_round_title')} el={fundraisingEl('empty_round_title')} /></p>
               <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} /></p>
               <Button size="sm" className="rounded-xl" onClick={() => openAskAi()}>
@@ -741,7 +756,7 @@ export default function FundraisingPage() {
             {leads.length === 0 ? (
               <Card className="rounded-xl border-dashed">
                 <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                  <CfbGlyphWell name="people" size="lg" />
+                  <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
                   <p className="font-medium"><BilingualText en={fundraisingEn('empty_pipeline_title')} el={fundraisingEl('empty_pipeline_title')} /></p>
                   <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_pipeline_hint')} el={fundraisingEl('empty_pipeline_hint')} /></p>
                   {emptyCta}

@@ -57,11 +57,11 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/matches/compare', title: 'Compare profiles', description: 'Side-by-side comparison of skills, stage, and fit.', section: 'Explore', status: 'partial' },
   { path: '/discover', title: 'Explore', description: 'Discover founders, mentors, investors, and team members with filters for role, skills, and location.', helpId: 'discover', helpTitle: 'How discovery works', helpTitleEl: 'Πώς λειτουργεί η εξερεύνηση', section: 'Explore', status: 'complete' },
   { path: '/recommendations', title: 'For you', description: 'Personalized suggestions based on your profile and activity.', section: 'Explore', status: 'complete' },
-  { path: '/search', title: 'Search', description: 'Find people, jobs, events, programs, and posts. Use filters in the result tabs to narrow by type.', section: 'Explore', status: 'complete' },
+  { path: '/search', title: 'Search', description: 'Find people, jobs, events, programs, and posts.', section: 'Explore', status: 'complete' },
   { path: '/connections', title: 'Connections', description: 'Manage pending requests and active professional relationships.', helpId: 'connections', helpTitle: 'Connections', helpTitleEl: 'Συνδέσεις', section: 'Network', status: 'complete' },
   { path: '/shortlist', title: 'Saved profiles', description: 'Profiles you bookmarked for later outreach.', section: 'Network', status: 'complete' },
   { path: '/messages', title: 'Messages', description: 'Full-height inbox for chats and intro requests. New message opens a connection picker; Ask AI drafts from the thread.', helpId: 'messages', helpTitle: 'Chats vs intro requests', helpTitleEl: 'Συνομιλίες και αιτήματα γνωριμίας', section: 'Communicate', priority: 'critical', status: 'complete' },
-  { path: '/calendar', title: 'Calendar', description: 'Sessions, calls, and events in one timeline.', section: 'Communicate', status: 'complete' },
+  { path: '/calendar', title: 'Calendar', description: 'Sessions, calls, and events in one timeline.', helpId: 'calendar', helpTitle: 'What this calendar shows', helpTitleEl: 'Τι δείχνει αυτό το ημερολόγιο', section: 'Communicate', status: 'complete' },
 
   // ── Mentor ──
   { path: '/dashboard/mentor', title: 'Mentor dashboard', description: 'Sessions, requests, earnings, and mentee overview.', section: 'Work', audience: ['mentor'], status: 'complete' },
@@ -77,7 +77,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Provider ──
   { path: '/dashboard/provider', title: 'Provider dashboard', description: 'Services, inquiries, and active client projects.', section: 'Work', audience: ['service_provider'], status: 'complete' },
-  { path: '/marketplace', title: 'Services marketplace', description: 'Browse legal, design, growth, and ops providers.', section: 'Resources', status: 'complete' },
+  { path: '/marketplace', title: 'Services marketplace', description: 'Browse legal, design, growth, and ops providers.', helpId: 'marketplace', helpTitle: 'How the marketplace works', helpTitleEl: 'Πώς δουλεύει η αγορά υπηρεσιών', section: 'Resources', status: 'complete' },
 
   // ── Organization ──
   { path: '/org/dashboard', title: 'Organization dashboard', description: 'Programs, cohorts, and portfolio health.', section: 'Work', audience: ['org'], status: 'complete' },
@@ -147,13 +147,16 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/help', title: 'Help & support', description: 'Guides, FAQs, and contact options.', section: 'Resources', status: 'complete' },
 
   // ── Programs, jobs, marketplace, community ──
-  { path: '/jobs', title: 'Jobs & roles', description: 'Equity, full-time, and contract roles posted by startups on the platform.', section: 'Resources', status: 'complete' },
-  { path: '/opportunities', title: 'Opportunities', description: 'Co-founder calls, paid gigs, equity roles, and short-term collaborations in one feed.', section: 'Resources', status: 'complete' },
+  { path: '/jobs', title: 'Jobs & roles', description: 'Equity, full-time, and contract roles posted by startups on the platform.', helpId: 'jobs', helpTitle: 'How jobs work here', helpTitleEl: 'Πώς δουλεύουν οι θέσεις εδώ', section: 'Resources', status: 'complete' },
+  { path: '/opportunities', title: 'Opportunities', description: 'Co-founder calls, paid gigs, equity roles, and short-term collaborations in one feed.', helpId: 'opportunities', helpTitle: 'How opportunities work', helpTitleEl: 'Πώς δουλεύουν οι ευκαιρίες', section: 'Resources', status: 'complete' },
   { path: '/events', title: 'Events', description: 'Workshops, demo days, meetups, and online sessions \u2014 RSVP and add to calendar.', section: 'Resources', status: 'complete' },
   { path: '/events/create', title: 'Create event', description: 'Publish a workshop, demo day, or meetup for the community to RSVP to.', section: 'Resources', status: 'complete' },
-  { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', section: 'Resources', status: 'complete' },
-  { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', section: 'Community', status: 'complete' },
-  { path: '/posts', title: 'Feed', description: 'Updates from your network, communities, and people you follow.', section: 'Community', status: 'complete' },
+  { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', helpId: 'learning', helpTitle: 'How the learning hub works', helpTitleEl: 'Πώς δουλεύει το κέντρο μάθησης', section: 'Resources', status: 'complete' },
+  { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', helpId: 'groups', helpTitle: 'How communities work', helpTitleEl: 'Πώς δουλεύουν οι κοινότητες', section: 'Community', status: 'complete' },
+  { path: '/feed', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only when the live feed is empty.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
+  { path: '/posts', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only when the live feed is empty.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
+  { path: '/pitch', title: 'Public pitch', description: 'Investor-facing deck. Views are counted; contact goes to the founder, not a public inbox.', helpId: 'public-pitch', helpTitle: 'Reading this pitch', helpTitleEl: 'Πώς διαβάζεται αυτό το pitch', section: 'Work', status: 'complete' },
+  { path: '/data-room', title: 'Investor data room', description: 'Private documents for diligence. Share access per investor; nothing here is public.', helpId: 'data-room', helpTitle: 'How the data room works', helpTitleEl: 'Πώς δουλεύει το data room', section: 'Work', status: 'complete' },
   { path: '/mentoring', title: 'Find mentors', description: 'Directory of vetted mentors \u2014 filter by expertise, timezone, and rate.', section: 'Explore', status: 'complete' },
 
   // ── Mentor sub-pages ──
@@ -178,7 +181,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/expert-reviews', title: 'Expert Reviews', description: 'Structured feedback on your pitch, financials, and strategy from domain experts.', section: 'Resources', status: 'complete' },
   { path: '/invite', title: 'Invite People', description: 'Grow your network by inviting co-founders, mentors, and investors.', section: 'Community', status: 'complete' },
   { path: '/members', title: 'Member Directory', description: 'Discover and connect with members across the platform.', section: 'Explore', status: 'complete' },
-  { path: '/programs', title: 'Programs', description: 'Accelerators, incubators, bootcamps, and competitions to grow your startup.', section: 'Resources', status: 'complete' },
+  { path: '/programs', title: 'Programs', description: 'Accelerators, incubators, bootcamps, and competitions to grow your startup.', helpId: 'programs', helpTitle: 'How programs work', helpTitleEl: 'Πώς δουλεύουν τα προγράμματα', section: 'Resources', status: 'complete' },
   { path: '/referrals', title: 'Referral Program', description: 'Invite friends and earn rewards when they join CoFounderBay.', section: 'Community', status: 'complete' },
   { path: '/reputation', title: 'Reputation Score', description: 'Your trust and credibility on CoFounderBay.', section: 'Account', status: 'complete' },
   { path: '/saved-searches', title: 'Saved Searches', description: 'Manage your saved search filters and get notified of new matches.', section: 'Explore', status: 'complete' },
@@ -253,6 +256,30 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
       status: 'complete',
     },
   },
+  {
+    pattern: /^\/pitch\/[^/]+$/,
+    meta: {
+      title: 'Public pitch',
+      description: 'Investor-facing deck. Views are counted; contact goes to the founder, not a public inbox.',
+      helpId: 'public-pitch',
+      helpTitle: 'Reading this pitch',
+      helpTitleEl: 'Πώς διαβάζεται αυτό το pitch',
+      section: 'Work',
+      status: 'complete',
+    },
+  },
+  {
+    pattern: /^\/data-room\/[^/]+$/,
+    meta: {
+      title: 'Investor data room',
+      description: 'Private documents for diligence. Share access per investor; nothing here is public.',
+      helpId: 'data-room',
+      helpTitle: 'How the data room works',
+      helpTitleEl: 'Πώς δουλεύει το data room',
+      section: 'Work',
+      status: 'complete',
+    },
+  },
 ];
 
 /** Resolve metadata for the current pathname (exact match first, then dynamic). */
@@ -302,11 +329,17 @@ export function resolvePageHeader(
   overrides?: PageMetaOverrides,
 ): { title?: string; titleEl?: string; description?: string; descriptionEl?: string; meta?: PageMeta } {
   const meta = getPageMeta(pathname);
+  const titleIsCustom = Boolean(overrides?.title) && overrides?.title !== meta?.title;
+  const descriptionIsCustom =
+    Boolean(overrides?.description) && overrides?.description !== meta?.description;
   return {
     title: overrides?.title ?? meta?.title,
-    titleEl: overrides?.titleEl ?? meta?.titleEl,
+    // Drop registry Greek only when the English title is a different string
+    // (a person's name). Pages that pass the registry English title still
+    // need titleEl — otherwise Analytics/Projects/Fundraising rendered EN-only.
+    titleEl: overrides?.titleEl ?? (titleIsCustom ? undefined : meta?.titleEl),
     description: overrides?.description ?? meta?.description,
-    descriptionEl: overrides?.descriptionEl ?? meta?.descriptionEl,
+    descriptionEl: overrides?.descriptionEl ?? (descriptionIsCustom ? undefined : meta?.descriptionEl),
     meta,
   };
 }

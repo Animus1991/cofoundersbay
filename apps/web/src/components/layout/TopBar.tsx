@@ -1,7 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Globe, Keyboard, Languages, MoreHorizontal, Sparkles } from 'lucide-react';
@@ -20,14 +18,12 @@ import { MobileNav } from './MobileNav';
 import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { NotificationsBell } from './NotificationsBell';
-import { DemoDataToggle } from '@/components/common/DemoDataToggle';
-import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
 import { BilingualText } from '@/components/common/BilingualText';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { STATUS } from '@/lib/semantic-colors';
-import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { useOpenCommandPalette } from './CommandPaletteHost';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
@@ -35,15 +31,9 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 /**
- * Small, inline indicator that this is the shared preview-demo account.
- * Replaces a previous fixed-position full-width banner that covered the
- * search bar and other top-bar controls, and whose secondary (Greek) text
- * used BilingualText's default `text-muted-foreground` — calibrated for the
- * app's normal card surfaces, not the raw amber background that banner used,
- * so it rendered near-illegible. This uses the same WCAG-checked semantic
- * status tokens the rest of the app already relies on for warning chips.
+ * Shared preview-demo chip. Lives in the phone bar and the sidebar user row.
  */
-function PreviewDemoBadge() {
+export function PreviewDemoBadge({ className }: { className?: string }) {
   const user = useCurrentUser();
   if (user?.email !== 'demo@cofounderbay.com') return null;
 
@@ -54,13 +44,14 @@ function PreviewDemoBadge() {
           <Link
             href="/register"
             className={cn(
-              'hidden sm:inline-flex h-7 items-center gap-1 rounded-full border px-2 text-2xs font-medium transition-colors',
+              'inline-flex h-7 items-center gap-1 rounded-full border px-2 text-2xs font-medium transition-colors',
               STATUS.warning.chip,
               'hover:brightness-95',
+              className,
             )}
           >
             <Sparkles className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Demo account" el="Δοκιμαστικός λογαριασμός" compact secondaryFrom="lg" />
+            <BilingualText en="Demo" el="Δείγμα" compact secondaryClassName="hidden" />
           </Link>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end" className="max-w-[220px]">
@@ -76,17 +67,6 @@ function PreviewDemoBadge() {
   );
 }
 
-const CommandPalette = dynamic(
-  () => import('@/components/common/CommandPalette').then((module) => ({ default: module.CommandPalette })),
-  { ssr: false },
-);
-
-// Consolidated tools, up to `xl`. Between 640 and 1023 the bar also carries the
-// navigation rail's absence, the demo chips and the user menu, and at `lg` the 240px drawer
-// takes 240px more, so the narrowest `lg` window has the least room of any: the
-// separate command-palette / sample-data / display-language controls squeezed the
-// search field to three characters ("Sea") at 834px and pushed the bar 51px past
-// the viewport at 1024px. Everything they do is here.
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
   const { displayMode, setDisplayMode } = useLanguagePreference();
@@ -99,7 +79,7 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 shrink-0 xl:hidden"
+          className="h-9 w-9 shrink-0"
           aria-label={t('More tools')}
         >
           <MoreHorizontal className="icon-sm" />
@@ -138,14 +118,14 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   );
 }
 
+/**
+ * Phone-only chrome. From `sm` the sidebar rail carries search, palette,
+ * notifications, theme, locale, and the user menu — a sticky top bar there
+ * would only steal vertical space without widening the column.
+ */
 export function TopBar() {
   const pathname = usePathname();
-  const [ready, setReady] = useState(false);
-  const { open: commandOpen, setOpen: setCommandOpen } = useCommandPalette();
-
-  useEffect(() => {
-    setReady(true);
-  }, []);
+  const setCommandOpen = useOpenCommandPalette();
 
   const isAuthPage =
     pathname?.startsWith('/login') ||
@@ -158,46 +138,21 @@ export function TopBar() {
   if (isAuthPage) return null;
 
   return (
-    <>
-      <header
-        style={{ top: TOP_BANNER_STACK }}
-        /* Gaps tighten below `sm`. Measured at 320px: the bar needed 339px --
-           hamburger 44 + search 36 + the five-control cluster 219, plus 4px
-           gaps -- and scrolled the whole page sideways. Narrowing the gaps to
-           2px recovers 22px and keeps every control at its 36px tap target,
-           rather than dropping one of them. */
-        className="sticky z-30 flex h-12 min-h-12 items-center gap-0.5 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x"
-      >
-        <MobileNav />
-        <SearchBar />
-
-        <div className="min-w-0 flex-1" />
-
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1.5">
-          <PreviewDemoBadge />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground xl:flex"
-            onClick={() => setCommandOpen(true)}
-            aria-label={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
-            title={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
-          >
-            <Keyboard className="icon-sm" />
-          </Button>
-          <div className="hidden xl:flex items-center gap-0.5">
-            <DemoDataToggle />
-            <LanguagePreferenceToggle />
-          </div>
-          <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
-          <LanguageSwitcher />
-          <ThemeSwitcher />
-          <NotificationsBell className="h-9 w-9" />
-          {ready && <UserMenu />}
-        </div>
-      </header>
-
-      {ready && commandOpen ? <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} /> : null}
-    </>
+    <header
+      style={{ top: TOP_BANNER_STACK }}
+      className="sticky z-30 flex h-12 min-h-12 items-center gap-0.5 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md safe-x sm:hidden"
+    >
+      <MobileNav />
+      <SearchBar />
+      <div className="min-w-0 flex-1" />
+      <div className="flex shrink-0 items-center gap-0.5">
+        <PreviewDemoBadge className="hidden xs:inline-flex" />
+        <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
+        <LanguageSwitcher iconOnly className="h-9 w-9" />
+        <ThemeSwitcher className="h-9 w-9" />
+        <NotificationsBell className="h-9 w-9" />
+        <UserMenu />
+      </div>
+    </header>
   );
 }

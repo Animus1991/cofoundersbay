@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { LogOut, User, Settings, Edit, ChevronDown } from 'lucide-react';
+import { LogOut, User, Settings, Edit, ChevronDown, Eye, EyeOff, Languages } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
@@ -16,6 +16,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { cn } from '@/lib/utils';
 
 /**
  * Secondary line shared by every menu entry. Sizing is deliberately NOT set here:
@@ -29,9 +32,11 @@ const SECONDARY_LINE = 'whitespace-normal break-words';
 /** Identity lines are user data, not translatable — they must wrap, never truncate. */
 const IDENTITY_LINE = 'text-sm break-words whitespace-normal';
 
-export function UserMenu() {
+export function UserMenu({ variant = 'toolbar' }: { variant?: 'toolbar' | 'sidebar' }) {
   const router = useRouter();
   const user = useStoredUser();
+  const { showDemoData, toggleDemoData } = useDemoData();
+  const { displayMode, setDisplayMode } = useLanguagePreference();
 
   const initials =
     user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
@@ -55,7 +60,12 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={triggerLabel}
-        className="flex h-9 items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 px-1.5 text-sm transition-colors outline-none hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-10 sm:px-2.5"
+        className={cn(
+          'flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 text-sm transition-colors outline-none hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          variant === 'sidebar'
+            ? 'h-9 w-full justify-center px-1.5 sm:justify-start sm:px-2'
+            : 'h-9 px-1.5 sm:h-10 sm:px-2.5',
+        )}
       >
         <Avatar className="h-7 w-7">
           <AvatarImage src={user?.avatarUrl ?? undefined} alt="" />
@@ -63,10 +73,10 @@ export function UserMenu() {
             {initials}
           </AvatarFallback>
         </Avatar>
-        <span className="hidden max-w-[140px] truncate text-sm font-medium text-foreground md:inline">
+        <span className={cn('max-w-[140px] truncate text-sm font-medium text-foreground', variant === 'sidebar' ? 'hidden min-[1024px]:inline' : 'hidden md:inline')}>
           {user?.displayName ?? <BilingualText en="Account" el="Λογαριασμός" compact />}
         </span>
-        <ChevronDown className="icon-sm hidden text-muted-foreground md:block" aria-hidden="true" />
+        <ChevronDown className={cn('icon-sm text-muted-foreground', variant === 'sidebar' ? 'hidden min-[1024px]:block' : 'hidden md:block')} aria-hidden="true" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-64">
@@ -105,6 +115,29 @@ export function UserMenu() {
             <Settings className="mr-2 icon-sm shrink-0" aria-hidden="true" />
             <BilingualText en="Settings" el="Ρυθμίσεις" secondaryClassName={SECONDARY_LINE} />
           </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          onSelect={() => setDisplayMode(displayMode === 'bilingual' ? 'primary-only' : 'bilingual')}
+        >
+          <Languages className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+          <BilingualText
+            en={displayMode === 'bilingual' ? 'Primary language only' : 'Bilingual display'}
+            el={displayMode === 'bilingual' ? 'Μόνο κύρια γλώσσα' : 'Δίγλωσση εμφάνιση'}
+            secondaryClassName={SECONDARY_LINE}
+          />
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={toggleDemoData}>
+          {showDemoData
+            ? <Eye className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+            : <EyeOff className="mr-2 icon-sm shrink-0" aria-hidden="true" />}
+          <BilingualText
+            en={showDemoData ? 'Hide sample data' : 'Show sample data'}
+            el={showDemoData ? 'Απόκρυψη δείγματος δεδομένων' : 'Εμφάνιση δείγματος δεδομένων'}
+            secondaryClassName={SECONDARY_LINE}
+          />
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

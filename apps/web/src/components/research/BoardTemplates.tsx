@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
-import { RESEARCH_TEMPLATE_I18N, researchEn, researchEl } from '@/lib/i18n/strings-research';
+import { RESEARCH_TEMPLATE_I18N, RESEARCH_TAG_EL, researchEn, researchEl } from '@/lib/i18n/strings-research';
 import { cn } from '@/lib/utils';
 
 export interface BoardTemplate {
@@ -424,23 +424,20 @@ export function BoardTemplatesDialog({
                   onClose();
                 }}
                 className={cn(
-                  'group flex items-start gap-4 rounded-xl border p-4 text-left',
-                  'transition-all hover:border-primary/40 hover:bg-accent',
+                  'group flex items-start gap-3 rounded-xl border border-border/70 p-3.5 text-left',
+                  'transition-colors hover:bg-muted/40',
                 )}
               >
-                <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: `${template.color}20`, color: template.color }}
-                >
-                  <CfbGlyph name={glyph} className="icon-lg" />
+                <div className="mt-0.5 shrink-0 text-muted-foreground">
+                  <CfbGlyph name={glyph} className="icon-md" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold transition-colors group-hover:text-primary-accessible">
+                  <div className="font-medium leading-snug">
                     {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact /> : template.name}
                   </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
+                  <div className="mt-1 text-sm leading-snug text-muted-foreground">
                     {copy ? (
-                      <BilingualText en={copy.description.en} el={copy.description.el} />
+                      <BilingualText en={copy.description.en} el={copy.description.el} wrap />
                     ) : (
                       template.description
                     )}
@@ -449,12 +446,12 @@ export function BoardTemplatesDialog({
                     {template.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-secondary px-2 py-0.5 text-xs"
+                        className="rounded-full px-2 py-0.5 text-2xs text-muted-foreground ring-1 ring-border/70"
                       >
-                        {tag}
+                        <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
                       </span>
                     ))}
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary-accessible">
+                    <span className="rounded-full px-2 py-0.5 text-2xs text-muted-foreground">
                       {template.initialNodes.length}{' '}
                       <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
                     </span>

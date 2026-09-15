@@ -9,7 +9,7 @@ import { Save, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
@@ -147,7 +147,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
-              <CfbGlyphWell name={section.glyph} size="sm" />
+              <CfbGlyph name={section.glyph} className="icon-sm shrink-0 text-muted-foreground" />
               <CardTitle className="truncate text-base">
                 <BilingualText en={builderEn(section.titleKey)} el={builderEl(section.titleKey)} compact />
               </CardTitle>

@@ -34,6 +34,13 @@ export type DemoProject = {
   name: string;
   tagline: string;
   description: string;
+  /**
+   * Greek rendering of the seed catalogue's description — the demo cards were
+   * the only English paragraphs left on a Greek-primary Projects page.
+   * User-created projects never set it and render exactly what was typed.
+   */
+  descriptionEl?: string;
+  taglineEl?: string;
   status: ProjectStatus;
   stage: string;
   industry: string;
@@ -72,8 +79,11 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     id: '1',
     name: 'EcoTrack',
     tagline: 'AI-powered carbon footprint tracking for businesses',
+    taglineEl: 'Παρακολούθηση ανθρακικού αποτυπώματος επιχειρήσεων με AI',
     description:
       'EcoTrack is building the future of corporate sustainability. Our AI-powered platform helps businesses of all sizes measure, reduce, and offset their carbon footprint with unprecedented accuracy and ease.\n\nWe are tackling one of the biggest challenges of our time: climate change. By making carbon tracking accessible and actionable, we are empowering companies to make real environmental impact.\n\nOur platform integrates with existing business tools, automatically calculates emissions across all operations, and provides actionable insights for reduction. We also facilitate verified carbon offset purchases and sustainability reporting.',
+    descriptionEl:
+      'Η EcoTrack χτίζει το μέλλον της εταιρικής βιωσιμότητας. Η πλατφόρμα μας με AI βοηθά επιχειρήσεις κάθε μεγέθους να μετρούν, να μειώνουν και να αντισταθμίζουν το ανθρακικό τους αποτύπωμα με πρωτοφανή ακρίβεια και ευκολία.\n\nΑντιμετωπίζουμε μία από τις μεγαλύτερες προκλήσεις της εποχής μας: την κλιματική αλλαγή. Κάνοντας την παρακολούθηση άνθρακα προσιτή και αξιοποιήσιμη, δίνουμε στις εταιρείες τη δυνατότητα για πραγματικό περιβαλλοντικό αντίκτυπο.\n\nΗ πλατφόρμα ενσωματώνεται με υπάρχοντα εργαλεία, υπολογίζει αυτόματα τις εκπομπές σε όλες τις λειτουργίες και προσφέρει πρακτικές προτάσεις μείωσης, μαζί με πιστοποιημένες αντισταθμίσεις και αναφορές βιωσιμότητας.',
     status: 'building',
     stage: 'Pre-seed',
     industry: 'CleanTech',
@@ -112,8 +122,11 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     id: '2',
     name: 'MentorMatch',
     tagline: 'Founders matched with mentors who have done it before',
+    taglineEl: 'Ιδρυτές σε αντιστοίχιση με μέντορες που το έχουν ήδη κάνει',
     description:
       'Platform connecting early-stage founders with experienced mentors for personalized guidance and accountability.\n\nStructured office hours, written goals, and a shared scorecard so mentorship is not a one-off coffee.',
+    descriptionEl:
+      'Πλατφόρμα που συνδέει ιδρυτές πρώιμου σταδίου με έμπειρους μέντορες για εξατομικευμένη καθοδήγηση και λογοδοσία.\n\nΔομημένες ώρες γραφείου, γραπτοί στόχοι και κοινό scorecard, ώστε το mentoring να μην είναι ένας καφές μίας φοράς.',
     status: 'validating',
     stage: 'Idea',
     industry: 'EdTech',
@@ -149,8 +162,11 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     id: '3',
     name: 'HealthSync',
     tagline: 'Wearable data, one wellness picture',
+    taglineEl: 'Δεδομένα wearables, μία εικόνα ευεξίας',
     description:
       'Unified health data platform that aggregates wearable data for personalized wellness insights.\n\nYou own this catalogue entry in the demo — it is the project that should appear under My projects.',
+    descriptionEl:
+      'Ενοποιημένη πλατφόρμα δεδομένων υγείας που συγκεντρώνει δεδομένα wearables για εξατομικευμένες πληροφορίες ευεξίας.\n\nΣτο demo αυτή η καταχώριση σας ανήκει — είναι το έργο που εμφανίζεται στα «Τα έργα μου».',
     status: 'idea',
     stage: 'Concept',
     industry: 'HealthTech',

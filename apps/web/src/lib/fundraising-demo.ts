@@ -25,12 +25,14 @@ export type InvestorLead = {
   status: InvestorStatus;
   lastContact?: string;
   notes?: string;
+  notesEl?: string;
   isVerified: boolean;
 };
 
 export type DataRoomDoc = {
   id: string;
   name: string;
+  nameEl?: string;
   category: string;
   status: DocStatus;
   isRequired: boolean;
@@ -54,25 +56,25 @@ export const FUNDRAISING_SEED_ROUND: FundRound = {
 };
 
 export const FUNDRAISING_SEED_LEADS: InvestorLead[] = [
-  { id: 'l1', name: 'Sarah Chen', firm: 'Chen Ventures', type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$25K–$150K', status: 'meeting', lastContact: '2026-09-04T12:00:00.000Z', isVerified: true, notes: 'Interested in AI angle. Follow up after demo.' },
-  { id: 'l2', name: 'Michael Torres', firm: 'Horizon Capital', type: 'VC', stage: 'Seed / A', checkSize: '$500K–$3M', status: 'contacted', lastContact: '2026-08-30T12:00:00.000Z', isVerified: true, notes: 'Warm intro via Nikos. Waiting for deck review.' },
-  { id: 'l3', name: 'Athens Tech Angels', firm: 'Syndicate', type: 'Syndicate', stage: 'Pre-Seed / Seed', checkSize: '€50K–€200K', status: 'committed', lastContact: '2026-09-03T12:00:00.000Z', isVerified: true, notes: 'Lead investor — committed $200K of the $375K raised.' },
+  { id: 'l1', name: 'Sarah Chen', firm: 'Chen Ventures', type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$25K–$150K', status: 'meeting', lastContact: '2026-09-04T12:00:00.000Z', isVerified: true, notes: 'Interested in AI angle. Follow up after demo.', notesEl: 'Ενδιαφέρεται για τη γωνία AI. Επικοινωνία μετά την επίδειξη.' },
+  { id: 'l2', name: 'Michael Torres', firm: 'Horizon Capital', type: 'VC', stage: 'Seed / A', checkSize: '$500K–$3M', status: 'contacted', lastContact: '2026-08-30T12:00:00.000Z', isVerified: true, notes: 'Warm intro via Nikos. Waiting for deck review.', notesEl: 'Θερμή γνωριμία μέσω Νίκου. Περιμένει ανασκόπηση του deck.' },
+  { id: 'l3', name: 'Athens Tech Angels', firm: 'Syndicate', type: 'Syndicate', stage: 'Pre-Seed / Seed', checkSize: '€50K–€200K', status: 'committed', lastContact: '2026-09-03T12:00:00.000Z', isVerified: true, notes: 'Lead investor — committed $200K of the $375K raised.', notesEl: 'Κύριος επενδυτής — δεσμεύτηκε $200K από τα $375K που έχουν συγκεντρωθεί.' },
   { id: 'l4', name: 'Emma Williams', firm: undefined, type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$10K–$75K', status: 'prospect', lastContact: undefined, isVerified: true, notes: undefined },
-  { id: 'l5', name: 'Sequoia Scout', firm: 'Sequoia Capital', type: 'Scout', stage: 'Pre-Seed', checkSize: '$100K–$500K', status: 'dd', lastContact: '2026-09-01T12:00:00.000Z', isVerified: true, notes: 'Requested financials and cap table.' },
-  { id: 'l6', name: 'Klaus Weber', firm: 'Weber Family Office', type: 'Family Office', stage: 'Seed / A', checkSize: '$1M–$5M', status: 'passed', lastContact: '2026-08-23T12:00:00.000Z', isVerified: false, notes: 'Too early for their ticket size.' },
+  { id: 'l5', name: 'Sequoia Scout', firm: 'Sequoia Capital', type: 'Scout', stage: 'Pre-Seed', checkSize: '$100K–$500K', status: 'dd', lastContact: '2026-09-01T12:00:00.000Z', isVerified: true, notes: 'Requested financials and cap table.', notesEl: 'Ζήτησε οικονομικά στοιχεία και πίνακα κεφαλαίου.' },
+  { id: 'l6', name: 'Klaus Weber', firm: 'Weber Family Office', type: 'Family Office', stage: 'Seed / A', checkSize: '$1M–$5M', status: 'passed', lastContact: '2026-08-23T12:00:00.000Z', isVerified: false, notes: 'Too early for their ticket size.', notesEl: 'Πολύ νωρίς για το μέγεθος επιταγής τους.' },
 ];
 
 export const FUNDRAISING_SEED_DOCS: DataRoomDoc[] = [
-  { id: 'd1', name: 'Pitch Deck', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-09-03T12:00:00.000Z' },
-  { id: 'd2', name: 'Executive Summary', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-08-30T12:00:00.000Z' },
-  { id: 'd3', name: '3-Year Financial Model', category: 'Financials', status: 'draft', isRequired: true, lastUpdated: '2026-09-01T12:00:00.000Z' },
-  { id: 'd4', name: 'Cap Table', category: 'Legal', status: 'ready', isRequired: true, lastUpdated: '2026-08-23T12:00:00.000Z' },
-  { id: 'd5', name: 'SAFE / Term Sheet Template', category: 'Legal', status: 'draft', isRequired: true, lastUpdated: undefined },
-  { id: 'd6', name: 'Product Demo Video', category: 'Product', status: 'ready', isRequired: false, lastUpdated: '2026-09-05T12:00:00.000Z' },
-  { id: 'd7', name: 'Market Research Report', category: 'Market', status: 'shared', isRequired: false, lastUpdated: '2026-08-23T12:00:00.000Z' },
-  { id: 'd8', name: 'Team Bios & LinkedIn', category: 'Team', status: 'ready', isRequired: false, lastUpdated: '2026-08-16T12:00:00.000Z' },
-  { id: 'd9', name: 'IP & Patents (if any)', category: 'Legal', status: 'draft', isRequired: false, lastUpdated: undefined },
-  { id: 'd10', name: 'Customer Contracts / LOIs', category: 'Traction', status: 'draft', isRequired: false, lastUpdated: undefined },
+  { id: 'd1', name: 'Pitch Deck', nameEl: 'Pitch deck', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-09-03T12:00:00.000Z' },
+  { id: 'd2', name: 'Executive Summary', nameEl: 'Εκτελεστική σύνοψη', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '2026-08-30T12:00:00.000Z' },
+  { id: 'd3', name: '3-Year Financial Model', nameEl: 'Οικονομικό μοντέλο 3 ετών', category: 'Financials', status: 'draft', isRequired: true, lastUpdated: '2026-09-01T12:00:00.000Z' },
+  { id: 'd4', name: 'Cap Table', nameEl: 'Πίνακας κεφαλαίου', category: 'Legal', status: 'ready', isRequired: true, lastUpdated: '2026-08-23T12:00:00.000Z' },
+  { id: 'd5', name: 'SAFE / Term Sheet Template', nameEl: 'Πρότυπο SAFE / φύλλου όρων', category: 'Legal', status: 'draft', isRequired: true, lastUpdated: undefined },
+  { id: 'd6', name: 'Product Demo Video', nameEl: 'Βίντεο επίδειξης προϊόντος', category: 'Product', status: 'ready', isRequired: false, lastUpdated: '2026-09-05T12:00:00.000Z' },
+  { id: 'd7', name: 'Market Research Report', nameEl: 'Έκθεση έρευνας αγοράς', category: 'Market', status: 'shared', isRequired: false, lastUpdated: '2026-08-23T12:00:00.000Z' },
+  { id: 'd8', name: 'Team Bios & LinkedIn', nameEl: 'Βιογραφικά ομάδας και LinkedIn', category: 'Team', status: 'ready', isRequired: false, lastUpdated: '2026-08-16T12:00:00.000Z' },
+  { id: 'd9', name: 'IP & Patents (if any)', nameEl: 'Πνευματική ιδιοκτησία και διπλώματα (αν υπάρχουν)', category: 'Legal', status: 'draft', isRequired: false, lastUpdated: undefined },
+  { id: 'd10', name: 'Customer Contracts / LOIs', nameEl: 'Συμβάσεις πελατών / LOI', category: 'Traction', status: 'draft', isRequired: false, lastUpdated: undefined },
 ];
 
 export const PIPELINE_STAGES: InvestorStatus[] = ['prospect', 'contacted', 'meeting', 'dd', 'committed', 'passed'];

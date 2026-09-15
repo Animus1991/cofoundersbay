@@ -42,10 +42,12 @@ import {
 } from '@/components/messaging/ConversationValidation';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   messagesEn,
   messagesEl,
   useMessagesPrimaryText,
+  PREVIEW_MESSAGE_EL,
 } from '@/lib/i18n/strings-messages';
 
 export type Message = {
@@ -93,14 +95,19 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatDate(date: Date, today: string, yesterday: string): string {
+function formatDate(date: Date, today: string, yesterday: string, lang: 'en' | 'el'): string {
   const now = new Date();
   const yest = new Date(now);
   yest.setDate(yest.getDate() - 1);
 
   if (date.toDateString() === now.toDateString()) return today;
   if (date.toDateString() === yest.toDateString()) return yesterday;
-  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(lang === 'el' ? 'el-GR' : 'en-GB', {
+    timeZone: 'UTC',
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 function MessageBubble({
@@ -197,7 +204,11 @@ function MessageBubble({
                 : 'rounded-2xl rounded-bl-sm border border-border/40 bg-background/90 text-foreground backdrop-blur-sm',
             )}
           >
-            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {PREVIEW_MESSAGE_EL[message.content]
+                ? <BilingualText en={message.content} el={PREVIEW_MESSAGE_EL[message.content]} wrap />
+                : message.content}
+            </p>
             {message.attachments?.length ? (
               <div className="mt-2 space-y-1">
                 {message.attachments.map((a, idx) => (
@@ -251,10 +262,11 @@ function MessageBubble({
 
 function DateDivider({ date }: { date: Date }) {
   const t = useMessagesPrimaryText();
+  const { primary } = useLanguagePreference();
   return (
     <div className="my-4 flex justify-center">
-      <span className="rounded-full bg-background/80 px-3 py-1 text-2xs font-medium text-muted-foreground shadow-sm ring-1 ring-border/50 backdrop-blur-md">
-        {formatDate(date, t(messagesEn('today'), messagesEl('today')), t(messagesEn('yesterday'), messagesEl('yesterday')))}
+      <span className="px-1 text-2xs font-medium text-muted-foreground">
+        {formatDate(date, t(messagesEn('today'), messagesEl('today')), t(messagesEn('yesterday'), messagesEl('yesterday')), primary)}
       </span>
     </div>
   );

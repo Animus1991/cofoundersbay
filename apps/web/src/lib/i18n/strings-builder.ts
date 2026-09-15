@@ -572,6 +572,15 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
 };
 
+/** Preview-API English hints rendered in Builder — keep the original EN as the key. */
+export const BUILDER_PREVIEW_HINT_EL: Record<string, string> = {
+  'No customer interviews logged yet': 'Δεν έχουν καταγραφεί ακόμη συνεντεύξεις πελατών',
+  'Business model still a draft': 'Το επιχειρηματικό μοντέλο είναι ακόμη προσχέδιο',
+  'Finish Idea Core problem and unique value': 'Ολοκληρώστε το πρόβλημα και τη μοναδική αξία στο Idea Core',
+  'Draft BMC value proposition and channels': 'Γράψτε value proposition και κανάλια στο BMC',
+  'Book 5 discovery interviews': 'Κλείστε 5 συνεντεύξεις ανακάλυψης',
+};
+
 export function builderDocLabel(type: string, lang: 'en' | 'el'): string {
   return BUILDER_DOC_TYPES[type]?.label[lang] ?? type;
 }

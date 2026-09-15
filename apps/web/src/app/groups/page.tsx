@@ -270,8 +270,7 @@ export default function GroupsPage() {
 
   return (
     <AppShell
-      title="Communities"
-      description="Join industry and stage-specific communities to learn and connect"
+      showHelp
       actions={
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
           <Plus className="icon-sm" />

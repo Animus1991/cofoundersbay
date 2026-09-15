@@ -41,6 +41,8 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -183,10 +185,17 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     return (
       <AppShell>
         <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <p className="text-lg font-semibold text-foreground">Profile not found</p>
-          <p className="text-sm text-muted-foreground">This profile may have been removed or is not publicly visible.</p>
+          <p className="text-lg font-semibold text-foreground">
+            <BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en="This profile may have been removed or is not publicly visible."
+              el="Αυτό το προφίλ μπορεί να έχει αφαιρεθεί ή να μην είναι δημόσια ορατό."
+            />
+          </p>
           <button onClick={() => router.back()} className="text-sm text-primary-accessible hover:underline">
-            ← Go back
+            <BilingualText en="Go back" el="Επιστροφή" compact />
           </button>
         </div>
       </AppShell>
@@ -229,13 +238,19 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       }
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleShare} title="Copy link">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleShare}
+            title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+            aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+          >
             <Share2 className="icon-sm" />
           </Button>
           <Button variant="secondary" size="sm" className="gap-2" asChild>
             <Link href="/discover">
               <ArrowLeft className="icon-sm" />
-              Back
+              <BilingualText en="Back" el="Πίσω" compact />
             </Link>
           </Button>
         </div>

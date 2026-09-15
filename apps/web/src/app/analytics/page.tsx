@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   getAnalyticsOverview,
 } from '@/lib/api';
-import { ArrowUp, ArrowDown, Minus, RefreshCw } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -53,6 +53,11 @@ const WEEKDAY_EL: Record<string, string> = {
   Sunday: 'Κυριακή',
 };
 
+/** "3h 20m" → "3ω 20λ": the API sends English duration units. */
+function durationEl(value: string): string {
+  return value.replace(/(\d+)\s*h\b/g, '$1ω').replace(/(\d+)\s*m(in)?\b/g, '$1λ');
+}
+
 function AskAiButton({
   labelEn,
   labelEl,
@@ -80,35 +85,35 @@ function metricValue(metric: AnalyticsMetric) {
 }
 
 function MetricCard({ metric }: { metric: AnalyticsMetric }) {
+  // Flat trend renders ArrowRight, not Minus: "− 0%" reads as *minus* zero
+  // percent — a phantom decline on a metric that simply did not move.
   const ChangeIcon =
     metric.changeType === 'increase'
       ? ArrowUp
       : metric.changeType === 'decrease'
       ? ArrowDown
-      : Minus;
+      : ArrowRight;
 
   return (
-    <Card className="card-interactive min-w-0 rounded-xl border-border/60">
+    <Card className="min-w-0 rounded-xl border-border/60 transition-colors hover:border-border">
       <CardContent className="p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="rounded-lg bg-primary/10 p-2.5 text-primary-accessible">
-            <CfbGlyph name={metric.glyph} className="icon-md" />
-          </div>
-          <Badge
-            variant={
+          <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
+          <span
+            className={cn(
+              'flex items-center gap-1 text-2xs font-medium tabular-nums',
               metric.changeType === 'increase'
-                ? 'default'
+                ? TREND.up
                 : metric.changeType === 'decrease'
-                ? 'destructive'
-                : 'secondary'
-            }
-            className="gap-1 text-2xs"
+                ? TREND.down
+                : 'text-muted-foreground',
+            )}
           >
             <ChangeIcon className="icon-sm" />
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
-          </Badge>
+          </span>
         </div>
-        <h3 className="mb-1 text-xl font-bold">{metricValue(metric)}</h3>
+        <h3 className="mb-1 text-xl font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
         <p className="text-xs leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} />
         </p>
@@ -219,7 +224,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
               key={item.label}
               className="min-w-0 text-center lg:flex lg:flex-1 lg:items-center lg:gap-3 lg:text-left"
             >
-              <div className="mx-auto mb-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible lg:mx-0 lg:mb-0">
+              <div className="mx-auto mb-1.5 flex shrink-0 items-center justify-center text-muted-foreground lg:mx-0 lg:mb-0">
                 <CfbGlyph name={item.glyph} className="icon-sm" />
               </div>
               <p className={cn('text-xs font-bold tabular-nums lg:order-3 lg:shrink-0',
@@ -256,7 +261,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
               key={item.id}
               className="flex items-start gap-3 rounded-xl p-3.5 transition-colors hover:bg-secondary/40"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary-accessible">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold tabular-nums text-muted-foreground">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">
@@ -275,7 +280,13 @@ function TopContentList({ content }: { content: TopContent[] }) {
                   </span>
                 </div>
               </div>
-              <Badge variant="secondary" className="shrink-0">{item.type}</Badge>
+              <Badge variant="secondary" className="shrink-0">
+                <BilingualText
+                  en={item.type}
+                  el={item.type === 'post' ? 'ανάρτηση' : item.type === 'comment' ? 'σχόλιο' : 'προφίλ'}
+                  compact
+                />
+              </Badge>
             </div>
           ))}
         </div>
@@ -308,10 +319,8 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
             <div
               key={achievement.id}
               className={cn(
-                'rounded-xl border p-3.5 transition-all',
-                achievement.unlocked
-                  ? 'border-primary/20 bg-primary/5'
-                  : 'border-border/40 bg-secondary/20 opacity-60'
+                'rounded-xl border p-3.5',
+                achievement.unlocked ? 'border-border/70' : 'border-border/40 opacity-60',
               )}
             >
               <div className="mb-2.5 flex items-center gap-2">
@@ -469,8 +478,6 @@ export default function AnalyticsPage() {
   return (
     <AppShell
       showHelp
-      title="Analytics"
-      description="Track your profile performance and network growth"
       askAi={askPrompt}
       contentClassName="overflow-x-clip"
     >
@@ -550,21 +557,24 @@ export default function AnalyticsPage() {
                   const sparkValues = isPreviewDemo() ? demoSparklines[metric.label] ?? []
                     : metric.label === 'Profile Views' ? (profileViews ?? []).map((point) => point.views) : [];
                   return (
-                    <Card key={metric.label} className="card-interactive relative min-w-0 overflow-hidden rounded-xl border-border/60">
+                    <Card key={metric.label} className="relative min-w-0 overflow-hidden rounded-xl border-border/60 transition-colors hover:border-border">
                       <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between gap-3">
-                          <div className="rounded-lg bg-primary/10 p-2.5 text-primary-accessible">
-                            <CfbGlyph name={metric.glyph} className="h-4 w-4" />
-                          </div>
-                          <Badge
-                            variant={metric.changeType === 'increase' ? 'default' : metric.changeType === 'decrease' ? 'destructive' : 'secondary'}
-                            className="gap-1 text-2xs"
+                          <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
+                          <span
+                            className={cn(
+                              'flex items-center gap-1 text-2xs font-medium tabular-nums',
+                              metric.changeType === 'increase' ? TREND.up
+                              : metric.changeType === 'decrease' ? TREND.down
+                              : 'text-muted-foreground',
+                            )}
                           >
-                            {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" /> : <Minus className="h-2.5 w-2.5" />}
+                            {/* ArrowRight for flat: Minus next to "0%" read as "−0%". */}
+                            {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" /> : <ArrowRight className="h-2.5 w-2.5" />}
                             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
-                          </Badge>
+                          </span>
                         </div>
-                        <h3 className="mb-1 text-xl font-bold">{metricValue(metric)}</h3>
+                        <h3 className="mb-1 text-xl font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
                         {/* `wrap`: at 1024px these are 76px wide and the
                             label is "Avg. Response Time · Μέσος χρόνος
                             απάντησης". */}
@@ -606,7 +616,13 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="min-w-0 space-y-1.5">
                         <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('avg_response')} el={analyticsEl('avg_response')} compact wrap /></p>
-                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.avgResponseTime || '—'}</p>
+                        <p className="text-base font-semibold sm:text-lg">
+                          {weeklySummary.avgResponseTime
+                            ? (durationEl(weeklySummary.avgResponseTime) !== weeklySummary.avgResponseTime
+                              ? <BilingualText en={weeklySummary.avgResponseTime} el={durationEl(weeklySummary.avgResponseTime)} compact />
+                              : weeklySummary.avgResponseTime)
+                            : '—'}
+                        </p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
                         <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('total_interactions')} el={analyticsEl('total_interactions')} compact wrap /></p>

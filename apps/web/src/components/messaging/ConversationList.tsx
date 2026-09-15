@@ -12,14 +12,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   messagesEn,
   messagesEl,
   useMessagesPrimaryText,
+  PREVIEW_MESSAGE_EL,
 } from '@/lib/i18n/strings-messages';
 
 export type Conversation = {
@@ -47,17 +49,18 @@ type ConversationListProps = {
   onDelete?: (id: string) => void;
 };
 
-function formatListTime(date: Date, yesterday: string): string {
+function formatListTime(date: Date, yesterday: string, lang: 'en' | 'el'): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / 86400000);
+  const locale = lang === 'el' ? 'el-GR' : 'en-GB';
 
   if (days === 0) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   }
   if (days === 1) return yesterday;
-  if (days < 7) return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short' });
-  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' });
+  if (days < 7) return date.toLocaleDateString(locale, { timeZone: 'UTC', weekday: 'short' });
+  return date.toLocaleDateString(locale, { timeZone: 'UTC', month: 'short', day: 'numeric' });
 }
 
 function ConversationItem({
@@ -68,6 +71,7 @@ function ConversationItem({
   onPin,
   onDelete,
   yesterdayLabel,
+  lang,
 }: {
   conversation: Conversation;
   isSelected: boolean;
@@ -76,6 +80,7 @@ function ConversationItem({
   onPin?: () => void;
   onDelete?: () => void;
   yesterdayLabel: string;
+  lang: 'en' | 'el';
 }) {
   const unread = conversation.unreadCount > 0;
 
@@ -92,8 +97,8 @@ function ConversationItem({
       className={cn(
         'group relative flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-150',
         isSelected
-          ? 'bg-background shadow-[0_10px_28px_-16px_hsl(var(--foreground)/0.35)] ring-1 ring-border/70'
-          : 'hover:bg-background/70',
+          ? 'bg-muted/50'
+          : 'hover:bg-muted/30',
       )}
       onClick={onSelect}
     >
@@ -132,7 +137,7 @@ function ConversationItem({
               unread ? 'font-medium text-primary-accessible' : 'text-muted-foreground',
             )}
           >
-            {formatListTime(conversation.lastMessageTime, yesterdayLabel)}
+            {formatListTime(conversation.lastMessageTime, yesterdayLabel, lang)}
           </span>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-2">
@@ -142,7 +147,11 @@ function ConversationItem({
               unread ? 'font-medium text-foreground/80' : 'text-muted-foreground',
             )}
           >
-            {conversation.lastMessage || (
+            {conversation.lastMessage ? (
+              PREVIEW_MESSAGE_EL[conversation.lastMessage]
+                ? <BilingualText en={conversation.lastMessage} el={PREVIEW_MESSAGE_EL[conversation.lastMessage]} compact />
+                : conversation.lastMessage
+            ) : (
               <span className="italic">
                 <BilingualText en={messagesEn('no_messages_yet')} el={messagesEl('no_messages_yet')} compact />
               </span>
@@ -201,6 +210,7 @@ export function ConversationList({
   onDelete,
 }: ConversationListProps) {
   const t = useMessagesPrimaryText();
+  const { primary } = useLanguagePreference();
   const [searchQuery, setSearchQuery] = useState('');
   const yesterday = t(messagesEn('yesterday'), messagesEl('yesterday'));
 
@@ -253,6 +263,7 @@ export function ConversationList({
                 conversation={conv}
                 isSelected={conv.id === selectedId}
                 yesterdayLabel={yesterday}
+                lang={primary}
                 onSelect={() => onSelect(conv)}
                 onArchive={() => onArchive?.(conv.id)}
                 onPin={() => onPin?.(conv.id)}
@@ -275,6 +286,7 @@ export function ConversationList({
                 conversation={conv}
                 isSelected={conv.id === selectedId}
                 yesterdayLabel={yesterday}
+                lang={primary}
                 onSelect={() => onSelect(conv)}
                 onArchive={() => onArchive?.(conv.id)}
                 onPin={() => onPin?.(conv.id)}
@@ -286,7 +298,7 @@ export function ConversationList({
 
         {filteredConversations.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-3 px-4 py-14 text-center">
-            <CfbGlyphWell name="messages" size="md" />
+            <CfbGlyph name="messages" className="icon-lg text-muted-foreground/50" />
             <p className="text-sm font-medium text-foreground">
               {searchQuery ? (
                 <BilingualText en={messagesEn('no_conversations_found')} el={messagesEl('no_conversations_found')} />

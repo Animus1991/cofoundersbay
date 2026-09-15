@@ -117,7 +117,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
   const titleEl = userName ? `Η πορεία του ${userName} ως ιδρυτής` : 'Η πορεία σας ως ιδρυτής';
 
   return (
-    <Card className="border-primary/20 bg-primary/[0.03] shadow-sm">
+    <Card className="rounded-xl">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <button
@@ -127,9 +127,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             aria-expanded={expanded}
             aria-controls={listId}
           >
-            <div className="shrink-0 rounded-lg bg-primary/10 p-2">
-              <CfbGlyph name="builder" className="icon-sm text-primary-accessible" />
-            </div>
+            <CfbGlyph name="builder" className="icon-sm shrink-0 text-muted-foreground" />
             <div className="min-w-0">
               <CardTitle className="text-sm font-semibold text-foreground">
                 <BilingualText en={titleEn} el={titleEl} />

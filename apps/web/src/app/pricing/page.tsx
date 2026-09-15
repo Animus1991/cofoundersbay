@@ -6,11 +6,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Check,
   X,
@@ -31,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { listBillingPlans, createBillingCheckout, type BillingPlanItem } from '@/lib/api';
 import { formatCents, annualSavingsPct } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
+import { LandingNav } from '@/components/layout/LandingNav';
 
 type PlanFeature = {
   name: string;
@@ -201,8 +200,9 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LandingNav />
       {/* Header */}
-      <div className="border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent">
+      <div className="border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent pt-[52px]">
         <div className="mx-auto max-w-7xl px-6 py-16 text-center">
           <Badge variant="secondary" className="mb-4">
             <Crown className="mr-1.5 icon-sm" />
@@ -216,18 +216,31 @@ export default function PricingPage() {
           </p>
 
           {/* Billing toggle */}
-          <div className="mt-8 flex items-center justify-center gap-3">
-            <span className={cn('text-sm font-medium', !annual ? 'text-foreground' : 'text-muted-foreground')}>
+          <div className="mt-8 inline-flex items-center rounded-full border border-border/60 bg-secondary/40 p-0.5">
+            <button
+              type="button"
+              onClick={() => setAnnual(false)}
+              className={cn(
+                'rounded-full px-3 py-1 text-sm font-medium',
+                !annual ? 'bg-background text-foreground' : 'text-muted-foreground',
+              )}
+            >
               Monthly
-            </span>
-            <Switch checked={annual} onCheckedChange={setAnnual} />
-            <span className={cn('text-sm font-medium', annual ? 'text-foreground' : 'text-muted-foreground')}>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnnual(true)}
+              className={cn(
+                'rounded-full px-3 py-1 text-sm font-medium',
+                annual ? 'bg-background text-foreground' : 'text-muted-foreground',
+              )}
+            >
               Annual
-            </span>
+            </button>
             {annual && (
-              <Badge variant="secondary" className="ml-2 bg-status-success-bg text-status-success">
+              <span className="ml-2 pr-2 text-xs text-status-success">
                 Save up to {Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)))}%
-              </Badge>
+              </span>
             )}
           </div>
         </div>

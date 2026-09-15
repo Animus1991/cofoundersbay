@@ -83,6 +83,11 @@ export const PROGRAMS_STRINGS: Record<string, BilingualPair> = {
     el: 'Προσθέστε μια σύντομη σημείωση για το γιατί ταιριάζετε.',
   },
   spots_taken: { en: 'spots taken', el: 'θέσεις καλυμμένες' },
+  refresh: { en: 'Refresh', el: 'Ανανέωση' },
+  stat_total: { en: 'Total programs', el: 'Συνολικά προγράμματα' },
+  stat_open: { en: 'Open applications', el: 'Ανοιχτές αιτήσεις' },
+  stat_applied: { en: 'Applied to', el: 'Αιτήσεις σας' },
+  stat_remote: { en: 'Remote options', el: 'Εξ αποστάσεως' },
 
   // ── Empty states. Each one names the next move, not just the absence. ──
   none_found: { en: 'No programs found', el: 'Δεν βρέθηκαν προγράμματα' },

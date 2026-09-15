@@ -296,7 +296,7 @@ export function LandingHome() {
       <main id="main-content">
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="relative flex min-h-screen items-center overflow-hidden pt-14">
+      <section className="relative flex min-h-screen items-center overflow-hidden pt-[52px]">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/4 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
           <div className="absolute bottom-0 right-1/4 h-96 w-96 translate-x-1/2 rounded-full bg-accent/8 blur-3xl" />
@@ -337,24 +337,24 @@ export function LandingHome() {
             className="mt-10 flex animate-fade-in flex-col items-center justify-center gap-4 sm:flex-row"
             style={{ animationDelay: '300ms' }}
           >
-            <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25" asChild>
+            <Button size="lg" className="gap-2 px-8 py-6 text-base" asChild>
               <Link href="/register">
                 Get started free
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5" asChild>
+            <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
               <Link href="/demo">
-                <Play className="icon-sm text-primary-accessible" />
+                <Play className="icon-sm" />
                 Try Demo
               </Link>
             </Button>
-            <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
-              <Link href="/discover">
-                Explore profiles
-              </Link>
-            </Button>
           </div>
+          <p className="mt-4 text-sm">
+            <Link href="/discover" className="text-muted-foreground hover:text-foreground hover:underline">
+              Explore profiles
+            </Link>
+          </p>
 
           <div
             className="mt-16 grid animate-fade-in grid-cols-3 gap-4"

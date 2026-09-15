@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 function useSafeRouter() {
   try {
@@ -29,9 +31,15 @@ export function AIInsightButton({
   className,
   variant = 'outline',
   size = 'sm',
-  label = 'Ask AI',
+  label,
 }: AIInsightButtonProps) {
   const router = useSafeRouter();
+  const { primary } = useLanguagePreference();
+  // One language, no wrap: BilingualText+compact inside a 36px-tall outline
+  // button stacked "Ask" over "AI" on Greek-primary pages, and the English
+  // default won the first paint. The chip still opens the same assistant.
+  const visibleLabel = label ?? (primary === 'el' ? 'Ρωτήστε το AI' : 'Ask AI');
+  const ariaLabel = label ?? bilingualAria('Ask AI', 'Ρωτήστε το AI');
 
   const openAssistant = () => {
     const params = new URLSearchParams({ q: prompt });
@@ -53,8 +61,8 @@ export function AIInsightButton({
           'text-status-accent hover:bg-status-accent-bg',
           className,
         )}
-        title={label}
-        aria-label={label}
+        title={ariaLabel}
+        aria-label={ariaLabel}
       >
         <Sparkles className="icon-sm" />
       </button>
@@ -67,10 +75,10 @@ export function AIInsightButton({
       variant={variant}
       size={size}
       onClick={openAssistant}
-      className={cn('gap-1.5', className)}
+      className={cn('h-auto min-h-9 gap-1.5 whitespace-nowrap px-2.5', className)}
     >
-      <Sparkles className="icon-sm text-status-accent" />
-      {label}
+      <Sparkles className="icon-sm shrink-0 text-status-accent" />
+      {visibleLabel}
     </Button>
   );
 }

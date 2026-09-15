@@ -16,7 +16,7 @@ import { READINESS_BAR, STATUS, readinessClasses } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader } from './BuilderStageChrome';
-import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { builderEn, builderEl, BUILDER_PREVIEW_HINT_EL } from '@/lib/i18n/strings-builder';
 
 interface ReadinessDimension {
   id: string;
@@ -438,7 +438,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                   {data.blockers.map((blocker, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
                       <AlertTriangle className="icon-sm text-status-danger mt-0.5 shrink-0" />
-                      {blocker}
+                      {BUILDER_PREVIEW_HINT_EL[blocker]
+                        ? <BilingualText en={blocker} el={BUILDER_PREVIEW_HINT_EL[blocker]} wrap />
+                        : blocker}
                     </li>
                   ))}
                 </ul>
@@ -459,7 +461,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                   {data.nextMilestones.map((milestone, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
                       <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />
-                      {milestone}
+                      {BUILDER_PREVIEW_HINT_EL[milestone]
+                        ? <BilingualText en={milestone} el={BUILDER_PREVIEW_HINT_EL[milestone]} wrap />
+                        : milestone}
                     </li>
                   ))}
                 </ul>

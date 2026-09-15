@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BuilderAskAiButton, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -451,9 +451,9 @@ export function PitchDeckBuilder({
         {/* Slide Editor */}
         <div className="order-1 min-w-0 lg:order-2 lg:col-span-3">
           {data.slides.length === 0 ? (
-            <Card className="flex h-[500px] min-w-0 items-center justify-center">
+            <Card className="flex min-h-[16rem] min-w-0 items-center justify-center px-4 py-10">
               <div className="text-center">
-                <CfbGlyphWell name="builder" size="lg" className="mx-auto mb-4 opacity-70" />
+                <CfbGlyph name="builder" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
                 <h3 className="mb-2 text-lg font-semibold">
                   <BilingualText en={builderEn('pitch_empty')} el={builderEl('pitch_empty')} />
                 </h3>

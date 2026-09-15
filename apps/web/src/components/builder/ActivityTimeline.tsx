@@ -14,58 +14,69 @@ import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import type { BuilderActivityLog } from '@/lib/builder-api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Activity type metadata ────────────────────────────────────────────────────
 
 interface ActivityMeta {
   icon: React.ElementType;
   color: string;
-  label: (activity: BuilderActivityLog) => string;
+  label: (activity: BuilderActivityLog) => { en: string; el: string };
 }
 
 const ACTIVITY_META: Record<string, ActivityMeta> = {
-  'workspace.created':    { icon: Zap,            color: 'text-status-accent bg-status-accent-bg',  label: () => 'created this workspace' },
-  'workspace.updated':    { icon: Settings,        color: 'text-muted-foreground bg-muted',     label: () => 'updated workspace settings' },
-  'document.created':     { icon: FileText,        color: 'text-status-info bg-status-info-bg',      label: (a) => `created document "${a.metadata?.title ?? ''}"` },
-  'document.updated':     { icon: Edit3,           color: 'text-blue-400 bg-status-info-bg',      label: (a) => `edited "${a.metadata?.title ?? 'a document'}"` },
-  'document.completed':   { icon: CheckCircle2,    color: 'text-status-success bg-status-success-bg',    label: (a) => `marked "${a.metadata?.title ?? 'document'}" as complete` },
-  'document.archived':    { icon: XCircle,         color: 'text-muted-foreground bg-muted',     label: (a) => `archived "${a.metadata?.title ?? 'document'}"` },
-  'version.restored':     { icon: RotateCcw,       color: 'text-status-warning bg-status-warning-bg',  label: (a) => `restored to v${a.metadata?.targetVersion}` },
-  'branch.created':       { icon: GitBranch,       color: 'text-status-accent bg-status-accent-bg',  label: (a) => `created draft variant "${a.metadata?.name ?? ''}"` },
-  'branch.closed':        { icon: XCircle,         color: 'text-muted-foreground bg-muted',     label: (a) => `closed variant "${a.metadata?.name ?? ''}"` },
-  'proposal.created':     { icon: GitPullRequest,  color: 'text-status-warning bg-status-warning-bg',  label: (a) => `submitted proposal "${a.metadata?.title ?? ''}"` },
-  'proposal.updated':     { icon: Edit3,           color: 'text-orange-400 bg-status-warning-bg',  label: () => 'updated a change proposal' },
-  'review.requested':     { icon: GitPullRequest,  color: 'text-status-warning bg-status-warning-bg',  label: () => 'requested a review' },
-  'review.approved':      { icon: CheckCircle2,    color: 'text-status-success bg-status-success-bg',    label: () => 'approved a change proposal' },
-  'review.changes_requested': { icon: RotateCcw,   color: 'text-status-warning bg-status-warning-bg',  label: () => 'requested changes to a proposal' },
-  'review.closed':        { icon: XCircle,         color: 'text-status-danger bg-status-danger-bg',        label: () => 'closed a proposal' },
-  'collaborator.added':   { icon: UserPlus,        color: 'text-status-success bg-status-success-bg',      label: () => 'added a collaborator' },
-  'collaborator.removed': { icon: UserPlus,        color: 'text-muted-foreground bg-muted',     label: () => 'removed a collaborator' },
-  'share.created':        { icon: Share2,          color: 'text-status-accent bg-status-accent-bg',      label: () => 'created a share link' },
-  'comment.created':      { icon: MessageSquare,   color: 'text-status-accent bg-status-accent-bg',  label: () => 'left a comment' },
-  'readiness.assessed':   { icon: Star,            color: 'text-status-warning bg-status-warning-bg',  label: () => 'ran a readiness assessment' },
+  'workspace.created':    { icon: Zap,            color: 'text-status-accent bg-status-accent-bg',  label: () => ({ en: 'created this workspace', el: 'δημιούργησε αυτόν τον χώρο εργασίας' }) },
+  'workspace.updated':    { icon: Settings,        color: 'text-muted-foreground bg-muted',     label: () => ({ en: 'updated workspace settings', el: 'ενημέρωσε τις ρυθμίσεις του χώρου' }) },
+  'document.created':     { icon: FileText,        color: 'text-status-info bg-status-info-bg',      label: (a) => ({ en: `created document "${a.metadata?.title ?? ''}"`, el: `δημιούργησε το έγγραφο «${a.metadata?.title ?? ''}»` }) },
+  'document.updated':     { icon: Edit3,           color: 'text-blue-400 bg-status-info-bg',      label: (a) => ({ en: `edited "${a.metadata?.title ?? 'a document'}"`, el: `επεξεργάστηκε «${a.metadata?.title ?? 'ένα έγγραφο'}»` }) },
+  'document.completed':   { icon: CheckCircle2,    color: 'text-status-success bg-status-success-bg',    label: (a) => ({ en: `marked "${a.metadata?.title ?? 'document'}" as complete`, el: `σήμανε «${a.metadata?.title ?? 'έγγραφο'}» ως ολοκληρωμένο` }) },
+  'document.archived':    { icon: XCircle,         color: 'text-muted-foreground bg-muted',     label: (a) => ({ en: `archived "${a.metadata?.title ?? 'document'}"`, el: `αρχειοθέτησε «${a.metadata?.title ?? 'έγγραφο'}»` }) },
+  'version.restored':     { icon: RotateCcw,       color: 'text-status-warning bg-status-warning-bg',  label: (a) => ({ en: `restored to v${a.metadata?.targetVersion}`, el: `επανέφερε στην έκδοση v${a.metadata?.targetVersion}` }) },
+  'branch.created':       { icon: GitBranch,       color: 'text-status-accent bg-status-accent-bg',  label: (a) => ({ en: `created draft variant "${a.metadata?.name ?? ''}"`, el: `δημιούργησε προσχέδιο «${a.metadata?.name ?? ''}»` }) },
+  'branch.closed':        { icon: XCircle,         color: 'text-muted-foreground bg-muted',     label: (a) => ({ en: `closed variant "${a.metadata?.name ?? ''}"`, el: `έκλεισε την παραλλαγή «${a.metadata?.name ?? ''}»` }) },
+  'proposal.created':     { icon: GitPullRequest,  color: 'text-status-warning bg-status-warning-bg',  label: (a) => ({ en: `submitted proposal "${a.metadata?.title ?? ''}"`, el: `υπέβαλε πρόταση «${a.metadata?.title ?? ''}»` }) },
+  'proposal.updated':     { icon: Edit3,           color: 'text-orange-400 bg-status-warning-bg',  label: () => ({ en: 'updated a change proposal', el: 'ενημέρωσε μια πρόταση αλλαγής' }) },
+  'review.requested':     { icon: GitPullRequest,  color: 'text-status-warning bg-status-warning-bg',  label: () => ({ en: 'requested a review', el: 'ζήτησε αξιολόγηση' }) },
+  'review.approved':      { icon: CheckCircle2,    color: 'text-status-success bg-status-success-bg',    label: () => ({ en: 'approved a change proposal', el: 'ενέκρινε μια πρόταση αλλαγής' }) },
+  'review.changes_requested': { icon: RotateCcw,   color: 'text-status-warning bg-status-warning-bg',  label: () => ({ en: 'requested changes to a proposal', el: 'ζήτησε αλλαγές σε πρόταση' }) },
+  'review.closed':        { icon: XCircle,         color: 'text-status-danger bg-status-danger-bg',        label: () => ({ en: 'closed a proposal', el: 'έκλεισε μια πρόταση' }) },
+  'collaborator.added':   { icon: UserPlus,        color: 'text-status-success bg-status-success-bg',      label: () => ({ en: 'added a collaborator', el: 'πρόσθεσε συνεργάτη' }) },
+  'collaborator.removed': { icon: UserPlus,        color: 'text-muted-foreground bg-muted',     label: () => ({ en: 'removed a collaborator', el: 'αφαίρεσε συνεργάτη' }) },
+  'share.created':        { icon: Share2,          color: 'text-status-accent bg-status-accent-bg',      label: () => ({ en: 'created a share link', el: 'δημιούργησε σύνδεσμο κοινοποίησης' }) },
+  'comment.created':      { icon: MessageSquare,   color: 'text-status-accent bg-status-accent-bg',  label: () => ({ en: 'left a comment', el: 'άφησε σχόλιο' }) },
+  'readiness.assessed':   { icon: Star,            color: 'text-status-warning bg-status-warning-bg',  label: () => ({ en: 'ran a readiness assessment', el: 'έτρεξε αξιολόγηση ετοιμότητας' }) },
 };
 
 const DEFAULT_META: ActivityMeta = {
   icon: Clock,
   color: 'text-muted-foreground bg-muted',
-  label: (a) => a.action.replace('.', ' '),
+  label: (a) => ({ en: a.action.replace('.', ' '), el: a.action.replace('.', ' ') }),
 };
+
+const ENTITY_EL: Record<string, string> = {
+  document: 'Έγγραφο',
+  workspace: 'Χώρος εργασίας',
+  branch: 'Παραλλαγή',
+  proposal: 'Πρόταση',
+  comment: 'Σχόλιο',
+};
+
+function timeAgoPair(iso: string): { en: string; el: string } {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return { en: 'just now', el: 'μόλις τώρα' };
+  if (mins < 60) return { en: `${mins}m ago`, el: `πριν ${mins}λ` };
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return { en: `${hrs}h ago`, el: `πριν ${hrs}ώ` };
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return { en: `${days}d ago`, el: `πριν ${days}η` };
+  const en = new Date(iso).toLocaleDateString('en-GB', { timeZone: 'UTC' });
+  const el = new Date(iso).toLocaleDateString('el-GR', { timeZone: 'UTC' });
+  return { en, el };
+}
 
 function getActivityMeta(action: string): ActivityMeta {
   return ACTIVITY_META[action] ?? DEFAULT_META;
-}
-
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 // ── API call ─────────────────────────────────────────────────────────────────
@@ -127,7 +138,9 @@ export function ActivityTimeline({
     return (
       <div className={cn('text-center py-8 text-muted-foreground', className)}>
         <History className="icon-xl mx-auto mb-2 opacity-30" />
-        <p className="text-sm">No activity yet</p>
+        <p className="text-sm">
+          <BilingualText en="No activity yet" el="Δεν υπάρχει ακόμη δραστηριότητα" />
+        </p>
       </div>
     );
   }
@@ -144,7 +157,7 @@ export function ActivityTimeline({
           disabled={isFetching}
         >
           <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />
-          Refresh
+          <BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
@@ -158,6 +171,9 @@ export function ActivityTimeline({
             const meta = getActivityMeta(activity.action);
             const Icon = meta.icon;
             const isLast = idx === activities.length - 1;
+            const phrase = meta.label(activity);
+            const ago = timeAgoPair(activity.createdAt);
+            const entityEl = activity.entityType ? ENTITY_EL[activity.entityType] : undefined;
 
             return (
               <div
@@ -186,8 +202,10 @@ export function ActivityTimeline({
                           {activity.user.displayName}&nbsp;
                         </span>
                       )}
-                      {meta.label(activity)}
-                      <span className="text-muted-foreground/60 ml-1.5">{timeAgo(activity.createdAt)}</span>
+                      <BilingualText en={phrase.en} el={phrase.el} compact wrap />
+                      <span className="text-muted-foreground/60 ml-1.5">
+                        <BilingualText en={ago.en} el={ago.el} compact />
+                      </span>
                     </p>
                   ) : (
                     <>
@@ -205,11 +223,13 @@ export function ActivityTimeline({
                             {activity.user && (
                               <span className="font-medium">{activity.user.displayName}&nbsp;</span>
                             )}
-                            <span className="text-muted-foreground">{meta.label(activity)}</span>
+                            <span className="text-muted-foreground">
+                              <BilingualText en={phrase.en} el={phrase.el} wrap />
+                            </span>
                           </p>
                         </div>
                         <span className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">
-                          {timeAgo(activity.createdAt)}
+                          <BilingualText en={ago.en} el={ago.el} compact />
                         </span>
                       </div>
 
@@ -218,7 +238,9 @@ export function ActivityTimeline({
                           variant="secondary"
                           className="text-2xs h-4 px-1.5 mt-1.5 capitalize"
                         >
-                          {activity.entityType}
+                          {entityEl
+                            ? <BilingualText en={activity.entityType} el={entityEl} compact />
+                            : activity.entityType}
                         </Badge>
                       )}
                     </>

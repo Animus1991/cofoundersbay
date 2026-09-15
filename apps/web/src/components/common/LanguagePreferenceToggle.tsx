@@ -17,6 +17,7 @@ import {
 } from '@/lib/i18n/LanguagePreferenceContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 
 const PRIMARY_OPTIONS: { value: PrimaryLanguage; labelEn: string; labelEl: string }[] = [
@@ -49,12 +50,8 @@ export function LanguagePreferenceToggle({ className }: { className?: string }) 
           variant="ghost"
           size="icon"
           className={cn('h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground', className)}
-          aria-label={
-            primary === 'el'
-              ? 'Ρυθμίσεις γλώσσας εμφάνισης'
-              : 'Display language settings'
-          }
-          title={primary === 'el' ? 'Γλώσσα' : 'Language'}
+          aria-label={bilingualAria('Display language settings', 'Ρυθμίσεις γλώσσας εμφάνισης')}
+          title={bilingualAria('Language', 'Γλώσσα')}
         >
           <Languages className="icon-sm" />
           <span className="sr-only">{primary === 'el' ? 'EL' : 'EN'}</span>

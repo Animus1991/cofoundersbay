@@ -78,6 +78,8 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   learning: 'book',
   marketplace: 'briefcase',
   jobs: 'briefcase',
+  pitch: 'builder',
+  'data-room': 'wallet',
   coaching: 'mentor',
   'expert-reviews': 'award',
   help: 'book',

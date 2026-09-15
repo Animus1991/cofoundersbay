@@ -340,8 +340,7 @@ export default function DataRoomPage() {
 
   return (
     <AppShell
-      title="Investor Data Room"
-      description="Secure document sharing for investors"
+      showHelp
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button

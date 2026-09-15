@@ -24,13 +24,18 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, AlertCircle, ArrowRight, X } from 'lucide-react';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { usePopupChat } from '@/contexts/PopupChatContext';
-import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import type { BuilderDocumentType } from '@/lib/builder-api';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
+
+/** Greek for the preview workspace description seeded by `lib/preview-api.ts`. */
+const PREVIEW_WS_DESC_EL: Record<string, string> = {
+  'Sample workspace — preview demo, not live founder data.':
+    'Δείγμα χώρου εργασίας — επίδειξη προεπισκόπησης, όχι πραγματικά δεδομένα ιδρυτή.',
+};
 
 const BUILDER_TABS: { id: string; glyph: CfbGlyphName; labelEn: string; labelEl: string }[] = [
   { id: 'overview', glyph: 'builder', labelEn: builderEn('tab_overview'), labelEl: builderEl('tab_overview') },
@@ -43,16 +48,6 @@ const BUILDER_TABS: { id: string; glyph: CfbGlyphName; labelEn: string; labelEl:
   { id: 'readiness', glyph: 'award', labelEn: builderEn('tab_readiness'), labelEl: builderEl('tab_readiness') },
   { id: 'applications', glyph: 'applications', labelEn: builderEn('tab_applications'), labelEl: builderEl('tab_applications') },
 ];
-
-function AskAiButton() {
-  const { open } = usePopupChat();
-  return (
-    <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => open()}>
-      <CfbGlyph name="spark" className="icon-sm" />
-      <BilingualText en={builderEn('ask_ai')} el={builderEl('ask_ai')} compact />
-    </Button>
-  );
-}
 
 function BuilderPageContent() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -130,7 +125,10 @@ function BuilderPageContent() {
   }
 
   return (
-    <AppShell showHelp actions={<AskAiButton />}>
+    <AppShell
+      showHelp
+      askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
+    >
       <div className="min-w-0 space-y-6 overflow-x-clip">
         {/* Error Alert */}
         {error && (
@@ -182,8 +180,13 @@ function BuilderPageContent() {
               <p className="text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
             )}
             <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
+              {/* The preview workspace ships an English description; map it so
+                  the Greek-primary page is not interrupted. User workspaces
+                  render whatever the founder wrote. */}
               {workspace?.description
-                ? workspace.description
+                ? (PREVIEW_WS_DESC_EL[workspace.description]
+                  ? <BilingualText en={workspace.description} el={PREVIEW_WS_DESC_EL[workspace.description]} wrap />
+                  : workspace.description)
                 : <BilingualText en={builderEn('tagline')} el={builderEl('tagline')} />}
             </p>
           </div>

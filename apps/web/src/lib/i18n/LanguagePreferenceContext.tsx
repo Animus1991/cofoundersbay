@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 
 /** Which language appears first (larger); the other is secondary (smaller). */
 export type PrimaryLanguage = 'en' | 'el';
@@ -29,86 +22,128 @@ type LanguagePreferenceContextValue = {
   mounted: boolean;
 };
 
-const LanguagePreferenceContext = createContext<LanguagePreferenceContextValue>({
-  primary: 'en',
-  setPrimary: () => {},
-  togglePrimary: () => {},
-  displayMode: 'bilingual',
-  setDisplayMode: () => {},
-  showSecondary: true,
-  mounted: false,
-});
+type LanguageSnapshot = {
+  primary: PrimaryLanguage;
+  displayMode: LanguageDisplayMode;
+  mounted: boolean;
+};
 
+/**
+ * The preference lives in a module store read through `useSyncExternalStore`,
+ * not in provider state handed down through context.
+ *
+ * The distinction only matters during hydration, and there it is the whole
+ * fix: Next 15 pages suspend on their async `params`/`searchParams`, so the
+ * page subtree hydrates *after* the root layout. By then a context provider
+ * had already applied the stored preference (Greek, primary-only), the late
+ * subtree hydrated against text the server never rendered, and React threw
+ * "Hydration failed because the server rendered text didn't match the
+ * client" on every page whose visitor had changed either setting — the dev
+ * overlay's permanent red badge.
+ *
+ * `useSyncExternalStore` renders every hydration pass from
+ * `getServerSnapshot` — the same defaults the server used — so the HTML
+ * always matches, and subscribers re-render to the stored preference
+ * immediately afterwards.
+ */
+const SERVER_SNAPSHOT: LanguageSnapshot = { primary: 'en', displayMode: 'bilingual', mounted: false };
+
+let snapshot: LanguageSnapshot = SERVER_SNAPSHOT;
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot(): LanguageSnapshot {
+  return snapshot;
+}
+
+function getServerSnapshot(): LanguageSnapshot {
+  return SERVER_SNAPSHOT;
+}
+
+function setSnapshot(partial: Partial<LanguageSnapshot>) {
+  snapshot = { ...snapshot, ...partial };
+  listeners.forEach((listener) => listener());
+}
+
+function persist(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Applies the stored preference once the app is interactive, and mirrors the
+ * current preference onto <html> (lang + data attributes the stylesheet keys
+ * on). Reading state is not gated on being inside it — see the store above.
+ */
 export function LanguagePreferenceProvider({ children }: { children: ReactNode }) {
-  const [primary, setPrimaryState] = useState<PrimaryLanguage>('en');
-  const [displayMode, setDisplayModeState] = useState<LanguageDisplayMode>('bilingual');
-  const [mounted, setMounted] = useState(false);
+  const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    setMounted(true);
+    let primary: PrimaryLanguage = 'en';
+    let displayMode: LanguageDisplayMode = 'bilingual';
     try {
       const storedPrimary = localStorage.getItem(PRIMARY_STORAGE_KEY);
-      if (storedPrimary === 'en' || storedPrimary === 'el') setPrimaryState(storedPrimary);
+      if (storedPrimary === 'en' || storedPrimary === 'el') primary = storedPrimary;
 
       const storedDisplay = localStorage.getItem(DISPLAY_STORAGE_KEY);
       if (storedDisplay === 'bilingual' || storedDisplay === 'primary-only') {
-        setDisplayModeState(storedDisplay);
+        displayMode = storedDisplay;
       }
     } catch {
       /* ignore */
     }
+    // Unconditional on purpose: a fresh provider (tests, remounts) resets a
+    // stale module store to what storage actually holds.
+    setSnapshot({ primary, displayMode, mounted: true });
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.lang = primary;
-    document.documentElement.dataset.primaryLang = primary;
-    document.documentElement.dataset.languageDisplay = displayMode;
-  }, [primary, displayMode, mounted]);
+    if (!snap.mounted) return;
+    document.documentElement.lang = snap.primary;
+    document.documentElement.dataset.primaryLang = snap.primary;
+    document.documentElement.dataset.languageDisplay = snap.displayMode;
+  }, [snap.mounted, snap.primary, snap.displayMode]);
+
+  return <>{children}</>;
+}
+
+export function useLanguagePreference(): LanguagePreferenceContextValue {
+  const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setPrimary = useCallback((lang: PrimaryLanguage) => {
-    setPrimaryState(lang);
-    try {
-      localStorage.setItem(PRIMARY_STORAGE_KEY, lang);
-    } catch {
-      /* ignore */
-    }
+    setSnapshot({ primary: lang });
+    persist(PRIMARY_STORAGE_KEY, lang);
   }, []);
 
   const setDisplayMode = useCallback((mode: LanguageDisplayMode) => {
-    setDisplayModeState(mode);
-    try {
-      localStorage.setItem(DISPLAY_STORAGE_KEY, mode);
-    } catch {
-      /* ignore */
-    }
+    setSnapshot({ displayMode: mode });
+    persist(DISPLAY_STORAGE_KEY, mode);
   }, []);
 
   const togglePrimary = useCallback(() => {
-    setPrimary(primary === 'en' ? 'el' : 'en');
-  }, [primary, setPrimary]);
+    const next = getSnapshot().primary === 'en' ? 'el' : 'en';
+    setSnapshot({ primary: next });
+    persist(PRIMARY_STORAGE_KEY, next);
+  }, []);
 
-  const showSecondary = displayMode === 'bilingual';
-
-  return (
-    <LanguagePreferenceContext.Provider
-      value={{
-        primary,
-        setPrimary,
-        togglePrimary,
-        displayMode,
-        setDisplayMode,
-        showSecondary,
-        mounted,
-      }}
-    >
-      {children}
-    </LanguagePreferenceContext.Provider>
-  );
-}
-
-export function useLanguagePreference() {
-  return useContext(LanguagePreferenceContext);
+  return {
+    primary: snap.primary,
+    setPrimary,
+    togglePrimary,
+    displayMode: snap.displayMode,
+    setDisplayMode,
+    showSecondary: snap.displayMode === 'bilingual',
+    mounted: snap.mounted,
+  };
 }
 
 /** Resolve primary/secondary text + lang codes for BilingualText. */

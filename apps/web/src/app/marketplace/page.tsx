@@ -316,7 +316,7 @@ export default function MarketplacePage() {
   const regular = filtered.filter(p => !p.isFeatured);
 
   return (
-    <AppShell title="Services Marketplace" description="Find verified experts for every startup need">
+    <AppShell showHelp>
       <div className="space-y-6 pb-10">
         {backendProviders.length === 0 && (
           <SampleDataNotice

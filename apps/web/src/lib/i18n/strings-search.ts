@@ -57,6 +57,10 @@ export const SEARCH_STRINGS: Record<string, BilingualPair> = {
     en: 'No results found',
     el: 'Δεν βρέθηκαν αποτελέσματα',
   },
+  idle_title: {
+    en: 'Search the network',
+    el: 'Αναζητήστε στο δίκτυο',
+  },
   empty_hint: {
     en: 'Enter a search term to find people, jobs, events, and more',
     el: 'Εισαγάγετε όρο αναζήτησης για εύρεση ατόμων, θέσεων εργασίας, εκδηλώσεων και άλλων',
@@ -72,6 +76,10 @@ export const SEARCH_STRINGS: Record<string, BilingualPair> = {
   browse_events: {
     en: 'Browse Events',
     el: 'Περιήγηση σε εκδηλώσεις',
+  },
+  ask_ai: {
+    en: 'Ask AI',
+    el: 'Ρωτήστε το AI',
   },
   search_failed_title: {
     en: 'Search failed',

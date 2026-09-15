@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -169,7 +169,7 @@ export default function CreateProjectPage() {
           >
             <ArrowLeft className="icon-md" />
           </Button>
-          <CfbGlyphWell name="briefcase" size="sm" />
+          <CfbGlyph name="briefcase" className="icon-md text-muted-foreground" />
         </div>
 
         <div className="flex items-center gap-2">

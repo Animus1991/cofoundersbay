@@ -55,7 +55,7 @@ export function XPProgressWidget() {
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-lg font-bold text-primary-accessible">
+              <div className="flex h-10 w-10 items-center justify-center text-lg font-semibold tabular-nums text-foreground">
                 {xp.level}
               </div>
               <div>
@@ -90,9 +90,9 @@ export function XPProgressWidget() {
         </div>
 
         {streak && (
-          <div className="flex items-center justify-between rounded-xl border border-status-warning-border bg-status-warning-bg p-3">
+          <div className="flex items-center justify-between rounded-xl p-3">
             <div className="flex items-center gap-3">
-              <CfbGlyph name="spark" className="icon-lg text-status-warning" />
+              <CfbGlyph name="spark" className="icon-lg text-muted-foreground" />
               <div>
                 <div className="text-sm font-semibold">
                   <BilingualText

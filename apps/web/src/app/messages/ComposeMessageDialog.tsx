@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { bilingualAria } from '@/lib/i18n/format';
 import { messagesEn, messagesEl, useMessagesPrimaryText } from '@/lib/i18n/strings-messages';
@@ -114,7 +114,7 @@ export function ComposeMessageDialog({
         <div className="mt-3 max-h-[min(50vh,20rem)] space-y-1 overflow-y-auto">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-3 px-4 py-8 text-center">
-              <CfbGlyphWell name="people" size="sm" />
+              <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
                 {candidates.length === 0 ? (
                   <BilingualText en={messagesEn('compose_none')} el={messagesEl('compose_none')} />

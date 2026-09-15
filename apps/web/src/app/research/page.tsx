@@ -32,8 +32,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { usePopupChat } from '@/contexts/PopupChatContext';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import {
@@ -75,15 +74,13 @@ function getBoardGlyph(iconValue: string | null): CfbGlyphName {
   return BOARD_ICONS.find((i) => i.value === iconValue)?.glyph ?? 'research';
 }
 
-function AskAiButton() {
-  const { open } = usePopupChat();
-  return (
-    <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => open()}>
-      <CfbGlyph name="spark" className="icon-sm" />
-      <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
-    </Button>
-  );
-}
+/**
+ * Greek for the preview board seeded by `lib/preview-api.ts`. Keyed by the
+ * exact English description, so user-authored boards are never touched.
+ */
+const PREVIEW_BOARD_DESC_EL: Record<string, string> = {
+  'Sample research board for the preview.': 'Δείγμα πίνακα έρευνας για την προεπισκόπηση.',
+};
 
 export default function ResearchBoardsPage() {
   const router = useRouter();
@@ -227,9 +224,9 @@ export default function ResearchBoardsPage() {
   return (
     <AppShell
       showHelp
+      askAi="Help me open a market, product, or competitive research board and tell me what to capture first."
       actions={
         <div className="flex flex-wrap gap-2">
-          <AskAiButton />
           <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2 rounded-xl" disabled={isLoading}>
             <CfbGlyph name="spark" className="icon-sm" />
             <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
@@ -305,7 +302,7 @@ export default function ResearchBoardsPage() {
 
           {boards.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <CfbGlyphWell name="research" size="lg" className="mb-6" />
+              <CfbGlyph name="research" className="mb-6 icon-lg text-muted-foreground/50" />
               <h2 className="mb-2 text-xl font-semibold">
                 <BilingualText en={researchEn('empty_title')} el={researchEl('empty_title')} />
               </h2>
@@ -559,23 +556,25 @@ function BoardCard({
 
   if (viewMode === 'list') {
     return (
-      <Card className="cursor-pointer rounded-xl transition-colors hover:border-primary/40" onClick={onOpen}>
+      <Card className="cursor-pointer rounded-xl transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen}>
         <CardContent className="flex items-center gap-4 p-4">
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-            style={{ backgroundColor: board.color ? `${board.color}20` : 'var(--secondary)' }}
-          >
-            <span style={{ color: board.color ?? 'var(--muted-foreground)' }}>
-              <CfbGlyph name={glyph} className="icon-lg" />
-            </span>
-          </div>
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: board.color ?? 'var(--muted-foreground)' }}
+            aria-hidden
+          />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
+              <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground" />
               <h3 className="truncate font-semibold">{board.title}</h3>
               {board.isPinned && <Pin className="icon-sm shrink-0 text-primary-accessible" />}
             </div>
             {board.description && (
-              <p className="truncate text-sm text-muted-foreground">{board.description}</p>
+              <p className="truncate text-sm text-muted-foreground">
+                {PREVIEW_BOARD_DESC_EL[board.description]
+                  ? <BilingualText en={board.description} el={PREVIEW_BOARD_DESC_EL[board.description]} compact />
+                  : board.description}
+              </p>
             )}
           </div>
           <div className="shrink-0 text-sm text-muted-foreground">
@@ -589,36 +588,40 @@ function BoardCard({
   }
 
   return (
-    <Card className="group cursor-pointer rounded-xl transition-all hover:border-primary/40 hover:shadow-md" onClick={onOpen}>
-      <CardContent className="p-0">
-        <div
-          className="relative flex h-32 items-center justify-center rounded-t-xl"
-          style={{ backgroundColor: board.color ? `${board.color}15` : 'var(--secondary)' }}
-        >
-          <span className="opacity-50" style={{ color: board.color ?? 'var(--muted-foreground)' }}>
-            <CfbGlyph name={glyph} className="h-12 w-12" />
-          </span>
-          {board.isPinned && (
-            <div className="absolute left-3 top-3">
-              <Pin className="icon-sm text-primary-accessible" />
-            </div>
-          )}
-          <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+    <Card className="group cursor-pointer rounded-xl transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen}>
+      <CardContent className="p-4">
+        <div className="mb-3 flex items-start gap-2.5">
+          <span
+            className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: board.color ?? 'var(--muted-foreground)' }}
+            aria-hidden
+          />
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate font-semibold leading-snug">
+              <span className="mr-1.5 inline-flex align-middle text-muted-foreground">
+                <CfbGlyph name={glyph} className="icon-sm" />
+              </span>
+              {board.title}
+            </h3>
+            {board.description && (
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                {PREVIEW_BOARD_DESC_EL[board.description]
+                  ? <BilingualText en={board.description} el={PREVIEW_BOARD_DESC_EL[board.description]} wrap />
+                  : board.description}
+              </p>
+            )}
+          </div>
+          {board.isPinned && <Pin className="icon-sm shrink-0 text-muted-foreground" />}
+          <div className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
             {menu}
           </div>
         </div>
-        <div className="p-4">
-          <h3 className="mb-1 truncate font-semibold">{board.title}</h3>
-          {board.description && (
-            <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{board.description}</p>
-          )}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>
               {board.nodeCount} <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
             </span>
             <span>{updated}</span>
           </div>
-        </div>
       </CardContent>
     </Card>
   );

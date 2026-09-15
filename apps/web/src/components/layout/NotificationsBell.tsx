@@ -23,6 +23,8 @@ import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const TYPE_GLYPH: Record<string, CfbGlyphName> = {
   message: 'messages',
@@ -141,7 +143,11 @@ export function NotificationsBell({ className }: { className?: string }) {
           variant="ghost"
           size="icon"
           className={cn('relative', className)}
-          aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
+          aria-label={
+            unread > 0
+              ? bilingualAria(`Notifications (${unread} unread)`, `Ειδοποιήσεις (${unread} μη αναγνωσμένες)`)
+              : bilingualAria('Notifications', 'Ειδοποιήσεις')
+          }
         >
           <CfbGlyph name="bell" className={cn('icon-md', hasNew && 'animate-pulse')} />
           {unread > 0 && (
@@ -155,10 +161,12 @@ export function NotificationsBell({ className }: { className?: string }) {
       <DropdownMenuContent align="end" className="flex max-h-[min(70dvh,520px)] w-[min(380px,calc(100vw-1.5rem))] flex-col overflow-hidden p-0">
         <div className="flex flex-shrink-0 items-center justify-between px-4 py-3">
           <div>
-            <span className="text-sm font-semibold text-foreground">Notifications</span>
+            <span className="text-sm font-semibold text-foreground">
+              <BilingualText en="Notifications" el="Ειδοποιήσεις" compact />
+            </span>
             {unread > 0 && (
               <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary-accessible">
-                {unread} new
+                <BilingualText en={`${unread} new`} el={`${unread} νέες`} compact />
               </span>
             )}
           </div>
@@ -180,7 +188,7 @@ export function NotificationsBell({ className }: { className?: string }) {
             }}
           >
             <CheckCheck className="icon-sm" />
-            Mark all read
+            <BilingualText en="Mark all read" el="Ανάγνωση όλων" compact />
           </Button>
         </div>
         <DropdownMenuSeparator className="my-0" />

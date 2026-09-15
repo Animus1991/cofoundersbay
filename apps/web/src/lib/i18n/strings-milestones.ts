@@ -19,7 +19,8 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
     el: 'Κάθε ορόσημο είναι ένας στόχος με υπεύθυνο και ημερομηνία. Η ολοκλήρωση τροφοδοτεί την Ετοιμότητα και τις ενημερώσεις επενδυτών. Ρωτήστε το AI να προτείνει τα επόμενα τρία από τον Builder.',
   },
   new_milestone: { en: 'New milestone', el: 'Νέο ορόσημο' },
-  search_ph: { en: 'Search milestones…', el: 'Αναζήτηση ορόσημων…' },
+  // Genitive plural of "ορόσημο" is "οροσήμων" (accent moves to the penult).
+  search_ph: { en: 'Search milestones…', el: 'Αναζήτηση οροσήμων…' },
   all: { en: 'All', el: 'Όλα' },
   cat_product: { en: 'Product', el: 'Προϊόν' },
   cat_fundraising: { en: 'Fundraising', el: 'Χρηματοδότηση' },
@@ -28,11 +29,20 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   cat_growth: { en: 'Growth', el: 'Ανάπτυξη' },
   cat_other: { en: 'Other', el: 'Άλλο' },
   cat_none: { en: 'None', el: 'Κανένα' },
+  // Plural forms: filter tabs describe a *set* ("Ολοκληρωμένα 6").
   status_todo: { en: 'To do', el: 'Προς εκτέλεση' },
   status_in_progress: { en: 'In progress', el: 'Σε εξέλιξη' },
   status_blocked: { en: 'Blocked', el: 'Αποκλεισμένα' },
   status_completed: { en: 'Completed', el: 'Ολοκληρωμένα' },
   status_cancelled: { en: 'Cancelled', el: 'Ακυρωμένα' },
+  // Singular forms: the chip on one card and the status <select> describe a
+  // *single* milestone — Greek adjectives agree in number, so "Ολοκληρωμένα"
+  // on one row reads wrong. English is unchanged.
+  status_todo_one: { en: 'To do', el: 'Προς εκτέλεση' },
+  status_in_progress_one: { en: 'In progress', el: 'Σε εξέλιξη' },
+  status_blocked_one: { en: 'Blocked', el: 'Αποκλεισμένο' },
+  status_completed_one: { en: 'Completed', el: 'Ολοκληρωμένο' },
+  status_cancelled_one: { en: 'Cancelled', el: 'Ακυρωμένο' },
   pri_low: { en: 'Low', el: 'Χαμηλή' },
   pri_medium: { en: 'Medium', el: 'Μεσαία' },
   pri_high: { en: 'High', el: 'Υψηλή' },
@@ -133,6 +143,15 @@ export const MILESTONE_STATUS_KEYS: Record<string, keyof typeof MILESTONE_STRING
   blocked: 'status_blocked',
   completed: 'status_completed',
   cancelled: 'status_cancelled',
+};
+
+/** Singular variants — for the chip on a single card and the status select. */
+export const MILESTONE_STATUS_ONE_KEYS: Record<string, keyof typeof MILESTONE_STRINGS> = {
+  todo: 'status_todo_one',
+  in_progress: 'status_in_progress_one',
+  blocked: 'status_blocked_one',
+  completed: 'status_completed_one',
+  cancelled: 'status_cancelled_one',
 };
 
 export const MILESTONE_PRIORITY_KEYS: Record<string, keyof typeof MILESTONE_STRINGS> = {

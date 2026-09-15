@@ -19,7 +19,7 @@ function AIPageInner() {
     return (
       <AppShell fullHeight contentClassName="min-h-0">
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-          Loading assistant…
+          <BilingualText en="Loading assistant…" el="Φόρτωση βοηθού…" compact />
         </div>
       </AppShell>
     );
@@ -76,7 +76,7 @@ export default function AIPage() {
       fallback={
         <AppShell fullHeight contentClassName="min-h-0">
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-            Loading assistant…
+            <BilingualText en="Loading assistant…" el="Φόρτωση βοηθού…" compact />
           </div>
         </AppShell>
       }

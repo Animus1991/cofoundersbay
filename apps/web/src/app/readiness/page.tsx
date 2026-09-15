@@ -115,7 +115,7 @@ const DEMO_RECS: Record<string, { en: string; el: string }> = {
   product:   { en: 'Create a detailed product roadmap covering the next 6 months with clear milestones.', el: 'Φτιάξτε αναλυτικό χάρτη προϊόντος για τους επόμενους 6 μήνες με σαφή ορόσημα.' },
   business:  { en: 'Validate your pricing with at least 5 potential customers and calculate unit economics.', el: 'Επικυρώστε την τιμολόγηση με τουλάχιστον 5 δυνητικούς πελάτες και υπολογίστε τα μοναδιαία οικονομικά.' },
   funding:   { en: 'Build a 3-year financial model and prepare your data room before approaching investors.', el: 'Φτιάξτε τριετές οικονομικό μοντέλο και ετοιμάστε το data room πριν προσεγγίσετε επενδυτές.' },
-  execution: { en: 'Implement bi-weekly retrospectives and document your processes in a shared wiki.', el: 'Εφαρμόστε αναδρομές ανά δύο εβδομάδες και τεκμηριώστε τις διαδικασίες σε κοινό wiki.' },
+  execution: { en: 'Implement bi-weekly retrospectives and document your processes in a shared wiki.', el: 'Καθιερώστε ανασκοπήσεις ανά δύο εβδομάδες και τεκμηριώστε τις διαδικασίες σε κοινό wiki.' },
 };
 
 const REC_EL: Record<string, string> = Object.fromEntries(
@@ -347,7 +347,7 @@ function DimensionCard({
     : `Help me improve ${dim.labelEn} readiness (${pct}%). What should I do next?`;
 
   return (
-    <Card className="min-w-0 rounded-xl transition-all hover:shadow-md">
+    <Card className="min-w-0 rounded-xl transition-colors hover:border-border">
       {/* `h-full` down the chain, so the box at the foot of this card can sit
           at the foot of it. The grid matches these cards' heights; without it
           the shorter of a pair ended on empty space instead of its own

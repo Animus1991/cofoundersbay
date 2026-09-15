@@ -24,14 +24,17 @@ import { CitationChip } from '@/components/ai/CitationChip';
 import type { CopilotAction } from '@/lib/copilot-types';
 import { getActionSpec } from '@/lib/action-registry';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const STARTERS = [
-  'What should I do next?',
-  'Find a technical cofounder in Athens',
-  'Show my best matches',
-  'Show my notifications',
-  'Save Elena to my shortlist',
-  'Connect with Elena',
+  { en: 'What should I do next?', el: 'Τι να κάνω μετά;' },
+  { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα' },
+  { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
+  { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
+  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist' },
+  { en: 'Connect with Elena', el: 'Σύνδεση με την Elena' },
 ];
 
 function formatTime(d: Date) {
@@ -64,7 +67,7 @@ function AssistantBody({
       {message.isStreaming && !message.content ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          Working across your graph…
+          <BilingualText en="Working across your graph…" el="Εργασία στο γράφο σας…" compact />
         </div>
       ) : (
         <SanitizedHtml
@@ -109,6 +112,7 @@ export function CopilotWorkspace({
   onExpand,
 }: CopilotWorkspaceProps) {
   const router = useRouter();
+  const sayOne = useBilingualString();
   const isPage = variant === 'page';
   const pageContext = usePageContext();
   const [input, setInput] = useState(initialPrompt ?? '');
@@ -153,7 +157,9 @@ export function CopilotWorkspace({
       {isPage && (
         <aside className="flex w-full shrink-0 flex-col border-b border-border/60 bg-card/80 lg:w-72 lg:border-b-0 lg:border-r">
           <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
-            <p className="text-sm font-semibold">Threads</p>
+            <p className="text-sm font-semibold">
+              <BilingualText en="Threads" el="Νήματα" compact />
+            </p>
             <Button
               type="button"
               size="sm"
@@ -162,13 +168,16 @@ export function CopilotWorkspace({
               onClick={() => chat.clearMessages()}
             >
               <Plus className="h-3.5 w-3.5" />
-              New
+              <BilingualText en="New" el="Νέα" compact />
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {chat.conversations.length === 0 ? (
               <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-                New conversations appear here after you send a message.
+                <BilingualText
+                  en="New conversations appear here after you send a message."
+                  el="Οι νέες συνομιλίες εμφανίζονται εδώ αφού στείλετε μήνυμα."
+                />
               </p>
             ) : (
               <ul className="space-y-1">
@@ -182,7 +191,11 @@ export function CopilotWorkspace({
                         chat.conversationId === conv.id && 'bg-primary/10 text-primary',
                       )}
                     >
-                      <span className="line-clamp-2">{conv.title || 'New conversation'}</span>
+                      <span className="line-clamp-2">
+                        {conv.title && conv.title !== 'New Conversation' && conv.title !== 'New conversation'
+                          ? conv.title
+                          : sayOne('New conversation', 'Νέα συνομιλία')}
+                      </span>
                     </button>
                   </li>
                 ))}
@@ -198,7 +211,7 @@ export function CopilotWorkspace({
               onClick={() => router.push('/settings/ai')}
             >
               <Settings className="h-4 w-4" />
-              AI preferences
+              <BilingualText en="AI preferences" el="Προτιμήσεις AI" compact />
             </Button>
           </div>
         </aside>
@@ -207,7 +220,7 @@ export function CopilotWorkspace({
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-2 border-b border-border/40 bg-muted/30 px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-xs text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
               {getAgentIcon(chat.currentAgent)}
             </span>
             <div className="min-w-0">
@@ -215,7 +228,9 @@ export function CopilotWorkspace({
                 {currentAgentConfig?.name || 'CoFounderBay Assistant'}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                {chat.isAIAvailable ? 'Live model + platform tools' : 'Platform copilot · tools online'}
+                {chat.isAIAvailable
+                  ? sayOne('Live model + platform tools', 'Ζωντανό μοντέλο + εργαλεία πλατφόρμας')
+                  : sayOne('Platform copilot · tools online', 'Βοηθός πλατφόρμας · εργαλεία ενεργά')}
               </p>
             </div>
           </div>
@@ -225,7 +240,7 @@ export function CopilotWorkspace({
                 value={chat.currentAgent}
                 onChange={(e) => chat.setAgent(e.target.value)}
                 className="h-8 max-w-[9rem] rounded-md border border-border bg-background px-2 text-xs"
-                aria-label="AI agent"
+                aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
               >
                 {agentList.map((agent) => (
                   <option key={agent.id} value={agent.id}>
@@ -236,16 +251,16 @@ export function CopilotWorkspace({
             )}
             {chat.messages.length > 0 && (
               <>
-                <button type="button" onClick={chat.retryLastMessage} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title="Retry">
+                <button type="button" onClick={chat.retryLastMessage} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Retry', 'Επανάληψη')} aria-label={bilingualAria('Retry', 'Επανάληψη')}>
                   <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
-                <button type="button" onClick={chat.clearMessages} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title="Clear">
+                <button type="button" onClick={chat.clearMessages} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Clear', 'Καθαρισμός')} aria-label={bilingualAria('Clear', 'Καθαρισμός')}>
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </>
             )}
             {onExpand && (
-              <button type="button" onClick={onExpand} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title="Open full page">
+                <button type="button" onClick={onExpand} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
                 <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             )}
@@ -256,22 +271,25 @@ export function CopilotWorkspace({
           {chat.messages.length === 0 ? (
             <div className="mx-auto flex max-w-lg flex-col gap-4 py-6">
               <div className="flex gap-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                   <Bot className="h-4 w-4" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-sm">
-                  I can search the network, explain matches, send intros, open threads, and jump to any page — using the same data as the rest of CoFounderBay. Writes wait for your confirm.
+                  <BilingualText
+                    en="I can search the network, explain matches, send intros, open threads, and jump to any page — using the same data as the rest of CoFounderBay. Writes wait for your confirm."
+                    el="Μπορώ να ψάξω στο δίκτυο, να εξηγήσω αντιστοιχίσεις, να στείλω συστάσεις, να ανοίξω νήματα και να μεταβώ σε οποιαδήποτε σελίδα — με τα ίδια δεδομένα της πλατφόρμας. Οι εγγραφές περιμένουν επιβεβαίωση."
+                  />
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 {STARTERS.map((q) => (
                   <button
-                    key={q}
+                    key={q.en}
                     type="button"
-                    onClick={() => void chat.sendMessage(q)}
+                    onClick={() => void chat.sendMessage(q.en)}
                     className="min-h-11 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
                   >
-                    {q}
+                    {sayOne(q.en, q.el)}
                   </button>
                 ))}
               </div>
@@ -280,7 +298,7 @@ export function CopilotWorkspace({
             chat.messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2', msg.role === 'user' && 'justify-end')}>
                 {msg.role === 'assistant' && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-[11px] text-white">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] text-muted-foreground">
                     {getAgentIcon(chat.currentAgent)}
                   </div>
                 )}
@@ -323,23 +341,29 @@ export function CopilotWorkspace({
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask AI to search, intro, message, or navigate…"
-              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1 focus-visible:ring-violet-500"
+              placeholder={sayOne(
+                'Ask AI to search, intro, message, or navigate…',
+                'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…',
+              )}
+              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1"
               disabled={chat.isStreaming}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!input.trim() || chat.isStreaming}
-              className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
-              aria-label="Send"
+              className="h-11 w-11 rounded-full"
+              aria-label={bilingualAria('Send', 'Αποστολή')}
             >
               {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
           <p className="mt-2 flex items-center justify-center gap-1 text-center text-2xs text-muted-foreground">
             <Sparkles className="h-3 w-3" />
-            Tools use your real Connections, Matches, and Messages APIs. Destructive steps need confirm.
+            <BilingualText
+              en="Tools use your real Connections, Matches, and Messages APIs. Destructive steps need confirm."
+              el="Τα εργαλεία χρησιμοποιούν τις πραγματικές συνδέσεις, αντιστοιχίσεις και μηνύματα. Οι καταστροφικές ενέργειες θέλουν επιβεβαίωση."
+            />
           </p>
         </form>
       </section>

@@ -83,7 +83,9 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   crit_okrs: { en: 'OKRs / quarterly goals set', el: 'OKR / τριμηνιαίοι στόχοι τέθηκαν' },
   crit_milestones: { en: 'Key milestones defined', el: 'Βασικά ορόσημα ορίστηκαν' },
   crit_metrics_tracked: { en: 'Core metrics tracked', el: 'Βασικές μετρικές παρακολουθούνται' },
-  crit_retrospectives: { en: 'Regular retrospectives held', el: 'Τακτικές αναδρομές πραγματοποιούνται' },
+  // "ανασκοπήσεις", not "αναδρομές": αναδρομή is a flashback/recursion, not a
+  // team retrospective.
+  crit_retrospectives: { en: 'Regular retrospectives held', el: 'Τακτικές ανασκοπήσεις πραγματοποιούνται' },
   crit_documentation: { en: 'Documentation practices in place', el: 'Πρακτικές τεκμηρίωσης σε εφαρμογή' },
 
   // ── Score status ──
@@ -113,11 +115,15 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   investor_readiness: { en: 'Investor Readiness', el: 'Ετοιμότητα επενδυτή' },
   investor_seed_preseed: { en: 'Seed & pre-seed fundraising', el: 'Χρηματοδότηση seed & pre-seed' },
   fundable_signal: { en: 'Fundable signal', el: 'Σήμα χρηματοδότησης' },
-  building_traction: { en: 'Building traction', el: 'Ανάπτυξη έλξης' },
+  // "traction" stays untranslated: Greek startup vocabulary uses the English
+  // term — "έλξη" (literal pull/attraction) reads as physics, not growth.
+  building_traction: { en: 'Building traction', el: 'Χτίσιμο traction' },
   pre_investment_stage: { en: 'Pre-investment stage', el: 'Στάδιο πριν την επένδυση' },
   investor_weight_note: {
     en: 'Investors weight team (30%) and market (25%) most heavily. Build strong validation first.',
-    el: 'Οι επενδυτές βαρύνουν την ομάδα (30%) και την αγορά (25%) περισσότερο. Χτίστε ισχυρή επικύρωση πρώτα.',
+    // "σταθμίζουν" (weigh/weight), not "βαρύνουν" (burden) — the old wording
+    // read as "investors burden the team".
+    el: 'Οι επενδυτές σταθμίζουν περισσότερο την ομάδα (30%) και την αγορά (25%). Χτίστε ισχυρή επικύρωση πρώτα.',
   },
   find_investors: { en: 'Find Investors', el: 'Εύρεση επενδυτών' },
 
@@ -146,7 +152,9 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   tab_history: { en: 'History', el: 'Ιστορικό' },
 
   // ── Workspace warning ──
-  no_workspace_title: { en: 'No workspace connected', el: 'Κανένας χώρος εργασίας συνδεδεμένος' },
+  // Natural Greek negation — the word-for-word "Κανένας χώρος εργασίας
+  // συνδεδεμένος" is an anglicism (no verb).
+  no_workspace_title: { en: 'No workspace connected', el: 'Δεν έχει συνδεθεί χώρος εργασίας' },
   no_workspace_desc: {
     en: 'Create a workspace in the Startup Builder to track and update your readiness criteria.',
     el: 'Δημιουργήστε χώρο εργασίας στο Startup Builder για παρακολούθηση και ενημέρωση κριτηρίων ετοιμότητας.',

@@ -176,7 +176,7 @@ export function FloatingActionButton({
     <Button
       size="icon"
       className={cn(
-        'fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full shadow-lg z-50 animate-bounce-subtle',
+        'fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full shadow-md z-50',
         className
       )}
       onClick={onClick}

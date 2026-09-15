@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,7 @@ export function BuilderStageHeader({
     <div className={cn('flex flex-col gap-3', hideTitle ? 'sm:flex-row sm:items-center sm:justify-end' : 'sm:flex-row sm:items-start sm:justify-between')}>
       {!hideTitle && (
         <div className="flex min-w-0 items-center gap-3">
-          <CfbGlyphWell name={glyph} size="md" />
+          <CfbGlyph name={glyph} className="mt-1 icon-md shrink-0 text-muted-foreground" />
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight text-foreground">
               <BilingualText en={titleEn} el={titleEl} />

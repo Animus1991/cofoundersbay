@@ -33,7 +33,7 @@ function useAppLocale() {
   return { locale, setLocale, mounted };
 }
 
-export function LanguageSwitcher({ className }: { className?: string }) {
+export function LanguageSwitcher({ className, iconOnly = false }: { className?: string; iconOnly?: boolean }) {
   const { locale, setLocale, mounted } = useAppLocale();
   const { t } = useI18n();
 
@@ -57,12 +57,17 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className={cn('relative h-9 min-w-9 shrink-0 gap-1 px-1.5', className)}
+          size="icon"
+          className={cn(
+            'relative shrink-0',
+            iconOnly ? 'h-8 w-8 px-0' : 'h-9 min-w-9 w-auto gap-1 px-1.5',
+            className,
+          )}
           aria-label={`${t('Language')}: ${current.label}`}
           title={t('Language')}
         >
           <Globe className="h-4 w-4 shrink-0" />
-          <span className="text-2xs font-semibold tabular-nums">{current.short}</span>
+          {!iconOnly && <span className="text-2xs font-semibold tabular-nums">{current.short}</span>}
           <span className="sr-only">{t('Change language')}</span>
         </Button>
       </DropdownMenuTrigger>

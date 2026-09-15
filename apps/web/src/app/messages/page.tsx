@@ -13,7 +13,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
-import { CfbGlyph, CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { messagesEn, messagesEl, useMessagesPrimaryText } from '@/lib/i18n/strings-messages';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -613,11 +613,9 @@ export default function MessagesPage() {
               <button
                 type="button"
                 onClick={() => openAskAi()}
-                className="flex w-full items-center gap-2.5 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-background/40 to-accent/10 px-3 py-2 text-left shadow-sm transition-colors hover:border-primary/35 hover:from-primary/15"
+                className="flex w-full items-center gap-2.5 rounded-xl border border-border/70 px-3 py-2 text-left transition-colors hover:bg-muted/40"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary-accessible">
-                  <CfbGlyph name="spark" className="icon-sm" />
-                </span>
+                <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
                 <span className="min-w-0">
                   <span className="block text-xs font-semibold text-foreground">
                     <BilingualText en={messagesEn('ask_ai')} el={messagesEl('ask_ai')} compact />
@@ -690,7 +688,7 @@ export default function MessagesPage() {
                   </div>
                 ) : introRequests.length === 0 ? (
                   <div className="flex flex-col items-center justify-center gap-3 p-10 text-center">
-                    <CfbGlyphWell name="people" size="md" />
+                    <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
                     <p className="text-sm font-medium text-foreground">
                       <BilingualText en={messagesEn('no_pending')} el={messagesEl('no_pending')} />
                     </p>

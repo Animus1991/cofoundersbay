@@ -45,9 +45,9 @@ import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
@@ -70,23 +70,30 @@ function AskAiButton({
   size?: 'sm' | 'md';
 }) {
   const { open } = usePopupChat();
+  const { primary } = useLanguagePreference();
+  const visible = primary === 'el'
+    ? (labelEl ?? dashboardEl('ask_ai'))
+    : (labelEn ?? dashboardEn('ask_ai'));
   return (
     <Button
       type="button"
       variant={variant}
       size={size}
-      className={cn('gap-1.5', className)}
+      className={cn('h-auto min-h-9 gap-1.5 whitespace-nowrap', className)}
       onClick={() => open()}
     >
-      <CfbGlyph name="spark" className="icon-sm" />
-      <BilingualText
-        en={labelEn ?? dashboardEn('ask_ai')}
-        el={labelEl ?? dashboardEl('ask_ai')}
-        compact
-      />
+      <CfbGlyph name="spark" className="icon-sm shrink-0" />
+      {visible}
     </Button>
   );
 }
+
+const PREVIEW_HEADLINE_EL: Record<string, string> = {
+  'Founder & CEO at Harbor': 'Ιδρυτής και CEO στο Harbor',
+  'Technical cofounder · Full-stack': 'Τεχνικός συνιδρυτής · Full-stack',
+  'Startup mentor · Ex-Google · 3x founder': 'Μέντορας νεοφυών · πρώην Google · 3× ιδρυτής',
+  'Angel investor · Seed': 'Angel επενδυτής · Seed',
+};
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
 //
@@ -165,7 +172,7 @@ function StatCard({
   trend?: { value: number; positive: boolean }; href?: string;
 }) {
   const content = (
-    <Card className="relative h-full overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
+    <Card className="relative h-full min-w-0 overflow-hidden rounded-xl transition-colors hover:border-border">
       {/* `h-full` continues onto the content, and the row centres inside it.
           Two of these four cards carry a trend line and two do not, so the
           row is as tall as the tallest: the card stretched to 148px while the
@@ -178,38 +185,47 @@ function StatCard({
         <div className="flex w-full items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
             <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
-            <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
+            <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">{value}</p>
             {trend && (
-              <p className={cn('text-[11px] font-medium leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
-                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%{' '}
-                <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} compact wrap />
-              </p>
+              <div className="space-y-0.5">
+                <p className={cn('text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
+                  {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
+                </p>
+                <p className="text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
+                  <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} stacked wrap />
+                </p>
+              </div>
             )}
           </div>
-          <div className="shrink-0 rounded-lg bg-primary/10 p-2 sm:p-2.5">
-            <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
-          </div>
+          {/* Glyph only — the previous icon-in-a-box repeated four times in a
+              row and read as chrome, not as data. Cursor-quiet: the number is
+              the object. */}
+          <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
         </div>
       </CardContent>
     </Card>
   );
-  return href ? <Link href={href}>{content}</Link> : content;
+  return href ? <Link href={href} className="block min-w-0 w-full">{content}</Link> : content;
 }
 
 function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? STATUS.info.icon : STATUS.warning.icon;
   return (
-    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 transition-all hover:border-primary/30 hover:shadow-sm">
+    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 transition-colors hover:border-border hover:bg-muted/30">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
+        <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
           {match.displayName?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{match.displayName}</p>
-        <p className="truncate text-xs text-muted-foreground">{match.headline}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {match.headline && PREVIEW_HEADLINE_EL[match.headline]
+            ? <BilingualText en={match.headline} el={PREVIEW_HEADLINE_EL[match.headline]} compact />
+            : match.headline}
+        </p>
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
         <span className={cn('flex items-center gap-0.5 text-sm font-bold tabular-nums', scoreColor)}>
@@ -232,7 +248,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
   return (
     <div className="flex items-center gap-3">
       <div
-        className={cn('shrink-0 rounded-full p-2', isComplete ? STATUS.success.bg : isOverdue ? STATUS.danger.bg : 'bg-primary/10')}
+        className="mt-0.5 shrink-0 text-muted-foreground"
         role="img"
         aria-label={stateLabel}
         title={stateLabel}
@@ -241,7 +257,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
           ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" />
           : isOverdue
           ? <AlertCircle className={cn('icon-sm', STATUS.danger.icon)} aria-hidden="true" />
-          : <Circle className="icon-sm text-primary-accessible" aria-hidden="true" />}
+          : <Circle className="icon-sm text-muted-foreground" aria-hidden="true" />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -368,8 +384,8 @@ export default function FounderDashboardContent() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="min-w-0 h-24" />)}
           </div>
         </div>
       </AppShell>
@@ -406,6 +422,9 @@ export default function FounderDashboardContent() {
           <BilingualText
             en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
             el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
+            stacked
+            wrap
+            secondaryFrom="lg"
           />
         </p>
 
@@ -423,7 +442,7 @@ export default function FounderDashboardContent() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
           <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
           <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />} value={unreadMessages} href="/messages" />
@@ -574,7 +593,7 @@ export default function FounderDashboardContent() {
                 ))}
                 {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
                   <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-center">
-                    <CfbGlyphWell name="matches" size="md" className="mx-auto mb-3" />
+                    <CfbGlyph name="matches" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
                     <p className="text-sm text-muted-foreground">
                       <BilingualText
                         en={dashboardEn('complete_profile_for_matches')}
@@ -700,24 +719,18 @@ export default function FounderDashboardContent() {
                   <BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {/* Nine actions in two columns left the ninth alone on a row
-                    of its own, stretched to full width and reading like a
-                    different kind of thing. Three columns divide them exactly. */}
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              <CardContent className="px-2 pb-2">
+                {/* List, not a 3×3 app-icon grid: the nine destinations stay,
+                    the bordered tiles were the noisiest block on the rail. */}
+                <div className="flex flex-col">
                   {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
                     <Link
                       key={href}
                       href={href}
-                      className="flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border"
+                      className="flex min-h-9 min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/50"
                     >
-                      <CfbGlyph name={glyph} className="icon-md shrink-0 text-primary-accessible" />
-                      {/* Three columns of this card are ~110px wide and the
-                          Greek labels are long — "Εύρεση συνιδρυτών" truncated
-                          into its neighbour. Two lines, not an ellipsis: the
-                          tile has the height for it and the word is the whole
-                          point of the tile. */}
-                      <span className="min-w-0 text-xs font-medium leading-tight text-foreground">
+                      <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 leading-snug">
                         <BilingualText en={labelEn} el={labelEl} compact wrap />
                       </span>
                     </Link>
@@ -744,7 +757,7 @@ export default function FounderDashboardContent() {
               <CardContent className="space-y-3">
                 {DEMO_ACTIVITY.map((item) => (
                   <div key={item.id} className="flex items-start gap-3">
-                    <div className="mt-0.5 shrink-0 rounded-full bg-primary/10 p-2 text-primary-accessible">
+                    <div className="mt-0.5 shrink-0 text-muted-foreground">
                       <CfbGlyph name={item.glyph} className="icon-sm" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -784,13 +797,10 @@ export default function FounderDashboardContent() {
                     return (
                       <div
                         key={event.id}
-                        className={cn(
-                          'flex items-start gap-3 rounded-xl border p-3 transition-colors',
-                          isUrgent ? cn('border', cfg.border, cfg.bg) : 'border-border/60'
-                        )}
+                        className="flex items-start gap-3 py-1.5"
                       >
-                        <div className={cn('mt-0.5 rounded-lg p-2 shrink-0', cfg.bg)}>
-                          <CfbGlyph name="calendar" className={cn('icon-sm', cfg.icon)} />
+                        <div className="mt-0.5 shrink-0 text-muted-foreground">
+                          <CfbGlyph name="calendar" className={cn('icon-sm', isUrgent ? cfg.icon : 'text-muted-foreground')} />
                         </div>
                         <div className="flex-1 min-w-0">
                           {/* Two lines rather than an ellipsis: in a 381px

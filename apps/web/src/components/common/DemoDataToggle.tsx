@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
  * styling used ghost+muted for ON and a dashed outline for OFF, which inverted
  * the affordance.
  */
-export function DemoDataToggle({ className }: { className?: string }) {
+export function DemoDataToggle({ className, iconOnly = false }: { className?: string; iconOnly?: boolean }) {
   const { showDemoData, toggleDemoData } = useDemoData();
   const label = showDemoData
     ? bilingualAria('Sample data is on — click to hide it', 'Τα δείγματα δεδομένων είναι ενεργά — κλικ για απόκρυψη')
@@ -35,12 +35,12 @@ export function DemoDataToggle({ className }: { className?: string }) {
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size={iconOnly ? 'icon' : 'sm'}
             onClick={toggleDemoData}
             aria-pressed={showDemoData}
             aria-label={label}
             className={cn(
-              'gap-1.5 px-2 font-medium',
+              iconOnly ? 'px-0' : 'gap-1.5 px-2 font-medium',
               showDemoData
                 ? 'bg-secondary text-foreground hover:bg-secondary/80'
                 : 'text-muted-foreground hover:text-foreground',
@@ -50,7 +50,7 @@ export function DemoDataToggle({ className }: { className?: string }) {
             {showDemoData
               ? <Eye className="icon-sm" aria-hidden="true" />
               : <EyeOff className="icon-sm" aria-hidden="true" />}
-            <span className="hidden sm:inline">
+            <span className={cn(!iconOnly && 'hidden sm:inline', iconOnly && 'sr-only')}>
               <BilingualText en="Sample data" el="Δείγμα" compact secondaryFrom="lg" />
             </span>
           </Button>

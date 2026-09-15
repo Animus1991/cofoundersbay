@@ -62,7 +62,7 @@ const themeConfig = [
   },
 ];
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ className }: { className?: string }) {
   const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark');
   const [mounted, setMounted] = useState(false);
   const { t } = useI18n();
@@ -81,7 +81,7 @@ export function ThemeSwitcher() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="relative h-9 w-9">
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
         <Moon className="icon-sm" />
       </Button>
     );
@@ -92,7 +92,7 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
           <CurrentIcon className="icon-sm transition-all" />
           <span className="sr-only">{t('Theme')}</span>
         </Button>

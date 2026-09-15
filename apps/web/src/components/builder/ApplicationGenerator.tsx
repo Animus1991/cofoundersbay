@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import {
@@ -422,7 +422,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
         ).map((item) => (
           <Card key={item.label} className="rounded-xl">
             <CardContent className="flex items-center gap-3 p-4">
-              <CfbGlyphWell name={item.glyph} size="sm" />
+              <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
               <div className="min-w-0">
                 <p className="text-2xs text-muted-foreground">
                   <BilingualText en={builderEn(item.label)} el={builderEl(item.label)} compact />
@@ -449,7 +449,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
-                  <CfbGlyphWell name={app.glyph} size="sm" />
+                  <CfbGlyph name={app.glyph} className="icon-sm text-muted-foreground" />
                   {getStatusBadge(app.status)}
                 </div>
                 <h3 className="font-semibold mb-1">{app.name}</h3>

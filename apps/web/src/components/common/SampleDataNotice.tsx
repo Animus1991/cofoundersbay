@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Info, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
+import { bilingualAria } from '@/lib/i18n/format';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type SampleDataNoticeProps = {
   surface: string;
@@ -13,33 +15,59 @@ type SampleDataNoticeProps = {
   className?: string;
 };
 
-/** Honest banner for screens that still render sample items instead of a live SoT. */
+/** Compact honesty pill. Expands to the full note; Ask AI stays a text link. */
 export function SampleDataNotice({ surface, detail, askAiPrompt, className }: SampleDataNoticeProps) {
   const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const title = t('{surface} is showing sample items', { surface: t(surface) });
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={bilingualAria(title, title)}
+        className={cn(
+          'inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground',
+          className,
+        )}
+      >
+        <Info className="icon-sm" aria-hidden="true" />
+        <BilingualText en="Sample data" el="Δείγμα δεδομένων" compact />
+      </button>
+    );
+  }
+
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 px-4 py-3.5 shadow-sm sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-2 rounded-xl border border-border/70 bg-card/80 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between',
         className,
       )}
     >
-      <div className="flex min-w-0 items-start gap-3">
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Info className="h-4 w-4" />
-        </span>
+      <div className="flex min-w-0 items-start gap-2">
+        <Info className="mt-0.5 icon-sm shrink-0 text-primary-accessible" aria-hidden="true" />
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">
-            {t('{surface} is showing sample items', { surface: t(surface) })}
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">{t(detail)}</p>
+          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t(detail)}</p>
         </div>
       </div>
-      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1.5">
-        <Link href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}>
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-          {t('Ask AI')}
+      <div className="flex shrink-0 items-center gap-2">
+        <Link
+          href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}
+          className="text-xs font-medium text-primary-accessible hover:underline"
+        >
+          <BilingualText en="Ask AI" el="Ρώτα το AI" compact />
         </Link>
-      </Button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label={bilingualAria('Dismiss sample-data notice', 'Απόρριψη ειδοποίησης δείγματος')}
+          className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+        >
+          <X className="icon-sm" aria-hidden="true" />
+        </button>
+      </div>
     </div>
   );
 }

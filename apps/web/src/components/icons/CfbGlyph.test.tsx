@@ -29,6 +29,9 @@ describe('CoFounderBay original glyph family', () => {
     expect(glyphForHref('/matches/compare')).toBe('compare');
     expect(glyphForHref('/settings/ai')).toBe('spark');
     expect(glyphForHref('/expert-reviews')).toBe('award');
+    expect(glyphForHref('/pitch/demo')).toBe('builder');
+    expect(glyphForHref('/data-room/abc')).toBe('wallet');
+    expect(glyphForHref('/feed')).toBe('spark');
     expect(glyphForHref('/messages?tab=ai')).toBe('messages');
     expect(glyphForHref('/unknown-surface')).toBe('default');
     expect(glyphForMode('work')).toBe('builder');

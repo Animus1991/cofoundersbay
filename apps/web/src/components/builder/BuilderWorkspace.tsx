@@ -54,7 +54,7 @@ import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
 import type { BuilderDocument } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import {
   builderEn,
@@ -62,6 +62,7 @@ import {
   builderDocLabel,
   builderDocDescription,
   BUILDER_DOC_TYPES,
+  BUILDER_PREVIEW_HINT_EL,
 } from '@/lib/i18n/strings-builder';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import {
@@ -69,6 +70,12 @@ import {
   useLanguagePreference,
 } from '@/lib/i18n/LanguagePreferenceContext';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+
+function PreviewHint({ text }: { text: string }) {
+  const el = BUILDER_PREVIEW_HINT_EL[text];
+  if (!el) return <>{text}</>;
+  return <BilingualText en={text} el={el} wrap />;
+}
 
 const MOBILE_DIALOG =
   'max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0';
@@ -492,57 +499,73 @@ export function BuilderWorkspace() {
       {/* ── Stats Bar ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card className="min-w-0">
-          <CardContent className="p-3 text-center sm:p-4">
-            <CfbGlyphWell name="builder" size="sm" className="mx-auto mb-2" />
-            <div className="text-xl font-bold text-foreground sm:text-2xl">{overallCompletion}%</div>
-            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact wrap />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">{overallCompletion}%</div>
+                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                  <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact wrap />
+                </div>
+              </div>
+              <CfbGlyph name="builder" className="icon-sm shrink-0 text-muted-foreground/70" />
             </div>
             <Progress value={overallCompletion} className="mt-2 h-1.5" />
           </CardContent>
         </Card>
 
         <Card className="min-w-0">
-          <CardContent className="p-3 text-center sm:p-4">
-            <CfbGlyphWell name="award" size="sm" className="mx-auto mb-2" />
-            <div className={cn('text-xl font-bold sm:text-2xl', dimensionColor(overallReadiness))}>
-              {assessingReadiness ? <Loader2 className="icon-lg mx-auto animate-spin" /> : `${overallReadiness}%`}
-            </div>
-            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact wrap />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className={cn('text-xl font-semibold tabular-nums tracking-tight sm:text-2xl', dimensionColor(overallReadiness))}>
+                  {assessingReadiness ? <Loader2 className="icon-lg animate-spin" /> : `${overallReadiness}%`}
+                </div>
+                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                  <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact wrap />
+                </div>
+              </div>
+              <CfbGlyph name="award" className="icon-sm shrink-0 text-muted-foreground/70" />
             </div>
             <Progress value={overallReadiness} className="mt-2 h-1.5" />
           </CardContent>
         </Card>
 
         <Card className="min-w-0">
-          <CardContent className="p-3 text-center sm:p-4">
-            <CfbGlyphWell name="flag" size="sm" className="mx-auto mb-2" />
-            <div className={cn('text-xl font-bold sm:text-2xl', completedDocs > 0 ? STATUS.success.text : 'text-foreground')}>{completedDocs}</div>
-            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact wrap />
-            </div>
-            <div className="mt-1.5 text-xs text-muted-foreground">
-              {inProgressDocs}{' '}
-              <BilingualText en={builderEn('in_progress')} el={builderEl('in_progress')} compact />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className={cn('text-xl font-semibold tabular-nums tracking-tight sm:text-2xl', completedDocs > 0 ? STATUS.success.text : 'text-foreground')}>{completedDocs}</div>
+                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                  <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact wrap />
+                </div>
+                <div className="mt-1.5 text-xs text-muted-foreground">
+                  {inProgressDocs}{' '}
+                  <BilingualText en={builderEn('in_progress')} el={builderEl('in_progress')} compact />
+                </div>
+              </div>
+              <CfbGlyph name="flag" className="icon-sm shrink-0 text-muted-foreground/70" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="min-w-0">
-          <CardContent className="p-3 text-center sm:p-4">
-            <CfbGlyphWell name="people" size="sm" className="mx-auto mb-2" />
-            <div className="text-xl font-bold text-primary-accessible sm:text-2xl">{collaborators.length}</div>
-            <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-              <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact wrap />
-            </div>
-            <div className="mt-2 -space-x-1.5 flex min-h-5 justify-center">
-              {collaborators.slice(0, 4).map(c => (
-                <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
-                  <AvatarImage src={c.user.avatarUrl} />
-                  <AvatarFallback className="text-2xs">{(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
-                </Avatar>
-              ))}
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-xl font-semibold tabular-nums tracking-tight text-foreground sm:text-2xl">{collaborators.length}</div>
+                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                  <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact wrap />
+                </div>
+                <div className="mt-2 -space-x-1.5 flex min-h-5">
+                  {collaborators.slice(0, 4).map(c => (
+                    <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
+                      <AvatarImage src={c.user.avatarUrl} />
+                      <AvatarFallback className="text-2xs">{(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+              </div>
+              <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground/70" />
             </div>
           </CardContent>
         </Card>
@@ -719,7 +742,7 @@ export function BuilderWorkspace() {
                     {readinessAssessment.blockers.slice(0, 3).map((b, i) => (
                       <div key={i} className={cn('flex items-start gap-1.5 text-xs', STATUS.danger.text)}>
                         <AlertCircle className="icon-sm mt-0.5 shrink-0" />
-                        {b}
+                        <PreviewHint text={b} />
                       </div>
                     ))}
                   </div>
@@ -741,7 +764,7 @@ export function BuilderWorkspace() {
                   {readinessAssessment.nextMilestones.slice(0, 6).map((milestone, i) => (
                     <div key={i} className="flex items-start gap-2 rounded-xl bg-muted/50 p-2.5 text-sm">
                       <ChevronRight className="icon-sm mt-0.5 shrink-0 text-primary-accessible" />
-                      <span className="text-muted-foreground">{milestone}</span>
+                      <span className="text-muted-foreground"><PreviewHint text={milestone} /></span>
                     </div>
                   ))}
                 </div>
@@ -768,7 +791,7 @@ export function BuilderWorkspace() {
           ) : documents.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <CfbGlyphWell name="book" size="lg" className="mx-auto mb-3 opacity-70" />
+                <CfbGlyph name="book" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
                 <p className="mb-4 text-muted-foreground">
                   <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
                 </p>
@@ -789,13 +812,13 @@ export function BuilderWorkspace() {
                 return (
                   <Card
                     key={doc.id}
-                    className="group cursor-pointer border-border/60 transition-all hover:shadow-md"
+                    className="group cursor-pointer border-border/60 transition-colors hover:border-border hover:bg-muted/20"
                     onClick={() => selectDocument(doc.id)}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex min-w-0 items-center gap-2">
-                          <CfbGlyphWell name={docGlyph(doc.type)} size="sm" />
+                          <CfbGlyph name={docGlyph(doc.type)} className="icon-sm shrink-0 text-muted-foreground" />
                           <CardTitle className="truncate text-sm">{doc.title}</CardTitle>
                         </div>
                         <div className={cn('h-2 w-2 shrink-0 rounded-full', statusColor(status))} />
@@ -833,7 +856,7 @@ export function BuilderWorkspace() {
               })}
 
               <Card
-                className="cursor-pointer border-2 border-dashed border-border/40 bg-muted/20 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
+                className="cursor-pointer border border-dashed border-border/50 bg-transparent transition-colors hover:border-border hover:bg-muted/30"
                 onClick={() => setShowCreateDocDialog(true)}
               >
                 <CardContent className="flex flex-col items-center justify-center gap-2 py-8 text-center">
@@ -865,7 +888,7 @@ export function BuilderWorkspace() {
             <CardContent>
               {collaborators.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  <CfbGlyphWell name="people" size="lg" className="mx-auto mb-3 opacity-70" />
+                  <CfbGlyph name="people" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
                   <p className="mb-3 text-sm">
                     <BilingualText en={builderEn('no_collab')} el={builderEl('no_collab')} />
                   </p>
@@ -1050,7 +1073,7 @@ export function BuilderWorkspace() {
           ) : readinessDimensions.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {readinessDimensions.map(dim => (
-                <Card key={dim.dimension} className="transition-shadow hover:shadow-sm">
+                <Card key={dim.dimension} className="transition-colors hover:border-border">
                   <CardContent className="space-y-3 p-4">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium">
@@ -1082,7 +1105,7 @@ export function BuilderWorkspace() {
           ) : (
             <Card>
               <CardContent className="py-10 text-center">
-                <CfbGlyphWell name="chart" size="lg" className="mx-auto mb-3 opacity-70" />
+                <CfbGlyph name="chart" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
                 <p className="mb-3 text-sm text-muted-foreground">
                   <BilingualText en={builderEn('no_readiness')} el={builderEl('no_readiness')} />
                 </p>

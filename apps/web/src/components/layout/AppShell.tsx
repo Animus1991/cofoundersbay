@@ -11,8 +11,9 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
-import { CfbGlyphWell } from '@/components/icons/CfbGlyph';
-import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { CfbGlyph, glyphForHref } from '@/components/icons/CfbGlyph';
+import { AIComposer } from '@/components/ai/AIComposer';
+import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 const MemoSideNav = memo(SideNav);
@@ -53,6 +54,7 @@ export function AppShellFrame({
 
   return (
     <InAppShellFrame.Provider value={true}>
+      <CommandPaletteHost>
       <div
         className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}
         style={{ paddingTop: TOP_BANNER_STACK }}
@@ -107,6 +109,7 @@ export function AppShellFrame({
           <MemoMobileBottomNav />
         </div>
       </div>
+      </CommandPaletteHost>
     </InAppShellFrame.Provider>
   );
 }
@@ -178,55 +181,46 @@ export function AppShell({
     // Inside a frame the <main> belongs to the layout above, so a page-level
     // contentClassName (e.g. overflow-x-clip on /analytics, /discover,
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
-    <div className={cn('space-y-6', insideFrame && contentClassName)}>
-      {(pageTitle || pageDescription || actions || showAskAi) && (
-        <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:flex-row sm:items-center">
-          <div className="flex min-w-0 items-start gap-3">
-            <CfbGlyphWell href={pathname} size="md" />
-            <div className="min-w-0">
-              {pageTitle && (
-                <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">
-                  <BilingualText en={pageTitle} el={pageTitleEl} />
-                </h1>
-              )}
-              {/* `lg:` on the wider measure, deliberately. The problem it
-                  solves is desktop-only -- with the column uncapped this
-                  bilingual subtitle still broke onto three lines while
-                  ~1200px sat empty beside it -- and applying 90ch at every
-                  width let the heading block claim room the action buttons
-                  needed, which pushed them 22px past a 640px viewport.
-                  Below `lg` the 65ch measure stays. */}
-              {pageDescription && (
-                <p className="mt-1 max-w-prose text-base leading-normal text-muted-foreground sm:mt-0.5 sm:text-sm lg:max-w-[90ch]">
-                  <BilingualText en={pageDescription} el={pageDescriptionEl} />
-                </p>
-              )}
+    <div className={cn('space-y-5', insideFrame && contentClassName)}>
+      {(pageTitle || pageDescription || actions || showAskAi || showHelp) && (
+        <header className="space-y-3">
+          <section className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 items-start gap-2.5">
+              <CfbGlyph
+                name={glyphForHref(pathname)}
+                className="mt-1 icon-md shrink-0 text-primary-accessible"
+              />
+              <div className="min-w-0">
+                {pageTitle && (
+                  <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">
+                    <BilingualText en={pageTitle} el={pageTitleEl} />
+                  </h1>
+                )}
+                {pageDescription && (
+                  <p className="mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
+                    <BilingualText
+                      en={pageDescription}
+                      el={pageDescriptionEl}
+                      stacked
+                      wrap
+                      secondaryFrom="lg"
+                    />
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-          {/* `sm:shrink-0` stopped the action cluster from ever giving width
-              back, so from `sm` up it pushed the page sideways (measured on
-              /profile at 640px: 576px of buttons ending 61px past the
-              viewport). It already wraps; letting it shrink to its widest
-              single button is what makes the wrap happen. */}
-          {(actions || showAskAi) && (
-            /* `lg:shrink-0` only. Below `lg` the cluster must keep giving
-               width back — that is what makes it wrap instead of pushing a
-               640px page sideways, as the note above records. On desktop the
-               opposite is true: there is room to spare, and letting the
-               heading's 90ch measure squeeze this column broke three buttons
-               onto three separate rows with ~900px sitting empty beside them.
-               The heading block carries `min-w-0`, so it absorbs the
-               difference. */
-            <div className="flex min-w-0 flex-wrap items-center gap-2 lg:min-w-fit lg:shrink-0">
-              {showAskAi && (
-                <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
-              )}
-              {actions}
-            </div>
-          )}
-        </section>
+            {(showHelp || showAskAi) && (
+              <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:max-w-[18rem] sm:shrink-0 sm:justify-end">
+                {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                {showAskAi && <AIComposer prompt={askAiPrompt} className="w-full sm:w-[16.5rem]" />}
+              </div>
+            )}
+          </section>
+          {actions ? (
+            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+          ) : null}
+        </header>
       )}
-      {showHelp && <PageContextualHelp />}
       {children}
     </div>
   );

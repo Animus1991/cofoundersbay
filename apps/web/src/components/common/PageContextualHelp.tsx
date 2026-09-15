@@ -639,6 +639,236 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  opportunities: {
+    en: (
+      <>
+        <p>
+          Four tabs, one purpose: find work to do with someone. <strong>Co-founder & freelance</strong> is listings from
+          the opportunities API. <strong>Jobs</strong> is the same feed as{' '}
+          <a href="/jobs">Jobs & roles</a>. <strong>My applications</strong> tracks what you sent;{' '}
+          <strong>Proposals</strong> is what others sent you.
+        </p>
+        <p>
+          When a listing has no apply URL, <em>Draft an approach</em> opens the assistant with that listing pre-loaded —
+          there is no silent apply endpoint. Sample proposals are labelled as sample.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τέσσερις καρτέλες, ένας σκοπός: να βρείτε δουλειά μαζί με κάποιον. Το <strong>Συνιδρυτής & freelance</strong>{' '}
+          είναι καταχωρίσεις από το API ευκαιριών. Οι <strong>Θέσεις</strong> είναι το ίδιο feed με τις{' '}
+          <a href="/jobs">Θέσεις εργασίας</a>. Οι <strong>αιτήσεις μου</strong> είναι όσα στείλατε· οι{' '}
+          <strong>Προτάσεις</strong> είναι όσα σας έστειλαν.
+        </p>
+        <p>
+          Όταν μια καταχώριση δεν έχει URL αίτησης, η <em>Σύνταξη προσέγγισης</em> ανοίγει τον βοηθό με την καταχώριση
+          προφορτωμένη — δεν υπάρχει σιωπηλό endpoint αίτησης. Οι δείγμα-προτάσεις φέρουν ετικέτα δείγματος.
+        </p>
+      </>
+    ),
+  },
+  jobs: {
+    en: (
+      <>
+        <p>
+          Roles posted by startups on this platform — not a general job board. Filter by function and employment type.
+          <em>Post a role</em> writes to the jobs API. Cards only show facts the posting actually has (no invented
+          skills or “posted today”).
+        </p>
+        <p>
+          Empty results can <em>Ask AI</em> to draft a cofounder or early-hire post from your profile gaps, or to
+          suggest people instead of a job.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Θέσεις που δημοσιεύουν startups σε αυτή την πλατφόρμα — όχι γενικός πίνακας αγγελιών. Φιλτράρετε κατά
+          λειτουργία και τύπο απασχόλησης. Η <em>Δημοσίευση θέσης</em> γράφει στο API. Οι κάρτες δείχνουν μόνο όσα έχει
+          όντως η αγγελία (χωρίς εφευρεμένες δεξιότητες ή «δημοσιεύτηκε σήμερα»).
+        </p>
+        <p>
+          Τα κενά αποτελέσματα μπορούν να <em>Ρωτήσουν το AI</em> να συντάξει αγγελία συνιδρυτή ή πρώτης πρόσληψης από
+          τα κενά του προφίλ σας, ή να προτείνει ανθρώπους αντί για θέση.
+        </p>
+      </>
+    ),
+  },
+  learning: {
+    en: (
+      <>
+        <p>
+          Resources and sequenced <strong>paths</strong> aligned with readiness gaps. Tapping a path filters this page
+          to that topic — it does not invent a separate course player. Saved and Completed are local to the cards on
+          this screen.
+        </p>
+        <p>
+          Prefer a guided next step? <em>Ask AI</em> which gap in Readiness to study first.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Πόροι και διαδοχικά <strong>μονοπάτια</strong> ευθυγραμμισμένα με τα κενά ετοιμότητας. Το πάτημα ενός
+          μονοπατιού φιλτράρει αυτή τη σελίδα στο θέμα του — δεν ανοίγει ξεχωριστό player. Τα Αποθηκευμένα και
+          Ολοκληρωμένα είναι τοπικά στις κάρτες εδώ.
+        </p>
+        <p>
+          Θέλετε καθοδηγούμενο επόμενο βήμα; <em>Ρωτήστε το AI</em> ποιο κενό στο Readiness να μελετήσετε πρώτα.
+        </p>
+      </>
+    ),
+  },
+  feed: {
+    en: (
+      <>
+        <p>
+          Network updates from people you follow. When the live feed module has nothing, sample posts appear behind a
+          notice — they are for layout, not activity you missed.
+        </p>
+        <p>
+          <em>Ask AI</em> what to do next on Discover, Matches, or Messages instead of waiting on a sample timeline.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Ενημερώσεις δικτύου από όσους ακολουθείτε. Όταν το live module δεν έχει τίποτα, εμφανίζονται δείγματα πίσω
+          από ειδοποίηση — είναι για τη διάταξη, όχι δραστηριότητα που χάσατε.
+        </p>
+        <p>
+          <em>Ρωτήστε το AI</em> τι να κάνετε μετά στο Discover, τα Matches ή τα Μηνύματα αντί να περιμένετε σε δείγμα
+          χρονολογίου.
+        </p>
+      </>
+    ),
+  },
+  marketplace: {
+    en: (
+      <>
+        <p>
+          Legal, design, growth, and ops providers. When live listings are empty, sample experts appear behind a
+          notice so you can learn the layout. <em>List your service</em> goes to the real provider workspace.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Πάροχοι νομικών, σχεδιασμού, growth και operations. Όταν οι live καταχωρίσεις είναι κενές, εμφανίζονται
+          δείγματα πίσω από ειδοποίηση ώστε να δείτε τη διάταξη. Η <em>Καταχώριση υπηρεσίας</em> πηγαίνει στον
+          πραγματικό χώρο του παρόχου.
+        </p>
+      </>
+    ),
+  },
+  calendar: {
+    en: (
+      <>
+        <p>
+          Sessions, events, and milestone due dates are not one API yet. The grid is a labelled sample so you can
+          learn month/list views. <em>Add event</em> opens the real event composer; live dates live on Events and
+          Milestones.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Συνεδρίες, εκδηλώσεις και προθεσμίες οροσήμων δεν είναι ακόμη ένα API. Το πλέγμα είναι επισημασμένο δείγμα
+          για τις προβολές μήνα/λίστας. Η <em>Προσθήκη εκδήλωσης</em> ανοίγει τον πραγματικό συνθέτη· οι ζωντανές
+          ημερομηνίες είναι στις Εκδηλώσεις και τα Ορόσημα.
+        </p>
+      </>
+    ),
+  },
+  programs: {
+    en: (
+      <>
+        <p>
+          Accelerators, incubators, bootcamps, and competitions. <strong>Open</strong> means you can still apply.{' '}
+          <strong>My applications</strong> is what you already sent — the same artefact the Builder Applications tab
+          writes. Deadlines of 7 days or less are highlighted.
+        </p>
+        <p>
+          Readiness sends you here when the accelerator dimension is high enough to apply. <em>Ask AI</em> which open
+          program fits your stage.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Επιταχυντές, θερμοκοιτίδες, bootcamps και διαγωνισμοί. <strong>Ανοιχτά</strong> σημαίνει ότι μπορείτε ακόμη να
+          κάνετε αίτηση. Οι <strong>αιτήσεις μου</strong> είναι όσα έχετε ήδη στείλει — το ίδιο παραδοτέο με την καρτέλα
+          Αιτήσεις στον Builder. Προθεσμίες έως 7 ημερών επισημαίνονται.
+        </p>
+        <p>
+          Το Readiness σας φέρνει εδώ όταν η διάσταση επιταχυντή είναι αρκετά υψηλή. <em>Ρωτήστε το AI</em> ποιο ανοιχτό
+          πρόγραμμα ταιριάζει στο στάδιό σας.
+        </p>
+      </>
+    ),
+  },
+  groups: {
+    en: (
+      <>
+        <p>
+          Industry and stage communities. Join to post; create your own anytime. Public groups are listed here;
+          private and secret groups stay off the directory unless you are a member.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Κοινότητες βάσει κλάδου και σταδίου. Συμμετέχετε για να δημοσιεύετε· δημιουργήστε τη δική σας οποτεδήποτε.
+          Οι δημόσιες ομάδες εμφανίζονται εδώ· οι ιδιωτικές και μυστικές μένουν εκτός καταλόγου εκτός αν είστε μέλος.
+        </p>
+      </>
+    ),
+  },
+  'public-pitch': {
+    en: (
+      <>
+        <p>
+          This is the investor-facing deck, not the Builder editor. Views are counted. Contact goes to the founder who
+          published it — there is no public inbox.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτό είναι το deck προς επενδυτές, όχι ο επεξεργαστής του Builder. Οι προβολές μετρώνται. Η επαφή πηγαίνει
+          στον ιδρυτή που το δημοσίευσε — δεν υπάρχει δημόσιο inbox.
+        </p>
+      </>
+    ),
+  },
+  'data-room': {
+    en: (
+      <>
+        <p>
+          Private diligence documents. Share access per investor; nothing here is public. Upload and share stay on
+          this room — they do not publish to the feed or to Discover.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Ιδιωτικά έγγραφα diligence. Η πρόσβαση μοιράζεται ανά επενδυτή· τίποτα εδώ δεν είναι δημόσιο. Η μεταφόρτωση
+          και ο διαμοιρασμός μένουν σε αυτό το room — δεν δημοσιεύονται στο feed ούτε στο Discover.
+        </p>
+      </>
+    ),
+  },
 };
 
 /**
@@ -668,7 +898,7 @@ export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, 
       id={helpId}
       title={helpTitle}
       titleEl={helpTitleEl}
-      defaultOpen={defaultOpen ?? true}
+      defaultOpen={defaultOpen ?? false}
       compact={compact}
     >
       {body}
