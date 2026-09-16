@@ -564,10 +564,14 @@ export default function MilestonesPage() {
           {/* Priority + View + Refresh */}
           <div className="flex items-center gap-2">
             <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-border/50 bg-secondary/30 px-3 py-1.5">
-              <CfbGlyph name="sliders" className="icon-sm text-muted-foreground" />
+              {/* The glyph is the only thing next to this control, and a glyph
+                  is not a label: axe reported `select-name (critical)` and a
+                  screen reader announced a combo box with no subject. */}
+              <CfbGlyph name="sliders" className="icon-sm text-muted-foreground" aria-hidden="true" />
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
+                aria-label={primary === 'el' ? 'Φίλτρο προτεραιότητας' : 'Filter by priority'}
                 className="tap-target-y cursor-pointer bg-transparent text-xs text-foreground outline-none"
               >
                 {[

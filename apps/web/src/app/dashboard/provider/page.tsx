@@ -99,8 +99,11 @@ function ServiceCard({ service }: { service: any }) {
           <span className="text-xs font-medium text-primary-accessible">{service.price}</span>
         </div>
       </div>
-      <Button variant="ghost" size="icon">
-        <Settings className="icon-sm" />
+      {/* One of these per service row, all three announced as "button" with
+          nothing to distinguish them. The service name is what tells them
+          apart, so it belongs in the name. */}
+      <Button variant="ghost" size="icon" aria-label={`Settings for ${service.name}`}>
+        <Settings className="icon-sm" aria-hidden="true" />
       </Button>
     </div>
   );
