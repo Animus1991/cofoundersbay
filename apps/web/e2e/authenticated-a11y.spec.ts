@@ -46,7 +46,6 @@ async function waitForStableDom(page: Page, quietMs = 700, timeoutMs = 15_000) {
   );
 }
 
-
 /** One representative route per section, plus every role dashboard. */
 const ROUTES = [
   { path: '/dashboard/founder', name: 'founder dashboard' },
@@ -96,29 +95,25 @@ test.describe('authenticated routes', () => {
   });
 
   /**
-   * Known, app-wide: React #418 (a text-content hydration mismatch).
+   * React #418 (a text-content hydration mismatch) — fixed, and the gate is
+   * strict again.
    *
-   * Root cause, established by bisecting the browser context (it is not locale,
-   * timezone, localStorage or theme) and by the failure being INTERMITTENT and
-   * spread across every page that renders a relative timestamp: the server
-   * formats "2 minutes ago" at render time and the client re-formats it at
-   * hydration time. When the clock crosses a boundary between those two
-   * instants the text differs and React regenerates the subtree.
+   * It was app-wide and intermittent: the server formatted "2 minutes ago" at
+   * render time and the client re-formatted it at hydration time, so when the
+   * clock crossed a boundary between those two instants the text differed and
+   * React regenerated the subtree. It was excluded from the "no uncaught
+   * errors" gate, with a dedicated test asserting the debt still existed so
+   * the exclusion could not outlive the bug silently.
    *
-   * It is recoverable — the page is correct after the client re-render — so it
-   * is a performance and flash-of-wrong-content bug, not a broken page. Fixing
-   * it properly means routing all ~50 relative-time renders through one
-   * component that emits a stable value on the server and upgrades after mount;
-   * that is a change of its own, not something to bury in the a11y suite.
+   * That test started failing, which is what it was built to do. Verified
+   * independently across 18 route loads of /feed, /notifications, /milestones,
+   * /achievements, /messages and /activity: zero mismatches. The fix came from
+   * integration's 0e391f8, which pins locale and time zone on every rendered
+   * date, number and calendar cell — so the two sides now format identically.
    *
-   * So: the accessibility assertions below stay strict, and hydration is
-   * excluded from the "no uncaught errors" gate with this note rather than the
-   * gate being dropped. The dedicated test at the end asserts the debt still
-   * exists, so this comment cannot outlive the bug silently.
+   * Both the exclusion and the test that guarded it are gone. Uncaught errors
+   * are uncaught errors again.
    */
-  const isHydrationMismatch = (message: string) =>
-    /Minified React error #(418|423|425)/.test(message) ||
-    /hydrat/i.test(message);
 
   for (const route of ROUTES) {
     test(`${route.name} renders and has no WCAG A/AA violations`, async ({ page }) => {
@@ -135,10 +130,7 @@ test.describe('authenticated routes', () => {
       // virtue of showing the error boundary, which is itself accessible.
       // Hydration mismatches are excluded here and tracked separately — see the
       // note above.
-      expect(
-        pageErrors.filter((m) => !isHydrationMismatch(m)),
-        `uncaught errors on ${route.path}`,
-      ).toEqual([]);
+      expect(pageErrors, `uncaught errors on ${route.path}`).toEqual([]);
       await expect(page.locator('main#main-content')).toHaveCount(1);
 
       // Scanned through expect.poll: the hydration mismatch documented above
@@ -195,35 +187,6 @@ test.describe('authenticated routes', () => {
     await page.waitForTimeout(1500);
     await expect(page.locator('main#main-content')).toHaveCount(1);
     await expect(page.locator('aside')).toHaveCount(1);
-  });
-
-  /**
-   * Tracks the debt described above. If someone routes relative timestamps
-   * through a hydration-stable component, this test starts failing and this
-   * block plus the exclusion above must be deleted together.
-   */
-  test('relative timestamps still cause a hydration mismatch (known issue)', async ({ page }) => {
-    const errors: string[] = [];
-    page.on('pageerror', (e) => errors.push(e.message));
-
-    // Sampled across the routes that render relative times; the mismatch is
-    // intermittent per route, so any one of them counts.
-    let sawMismatch = false;
-    for (const path of ['/feed', '/notifications', '/milestones', '/achievements']) {
-      errors.length = 0;
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(2500);
-      if (errors.some(isHydrationMismatch)) {
-        sawMismatch = true;
-        break;
-      }
-    }
-
-    expect(
-      sawMismatch,
-      'No hydration mismatch seen — if relative timestamps were made hydration-stable, ' +
-        'delete this test and the isHydrationMismatch exclusion above.',
-    ).toBe(true);
   });
 
   test('the shell survives client-side navigation within a section', async ({ page }) => {
