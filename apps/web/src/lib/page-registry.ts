@@ -154,19 +154,13 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', helpId: 'learning', helpTitle: 'How the learning hub works', helpTitleEl: 'Πώς δουλεύει το κέντρο μάθησης', section: 'Resources', status: 'complete' },
   { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', helpId: 'groups', helpTitle: 'How communities work', helpTitleEl: 'Πώς δουλεύουν οι κοινότητες', section: 'Community', status: 'complete' },
   { path: '/feed', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only when the live feed is empty.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
-  { path: '/posts', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only when the live feed is empty.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
-  { path: '/pitch', title: 'Public pitch', description: 'Investor-facing deck. Views are counted; contact goes to the founder, not a public inbox.', helpId: 'public-pitch', helpTitle: 'Reading this pitch', helpTitleEl: 'Πώς διαβάζεται αυτό το pitch', section: 'Work', status: 'complete' },
-  { path: '/data-room', title: 'Investor data room', description: 'Private documents for diligence. Share access per investor; nothing here is public.', helpId: 'data-room', helpTitle: 'How the data room works', helpTitleEl: 'Πώς δουλεύει το data room', section: 'Work', status: 'complete' },
   { path: '/mentoring', title: 'Find mentors', description: 'Directory of vetted mentors \u2014 filter by expertise, timezone, and rate.', section: 'Explore', status: 'complete' },
 
   // ── Mentor sub-pages ──
-  { path: '/mentor/profile-setup', title: 'Mentor setup', description: 'Tell founders what you offer, your rates, and your availability.', section: 'Work', audience: ['mentor'], status: 'complete' },
 
   // ── Investor sub-pages ──
-  { path: '/investor/profile-setup', title: 'Investor setup', description: 'Configure thesis, check size, sectors, and stages to receive matching dealflow.', section: 'Work', audience: ['investor'], status: 'complete' },
 
   // ── Provider sub-pages ──
-  { path: '/provider/listings', title: 'My listings', description: 'Manage services you offer to startups on the marketplace.', section: 'Work', audience: ['service_provider'], status: 'complete' },
 
   // ── Ten routes that shipped without an entry here ──
   //    Each passes its own `title`/`description` to AppShell, so the header
@@ -185,6 +179,78 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/referrals', title: 'Referral Program', description: 'Invite friends and earn rewards when they join CoFounderBay.', section: 'Community', status: 'complete' },
   { path: '/reputation', title: 'Reputation Score', description: 'Your trust and credibility on CoFounderBay.', section: 'Account', status: 'complete' },
   { path: '/saved-searches', title: 'Saved Searches', description: 'Manage your saved search filters and get notified of new matches.', section: 'Explore', status: 'complete' },
+
+  // ── The 49 routes the registry did not know ──────────────────────────────
+  // `navigate` is a declared assistant capability and `getPageMeta` is what
+  // gives the header, the breadcrumb and the assistant a page's identity. A
+  // route missing from here is a route the assistant cannot offer to open,
+  // cannot describe when asked "what is this page", and cannot weigh when
+  // deciding what to suggest next — a third of the product was in that state.
+  // `pageRegistryCoverage.test.ts` fails if a new `page.tsx` lands without an
+  // entry, so the gap cannot reopen quietly.
+
+  // Mentor
+  { path: '/mentor/dashboard', title: 'Mentor dashboard', titleEl: 'Πίνακας μέντορα', description: 'Your mentees, sessions and earnings at a glance.', descriptionEl: 'Οι μαθητευόμενοι, οι συνεδρίες και τα έσοδά σας με μια ματιά.', section: 'Work', audience: ['mentor'], priority: 'critical', status: 'complete' },
+  { path: '/mentor/mentees', title: 'Mentees', titleEl: 'Μαθητευόμενοι', description: 'The founders you are mentoring, and where each one stands.', descriptionEl: 'Οι ιδρυτές που καθοδηγείτε και σε ποιο σημείο βρίσκεται ο καθένας.', section: 'Work', audience: ['mentor'], status: 'complete' },
+  { path: '/mentor/availability', title: 'Availability', titleEl: 'Διαθεσιμότητα', description: 'The hours you can be booked for sessions.', descriptionEl: 'Οι ώρες που μπορείτε να κλείσετε συνεδρίες.', section: 'Work', audience: ['mentor'], status: 'complete' },
+  { path: '/mentor/earnings', title: 'Earnings', titleEl: 'Έσοδα', description: 'Payouts, pending balance and session history.', descriptionEl: 'Πληρωμές, εκκρεμές υπόλοιπο και ιστορικό συνεδριών.', section: 'Work', audience: ['mentor'], status: 'complete' },
+  { path: '/mentor/reviews', title: 'Reviews', titleEl: 'Κριτικές', description: 'What the founders you have mentored said afterwards.', descriptionEl: 'Τι είπαν οι ιδρυτές που καθοδηγήσατε.', section: 'Work', audience: ['mentor'], status: 'complete' },
+  { path: '/mentor/profile', title: 'Mentor profile', titleEl: 'Προφίλ μέντορα', description: 'Your expertise, rates and the founders you want to reach.', descriptionEl: 'Η εξειδίκευσή σας, οι χρεώσεις και οι ιδρυτές που θέλετε να προσεγγίσετε.', section: 'Account', audience: ['mentor'], status: 'complete' },
+
+  // Investor
+  { path: '/investor/dashboard', title: 'Investor dashboard', titleEl: 'Πίνακας επενδυτή', description: 'Deal flow, portfolio and the founders on your watchlist.', descriptionEl: 'Ροή συμφωνιών, χαρτοφυλάκιο και οι ιδρυτές στη λίστα παρακολούθησης.', section: 'Work', audience: ['investor'], priority: 'critical', status: 'complete' },
+  { path: '/investor/portfolio', title: 'Portfolio', titleEl: 'Χαρτοφυλάκιο', description: 'The companies you have invested in and how they are tracking.', descriptionEl: 'Οι εταιρείες στις οποίες επενδύσατε και η πορεία τους.', section: 'Work', audience: ['investor'], status: 'complete' },
+  { path: '/investor/watchlist', title: 'Watchlist', titleEl: 'Λίστα παρακολούθησης', description: 'Founders and startups you are following before committing.', descriptionEl: 'Ιδρυτές και startups που παρακολουθείτε πριν δεσμευτείτε.', section: 'Work', audience: ['investor'], status: 'complete' },
+  { path: '/investor/analytics', title: 'Investor analytics', titleEl: 'Αναλυτικά επενδυτή', description: 'Deal flow trends, sector exposure and response rates.', descriptionEl: 'Τάσεις ροής συμφωνιών, έκθεση ανά κλάδο και ποσοστά απόκρισης.', section: 'Work', audience: ['investor'], status: 'complete' },
+
+  // Service provider
+  { path: '/provider/dashboard', title: 'Provider dashboard', titleEl: 'Πίνακας παρόχου', description: 'Inquiries, active projects and revenue.', descriptionEl: 'Αιτήματα, ενεργά έργα και έσοδα.', section: 'Work', audience: ['service_provider'], priority: 'critical', status: 'complete' },
+  { path: '/provider/services', title: 'Services', titleEl: 'Υπηρεσίες', description: 'What you offer, how it is priced and what is currently bookable.', descriptionEl: 'Τι προσφέρετε, πώς τιμολογείται και τι είναι διαθέσιμο.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+  { path: '/provider/inquiries', title: 'Inquiries', titleEl: 'Αιτήματα', description: 'Founders who asked about your services and are waiting on you.', descriptionEl: 'Ιδρυτές που ρώτησαν για τις υπηρεσίες σας και περιμένουν απάντηση.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+  { path: '/provider/projects', title: 'Projects', titleEl: 'Έργα', description: 'Engagements in progress and what each one is waiting on.', descriptionEl: 'Συνεργασίες σε εξέλιξη και τι εκκρεμεί σε καθεμία.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+  { path: '/provider/reviews', title: 'Provider reviews', titleEl: 'Κριτικές παρόχου', description: 'What clients said after working with you.', descriptionEl: 'Τι είπαν οι πελάτες μετά τη συνεργασία.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+  { path: '/provider/analytics', title: 'Provider analytics', titleEl: 'Αναλυτικά παρόχου', description: 'Views, inquiry conversion and revenue over time.', descriptionEl: 'Προβολές, μετατροπή αιτημάτων και έσοδα διαχρονικά.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+  { path: '/provider/profile', title: 'Provider profile', titleEl: 'Προφίλ παρόχου', description: 'Your company, specialisms and portfolio.', descriptionEl: 'Η εταιρεία, οι εξειδικεύσεις και το χαρτοφυλάκιό σας.', section: 'Account', audience: ['service_provider'], status: 'complete' },
+
+  // Incubator / organization
+  { path: '/dashboard', title: 'Dashboard', titleEl: 'Πίνακας ελέγχου', description: 'Your workspace home — it opens the dashboard for your role.', descriptionEl: 'Η αρχική του χώρου σας — ανοίγει τον πίνακα του ρόλου σας.', section: 'Work', priority: 'critical', status: 'complete' },
+  { path: '/dashboard/incubator', title: 'Incubator dashboard', titleEl: 'Πίνακας θερμοκοιτίδας', description: 'Cohorts, applications and the milestones your startups are hitting.', descriptionEl: 'Κύκλοι, αιτήσεις και τα ορόσημα των startups σας.', section: 'Work', audience: ['org'], priority: 'critical', status: 'complete' },
+  { path: '/org/[slug]', title: 'Organization', titleEl: 'Οργανισμός', description: 'An organization\u2019s public page — programs, cohorts and members.', descriptionEl: 'Η δημόσια σελίδα ενός οργανισμού — προγράμματα, κύκλοι και μέλη.', section: 'Explore', status: 'complete' },
+  { path: '/org/[slug]/admin', title: 'Organization admin', titleEl: 'Διαχείριση οργανισμού', description: 'Manage this organization\u2019s programs, cohorts, members and branding.', descriptionEl: 'Διαχειριστείτε προγράμματα, κύκλους, μέλη και branding.', section: 'Work', audience: ['org'], status: 'complete' },
+  { path: '/org/cohorts/[id]', title: 'Cohort', titleEl: 'Κύκλος', description: 'A single cohort — its startups, schedule and progress.', descriptionEl: 'Ένας κύκλος — startups, πρόγραμμα και πρόοδος.', section: 'Work', audience: ['org'], status: 'complete' },
+  { path: '/t/[slug]', title: 'Tenant workspace', titleEl: 'Χώρος οργανισμού', description: 'A white-labelled workspace on its own subdomain or path.', descriptionEl: 'Χώρος εργασίας με δική του επωνυμία, σε υποτομέα ή διαδρομή.', section: 'Work', status: 'complete' },
+  { path: '/admin/user-detail/[id]', title: 'User detail', titleEl: 'Στοιχεία χρήστη', description: 'Everything the platform knows about one account, and the actions you can take on it.', descriptionEl: 'Ό,τι γνωρίζει η πλατφόρμα για έναν λογαριασμό και οι ενέργειες που μπορείτε να κάνετε.', section: 'Admin', audience: ['admin'], status: 'complete' },
+
+  // Community and profiles
+  { path: '/endorsements', title: 'Endorsements', titleEl: 'Συστάσεις', description: 'Vouches you have given and received, and who is waiting on one.', descriptionEl: 'Συστάσεις που δώσατε και λάβατε, και ποιος περιμένει μία.', section: 'Community', status: 'complete' },
+  { path: '/coaching', title: 'Coaching', titleEl: 'Καθοδήγηση', description: 'Book time with mentors and see your upcoming sessions.', descriptionEl: 'Κλείστε χρόνο με μέντορες και δείτε τις επόμενες συνεδρίες σας.', section: 'Resources', status: 'complete' },
+  { path: '/groups/[groupId]', title: 'Group', titleEl: 'Ομάδα', description: 'A community group — its posts, members and events.', descriptionEl: 'Μια ομάδα — αναρτήσεις, μέλη και εκδηλώσεις.', section: 'Community', status: 'complete' },
+  { path: '/groups/manage', title: 'Manage group', titleEl: 'Διαχείριση ομάδας', description: 'Settings, membership and permissions for a group you run.', descriptionEl: 'Ρυθμίσεις, μέλη και δικαιώματα για ομάδα που διαχειρίζεστε.', section: 'Community', status: 'complete' },
+  { path: '/groups/moderation', title: 'Group moderation', titleEl: 'Συντονισμός ομάδας', description: 'Reported posts and pending members awaiting a decision.', descriptionEl: 'Αναφερθείσες αναρτήσεις και μέλη σε αναμονή απόφασης.', section: 'Community', status: 'complete' },
+  { path: '/profiles/[userId]', title: 'Profile', titleEl: 'Προφίλ', description: 'Someone\u2019s full profile — background, skills and what they are looking for.', descriptionEl: 'Το πλήρες προφίλ κάποιου — υπόβαθρο, δεξιότητες και τι αναζητά.', section: 'Explore', status: 'complete' },
+  { path: '/p/[username]', title: 'Public profile', titleEl: 'Δημόσιο προφίλ', description: 'A shareable profile page that works without signing in.', descriptionEl: 'Σελίδα προφίλ που μοιράζεται και λειτουργεί χωρίς σύνδεση.', section: 'Public', status: 'complete' },
+  { path: '/matches/[userId]', title: 'Match detail', titleEl: 'Λεπτομέρειες αντιστοίχισης', description: 'Why you and this person were matched, factor by factor.', descriptionEl: 'Γιατί αντιστοιχιστήκατε με αυτό το άτομο, παράγοντα προς παράγοντα.', section: 'Explore', status: 'complete' },
+
+  // Workspace artifacts
+  { path: '/research/canvas', title: 'Research canvas', titleEl: 'Καμβάς έρευνας', description: 'Map a problem, hypotheses and evidence on an open canvas.', descriptionEl: 'Χαρτογραφήστε πρόβλημα, υποθέσεις και ευρήματα σε ανοιχτό καμβά.', section: 'Work', status: 'complete' },
+  { path: '/research/[boardId]', title: 'Research board', titleEl: 'Πίνακας έρευνας', description: 'One research board and everything pinned to it.', descriptionEl: 'Ένας πίνακας έρευνας και ό,τι είναι καρφιτσωμένο πάνω του.', section: 'Work', status: 'complete' },
+  { path: '/projects/[projectId]', title: 'Project', titleEl: 'Έργο', description: 'A project\u2019s tasks, collaborators and files.', descriptionEl: 'Οι εργασίες, οι συνεργάτες και τα αρχεία ενός έργου.', section: 'Work', status: 'complete' },
+  { path: '/pitch/[id]', title: 'Pitch deck', titleEl: 'Παρουσίαση', description: 'A deck in the builder — slides, notes and sharing.', descriptionEl: 'Μια παρουσίαση στον builder — διαφάνειες, σημειώσεις και κοινοποίηση.', helpId: 'public-pitch', helpTitle: 'Reading this pitch', helpTitleEl: 'Πώς διαβάζεται αυτό το pitch', section: 'Work', status: 'complete' },
+  { path: '/data-room/[id]', title: 'Data room', titleEl: 'Data room', description: 'Documents shared with investors, and who has opened what.', descriptionEl: 'Έγγραφα που μοιράζεστε με επενδυτές και ποιος άνοιξε τι.', helpId: 'data-room', helpTitle: 'How the data room works', helpTitleEl: 'Πώς δουλεύει το data room', section: 'Work', status: 'complete' },
+  { path: '/share/[token]', title: 'Shared link', titleEl: 'Κοινόχρηστος σύνδεσμος', description: 'Something shared with you through a link.', descriptionEl: 'Κάτι που μοιράστηκε μαζί σας μέσω συνδέσμου.', section: 'Public', status: 'complete' },
+
+  // Auth and system
+  { path: '/forgot-password', title: 'Reset your password', titleEl: 'Επαναφορά κωδικού', description: 'We will email you a link to set a new password.', descriptionEl: 'Θα σας στείλουμε σύνδεσμο για νέο κωδικό.', section: 'Auth', status: 'complete' },
+  { path: '/reset-password', title: 'Set a new password', titleEl: 'Ορισμός νέου κωδικού', description: 'Choose a new password for your account.', descriptionEl: 'Επιλέξτε νέο κωδικό για τον λογαριασμό σας.', section: 'Auth', status: 'complete' },
+  { path: '/auth/verify-email', title: 'Verify your email', titleEl: 'Επιβεβαίωση email', description: 'Confirm your address so we can reach you.', descriptionEl: 'Επιβεβαιώστε τη διεύθυνσή σας για να μπορούμε να επικοινωνούμε.', section: 'Auth', status: 'complete' },
+  { path: '/auth/oauth-callback', title: 'Signing you in', titleEl: 'Γίνεται σύνδεση', description: 'Completing sign-in with your provider.', descriptionEl: 'Ολοκλήρωση σύνδεσης με τον πάροχό σας.', section: 'Auth', status: 'complete' },
+  { path: '/auth/sso-complete', title: 'Single sign-on', titleEl: 'Ενιαία σύνδεση', description: 'Finishing your organization sign-in.', descriptionEl: 'Ολοκλήρωση σύνδεσης μέσω του οργανισμού σας.', section: 'Auth', status: 'complete' },
+  { path: '/terms', title: 'Terms of Service', titleEl: 'Όροι χρήσης', description: 'The agreement between you and CoFounderBay.', descriptionEl: 'Η συμφωνία ανάμεσα σε εσάς και το CoFounderBay.', section: 'Public', status: 'complete' },
+  { path: '/privacy', title: 'Privacy Policy', titleEl: 'Πολιτική απορρήτου', description: 'What we collect, why, and what you can ask us to delete.', descriptionEl: 'Τι συλλέγουμε, γιατί, και τι μπορείτε να ζητήσετε να διαγραφεί.', section: 'Public', status: 'complete' },
+  { path: '/api-status', title: 'API status', titleEl: 'Κατάσταση API', description: 'Whether the backend is reachable, and what is degraded.', descriptionEl: 'Αν το backend είναι προσβάσιμο και τι λειτουργεί μειωμένα.', section: 'Account', status: 'complete' },
+  { path: '/demo', title: 'Demo', titleEl: 'Επίδειξη', description: 'A guided tour of the product with sample data.', descriptionEl: 'Ξενάγηση στο προϊόν με δείγμα δεδομένων.', section: 'Public', status: 'complete' },
+  { path: '/themes/alliance', title: 'Alliance theme', titleEl: 'Θέμα Alliance', description: 'Preview of the Alliance palette across the design system.', descriptionEl: 'Προεπισκόπηση της παλέτας Alliance στο design system.', section: 'Account', status: 'partial' },
+  { path: '/test-onboarding', title: 'Onboarding preview', titleEl: 'Προεπισκόπηση onboarding', description: 'Internal preview of the onboarding flow.', descriptionEl: 'Εσωτερική προεπισκόπηση της ροής onboarding.', section: 'Account', status: 'scaffold' },
 ];
 
 const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & { path?: string } }> = [

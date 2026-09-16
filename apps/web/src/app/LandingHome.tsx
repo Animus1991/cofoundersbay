@@ -695,21 +695,21 @@ export function LandingHome() {
                 and accelerators through intelligent matching and real-time collaboration.
               </p>
               <div className="flex items-center gap-3">
-                <a href="https://twitter.com" target="_blank" rel="noreferrer"
+                <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="CoFounderBay on Twitter"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Twitter className="icon-sm" />
+                  <Twitter className="icon-sm" aria-hidden="true" />
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer"
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="CoFounderBay on LinkedIn"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Linkedin className="icon-sm" />
+                  <Linkedin className="icon-sm" aria-hidden="true" />
                 </a>
-                <a href="https://github.com" target="_blank" rel="noreferrer"
+                <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="CoFounderBay on GitHub"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Github className="icon-sm" />
+                  <Github className="icon-sm" aria-hidden="true" />
                 </a>
-                <a href="https://globe.app" target="_blank" rel="noreferrer"
+                <a href="https://globe.app" target="_blank" rel="noreferrer" aria-label="The CoFounderBay website"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Globe className="icon-sm" />
+                  <Globe className="icon-sm" aria-hidden="true" />
                 </a>
               </div>
             </div>

@@ -28,13 +28,22 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 
-const STARTERS = [
+/**
+ * Starters, split the way the capability contract already splits its actions:
+ * a `read` answers a question, a `mutation` changes something you own. The six
+ * used to render as one undifferentiated run of chips, so nothing on screen
+ * told you that two of them would send a request to another person while the
+ * other four only looked something up. `writes` is the same distinction
+ * `ActionDeclaration.writes` carries — surfaced here, before the click, rather
+ * than only in the confirmation that follows it.
+ */
+const STARTERS: { en: string; el: string; writes?: boolean }[] = [
   { en: 'What should I do next?', el: 'Τι να κάνω μετά;' },
   { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα' },
   { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
   { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
-  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist' },
-  { en: 'Connect with Elena', el: 'Σύνδεση με την Elena' },
+  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist', writes: true },
+  { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', writes: true },
 ];
 
 function formatTime(d: Date) {
@@ -269,10 +278,17 @@ export function CopilotWorkspace({
 
         <div className="flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
           {chat.messages.length === 0 ? (
-            <div className="mx-auto flex max-w-lg flex-col gap-4 py-6">
+            /* `h-full` + `justify-center` rather than a top-pinned block: the
+               scroller is the full height of the page, so an intro that
+               started at the top left roughly 700px of void between the last
+               chip and the composer — the flagship page read as broken rather
+               than as ready for input. Centred, the same content sits between
+               the header and the composer it belongs to. `min-h-full` keeps it
+               scrollable once it outgrows the viewport. */
+            <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center gap-5 py-6">
               <div className="flex gap-2">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <Bot className="h-4 w-4" />
+                  <Bot className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-sm">
                   <BilingualText
@@ -281,18 +297,41 @@ export function CopilotWorkspace({
                   />
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {STARTERS.map((q) => (
-                  <button
-                    key={q.en}
-                    type="button"
-                    onClick={() => void chat.sendMessage(q.en)}
-                    className="min-h-11 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
-                  >
-                    {sayOne(q.en, q.el)}
-                  </button>
-                ))}
-              </div>
+
+              {([false, true] as const).map((writes) => {
+                const group = STARTERS.filter((q) => Boolean(q.writes) === writes);
+                if (group.length === 0) return null;
+                return (
+                  <div key={String(writes)} className="space-y-2">
+                    <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {writes
+                        ? sayOne('Changes something — asks first', 'Αλλάζει κάτι — ρωτά πρώτα')
+                        : sayOne('Just looks something up', 'Απλώς αναζητά κάτι')}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {group.map((q) => (
+                        <button
+                          key={q.en}
+                          type="button"
+                          onClick={() => void chat.sendMessage(q.en)}
+                          className={cn(
+                            'min-h-11 rounded-full border px-3 py-2 text-xs font-medium transition-colors',
+                            // Semantic tokens, not raw palette steps: the
+                            // product migrated ~2,000 of those onto the status
+                            // scale and these six were left behind, so they
+                            // were the only violet in the theme's chrome.
+                            writes
+                              ? 'border-status-warning-border/50 bg-status-warning-bg text-status-warning hover:bg-status-warning-bg/70'
+                              : 'border-border bg-secondary/50 text-foreground hover:bg-secondary',
+                          )}
+                        >
+                          {sayOne(q.en, q.el)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             chat.messages.map((msg) => (

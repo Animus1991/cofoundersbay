@@ -852,8 +852,12 @@ html {
   /* Skip-to-content — stays in the tab order, but has no paint until focused (WCAG 2.4.1) */
   .skip-to-content:not(:focus) {
     position: absolute;
+    /* Off-screen in both axes. `left` alone leaves the box at y=0 with a 1px
+       height, which is inside the viewport: enough for a sliver of paint if any
+       theme ever gives it a background, and enough to fail a bounding-box
+       assertion that the link is not on screen. */
     left: -10000px;
-    top: 0;
+    top: -10000px;
     width: 1px;
     height: 1px;
     padding: 0;
@@ -1203,6 +1207,13 @@ html {
     .sm\:text-lg  { font-size: 1.05894905rem; }
     .sm\:text-xl  { font-size: 1.17661005rem; }
     .sm\:text-2xl { font-size: 1.41193206rem; }
+    /* Three variants the product uses that this block had never listed, so
+       they fell through to the raw Tailwind scale against the 82% root — the
+       same defect that once rendered `sm:text-xs` at 9.84px. Values mirror the
+       unprefixed step of the same name. */
+    .sm\:text-3xl { font-size: 1.51782696rem; }
+    .lg\:text-5xl { font-size: 1.90396215rem; }
+    .xl\:text-3xl { font-size: 1.51782696rem; }
     .sm\:text-4xl { font-size: 1.69996620rem; }
     .sm\:text-5xl { font-size: 1.90396215rem; }
     .sm\:text-6xl { font-size: 2.13243760rem; }
@@ -1421,6 +1432,24 @@ html {
     .sm\:text-2xl {
       font-size: 1.35601955rem;
       line-height: 1.84492456rem;
+    }
+
+    /* See the note in the tablet block: `sm:text-3xl`, `xl:text-3xl` and
+       `lg:text-5xl` are used by the admin headers, the role dashboards and the
+       pitch viewer, and were the last three variants with no desktop override.
+       They track the unprefixed `.text-3xl` / `.text-5xl` steps exactly. */
+    .sm\:text-3xl {
+      font-size: 1.45772102rem;
+      line-height: 1.78529054rem;
+    }
+
+    .xl\:text-3xl {
+      font-size: 1.45772102rem;
+      line-height: 1.78529054rem;
+    }
+
+    .lg\:text-5xl {
+      font-size: 1.82856523rem;
     }
 
     .sm\:text-4xl {
