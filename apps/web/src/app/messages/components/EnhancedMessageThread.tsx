@@ -454,7 +454,7 @@ export function EnhancedMessageThread({
           >
             <Paperclip className="icon-md" />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button aria-label="Attach an image" variant="ghost" size="icon">
             <ImageIcon className="icon-md" />
           </Button>
           

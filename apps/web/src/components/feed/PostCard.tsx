@@ -160,7 +160,7 @@ export function PostCard({
             </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button aria-label="Post actions" variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
                   <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>

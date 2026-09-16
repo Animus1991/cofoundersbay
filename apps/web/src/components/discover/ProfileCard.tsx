@@ -302,7 +302,7 @@ function ProfileCardInner({
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <Button aria-label="Profile actions" variant="ghost" size="icon" className="h-10 w-10">
                     <MoreHorizontal className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>

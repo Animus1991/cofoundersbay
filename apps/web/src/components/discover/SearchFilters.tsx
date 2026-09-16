@@ -242,8 +242,16 @@ export function SearchFilters({
 
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" className="relative min-h-10 shrink-0 gap-2 px-3">
-                <Filter className="icon-sm" />
+              {/* Same shape as the feed's Preferences button: the word "Filters"
+                  is `hidden sm:inline`, so below 640px the only thing left in
+                  the button was the active-filter count — a number, which is
+                  not a name. */}
+              <Button
+                variant="outline"
+                aria-label="Filters"
+                className="relative min-h-10 shrink-0 gap-2 px-3"
+              >
+                <Filter className="icon-sm" aria-hidden="true" />
                 <span className="hidden sm:inline">Filters</span>
                 {activeFiltersCount > 0 && (
                   <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">

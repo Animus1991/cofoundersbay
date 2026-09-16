@@ -327,7 +327,7 @@ export default function MatchComparePage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="icon-md" />
           </Button>
           <div className="flex-1">

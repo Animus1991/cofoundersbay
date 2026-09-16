@@ -385,7 +385,7 @@ export function ChatWindow({
         <div className="flex items-center justify-between gap-2 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {onBack && (
-              <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden">
+              <Button aria-label="Back to conversations" variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden">
                 <ArrowLeft className="icon-md" />
               </Button>
             )}
@@ -429,18 +429,18 @@ export function ChatWindow({
                 validationState={validationState}
               />
             )}
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
               <Search className="icon-sm" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" disabled title={bilingualAria(messagesEn('voice_soon'), messagesEl('voice_soon'))}>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" disabled aria-label={bilingualAria(messagesEn('voice_soon'), messagesEl('voice_soon'))}>
               <Phone className="icon-md" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" disabled title={bilingualAria(messagesEn('video_soon'), messagesEl('video_soon'))}>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" disabled aria-label={bilingualAria(messagesEn('video_soon'), messagesEl('video_soon'))}>
               <Video className="icon-md" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
+                <Button aria-label="Conversation actions" variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
                   <MoreVertical className="icon-md" />
                 </Button>
               </DropdownMenuTrigger>
@@ -486,7 +486,7 @@ export function ChatWindow({
                   : t(messagesEn('results_n'), messagesEl('results_n'))}
               </span>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
+            <Button aria-label="Close search" variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
               <X className="icon-sm" />
             </Button>
           </div>
@@ -564,7 +564,7 @@ export function ChatWindow({
               </p>
               <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
+            <Button aria-label="Cancel the reply" variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
               <X className="icon-sm" />
             </Button>
           </div>

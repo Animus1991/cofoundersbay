@@ -338,7 +338,7 @@ function PostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button aria-label="Post actions" variant="ghost" size="icon" className="h-8 w-8">
                 <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -404,13 +404,19 @@ function PostCard({
             <Share2 className="icon-sm mr-1" />
             Share
           </Button>
+          {/* `size="sm"` with an icon and no text: the Button guard keys on the
+              size prop, so a non-icon size carrying icon-only children slips
+              past it. That is the guard's real limit, and it is why the axe
+              gate stays — the two cover different halves of the same defect. */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onBookmark}
+            aria-pressed={post.isBookmarked}
+            aria-label={post.isBookmarked ? 'Saved' : 'Save this post'}
             className={cn(post.isBookmarked && 'text-primary-accessible')}
           >
-            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
         </div>
 
@@ -730,13 +736,20 @@ export default function FeedPage() {
               <TabsTrigger value="trending"><BilingualText en="Trending" el="Τάσεις" compact /></TabsTrigger>
             </TabsList>
           </Tabs>
+          {/* The label is `hidden sm:inline`, so below 640px this button had no
+              accessible name at all — named on desktop, anonymous on a phone,
+              which is why it failed only the mobile project. A responsive
+              class can hide text from the screen; it must not be the only
+              thing naming the control. */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowPreferences(!showPreferences)}
+            aria-label="Preferences"
+            aria-expanded={showPreferences}
             className="gap-1"
           >
-            <Settings className="icon-sm" />
+            <Settings className="icon-sm" aria-hidden="true" />
             <span className="hidden sm:inline"><BilingualText en="Preferences" el="Προτιμήσεις" compact /></span>
           </Button>
         </div>

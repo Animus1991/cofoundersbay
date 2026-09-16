@@ -281,12 +281,13 @@ function MatchListRow({
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
-              title="Pass" aria-label="Pass">
+              aria-label={`Pass on ${hit.displayName}`}>
               <X className="icon-sm" />
             </button>
             <button onClick={onSave}
               className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border/60 text-muted-foreground hover:text-status-warning')}
-              title={isSaved ? 'Saved' : 'Save to shortlist'}>
+              aria-pressed={isSaved}
+              aria-label={isSaved ? `${hit.displayName} is on your shortlist` : `Save ${hit.displayName} to your shortlist`}>
               {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
             </button>
           </div>
@@ -1013,8 +1014,8 @@ export default function MatchesPage() {
                   </div>
 
                   {lastPassed && (
-                    <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
-                      <RotateCcw className="icon-sm" />
+                    <Button size="sm" variant="ghost" onClick={handleUndoPass} aria-label="Undo the last pass" className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
+                      <RotateCcw className="icon-sm" aria-hidden="true" />
                       <span className="hidden sm:inline">Undo</span>
                     </Button>
                   )}

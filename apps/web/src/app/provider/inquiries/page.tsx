@@ -81,7 +81,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 <span className="text-xs text-muted-foreground">{inquiry.receivedAt}</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button aria-label="Inquiry actions" variant="ghost" size="icon" className="h-8 w-8">
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>

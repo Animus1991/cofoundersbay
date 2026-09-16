@@ -270,6 +270,7 @@ function MatchCardInner({
           {onPass && (
             <button
               onClick={onPass}
+              aria-label={`Pass on ${displayName}`}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
             >
               <X className="icon-sm" />
@@ -278,6 +279,7 @@ function MatchCardInner({
           {onLike && (
             <button
               onClick={onLike}
+              aria-label={`Save ${displayName}`}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
             >
               <Heart className="icon-sm" />
@@ -285,6 +287,7 @@ function MatchCardInner({
           )}
           <button
             onClick={handleBookmark}
+              aria-label={`Bookmark ${displayName}`}
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
               bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')

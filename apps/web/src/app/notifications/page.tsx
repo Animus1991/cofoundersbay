@@ -401,7 +401,7 @@ export default function NotificationsPage() {
                 <CheckCheck className="icon-sm" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} aria-label="Refresh">
               <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>

@@ -255,7 +255,7 @@ export default function PublicProfilePage() {
                           Connect
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon">
+                      <Button aria-label="Share this profile" variant="ghost" size="icon">
                         <Share2 className="icon-sm" />
                       </Button>
                     </div>

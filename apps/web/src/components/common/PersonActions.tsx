@@ -63,8 +63,7 @@ export function MessageButton({
       variant={variant}
       className={cn('gap-1.5', className)}
       disabled={opening}
-      aria-label={iconOnly ? label : undefined}
-      title={iconOnly ? label : undefined}
+      aria-label={label}
       onClick={async () => {
         setOpening(true);
         try {
@@ -111,7 +110,7 @@ export function ConnectButton({
   // why the assistant declares the same action irreversible.
   if (state === 'sent') {
     return (
-      <Button type="button" size={size} variant="outline" className={cn('gap-1.5', className)} disabled>
+      <Button type="button" size={size} variant="outline" className={cn('gap-1.5', className)} disabled aria-label={label}>
         <Check className="icon-sm" aria-hidden="true" />
         {!iconOnly && <BilingualText en="Request sent" el="Στάλθηκε" compact />}
       </Button>
@@ -125,8 +124,7 @@ export function ConnectButton({
       variant={variant}
       className={cn('gap-1.5', className)}
       disabled={state === 'sending'}
-      aria-label={iconOnly ? label : undefined}
-      title={iconOnly ? label : undefined}
+      aria-label={label}
       onClick={async () => {
         setState('sending');
         try {

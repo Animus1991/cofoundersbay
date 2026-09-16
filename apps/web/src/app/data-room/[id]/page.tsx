@@ -537,7 +537,7 @@ export default function DataRoomPage() {
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Button aria-label="Document actions" variant="ghost" size="icon" className="h-8 w-8">
                                     <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -709,7 +709,7 @@ export default function DataRoomPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button aria-label="Document actions" variant="ghost" size="icon" className="h-8 w-8">
                               <MoreVertical className="icon-sm" />
                             </Button>
                           </DropdownMenuTrigger>

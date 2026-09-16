@@ -103,7 +103,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button aria-label={`Actions for ${investment.name}`} variant="ghost" size="icon" className="h-8 w-8">
                     <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>

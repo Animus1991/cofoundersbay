@@ -372,7 +372,7 @@ export default function ProfilePage() {
             <Share2 className="icon-sm" />
             <BilingualText en={profileEn('share_profile')} el={profileEl('share_profile')} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
+          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" aria-label={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
             <Share2 className="icon-sm" />
           </Button>
           <Button size="sm" className="gap-2" asChild>

@@ -292,7 +292,7 @@ export default function ProjectDetailPage() {
                           <p className="text-sm text-muted-foreground">{member.role}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => openAskAi(member.id)}>
+                          <Button aria-label="Ask AI about this member" variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => openAskAi(member.id)}>
                             <MessageSquare className="icon-sm" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" asChild>

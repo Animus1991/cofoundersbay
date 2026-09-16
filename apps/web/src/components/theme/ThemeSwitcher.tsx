@@ -81,7 +81,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
+      <Button aria-label="Change theme" variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
         <Moon className="icon-sm" />
       </Button>
     );
@@ -92,9 +92,8 @@ export function ThemeSwitcher({ className }: { className?: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
+        <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)} aria-label={t('Theme')}>
           <CurrentIcon className="icon-sm transition-all" />
-          <span className="sr-only">{t('Theme')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

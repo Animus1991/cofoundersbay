@@ -739,7 +739,7 @@ export default function ProfileEditPage() {
                             {aiSuggestions.completionScore}% Optimization Score
                           </Badge>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
+                        <Button aria-label="Dismiss the AI suggestions" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
                           <X className="icon-sm" />
                         </Button>
                       </div>

@@ -286,8 +286,9 @@ export function CollabToolbar({
                 size="sm"
                 className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
                 onClick={onHistoryClick}
+                aria-label="History"
               >
-                <History className="icon-sm mr-1.5" />
+                <History className="icon-sm mr-1.5" aria-hidden="true" />
                 <span className="text-xs hidden sm:inline">History</span>
               </Button>
             </TooltipTrigger>

@@ -71,12 +71,43 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  loading?: boolean;
-}
+type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+    loading?: boolean;
+  };
+
+/** The sizes that render an icon and no text, so have nothing to announce. */
+type IconOnlySize = 'icon';
+
+type ButtonSize = NonNullable<ButtonBaseProps['size']>;
+
+/**
+ * An icon-only button must name itself, and the type system says so.
+ *
+ * This is the only reliable guard for the defect. A nameless icon button looks
+ * completely correct in review and in the browser — it is discoverable solely
+ * by running axe against the page that happens to contain one, which is how
+ * this round found `button-name (critical)` on five separate routes, one route
+ * at a time. A scan finds the instances; only the compiler finds the class.
+ *
+ * The third member of the union covers wrapper components that forward a
+ * `size` whose type merely *may* be an icon size: they are held to the same
+ * requirement rather than slipping through on a widened type.
+ */
+export type ButtonProps = ButtonBaseProps &
+  (
+    // Text buttons: any non-icon size, no extra requirement.
+    | { size?: Exclude<ButtonSize, IconOnlySize> }
+    // `asChild` renders someone else's element — almost always a Link — and
+    // that element carries its own name. Requiring one here as well would put
+    // two competing accessible names on one control.
+    | { asChild: true }
+    // `| null` because cva's VariantProps admits null for an unset variant, and
+    // a wrapper forwarding `size` from its own props carries that null through.
+    | { size: ButtonSize | null; 'aria-label': string }
+    | { size: ButtonSize | null; 'aria-labelledby': string }
+  );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (

@@ -83,7 +83,7 @@ export function ShareButton({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} className={className}>
+        <Button variant={variant} size={size} className={className} aria-label="Share">
           <Share2 className="icon-sm mr-2" />
           Share
         </Button>
