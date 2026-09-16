@@ -39,7 +39,22 @@ export type CopilotAction = {
 };
 
 export type CopilotCitation = {
-  type: 'person' | 'match' | 'conversation' | 'notification' | 'graph' | 'route';
+  type:
+    | 'person'
+    | 'match'
+    | 'conversation'
+    | 'notification'
+    | 'graph'
+    | 'route'
+    // The areas `copilot-reads.ts` reads. The type is part of the dedup key, so
+    // an event and a milestone that happen to share an id stay two citations.
+    | 'event'
+    | 'milestone'
+    | 'job'
+    | 'group'
+    | 'endorsement'
+    | 'opportunity'
+    | 'session';
   id: string;
   label: string;
   href?: string;

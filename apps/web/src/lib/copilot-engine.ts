@@ -15,11 +15,13 @@ import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { planCopilotTools, detectPersonName, asksAboutThisPage } from '@/lib/copilot-planner';
+import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import type {
   CopilotAction,
   CopilotCitation,
   CopilotGraph,
   CopilotTurnResult,
+  PlannedTool,
 } from '@/lib/copilot-types';
 
 export type PageContextPacket = {
@@ -44,7 +46,7 @@ export type PageContextPacket = {
 };
 
 /**
- * Bound to the reader's locale for one turn.
+ * Bound to the reader’s locale for one turn.
  *
  * The engine is a plain async function rather than a component, so it cannot
  * read `useI18n`. It receives the locale on the page-context packet and binds
@@ -277,12 +279,44 @@ export function actionsFromToolCalls(
   return actions;
 }
 
+export type CopilotTurnOptions = {
+  /**
+   * Run these tools instead of planning from the message.
+   *
+   * This is how a read the *model* asks for gets answered. The model is offered
+   * every declared read, and until now the client dropped any it chose —
+   * `actionsFromToolCalls` rightly makes no card for a question, and nothing
+   * else ran it. Passing the model’s calls here sends them down exactly the
+   * path a keyword match takes, so a read answers the same way whichever of
+   * the two asked for it, and there is no second implementation to drift.
+   */
+  tools?: readonly PlannedTool[];
+};
+
+/**
+ * The language to answer in: the reader’s locale, unless they wrote in Greek.
+ *
+ * The product is bilingual, and its interface language and the language a
+ * founder types in are separate choices. A founder whose interface is English
+ * who asks «ποια ορόσημα έχω;» was answered in English, because the reply
+ * followed the interface. Answering in the language of the question is what a
+ * person would do. Only English is overridden — a reader who chose any other
+ * locale chose it, and Greek letters in a message are not a reason to discard
+ * that.
+ */
+export function replyLocaleFor(userMessage: string, locale?: string): string | undefined {
+  if ((!locale || locale === 'en') && /[Ͱ-Ͽἀ-῿]/.test(userMessage)) return 'el';
+  return locale;
+}
+
 export async function runCopilotTurn(
   userMessage: string,
   pageContext?: PageContextPacket,
+  options?: CopilotTurnOptions,
 ): Promise<CopilotTurnResult> {
-  const t = translatorFor(pageContext?.locale);
-  const planned = planCopilotTools(userMessage);
+  const replyLocale = replyLocaleFor(userMessage, pageContext?.locale);
+  const t = translatorFor(replyLocale);
+  const planned = options?.tools ? [...options.tools] : planCopilotTools(userMessage);
   const usedTools = planned.map((t) => t.name);
   const citations: CopilotCitation[] = [];
   const actions: CopilotAction[] = [];
@@ -346,6 +380,22 @@ export async function runCopilotTurn(
   }
 
   for (const tool of planned) {
+    // The product areas — events, milestones, jobs and the rest. One arm for
+    // all of them, because each reader returns the same three things a turn is
+    // made of. A failing area is named as unavailable rather than failing the
+    // whole reply: the other tools in the turn still have something to say.
+    if (isAreaRead(tool.name)) {
+      try {
+        const read = await AREA_READERS[tool.name](tool.args ?? {}, { t, locale: replyLocale });
+        sections.push(read.section);
+        citations.push(...read.citations);
+        actions.push(...read.actions);
+      } catch {
+        sections.push(t('That part of the platform did not answer just now. Try again in a moment.'));
+      }
+      continue;
+    }
+
     if (tool.name === 'get_graph') {
       graph = await fetchGraph();
       sections.push(describeGraph(graph, t));
@@ -649,7 +699,10 @@ export async function runCopilotTurn(
   );
 
   let message = sections.join('\n\n').trim();
-  if (!message) {
+  // A turn run for the model’s own calls reports only what those calls found;
+  // the "here is what I can do" introduction is for a person, and handing it to
+  // the model as a tool result would read to it as data.
+  if (!message && !options?.tools) {
     const network = isPreviewDemo()
       ? t(
           'I can search people, save them to your shortlist, read notifications, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.',
@@ -662,6 +715,8 @@ export async function runCopilotTurn(
     // orphan sixteen translations to announce three capabilities.
     message = `${network} ${t(
       'I can also tick your readiness criteria, change the analytics window, and create the workspace Builder needs.',
+    )} ${t(
+      'And I can read your events, milestones, open roles, communities, endorsements, opportunities, mentoring sessions and saved profiles.',
     )}`;
   }
 
@@ -676,7 +731,7 @@ export async function runCopilotTurn(
 /**
  * Delegates to `action-registry`, which now owns what each capability does.
  * The chain this replaced described the same four writes in a place nothing
- * else could read, so the model's tool catalogue could not be derived from it.
+ * else could read, so the model’s tool catalogue could not be derived from it.
  *
  * `action.href` is still folded in as the default `href`: the navigate arm used
  * to read `payload.href ?? action.href ?? '/dashboard'`, and proposals built

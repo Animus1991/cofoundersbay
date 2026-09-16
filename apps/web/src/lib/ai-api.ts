@@ -55,6 +55,14 @@ export interface ChatResponse {
   agent: string;
   model: string;
   fallback?: boolean;
+  /**
+   * The non-streaming route returns these exactly as the streaming route's
+   * terminal event does — the controller reviews them the same way. They were
+   * missing from this type, so a client that fell back to this route discarded
+   * every proposal the model made.
+   */
+  toolCalls?: AIToolCallProposal[];
+  rejectedToolCalls?: AIToolCallRejection[];
 }
 
 export interface ChatRequest {

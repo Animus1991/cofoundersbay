@@ -108,3 +108,53 @@ describe('what the planner may name', () => {
     expect(plan('what should I do next')).toContain('get_graph');
   });
 });
+
+describe('reading a product area', () => {
+  it('reads the area a question names, in English and Greek', () => {
+    expect(plan('what events are coming up')).toContain('get_events');
+    expect(plan('ποιες εκδηλώσεις έρχονται')).toContain('get_events');
+    expect(plan('which of my milestones are overdue')).toContain('get_milestones');
+    expect(plan('δείξε μου τα ορόσημά μου')).toContain('get_milestones');
+    expect(plan('any open jobs?')).toContain('get_jobs');
+    expect(plan('what communities am I in')).toContain('get_groups');
+    expect(plan('do I have endorsements waiting')).toContain('get_endorsements');
+    expect(plan('show me open opportunities')).toContain('get_opportunities');
+    expect(plan('when is my next mentoring session')).toContain('get_mentorship_sessions');
+    expect(plan('who is on my shortlist')).toContain('get_shortlist');
+  });
+
+  it('answers the question before the workspace summary, not after it', () => {
+    // A question about one area is not vague; leading with unread-message
+    // counts would bury the answer under context nobody asked for.
+    expect(plan('what events are coming up')[0]).toBe('get_events');
+    expect(plan('what events are coming up')).not.toContain('get_graph');
+  });
+
+  it('does not find an area inside a longer word', () => {
+    // "event" sits inside "prevent", "job" inside "jobless", "group" inside "subgroup".
+    expect(plan('how do I prevent churn')).not.toContain('get_events');
+    expect(plan('jobless founders forum')).not.toContain('get_jobs');
+    expect(plan('split the subgroup budget')).not.toContain('get_groups');
+  });
+
+  it('goes to the page without reading it when the request is only to go', () => {
+    expect(plan('open events')).toContain('navigate');
+    expect(plan('open events')).not.toContain('get_events');
+  });
+
+  it('does not search people because a question mentions mentoring', () => {
+    // "mentoring session" contains "mentor", which on its own plans a search.
+    expect(plan('my upcoming mentoring sessions')).not.toContain('search_people');
+    // With a search verb it is a search again.
+    expect(plan('find a mentor for my next session')).toContain('search_people');
+  });
+
+  it('does not propose a save when asked what is already saved', () => {
+    expect(plan('who is on my shortlist')).not.toContain('shortlist_add');
+    // Nor a people search for the sentence itself: "who is" begins a question
+    // about the list, and was once read as a search verb.
+    expect(plan('who is on my shortlist')).not.toContain('search_people');
+    // Asking to save still saves.
+    expect(plan('save Elena to my shortlist')).toContain('shortlist_add');
+  });
+});

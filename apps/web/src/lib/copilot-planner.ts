@@ -1,4 +1,5 @@
 import { resolveRouteTarget } from '@/lib/action-registry';
+import type { AreaReadId } from './copilot-reads';
 import type { CopilotToolName, PlannedTool } from './copilot-types';
 
 const ROUTE_ALIASES: Array<{ keys: string[]; href: string; label: string }> = [
@@ -62,14 +63,104 @@ function includesAny(haystack: string, needles: string[]): boolean {
 }
 
 /**
+ * Lower case, with Greek tonos and diaeresis removed.
+ *
+ * A Greek stem written with an accent matches only the forms that keep the
+ * accent in the same place, and Greek moves it: «εκδήλωση» but «εκδηλώσεις».
+ * Listing each variant is how a key goes missing, so both sides are folded to
+ * unaccented letters before they are compared.
+ */
+function fold(text: string): string {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Whether any key names a whole word in the message.
+ *
+ * The older phrase lists match substrings and can, because their phrases are
+ * long. The area keys are short nouns: "event" sits inside "prevent", "job"
+ * inside "jobless", "group" inside "subgroup". So an English key must be the
+ * whole word, with an optional plural — "events" still names "event" — and a
+ * key ending in `*` is a stem that may continue, for words whose endings vary
+ * ("communit*" covers community and communities).
+ *
+ * Greek keys are compared as folded substrings. JavaScript’s `\b` knows only
+ * ASCII word characters, and the Greek keys are stems chosen to be unambiguous.
+ */
+function includesWord(haystack: string, needles: string[]): boolean {
+  const text = fold(haystack);
+  return needles.some((raw) => {
+    const needle = fold(raw);
+    const stem = needle.endsWith('*');
+    const body = stem ? needle.slice(0, -1) : needle;
+    if (!/^[\x00-\x7f]+$/.test(body)) return text.includes(body);
+    const escaped = body.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(stem ? `\\b${escaped}` : `\\b${escaped}s?\\b`).test(text);
+  });
+}
+
+/**
+ * Questions about a product area, answered by reading it.
+ *
+ * Each maps to a reader in `copilot-reads.ts`. The keys are nouns, not verbs:
+ * "what events are coming up", "show my milestones" and «ποιες εκδηλώσεις
+ * έρχονται» all name the area, and naming it is enough to be worth reading.
+ */
+const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
+  { keys: ['event', 'meetup', 'webinar', 'workshop', 'demo day', 'εκδηλωσ'], tool: 'get_events' },
+  { keys: ['milestone', 'overdue', 'οροσημ', 'εκπροθεσμ'], tool: 'get_milestones' },
+  { keys: ['job', 'open role', 'hiring', 'θεσεις εργασιας', 'αγγελι', 'προσληψ'], tool: 'get_jobs' },
+  { keys: ['group', 'communit*', 'κοινοτητ'], tool: 'get_groups' },
+  { keys: ['endorse*', 'προσυπογραφ'], tool: 'get_endorsements' },
+  { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
+  { keys: ['session', 'συνεδρι'], tool: 'get_mentorship_sessions' },
+  {
+    keys: ['saved profile', 'my shortlist', 'αποθηκευμενα προφιλ', 'αποθηκευμενους'],
+    tool: 'get_shortlist',
+  },
+];
+
+/**
+ * Phrasing that asks rather than instructs.
+ *
+ * Used for one decision only: "open events" is a request to go somewhere and
+ * reads nothing, while "open events — which ones are this week?" is both. With
+ * no navigation verb in the message, naming an area is already a question.
+ */
+const QUESTION_PHRASES = [
+  'what', 'which', 'who', 'show', 'list', 'how many', 'any ', 'do i have', 'coming up', 'upcoming',
+  'τι ', 'ποια', 'ποιες', 'ποιοι', 'ποιος', 'δείξε', 'δειξε', 'πόσ', 'ποσα', 'ποσες', 'ποσοι',
+  'έχω', 'εχω', 'επερχόμεν', 'επερχομεν', 'έρχονται', 'ερχονται',
+];
+
+/**
+ * Verbs that mean "go and search", as opposed to a noun that happens to be a role.
+ *
+ * Deliberately no "who is": it is how a question about a list begins — "who is
+ * on my shortlist" — and treating it as a search verb ran a people search for
+ * that whole sentence beside the shortlist it had already read.
+ */
+const EXPLICIT_SEARCH_PHRASES = ['find', 'search', 'look for', 'βρες', 'ψάξε', 'ψαξε', 'αναζήτη'];
+
+/** Verbs that mean "add to the list", as opposed to asking what is on it. */
+const EXPLICIT_SAVE_PHRASES = [
+  'save', 'add ', 'bookmark', 'αποθήκευσε', 'αποθηκευσε', 'πρόσθεσε', 'προσθεσε',
+];
+
+export function detectAreaReads(message: string): AreaReadId[] {
+  const lower = message.toLowerCase();
+  return AREA_READ_ALIASES.filter((alias) => includesWord(lower, alias.keys)).map((alias) => alias.tool);
+}
+
+/**
  * Whether the reader is asking about the screen in front of them.
  *
- * Narrow on purpose. A question about the page is one the page's own snapshot
+ * Narrow on purpose. A question about the page is one the page’s own snapshot
  * can answer; anything broader belongs to the network tools, and answering it
  * by describing the current page would be a non-sequitur.
  *
  * It lives here rather than in the engine because every other phrase list does
- * — and because the engine's source is scanned for user-facing prose, where a
+ * — and because the engine’s source is scanned for user-facing prose, where a
  * list of matching keys reads as untranslated copy.
  */
 const THIS_PAGE_PHRASES = [
@@ -96,7 +187,7 @@ export function detectReadinessDimension(message: string): string | undefined {
  * Pulls a workspace name out of quotes.
  *
  * Only quoted, deliberately. Guessing a name from free prose would create
- * something the user has to go and rename, and the engine's "what should I
+ * something the user has to go and rename, and the engine’s "what should I
  * call it?" is a better answer than a wrong name. Handles the curly quotes a
  * phone keyboard produces as well as the straight ones a desktop does.
  */
@@ -167,6 +258,15 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const person = detectPersonName(message);
   const nav = detectNavigateHref(message);
 
+  // Area reads are decided first, because two of the older intents need to
+  // know about them. "My upcoming mentoring sessions" contains "mentor", which
+  // plans a people search; "who is on my shortlist" contains "shortlist", which
+  // plans a save. Neither asked for that. Each older intent still fires when its
+  // own verb is there — "find a mentor", "save Elena to my shortlist".
+  const areaReads = !nav || includesAny(message, QUESTION_PHRASES) ? detectAreaReads(message) : [];
+  const explicitSearch = includesAny(message, EXPLICIT_SEARCH_PHRASES);
+  const explicitSave = includesAny(message, EXPLICIT_SAVE_PHRASES);
+
   const wantsGraph = includesAny(message, [
     'what should i do',
     'next',
@@ -184,7 +284,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'επομενο',
   ]);
 
-  const wantsSearch = includesAny(message, [
+  const wantsSearch = !(areaReads.length > 0 && !explicitSearch) && includesAny(message, [
     'find',
     'search',
     'look for',
@@ -220,7 +320,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'ειδοποιη',
   ]);
 
-  const wantsShortlist = includesAny(message, [
+  const wantsShortlist = !(areaReads.includes('get_shortlist') && !explicitSave) && includesAny(message, [
     'shortlist',
     'bookmark',
     'save to',
@@ -310,6 +410,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
 
   if (wantsNotifications) add('get_notifications');
 
+  for (const read of areaReads) add(read);
+
   if (wantsShortlist) {
     const args: Record<string, string> = {};
     if (person) args.name = person;
@@ -362,7 +464,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     else add('get_graph');
   }
 
-  if (!tools.some((t) => t.name === 'get_graph') && tools.length <= 2) {
+  // The workspace summary leads short turns because it is usually the context a
+  // vague question needs. A question about one area is not vague, and leading
+  // "what events are coming up" with unread-message counts buries the answer.
+  if (!tools.some((t) => t.name === 'get_graph') && tools.length <= 2 && areaReads.length === 0) {
     tools.unshift({ name: 'get_graph', args: {} });
   }
 

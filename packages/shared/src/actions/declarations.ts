@@ -76,6 +76,126 @@ export const ACTION_DECLARATIONS = [
     params: [],
     writes: false,
   },
+  // ── The areas the assistant could not see ──────────────────────────────
+  //
+  // Before these, it could read four things — the graph summary, people,
+  // matches and notifications — while the product has some twenty areas. Asked
+  // "what events are coming up" or "which milestones are overdue", it could
+  // only offer to open the page. Each of these is a facade over a client
+  // function the web app already calls for its own screen, so the assistant
+  // reads exactly what the page shows and needs no new server surface.
+  //
+  // The descriptions say what comes back, not just what the tool is for: the
+  // `en` half is the only thing a model sees when deciding whether a tool can
+  // answer the question in front of it.
+  {
+    id: 'get_events',
+    kind: 'read',
+    label: { en: 'Read upcoming events', el: 'Ανάγνωση επερχόμενων εκδηλώσεων' },
+    description: {
+      en: 'Read upcoming events on the platform: title, date, whether online or in person, how many are attending, and whether the signed-in user has RSVPed. Returns up to five.',
+      el: 'Διαβάζει τις επερχόμενες εκδηλώσεις της πλατφόρμας: τίτλο, ημερομηνία, αν γίνονται online ή δια ζώσης, πόσοι συμμετέχουν και αν ο χρήστης έχει δηλώσει συμμετοχή. Επιστρέφει έως πέντε.',
+    },
+    params: [
+      {
+        name: 'q',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Optional words to narrow the events, e.g. "demo day" or "fintech".',
+          el: 'Προαιρετικές λέξεις για περιορισμό, π.χ. «demo day» ή «fintech».',
+        },
+      },
+    ],
+    writes: false,
+  },
+  {
+    id: 'get_milestones',
+    kind: 'read',
+    label: { en: 'Read your milestones', el: 'Ανάγνωση των ορόσημών σου' },
+    description: {
+      en: 'Read the signed-in user’s milestones: how many are complete, overdue and due soon, the completion rate, and the next open milestones by due date.',
+      el: 'Διαβάζει τα ορόσημα του χρήστη: πόσα έχουν ολοκληρωθεί, πόσα έχουν καθυστερήσει ή λήγουν σύντομα, το ποσοστό ολοκλήρωσης και τα επόμενα ανοιχτά κατά ημερομηνία λήξης.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_jobs',
+    kind: 'read',
+    label: { en: 'Read open roles', el: 'Ανάγνωση ανοιχτών θέσεων' },
+    description: {
+      en: 'Read open roles that startups have posted on the platform: title, who posted it, location and whether it is remote. Returns up to five.',
+      el: 'Διαβάζει τις ανοιχτές θέσεις που έχουν δημοσιεύσει startups: τίτλο, ποιος τη δημοσίευσε, τοποθεσία και αν είναι εξ αποστάσεως. Επιστρέφει έως πέντε.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_groups',
+    kind: 'read',
+    label: { en: 'Read your communities', el: 'Ανάγνωση των κοινοτήτων σου' },
+    description: {
+      en: 'Read the communities the signed-in user belongs to, with member and post counts and the user’s role in each.',
+      el: 'Διαβάζει τις κοινότητες στις οποίες ανήκει ο χρήστης, με πλήθος μελών και αναρτήσεων και τον ρόλο του σε καθεμία.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_endorsements',
+    kind: 'read',
+    label: { en: 'Read your endorsements', el: 'Ανάγνωση των προσυπογραφών σου' },
+    description: {
+      en: 'Read how many endorsements the signed-in user has received and given, and which received ones are still waiting for their approval before they show on the profile.',
+      el: 'Διαβάζει πόσες προσυπογραφές έχει λάβει και δώσει ο χρήστης, και ποιες από όσες έλαβε περιμένουν ακόμη την έγκρισή του για να εμφανιστούν στο προφίλ.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_opportunities',
+    kind: 'read',
+    label: { en: 'Read open opportunities', el: 'Ανάγνωση ανοιχτών ευκαιριών' },
+    description: {
+      en: 'Read open opportunities — co-founder calls, paid gigs, equity roles and collaborations — with type, company, location and deadline. Returns up to five.',
+      el: 'Διαβάζει ανοιχτές ευκαιρίες — αναζητήσεις συνιδρυτών, αμειβόμενα projects, θέσεις με equity και συνεργασίες — με είδος, εταιρεία, τοποθεσία και προθεσμία. Επιστρέφει έως πέντε.',
+    },
+    params: [
+      {
+        name: 'q',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Optional words to narrow the opportunities, e.g. "design" or "remote".',
+          el: 'Προαιρετικές λέξεις για περιορισμό, π.χ. «design» ή «remote».',
+        },
+      },
+    ],
+    writes: false,
+  },
+  {
+    id: 'get_mentorship_sessions',
+    kind: 'read',
+    label: { en: 'Read your mentoring sessions', el: 'Ανάγνωση των συνεδριών mentoring' },
+    description: {
+      en: 'Read the signed-in user’s upcoming mentoring sessions: title, date and time, length, and whether it is a video call, in person or a chat.',
+      el: 'Διαβάζει τις επερχόμενες συνεδρίες mentoring του χρήστη: τίτλο, ημερομηνία και ώρα, διάρκεια, και αν είναι βιντεοκλήση, δια ζώσης ή συνομιλία.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_shortlist',
+    kind: 'read',
+    label: { en: 'Read your saved profiles', el: 'Ανάγνωση των αποθηκευμένων προφίλ' },
+    description: {
+      en: 'Read the profiles the signed-in user has saved to their shortlist, with any private note they added. Returns up to six.',
+      el: 'Διαβάζει τα προφίλ που έχει αποθηκεύσει ο χρήστης στη λίστα του, μαζί με όποια ιδιωτική σημείωση έχει προσθέσει. Επιστρέφει έως έξι.',
+    },
+    params: [],
+    writes: false,
+  },
   {
     id: 'navigate',
     kind: 'mutation',
@@ -375,6 +495,15 @@ export type DeclaredActionId = DeclaredAction['id'];
 
 /** The subset that changes something; the only ids that need an executor. */
 export type MutationActionId = Extract<DeclaredAction, { kind: 'mutation' }>['id'];
+
+/**
+ * The subset that answers a question.
+ *
+ * Derived for the same reason `MutationActionId` is: the web app keys its
+ * readers by it, so a read declared here and left unimplemented there stops
+ * compiling rather than reaching a model that can ask for it and get nothing.
+ */
+export type ReadActionId = Extract<DeclaredAction, { kind: 'read' }>['id'];
 
 /**
  * The subset that claims it can be taken back. An app that binds undos to

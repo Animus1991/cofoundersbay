@@ -22,7 +22,14 @@ import { translate } from '@/lib/i18n/translate';
  */
 
 const ENGINE_PATH = 'src/lib/copilot-engine.ts';
-const ENGINE = readFileSync(ENGINE_PATH, 'utf8');
+/**
+ * The engine's replies are composed in two files now: the engine itself, and
+ * `copilot-reads.ts`, which answers questions about product areas. Scanning
+ * only the first would let every area reply ship in English without a failing
+ * test, which is the exact regression this file exists to stop.
+ */
+const READS_PATH = 'src/lib/copilot-reads.ts';
+const ENGINE = readFileSync(ENGINE_PATH, 'utf8') + '\n' + readFileSync(READS_PATH, 'utf8');
 
 /**
  * Literals that are not user-facing copy. Kept explicit so a new sentence has
@@ -75,6 +82,38 @@ describe('copilot reply copy', () => {
       .sort();
 
     expect(unchanged).toEqual([]);
+  });
+
+  it('has a translation in every catalogue locale, not only Greek', () => {
+    // Greek alone was enforced, and that is exactly how 48 of the engine's
+    // replies came to exist in Greek and nowhere else: a Spanish, French,
+    // German, Italian, Portuguese, Chinese or Japanese reader got them in
+    // English, with no failing test to say so. Every locale the catalogue
+    // declares is held to the same bar now.
+    const catalogues = CATALOG as Record<string, Record<string, string>>;
+    const gaps: string[] = [];
+    for (const [locale, entries] of Object.entries(catalogues)) {
+      for (const value of prose(ENGINE)) {
+        if (NOT_USER_FACING.has(value)) continue;
+        if (!entries[value]) gaps.push(`${locale}: ${value}`);
+      }
+    }
+    expect(gaps).toEqual([]);
+  });
+
+  it('keeps every placeholder intact in every locale', () => {
+    const catalogues = CATALOG as Record<string, Record<string, string>>;
+    const mismatched: string[] = [];
+    for (const [locale, entries] of Object.entries(catalogues)) {
+      for (const value of prose(ENGINE)) {
+        const translated = entries[value];
+        if (!translated) continue;
+        const source = [...value.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
+        const target = [...translated.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
+        if (source !== target) mismatched.push(`${locale}: ${value} → [${source}] vs [${target}]`);
+      }
+    }
+    expect(mismatched).toEqual([]);
   });
 
   it('keeps every placeholder intact in the Greek copy', () => {
