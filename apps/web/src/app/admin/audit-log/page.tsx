@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -100,7 +101,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
           <p className="text-xs text-muted-foreground mt-0.5 truncate">{metaStr}</p>
         )}
       </div>
-      <span className="text-xs text-muted-foreground shrink-0">{formatRelativeTime(log.createdAt)}</span>
+      <span className="text-xs text-muted-foreground shrink-0"><RelativeTime date={log.createdAt} format={formatRelativeTime} /></span>
     </div>
   );
 }

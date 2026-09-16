@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
@@ -518,7 +519,12 @@ function BoardCard({
   onDelete: () => void;
 }) {
   const glyph = getBoardGlyph(board.icon);
-  const updated = formatDistanceToNow(new Date(board.updatedAt), { addSuffix: true, locale: dateLocale });
+  const updated = (
+    <RelativeTime
+      date={board.updatedAt}
+      format={(iso) => formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateLocale })}
+    />
+  );
 
   const menu = (
     <DropdownMenu>

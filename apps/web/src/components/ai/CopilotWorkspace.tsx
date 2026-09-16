@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Bot,
   Loader2,
   Maximize2,
   Plus,
@@ -15,8 +14,16 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { cn } from '@/lib/utils';
-import { getAgentIcon } from '@/lib/ai-api';
+import { getAgentGlyph } from '@/lib/ai-api';
 import { useAIChat, type AIMessage } from '@/hooks/useAIChat';
 import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
@@ -216,11 +223,13 @@ export function CopilotWorkspace({
               type="button"
               variant="ghost"
               size="sm"
-              className="w-full justify-start gap-2"
+              // h-auto + stacked: the inline "AI preferences · Προτιμήσεις AI"
+              // did not fit the 288px rail and clipped to "AI preferen…".
+              className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
               onClick={() => router.push('/settings/ai')}
             >
-              <Settings className="h-4 w-4" />
-              <BilingualText en="AI preferences" el="Προτιμήσεις AI" compact />
+              <Settings className="h-4 w-4 shrink-0" />
+              <BilingualText en="AI preferences" el="Προτιμήσεις AI" stacked className="min-w-0 text-left" />
             </Button>
           </div>
         </aside>
@@ -229,8 +238,8 @@ export function CopilotWorkspace({
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-2 border-b border-border/40 bg-muted/30 px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
-              {getAgentIcon(chat.currentAgent)}
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">
@@ -245,18 +254,24 @@ export function CopilotWorkspace({
           </div>
           <div className="flex items-center gap-1">
             {agentList.length > 1 && (
-              <select
-                value={chat.currentAgent}
-                onChange={(e) => chat.setAgent(e.target.value)}
-                className="h-8 max-w-[9rem] rounded-md border border-border bg-background px-2 text-xs"
-                aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
-              >
-                {agentList.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name}
-                  </option>
-                ))}
-              </select>
+              /* The Select primitive, not a raw <select>: this was the last
+                 native control in the chrome — unthemed, unportalled, and
+                 visually foreign next to every other menu in the product. */
+              <Select value={chat.currentAgent} onValueChange={(v) => chat.setAgent(v)}>
+                <SelectTrigger
+                  className="h-8 min-h-8 w-auto max-w-[11rem] gap-1 px-2 text-xs"
+                  aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {agentList.map((agent) => (
+                    <SelectItem key={agent.id} value={agent.id} className="text-xs">
+                      {agent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
             {chat.messages.length > 0 && (
               <>
@@ -288,7 +303,7 @@ export function CopilotWorkspace({
             <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center gap-5 py-6">
               <div className="flex gap-2">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <Bot className="h-4 w-4" aria-hidden="true" />
+                  <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-sm">
                   <BilingualText
@@ -337,8 +352,8 @@ export function CopilotWorkspace({
             chat.messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2', msg.role === 'user' && 'justify-end')}>
                 {msg.role === 'assistant' && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] text-muted-foreground">
-                    {getAgentIcon(chat.currentAgent)}
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
                   </div>
                 )}
                 <div

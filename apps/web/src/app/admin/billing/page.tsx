@@ -113,7 +113,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
         <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={`Download invoice ${inv.invoiceNumber}`}>
             <Download className="icon-sm" />
           </Button>
         </a>

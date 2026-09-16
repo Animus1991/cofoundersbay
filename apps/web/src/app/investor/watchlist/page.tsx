@@ -211,7 +211,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Open actions for ${startup.name}`}>
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>

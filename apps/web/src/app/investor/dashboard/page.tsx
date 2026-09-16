@@ -67,7 +67,7 @@ function StartupCard({ startup }: { startup: Startup }) {
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${startup.name}`}>
             <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>

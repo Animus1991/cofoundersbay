@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -134,7 +135,7 @@ function NotificationItem({
           {notification.body}
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
-          {formatTimestamp(notification.timestamp)}
+          <RelativeTime date={notification.timestamp} format={formatTimestamp} />
         </p>
       </div>
     </div>
@@ -165,7 +166,12 @@ export function NotificationCenter({
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        >
           <Bell className="icon-md" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">

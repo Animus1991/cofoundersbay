@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import {
   Users,
   Flag,
@@ -284,7 +285,7 @@ function ReportCard({
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter?.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
+                Reported by {report.reporter?.name || report.reporter.email} · <RelativeTime date={report.createdAt} format={formatTimeAgo} />
               </p>
             </div>
           </div>
@@ -391,13 +392,13 @@ function UserRow({
       <div className="hidden text-right sm:block">
         <p className="text-sm capitalize text-foreground">{user.role}</p>
         {user.lastSeenAt && (
-          <p className="text-xs text-muted-foreground">{formatTimeAgo(user.lastSeenAt)}</p>
+          <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} format={formatTimeAgo} /></p>
         )}
       </div>
       <div className="hidden text-right md:block">
         <p className="text-sm text-foreground">{user.reportsCount} reports</p>
         <p className="text-xs text-muted-foreground">
-          Joined {formatTimeAgo(user.createdAt)}
+          Joined <RelativeTime date={user.createdAt} format={formatTimeAgo} />
         </p>
       </div>
       <DropdownMenu>
@@ -1166,7 +1167,7 @@ export default function AdminPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {log.entityId && <span>ID: {log.entityId.slice(0, 8)}… · </span>}
-                        {formatTimeAgo(log.createdAt)}
+                        <RelativeTime date={log.createdAt} format={formatTimeAgo} />
                       </p>
                       {log.meta && Object.keys(log.meta).length > 0 && (
                         <pre className="mt-2 rounded bg-secondary/40 p-2 text-xs text-muted-foreground overflow-x-auto">

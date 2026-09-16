@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { useDraggable } from '@/hooks/useDraggable';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useMessaging } from '@/contexts/MessagingContext';
@@ -120,7 +121,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
             {conv.recipientName}
           </span>
           <span className="text-2xs text-muted-foreground shrink-0 tabular-nums">
-            {formatRelativeTime(conv.lastMessageTime)}
+            <RelativeTime date={conv.lastMessageTime} format={formatRelativeTime} />
           </span>
         </div>
         <div className="flex items-center justify-between gap-1 mt-0.5">

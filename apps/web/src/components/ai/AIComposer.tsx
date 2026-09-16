@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowRight } from 'lucide-react';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -44,11 +45,15 @@ export function AIComposer({
         aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
         className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
       />
+      {/* Icon-only submit: a visible "Ask" next to the "Ask AI…" placeholder
+          read as two competing controls, and the pair overflowed the header
+          slot, clipping the placeholder at every width. */}
       <button
         type="submit"
-        className="shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary-accessible hover:bg-primary/10"
+        aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
+        className="shrink-0 rounded-md p-1 text-primary-accessible hover:bg-primary/10"
       >
-        {sayOne('Ask', 'Ρώτα')}
+        <ArrowRight className="icon-sm" aria-hidden="true" />
       </button>
     </form>
   );

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -218,7 +219,7 @@ function ProfileCardInner({
             {profile.lastActive && (
               <span className="flex items-center gap-1">
                 <Clock className="icon-sm" />
-                {formatLastActive(profile.lastActive)}
+                <RelativeTime date={profile.lastActive} format={formatLastActive} />
               </span>
             )}
           </div>
@@ -302,7 +303,7 @@ function ProfileCardInner({
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={`More actions for ${profile.displayName}`}>
                     <MoreHorizontal className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>

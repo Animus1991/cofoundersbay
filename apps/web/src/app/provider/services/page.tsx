@@ -93,7 +93,7 @@ function ServiceCard({ service }: { service: Service }) {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${service.name}`}>
                   <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>

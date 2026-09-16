@@ -13,7 +13,7 @@ import {
   type ResearchComment,
 } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
-import { formatDistanceToNow } from 'date-fns';
+import { RelativeTime } from '@/components/common/RelativeTime';
 
 interface CommentsPanelProps {
   nodeId: string;
@@ -51,7 +51,7 @@ function CommentBubble({
           isOwn ? 'flex-row-reverse' : 'flex-row',
         )}>
           <span className="font-medium">{comment.authorName}</span>
-          <span>{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
+          <RelativeTime date={comment.createdAt} />
         </div>
         <div className={cn(
           'relative px-3 py-2 rounded-xl text-sm leading-relaxed',

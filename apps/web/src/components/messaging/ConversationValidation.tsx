@@ -220,6 +220,7 @@ export function ConversationValidationMenu({
             size="icon"
             className="h-9 w-9 rounded-xl"
             title={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
+            aria-label={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
           >
             <Icon className={cn('icon-sm', config.color)} />
           </Button>

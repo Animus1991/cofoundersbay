@@ -71,12 +71,35 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  loading?: boolean;
-}
+type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+    loading?: boolean;
+  };
+
+/**
+ * Icon-only sizes have no text node, so they need an explicit accessible name.
+ * The type system enforces it rather than leaving it to review: picking an
+ * icon size without `aria-label` (or `aria-labelledby`) is a compile error.
+ *
+ * This guard existed before the two branches merged and was lost in the
+ * merge; the axe run noticed immediately (`button-name` ×11 on /settings).
+ * The instances were fixed by hand, but only the type keeps the class of bug
+ * from coming back.
+ */
+type IconOnlySize = 'icon';
+
+type ButtonSize = NonNullable<ButtonBaseProps['size']>;
+
+export type ButtonProps = ButtonBaseProps &
+  (
+    // Text buttons: any non-icon size, no extra requirement.
+    | { size?: Exclude<ButtonSize, IconOnlySize> | null }
+    // Icon sizes (including a size prop whose union merely *may* be an icon
+    // size, as in wrapper components that forward `size`) must name themselves.
+    | { size: ButtonSize | null | undefined; 'aria-label': string }
+    | { size: ButtonSize | null | undefined; 'aria-labelledby': string }
+  );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (

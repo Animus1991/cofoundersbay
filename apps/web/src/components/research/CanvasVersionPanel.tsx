@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -632,7 +633,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{v.changeSummary}</p>
                 )}
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-xs text-muted-foreground">{timeAgo(v.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground"><RelativeTime date={v.createdAt} format={timeAgo} /></span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs text-muted-foreground">{v.nodeCount} nodes</span>
                   {v.createdBy && (
@@ -801,7 +802,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
               </div>
               {b.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{b.description}</p>}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-muted-foreground">{timeAgo(b.updatedAt)}</span>
+                <span className="text-xs text-muted-foreground"><RelativeTime date={b.updatedAt} format={timeAgo} /></span>
                 {b.nodeCount != null && (
                   <>
                     <span className="text-xs text-muted-foreground">·</span>

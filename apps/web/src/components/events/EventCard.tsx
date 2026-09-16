@@ -266,7 +266,7 @@ export function EventCard({
               >
                 <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
               </Button>
-              <Button variant="ghost" size="icon" onClick={onShare}>
+              <Button variant="ghost" size="icon" onClick={onShare} aria-label={`Share event ${event.title}`}>
                 <Share2 className="icon-sm" />
               </Button>
               <Button

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getOrgOpportunities, getOrgCohorts, getOrgMembers, type OrgProfile, type OpportunityItem, type CohortItem, type OrgMember } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { AppShell } from '@/components/layout/AppShell';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 
@@ -92,7 +93,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 )}
                 <div className="flex items-center gap-1.5">
                   <Calendar className="icon-sm shrink-0" aria-hidden="true" />
-                  <span>Joined {formatRelativeTime(org.createdAt)}</span>
+                  <span>Joined <RelativeTime date={org.createdAt} format={formatRelativeTime} /></span>
                 </div>
               </div>
 
@@ -211,7 +212,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                         )}
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-xs text-muted-foreground">
-                            {formatRelativeTime(opp.createdAt)}
+                            <RelativeTime date={opp.createdAt} format={formatRelativeTime} />
                           </span>
                           <Button size="sm" variant="ghost" className="h-7 text-xs px-3">
                             View

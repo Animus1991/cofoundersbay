@@ -199,7 +199,7 @@ export function ShareButton({ url, title, description, imageUrl, hashtags, child
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)}>
+      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)} aria-label="Share">
         {children ?? <><Share2 className="icon-sm mr-1.5" />Share</>}
       </Button>
       <ShareModal open={open} onClose={() => setOpen(false)} url={url} title={title} description={description} imageUrl={imageUrl} hashtags={hashtags} />

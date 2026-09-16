@@ -181,11 +181,11 @@ export function ScheduleCallModal({
           <div className="space-y-4">
             {/* Calendar Header */}
             <div className="flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={prevMonth}>
+              <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
                 <ChevronLeft className="icon-sm" />
               </Button>
-              <span className="font-medium">{monthName}</span>
-              <Button variant="ghost" size="icon" onClick={nextMonth}>
+              <span className="font-medium" aria-live="polite">{monthName}</span>
+              <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Next month">
                 <ChevronRight className="icon-sm" />
               </Button>
             </div>

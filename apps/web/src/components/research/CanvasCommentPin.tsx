@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -174,7 +175,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                   {comment.author?.displayName ?? 'Anonymous'}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-2xs text-muted-foreground">{timeAgo(comment.createdAt)}</span>
+                  <span className="text-2xs text-muted-foreground"><RelativeTime date={comment.createdAt} format={timeAgo} /></span>
                   <Button
                     variant="ghost"
                     size="sm"

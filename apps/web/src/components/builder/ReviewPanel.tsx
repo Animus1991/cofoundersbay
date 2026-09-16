@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -345,7 +346,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-xs text-muted-foreground">
-                        {proposal.createdBy.displayName} · {timeAgo(proposal.createdAt)}
+                        {proposal.createdBy.displayName} · <RelativeTime date={proposal.createdAt} format={timeAgo} />
                       </span>
                     </div>
 

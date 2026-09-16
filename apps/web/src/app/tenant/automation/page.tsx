@@ -213,15 +213,15 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" aria-label={`Run ${rule.name} now`} onClick={() => trigger.mutate()} disabled={trigger.isPending}>
             <Play className="icon-sm" />
           </Button>
           {rule.status === 'active' ? (
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" aria-label={`Pause ${rule.name}`} onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
               <Pause className="icon-sm" />
             </Button>
           ) : rule.status !== 'archived' ? (
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" aria-label={`Activate ${rule.name}`} onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
               <Zap className="icon-sm text-status-success" />
             </Button>
           ) : null}

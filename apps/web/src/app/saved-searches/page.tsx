@@ -39,6 +39,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { SAVED_SEARCHES_STRINGS, savedSearchesEn, savedSearchesEl } from '@/lib/i18n/strings-saved-searches';
@@ -115,12 +116,29 @@ function SearchCard({
               </span>
               <span className="flex min-w-0 items-center gap-1">
                 <Clock className="icon-sm shrink-0" aria-hidden="true" />
-                <BilingualText
-                  en={fill('last_run', { when: timeAgo.en }).en}
-                  el={fill('last_run', { when: timeAgo.el }).el}
-                  compact
-                  wrap
-                />
+                {lastRunDate ? (
+                  <RelativeTime
+                    date={lastRunDate}
+                    format={(d) => {
+                      const ago = formatTimeAgo(d);
+                      return (
+                        <BilingualText
+                          en={fill('last_run', { when: ago.en }).en}
+                          el={fill('last_run', { when: ago.el }).el}
+                          compact
+                          wrap
+                        />
+                      );
+                    }}
+                  />
+                ) : (
+                  <BilingualText
+                    en={fill('last_run', { when: timeAgo.en }).en}
+                    el={fill('last_run', { when: timeAgo.el }).el}
+                    compact
+                    wrap
+                  />
+                )}
               </span>
             </div>
           </div>

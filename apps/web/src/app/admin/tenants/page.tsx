@@ -396,7 +396,7 @@ function TenantEditor({
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             )}
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close tenant editor">
               <X className="icon-sm" />
             </Button>
           </div>

@@ -13,7 +13,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import Link from 'next/link';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
-import { RelativeTime } from '@/components/common/LocalTime';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -326,7 +326,7 @@ function PostCard({
                   "now" is not the browser's, and the two disagreeing is
                   what made this page fail hydration on every load. */}
               <p className="text-xs text-muted-foreground mt-0.5">
-                <RelativeTime value={post.createdAt} />
+                <RelativeTime date={post.createdAt} />
               </p>
               {post.relevanceReasons && post.relevanceReasons.length > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
@@ -338,7 +338,7 @@ function PostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria('Open post actions', 'Άνοιγμα ενεργειών δημοσίευσης')}>
                 <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -409,8 +409,14 @@ function PostCard({
             size="sm"
             onClick={onBookmark}
             className={cn(post.isBookmarked && 'text-primary-accessible')}
+            aria-label={
+              post.isBookmarked
+                ? bilingualAria('Remove bookmark', 'Αφαίρεση σελιδοδείκτη')
+                : bilingualAria('Bookmark post', 'Σελιδοδείκτης δημοσίευσης')
+            }
+            aria-pressed={post.isBookmarked}
           >
-            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
         </div>
 

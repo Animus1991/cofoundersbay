@@ -10,6 +10,7 @@ import {
   Settings, UserPlus, LogOut, CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +96,7 @@ function PostCard({
           <div className="flex items-center justify-between gap-2">
             <div>
               <span className="text-sm font-semibold">{post.author.displayName}</span>
-              <span className="ml-2 text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
+              <span className="ml-2 text-xs text-muted-foreground"><RelativeTime date={post.createdAt} format={formatRelativeTime} /></span>
             </div>
             {isOwn && (
               <button
@@ -176,7 +177,7 @@ function PostCard({
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">
                 <span className="text-xs font-semibold">{c.author.displayName}</span>
-                <span className="ml-2 text-2xs text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
+                <span className="ml-2 text-2xs text-muted-foreground"><RelativeTime date={c.createdAt} format={formatRelativeTime} /></span>
                 <p className="mt-0.5 text-xs text-foreground/90">{c.content}</p>
               </div>
             </div>

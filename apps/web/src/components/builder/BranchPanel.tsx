@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -324,7 +325,7 @@ export function BranchPanel({
                               base v{branch.baseVersionNum}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {timeAgo(branch.createdAt)}
+                              <RelativeTime date={branch.createdAt} format={timeAgo} />
                             </span>
                           </div>
                         </div>

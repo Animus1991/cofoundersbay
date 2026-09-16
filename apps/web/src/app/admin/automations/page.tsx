@@ -498,6 +498,7 @@ export default function AutomationsPage() {
                       size="icon"
                       className="h-8 w-8"
                       title="Edit rule"
+                      aria-label={`Edit rule ${rule.name}`}
                       onClick={() => setEditRule(rule)}
                     >
                       <Pencil className="icon-sm" />
@@ -507,6 +508,7 @@ export default function AutomationsPage() {
                       size="icon"
                       className="h-8 w-8"
                       title="Manual trigger"
+                      aria-label={`Manually trigger ${rule.name}`}
                       onClick={() => triggerMutation.mutate(rule.id)}
                       disabled={triggerMutation.isPending}
                     >
@@ -518,6 +520,7 @@ export default function AutomationsPage() {
                         size="icon"
                         className="h-8 w-8"
                         title="Pause"
+                        aria-label={`Pause ${rule.name}`}
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
                       >
                         <Pause className="icon-sm" />
@@ -528,6 +531,7 @@ export default function AutomationsPage() {
                         size="icon"
                         className="h-8 w-8"
                         title="Activate"
+                        aria-label={`Activate ${rule.name}`}
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
                         <Zap className="icon-sm text-status-success" />
@@ -538,6 +542,7 @@ export default function AutomationsPage() {
                       size="icon"
                       className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
                       title="Delete"
+                      aria-label={`Delete ${rule.name}`}
                       onClick={async () => {
                         if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
                       }}

@@ -94,12 +94,12 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
                   <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`More actions for ${startup.name}`}>
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -225,10 +225,10 @@ export default function InvestorScoutingPage() {
             <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
+            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="List view" aria-pressed={viewMode === 'list'}>
               <List className="icon-sm" />
             </Button>
-            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
+            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Grid view" aria-pressed={viewMode === 'grid'}>
               <LayoutGrid className="icon-sm" />
             </Button>
           </div>

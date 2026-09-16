@@ -67,7 +67,7 @@ function DealCard({ deal }: { deal: Deal }) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" aria-label={`Open actions for ${deal.name}`}>
               <MoreVertical className="icon-sm" />
             </Button>
           </DropdownMenuTrigger>

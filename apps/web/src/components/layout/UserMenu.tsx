@@ -17,7 +17,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 
 /**
@@ -35,6 +35,7 @@ const IDENTITY_LINE = 'text-sm break-words whitespace-normal';
 export function UserMenu({ variant = 'toolbar' }: { variant?: 'toolbar' | 'sidebar' }) {
   const router = useRouter();
   const user = useStoredUser();
+  const sayOne = useBilingualString();
   const { showDemoData, toggleDemoData } = useDemoData();
   const { displayMode, setDisplayMode } = useLanguagePreference();
 
@@ -73,8 +74,17 @@ export function UserMenu({ variant = 'toolbar' }: { variant?: 'toolbar' | 'sideb
             {initials}
           </AvatarFallback>
         </Avatar>
-        <span className={cn('max-w-[140px] truncate text-sm font-medium text-foreground', variant === 'sidebar' ? 'hidden min-[1024px]:inline' : 'hidden md:inline')}>
-          {user?.displayName ?? <BilingualText en="Account" el="Λογαριασμός" compact />}
+        {/* One language on this row: the bilingual fallback clipped to
+            "Acc…·Λογαρια…" inside the rail, and the dropdown already shows the
+            full identity. The sidebar variant takes the row's whole width
+            instead of the toolbar's 140px cap. */}
+        <span
+          className={cn(
+            'truncate text-sm font-medium text-foreground',
+            variant === 'sidebar' ? 'hidden min-w-0 flex-1 text-left min-[1024px]:inline' : 'hidden max-w-[140px] md:inline',
+          )}
+        >
+          {user?.displayName ?? sayOne('Account', 'Λογαριασμός')}
         </span>
         <ChevronDown className={cn('icon-sm text-muted-foreground', variant === 'sidebar' ? 'hidden min-[1024px]:block' : 'hidden md:block')} aria-hidden="true" />
       </DropdownMenuTrigger>

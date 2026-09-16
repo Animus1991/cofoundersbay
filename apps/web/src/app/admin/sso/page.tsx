@@ -392,7 +392,7 @@ function SSOConfigPanel({
             <CardTitle>SSO — {tenantName}</CardTitle>
             <CardDescription>Configure providers and authentication policy</CardDescription>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}><X className="icon-sm" /></Button>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close SSO configuration"><X className="icon-sm" /></Button>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">

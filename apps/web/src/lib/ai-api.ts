@@ -1,4 +1,5 @@
 import { ApiError, apiFetch, apiRequest, withApiAbort } from './api';
+import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -559,4 +560,25 @@ export function getAgentIcon(agentId: string): string {
     'growth-strategist': '📈',
   };
   return icons[agentId] || '🤖';
+}
+
+/**
+ * CfbGlyph name for an agent. The assistant's avatar was a robot emoji next
+ * to a product that has its own glyph system; chrome surfaces should use this
+ * and leave `getAgentIcon` to the places where an emoji is the content.
+ */
+export function getAgentGlyph(agentId: string): CfbGlyphName {
+  const glyphs: Record<string, CfbGlyphName> = {
+    general: 'spark',
+    matching: 'matches',
+    research: 'research',
+    'pitch-coach': 'target',
+    'mentor-finder': 'mentor',
+    'market-analyst': 'chart',
+    fundraising: 'wallet',
+    'legal-advisor': 'shield',
+    'technical-advisor': 'builder',
+    'growth-strategist': 'chart',
+  };
+  return glyphs[agentId] ?? 'spark';
 }

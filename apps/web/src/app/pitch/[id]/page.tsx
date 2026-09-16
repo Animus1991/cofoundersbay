@@ -660,7 +660,7 @@ export default function PitchDeckPage() {
                   <Linkedin className="icon-sm" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} aria-label="Copy link">
                 {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>

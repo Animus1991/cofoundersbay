@@ -454,7 +454,7 @@ export function EnhancedMessageThread({
           >
             <Paperclip className="icon-md" />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Attach image" onClick={() => fileInputRef.current?.click()}>
             <ImageIcon className="icon-md" />
           </Button>
           

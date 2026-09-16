@@ -77,7 +77,7 @@ function ProjectCard({ project }: { project: Project }) {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open project actions for ${project.clientName}`}>
                     <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
