@@ -50,6 +50,9 @@ export function useToast() {
   return context;
 }
 
+/** More than this on screen at once is noise; the oldest are dropped. */
+const MAX_VISIBLE_TOASTS = 4;
+
 const toastIcons: Record<ToastType, typeof CheckCircle> = {
   success: CheckCircle,
   error: AlertCircle,
@@ -158,8 +161,21 @@ function ToastPortal({ toasts, removeToast }: { toasts: Toast[]; removeToast: (i
   if (!container) return null;
 
   return createPortal(
-    <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col gap-2 max-w-sm pointer-events-none sm:left-auto sm:right-4 sm:bottom-4">
-      {toasts.map((toast) => (
+    /* The region is named and live *before* any toast exists. A live region
+       inserted into the DOM at the same moment as its content is generally
+       not announced — screen readers watch regions they already know about —
+       so a viewport that only mounts alongside the first toast silently drops
+       that first announcement. The per-toast `role="status"`/`alert` below
+       stays: it is what escalates an error from polite to assertive. */
+    <div
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+      className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col gap-2 max-w-sm pointer-events-none sm:left-auto sm:right-4 sm:bottom-4"
+    >
+      {/* More than a handful on screen at once is noise rather than feedback,
+          and the stack grows off the top of the viewport. The oldest go. */}
+      {toasts.slice(-MAX_VISIBLE_TOASTS).map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
       ))}
     </div>,

@@ -21,16 +21,34 @@ export interface ProgressProps
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, max = 100, ...props }, ref) => {
+  ProgressProps
+>(({ className, value, max = 100, label, ...props }, ref) => {
   const maximum = Number.isFinite(max) && max > 0 ? max : 100
   const current = typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= maximum ? value : null
+
+  // `label` was declared and documented on ProgressProps — including a note
+  // that the axe sweep had found nameless progressbars on the dashboards —
+  // and then never wired: the component was typed against the Radix props
+  // rather than its own, so the prop could not even be passed. All 85 call
+  // sites render without one, and axe reports `aria-progressbar-name
+  // (serious)` on every authenticated route that draws a bar.
+  //
+  // The name is set here rather than at 85 call sites so no bar can ever be
+  // nameless again; a call site that knows what its bar measures should still
+  // pass `label`, and that is strictly better than the fallback.
+  const named = props["aria-label"] ?? props["aria-labelledby"]
+  const percent = current === null ? null : Math.round((current / maximum) * 100)
 
   return (
     <ProgressPrimitive.Root
       ref={ref}
       value={current}
       max={maximum}
+      aria-label={named ? undefined : (label ?? "Progress")}
+      // The name says what the bar is; the value label says where it stands.
+      // Putting the number in the name instead would make the name change on
+      // every tick, which screen readers re-announce as a new control.
+      getValueLabel={() => (percent === null ? "Loading" : `${percent}%`)}
       className={cn(
         "relative h-2 w-full overflow-hidden rounded-full bg-secondary/50",
         className

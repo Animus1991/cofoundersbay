@@ -201,6 +201,23 @@ contributor has to reconcile:
 | Modals | Radix `Dialog`/`Sheet` in the primitives, hand-rolled `<div role="dialog">` + `useModalA11y` in ~12 pages | one idiom — the primitive, with `useModalA11y` retired into it |
 | Dead chrome | `TopNav.tsx` is referenced by nothing and carries a second `MobileNav` | delete, or wire it |
 | Native controls | the AI model picker on `/ai` is the only raw `<select>` in the chrome | the `Select` primitive |
+| **Icon-button names** | `Button`'s compile-time guard is gone | restore it — see below |
+
+### The guard worth restoring first
+
+`Button` used to make `aria-label` a **compile error** on the icon-only sizes:
+a union type over `IconOnlySize` meant `<Button size="icon">` without a name
+did not typecheck. That enforcement is not in the merged `Button`, and the
+consequence showed up immediately in this round's axe run — `button-name
+(critical) x11` on `/settings`, `x3` on `/mentor/dashboard`, each one an
+icon-only button rendered with nothing to announce.
+
+Those specific instances are fixed. The guard is not, and without it the class
+comes back: there is no way to notice a nameless icon button except by running
+axe on the page that has one. Restoring it is a contained change to one file,
+followed by naming whatever call sites it then rejects — which is exactly the
+work that should happen, done once, at compile time, rather than route by route
+through a browser.
 
 ---
 

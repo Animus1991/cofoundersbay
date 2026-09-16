@@ -70,8 +70,23 @@ const DEFAULT_PREFS: NotifPrefs = {
  * like radio buttons. `@/components/ui/switch` is the same control the other
  * ten pages use.
  */
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return <Switch checked={checked} onCheckedChange={onChange} />;
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  /**
+   * What this switch controls. The visible text sits in a sibling `<p>`, which
+   * associates nothing: axe reported `button-name (critical) x11` here, and a
+   * screen reader announced ten of these as "switch, on" with no subject. The
+   * label is next to every call site already — it just never reached the
+   * control.
+   */
+  label: string;
+}) {
+  return <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />;
 }
 
 const PRIVACY_ITEMS = [
@@ -150,7 +165,7 @@ function PrivacyCard() {
                 <p className="text-xs text-muted-foreground">{t(desc)}</p>
               </div>
             </div>
-            <Toggle checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
+            <Toggle label={t(label)} checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
           </div>
         ))}
       </CardContent>
@@ -406,9 +421,15 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => setShowPw((v) => !v)}
+                        // The icon flips between Eye and EyeOff, and so does the
+                        // name: a static "Show password" would announce the
+                        // wrong thing half the time. `aria-pressed` carries the
+                        // state so the control reads as a toggle, not a command.
+                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                        aria-pressed={showPw}
                         className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {showPw ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
+                        {showPw ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
                       </button>
                     </div>
                     <Input
@@ -579,6 +600,7 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <Toggle
+                        label={label}
                         checked={prefs[key]}
                         onChange={(v) => {
                           updatePref(key, v);

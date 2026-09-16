@@ -87,8 +87,16 @@ function MenteeCard({ mentee }: { mentee: any }) {
         <Badge variant="outline" className="text-xs">
           {mentee.sessionsCompleted} sessions
         </Badge>
-        <Button variant="ghost" size="icon">
-          <MessageCircle className="icon-sm" />
+        {/* Three of these rendered per dashboard with no name at all: axe
+            reported `button-name (critical)`, and a screen reader announced
+            "button" three times with nothing to tell them apart. Naming the
+            mentee is what makes them distinguishable, not just present. */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Message ${mentee.name}`}
+        >
+          <MessageCircle className="icon-sm" aria-hidden="true" />
         </Button>
       </div>
     </div>
@@ -462,7 +470,12 @@ export default function MentorDashboard() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Accepting requests</span>
-                  <Badge variant="default" className="bg-green-500">Active</Badge>
+                  {/* `bg-green-500` with the default variant's white text measured 2.28:1 —
+                      axe `color-contrast (serious)`. The `success` variant exists for
+                      exactly this and is the pair the status scale guarantees; it is
+                      also the last raw palette class on this page after the ~2,000-class
+                      migration. */}
+                  <Badge variant="success">Active</Badge>
                 </div>
                 <div className="text-xs text-muted-foreground">
                   You have 4 slots available this week
