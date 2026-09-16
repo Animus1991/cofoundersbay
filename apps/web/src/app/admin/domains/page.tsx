@@ -242,7 +242,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
     onSuccess: () => { setCustomDomainInput(''); refetch(); },
   });
 
-  const domains = data?.domains ?? [];
+  const domains = Array.isArray(data?.domains) ? data.domains : [];
 
   return (
     <div className="space-y-4">
@@ -323,7 +323,7 @@ export default function DomainsAdminPage() {
     staleTime: 60_000,
   });
 
-  const tenants = tenantsData ?? [];
+  const tenants = Array.isArray(tenantsData) ? tenantsData : [];
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
 
   return (

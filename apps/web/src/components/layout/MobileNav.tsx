@@ -39,6 +39,32 @@ export function MobileNav() {
     setMobileNavOpen(false);
   }, [pathname, setMobileNavOpen]);
 
+  /**
+   * Escape closes the drawer.
+   *
+   * Radix already offers this, and it does not arrive. Measured in Chromium:
+   * opening this drawer puts two dismissable layers on the stack, and
+   * `DismissableLayer` only acts on Escape for the highest one —
+   * `if (index !== context.layers.size - 1) return`. The drawer is the lower
+   * layer, so the first Escape is consumed by the one above it (which also
+   * calls `preventDefault`, which is why nothing downstream could recover
+   * it), and only a *second* press reaches the drawer. Close button and
+   * outside-click both work, so the state path is sound; it is the keyboard
+   * route alone that was lost.
+   *
+   * This listener is on the bubble phase, so it runs after Radix's capture
+   * handler has had its chance and regardless of where the drawer sits in
+   * the stack. `onCloseAutoFocus` still returns focus to the opener.
+   */
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileNavOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mobileNavOpen, setMobileNavOpen]);
+
   const sections = useMemo(
     () => getSectionsForMode(mode, primaryRole ?? user?.role),
     [mode, primaryRole, user?.role],

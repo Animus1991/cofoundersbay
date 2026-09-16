@@ -159,10 +159,14 @@ export default function AdminBillingPage() {
     staleTime: 60_000,
   });
 
-  const plans = statsData?.plans ?? [];
-  const subs = subsData ?? [];
-  const invoices = invoicesData ?? [];
-  const coupons = couponsData ?? [];
+  // `?? []` only guards nullishness. A payload that arrives as an object —
+  // a paginated envelope, or a stub answering an endpoint it does not model —
+  // passes straight through it and throws on the first `.map`. These four fed
+  // three tables and a card grid, and took the page to its error boundary.
+  const plans = Array.isArray(statsData?.plans) ? statsData.plans : [];
+  const subs = Array.isArray(subsData) ? subsData : [];
+  const invoices = Array.isArray(invoicesData) ? invoicesData : [];
+  const coupons = Array.isArray(couponsData) ? couponsData : [];
 
   const { mutate: extendTrial } = useMutation({
     mutationFn: (id: string) => adminExtendTrial(id, 7),

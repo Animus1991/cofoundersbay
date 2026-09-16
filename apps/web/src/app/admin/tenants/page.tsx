@@ -42,7 +42,12 @@ export default function TenantsAdminPage() {
     queryFn: () => listTenants({ limit: 100 }),
   });
 
-  const tenantIds = tenants?.map(t => t.id) ?? [];
+  // One guarded list, used everywhere below. `tenants?.filter(...)` repeated
+  // at each call site guards nullishness only, so a payload that arrives as an
+  // object threw on the first stat card. Narrowing once means the rest of the
+  // page can treat it as the array it already assumed it was.
+  const tenantList = Array.isArray(tenants) ? tenants : [];
+  const tenantIds = tenantList.map((t) => t.id);
   const { selectedIds, toggle, clear, isAllSelected, isPartiallySelected } = useBulkSelection(tenantIds);
 
   const bulkActions = [
@@ -116,7 +121,7 @@ export default function TenantsAdminPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               <Building2 className="icon-md text-primary-accessible" />
-              <span className="text-xl font-bold">{tenants?.length || 0}</span>
+              <span className="text-xl font-bold">{tenantList.length}</span>
             </div>
           </CardContent>
         </Card>
@@ -129,7 +134,7 @@ export default function TenantsAdminPage() {
             <div className="flex items-center gap-2">
               <Check className="icon-md text-status-success" />
               <span className="text-xl font-bold">
-                {tenants?.filter(t => t.status === 'active').length || 0}
+                {tenantList.filter((t) => t.status === 'active').length}
               </span>
             </div>
           </CardContent>
@@ -143,7 +148,7 @@ export default function TenantsAdminPage() {
             <div className="flex items-center gap-2">
               <Palette className="icon-md text-status-accent" />
               <span className="text-xl font-bold">
-                {tenants?.filter(t => t.logoUrl).length || 0}
+                {tenantList.filter((t) => t.logoUrl).length}
               </span>
             </div>
           </CardContent>
@@ -173,7 +178,7 @@ export default function TenantsAdminPage() {
                 Retry
               </Button>
             </div>
-          ) : !tenants?.length ? (
+          ) : tenantList.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Building2 className="icon-xl mx-auto mb-2" />
               <p>No tenants configured yet</p>
@@ -184,7 +189,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {tenants.map((tenant) => (
+              {tenantList.map((tenant) => (
                 <div
                   key={tenant.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-border/60 hover:bg-muted/30 transition-colors"

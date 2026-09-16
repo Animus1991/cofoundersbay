@@ -265,12 +265,19 @@ test('every theme clears WCAG AA on its token pairs', async () => {
  * than as a page that is subtly noisier than the one next to it.
  */
 test.describe('corner system', () => {
-  // --radius-xs .. --radius-3xl, plus the 2px heat-map cell, which is smaller
-  // than the bottom of the ladder on purpose: its box is 6-10px square.
-  const LADDER = [0, 2, 5, 7, 10, 13, 18, 24, 32];
+  // The ladder is derived from `--radius` rather than written out, because
+  // the token is per-theme: `:root` sets 12px and the minimal theme 8px, and
+  // every Tailwind step is a calc() off it (see tailwind.config.ts). Hard
+  // numbers here would pass on one theme and fail on another for no reason.
+  // The 2px heat-map cell is below the bottom of the ladder on purpose — its
+  // box is 6-10px square — so it is allowed explicitly.
+  const ladderFor = (base: number) =>
+    [0, 2, base - 6, base - 4, base - 2, base, base + 4, base + 8, base + 14];
 
   test('every corner comes from the radius ladder', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const base = await page.evaluate(() =>
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--radius')) || 12);
     const strays = await page.evaluate((ladder: number[]) => {
       const out: string[] = [];
       for (const el of Array.from(document.querySelectorAll('body *'))) {
@@ -290,8 +297,8 @@ test.describe('corner system', () => {
         }
       }
       return [...new Set(out)];
-    }, LADDER);
-    expect(strays, 'radii outside the ladder').toEqual([]);
+    }, ladderFor(base));
+    expect(strays, `radii outside the ladder derived from --radius: ${base}px`).toEqual([]);
   });
 
   test('pills keep a circular corner, everything else is a squircle', async ({ page }) => {
