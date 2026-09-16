@@ -191,6 +191,7 @@ describe('action registry coverage', () => {
     // Saving to a shortlist reports where the result can be seen without
     // taking the user off the page they were reading.
     expect(getActionSpec('shortlist_add')?.navigatesOnSuccess).toBeFalsy();
+    expect(getActionSpec('shortlist_remove')?.navigatesOnSuccess).toBeFalsy();
     expect(getActionSpec('send_connection')?.navigatesOnSuccess).toBeFalsy();
   });
 
@@ -294,6 +295,14 @@ describe('executing registry actions', () => {
     expect(shortlist).toHaveBeenCalledExactlyOnceWith('u1');
   });
 
+  it('takes a profile off the shortlist the same way it put it on', async () => {
+    await expect(executeAction('shortlist_remove', { userId: 'u1' })).resolves.toEqual({
+      ok: true,
+      href: '/shortlist',
+    });
+    expect(unshortlist).toHaveBeenCalledExactlyOnceWith('u1');
+  });
+
   it('sends a connection with the optional note preserved', async () => {
     await expect(
       executeAction('send_connection', { receiverId: 'u2', message: 'hello' }),
@@ -320,6 +329,10 @@ describe('executing registry actions', () => {
       ok: false,
       error: 'Missing user',
     });
+    await expect(executeAction('shortlist_remove', {})).resolves.toEqual({
+      ok: false,
+      error: 'Missing user',
+    });
     await expect(executeAction('send_connection', {})).resolves.toEqual({
       ok: false,
       error: 'Missing receiver',
@@ -330,6 +343,7 @@ describe('executing registry actions', () => {
     });
 
     expect(shortlist).not.toHaveBeenCalled();
+    expect(unshortlist).not.toHaveBeenCalled();
     expect(sendConnection).not.toHaveBeenCalled();
     expect(openThread).not.toHaveBeenCalled();
   });
@@ -505,6 +519,14 @@ describe('undoing registry actions', () => {
     expect(unshortlist).toHaveBeenCalledExactlyOnceWith('u1');
   });
 
+  it('puts a removed shortlist entry back on', async () => {
+    await expect(undoAction('shortlist_remove', { userId: 'u1' })).resolves.toEqual({
+      ok: true,
+      href: '/shortlist',
+    });
+    expect(shortlist).toHaveBeenCalledExactlyOnceWith('u1');
+  });
+
   it('refuses to undo an intro, and touches no API doing so', async () => {
     // There is no sender-side withdraw route. A "best effort" undo here would
     // either fail loudly or, worse, reach for the receiver's PATCH and be
@@ -592,6 +614,7 @@ describe('undoing registry actions', () => {
 
   it('reports exactly which tools can be taken back', () => {
     expect(isUndoable('shortlist_add')).toBe(true);
+    expect(isUndoable('shortlist_remove')).toBe(true);
     expect(isUndoable('send_connection')).toBe(false);
     expect(isUndoable('start_or_send_message')).toBe(false);
     expect(isUndoable('navigate')).toBe(false);

@@ -9,8 +9,10 @@ import {
   listJobs,
   listMilestones,
   listOpportunities,
+  listResearchBoards,
   listShortlist,
 } from '@/lib/api';
+import { getWorkspaces } from '@/lib/builder-api';
 import { listActionIds, getActionDeclaration } from '@cofounderbay/shared';
 import { AREA_READERS, isAreaRead } from './copilot-reads';
 import { replyLocaleFor, runCopilotTurn } from './copilot-engine';
@@ -38,6 +40,11 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   listOpportunities: vi.fn(),
   getUpcomingMentorshipSessions: vi.fn(),
   listShortlist: vi.fn(),
+  listResearchBoards: vi.fn(),
+}));
+vi.mock('@/lib/builder-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/builder-api')>()),
+  getWorkspaces: vi.fn(),
 }));
 
 const en = { t: (s: string, v?: Record<string, string | number>) => translate('en', s, v), locale: 'en' };
@@ -54,6 +61,8 @@ beforeEach(() => {
   vi.mocked(listOpportunities).mockReset();
   vi.mocked(getUpcomingMentorshipSessions).mockReset();
   vi.mocked(listShortlist).mockReset();
+  vi.mocked(listResearchBoards).mockReset();
+  vi.mocked(getWorkspaces).mockReset();
 });
 
 describe('the reader map', () => {
@@ -171,6 +180,75 @@ describe('reading endorsements', () => {
     expect(read.section).toContain('Endorsements: 5 received, 2 given.');
     expect(read.section).toContain('1 waiting for your approval');
     expect(read.section).toContain('**Go-to-market** — from Elena');
+  });
+});
+
+describe('reading research boards', () => {
+  it('lists active boards with their node counts and offers the page', async () => {
+    vi.mocked(listResearchBoards).mockResolvedValue({
+      boards: [
+        {
+          id: 'b1', ownerId: 'me', title: 'Athens TAM', description: null, visibility: 'private',
+          canvasState: null, tags: [], color: null, icon: null, isPinned: true, isArchived: false,
+          nodeCount: 12, createdAt: '', updatedAt: '',
+        },
+        {
+          id: 'b2', ownerId: 'me', title: 'Old', description: null, visibility: 'private',
+          canvasState: null, tags: [], color: null, icon: null, isPinned: false, isArchived: true,
+          nodeCount: 3, createdAt: '', updatedAt: '',
+        },
+      ],
+    });
+
+    const read = await AREA_READERS.get_research_boards({}, en);
+
+    expect(read.section).toContain('Your research boards:');
+    expect(read.section).toContain('**Athens TAM**');
+    expect(read.section).toContain('12 nodes');
+    expect(read.section).toContain('pinned');
+    expect(read.section).not.toContain('Old');
+    expect(read.citations).toEqual([expect.objectContaining({ type: 'research', id: 'b1', href: '/research/b1' })]);
+    expect(read.actions).toEqual([expect.objectContaining({ tool: 'navigate', href: '/research' })]);
+  });
+
+  it('says so when there are none, and still offers the page', async () => {
+    vi.mocked(listResearchBoards).mockResolvedValue({ boards: [] });
+    const read = await AREA_READERS.get_research_boards({}, en);
+    expect(read.section).toBe('No research boards yet.');
+    expect(read.actions).toHaveLength(1);
+  });
+});
+
+describe('reading Startup Builder workspaces', () => {
+  it('lists active workspaces with readiness and offers Builder', async () => {
+    vi.mocked(getWorkspaces).mockResolvedValue({
+      data: [
+        {
+          id: 'w1', name: 'Helios', slug: 'helios', status: 'active', visibility: 'private',
+          createdAt: '', updatedAt: '', owner: { id: 'me', displayName: 'Me' },
+          documentCount: 4, overallReadiness: 62,
+        },
+      ],
+      meta: { total: 1, page: 1, limit: 5, totalPages: 1, hasMore: false },
+    } as Awaited<ReturnType<typeof getWorkspaces>>);
+
+    const read = await AREA_READERS.get_builder_state({}, en);
+
+    expect(read.section).toContain('Your workspaces:');
+    expect(read.section).toContain('**Helios**');
+    expect(read.section).toContain('4 documents');
+    expect(read.section).toContain('readiness 62%');
+    expect(read.citations).toEqual([expect.objectContaining({ type: 'workspace', id: 'w1' })]);
+    expect(read.actions).toEqual([expect.objectContaining({ tool: 'navigate', href: '/builder' })]);
+  });
+
+  it('suggests creating one when there are none', async () => {
+    vi.mocked(getWorkspaces).mockResolvedValue({
+      data: [],
+      meta: { total: 0, page: 1, limit: 5, totalPages: 0, hasMore: false },
+    } as Awaited<ReturnType<typeof getWorkspaces>>);
+    const read = await AREA_READERS.get_builder_state({}, en);
+    expect(read.section).toMatch(/^No Startup Builder workspace yet\./);
   });
 });
 

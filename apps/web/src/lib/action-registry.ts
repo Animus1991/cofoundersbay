@@ -158,6 +158,13 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     return { ok: true, href: '/shortlist' };
   },
 
+  shortlist_remove: async (payload) => {
+    const userId = requireString(payload, 'userId');
+    if (!userId) return { ok: false, error: 'Missing user' };
+    await removeFromShortlist(userId);
+    return { ok: true, href: '/shortlist' };
+  },
+
   send_connection: async (payload) => {
     const receiverId = requireString(payload, 'receiverId');
     if (!receiverId) return { ok: false, error: 'Missing receiver' };
@@ -222,15 +229,22 @@ const ANALYTICS_PERIODS = ['7d', '14d', '30d', '90d'];
 
 /**
  * Exhaustive over every declaration that claims `full` or `partial`
- * reversibility — which today is `shortlist_add` alone, because a connection
- * request has no sender-side withdraw route and a direct conversation cannot
- * be deleted.
+ * reversibility — shortlist add/remove are the fully reversible pair, because
+ * a connection request has no sender-side withdraw route and a direct
+ * conversation cannot be deleted.
  */
 const UNDOS: Record<UndoableActionId, Executor> = {
   shortlist_add: async (payload) => {
     const userId = requireString(payload, 'userId');
     if (!userId) return { ok: false, error: 'Missing user' };
     await removeFromShortlist(userId);
+    return { ok: true, href: '/shortlist' };
+  },
+
+  shortlist_remove: async (payload) => {
+    const userId = requireString(payload, 'userId');
+    if (!userId) return { ok: false, error: 'Missing user' };
+    await saveToShortlist(userId);
     return { ok: true, href: '/shortlist' };
   },
 

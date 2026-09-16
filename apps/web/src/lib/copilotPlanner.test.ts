@@ -83,6 +83,7 @@ describe('what the planner may name', () => {
     const phrases = [
       'find a technical cofounder in Athens',
       'save Elena to my shortlist',
+      'remove Elena from my shortlist',
       'connect with Marcus',
       'στείλε μήνυμα στη Sarah',
       'open matches',
@@ -121,6 +122,10 @@ describe('reading a product area', () => {
     expect(plan('show me open opportunities')).toContain('get_opportunities');
     expect(plan('when is my next mentoring session')).toContain('get_mentorship_sessions');
     expect(plan('who is on my shortlist')).toContain('get_shortlist');
+    expect(plan('show my research boards')).toContain('get_research_boards');
+    expect(plan('δείξε τους πίνακες έρευνας')).toContain('get_research_boards');
+    expect(plan('show my startup builder workspaces')).toContain('get_builder_state');
+    expect(plan('ποιοι χώροι εργασίας μου είναι ανοιχτοί')).toContain('get_builder_state');
   });
 
   it('answers the question before the workspace summary, not after it', () => {
@@ -156,5 +161,9 @@ describe('reading a product area', () => {
     expect(plan('who is on my shortlist')).not.toContain('search_people');
     // Asking to save still saves.
     expect(plan('save Elena to my shortlist')).toContain('shortlist_add');
+    expect(plan('remove Elena from my shortlist')).toContain('shortlist_remove');
+    expect(plan('remove Elena from my shortlist')).not.toContain('shortlist_add');
+    expect(plan('βγάλε την Elena από τη λίστα')).toContain('shortlist_remove');
+    expect(plan('who is on my shortlist')).not.toContain('shortlist_remove');
   });
 });

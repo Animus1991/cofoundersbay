@@ -9,6 +9,7 @@ import {
   listJobs,
   listMilestones,
   listOpportunities,
+  listResearchBoards,
   listShortlist,
   type EndorsementItem,
   type EventItem,
@@ -17,8 +18,10 @@ import {
   type MentorshipSessionItem,
   type Milestone,
   type OpportunityItem,
+  type ResearchBoard,
   type ShortlistItem,
 } from '@/lib/api';
+import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 
@@ -377,6 +380,57 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     });
 
     return { section: `${t('Saved profiles:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_research_boards(_args, { t }) {
+    const result = await listResearchBoards();
+    const boards = asList<ResearchBoard>(result?.boards)
+      .filter((board) => !board.isArchived)
+      .slice(0, LIMIT);
+    const actions = [openArea(t, '/research', t('Open research boards'), t('Open a board or start a new one.'))];
+
+    if (boards.length === 0) {
+      return { section: t('No research boards yet.'), citations: [], actions };
+    }
+
+    const citations: CopilotCitation[] = [];
+    const lines = boards.map((board) => {
+      citations.push({ type: 'research', id: board.id, label: board.title, href: `/research/${board.id}` });
+      const details = [
+        t('{count} nodes', { count: board.nodeCount ?? 0 }),
+        board.isPinned ? t('pinned') : '',
+      ].filter(Boolean);
+      return `• **${board.title}** — ${details.join(' · ')}`;
+    });
+
+    return { section: `${t('Your research boards:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_builder_state(_args, { t }) {
+    const result = await getWorkspaces({ limit: LIMIT, status: 'active' });
+    const workspaces = asList<BuilderWorkspace>(result?.data).slice(0, LIMIT);
+    const actions = [openArea(t, '/builder', t('Open Startup Builder'), t('Create or open a workspace.'))];
+
+    if (workspaces.length === 0) {
+      return {
+        section: t('No Startup Builder workspace yet. Ask me to create one.'),
+        citations: [],
+        actions,
+      };
+    }
+
+    const citations: CopilotCitation[] = [];
+    const lines = workspaces.map((workspace) => {
+      citations.push({ type: 'workspace', id: workspace.id, label: workspace.name, href: '/builder' });
+      const details = [
+        workspace.status ?? '',
+        typeof workspace.documentCount === 'number' ? t('{count} documents', { count: workspace.documentCount }) : '',
+        typeof workspace.overallReadiness === 'number' ? t('readiness {score}%', { score: workspace.overallReadiness }) : '',
+      ].filter(Boolean);
+      return `• **${workspace.name}**${details.length ? ` — ${details.join(' · ')}` : ''}`;
+    });
+
+    return { section: `${t('Your workspaces:')}\n${lines.join('\n')}`, citations, actions };
   },
 };
 

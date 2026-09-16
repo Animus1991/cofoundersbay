@@ -468,7 +468,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           void queryClient.invalidateQueries({ queryKey: [...key] });
         });
       }
-      if (tool === 'shortlist_add') {
+      if (tool === 'shortlist_add' || tool === 'shortlist_remove') {
         void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlist] });
         void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlistIds] });
       }

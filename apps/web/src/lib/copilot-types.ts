@@ -54,7 +54,9 @@ export type CopilotCitation = {
     | 'group'
     | 'endorsement'
     | 'opportunity'
-    | 'session';
+    | 'session'
+    | 'research'
+    | 'workspace';
   id: string;
   label: string;
   href?: string;

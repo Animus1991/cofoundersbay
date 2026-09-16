@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Loader2,
+  List,
   Maximize2,
   Plus,
   RefreshCw,
@@ -48,8 +49,10 @@ const STARTERS: { en: string; el: string; writes?: boolean }[] = [
   { en: 'What should I do next?', el: 'Τι να κάνω μετά;' },
   { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα' },
   { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
+  { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
   { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
   { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist', writes: true },
+  { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα', writes: true },
   { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', writes: true },
 ];
 
@@ -223,6 +226,16 @@ export function CopilotWorkspace({
               type="button"
               variant="ghost"
               size="sm"
+              className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
+              onClick={() => router.push('/ai/capabilities')}
+            >
+              <List className="h-4 w-4 shrink-0" />
+              <BilingualText en="What I can do" el="Τι μπορώ να κάνω" stacked className="min-w-0 text-left" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               // h-auto + stacked: the inline "AI preferences · Προτιμήσεις AI"
               // did not fit the 288px rail and clipped to "AI preferen…".
               className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
@@ -347,6 +360,20 @@ export function CopilotWorkspace({
                   </div>
                 );
               })}
+              <p className="text-center text-xs text-muted-foreground">
+                <button
+                  type="button"
+                  className="underline-offset-2 hover:underline"
+                  onClick={() => router.push('/ai/capabilities')}
+                >
+                  <BilingualText
+                    en="See everything I can read and change"
+                    el="Δες όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                    compact
+                    wrap
+                  />
+                </button>
+              </p>
             </div>
           ) : (
             chat.messages.map((msg) => (

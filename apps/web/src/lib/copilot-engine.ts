@@ -4,9 +4,11 @@ import {
   listConnectionRequests,
   listMessageConversations,
   listNotifications,
+  listShortlist,
   searchProfiles,
   getRecommendations,
   type SearchHit,
+  type ShortlistItem,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
 import { executeAction, getActionSpec } from '@/lib/action-registry';
@@ -354,6 +356,78 @@ export async function runCopilotTurn(
     return true;
   };
 
+  const applyShortlistRemove = async (name?: string) => {
+    let saved: ShortlistItem[] = [];
+    try {
+      const result = await listShortlist({ limit: 50 });
+      saved = Array.isArray(result?.items) ? result.items : [];
+    } catch {
+      saved = [];
+    }
+
+    const needle = (name || detectPersonName(userMessage) || '').toLowerCase();
+    let item: ShortlistItem | undefined;
+    if (needle) {
+      const exact = saved.find((entry) => (entry.profile?.displayName ?? '').toLowerCase() === needle);
+      const partial = saved.filter((entry) => (entry.profile?.displayName ?? '').toLowerCase().includes(needle));
+      item = exact ?? (partial.length === 1 ? partial[0] : undefined);
+    } else if (saved.length === 1) {
+      item = saved[0];
+    }
+
+    if (!item) {
+      const pool = people.length ? people : matches;
+      const target = findPerson(pool, name || detectPersonName(userMessage));
+      if (!target) return false;
+      sections.push(
+        t('I found **{name}**. I can take them off your shortlist if you like.', { name: target.displayName }),
+      );
+      citations.push({
+        type: 'person',
+        id: target.userId,
+        label: target.displayName,
+        href: personHref(target),
+      });
+      actions.push({
+        id: newId('unshortlist'),
+        tool: 'shortlist_remove',
+        title: t('Remove {name} from shortlist', { name: target.displayName }),
+        description: t('Remove {name} from your saved profiles. This only writes when you confirm.', {
+          name: target.displayName,
+        }),
+        confirmLabel: t('Remove from shortlist'),
+        payload: { userId: target.userId, displayName: target.displayName },
+        status: 'pending',
+        href: '/shortlist',
+      });
+      return true;
+    }
+
+    const displayName = item.profile?.displayName ?? item.userId;
+    sections.push(
+      t('I found **{name}**. I can take them off your shortlist if you like.', { name: displayName }),
+    );
+    citations.push({
+      type: 'person',
+      id: item.userId,
+      label: displayName,
+      href: `/profiles/${item.userId}`,
+    });
+    actions.push({
+      id: newId('unshortlist'),
+      tool: 'shortlist_remove',
+      title: t('Remove {name} from shortlist', { name: displayName }),
+      description: t('Remove {name} from your saved profiles. This only writes when you confirm.', {
+        name: displayName,
+      }),
+      confirmLabel: t('Remove from shortlist'),
+      payload: { userId: item.userId, displayName },
+      status: 'pending',
+      href: '/shortlist',
+    });
+    return true;
+  };
+
   // Ground the turn in what the reader is actually looking at.
   //
   // The assistant knew the route and nothing on it, so "what am I looking at"
@@ -511,6 +585,13 @@ export async function runCopilotTurn(
       const ok = await applyShortlist(tool.args.name);
       if (!ok && !planned.some((t) => t.name === 'search_people' || t.name === 'get_recommendations')) {
         sections.push(t('Name someone from Matches or Search and I will save them to your shortlist.'));
+      }
+    }
+
+    if (tool.name === 'shortlist_remove') {
+      const ok = await applyShortlistRemove(tool.args.name);
+      if (!ok && !planned.some((t) => t.name === 'get_shortlist')) {
+        sections.push(t('Name someone on your shortlist and I will take them off.'));
       }
     }
 
@@ -687,6 +768,13 @@ export async function runCopilotTurn(
     }
   }
 
+  if (planned.some((t) => t.name === 'shortlist_remove') && !actions.some((a) => a.tool === 'shortlist_remove')) {
+    const ok = await applyShortlistRemove(detectPersonName(userMessage));
+    if (!ok) {
+      sections.push(t('Name someone on your shortlist and I will take them off.'));
+    }
+  }
+
   const uniqueActions = actions.filter(
     (action, index) =>
       actions.findIndex(
@@ -717,6 +805,10 @@ export async function runCopilotTurn(
       'I can also tick your readiness criteria, change the analytics window, and create the workspace Builder needs.',
     )} ${t(
       'And I can read your events, milestones, open roles, communities, endorsements, opportunities, mentoring sessions and saved profiles.',
+    )} ${t(
+      'I can also read your research boards and Startup Builder workspaces.',
+    )} ${t(
+      'I can take a profile off your shortlist the same way I put it on.',
     )}`;
   }
 

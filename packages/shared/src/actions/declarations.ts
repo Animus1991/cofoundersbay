@@ -197,6 +197,28 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_research_boards',
+    kind: 'read',
+    label: { en: 'Read your research boards', el: 'Ανάγνωση των πινάκων έρευνας' },
+    description: {
+      en: 'Read the signed-in user’s research boards: title, how many notes are pinned, and whether it is archived. Returns up to five.',
+      el: 'Διαβάζει τους πίνακες έρευνας του χρήστη: τίτλο, πόσα σημειώματα είναι καρφιτσωμένα, και αν είναι αρχειοθετημένος. Επιστρέφει έως πέντε.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_builder_state',
+    kind: 'read',
+    label: { en: 'Read your Startup Builder workspaces', el: 'Ανάγνωση των χώρων Startup Builder' },
+    description: {
+      en: 'Read the signed-in user’s Startup Builder workspaces: name, status, document count and readiness score. Returns up to five.',
+      el: 'Διαβάζει τους χώρους Startup Builder του χρήστη: όνομα, κατάσταση, πλήθος εγγράφων και βαθμό ετοιμότητας. Επιστρέφει έως πέντε.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'navigate',
     kind: 'mutation',
     label: { en: 'Open a page', el: 'Άνοιγμα σελίδας' },
@@ -265,6 +287,35 @@ export const ACTION_DECLARATIONS = [
       },
     },
     confirmLabel: { en: 'Save to shortlist', el: 'Αποθήκευση στη λίστα' },
+  },
+  {
+    id: 'shortlist_remove',
+    kind: 'mutation',
+    label: { en: 'Remove from shortlist', el: 'Αφαίρεση από τη λίστα' },
+    description: {
+      en: 'Remove a person from the signed-in user’s saved profiles. Writes only after confirmation, and can be put back in one click.',
+      el: 'Αφαιρεί ένα άτομο από τα αποθηκευμένα προφίλ του χρήστη. Γράφει μόνο μετά από επιβεβαίωση και επιστρέφει με ένα κλικ.',
+    },
+    params: [
+      {
+        name: 'userId',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Id of the person to remove. Must come from a prior shortlist, search or recommendation result.',
+          el: 'Το id του ατόμου. Πρέπει να προέρχεται από τη λίστα, προηγούμενη αναζήτηση ή πρόταση.',
+        },
+      },
+    ],
+    writes: true,
+    reversal: {
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. Putting them back recreates the saved entry, and nobody is notified either way.',
+        el: 'Πλήρως αναστρέψιμο. Η επαναφορά δημιουργεί ξανά την αποθηκευμένη εγγραφή και δεν ειδοποιείται κανείς.',
+      },
+    },
+    confirmLabel: { en: 'Remove from shortlist', el: 'Αφαίρεση από τη λίστα' },
   },
   {
     id: 'send_connection',

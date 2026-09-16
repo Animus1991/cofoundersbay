@@ -343,12 +343,15 @@ included.
 
 ### 6.4 What is still open, in order
 
-1. **Reversible writes (item 6).** Still 5 of ~140. The read loop above is the
-   prerequisite that was missing: a model can now look before it proposes.
-2. **Capability index (item 7).** Twelve reads and six mutations are now worth
-   listing; generated from the declarations, it costs nothing to maintain.
+1. **Reversible writes (item 6).** `shortlist_remove` now pairs with `shortlist_add`
+   — same API, same confirmation, undo puts the profile back. Still ~6 of ~140
+   mutations; next are other full-reversal list add/remove writes.
+2. **Capability index (item 7).** Shipped at `/ai/capabilities`, generated from
+   `ACTION_DECLARATIONS`. Linked from the assistant rail, the empty-state, and
+   AI settings. The activity log half of item 7 is still open.
 3. **Demo data for the showcase areas.** In preview mode `/events`, `/jobs`,
    `/groups` and `/opportunities` fall through to the shim's generic fallback,
    so both the pages and the assistant truthfully report them empty. The
    assistant is consistent with the page; the showcase is thinner than it
    should be.
+4. **One modal idiom (item 8).** Still two patterns in the tree.

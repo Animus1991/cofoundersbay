@@ -118,6 +118,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['saved profile', 'my shortlist', 'αποθηκευμενα προφιλ', 'αποθηκευμενους'],
     tool: 'get_shortlist',
   },
+  { keys: ['research board', 'πινακες ερευνας', 'πινακα ερευνας'], tool: 'get_research_boards' },
+  {
+    keys: ['my workspace', 'my workspaces', 'startup builder', 'builder workspace', 'χωρους εργασιας', 'χωρο εργασιας', 'χωροι εργασιας'],
+    tool: 'get_builder_state',
+  },
 ];
 
 /**
@@ -145,6 +150,11 @@ const EXPLICIT_SEARCH_PHRASES = ['find', 'search', 'look for', 'βρες', 'ψά
 /** Verbs that mean "add to the list", as opposed to asking what is on it. */
 const EXPLICIT_SAVE_PHRASES = [
   'save', 'add ', 'bookmark', 'αποθήκευσε', 'αποθηκευσε', 'πρόσθεσε', 'προσθεσε',
+];
+
+/** Verbs that mean "take off the list", as opposed to asking what is on it. */
+const EXPLICIT_REMOVE_PHRASES = [
+  'remove', 'unsave', 'take off', 'drop from', 'βγάλε', 'βγαλε', 'αφαίρεσε', 'αφαιρεσε',
 ];
 
 export function detectAreaReads(message: string): AreaReadId[] {
@@ -266,6 +276,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const areaReads = !nav || includesAny(message, QUESTION_PHRASES) ? detectAreaReads(message) : [];
   const explicitSearch = includesAny(message, EXPLICIT_SEARCH_PHRASES);
   const explicitSave = includesAny(message, EXPLICIT_SAVE_PHRASES);
+  const explicitRemove = includesAny(message, EXPLICIT_REMOVE_PHRASES);
 
   const wantsGraph = includesAny(message, [
     'what should i do',
@@ -320,18 +331,29 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'ειδοποιη',
   ]);
 
-  const wantsShortlist = !(areaReads.includes('get_shortlist') && !explicitSave) && includesAny(message, [
+  const namesTheList = includesAny(message, [
     'shortlist',
-    'bookmark',
-    'save to',
-    'save them',
-    'save her',
-    'save him',
-    'αποθήκευσε',
-    'αποθηκευσε',
+    'saved profile',
     'λίστα',
     'λιστα',
+    'αποθηκευμ',
   ]);
+  const wantsShortlist =
+    !explicitRemove &&
+    !(areaReads.includes('get_shortlist') && !explicitSave) &&
+    includesAny(message, [
+      'shortlist',
+      'bookmark',
+      'save to',
+      'save them',
+      'save her',
+      'save him',
+      'αποθήκευσε',
+      'αποθηκευσε',
+      'λίστα',
+      'λιστα',
+    ]);
+  const wantsShortlistRemove = explicitRemove && namesTheList;
 
   const wantsConnect = includesAny(message, [
     'connect',
@@ -411,6 +433,12 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (wantsNotifications) add('get_notifications');
 
   for (const read of areaReads) add(read);
+
+  if (wantsShortlistRemove) {
+    const args: Record<string, string> = {};
+    if (person) args.name = person;
+    add('shortlist_remove', args);
+  }
 
   if (wantsShortlist) {
     const args: Record<string, string> = {};
