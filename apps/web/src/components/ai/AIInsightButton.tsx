@@ -75,6 +75,9 @@ export function AIInsightButton({
       variant={variant}
       size={size}
       onClick={openAssistant}
+      // The visible label is the name; repeating it here keeps the two
+      // identical (SC 2.5.3) and covers the `icon` size this `size` can carry.
+      aria-label={visibleLabel}
       className={cn('h-auto min-h-9 gap-1.5 whitespace-nowrap px-2.5', className)}
       // `size` is a forwarded union that may name an icon size, so the
       // compile guard asks for a name even though this branch renders text.

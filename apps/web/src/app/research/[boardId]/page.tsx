@@ -1283,8 +1283,8 @@ export default function ResearchBoardPage() {
           {/* Categorised Add Node mega-dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs">
-                <Plus className="icon-sm" />
+              <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs" aria-label={researchEn('add_node')}>
+                <Plus className="icon-sm" aria-hidden="true" />
                 <span className="hidden md:inline">
                   <BilingualText en={researchEn('add_node')} el={researchEl('add_node')} compact />
                 </span>
