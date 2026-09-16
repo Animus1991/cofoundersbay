@@ -168,7 +168,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          className="pl-10 pr-20"
+          className="pl-9 pr-20"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query && (

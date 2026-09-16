@@ -474,7 +474,7 @@ export function MembersPageClient() {
               placeholder="Search members by name, skills, or bio..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9"
             />
           </div>
 

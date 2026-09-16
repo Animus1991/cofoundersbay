@@ -1835,6 +1835,80 @@ html {
     .py-4   { padding-top: 16px; padding-bottom: 16px; }
     .py-5   { padding-top: 20px; padding-bottom: 20px; }
     .py-6   { padding-top: 24px; padding-bottom: 24px; }
+
+    /* The side utilities, restated after the shorthands above — and why that
+       order is the whole fix. Tailwind emits `p-*`, then `px-*`/`py-*`, then
+       `pt-*`/`pr-*`/`pb-*`/`pl-*`, so a side class beats the shorthand it
+       refines: `px-3 pl-9` means 12px on the right and 36px on the left. The
+       px anchors above restated only the shorthands, and they sit later in the
+       sheet than Tailwind's side classes, so on desktop the shorthand won
+       instead. Measured: 13 search fields across /events, /jobs, /groups,
+       /members, /mentoring, /marketplace, /opportunities, /messages, /shortlist,
+       /investors, /learning, /research — each an `Input` carrying `px-3` with a
+       call-site `pl-9` or `pl-10` — started their placeholder 12.8px *under*
+       the magnifier icon. The same inversion undid every `p-4 pt-0` and
+       `p-4 pb-2` written on a desktop card. Restating the side steps the
+       product uses, here, after the shorthands, puts the precedence back where
+       Tailwind has it. */
+    .pt-0 { padding-top: 0; }
+    .pt-0\.5 { padding-top: 2px; }
+    .pt-1 { padding-top: 4px; }
+    .pt-1\.5 { padding-top: 6px; }
+    .pt-2 { padding-top: 8px; }
+    .pt-2\.5 { padding-top: 10px; }
+    .pt-3 { padding-top: 12px; }
+    .pt-4 { padding-top: 16px; }
+    .pt-5 { padding-top: 20px; }
+    .pt-6 { padding-top: 24px; }
+    .pt-8 { padding-top: 32px; }
+
+    .pr-0 { padding-right: 0; }
+    .pr-0\.5 { padding-right: 2px; }
+    .pr-1 { padding-right: 4px; }
+    .pr-2 { padding-right: 8px; }
+    .pr-3 { padding-right: 12px; }
+    .pr-4 { padding-right: 16px; }
+    .pr-6 { padding-right: 24px; }
+    .pr-7 { padding-right: 28px; }
+    .pr-8 { padding-right: 32px; }
+    .pr-10 { padding-right: 40px; }
+    .pr-12 { padding-right: 48px; }
+    .pr-14 { padding-right: 56px; }
+    .pr-16 { padding-right: 64px; }
+    .pr-20 { padding-right: 80px; }
+    .pr-40 { padding-right: 160px; }
+    .pr-44 { padding-right: 176px; }
+
+    .pb-0 { padding-bottom: 0; }
+    .pb-0\.5 { padding-bottom: 2px; }
+    .pb-1 { padding-bottom: 4px; }
+    .pb-1\.5 { padding-bottom: 6px; }
+    .pb-2 { padding-bottom: 8px; }
+    .pb-2\.5 { padding-bottom: 10px; }
+    .pb-3 { padding-bottom: 12px; }
+    .pb-4 { padding-bottom: 16px; }
+    .pb-5 { padding-bottom: 20px; }
+    .pb-6 { padding-bottom: 24px; }
+    .pb-8 { padding-bottom: 32px; }
+    .pb-10 { padding-bottom: 40px; }
+    .pb-16 { padding-bottom: 64px; }
+    .pb-20 { padding-bottom: 80px; }
+    .pb-24 { padding-bottom: 96px; }
+    .pb-28 { padding-bottom: 112px; }
+
+    .pl-0 { padding-left: 0; }
+    .pl-0\.5 { padding-left: 2px; }
+    .pl-1 { padding-left: 4px; }
+    .pl-1\.5 { padding-left: 6px; }
+    .pl-2 { padding-left: 8px; }
+    .pl-3 { padding-left: 12px; }
+    .pl-4 { padding-left: 16px; }
+    .pl-5 { padding-left: 20px; }
+    .pl-6 { padding-left: 24px; }
+    .pl-7 { padding-left: 28px; }
+    .pl-8 { padding-left: 32px; }
+    .pl-9 { padding-left: 36px; }
+    .pl-10 { padding-left: 40px; }
   }
 
   /* ── Spacing rhythm ── */

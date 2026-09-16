@@ -405,7 +405,7 @@ export default function ShortlistPage() {
                 placeholder={say(shortlistEn('search_placeholder'), shortlistEl('search_placeholder'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-9 text-sm"
+                className="pl-9 h-9 text-sm"
               />
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>

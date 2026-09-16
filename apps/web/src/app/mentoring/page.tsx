@@ -758,7 +758,7 @@ export default function MentoringPage() {
                 placeholder="Search mentors by name, expertise, or bio..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-9"
               />
             </div>
 

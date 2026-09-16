@@ -440,7 +440,7 @@ export default function DataRoomPage() {
                       placeholder="Search documents..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-[300px]"
+                      className="pl-9 w-[300px]"
                     />
                   </div>
                 </div>

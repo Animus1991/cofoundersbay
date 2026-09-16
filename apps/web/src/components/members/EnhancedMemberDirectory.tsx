@@ -170,7 +170,7 @@ export function EnhancedMemberDirectory() {
               placeholder="Search by name, skills, or industry..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9"
             />
           </div>
           <Button

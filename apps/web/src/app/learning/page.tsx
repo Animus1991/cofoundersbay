@@ -494,7 +494,7 @@ export default function LearningPage() {
                 placeholder={bilingualInline(learningEn('search'), learningEl('search'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-9"
               />
             </div>
 

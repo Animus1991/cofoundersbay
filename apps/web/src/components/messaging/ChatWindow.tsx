@@ -475,7 +475,7 @@ export function ChatWindow({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t(messagesEn('search_in_chat'), messagesEl('search_in_chat'))}
-                className="w-full rounded-xl border border-border/60 bg-secondary/50 py-1.5 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full rounded-xl border border-border/60 bg-secondary/50 py-1.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
             {searchQuery && (

@@ -357,7 +357,7 @@ export default function GroupsPage() {
                   placeholder="Search communities by name, topic, or tags..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-9"
                 />
               </div>
               {/* Type filter tabs — Figma-inspired */}

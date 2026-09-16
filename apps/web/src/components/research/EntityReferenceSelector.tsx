@@ -152,7 +152,7 @@ export function EntityReferenceSelector({
                 placeholder={`Search ${ENTITY_TYPES.find((t) => t.type === selectedType)?.label?.toLowerCase()}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-9"
                 autoFocus
               />
             </div>
