@@ -71,7 +71,7 @@ export function ExportDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Download className="icon-sm" aria-hidden="true" />
+            <Download className="icon-sm" />
             {title}
           </DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -81,7 +81,7 @@ export function ExportDialog({
           {/* Row count info */}
           {rowCount != null && (
             <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-              Exporting <span className="font-medium text-foreground">{rowCount.toLocaleString()}</span> {rowCount === 1 ? 'row' : 'rows'}
+              Exporting <span className="font-medium text-foreground">{rowCount.toLocaleString('en-GB')}</span> {rowCount === 1 ? 'row' : 'rows'}
               {columns && ` · ${selectedColumns.length} of ${columns.length} columns`}
             </div>
           )}
@@ -160,7 +160,7 @@ export function ExportDialog({
               onClick={handleExport}
               disabled={exporting || (columns ? selectedColumns.length === 0 : false)}
             >
-              {exporting ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Download className="icon-sm" aria-hidden="true" />}
+              {exporting ? <Loader2 className="icon-sm animate-spin" /> : <Download className="icon-sm" />}
               {exporting ? 'Exporting...' : 'Export'}
             </Button>
           </div>

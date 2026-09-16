@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { listMarketplaceServices, type MarketplaceCategory } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,14 +54,14 @@ type ServiceProvider = {
 
 const CAT_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   All: { label: 'All Services', icon: Store, color: 'text-foreground' },
-  legal: { label: 'Legal', icon: Scale, color: 'text-blue-500' },
-  finance: { label: 'Finance', icon: Calculator, color: 'text-green-500' },
-  marketing: { label: 'Marketing', icon: Megaphone, color: 'text-orange-500' },
-  development: { label: 'Development', icon: Code2, color: 'text-purple-500' },
-  design: { label: 'Design', icon: Brush, color: 'text-pink-500' },
-  consulting: { label: 'Consulting', icon: BrainCircuit, color: 'text-amber-500' },
-  coaching: { label: 'Coaching', icon: GraduationCap, color: 'text-teal-500' },
-  other: { label: 'Other', icon: Globe, color: 'text-gray-500' },
+  legal: { label: 'Legal', icon: Scale, color: 'text-status-info' },
+  finance: { label: 'Finance', icon: Calculator, color: 'text-status-success' },
+  marketing: { label: 'Marketing', icon: Megaphone, color: 'text-status-warning' },
+  development: { label: 'Development', icon: Code2, color: 'text-status-accent' },
+  design: { label: 'Design', icon: Brush, color: 'text-status-accent' },
+  consulting: { label: 'Consulting', icon: BrainCircuit, color: 'text-status-warning' },
+  coaching: { label: 'Coaching', icon: GraduationCap, color: 'text-status-success' },
+  other: { label: 'Other', icon: Globe, color: 'text-muted-foreground' },
 };
 
 const CATEGORIES = Object.keys(CAT_CONFIG);
@@ -145,33 +146,42 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-11 w-11 shrink-0 rounded-lg">
               <AvatarImage src={provider.providerAvatar} />
-              <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">
                 {provider.providerName[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="font-semibold text-sm truncate">{provider.providerName}</p>
-                {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" aria-hidden="true" />}
-                {featured && <Badge className="text-2xs bg-primary/10 text-primary-emphasis border-primary/20 border">Featured</Badge>}
+                <p className="text-sm font-semibold leading-snug">{provider.providerName}</p>
+                {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" />}
+                {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
               </div>
-              <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
+              {/* "Growth Marketing Strategist" is 170px against the 102px
+                  this column gives it at 1024px — the trade an ellipsis makes
+                  here is the whole specialism for one line. */}
+              <p className="text-xs leading-snug text-muted-foreground">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
-                <Star className="icon-2xs fill-amber-400 text-amber-400" aria-hidden="true" />
+                <Star className="icon-sm fill-status-warning text-amber-400" />
                 <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
                 <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
               </div>
             </div>
           </div>
-          <button onClick={() => setSaved(!saved)} className="shrink-0 p-1 rounded hover:bg-muted transition-colors">
-            <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
+          {/* Their tap target and accessible name (this icon-only button had
+              neither), kept with our icon-size and contrast-safe tokens. */}
+          <button
+            onClick={() => setSaved(!saved)}
+            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center rounded hover:bg-muted transition-colors"
+            aria-label={saved ? 'Remove bookmark' : 'Save provider'}
+          >
+            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
           </button>
         </div>
 
         {/* Service */}
         <div>
           <div className="flex items-center gap-1.5 mb-1">
-            <CatIcon className={cn('h-3.5 w-3.5 shrink-0', catCfg.color)} />
+            <CatIcon className={cn('icon-sm shrink-0', catCfg.color)} />
             <h3 className="font-semibold text-sm">{provider.title}</h3>
           </div>
           <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{provider.description}</p>
@@ -189,9 +199,9 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
         {/* Meta */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{provider.responseTime}</div>
-          <div className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{provider.clientCount} clients</div>
-          <div className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{provider.location}</div>
+          <div className="flex items-center gap-1"><Clock className="icon-sm" />{provider.responseTime}</div>
+          <div className="flex items-center gap-1"><Users className="icon-sm" />{provider.clientCount} clients</div>
+          <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
           <div className="flex items-center gap-1">
             <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-green-500' : 'bg-gray-400')} />
             {provider.isAvailable ? 'Available' : 'Fully booked'}
@@ -206,7 +216,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           </div>
           <div className="flex shrink-0 gap-2">
             <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-              <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />Message
+              <MessageCircle className="icon-sm" />Message
             </Button>
             <Button size="sm" className="h-8 text-xs" disabled={!provider.isAvailable}>
               Request
@@ -232,7 +242,7 @@ function StatsBar() {
       {stats.map(s => (
         <Card key={s.label}>
           <CardContent className="p-3 flex items-center gap-2">
-            <s.icon className="h-4 w-4 text-primary-emphasis shrink-0" />
+            <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
             <div>
               <p className="text-xs font-bold">{s.value}</p>
               <p className="text-2xs text-muted-foreground">{s.label}</p>
@@ -306,17 +316,28 @@ export default function MarketplacePage() {
   const regular = filtered.filter(p => !p.isFeatured);
 
   return (
-    <AppShell title="Services Marketplace" description="Find verified experts for every startup need">
+    <AppShell showHelp>
       <div className="space-y-6 pb-10">
+        {backendProviders.length === 0 && (
+          <SampleDataNotice
+            surface="Marketplace"
+            detail="Live provider listings are not the source of truth yet. These cards are sample experts so you can browse the layout."
+            askAiPrompt="The marketplace is showing sample providers. How should I evaluate legal, finance, and coaching help for an early-stage startup?"
+          />
+        )}
         {/* Banner CTA for providers */}
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-          <CardContent className="p-4 flex items-center justify-between gap-4">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold">Are you a service provider?</p>
               <p className="text-sm text-muted-foreground">List your services and reach 500+ founders on CoFounderBay</p>
             </div>
-            <Button size="sm" className="shrink-0">
-              <Plus className="mr-1.5 icon-sm" aria-hidden="true" />List Your Service
+            {/* Theirs turns a dead button into a real link to /provider/services;
+                our icon-size token is kept. */}
+            <Button size="sm" className="shrink-0" asChild>
+              <Link href="/provider/services">
+                <Plus className="mr-1.5 icon-sm" />List Your Service
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -327,12 +348,12 @@ export default function MarketplacePage() {
         {/* Search & Sort */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input placeholder="Search services, providers, specialties..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[160px]">
-              <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
+              <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -347,7 +368,7 @@ export default function MarketplacePage() {
             className="h-10"
             onClick={() => setAvailableOnly(!availableOnly)}
           >
-            <CheckCircle className="mr-1.5 icon-sm" aria-hidden="true" />Available
+            <CheckCircle className="mr-1.5 icon-sm" />Available
           </Button>
         </div>
 
@@ -359,7 +380,7 @@ export default function MarketplacePage() {
               const CatIcon = cfg.icon;
               return (
                 <TabsTrigger key={cat} value={cat} className="gap-1.5 text-xs data-[state=active]:bg-background">
-                  <CatIcon className={cn('h-3.5 w-3.5', cfg.color)} />
+                  <CatIcon className={cn('icon-sm', cfg.color)} />
                   {cfg.label}
                 </TabsTrigger>
               );
@@ -383,7 +404,7 @@ export default function MarketplacePage() {
                 {featured.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                      <TrendingUp className="icon-sm text-primary-accessible" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Featured Providers</h2>
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

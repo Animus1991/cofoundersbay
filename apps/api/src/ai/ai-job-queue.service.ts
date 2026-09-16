@@ -1,4 +1,7 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import { EnqueueJobDto } from './dto/enqueue-job.dto';
 import { ConfigService } from '@nestjs/config';
 import { Queue, Worker, Job } from 'bullmq';
 import { OllamaService } from './ollama.service';
@@ -111,16 +114,33 @@ export class AIJobQueueService implements OnModuleInit, OnModuleDestroy {
 
   /** Returns the BullMQ job ID, or null when queue is disabled (no Redis). */
   async enqueueJob(data: AIJobData): Promise<string | null> {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new BadRequestException('Invalid AI job');
+    }
+    const { userId, ...request } = data;
+    if (typeof userId !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(userId)) {
+      throw new BadRequestException('Invalid AI job owner');
+    }
+    const dto = plainToInstance(EnqueueJobDto, request);
+    if (validateSync(dto, { whitelist: true, forbidNonWhitelisted: true }).length) {
+      throw new BadRequestException('Invalid AI job');
+    }
     if (!this.queue) return null;
+    if (data.type === 'generate-document' && data.conversationId) {
+      const conversation = await this.conversations.getConversation(data.conversationId, userId);
+      if (!conversation) throw new NotFoundException('Conversation not found');
+    }
     const job = await this.queue.add(data.type, data);
     return job.id ?? null;
   }
 
   /** Polls status of an enqueued job. Returns null if jobId not found. */
-  async getJobStatus(jobId: string): Promise<AIJobStatus | null> {
+  async getJobStatus(jobId: string, userId: string): Promise<AIJobStatus | null> {
+    if (typeof jobId !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(jobId)) return null;
+    if (typeof userId !== 'string' || !userId) return null;
     if (!this.queue) return null;
     const job = await this.queue.getJob(jobId);
-    if (!job) return null;
+    if (!job || job.data?.userId !== userId) return null;
 
     const raw = await job.getState();
     const state = raw as AIJobStatus['state'];
@@ -151,6 +171,10 @@ export class AIJobQueueService implements OnModuleInit, OnModuleDestroy {
     job: Job<GenerateDocumentJobData, AIJobResult>,
   ): Promise<AIJobResult> {
     const { agentId, prompt, userId, conversationId, model } = job.data;
+    if (conversationId) {
+      const conversation = await this.conversations.getConversation(conversationId, userId);
+      if (!conversation) throw new NotFoundException('Conversation not found');
+    }
     const agent = getAgent(agentId ?? 'general');
     const messages = agent.buildMessages(prompt, [], { userId });
 

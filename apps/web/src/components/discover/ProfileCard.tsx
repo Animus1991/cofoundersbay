@@ -125,16 +125,17 @@ function ProfileCardInner({
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-sm font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary-emphasis transition-colors truncate"
+                  // tap-target-y + inline-flex: the name link measured 23px tall, a hair under the 24px target minimum, and inline-flex already takes it out of the inline flow so SC 2.5.8's inline-link exception does not apply.
+                  className="inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>
@@ -145,7 +146,7 @@ function ProfileCardInner({
               )}
             </div>
             <Button size="sm" variant="ghost" onClick={onConnect}>
-              <UserPlus className="icon-sm" aria-hidden="true" />
+              <UserPlus className="icon-sm" />
             </Button>
           </div>
         </CardContent>
@@ -161,7 +162,7 @@ function ProfileCardInner({
         
         {profile.matchScore && (
           <div className="absolute top-3 right-3 z-10">
-            <Badge variant="secondary" className="bg-primary/20 text-primary-emphasis border-primary/30">
+            <Badge variant="secondary" className="bg-primary/20 text-primary-accessible border-primary/30">
               {profile.matchScore}% match
             </Badge>
           </div>
@@ -173,7 +174,7 @@ function ProfileCardInner({
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-12 w-12 ring-2 ring-border/40 group-hover:ring-primary/40 transition-all">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-base font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-base font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -182,12 +183,12 @@ function ProfileCardInner({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="text-lg font-semibold text-foreground hover:text-primary-emphasis transition-colors"
+                  className="text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {profile.displayName}
                 </Link>
                 {profile.isVerified && (
-                  <Badge variant="secondary" size="sm" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                  <Badge variant="secondary" size="sm" className="bg-status-success-bg text-status-success border-status-success-border">
                     Verified
                   </Badge>
                 )}
@@ -210,13 +211,13 @@ function ProfileCardInner({
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {profile.location && (
               <span className="flex items-center gap-1">
-                <MapPin className="icon-2xs" aria-hidden="true" />
+                <MapPin className="icon-sm" />
                 {profile.location}
               </span>
             )}
             {profile.lastActive && (
               <span className="flex items-center gap-1">
-                <Clock className="icon-2xs" aria-hidden="true" />
+                <Clock className="icon-sm" />
                 {formatLastActive(profile.lastActive)}
               </span>
             )}
@@ -278,51 +279,49 @@ function ProfileCardInner({
           )}
 
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
-            <div className="flex items-center gap-2">
-              <Button onClick={onConnect} size="sm" className="gap-2">
-                <UserPlus className="icon-sm" aria-hidden="true" />
-                Connect
-              </Button>
-              <Button onClick={onMessage} size="sm" variant="secondary" className="gap-2">
-                <MessageCircle className="icon-sm" aria-hidden="true" />
-                Message
-              </Button>
-            </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4">
+            <Button onClick={onConnect} size="sm" className="min-h-10 flex-1 gap-2">
+              <UserPlus className="icon-sm" />
+              Connect
+            </Button>
+            <Button onClick={onMessage} size="sm" variant="secondary" className="min-h-10 flex-1 gap-2">
+              <MessageCircle className="icon-sm" />
+              Message
+            </Button>
             <div className="flex items-center gap-1">
               <Button aria-label="Save"
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
                 className={cn(
-                  'h-8 w-8',
-                  bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                  'h-10 w-10',
+                  bookmarked ? 'text-status-warning' : 'text-muted-foreground hover:text-status-warning'
                 )}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
+                <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="icon-sm" aria-hidden="true" />
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                    <MoreHorizontal className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>
-                    <Share2 className="icon-sm mr-2" aria-hidden="true" />
+                    <Share2 className="icon-sm mr-2" />
                     Share profile
                   </DropdownMenuItem>
                   {profile.linkedinUrl && (
                     <DropdownMenuItem asChild>
                       <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="icon-sm mr-2" aria-hidden="true" />
+                        <ExternalLink className="icon-sm mr-2" />
                         LinkedIn
                       </a>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive-emphasis">
-                    <Flag className="icon-sm mr-2" aria-hidden="true" />
+                  <DropdownMenuItem className="text-destructive-accessible">
+                    <Flag className="icon-sm mr-2" />
                     Report
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -344,7 +343,7 @@ function ProfileCardInner({
             <div className="relative">
               <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -359,10 +358,14 @@ function ProfileCardInner({
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
+              {/* The name wraps rather than truncating. It shares this row with
+                  a role badge, and at 1024px "Elena Papadopoulos" was left 46px
+                  of the 141px it needs — two thirds of a person's name gone, in
+                  a card whose whole purpose is to introduce that person. */}
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary-emphasis transition-colors truncate"
+                  className="inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>
@@ -370,8 +373,8 @@ function ProfileCardInner({
               </div>
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
-                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-emphasis">
-                    <Star className="icon-2xs fill-current" aria-hidden="true" />
+                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
+                    <Star className="icon-sm fill-current" />
                     {profile.matchScore}%
                   </div>
                 )}
@@ -381,10 +384,10 @@ function ProfileCardInner({
                   onClick={handleBookmark}
                   className={cn(
                     'h-8 w-8 flex-shrink-0',
-                    bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                    bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
                   )}
                 >
-                  <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
+                  <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
                 </Button>
               </div>
             </div>
@@ -393,7 +396,7 @@ function ProfileCardInner({
             )}
             {profile.location && (
               <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="icon-2xs" aria-hidden="true" />
+                <MapPin className="icon-sm" />
                 {profile.location}
               </div>
             )}
@@ -427,13 +430,13 @@ function ProfileCardInner({
         )}
 
         {/* Actions */}
-        <div className="mt-4 flex items-center gap-2">
-          <Button onClick={onConnect} size="sm" variant="secondary" className="flex-1 gap-1.5">
-            <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+        <div className="mt-4 flex min-w-0 items-center gap-2">
+          <Button onClick={onConnect} size="sm" variant="secondary" className="min-h-10 flex-1 gap-1.5">
+            <UserPlus className="icon-sm" />
             Connect
           </Button>
-          <Button onClick={onMessage} size="sm" variant="ghost" className="gap-1.5">
-            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5" aria-label="Message">
+            <MessageCircle className="icon-sm" />
           </Button>
         </div>
       </CardContent>

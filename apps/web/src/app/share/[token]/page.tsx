@@ -53,10 +53,10 @@ interface SharedDocument {
 
 function PermissionBadge({ permission }: { permission: string }) {
   const meta = {
-    view:    { label: 'View Only',  color: 'text-gray-600 bg-gray-50 border-gray-200',    icon: Eye },
-    comment: { label: 'Can Comment',color: 'text-blue-600 bg-blue-50 border-blue-200',   icon: MessageSquare },
-    suggest: { label: 'Can Suggest',color: 'text-purple-600 bg-purple-50 border-purple-200', icon: Edit3 },
-    edit:    { label: 'Can Edit',   color: 'text-green-600 bg-green-50 border-green-200', icon: Edit3 },
+    view:    { label: 'View Only',  color: 'text-muted-foreground bg-muted border-border',    icon: Eye },
+    comment: { label: 'Can Comment',color: 'text-status-info bg-status-info-bg border-status-info-border',   icon: MessageSquare },
+    suggest: { label: 'Can Suggest',color: 'text-status-accent bg-status-accent-bg border-status-accent-border', icon: Edit3 },
+    edit:    { label: 'Can Edit',   color: 'text-status-success bg-status-success-bg border-status-success-border', icon: Edit3 },
   }[permission] ?? { label: permission, color: 'bg-muted', icon: Eye };
 
   const Icon = meta.icon;
@@ -89,7 +89,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
   if (!content || Object.keys(content).length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <FileText className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
+        <FileText className="icon-xl mx-auto mb-2 opacity-30" />
         <p className="text-sm">No content available in this version.</p>
       </div>
     );
@@ -113,7 +113,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
       return (
         <div key={key} className="space-y-1">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-sm font-medium">{val.toLocaleString()}</p>
+          <p className="text-sm font-medium">{val.toLocaleString('en-GB')}</p>
         </div>
       );
     }
@@ -124,7 +124,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
           <ul className="space-y-1">
             {val.slice(0, 10).map((item, i) => (
               <li key={i} className="flex items-start gap-1.5 text-sm">
-                <span className="text-primary-emphasis mt-1 shrink-0">•</span>
+                <span className="text-primary-accessible mt-1 shrink-0">•</span>
                 {typeof item === 'string' ? item : JSON.stringify(item)}
               </li>
             ))}
@@ -227,7 +227,7 @@ export default function SharePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="icon-xl animate-spin mx-auto mb-3 text-primary-emphasis" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin mx-auto mb-3 text-primary-accessible" />
           <p className="text-sm text-muted-foreground">Loading shared document…</p>
         </div>
       </div>
@@ -243,7 +243,7 @@ export default function SharePage() {
           <CardHeader className="text-center pb-3">
             <div className="flex justify-center mb-3">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Lock className="icon-lg text-primary-emphasis" aria-hidden="true" />
+                <Lock className="icon-lg text-primary-accessible" />
               </div>
             </div>
             <CardTitle>Password Protected</CardTitle>
@@ -266,7 +266,7 @@ export default function SharePage() {
                 className={cn(passwordError && 'border-destructive')}
               />
               {passwordError && (
-                <p className="text-xs text-destructive-emphasis">{passwordError}</p>
+                <p className="text-xs text-destructive-accessible">{passwordError}</p>
               )}
             </div>
             <Button
@@ -274,7 +274,7 @@ export default function SharePage() {
               onClick={handlePasswordSubmit}
               disabled={submittingPassword || !password.trim()}
             >
-              {submittingPassword && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" aria-hidden="true" />}
+              {submittingPassword && <Loader2 className="icon-sm mr-2 animate-spin" />}
               View Document
             </Button>
           </CardContent>
@@ -290,7 +290,7 @@ export default function SharePage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
-            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-emphasis" aria-hidden="true" />
+            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-accessible" />
             <h2 className="font-semibold mb-2">Link Unavailable</h2>
             <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
             <Button variant="outline" onClick={() => window.location.href = '/'}>
@@ -311,7 +311,7 @@ export default function SharePage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center gap-2">
-              <Rocket className="icon-md text-primary-emphasis shrink-0" aria-hidden="true" />
+              <Rocket className="icon-md text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm hidden sm:block">CoFounderBay</span>
             </div>
             {document && (
@@ -325,8 +325,8 @@ export default function SharePage() {
             {linkInfo && <PermissionBadge permission={linkInfo.permissions} />}
             {linkInfo?.expiresAt && (
               <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
-                <Calendar className="icon-2xs" aria-hidden="true" />
-                Expires {new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                <Calendar className="icon-sm" />
+                Expires {new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </span>
             )}
             <Button
@@ -335,7 +335,7 @@ export default function SharePage() {
               onClick={() => window.location.href = '/'}
               className="text-xs"
             >
-              <ExternalLink className="icon-2xs mr-1.5" aria-hidden="true" />
+              <ExternalLink className="icon-sm mr-1.5" />
               Sign In
             </Button>
           </div>
@@ -357,9 +357,9 @@ export default function SharePage() {
                     <Badge
                       variant="outline"
                       className={cn('text-xs capitalize', {
-                        'text-green-600 dark:text-green-400': document.status === 'approved',
-                        'text-blue-600 dark:text-blue-400': document.status === 'review',
-                        'text-yellow-600 dark:text-yellow-400': document.status === 'in_progress',
+                        'text-status-success': document.status === 'approved',
+                        'text-status-info': document.status === 'review',
+                        'text-status-warning': document.status === 'in_progress',
                       })}
                     >
                       {document.status.replace('_', ' ')}
@@ -378,7 +378,7 @@ export default function SharePage() {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Rocket className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                        <Rocket className="icon-sm text-primary-accessible" />
                         <span className="font-medium text-sm">
                           {document.workspace.startupName ?? document.workspace.name}
                         </span>
@@ -395,7 +395,7 @@ export default function SharePage() {
                       )}
                       {document.owner && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
-                          <User className="icon-2xs" aria-hidden="true" />
+                          <User className="icon-sm" />
                           {document.owner.displayName}
                         </div>
                       )}
@@ -421,11 +421,11 @@ export default function SharePage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <FileText className="icon-sm" aria-hidden="true" />
+                    <FileText className="icon-sm" />
                     Document Content
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                   </span>
                 </div>
               </CardHeader>
@@ -437,7 +437,7 @@ export default function SharePage() {
             {/* View-only notice */}
             {linkInfo?.permissions === 'view' && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-lg p-3">
-                <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <Eye className="icon-sm shrink-0" />
                 You are viewing this document in read-only mode. To collaborate, request full access from the owner.
               </div>
             )}
@@ -471,7 +471,7 @@ export default function SharePage() {
       {/* Footer */}
       <footer className="border-t mt-12 py-6 text-center text-xs text-muted-foreground">
         Shared via{' '}
-        <a href="/" className="text-primary-emphasis hover:underline font-medium">
+        <a href="/" className="text-primary-accessible hover:underline font-medium">
           CoFounderBay
         </a>{' '}
         — Startup Builder Platform

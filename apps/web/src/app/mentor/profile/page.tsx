@@ -40,6 +40,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
@@ -78,7 +79,7 @@ export default function MentorProfilePage() {
   const [tagInput, setTagInput] = useState('');
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -114,14 +115,14 @@ export default function MentorProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <User className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <User className="icon-lg text-primary-accessible" />
               Mentor Profile
             </h1>
             <p className="text-muted-foreground">How mentees see you on the platform</p>
           </div>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
         </div>
@@ -132,25 +133,25 @@ export default function MentorProfilePage() {
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/30">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-lg">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-bold rounded-xl">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
-                  <BadgeCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                  <BadgeCheck className="icon-sm text-primary-accessible" />
                   <Badge variant="secondary" className="text-xs">Mentor</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="icon-2xs text-amber-400" aria-hidden="true" /> 4.9 (12 reviews)</span>
-                  <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" /> {sessionDuration} min sessions</span>
-                  <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" /> {hoursPerWeek}h/week</span>
-                  <span className={cn('flex items-center gap-1', isFree ? 'text-green-500' : '')}>
-                    <DollarSign className="icon-2xs" aria-hidden="true" />
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" /> 4.9 (12 reviews)</span>
+                  <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
+                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
+                  <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>
+                    <DollarSign className="icon-sm" />
                     {isFree ? 'Free' : `$${hourlyRate}/hr`}
                   </span>
                 </div>

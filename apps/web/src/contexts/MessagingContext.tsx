@@ -28,7 +28,9 @@ import React, {
   useRef,
 } from 'react';
 import { useSession } from '@/hooks/useSession';
+import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import { listMessageConversations } from '@/lib/api';
+import { isApiCircuitOpen, probeApiHealth } from '@/lib/api';
 import { createMessagingSocket } from '@/lib/messagingSocket';
 import type { MessageItem } from '@/lib/api';
 
@@ -116,8 +118,11 @@ const MessagingContext = createContext<MessagingContextValue>({
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
+const SOCKET_CONNECT_DELAY_MS = 450;
+
 export function MessagingProvider({ children }: { children: React.ReactNode }) {
-  const { hasSession, mounted: sessionReady } = useSession();
+  const { mounted: sessionReady } = useSession();
+  const { isAuthenticated } = useAuthenticatedSession();
 
   const [state, dispatch] = useReducer(reducer, {
     unreadMap: {},
@@ -138,7 +143,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
 
   // ── Bootstrap unread map from REST ──────────────────────────────────────────
   const refreshUnread = useCallback(async () => {
-    if (!hasSession || !apiOnlineRef.current) return;
+    if (!isAuthenticated || !apiOnlineRef.current) return;
     try {
       const { conversations } = await listMessageConversations();
       const map: Record<string, number> = {};
@@ -149,7 +154,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // silently ignore — stale values are acceptable
     }
-  }, [hasSession]);
+  }, [isAuthenticated]);
 
   // ── Track API availability — pause everything when server is down ────────────
   useEffect(() => {
@@ -165,7 +170,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     const handleOnline = () => {
       apiOnlineRef.current = true;
       // Re-bootstrap unread count and reconnect socket if session is active
-      if (sessionReady && hasSession && !socketRef.current) {
+      if (sessionReady && isAuthenticated && !socketRef.current) {
         refreshUnread();
         const socket = createMessagingSocket();
         socketRef.current = socket;
@@ -184,7 +189,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('cfb:api-offline', handleOffline);
       window.removeEventListener('cfb:api-online', handleOnline);
     };
-  }, [sessionReady, hasSession, refreshUnread]);
+  }, [sessionReady, isAuthenticated, refreshUnread]);
 
   // ── Shared socket for unread tracking only ──────────────────────────────────
   // This socket listens for new-message events to update the unread count in
@@ -192,22 +197,34 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
   // ChatPopup and MessagesPage still maintain their OWN sockets for sending /
   // receiving full message objects — this one is only for the count.
   useEffect(() => {
-    if (!sessionReady || !hasSession) return;
+    if (!sessionReady || !isAuthenticated) return;
 
-    refreshUnread();
+    let cancelled = false;
+    let socket: ReturnType<typeof createMessagingSocket> | null = null;
 
-    const socket = createMessagingSocket();
-    socketRef.current = socket;
+    const connectTimer = setTimeout(() => {
+      void (async () => {
+        if (cancelled) return;
 
-    socket.on('message:new', ({ message }: { message: MessageItem }) => {
-      const convId = message.conversationId;
-      if (!convId) return;
-      // Only increment if this conversation is NOT currently active (open)
-      // Use ref instead of state to avoid stale closure
-      if (activeConversationIdRef.current !== convId) {
-        dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
-      }
-    });
+        if (isApiCircuitOpen()) {
+          const ok = await probeApiHealth();
+          if (!ok || cancelled) return;
+        }
+
+        refreshUnread();
+
+        socket = createMessagingSocket();
+        socketRef.current = socket;
+
+        socket.on('message:new', ({ message }: { message: MessageItem }) => {
+          const convId = message.conversationId;
+          if (!convId) return;
+          if (activeConversationIdRef.current !== convId) {
+            dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
+          }
+        });
+      })();
+    }, SOCKET_CONNECT_DELAY_MS);
 
     // Periodic refresh every 90 s as a safety net — skipped if API is offline
     refreshTimerRef.current = setInterval(() => {
@@ -215,18 +232,20 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     }, 90_000);
 
     return () => {
-      socket.disconnect();
+      cancelled = true;
+      clearTimeout(connectTimer);
+      socket?.disconnect();
       socketRef.current = null;
       if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionReady, hasSession]);
+  }, [sessionReady, isAuthenticated]);
 
-  // Re-run refreshUnread when hasSession changes (login/logout)
+  // Re-run refreshUnread when auth changes (login/logout)
   useEffect(() => {
-    if (sessionReady && hasSession) refreshUnread();
-    if (!hasSession) dispatch({ type: 'SET_UNREAD_MAP', map: {} });
-  }, [sessionReady, hasSession, refreshUnread]);
+    if (sessionReady && isAuthenticated) refreshUnread();
+    if (!isAuthenticated) dispatch({ type: 'SET_UNREAD_MAP', map: {} });
+  }, [sessionReady, isAuthenticated, refreshUnread]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 

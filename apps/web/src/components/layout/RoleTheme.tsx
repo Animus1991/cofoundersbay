@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback } from 'react';
 
-type Theme = 'dark' | 'light' | 'system' | 'minimal';
+type Theme = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder' | 'minimal';
 type Role = 'founder' | 'mentor' | 'investor' | 'org' | null;
 
 const roleClasses = ['role-founder', 'role-mentor', 'role-investor', 'role-org'];
@@ -35,21 +35,25 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     if (typeof window === 'undefined') return;
     const root = document.documentElement;
     
-    // Handle dark/light mode. `minimal` is a light-based palette plus its own
-    // component layer, both carried by the data-theme attribute; the attribute
-    // is cleared for every other theme so none of them inherit it.
+    // Named palettes live on data-theme. Do not clear it for alliance /
+    // cofounder / system — those are first-class themes on this line.
     root.classList.remove('dark', 'light');
     if (newTheme === 'minimal') {
       root.classList.add('light');
       root.setAttribute('data-theme', 'minimal');
+    } else if (newTheme === 'alliance') {
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'alliance');
+    } else if (newTheme === 'cofounder') {
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'cofounder');
+    } else if (newTheme === 'system') {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.add(systemDark ? 'dark' : 'light');
+      root.setAttribute('data-theme', 'system');
     } else {
       root.removeAttribute('data-theme');
-      if (newTheme === 'system') {
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        root.classList.add(systemDark ? 'dark' : 'light');
-      } else {
-        root.classList.add(newTheme);
-      }
+      root.classList.add(newTheme);
     }
 
     // Handle role theme

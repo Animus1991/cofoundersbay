@@ -83,8 +83,8 @@ export function ShareButton({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} aria-label="Share" className={className}>
-          <Share2 className="icon-sm mr-2" aria-hidden="true" />
+        <Button variant={variant} size={size} className={className}>
+          <Share2 className="icon-sm mr-2" />
           Share
         </Button>
       </DropdownMenuTrigger>
@@ -92,7 +92,7 @@ export function ShareButton({
         {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <>
             <DropdownMenuItem onClick={handleNativeShare}>
-              <Share2 className="icon-sm mr-2" aria-hidden="true" />
+              <Share2 className="icon-sm mr-2" />
               Share via...
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -100,22 +100,22 @@ export function ShareButton({
         )}
 
         <DropdownMenuItem onClick={() => handleShare('facebook')}>
-          <Facebook className="icon-sm mr-2" aria-hidden="true" />
+          <Facebook className="icon-sm mr-2" />
           Share on Facebook
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => handleShare('twitter')}>
-          <Twitter className="icon-sm mr-2" aria-hidden="true" />
+          <Twitter className="icon-sm mr-2" />
           Share on Twitter
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => handleShare('linkedin')}>
-          <Linkedin className="icon-sm mr-2" aria-hidden="true" />
+          <Linkedin className="icon-sm mr-2" />
           Share on LinkedIn
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => handleShare('email')}>
-          <Mail className="icon-sm mr-2" aria-hidden="true" />
+          <Mail className="icon-sm mr-2" />
           Share via Email
         </DropdownMenuItem>
 
@@ -124,12 +124,12 @@ export function ShareButton({
         <DropdownMenuItem onClick={handleCopyLink}>
           {copied ? (
             <>
-              <Check className="icon-sm mr-2 text-green-500" aria-hidden="true" />
+              <Check className="icon-sm mr-2 text-status-success" />
               Link Copied!
             </>
           ) : (
             <>
-              <Copy className="icon-sm mr-2" aria-hidden="true" />
+              <Copy className="icon-sm mr-2" />
               Copy Link
             </>
           )}

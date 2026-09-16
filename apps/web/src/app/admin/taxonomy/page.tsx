@@ -94,8 +94,8 @@ function SkillRow({
             <Edit className="mr-2 icon-sm" aria-hidden="true" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive-emphasis" onClick={() => onDelete(skill)}>
-            <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+          <DropdownMenuItem className="text-destructive-accessible" onClick={() => onDelete(skill)}>
+            <Trash2 className="mr-2 icon-sm" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -308,7 +308,7 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Folder className="icon-md text-primary-accessible" />
                 <CardTitle className="text-lg">Skills</CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
@@ -348,8 +348,8 @@ export default function AdminTaxonomyPage() {
 
             <div className="border-t">
               {isError && (
-                <div className="flex items-center gap-2 p-6 text-destructive-emphasis justify-center">
-                  <AlertCircle className="icon-md" aria-hidden="true" />
+                <div className="flex items-center gap-2 p-6 text-destructive-accessible justify-center">
+                  <AlertCircle className="icon-md" />
                   <span className="text-sm">Failed to load skills.</span>
                   <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
                 </div>

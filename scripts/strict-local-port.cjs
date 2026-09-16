@@ -44,6 +44,35 @@ function ensureStrictLocalPort({ port, label, host = '127.0.0.1', origin }) {
   });
 }
 
+/** True when something is already bound to host:port. */
+function isPortInUse(port, host = '127.0.0.1') {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.unref();
+
+    server.once('error', (error) => {
+      if (error && error.code === 'EADDRINUSE') {
+        resolve(true);
+        return;
+      }
+      reject(error);
+    });
+
+    server.once('listening', () => {
+      server.close((closeError) => {
+        if (closeError) {
+          reject(closeError);
+          return;
+        }
+        resolve(false);
+      });
+    });
+
+    server.listen(port, host);
+  });
+}
+
 module.exports = {
   ensureStrictLocalPort,
+  isPortInUse,
 };

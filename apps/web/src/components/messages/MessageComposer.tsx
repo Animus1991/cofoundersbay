@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, Smile, X, Image as ImageIcon, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 
 interface MessageComposerProps {
   onSend: (content: string, attachments?: File[]) => Promise<void>;
@@ -20,7 +20,7 @@ export function MessageComposer({
   disabled = false,
   className,
 }: MessageComposerProps) {
-  const toast = useToast();
+  const { error: toastError } = useToast();
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
@@ -66,7 +66,7 @@ export function MessageComposer({
     const validFiles = files.filter((file) => {
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
-        toast.error('Attachment too large', `${file.name} exceeds the 10 MB limit.`);
+        toastError(`${file.name} is too large. Max size is 10MB.`);
         return false;
       }
       return true;
@@ -101,16 +101,16 @@ export function MessageComposer({
                 className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg text-sm"
               >
                 {file.type.startsWith('image/') ? (
-                  <ImageIcon className="icon-sm text-muted-foreground" aria-hidden="true" />
+                  <ImageIcon className="icon-sm text-muted-foreground" />
                 ) : (
-                  <File className="icon-sm text-muted-foreground" aria-hidden="true" />
+                  <File className="icon-sm text-muted-foreground" />
                 )}
                 <span className="max-w-[150px] truncate">{file.name}</span>
                 <button
                   onClick={() => removeAttachment(index)}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  <X className="icon-2xs" aria-hidden="true" />
+                  <X className="icon-sm" />
                 </button>
               </div>
             ))}
@@ -156,7 +156,7 @@ export function MessageComposer({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={disabled || sending || attachments.length >= 5}
               >
-                <Paperclip className="icon-sm" aria-hidden="true" />
+                <Paperclip className="icon-sm" />
               </Button>
               <Button
                 type="button"
@@ -166,7 +166,7 @@ export function MessageComposer({
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 disabled={disabled || sending}
               >
-                <Smile className="icon-sm" aria-hidden="true" />
+                <Smile className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -180,7 +180,7 @@ export function MessageComposer({
               <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <>
-                <Send className="icon-sm mr-2" aria-hidden="true" />
+                <Send className="icon-sm mr-2" />
                 Send
               </>
             )}

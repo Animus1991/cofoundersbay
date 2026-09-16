@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Logo } from '@/components/brand/Logo';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 
@@ -52,8 +53,8 @@ function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
       )}
       <div className="flex items-center gap-3 mt-4">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={endorsement.fromUser.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm">
+          <AvatarImage src={endorsement.fromUser?.avatarUrl ?? undefined} />
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
             {endorsement.fromUser.displayName[0]}
           </AvatarFallback>
         </Avatar>
@@ -137,9 +138,8 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center"><span className="text-sm font-bold text-primary-foreground">C</span></div>
-              <span className="font-semibold text-foreground">CoFounderBay</span>
+            <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
+              <Logo size="sm" />
             </Link>
           </div>
         </header>
@@ -153,7 +153,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
         <div className="text-center space-y-4 p-8">
           <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-            <Users className="icon-xl text-muted-foreground" aria-hidden="true" />
+            <Users className="icon-xl text-muted-foreground" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Profile not found</h2>
           <p className="text-muted-foreground">This profile doesn&apos;t exist or may have been removed.</p>
@@ -172,11 +172,8 @@ export default function PublicProfilePage() {
       {/* Header */}
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">C</span>
-            </div>
-            <span className="font-semibold text-foreground">CoFounderBay</span>
+          <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
+            <Logo size="sm" />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -189,8 +186,8 @@ export default function PublicProfilePage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <main id="main-content" className="max-w-5xl mx-auto px-4 py-8">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Header */}
@@ -199,7 +196,7 @@ export default function PublicProfilePage() {
                 <div className="flex flex-col sm:flex-row gap-6">
                   <Avatar className="h-20 w-20 shrink-0">
                     <AvatarImage src={profile.avatarUrl ?? undefined} />
-                    <AvatarFallback className="text-xl bg-primary/10 text-primary-emphasis">
+                    <AvatarFallback className="text-xl bg-primary/10 text-primary-accessible">
                       {firstName[0]}{lastName[0] || firstName[1] || ''}
                     </AvatarFallback>
                   </Avatar>
@@ -210,7 +207,7 @@ export default function PublicProfilePage() {
                           {firstName} {lastName}
                         </h1>
                         {isVerified && (
-                          <CheckCircle2 className="icon-md text-primary-emphasis" aria-hidden="true" />
+                          <CheckCircle2 className="icon-md text-primary-accessible" />
                         )}
                         <RoleBadge role={profile.role} />
                       </div>
@@ -220,27 +217,27 @@ export default function PublicProfilePage() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                       {profile.location && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="icon-sm" aria-hidden="true" />
+                          <MapPin className="icon-sm" />
                           {profile.location}
                         </span>
                       )}
                       {profile.timezone && (
                         <span className="flex items-center gap-1">
-                          <Clock className="icon-sm" aria-hidden="true" />
+                          <Clock className="icon-sm" />
                           {profile.timezone}
                         </span>
                       )}
                       {profile.role && (
                         <span className="flex items-center gap-1 capitalize">
-                          <Briefcase className="icon-sm" aria-hidden="true" />
+                          <Briefcase className="icon-sm" />
                           {profile.role}
                         </span>
                       )}
                     </div>
 
                     {isAvailable && (
-                      <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-                        <Zap className="icon-2xs mr-1" aria-hidden="true" />
+                      <Badge className="bg-status-success-bg text-status-success border-status-success-border">
+                        <Zap className="icon-sm mr-1" />
                         Open to Opportunities
                       </Badge>
                     )}
@@ -248,18 +245,18 @@ export default function PublicProfilePage() {
                     <div className="flex flex-wrap gap-2 pt-2">
                       <Button className="gap-2" asChild>
                         <Link href={`/register?action=message&user=${username}`}>
-                          <MessageSquare className="icon-sm" aria-hidden="true" />
+                          <MessageSquare className="icon-sm" />
                           Message
                         </Link>
                       </Button>
                       <Button variant="outline" className="gap-2" asChild>
                         <Link href={`/register?action=connect&user=${username}`}>
-                          <UserPlus className="icon-sm" aria-hidden="true" />
+                          <UserPlus className="icon-sm" />
                           Connect
                         </Link>
                       </Button>
-                      <Button aria-label="Share" variant="ghost" size="icon">
-                        <Share2 className="icon-sm" aria-hidden="true" />
+                      <Button variant="ghost" size="icon">
+                        <Share2 className="icon-sm" />
                       </Button>
                     </div>
                   </div>
@@ -286,14 +283,14 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <Target className="icon-md text-primary-accessible" />
                     Looking For
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {lookingFor.map((role) => (
-                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary-emphasis">
+                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary-accessible">
                         {role}
                       </Badge>
                     ))}
@@ -307,7 +304,7 @@ export default function PublicProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="icon-md" aria-hidden="true" />
+                  <Briefcase className="icon-md" />
                   Experience
                 </CardTitle>
               </CardHeader>
@@ -316,7 +313,7 @@ export default function PublicProfilePage() {
                   <div key={i} className={cn(i > 0 && 'pt-6 border-t border-border/60')}>
                     <div className="flex items-start gap-4">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Briefcase className="icon-md text-muted-foreground" aria-hidden="true" />
+                        <Briefcase className="icon-md text-muted-foreground" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-foreground">{exp.title}</h4>
@@ -336,7 +333,7 @@ export default function PublicProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <GraduationCap className="icon-md" aria-hidden="true" />
+                  <GraduationCap className="icon-md" />
                   Education
                 </CardTitle>
               </CardHeader>
@@ -344,7 +341,7 @@ export default function PublicProfilePage() {
                 {education.map((edu, i) => (
                   <div key={i} className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <GraduationCap className="icon-md text-muted-foreground" aria-hidden="true" />
+                      <GraduationCap className="icon-md text-muted-foreground" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-foreground">{edu.degree}</h4>
@@ -362,12 +359,12 @@ export default function PublicProfilePage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="icon-md text-amber-500" aria-hidden="true" />
+                    <Star className="icon-md text-status-warning" />
                     Endorsements
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-1.5 text-xs" asChild>
                     <Link href={`/register?action=endorse&user=${username}`}>
-                      <PenLine className="h-3.5 w-3.5" aria-hidden="true" />
+                      <PenLine className="icon-sm" />
                       Write Endorsement
                     </Link>
                   </Button>
@@ -456,7 +453,7 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Award className="icon-md text-amber-500" aria-hidden="true" />
+                    <Award className="icon-md text-status-warning" />
                     Achievements
                   </CardTitle>
                 </CardHeader>
@@ -464,7 +461,7 @@ export default function PublicProfilePage() {
                   <ul className="space-y-2">
                     {achievements.map((achievement, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
-                        <Award className="icon-sm text-amber-500 shrink-0" aria-hidden="true" />
+                        <Award className="icon-sm text-status-warning shrink-0" />
                         <span className="text-muted-foreground">{achievement}</span>
                       </li>
                     ))}
@@ -485,33 +482,33 @@ export default function PublicProfilePage() {
                 {website && (
                   <a href={website} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Globe className="icon-sm" aria-hidden="true" />
+                    <Globe className="icon-sm" />
                     <span className="truncate">{website.replace(/^https?:\/\//, '')}</span>
-                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
+                    <ExternalLink className="icon-sm ml-auto shrink-0" />
                   </a>
                 )}
                 {linkedin && (
                   <a href={linkedin} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Linkedin className="icon-sm" aria-hidden="true" />
+                    <Linkedin className="icon-sm" />
                     <span>LinkedIn</span>
-                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
+                    <ExternalLink className="icon-sm ml-auto shrink-0" />
                   </a>
                 )}
                 {twitter && (
                   <a href={twitter} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Twitter className="icon-sm" aria-hidden="true" />
+                    <Twitter className="icon-sm" />
                     <span>Twitter / X</span>
-                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
+                    <ExternalLink className="icon-sm ml-auto shrink-0" />
                   </a>
                 )}
                 {github && (
                   <a href={github} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Github className="icon-sm" aria-hidden="true" />
+                    <Github className="icon-sm" />
                     <span>GitHub</span>
-                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
+                    <ExternalLink className="icon-sm ml-auto shrink-0" />
                   </a>
                 )}
               </CardContent>
@@ -521,8 +518,8 @@ export default function PublicProfilePage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Calendar className="icon-sm" aria-hidden="true" />
-                  <span>Member since {joinedAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                  <Calendar className="icon-sm" />
+                  <span>Member since {joinedAt.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' })}</span>
                 </div>
               </CardContent>
             </Card>

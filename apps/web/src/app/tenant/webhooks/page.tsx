@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { EmptyTenantWebhooks } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 type WebhookItem = {
@@ -111,10 +112,10 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit</DropdownMenuItem>
-                <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" aria-hidden="true" />Resend Last</DropdownMenuItem>
-                <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" aria-hidden="true" />View Logs</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
+                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
+                <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" />Resend Last</DropdownMenuItem>
+                <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" />View Logs</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -150,14 +151,7 @@ export default function TenantWebhooksPage() {
         </div>
 
         {webhooks.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="p-12 text-center">
-              <Webhook className="icon-lg mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-              <p className="font-medium">No webhooks configured</p>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">Connect Zapier, Slack, or any HTTP endpoint to receive real-time events</p>
-              <Button size="sm"><Plus className="mr-1.5 icon-sm" aria-hidden="true" />Add Webhook</Button>
-            </CardContent>
-          </Card>
+          <EmptyTenantWebhooks />
         ) : (
           <>
             <div className="space-y-3">

@@ -79,9 +79,9 @@ const MOCK_TOP_SERVICES = [
 
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
-  if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-green-500" aria-hidden="true" />;
-  if (trend === 'down') return <ArrowDown className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />;
-  return <Minus className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
+  if (trend === 'up') return <ArrowUp className="icon-sm text-status-success" />;
+  if (trend === 'down') return <ArrowDown className="icon-sm text-status-danger" />;
+  return <Minus className="icon-sm text-muted-foreground" />;
 }
 
 function MetricCard({
@@ -102,10 +102,10 @@ function MetricCard({
   format?: 'number' | 'currency' | 'percent';
 }) {
   const displayValue = format === 'currency'
-    ? `$${value.toLocaleString()}`
+    ? `$${value.toLocaleString('en-GB')}`
     : format === 'percent'
     ? `${value}%`
-    : value.toLocaleString();
+    : value.toLocaleString('en-GB');
 
   return (
     <Card>
@@ -113,13 +113,13 @@ function MetricCard({
         <div className="flex items-start justify-between mb-2">
           <p className="text-xs text-muted-foreground">{label}</p>
           <div className="rounded-md bg-primary/10 p-1.5">
-            <Icon className="h-3.5 w-3.5 text-primary-emphasis" />
+            <Icon className="icon-sm text-primary-accessible" />
           </div>
         </div>
         <p className="text-2xl font-bold tabular-nums">{displayValue}{unit}</p>
         <div className={cn(
           'flex items-center gap-1 mt-1 text-xs',
-          trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
+          trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'
         )}>
           <TrendIcon trend={trend} />
           <span>{trend !== 'neutral' ? `${Math.abs(change)}%` : 'No change'} vs last period</span>
@@ -160,8 +160,8 @@ export default function ProviderAnalyticsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <BarChart3 className="icon-lg text-primary-accessible" />
               Analytics
             </h1>
             <p className="text-muted-foreground">Track your profile performance and service metrics</p>
@@ -179,7 +179,7 @@ export default function ProviderAnalyticsPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm">
-              <RefreshCw className="icon-sm" aria-hidden="true" />
+              <RefreshCw className="icon-sm" />
             </Button>
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function ProviderAnalyticsPage() {
                             style={{ height: `${(d.views / maxViews) * 140}px` }}
                           />
                           <div
-                            className="w-full bg-violet-500/70 min-h-[2px]"
+                            className="w-full bg-status-accent-bg min-h-[2px]"
                             style={{ height: `${(d.inquiries / 7) * 30}px` }}
                           />
                         </div>
@@ -230,7 +230,7 @@ export default function ProviderAnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/80 inline-block" />Profile Views</span>
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-500/70 inline-block" />Inquiries</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" />Inquiries</span>
                   </div>
                 </CardContent>
               </Card>
@@ -274,7 +274,7 @@ export default function ProviderAnalyticsPage() {
                         <span className="font-medium">{stage.stage}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-muted-foreground text-xs">{stage.count.toLocaleString()}</span>
+                        <span className="text-muted-foreground text-xs">{stage.count.toLocaleString('en-GB')}</span>
                         <Badge variant="outline" className="text-xs tabular-nums">{stage.pct}%</Badge>
                       </div>
                     </div>
@@ -308,12 +308,12 @@ export default function ProviderAnalyticsPage() {
                         <p className="text-xs text-muted-foreground">{svc.inquiries} inquiries</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">${svc.revenue.toLocaleString()}</p>
+                        <p className="text-sm font-semibold">${svc.revenue.toLocaleString('en-GB')}</p>
                         <p className="text-xs text-muted-foreground">revenue</p>
                       </div>
                       {svc.rating != null ? (
                         <div className="flex items-center gap-1 shrink-0">
-                          <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" aria-hidden="true" />
+                          <Star className="icon-sm text-amber-400 fill-status-warning" />
                           <span className="text-sm font-medium">{svc.rating}</span>
                         </div>
                       ) : (

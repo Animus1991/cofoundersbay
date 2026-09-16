@@ -160,7 +160,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
   return (
     <div className={cn('relative', className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
         <Input
           ref={inputRef}
           type="text"
@@ -178,13 +178,13 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
               className="h-6 w-6 p-0"
               onClick={() => setQuery('')}
             >
-              <X className="icon-2xs" aria-hidden="true" />
+              <X className="icon-sm" />
             </Button>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-6 px-2">
-                <Filter className="icon-2xs mr-1" aria-hidden="true" />
+                <Filter className="icon-sm mr-1" />
                 {selectedTypes.includes('all') ? 'All' : selectedTypes.length}
               </Button>
             </DropdownMenuTrigger>
@@ -215,7 +215,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
               <div className="p-3 border-b">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
-                    <Clock className="icon-sm" aria-hidden="true" />
+                    <Clock className="icon-sm" />
                     Recent Searches
                   </h4>
                   <Button
@@ -245,7 +245,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
             {debouncedQuery && suggestions.length > 0 && (
               <div className="p-3 border-b">
                 <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <TrendingUp className="icon-sm" aria-hidden="true" />
+                  <TrendingUp className="icon-sm" />
                   Suggestions
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                          <User className="icon-md text-muted-foreground" aria-hidden="true" />
+                          <User className="icon-md text-muted-foreground" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">

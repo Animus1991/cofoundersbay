@@ -28,7 +28,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -45,19 +47,19 @@ type ModerationReport = {
   priority: 'high' | 'medium' | 'low';
 };
 
-const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
-  misinformation: { label: 'Misinformation', color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  'off-topic': { label: 'Off-topic', color: 'bg-gray-500/10 text-gray-600' },
+const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; chip: string }> = {
+  spam: { label: 'Spam', chip: STATUS.warning.chip },
+  harassment: { label: 'Harassment', chip: STATUS.danger.chip },
+  misinformation: { label: 'Misinformation', chip: STATUS.warning.chip },
+  inappropriate: { label: 'Inappropriate', chip: STATUS.accent.chip },
+  'off-topic': { label: 'Off-topic', chip: STATUS.neutral.chip },
 };
 
-const STATUS_CONFIG: Record<ReportStatus, { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: Clock },
-  reviewed: { label: 'Reviewed', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: Eye },
-  resolved: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: CheckCircle },
-  dismissed: { label: 'Dismissed', color: 'bg-gray-500/10 text-gray-500 border-gray-500/20', icon: XCircle },
+const STATUS_CONFIG: Record<ReportStatus, { label: string; chip: string; icon: React.ElementType }> = {
+  pending: { label: 'Pending', chip: STATUS.warning.chip, icon: Clock },
+  reviewed: { label: 'Reviewed', chip: STATUS.info.chip, icon: Eye },
+  resolved: { label: 'Resolved', chip: STATUS.success.chip, icon: CheckCircle },
+  dismissed: { label: 'Dismissed', chip: STATUS.neutral.chip, icon: XCircle },
 };
 
 const MOCK_REPORTS: ModerationReport[] = [
@@ -79,13 +81,13 @@ function ReportCard({ report }: { report: ModerationReport }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className={cn('text-xs', typeCfg.color)}>
-                <AlertTriangle className="mr-1 icon-2xs" aria-hidden="true" />
+              <Badge variant="secondary" className={cn('text-xs border', typeCfg.chip)}>
+                <AlertTriangle className="mr-1 icon-sm" />
                 {typeCfg.label}
               </Badge>
               <Badge variant="secondary" className="text-xs capitalize">{report.contentType}</Badge>
-              <Badge variant="outline" className={cn('text-xs', statusCfg.color)}>
-                <StatusIcon className="mr-1 h-3 w-3" />
+              <Badge variant="outline" className={cn('text-xs border', statusCfg.chip)}>
+                <StatusIcon className="mr-1 icon-sm" />
                 {statusCfg.label}
               </Badge>
               {report.priority === 'high' && (
@@ -99,29 +101,29 @@ function ReportCard({ report }: { report: ModerationReport }) {
               <span>Reported by: <span className="font-medium text-foreground">{report.reportedBy}</span></span>
               <span>Against: <span className="font-medium text-foreground">{report.reportedUser}</span></span>
               <span>In: <span className="font-medium text-foreground">{report.groupName}</span></span>
-              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{report.reportedAt}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />{report.reportedAt}</span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreVertical className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Report actions">
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Eye className="mr-2 icon-sm" aria-hidden="true" />View Content</DropdownMenuItem>
-              <DropdownMenuItem><CheckCircle className="mr-2 icon-sm" aria-hidden="true" />Mark Resolved</DropdownMenuItem>
-              <DropdownMenuItem><XCircle className="mr-2 icon-sm" aria-hidden="true" />Dismiss</DropdownMenuItem>
-              <DropdownMenuItem><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-emphasis"><Ban className="mr-2 icon-sm" aria-hidden="true" />Ban User</DropdownMenuItem>
+              <DropdownMenuItem><Eye className="mr-2 icon-sm" />View Content</DropdownMenuItem>
+              <DropdownMenuItem><CheckCircle className="mr-2 icon-sm" />Mark Resolved</DropdownMenuItem>
+              <DropdownMenuItem><XCircle className="mr-2 icon-sm" />Dismiss</DropdownMenuItem>
+              <DropdownMenuItem><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible"><Ban className="mr-2 icon-sm" />Ban User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         {report.status === 'pending' && (
           <div className="flex gap-2 mt-3">
-            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 icon-2xs" aria-hidden="true" />Resolve</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 icon-2xs" aria-hidden="true" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-emphasis border-destructive/30"><Ban className="mr-1 icon-2xs" aria-hidden="true" />Ban User</Button>
+            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 icon-sm" />Resolve</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 icon-sm" />Dismiss</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30"><Ban className="mr-1 icon-sm" />Ban User</Button>
           </div>
         )}
       </CardContent>
@@ -144,22 +146,16 @@ export default function GroupsModerationPage() {
   });
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="icon-lg text-primary-emphasis" aria-hidden="true" />
-            Moderation Queue
-          </h1>
-          <p className="text-muted-foreground">Review and action community reports</p>
-        </div>
-
+    <AppShell
+      title="Moderation queue"
+      description="Review and action community reports. High-priority items are flagged first so nothing urgent slips through."
+    >
+      <div className="space-y-6">
         {/* Alert Banner */}
         {highPriority > 0 && (
-          <Card className="border-red-500/30 bg-red-500/5">
+          <Card className="border-status-danger-border/40 bg-status-danger-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertTriangle className="icon-md text-red-500 shrink-0" aria-hidden="true" />
+              <AlertTriangle className={cn('icon-md shrink-0', STATUS.danger.icon)} />
               <p className="text-sm">
                 <span className="font-semibold">{highPriority} high-priority report{highPriority > 1 ? 's' : ''}</span> require immediate attention
               </p>
@@ -170,9 +166,9 @@ export default function GroupsModerationPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[
-            { label: 'Pending', value: pendingCount, color: 'text-amber-500' },
-            { label: 'High Priority', value: highPriority, color: 'text-red-500' },
-            { label: 'Resolved (30d)', value: MOCK_REPORTS.filter(r => r.status === 'resolved').length, color: 'text-green-500' },
+            { label: 'Pending', value: pendingCount, color: STATUS.warning.icon },
+            { label: 'High Priority', value: highPriority, color: STATUS.danger.icon },
+            { label: 'Resolved (30d)', value: MOCK_REPORTS.filter(r => r.status === 'resolved').length, color: STATUS.success.icon },
             { label: 'Total Reports', value: MOCK_REPORTS.length, color: 'text-foreground' },
           ].map(stat => (
             <Card key={stat.label}>
@@ -186,7 +182,7 @@ export default function GroupsModerationPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search reports..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -200,15 +196,23 @@ export default function GroupsModerationPage() {
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(report => <ReportCard key={report.id} report={report} />)}
             {filtered.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                  <p className="font-medium">No reports found</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {activeTab === 'pending' ? 'All caught up! No pending reports.' : 'No reports match your search.'}
-                  </p>
-                </CardContent>
-              </Card>
+              search ? (
+                <NoFilterResults entity="reports" onClear={() => setSearch('')} />
+              ) : activeTab === 'pending' ? (
+                <ListEmptyState
+                  icon={CheckCircle}
+                  tone="success"
+                  title="All caught up"
+                  description="There are no pending reports to review. New community reports will appear here for action."
+                />
+              ) : (
+                <ListEmptyState
+                  icon={Shield}
+                  tone="neutral"
+                  title="No reports here"
+                  description={`There are no ${activeTab === 'all' ? '' : `${activeTab} `}reports to show right now.`}
+                />
+              )
             )}
           </TabsContent>
         </Tabs>

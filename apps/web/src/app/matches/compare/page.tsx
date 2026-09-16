@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { AppShell } from '@/components/layout/AppShell';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn } from '@/lib/utils';
+import { ConnectButton, MessageButton } from '@/components/common/PersonActions';
 
 type CompareUser = {
   id: string;
@@ -123,16 +124,16 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           className="absolute top-2 right-2 h-7 w-7"
           onClick={onRemove}
         >
-          <X className="icon-sm" aria-hidden="true" />
+          <X className="icon-sm" />
         </Button>
         <CardContent className="pt-6 text-center">
           <Avatar className="h-16 w-16 mx-auto mb-3">
             <AvatarImage src={user.avatar} />
-            <AvatarFallback className="text-base bg-primary/10 text-primary-emphasis">
+            <AvatarFallback className="text-base bg-primary/10 text-primary-accessible">
               {user.name[0]}
             </AvatarFallback>
           </Avatar>
-          <Link href={`/profiles/${user.id}`} className="font-semibold text-lg text-foreground hover:text-primary-emphasis transition-colors">
+          <Link href={`/profiles/${user.id}`} className="font-semibold text-lg text-foreground hover:text-primary-accessible transition-colors">
             {user.name}
           </Link>
           <div className="mt-1">
@@ -143,19 +144,16 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           
           {/* Match Score */}
           <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-            <div className="text-2xl font-bold text-primary-emphasis">{user.matchScore}%</div>
+            <div className="text-2xl font-bold text-primary-accessible">{user.matchScore}%</div>
             <div className="text-xs text-muted-foreground">Match Score</div>
           </div>
 
           <div className="flex gap-2 mt-4">
-            <Button size="sm" className="flex-1 gap-1">
-              <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
-              Message
-            </Button>
-            <Button size="sm" variant="outline" className="flex-1 gap-1">
-              <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
-              Connect
-            </Button>
+            {/* Both of these drew a button with nothing behind it while the
+                assistant could already open the thread and send the intro.
+                Same endpoints, same destination, whichever way it is asked. */}
+            <MessageButton userId={user.id} displayName={user.name} variant="default" className="flex-1" />
+            <ConnectButton userId={user.id} displayName={user.name} variant="outline" className="flex-1" />
           </div>
         </CardContent>
       </Card>
@@ -216,7 +214,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Check className="icon-sm text-emerald-500" aria-hidden="true" />
+            <Check className="icon-sm text-status-success" />
             Strengths
           </CardTitle>
         </CardHeader>
@@ -224,7 +222,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <ul className="space-y-2">
             {user.strengths.map((s, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <Check className="icon-sm text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <Check className="icon-sm text-status-success shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{s}</span>
               </li>
             ))}
@@ -236,7 +234,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Minus className="icon-sm text-amber-500" aria-hidden="true" />
+            <Minus className="icon-sm text-status-warning" />
             Considerations
           </CardTitle>
         </CardHeader>
@@ -244,7 +242,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <ul className="space-y-2">
             {user.potentialFrictions.map((f, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <Minus className="icon-sm text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <Minus className="icon-sm text-status-warning shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{f}</span>
               </li>
             ))}
@@ -259,12 +257,12 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
-            <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />
+            <Clock className="icon-sm text-muted-foreground" />
             <span className="text-muted-foreground">Availability:</span>
             <span className="font-medium">{user.availability}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <Briefcase className="icon-sm text-muted-foreground" aria-hidden="true" />
+            <Briefcase className="icon-sm text-muted-foreground" />
             <span className="text-muted-foreground">Experience:</span>
             <span className="font-medium">{user.experience}</span>
           </div>
@@ -280,14 +278,14 @@ function AddUserSlot({ onAdd }: { onAdd: () => void }) {
       <Card className="h-full border-dashed">
         <CardContent className="flex flex-col items-center justify-center h-full min-h-[400px] py-12">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-            <Plus className="icon-xl text-muted-foreground" aria-hidden="true" />
+            <Plus className="icon-xl text-muted-foreground" />
           </div>
           <h3 className="font-semibold text-foreground mb-1">Add to Compare</h3>
           <p className="text-sm text-muted-foreground text-center mb-4">
             Select another match to compare
           </p>
           <Button variant="outline" onClick={onAdd}>
-            <Plus className="icon-sm mr-2" aria-hidden="true" />
+            <Plus className="icon-sm mr-2" />
             Add Match
           </Button>
         </CardContent>
@@ -325,12 +323,12 @@ export default function MatchComparePage() {
   };
 
   return (
-    <AppShell>
+    <AppShell title="Compare matches" description="Open two or more match profiles side by side to weigh fit.">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="icon-md" aria-hidden="true" />
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="icon-md" />
           </Button>
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Compare Matches</h1>
@@ -364,7 +362,7 @@ export default function MatchComparePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Brain className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Brain className="icon-md text-primary-accessible" />
                 AI Recommendation
               </CardTitle>
             </CardHeader>
@@ -375,14 +373,20 @@ export default function MatchComparePage() {
                 Their technical expertise and previous startup experience align well with your needs. 
                 Consider scheduling a call to discuss potential collaboration.
               </p>
-              <div className="flex gap-3 mt-4">
-                <Button>
-                  <MessageSquare className="icon-sm mr-2" aria-hidden="true" />
-                  Message {selectedUsers[0]?.name.split(' ')[0]}
-                </Button>
-                <Button variant="outline">
-                  <Target className="icon-sm mr-2" aria-hidden="true" />
-                  View Full Analysis
+              <div className="flex flex-wrap gap-3 mt-4">
+                <MessageButton
+                  userId={selectedUsers[0]?.id}
+                  displayName={selectedUsers[0]?.name}
+                  variant="default"
+                  size="md"
+                />
+                {/* The full analysis is this person's match page — the one
+                    screen that actually holds it. */}
+                <Button asChild variant="outline" size="md">
+                  <Link href={`/matches/${selectedUsers[0]?.id ?? ''}`}>
+                    <Target className="icon-sm mr-2" />
+                    View Full Analysis
+                  </Link>
                 </Button>
               </div>
             </CardContent>

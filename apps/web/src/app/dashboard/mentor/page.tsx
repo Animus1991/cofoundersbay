@@ -28,6 +28,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -53,13 +54,13 @@ function StatCard({
     <Card className="relative overflow-hidden transition-all hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary-emphasis" />
+            <Icon className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -69,41 +70,12 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-/**
- * Shapes for the role-dashboard cards. These mirror the demo fixtures below and
- * the API payloads they stand in for; the cards were previously typed `any`,
- * which hid every field rename behind a runtime undefined.
- */
-type Mentee = {
-  id: string;
-  name: string;
-  startup: string | null;
-  sessionsCompleted: number;
-  avatarUrl: string | null;
-};
-
-type MentorSession = {
-  id: string;
-  menteeName: string;
-  /** ISO 8601 */
-  scheduledAt: string;
-  /** minutes */
-  duration: number;
-};
-
-type MentorRequest = {
-  id: string;
-  name: string;
-  message: string;
-  avatarUrl: string | null;
-};
-
-function MenteeCard({ mentee }: { mentee: Mentee }) {
+function MenteeCard({ mentee }: { mentee: any }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={mentee.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-primary/10 text-primary-emphasis">
+        <AvatarImage src={mentee.avatarUrl} />
+        <AvatarFallback className="bg-primary/10 text-primary-accessible">
           {mentee.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -115,15 +87,15 @@ function MenteeCard({ mentee }: { mentee: Mentee }) {
         <Badge variant="outline" className="text-xs">
           {mentee.sessionsCompleted} sessions
         </Badge>
-        <Button aria-label="Message" variant="ghost" size="icon">
-          <MessageCircle className="icon-sm" aria-hidden="true" />
+        <Button variant="ghost" size="icon">
+          <MessageCircle className="icon-sm" />
         </Button>
       </div>
     </div>
   );
 }
 
-function SessionCard({ session }: { session: MentorSession }) {
+function SessionCard({ session }: { session: any }) {
   const isUpcoming = new Date(session.scheduledAt) > new Date();
   
   return (
@@ -135,12 +107,12 @@ function SessionCard({ session }: { session: MentorSession }) {
         'rounded-full p-2',
         isUpcoming ? 'bg-primary/10' : 'bg-muted'
       )}>
-        <Video className={cn('icon-sm', isUpcoming ? 'text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
+        <Video className={cn('icon-sm', isUpcoming ? 'text-primary-accessible' : 'text-muted-foreground')} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{session.menteeName}</p>
         <p className="text-xs text-muted-foreground">
-          {new Date(session.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at{' '}
+          {new Date(session.scheduledAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })} at{' '}
           {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
@@ -158,12 +130,12 @@ function SessionCard({ session }: { session: MentorSession }) {
   );
 }
 
-function RequestCard({ request }: { request: MentorRequest }) {
+function RequestCard({ request }: { request: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+    <div className="flex items-start gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={request.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600 dark:text-amber-400">
+        <AvatarImage src={request.avatarUrl} />
+        <AvatarFallback className="bg-status-warning-bg text-status-warning">
           {request.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -185,7 +157,7 @@ export default function MentorDashboard() {
   const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -236,7 +208,7 @@ export default function MentorDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -247,33 +219,27 @@ export default function MentorDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h1>
-            <p className="text-muted-foreground">
-              Your mentoring impact at a glance
-            </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5">
-            <GraduationCap className="icon-sm" aria-hidden="true" />
-            Mentor
-          </Badge>
-        </div>
+    <AppShell
+      title={`${getTimeBasedGreeting()}, ${displayName}`}
+      description="Sessions, mentee requests, reviews, and earnings at a glance."
+      actions={
+        <Badge variant="outline" className="gap-1.5">
+          <GraduationCap className="icon-sm" />
+          Mentor
+        </Badge>
+      }
+    >
+      <div className="space-y-6">
 
         {/* Next Session Banner */}
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
-          <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-status-info-border bg-status-info-bg px-4 py-3">
             <div className="flex items-center gap-2">
-              <Video className="icon-sm text-blue-500" aria-hidden="true" />
+              <Video className="icon-sm text-status-info" />
               <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
             </div>
             <Link href="/mentor/sessions">
-              <button className="rounded-md border border-blue-500/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors">
+              <button className="rounded-md border border-status-info-border px-3 py-1 text-xs font-medium text-status-info hover:bg-status-info-bg transition-colors">
                 Join Now
               </button>
             </Link>
@@ -281,7 +247,7 @@ export default function MentorDashboard() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             icon={Users}
             label="Active Mentees"
@@ -310,38 +276,38 @@ export default function MentorDashboard() {
 
         {/* Earnings Banner */}
         {showDemoData && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Link href="/mentor/earnings">
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
-                <DollarSign className="icon-md text-emerald-500 shrink-0" aria-hidden="true" />
+              <div className="flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3 transition-all hover:border-status-success-border cursor-pointer">
+                <DollarSign className="icon-md text-status-success shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Earnings this month</p>
-                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{mentorStats.earningsThisMonth}</p>
+                  <p className="text-lg font-bold text-status-success">{mentorStats.earningsThisMonth}</p>
                 </div>
               </div>
             </Link>
             <Link href="/mentor/reviews">
-              <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 transition-all hover:border-amber-500/40 cursor-pointer">
-                <Star className="icon-md text-amber-500 shrink-0" aria-hidden="true" />
+              <div className="flex items-center gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3 transition-all hover:border-status-warning-border cursor-pointer">
+                <Star className="icon-md text-status-warning shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Average rating</p>
-                  <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
+                  <p className="text-lg font-bold text-status-warning">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
                 </div>
               </div>
             </Link>
             <Link href="/mentor/sessions">
               <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 transition-all hover:border-primary/40 cursor-pointer">
-                <Video className="icon-md text-primary-emphasis shrink-0" aria-hidden="true" />
+                <Video className="icon-md text-primary-accessible shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Hours this month</p>
-                  <p className="text-lg font-bold text-primary-emphasis">{mentorStats.hoursThisMonth}h</p>
+                  <p className="text-lg font-bold text-primary-accessible">{mentorStats.hoursThisMonth}h</p>
                 </div>
               </div>
             </Link>
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Requests */}
@@ -350,12 +316,12 @@ export default function MentorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" aria-hidden="true" />
+                      <Zap className="icon-sm text-status-warning" />
                       Mentorship Requests ({pendingRequests.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/mentor/requests">
-                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -373,12 +339,12 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <Calendar className="icon-sm text-primary-accessible" />
                     Upcoming Sessions
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/mentor/sessions">
-                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -400,12 +366,12 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <UserCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <UserCheck className="icon-sm text-primary-accessible" />
                     Your Mentees
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/mentor/mentees">
-                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -428,31 +394,31 @@ export default function MentorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/availability">
-                    <Clock className="mr-2 icon-sm" aria-hidden="true" />
+                    <Clock className="mr-2 icon-sm" />
                     Set Availability
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/requests">
-                    <UserCheck className="mr-2 icon-sm" aria-hidden="true" />
+                    <UserCheck className="mr-2 icon-sm" />
                     Mentorship Requests
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/reviews">
-                    <Star className="mr-2 icon-sm" aria-hidden="true" />
+                    <Star className="mr-2 icon-sm" />
                     My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/earnings">
-                    <DollarSign className="mr-2 icon-sm" aria-hidden="true" />
+                    <DollarSign className="mr-2 icon-sm" />
                     Earnings
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/profile">
-                    <TrendingUp className="mr-2 icon-sm" aria-hidden="true" />
+                    <TrendingUp className="mr-2 icon-sm" />
                     Mentor Profile
                   </Link>
                 </Button>
@@ -481,7 +447,7 @@ export default function MentorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2">
-                    <Star className="icon-sm text-yellow-500 fill-yellow-500" aria-hidden="true" />
+                    <Star className="icon-sm text-status-warning fill-status-warning" />
                     <span className="text-sm font-medium">Top 10% Mentor</span>
                   </div>
                 </div>
@@ -496,7 +462,7 @@ export default function MentorDashboard() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Accepting requests</span>
-                  <Badge variant="success">Active</Badge>
+                  <Badge variant="default" className="bg-green-500">Active</Badge>
                 </div>
                 <div className="text-xs text-muted-foreground">
                   You have 4 slots available this week

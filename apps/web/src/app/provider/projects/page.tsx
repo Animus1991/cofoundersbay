@@ -45,9 +45,9 @@ type Project = {
 
 function ProjectCard({ project }: { project: Project }) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
-    active: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: Clock },
-    completed: { color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: CheckCircle },
-    on_hold: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: AlertCircle },
+    active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Clock },
+    completed: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: CheckCircle },
+    on_hold: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: AlertCircle },
   };
 
   const config = statusConfig[project.status];
@@ -67,7 +67,7 @@ function ProjectCard({ project }: { project: Project }) {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{project.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 h-3 w-3" />
+                    <StatusIcon className="mr-1 icon-sm" />
                     {project.status.replace('_', ' ')}
                   </Badge>
                 </div>
@@ -77,8 +77,8 @@ function ProjectCard({ project }: { project: Project }) {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -104,11 +104,11 @@ function ProjectCard({ project }: { project: Project }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+                <Calendar className="icon-sm" />
                 Due: {project.dueDate}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                <Clock className="icon-sm" />
                 Updated: {project.lastUpdate}
               </span>
               <span className="font-medium text-foreground">{project.amount}</span>
@@ -116,7 +116,7 @@ function ProjectCard({ project }: { project: Project }) {
 
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline">
-                <MessageSquare className="mr-1 icon-2xs" aria-hidden="true" />
+                <MessageSquare className="mr-1 icon-sm" />
                 Message
               </Button>
               <Button size="sm">Update</Button>
@@ -224,7 +224,7 @@ export default function ProviderProjectsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search projects..."
             value={search}

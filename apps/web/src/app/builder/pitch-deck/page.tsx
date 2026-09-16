@@ -1,92 +1,136 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Presentation, Loader2, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { bilingualAria } from '@/lib/i18n/format';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 
 function PitchDeckPageContent() {
   const {
     workspace,
-    workspaces,
-    isLoadingWorkspaces,
     documents,
     activeDocument,
+    isLoadingWorkspaces,
     error,
     loadWorkspaces,
-    selectWorkspace,
     updateDocumentSection,
+    updateDocument,
+    createDocument,
+    selectDocument,
     clearError,
   } = useBuilder();
 
   useEffect(() => {
-    loadWorkspaces();
+    loadWorkspaces(true);
   }, [loadWorkspaces]);
 
   useEffect(() => {
-    if (!workspace && workspaces.length > 0) {
-      selectWorkspace(workspaces[0].id);
+    const pitch = documents.find((d) => d.type === 'pitch_deck');
+    if (pitch && activeDocument?.id !== pitch.id) {
+      void selectDocument(pitch.id);
     }
-  }, [workspace, workspaces, selectWorkspace]);
+  }, [documents, activeDocument?.id, selectDocument]);
 
-  const handleSave = async (data: any) => {
-    if (!activeDocument) return;
-    await updateDocumentSection(activeDocument.id, 'pitchDeck', data);
+  const pitchDocument = documents.find((d) => d.type === 'pitch_deck');
+  const rawContent =
+    (activeDocument?.type === 'pitch_deck' ? activeDocument.content : undefined) ??
+    pitchDocument?.content ??
+    {};
+
+  const ideaCore = documents.find((d) => d.type === 'idea_core')?.content ?? {};
+  const bmc = documents.find((d) => d.type === 'business_model_canvas')?.content ?? {};
+  const workspaceName = workspace?.startupName || workspace?.name || '';
+
+  const handleSave = async (data: {
+    companyName?: string;
+    tagline?: string;
+    askAmount?: string;
+    slides?: unknown[];
+    deckType?: string;
+  }) => {
+    try {
+      let doc = documents.find((d) => d.type === 'pitch_deck');
+      if (!doc) {
+        doc = await createDocument(
+          'pitch_deck',
+          data.companyName ? `${data.companyName} Pitch Deck` : 'Pitch Deck',
+        );
+      }
+      await updateDocumentSection(doc.id, 'pitchDeck', data as Record<string, any>);
+      const slides = Array.isArray(data.slides) ? data.slides : [];
+      const filled = slides.filter(
+        (s) => typeof s === 'object' && s && 'content' in s && String((s as { content?: string }).content || '').trim(),
+      ).length;
+      await updateDocument(doc.id, {
+        completionPercent: slides.length ? Math.round((filled / slides.length) * 100) : 0,
+      });
+    } catch {
+      // BuilderContext already surfaces the error banner.
+    }
   };
 
-  const getDocumentContent = (type: string) => {
-    const doc = documents.find((d) => d.type === type);
-    return doc?.content || {};
-  };
+  const askPrompt = `Build an investor pitch deck for ${workspaceName || 'this startup'}. Idea Core: ${ideaCore.problemStatement || ideaCore.solution || 'not filled yet'}. Value proposition: ${bmc.valueProposition || bmc.valuePropositions || 'not filled yet'}. Recommend 10 slides and draft Cover + Problem.`;
 
   if (isLoadingWorkspaces) {
     return (
-      <AppShell>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+      <AppShell showHelp>
+        <div className="flex h-64 flex-col items-center justify-center gap-3">
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={builderEn('loading_pitch')} el={builderEl('loading_pitch')} compact />
+          </p>
         </div>
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <AppShell showHelp contentClassName="overflow-x-clip" askAi={askPrompt}>
+      <div className="min-w-0 space-y-6 overflow-x-clip">
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive-emphasis" aria-hidden="true" />
-            <p className="text-sm text-destructive-emphasis">{error}</p>
-            <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
-              Dismiss
+          <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-start gap-3">
+              <AlertCircle className="icon-md shrink-0 text-destructive-accessible" />
+              <p className="text-sm text-destructive-accessible">{error}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={clearError} className="sm:ml-auto">
+              <BilingualText en={builderEn('dismiss')} el={builderEl('dismiss')} compact />
             </Button>
           </div>
         )}
 
-        <div className="flex items-center gap-4">
-          <Button aria-label="Go back" variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <Link href="/builder">
-              <ArrowLeft className="icon-sm" aria-hidden="true" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Presentation className="icon-lg text-primary-emphasis" aria-hidden="true" />
-              </div>
-              Pitch Deck Builder
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create a compelling pitch deck for investors and stakeholders
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-start gap-3">
+            <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-muted-foreground" aria-label={bilingualAria(builderEn('pitch_back'), builderEl('pitch_back'))} asChild>
+              <Link href="/builder">
+                <ArrowLeft className="icon-sm" />
+                <CfbGlyph name="builder" className="icon-sm" />
+                <BilingualText en={builderEn('pitch_back')} el={builderEl('pitch_back')} compact />
+              </Link>
+            </Button>
+            <p className="max-w-2xl text-sm leading-snug text-muted-foreground">
+              <BilingualText en={builderEn('pitch_lead')} el={builderEl('pitch_lead')} />
+              {workspaceName ? ` · ${workspaceName}` : ''}
             </p>
           </div>
+          <AIInsightButton className="h-9 w-full sm:w-auto" prompt={askPrompt} />
         </div>
 
         <PitchDeckBuilder
+          hideTitle
           onSave={handleSave}
-          initialData={getDocumentContent('pitch_deck')}
+          initialData={rawContent}
+          workspaceName={workspaceName}
+          ideaCore={ideaCore}
+          askPrompt={askPrompt}
         />
       </div>
     </AppShell>

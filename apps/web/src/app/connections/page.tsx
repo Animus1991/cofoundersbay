@@ -36,7 +36,11 @@ import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { BilingualText } from '@/components/common/BilingualText';
+import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -72,7 +76,7 @@ function ConnectionCard({
         <Link href={`/profiles/${other.id}`}>
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
+            <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
               {other.displayName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -80,7 +84,7 @@ function ConnectionCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
+            <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
               {other.displayName}
             </Link>
             <RoleBadge role={other.role} size="sm" />
@@ -103,11 +107,11 @@ function ConnectionCard({
                 agentId="matching"
                 cacheKey={`conn-match-${connection.id}`}
                 variant="icon"
-                label="AI collaboration insight"
+                label={bilingualAria(connectionsEn('ai_collaboration'), connectionsEl('ai_collaboration'))}
               />
               <Button variant="secondary" size="sm" className="gap-2" onClick={onMessage}>
-                <MessageCircle className="icon-sm" aria-hidden="true" />
-                Message
+                <MessageCircle className="icon-sm" />
+                <BilingualText en={connectionsEn('message')} el={connectionsEl('message')} compact />
               </Button>
             </>
           ) : isReceiver && connection.status === 'pending' ? (
@@ -118,13 +122,13 @@ function ConnectionCard({
                 onClick={onAccept}
                 disabled={isPending}
               >
-                <Check className="icon-sm" aria-hidden="true" />
-                Accept
+                <Check className="icon-sm" />
+                <BilingualText en={connectionsEn('accept')} el={connectionsEl('accept')} compact />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1 text-muted-foreground hover:text-destructive-emphasis"
+                className="gap-1 text-muted-foreground hover:text-destructive-accessible"
                 onClick={onDecline}
                 disabled={isPending}
               >
@@ -133,8 +137,8 @@ function ConnectionCard({
             </>
           ) : (
             <Badge variant="outline" className="text-muted-foreground">
-              <Clock className="mr-1 icon-sm" aria-hidden="true" />
-              Pending
+              <Clock className="mr-1 icon-sm" />
+              <BilingualText en={connectionsEn('pending')} el={connectionsEl('pending')} compact />
             </Badge>
           )}
         </div>
@@ -162,7 +166,7 @@ function IntroRequestCard({
           <Link href={`/profiles/${sender.id}`}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                 {sender.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -170,13 +174,13 @@ function IntroRequestCard({
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
+              <Link href={`/profiles/${sender.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />
-              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary-emphasis gap-1">
-                <Handshake className="icon-sm" aria-hidden="true" />
-                Intro request
+              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary-accessible gap-1">
+                <Handshake className="icon-sm" />
+                <BilingualText en={connectionsEn('intro_request')} el={connectionsEl('intro_request')} compact />
               </Badge>
             </div>
 
@@ -186,28 +190,28 @@ function IntroRequestCard({
 
             {connection.message && (
               <div className="flex gap-2 rounded-xl bg-secondary/50 px-3 py-2.5">
-                <Quote className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary-emphasis/60" aria-hidden="true" />
+                <Quote className="icon-sm shrink-0 mt-0.5 text-primary/60" />
                 <p className="text-sm text-foreground/80 italic">{connection.message}</p>
               </div>
             )}
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
-                <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                Accept intro
+                <Check className="icon-sm" />
+                <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="gap-1.5 text-muted-foreground hover:text-destructive-emphasis"
+                className="gap-1.5 text-muted-foreground hover:text-destructive-accessible"
                 onClick={onDecline}
                 disabled={isPending}
               >
-                <X className="h-3.5 w-3.5" aria-hidden="true" />
-                Decline
+                <X className="icon-sm" />
+                <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
-              <p className="ml-auto text-xs text-muted-foreground">
-                {new Date(connection.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              <p className="ml-auto shrink-0 text-xs text-muted-foreground">
+                {new Date(connection.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             </div>
           </div>
@@ -305,13 +309,12 @@ export default function ConnectionsPage() {
       />
     )}
     <AppShell
-      title="Connections"
-      description="Manage your network and connection requests"
+      showHelp
       actions={
         <Button className="gap-2" asChild>
           <Link href="/discover">
-            <UserPlus className="icon-sm" aria-hidden="true" />
-            Find people
+            <UserPlus className="icon-sm" />
+            <BilingualText en={connectionsEn('find_people')} el={connectionsEl('find_people')} />
           </Link>
         </Button>
       }
@@ -319,23 +322,39 @@ export default function ConnectionsPage() {
       <div className="space-y-5 pb-10">
       {/* Stats bar */}
       {!isLoading && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        /* Four across waits for `md`. At 640px `sm:grid-cols-4` gave each tile
+           145px, which leaves a bilingual label about 80px — less than
+           "Σύνολο αλληλεπιδράσεων" can break to, and the page scrolled 20px
+           sideways because of it. Two columns hold to 768px.
+           A JS comment, not a JSX one: this is the single child of a `&&`
+           expression, where a braced JSX comment would be a second child and a
+           syntax error. */
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
-            { label: 'Connected', value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Intro Requests', value: introCount, icon: Handshake, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Sent Pending', value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Total Interactions', value: (data?.connections ?? []).length, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { labelEn: connectionsEn('stat_connected'), labelEl: connectionsEl('stat_connected'), value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, tone: 'accent' as const },
+            { labelEn: connectionsEn('stat_intro_requests'), labelEl: connectionsEl('stat_intro_requests'), value: introCount, icon: Handshake, tone: 'warning' as const },
+            { labelEn: connectionsEn('stat_sent_pending'), labelEl: connectionsEl('stat_sent_pending'), value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, tone: 'info' as const },
+            { labelEn: connectionsEn('stat_total_interactions'), labelEl: connectionsEl('stat_total_interactions'), value: (data?.connections ?? []).length, icon: TrendingUp, tone: 'success' as const },
           ].map((s) => {
             const SIcon = s.icon;
+            const colors = STATUS[s.tone];
             return (
-              <Card key={s.label} className="shadow-sm border-border/50">
+              <Card key={s.labelEn} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', colors.bg, colors.icon)}>
                     <SIcon className="icon-sm" />
                   </div>
-                  <div>
+                  {/* min-w-0: without it this flex child sits at its min-content
+                      width, so `compact`'s truncation never engages and the tile
+                      pushed the page 166px sideways at 640-1024px. */}
+                  <div className="min-w-0">
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
+                    {/* `wrap`: a quarter-width stat tile leaves this label
+                        about 100px, and the bilingual pair is longer than that
+                        in every one of the four. */}
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                      <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -347,8 +366,8 @@ export default function ConnectionsPage() {
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">
-            <Handshake className="icon-sm" aria-hidden="true" />
-            Intro Requests
+            <Handshake className="icon-sm" />
+            <BilingualText en={connectionsEn('intro_requests')} el={connectionsEl('intro_requests')} compact />
             {introCount > 0 && (
               <Badge variant="destructive" size="sm" className="ml-1 px-1.5">
                 {introCount}
@@ -356,16 +375,16 @@ export default function ConnectionsPage() {
             )}
           </TabsTrigger>
           <TabsTrigger value="received" className="gap-2">
-            <UserCheck className="icon-sm" aria-hidden="true" />
-            Received
+            <UserCheck className="icon-sm" />
+            <BilingualText en={connectionsEn('received')} el={connectionsEl('received')} compact />
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
-            <Send className="icon-sm" aria-hidden="true" />
-            Sent
+            <Send className="icon-sm" />
+            <BilingualText en={connectionsEn('sent')} el={connectionsEl('sent')} compact />
           </TabsTrigger>
           <TabsTrigger value="accepted" className="gap-2">
-            <Users className="icon-sm" aria-hidden="true" />
-            Connected
+            <Users className="icon-sm" />
+            <BilingualText en={connectionsEn('connected')} el={connectionsEl('connected')} compact />
           </TabsTrigger>
         </TabsList>
 
@@ -381,13 +400,14 @@ export default function ConnectionsPage() {
           ) : connections.length === 0 ? (
             <EmptyState
               illustration="default"
-              title="No intro requests"
-              description="When someone sends you a connection request with a message, it appears here."
+              title={<BilingualText en={connectionsEn('no_intro_requests')} el={connectionsEl('no_intro_requests')} />}
+              description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
+              askAiPrompt="I have no intro requests. Help me find people to connect with and draft a first intro."
               action={
                 <Button variant="secondary" className="gap-2" asChild>
                   <Link href="/discover">
-                    <Compass className="icon-sm" aria-hidden="true" />
-                    Discover people
+                    <Compass className="icon-sm" />
+                    <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
                   </Link>
                 </Button>
               }
@@ -398,7 +418,7 @@ export default function ConnectionsPage() {
                 key={c.id}
                 connection={c}
                 isPending={respondMutation.isPending}
-                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester.headline ?? null } })}
+                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester?.headline ?? null } })}
                 onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
               />
             ))
@@ -419,25 +439,40 @@ export default function ConnectionsPage() {
               <EmptyState
                 illustration={t === 'accepted' ? 'connection' : 'default'}
                 title={
-                  t === 'received'
-                    ? 'No pending requests'
-                    : t === 'sent'
-                      ? 'No sent requests'
-                      : 'No connections yet'
+                  <BilingualText
+                    en={
+                      t === 'received' ? connectionsEn('no_pending_requests')
+                        : t === 'sent' ? connectionsEn('no_sent_requests')
+                        : connectionsEn('no_connections_yet')
+                    }
+                    el={
+                      t === 'received' ? connectionsEl('no_pending_requests')
+                        : t === 'sent' ? connectionsEl('no_sent_requests')
+                        : connectionsEl('no_connections_yet')
+                    }
+                  />
                 }
                 description={
-                  t === 'accepted'
-                    ? 'Start connecting with founders, mentors, and investors.'
-                    : t === 'sent'
-                      ? 'Browse profiles and send connection requests.'
-                      : 'When people send you requests, they appear here.'
+                  <BilingualText
+                    en={
+                      t === 'accepted' ? connectionsEn('start_connecting')
+                        : t === 'sent' ? connectionsEn('browse_profiles')
+                        : connectionsEn('when_people_send')
+                    }
+                    el={
+                      t === 'accepted' ? connectionsEl('start_connecting')
+                        : t === 'sent' ? connectionsEl('browse_profiles')
+                        : connectionsEl('when_people_send')
+                    }
+                  />
                 }
+                askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
                 action={
                   t !== 'received' ? (
                     <Button variant="secondary" className="gap-2" asChild>
                       <Link href="/discover">
-                        <Compass className="icon-sm" aria-hidden="true" />
-                        Discover people
+                        <Compass className="icon-sm" />
+                        <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
                       </Link>
                     </Button>
                   ) : undefined

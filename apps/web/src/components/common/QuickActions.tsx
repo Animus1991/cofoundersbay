@@ -74,9 +74,9 @@ export function QuickActions({
   const [isOpen, setIsOpen] = useState(false);
 
   const positionClasses = {
-    'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-6 left-6',
-    'bottom-center': 'bottom-6 left-1/2 -translate-x-1/2',
+    'bottom-right': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6',
+    'bottom-left': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 lg:bottom-6 lg:left-6',
+    'bottom-center': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 lg:bottom-6',
   };
 
   return (
@@ -108,7 +108,7 @@ export function QuickActions({
                   action.color
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="icon-md" />
               </button>
             </div>
           );
@@ -144,7 +144,7 @@ export function QuickActions({
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="icon-lg" aria-hidden="true" /> : <Plus className="icon-lg" aria-hidden="true" />}
+        {isOpen ? <X className="icon-lg" /> : <Plus className="icon-lg" />}
       </Button>
 
       {/* Backdrop */}
@@ -177,12 +177,12 @@ export function FloatingActionButton({
     <Button aria-label="{label}"
       size="icon"
       className={cn(
-        'fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 animate-bounce-subtle',
+        'fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full shadow-md z-50',
         className
       )}
       onClick={onClick}
     >
-      <Icon className="h-6 w-6" />
+      <Icon className="icon-lg" />
       {label && <span className="sr-only">{label}</span>}
     </Button>
   );

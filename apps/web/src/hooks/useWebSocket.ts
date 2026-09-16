@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getSocketOrigin } from '@/lib/api-origin';
 
 interface UseWebSocketOptions {
   url?: string;
@@ -17,7 +18,7 @@ interface WebSocketState {
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const {
-    url = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001',
+    url = getSocketOrigin(),
     autoConnect = true,
     onConnect,
     onDisconnect,

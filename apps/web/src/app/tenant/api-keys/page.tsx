@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { EmptyTenantApiKeys } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 type ApiKey = {
@@ -55,9 +56,9 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex items-center gap-2">
             <p className="font-medium">{apiKey.name}</p>
             {apiKey.isActive ? (
-              <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Active</Badge>
+              <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border"><CheckCircle className="mr-1 icon-sm" />Active</Badge>
             ) : (
-              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-gray-500">Inactive</Badge>
+              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-muted-foreground">Inactive</Badge>
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
@@ -75,7 +76,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" />Created {apiKey.createdAt}</span>
             {apiKey.lastUsed && <span>Last used {apiKey.lastUsed}</span>}
-            {apiKey.expiresAt && <span className="text-amber-600 dark:text-amber-400">Expires {apiKey.expiresAt}</span>}
+            {apiKey.expiresAt && <span className="text-status-warning">Expires {apiKey.expiresAt}</span>}
           </div>
         </div>
         <DropdownMenu>
@@ -87,7 +88,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Edit Scopes</DropdownMenuItem>
             <DropdownMenuItem>Regenerate</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Revoke</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Revoke</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -103,23 +104,18 @@ export default function TenantApiKeysPage() {
     <AppShell
       title="API Keys"
       description="Manage API keys for programmatic access to your tenant data"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Create API Key</Button>}
+      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Create API Key</Button>}
     >
       <div className="space-y-5">
-        <Card className="border-amber-500/20 bg-amber-500/5">
+        <Card className="border-status-warning-border bg-status-warning-bg">
           <CardContent className="p-4 flex items-center gap-3">
-            <Shield className="icon-md text-amber-500 shrink-0" aria-hidden="true" />
+            <Shield className="icon-md text-status-warning shrink-0" />
             <p className="text-sm">API keys grant full access to your tenant's resources. Store them securely and never share them publicly.</p>
           </CardContent>
         </Card>
 
         {keys.length === 0 ? (
-          <div className="py-16 text-center rounded-lg border border-dashed">
-            <KeyRound className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-            <p className="font-medium">No API keys yet</p>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">Create an API key to enable programmatic access</p>
-            <Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Create API Key</Button>
-          </div>
+          <EmptyTenantApiKeys />
         ) : (
           <div className="space-y-3">
             {keys.map(k => <KeyRow key={k.id} apiKey={k} />)}

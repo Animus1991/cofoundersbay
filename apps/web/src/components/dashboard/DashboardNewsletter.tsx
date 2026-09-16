@@ -35,7 +35,7 @@ export function DashboardNewsletter({
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Mail className="icon-sm text-primary-emphasis" aria-hidden="true" />
+          <Mail className="icon-sm text-primary-accessible" />
           Announcements & newsletter
         </CardTitle>
       </CardHeader>
@@ -68,7 +68,7 @@ export function DashboardNewsletter({
             aria-label="Newsletter email"
           />
           <Button size="sm" className="shrink-0">
-            <ArrowRight className="icon-sm" aria-hidden="true" />
+            <ArrowRight className="icon-sm" />
           </Button>
         </div>
       </CardContent>

@@ -34,23 +34,23 @@ type Startup = {
 
 function StartupCard({ startup }: { startup: Startup }) {
   const statusColors: Record<string, string> = {
-    new: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    reviewing: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    shortlisted: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    passed: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
+    new: 'bg-status-info-bg text-status-info border-status-info-border',
+    reviewing: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    shortlisted: 'bg-status-success-bg text-status-success border-status-success-border',
+    passed: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
   };
 
   return (
     <div className="flex items-center gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors">
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={startup.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
           {startup.name[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/startups/${startup.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
+          <Link href={`/startups/${startup.id}`} className="font-medium hover:text-primary-accessible transition-colors">
             {startup.name}
           </Link>
           <Badge variant="outline" className={cn('text-xs', statusColors[startup.status])}>
@@ -67,8 +67,8 @@ function StartupCard({ startup }: { startup: Startup }) {
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="icon-sm" aria-hidden="true" />
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -156,7 +156,7 @@ function _InvestorDashboardPage_legacy() {
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href="/investor/scouting">
-                <Eye className="mr-2 icon-sm" aria-hidden="true" />
+                <Eye className="mr-2 icon-sm" />
                 Scout Startups
               </Link>
             </Button>
@@ -208,7 +208,7 @@ function _InvestorDashboardPage_legacy() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/investor/pipeline">
                   View All
-                  <ChevronRight className="ml-1 icon-sm" aria-hidden="true" />
+                  <ChevronRight className="ml-1 icon-sm" />
                 </Link>
               </Button>
             </CardHeader>
@@ -230,7 +230,7 @@ function _InvestorDashboardPage_legacy() {
                 {upcomingMeetings.map((meeting) => (
                   <div key={meeting.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <Calendar className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                      <Calendar className="icon-sm text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{meeting.startup}</p>

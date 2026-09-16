@@ -41,17 +41,17 @@ function SeatRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{seat.user.email}</p>
         <p className="text-xs text-muted-foreground">
-          Allocated {new Date(seat.allocatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          Allocated {new Date(seat.allocatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
         </p>
       </div>
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 text-destructive-emphasis hover:text-destructive-emphasis gap-1.5 shrink-0"
+        className="h-7 text-destructive-accessible hover:text-destructive-accessible gap-1.5 shrink-0"
         onClick={() => onRevoke(seat.userId)}
         disabled={revoking}
       >
-        {revoking ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <UserMinus className="h-3.5 w-3.5" aria-hidden="true" />}
+        {revoking ? <Loader2 className="icon-sm animate-spin" /> : <UserMinus className="icon-sm" />}
         Revoke
       </Button>
     </div>
@@ -120,21 +120,19 @@ export default function TenantBillingPage() {
   const seatPct = seatLimit ? Math.round((seatUsage / seatLimit) * 100) : null;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6 max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Organization Billing</h1>
-            <p className="text-sm text-muted-foreground">Manage your organization plan, seats, and billing details.</p>
-          </div>
-          <Button variant="outline" size="sm" className="gap-2" asChild>
-            <Link href="/pricing">
-              View plans
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </Button>
-        </div>
+    <AppShell
+      title="Organization Billing"
+      description="Plan, seats, invoices, and payment methods for your workspace."
+      actions={(
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/pricing">
+            View plans
+            <ChevronRight className="icon-sm" />
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6 max-w-3xl">
 
         {/* Plan Overview */}
         <Card>
@@ -144,14 +142,14 @@ export default function TenantBillingPage() {
           <CardContent className="space-y-4">
             {subLoading ? (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+                <Loader2 className="icon-sm animate-spin" />
                 <span className="text-sm">Loading…</span>
               </div>
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-violet-500/10 shrink-0">
-                    <Building2 className="icon-lg text-violet-500" aria-hidden="true" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-status-accent-bg shrink-0">
+                    <Building2 className="icon-lg text-status-accent" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -164,7 +162,7 @@ export default function TenantBillingPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground capitalize">
-                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
@@ -179,8 +177,8 @@ export default function TenantBillingPage() {
                 </div>
 
                 {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700 dark:text-red-400">
-                    <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
+                  <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
+                    <AlertTriangle className="icon-sm shrink-0" />
                     Payment overdue. Update your payment method to avoid service interruption.
                   </div>
                 )}
@@ -191,14 +189,14 @@ export default function TenantBillingPage() {
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {portalLoading ? <Loader2 className="icon-sm animate-spin" /> : <CreditCard className="icon-sm" />}
                     Manage billing
-                    <ExternalLink className="icon-2xs" aria-hidden="true" />
+                    <ExternalLink className="icon-sm" />
                   </Button>
                   {(sub.plan?.planType === 'team' || sub.plan?.planType === 'organization') && (
                     <Button size="sm" variant="outline" className="gap-2" asChild>
                       <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade Request">
-                        <Crown className="h-3.5 w-3.5" aria-hidden="true" />
+                        <Crown className="icon-sm" />
                         Request enterprise upgrade
                       </a>
                     </Button>
@@ -210,7 +208,7 @@ export default function TenantBillingPage() {
                 <p className="text-sm text-muted-foreground">No active subscription for this organization.</p>
                 <Button size="sm" className="gap-2" asChild>
                   <Link href="/pricing">
-                    <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <Building2 className="icon-sm" />
                     See organization plans
                   </Link>
                 </Button>
@@ -235,9 +233,9 @@ export default function TenantBillingPage() {
                     variant="outline"
                     className={cn(
                       'text-xs',
-                      (seatPct ?? 0) >= 90 ? 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20' :
-                      (seatPct ?? 0) >= 70 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' :
-                      'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+                      (seatPct ?? 0) >= 90 ? 'bg-status-danger-bg text-status-danger border-status-danger-border' :
+                      (seatPct ?? 0) >= 70 ? 'bg-status-warning-bg text-status-warning border-status-warning-border' :
+                      'bg-status-success-bg text-status-success border-status-success-border',
                     )}
                   >
                     {seatPct}% used
@@ -260,8 +258,8 @@ export default function TenantBillingPage() {
               )}
 
               {seatLimit && seatUsage >= seatLimit && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700 dark:text-amber-400">
-                  <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
+                <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
+                  <AlertTriangle className="icon-sm shrink-0" />
                   Seat limit reached. Upgrade your plan or revoke unused seats to add more members.
                 </div>
               )}
@@ -285,7 +283,7 @@ export default function TenantBillingPage() {
 
               {seatLimit && seatUsage < seatLimit && (
                 <div className="pt-1 flex items-center gap-2">
-                  <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
+                  <Users className="icon-sm text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     {seatLimit - seatUsage} seat{seatLimit - seatUsage !== 1 ? 's' : ''} available. Invite team members from the Members page.
                   </span>
@@ -307,7 +305,7 @@ export default function TenantBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" aria-hidden="true" />
+                      <CheckCircle2 className="icon-sm text-status-success shrink-0" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}
@@ -395,7 +393,7 @@ export default function TenantBillingPage() {
                     onClick={() => saveContact()}
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
-                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
+                    {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                     Save contact
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
@@ -410,7 +408,7 @@ export default function TenantBillingPage() {
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                <Shield className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Shield className="icon-md text-primary-accessible" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">Need enterprise features?</p>
@@ -420,7 +418,7 @@ export default function TenantBillingPage() {
               </div>
               <Button size="sm" variant="outline" className="shrink-0 gap-2" asChild>
                 <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade">
-                  <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Mail className="icon-sm" />
                   Contact sales
                 </a>
               </Button>

@@ -3,18 +3,15 @@
 import { useLayoutEffect, useRef } from 'react';
 
 /**
- * Publishes a fixed top banner's measured height as a CSS variable on the root
- * element, so whatever renders below it can offset by however much chrome is
- * actually stacked above.
+ * Publishes a fixed top banner's measured height as a CSS variable on <html>
+ * so the sticky header and content column can offset by the live stack height.
  *
- * The app has two independent `fixed top-0` banners that live in different
- * trees — the network/API notice in the root layout, and the demo bar in
- * AppShell — so neither can know about the other. They rendered on top of each
- * other, and the shell's content column only ever cleared the demo one, which
- * meant an API outage hid the top 56px of every page behind a banner.
+ * Adopted from origin/claude/project-audit-upgrade-y2ebnr (977a87d). Their
+ * line still had a second `fixed` demo bar; ours uses a TopBar badge instead,
+ * so `--banner-demo` stays 0 unless a future surface publishes it.
  *
- * Heights are measured rather than hard-coded because both banners wrap to two
- * lines on a narrow viewport.
+ * Heights are measured rather than hard-coded because the network banner wraps
+ * to two lines on a narrow viewport.
  */
 export function useTopBannerHeight<T extends HTMLElement>(
   varName: string,

@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import {
   Building2, Shield, Plus, Check, X, AlertTriangle,
   Key, Activity, ChevronRight, RefreshCw, Trash2,
@@ -34,12 +37,10 @@ import {
   type SSOAuthEvent,
   type SSODomainMapping,
 } from '@/lib/api';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
-  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30">SSO Required</Badge>;
-  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30">SSO Optional</Badge>;
+  if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border">SSO Required</Badge>;
+  if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border">SSO Optional</Badge>;
   return <Badge variant="secondary">SSO Disabled</Badge>;
 }
 
@@ -68,12 +69,12 @@ export default function SSOAdminPage() {
       description="Configure Single Sign-On for organization tenants"
     >
       {/* Stats row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mb-6">
+      <div className="grid gap-4 lg:grid-cols-4 mb-6">
         {[
-          { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-emphasis' },
-          { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-blue-500' },
-          { label: 'Total Providers', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-violet-500' },
-          { label: 'Events (24h)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-green-500' },
+          { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-accessible' },
+          { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-status-info' },
+          { label: 'Total Providers', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-status-accent' },
+          { label: 'Events (24h)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-status-success' },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label}>
             <CardHeader className="pb-2">
@@ -102,12 +103,12 @@ export default function SSOAdminPage() {
             </div>
           ) : tenantsError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-emphasis" aria-hidden="true" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" />
               <p>Failed to load tenants</p>
             </div>
           ) : !tenants?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <Building2 className="icon-xl mx-auto mb-2" />
               <p className="text-sm">No tenants yet — create one in the Tenants admin page.</p>
             </div>
           ) : (
@@ -138,13 +139,13 @@ export default function SSOAdminPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="icon-md" aria-hidden="true" />
+              <Activity className="icon-md" />
               Recent SSO Auth Events
             </CardTitle>
             <CardDescription>Authentication activity across all tenants (last 20)</CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={() => refetchEvents()} className="gap-2">
-            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+            <RefreshCw className="icon-sm" />
             Refresh
           </Button>
         </CardHeader>
@@ -153,7 +154,7 @@ export default function SSOAdminPage() {
             <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 rounded-lg bg-muted/50 animate-pulse" />)}</div>
           ) : !events?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Activity className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <Activity className="icon-xl mx-auto mb-2" />
               <p className="text-sm">No SSO events yet</p>
             </div>
           ) : (
@@ -180,10 +181,10 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
     >
       <div className="flex items-center gap-4">
         {tenant.logoUrl ? (
-          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
+          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
         ) : (
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
+            <Building2 className="icon-md text-primary-accessible" />
           </div>
         )}
         <div>
@@ -196,7 +197,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
         {config?.identityProvider && (
           <span className="text-xs text-muted-foreground">{config.identityProvider.providerName}</span>
         )}
-        <ChevronRight className="icon-sm text-muted-foreground" aria-hidden="true" />
+        <ChevronRight className="icon-sm text-muted-foreground" />
       </div>
     </div>
   );
@@ -207,15 +208,15 @@ function SSOEventRow({ event }: { event: SSOAuthEvent }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/30 text-sm">
       {isSuccess
-        ? <ShieldCheck className="icon-sm text-green-500 shrink-0" aria-hidden="true" />
-        : <ShieldOff className="icon-sm text-destructive-emphasis shrink-0" aria-hidden="true" />}
+        ? <ShieldCheck className="icon-sm text-status-success shrink-0" />
+        : <ShieldOff className="icon-sm text-destructive-accessible shrink-0" />}
       <div className="flex-1 min-w-0">
         <span className="font-medium">{event.eventType}</span>
         {event.email && <span className="ml-2 text-muted-foreground">{event.email}</span>}
       </div>
       <span className="text-xs text-muted-foreground shrink-0">{event.identityProvider.tenant.name}</span>
-      <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString()}</span>
-      {event.errorMessage && <span className="text-xs text-destructive-emphasis truncate max-w-[160px]">{event.errorMessage}</span>}
+      <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
+      {event.errorMessage && <span className="text-xs text-destructive-accessible truncate max-w-[160px]">{event.errorMessage}</span>}
     </div>
   );
 }
@@ -227,9 +228,22 @@ function SSOConfigPanel({
   tenantName: string;
   onClose: () => void;
 }) {
-  const confirm = useConfirm();
+  const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [saveError, setSaveError] = useState('');
+
+  const confirmDeleteProvider = (p: IdentityProviderItem) =>
+    confirm({
+      title: <BilingualText en={`Delete SSO provider “${p.providerName}”?`} el={`Διαγραφή παρόχου SSO “${p.providerName}”;`} />,
+      description: (
+        <BilingualText
+          en="Members who sign in through this provider will lose that sign-in method. This cannot be undone."
+          el="Τα μέλη που συνδέονται μέσω αυτού του παρόχου θα χάσουν αυτή τη μέθοδο σύνδεσης. Δεν μπορεί να αναιρεθεί."
+        />
+      ),
+      confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+    });
 
   const { data: existingConfig, isLoading: configLoading } = useQuery({
     queryKey: ['admin', 'sso', 'config', tenantId],
@@ -361,26 +375,30 @@ function SSOConfigPanel({
     );
 
   return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <DialogContent
-        size="lg"
-        // The panel's own Card provides the chrome and internal scrolling.
-        showCloseButton={false}
-        className="max-h-[90dvh] overflow-hidden border-0 bg-transparent p-0 shadow-none"
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      {/* `useModalA11y`: focus in on open, Tab trapped, Escape closes,
+          scroll locked, focus returned. This was a bare overlay with a
+          close handler and nothing else a dialog owes a keyboard user. */}
+      <Card
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="SSO configuration"
+        tabIndex={-1}
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-      <Card className="max-h-[90dvh] w-full overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between border-b sticky top-0 bg-card z-10">
           <div>
-            <DialogTitle>SSO — {tenantName}</DialogTitle>
+            <CardTitle>SSO — {tenantName}</CardTitle>
             <CardDescription>Configure providers and authentication policy</CardDescription>
           </div>
-          <Button aria-label="Close SSO configuration" variant="ghost" size="icon" onClick={onClose}><X className="icon-sm" aria-hidden="true" /></Button>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="icon-sm" /></Button>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
           {saveError && (
-            <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-emphasis flex items-center gap-2">
-              <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />{saveError}
+            <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-accessible flex items-center gap-2">
+              <AlertTriangle className="icon-sm shrink-0" />{saveError}
             </div>
           )}
 
@@ -389,7 +407,7 @@ function SSOConfigPanel({
             {(['providers','policy','domains'] as const).map(tab => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors capitalize ${
-                  activeTab === tab ? 'bg-primary/10 text-primary-emphasis font-medium' : 'text-muted-foreground hover:bg-muted/50'
+                  activeTab === tab ? 'bg-primary/10 text-primary-accessible font-medium' : 'text-muted-foreground hover:bg-muted/50'
                 }`}>
                 {tab === 'providers' ? 'Providers' : tab === 'policy' ? 'Policy' : 'Email Domains'}
               </button>
@@ -401,7 +419,7 @@ function SSOConfigPanel({
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Identity Providers</label>
               <Button variant="outline" size="sm" onClick={() => setShowNewProvider(v => !v)} className="gap-2">
-                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 {showNewProvider ? 'Cancel' : 'Add Provider'}
               </Button>
             </div>
@@ -427,21 +445,8 @@ function SSOConfigPanel({
                       <button type="button" onClick={() => toggleActive(p)} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                         {p.isActive ? 'Disable' : 'Enable'}
                       </button>
-                      <button
-                        type="button"
-                        aria-label={`Delete ${p.providerName}`}
-                        onClick={async () => {
-                          const ok = await confirm({
-                            title: `Delete "${p.providerName}"?`,
-                            description: 'Members who sign in through this provider will lose access.',
-                            confirmLabel: 'Delete provider',
-                            intent: 'destructive',
-                          });
-                          if (ok) deleteProviderMut.mutate(p.id);
-                        }}
-                        className="focus-ring rounded text-xs text-destructive-emphasis hover:opacity-70"
-                      >
-                        <Trash2 className="icon-xs" aria-hidden="true" />
+                      <button type="button" onClick={async () => { if (await confirmDeleteProvider(p)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive-accessible hover:opacity-70">
+                        <Trash2 className="icon-sm" />
                       </button>
                     </div>
                   </div>
@@ -456,7 +461,7 @@ function SSOConfigPanel({
                 <div className="grid grid-cols-2 gap-2">
                   {(['oidc', 'saml', 'oauth2'] as const).map(t => (
                     <button key={t} type="button" onClick={() => setProviderType(t)}
-                      className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
+                      className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                       {t === 'oidc' ? 'OpenID Connect' : t === 'saml' ? 'SAML 2.0' : 'OAuth 2.0'}
                     </button>
                   ))}
@@ -515,7 +520,7 @@ function SSOConfigPanel({
                 </div>
                 <div className="flex justify-end">
                   <Button size="sm" onClick={() => createProviderMut.mutate()} disabled={createProviderMut.isPending || !newProvider.providerName} className="gap-2">
-                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                    <Plus className="icon-sm" />
                     {createProviderMut.isPending ? 'Creating…' : 'Create Provider'}
                   </Button>
                 </div>
@@ -532,7 +537,7 @@ function SSOConfigPanel({
               <div className="grid grid-cols-3 gap-2">
                 {([['disabled', 'Disabled', ShieldOff], ['optional', 'Optional', Shield], ['required', 'Required', Lock]] as const).map(([mode, label, Icon]) => (
                   <button key={mode} type="button" onClick={() => setSsoMode(mode)}
-                    className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
+                    className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                     <Icon className="icon-sm" />{label}
                   </button>
                 ))}
@@ -614,7 +619,7 @@ function SSOConfigPanel({
                   Auto-redirect
                 </label>
                 <Button size="sm" onClick={() => addDomainMut.mutate()} disabled={!newDomain.trim() || addDomainMut.isPending} className="gap-1 shrink-0">
-                  <Plus className="h-3.5 w-3.5" aria-hidden="true" />Add
+                  <Plus className="icon-sm" />Add
                 </Button>
               </div>
 
@@ -622,7 +627,7 @@ function SSOConfigPanel({
                 <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-10 rounded-lg bg-muted/50 animate-pulse" />)}</div>
               ) : !domainMappings?.length ? (
                 <div className="p-4 rounded-lg border border-dashed text-center text-sm text-muted-foreground">
-                  <Globe className="icon-lg mx-auto mb-1" aria-hidden="true" />
+                  <Globe className="icon-lg mx-auto mb-1" />
                   No email domains mapped for this tenant
                 </div>
               ) : (
@@ -630,15 +635,15 @@ function SSOConfigPanel({
                   {domainMappings.map((m: SSODomainMapping) => (
                     <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border">
                       <div className="flex items-center gap-2">
-                        <Globe className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                        <Globe className="icon-sm text-muted-foreground" />
                         <span className="text-sm font-medium">@{m.domain}</span>
                         {m.isVerified
-                          ? <span className="text-xs text-green-600 dark:text-green-400">✓ Verified</span>
-                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-emphasis hover:underline">Mark verified</button>}
+                          ? <span className="text-xs text-status-success">✓ Verified</span>
+                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-accessible hover:underline">Mark verified</button>}
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>
-                      <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-emphasis">
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-accessible">
+                        <Trash2 className="icon-sm" />
                       </button>
                     </div>
                   ))}
@@ -658,14 +663,14 @@ function SSOConfigPanel({
                       className="h-8 rounded-md border border-input bg-background px-2 text-xs">
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}
                     </select>
-                    <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-emphasis">
-                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-accessible">
+                      <X className="icon-sm" />
                     </button>
                   </div>
                 ))}
                 <button type="button" onClick={() => setRoleMappingRules(r => [...r, {claim:'',value:'',role:'member'}])}
-                  className="text-xs text-primary-emphasis hover:underline flex items-center gap-1">
-                  <Plus className="icon-sm" aria-hidden="true" />Add rule
+                  className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
+                  <Plus className="icon-sm" />Add rule
                 </button>
               </div>
             </div>
@@ -673,14 +678,13 @@ function SSOConfigPanel({
 
           <div className="flex justify-end gap-3 pt-2 border-t">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={() => configMut.mutate()} loading={configMut.isPending} loadingText="Saving SSO configuration" className="gap-2">
-              <Check className="icon-sm" aria-hidden="true" />
-              Save SSO Config
+            <Button onClick={() => configMut.mutate()} disabled={configMut.isPending} className="gap-2">
+              <Check className="icon-sm" />
+              {configMut.isPending ? 'Saving…' : 'Save SSO Config'}
             </Button>
           </div>
         </CardContent>
       </Card>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }

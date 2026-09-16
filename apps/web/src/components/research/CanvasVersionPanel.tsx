@@ -52,6 +52,8 @@ import {
   type CanvasDiff,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { LocalTime } from '@/components/common/LocalTime';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -108,20 +110,20 @@ function timeAgo(iso: string) {
 
 function triggerMeta(type: string) {
   switch (type) {
-    case 'checkpoint':    return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-green-600 bg-green-50 border-green-200' };
-    case 'autosave':      return { label: 'Autosave',   icon: Zap,          color: 'text-blue-500 bg-blue-50 border-blue-200' };
-    case 'restore':       return { label: 'Restore',    icon: RotateCcw,    color: 'text-orange-600 bg-orange-50 border-orange-200' };
-    case 'branch_create': return { label: 'Fork',       icon: GitBranch,    color: 'text-violet-600 bg-violet-50 border-violet-200' };
-    case 'post_merge':    return { label: 'Merge',      icon: GitBranch,    color: 'text-teal-600 bg-teal-50 border-teal-200' };
-    case 'pre_merge':     return { label: 'Pre-merge',  icon: GitBranch,    color: 'text-amber-600 bg-amber-50 border-amber-200' };
-    default:              return { label: 'Manual',     icon: Camera,       color: 'text-purple-600 bg-purple-50 border-purple-200' };
+    case 'checkpoint':    return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-status-success bg-status-success-bg border-status-success-border' };
+    case 'autosave':      return { label: 'Autosave',   icon: Zap,          color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    case 'restore':       return { label: 'Restore',    icon: RotateCcw,    color: 'text-status-warning bg-status-warning-bg border-status-warning-border' };
+    case 'branch_create': return { label: 'Fork',       icon: GitBranch,    color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
+    case 'post_merge':    return { label: 'Merge',      icon: GitBranch,    color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    case 'pre_merge':     return { label: 'Pre-merge',  icon: GitBranch,    color: 'text-status-warning bg-status-warning-bg border-status-warning-border' };
+    default:              return { label: 'Manual',     icon: Camera,       color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
   }
 }
 
 function branchStatusColor(status: string) {
   switch (status) {
-    case 'active':   return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200';
-    case 'merged':   return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-200';
+    case 'active':   return 'bg-status-success/15 text-status-success border-status-success-border';
+    case 'merged':   return 'bg-status-accent/15 text-status-accent border-status-accent-border';
     case 'archived': return 'bg-muted text-muted-foreground border-border';
     default:         return 'bg-muted text-muted-foreground border-border';
   }
@@ -134,23 +136,23 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <Plus className="h-2.5 w-2.5" aria-hidden="true" />{diff.added.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success border border-status-success-border">
+          <Plus className="h-2.5 w-2.5" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-          <Minus className="h-2.5 w-2.5" aria-hidden="true" />{diff.removed.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger border border-status-danger-border">
+          <Minus className="h-2.5 w-2.5" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-          <Edit2 className="h-2.5 w-2.5" aria-hidden="true" />{diff.modified.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning border border-status-warning-border">
+          <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-          <Move className="h-2.5 w-2.5" aria-hidden="true" />{diff.moved.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info border border-status-info-border">
+          <Move className="h-2.5 w-2.5" />{diff.moved.length}
         </span>
       )}
     </div>
@@ -173,7 +175,7 @@ function DiffDetailDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <GitCommit className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <GitCommit className="icon-sm text-primary-accessible" />
             Diff: {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -188,11 +190,11 @@ function DiffDetailDialog({
 
           {diff.added.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide flex items-center gap-1">
-                <Plus className="icon-2xs" aria-hidden="true" /> Added ({diff.added.length})
+              <p className="text-xs font-semibold text-status-success uppercase tracking-wide flex items-center gap-1">
+                <Plus className="icon-sm" /> Added ({diff.added.length})
               </p>
               {diff.added.map((n) => (
-                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-emerald-50 border border-emerald-100">
+                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-success-bg border border-status-success-border">
                   <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                 </div>
@@ -202,11 +204,11 @@ function DiffDetailDialog({
 
           {diff.removed.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide flex items-center gap-1">
-                <Minus className="icon-2xs" aria-hidden="true" /> Removed ({diff.removed.length})
+              <p className="text-xs font-semibold text-status-danger uppercase tracking-wide flex items-center gap-1">
+                <Minus className="icon-sm" /> Removed ({diff.removed.length})
               </p>
               {diff.removed.map((n) => (
-                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-red-50 border border-red-100">
+                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-danger-bg border border-status-danger-border">
                   <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate line-through text-muted-foreground">{n.title ?? '(untitled)'}</span>
                 </div>
@@ -216,11 +218,11 @@ function DiffDetailDialog({
 
           {diff.modified.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1">
-                <Edit2 className="icon-2xs" aria-hidden="true" /> Modified ({diff.modified.length})
+              <p className="text-xs font-semibold text-status-warning uppercase tracking-wide flex items-center gap-1">
+                <Edit2 className="icon-sm" /> Modified ({diff.modified.length})
               </p>
               {diff.modified.map((n) => (
-                <div key={n.id} className="p-1.5 rounded bg-amber-50 border border-amber-100 space-y-0.5">
+                <div key={n.id} className="p-1.5 rounded bg-status-warning-bg border border-status-warning-border space-y-0.5">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                     <span className="text-xs font-medium truncate">{n.title ?? '(untitled)'}</span>
@@ -240,11 +242,11 @@ function DiffDetailDialog({
 
           {diff.moved.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide flex items-center gap-1">
-                <Move className="icon-2xs" aria-hidden="true" /> Moved ({diff.moved.length})
+              <p className="text-xs font-semibold text-status-info uppercase tracking-wide flex items-center gap-1">
+                <Move className="icon-sm" /> Moved ({diff.moved.length})
               </p>
               {diff.moved.map((n) => (
-                <div key={n.id} className="p-1.5 rounded bg-blue-50 border border-blue-100">
+                <div key={n.id} className="p-1.5 rounded bg-status-info-bg border border-status-info-border">
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                   <div className="text-2xs text-muted-foreground">
                     ({Math.round(n.before.posX)}, {Math.round(n.before.posY)}) → ({Math.round(n.after.posX)}, {Math.round(n.after.posY)})
@@ -257,15 +259,15 @@ function DiffDetailDialog({
           {(diff.edgeDiff.added.length > 0 || diff.edgeDiff.removed.length > 0) && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1">
-                <ArrowRight className="icon-2xs" aria-hidden="true" /> Edges
+                <ArrowRight className="icon-sm" /> Edges
               </p>
               {diff.edgeDiff.added.map((e) => (
-                <div key={e.id} className="text-2xs p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-status-success-bg border border-status-success-border text-status-success">
                   + edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
               {diff.edgeDiff.removed.map((e) => (
-                <div key={e.id} className="text-2xs p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-status-danger-bg border border-status-danger-border text-status-danger">
                   − edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
@@ -297,7 +299,7 @@ function RestoreConfirmDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="icon-sm text-amber-500" aria-hidden="true" />
+            <AlertTriangle className="icon-sm text-status-warning" />
             Restore canvas?
           </DialogTitle>
           <DialogDescription className="text-sm">
@@ -308,7 +310,7 @@ function RestoreConfirmDialog({
         <DialogFooter className="flex gap-2 justify-end">
           <Button variant="outline" size="sm" onClick={onClose} disabled={isPending}>Cancel</Button>
           <Button variant="destructive" size="sm" onClick={onConfirm} disabled={isPending}>
-            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" aria-hidden="true" /> : <RotateCcw className="h-3.5 w-3.5 mr-1" aria-hidden="true" />}
+            {isPending ? <Loader2 className="icon-sm animate-spin mr-1" /> : <RotateCcw className="icon-sm mr-1" />}
             Restore
           </Button>
         </DialogFooter>
@@ -329,11 +331,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
   const [restoring, setRestoring] = useState(false);
   const [previewData, setPreviewData] = useState<BoardSnapshotFull | null>(null);
   const [previewDiff, setPreviewDiff] = useState<CanvasDiff | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['snapshots', boardId],
     queryFn: () => listSnapshots(boardId),
-    refetchInterval: 60_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const snapshots: BoardSnapshot[] = data ?? [];
@@ -376,9 +382,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
 
   const grouped: Record<string, BoardSnapshot[]> = {};
   for (const snap of snapshots) {
-    const dateKey = new Date(snap.createdAt).toLocaleDateString(undefined, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
+    const dateKey = new Date(snap.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     if (!grouped[dateKey]) grouped[dateKey] = [];
     grouped[dateKey].push(snap);
   }
@@ -397,7 +401,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Camera className="h-3.5 w-3.5" aria-hidden="true" />}
+            {creating ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">Captures all nodes and connectors.</p>
@@ -406,7 +410,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
       {/* Refresh */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
         </Button>
       </div>
 
@@ -416,7 +420,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
         ) : snapshots.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <History className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
+            <History className="icon-xl mx-auto mb-2 opacity-30" />
             <p className="text-sm">No snapshots yet</p>
             <p className="text-xs mt-1">Save your first snapshot to track history.</p>
           </div>
@@ -430,12 +434,12 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                 return (
                   <div key={snap.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
                     <div className={cn('h-7 w-7 rounded-full flex items-center justify-center shrink-0 border', meta.color)}>
-                      <Icon className="h-3.5 w-3.5" />
+                      <Icon className="icon-sm" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{snap.label ?? 'Snapshot'}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-muted-foreground">{new Date(snap.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <LocalTime value={snap.createdAt} className="text-xs text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">·</span>
                         <span className="text-xs text-muted-foreground">{snap.nodeCount} node{snap.nodeCount !== 1 ? 's' : ''}</span>
                         {snap.createdBy && (
@@ -454,10 +458,10 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="Preview" onClick={() => handlePreview(snap)}>
-                        <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                        <Eye className="icon-sm" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700 dark:text-amber-400" title="Restore" onClick={() => setRestoreTarget(snap)}>
-                        <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(snap)}>
+                        <RotateCcw className="icon-sm" />
                       </Button>
                     </div>
                   </div>
@@ -474,15 +478,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
-                <History className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                <History className="icon-sm text-primary-accessible" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
             </DialogHeader>
             <div className="py-2 space-y-3">
               <div className="flex gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" aria-hidden="true" />{previewData.nodeCount} nodes</span>
+                <span className="flex items-center gap-1.5"><Layers className="icon-sm" />{previewData.nodeCount} nodes</span>
                 {Array.isArray(previewData.connectors) && (
-                  <span className="flex items-center gap-1.5"><ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />{(previewData.connectors as unknown[]).length} connectors</span>
+                  <span className="flex items-center gap-1.5"><ChevronRight className="icon-sm" />{(previewData.connectors as unknown[]).length} connectors</span>
                 )}
               </div>
               {Array.isArray(previewData.nodeData) && previewData.nodeData.length > 0 && (
@@ -501,7 +505,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             <DialogFooter className="gap-2">
               <Button variant="outline" size="sm" onClick={() => { setPreviewId(null); setPreviewData(null); }}>Close</Button>
               <Button variant="default" size="sm" onClick={() => { setRestoreTarget(snapshots.find((s) => s.id === previewId) ?? null); setPreviewId(null); setPreviewData(null); }}>
-                <RotateCcw className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> Restore this
+                <RotateCcw className="icon-sm mr-1" /> Restore this
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -529,11 +533,15 @@ function VersionsTab({ boardId }: { boardId: string }) {
   const [diffVersion, setDiffVersion] = useState<CanvasVersion | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<CanvasVersion | null>(null);
   const [restoring, setRestoring] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['canvas-versions', boardId],
     queryFn: () => listCanvasVersions(boardId),
-    refetchInterval: 90_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(90_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const versions: CanvasVersion[] = data ?? [];
@@ -582,7 +590,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <GitCommit className="h-3.5 w-3.5" aria-hidden="true" />}
+            {creating ? <Loader2 className="icon-sm animate-spin" /> : <GitCommit className="icon-sm" />}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">Records a diff-tracked version with change summary.</p>
@@ -590,7 +598,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
         </Button>
       </div>
 
@@ -599,7 +607,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
         ) : versions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <GitCommit className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
+            <GitCommit className="icon-xl mx-auto mb-2 opacity-30" />
             <p className="text-sm">No versions yet</p>
             <p className="text-xs mt-1">Commit your first version to track diffs.</p>
           </div>
@@ -609,14 +617,14 @@ function VersionsTab({ boardId }: { boardId: string }) {
           return (
             <div key={v.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
               <div className={cn('h-7 w-7 rounded-full flex items-center justify-center shrink-0 border', meta.color)}>
-                <Icon className="h-3.5 w-3.5" />
+                <Icon className="icon-sm" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium truncate">{v.label ?? 'Version'}</p>
                   {v.branchName && (
                     <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0">
-                      <GitBranch className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />{v.branchName}
+                      <GitBranch className="h-2.5 w-2.5 mr-0.5" />{v.branchName}
                     </Badge>
                   )}
                 </div>
@@ -639,11 +647,11 @@ function VersionsTab({ boardId }: { boardId: string }) {
               <div className="flex items-center gap-1 shrink-0">
                 {v.diffData && !v.diffData.isEmpty && (
                   <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="View diff" onClick={() => setDiffVersion(v)}>
-                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                    <Eye className="icon-sm" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700 dark:text-amber-400" title="Restore" onClick={() => setRestoreTarget(v)}>
-                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(v)}>
+                  <RotateCcw className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -682,11 +690,15 @@ function BranchesTab({ boardId }: { boardId: string }) {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['canvas-branches', boardId],
     queryFn: () => listCanvasBranches(boardId),
-    refetchInterval: 60_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const branches: CanvasBranch[] = data ?? [];
@@ -730,7 +742,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">Manage isolated canvas branches</p>
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="icon-2xs" aria-hidden="true" />New
+          <Plus className="icon-sm" />New
         </Button>
       </div>
 
@@ -752,7 +764,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowCreate(false); setName(''); setDesc(''); }}>Cancel</Button>
             <Button size="sm" className="h-7 text-xs" onClick={handleCreate} disabled={creating || !name.trim()}>
-              {creating ? <Loader2 className="icon-2xs animate-spin mr-1" aria-hidden="true" /> : <GitBranch className="icon-2xs mr-1" aria-hidden="true" />}
+              {creating ? <Loader2 className="icon-sm animate-spin mr-1" /> : <GitBranch className="icon-sm mr-1" />}
               Create
             </Button>
           </div>
@@ -761,7 +773,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
         </Button>
       </div>
 
@@ -770,14 +782,14 @@ function BranchesTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}</div>
         ) : branches.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <GitBranch className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
+            <GitBranch className="icon-xl mx-auto mb-2 opacity-30" />
             <p className="text-sm">No branches yet</p>
             <p className="text-xs mt-1">Create a branch to experiment safely.</p>
           </div>
         ) : branches.map((b) => (
           <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
-            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-violet-50 border-violet-200 text-violet-600">
-              <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
+            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-status-accent-bg border-status-accent-border text-status-accent">
+              <GitBranch className="icon-sm" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
@@ -808,16 +820,16 @@ function BranchesTab({ boardId }: { boardId: string }) {
                     disabled={archiveMutation.isPending}
                     onClick={() => archiveMutation.mutate({ branchId: b.id })}
                   >
-                    <Archive className="h-3.5 w-3.5" aria-hidden="true" />
+                    <Archive className="icon-sm" />
                   </Button>
                 )}
                 <Button
                   variant="ghost" size="sm"
-                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive-emphasis hover:text-destructive-emphasis"
+                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive-accessible hover:text-destructive-accessible"
                   title="Delete"
                   onClick={() => setDeletingId(b.id)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Trash2 className="icon-sm" />
                 </Button>
               </div>
             )}
@@ -829,7 +841,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="icon-sm text-destructive-emphasis" aria-hidden="true" />Delete branch?
+              <AlertTriangle className="icon-sm text-destructive-accessible" />Delete branch?
             </DialogTitle>
             <DialogDescription className="text-sm">
               All versions on this branch will be deleted. This cannot be undone.
@@ -842,7 +854,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
               disabled={deleteMutation.isPending}
               onClick={() => deletingId && deleteMutation.mutate({ branchId: deletingId })}
             >
-              {deleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />}
+              {deleteMutation.isPending ? <Loader2 className="icon-sm animate-spin mr-1" /> : <Trash2 className="icon-sm mr-1" />}
               Delete
             </Button>
           </DialogFooter>
@@ -867,7 +879,7 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
         <SheetHeader className="px-4 pt-4 pb-3 border-b border-border/60">
           <SheetTitle className="flex items-center gap-2 text-base">
-            <History className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <History className="icon-sm text-primary-accessible" />
             Canvas History
           </SheetTitle>
           <SheetDescription className="text-xs">
@@ -878,13 +890,13 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
         <Tabs defaultValue="snapshots" className="flex flex-col flex-1 overflow-hidden px-4 pt-3">
           <TabsList className="grid grid-cols-3 h-8 mb-3 shrink-0">
             <TabsTrigger value="snapshots" className="text-xs flex items-center gap-1">
-              <Camera className="icon-2xs" aria-hidden="true" />Snapshots
+              <Camera className="icon-sm" />Snapshots
             </TabsTrigger>
             <TabsTrigger value="versions" className="text-xs flex items-center gap-1">
-              <GitCommit className="icon-2xs" aria-hidden="true" />Versions
+              <GitCommit className="icon-sm" />Versions
             </TabsTrigger>
             <TabsTrigger value="branches" className="text-xs flex items-center gap-1">
-              <GitBranch className="icon-2xs" aria-hidden="true" />Branches
+              <GitBranch className="icon-sm" />Branches
             </TabsTrigger>
           </TabsList>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getNativeWebSocketOrigin } from '@/lib/api-origin';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bell,
@@ -30,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { listNotifications, markNotificationRead, markAllNotificationsRead, type NotificationItem } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // Use NotificationItem from @/lib/api
 
@@ -45,14 +47,14 @@ const NOTIFICATION_ICONS = {
 };
 
 const NOTIFICATION_COLORS = {
-  message: 'text-blue-500',
-  connection: 'text-green-500',
-  like: 'text-red-500',
-  comment: 'text-purple-500',
-  event: 'text-orange-500',
-  job: 'text-cyan-500',
-  achievement: 'text-yellow-500',
-  system: 'text-gray-500',
+  message: 'text-status-info',
+  connection: 'text-status-success',
+  like: 'text-status-danger',
+  comment: 'text-status-accent',
+  event: 'text-status-warning',
+  job: 'text-status-info',
+  achievement: 'text-status-warning',
+  system: 'text-muted-foreground',
 };
 
 function NotificationRow({
@@ -83,7 +85,7 @@ function NotificationRow({
       }}
     >
       <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || NOTIFICATION_COLORS.system)}>
-        <Icon className="h-4 w-4" />
+        <Icon className="icon-sm" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -109,7 +111,7 @@ function NotificationRow({
                   onMarkAsRead(notification.id);
                 }}
               >
-                <Check className="icon-2xs" aria-hidden="true" />
+                <Check className="icon-sm" />
               </Button>
             )}
             <Button
@@ -121,7 +123,7 @@ function NotificationRow({
                 onDelete(notification.id);
               }}
             >
-              <X className="icon-2xs" aria-hidden="true" />
+              <X className="icon-sm" />
             </Button>
           </div>
         </div>
@@ -137,7 +139,7 @@ function getTimeAgo(date: string | Date): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(date).toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 export function NotificationCenter() {
@@ -145,6 +147,7 @@ export function NotificationCenter() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const queryClient = useQueryClient();
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', filter, categoryFilter],
@@ -163,7 +166,10 @@ export function NotificationCenter() {
       }
       return items;
     },
-    refetchInterval: 30000,
+    enabled: apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const markAsReadMutation = useMutation({
@@ -197,26 +203,26 @@ export function NotificationCenter() {
   const unreadCount = notifications.filter((n: NotificationItem) => n.readAt === null).length;
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'WebSocket' in window) {
-      const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
-      
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'notification') {
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
-          
-          if (Notification.permission === 'granted') {
-            new Notification(data.title, {
-              body: data.message,
-              icon: '/logo.png',
-            });
-          }
-        }
-      };
+    if (!apiAvailable || typeof window === 'undefined' || !('WebSocket' in window)) return;
 
-      return () => ws.close();
-    }
-  }, [queryClient]);
+    const ws = new WebSocket(getNativeWebSocketOrigin());
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'notification') {
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+        if (Notification.permission === 'granted') {
+          new Notification(data.title, {
+            body: data.message,
+            icon: '/logo.png',
+          });
+        }
+      }
+    };
+
+    return () => ws.close();
+  }, [queryClient, apiAvailable]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
@@ -235,8 +241,8 @@ export function NotificationCenter() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Notifications" variant="ghost" size="icon" className="relative">
-          <Bell className="icon-md" aria-hidden="true" />
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="icon-md" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -259,11 +265,11 @@ export function NotificationCenter() {
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={unreadCount === 0}
               >
-                <CheckCheck className="icon-sm mr-1" aria-hidden="true" />
+                <CheckCheck className="icon-sm mr-1" />
                 Mark all read
               </Button>
-              <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Settings className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -289,7 +295,7 @@ export function NotificationCenter() {
                   className="cursor-pointer gap-1"
                   onClick={() => setCategoryFilter(category.value)}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="icon-sm" />
                   {category.label}
                 </Badge>
               );

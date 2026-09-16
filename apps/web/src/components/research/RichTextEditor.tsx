@@ -38,7 +38,7 @@ export function RichTextEditor({
   const handleInput = useCallback(() => {
     if (editorRef.current) {
       const html = editorRef.current.innerHTML;
-      const textContent = editorRef.current.textContent || '';
+      const textContent = editorRef.current?.textContent || '';
       setIsEmpty(!textContent.trim());
       onChange(html);
     }
@@ -101,14 +101,17 @@ export function RichTextEditor({
       title={title}
       className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
     >
-      {Icon ? <Icon className="w-3.5 h-3.5" /> : children}
+      {Icon ? <Icon className="icon-sm" /> : children}
     </button>
   );
 
   if (readOnly) {
     return (
       <SanitizedHtml
-        className={cn('prose prose-sm dark:prose-invert max-w-none p-4', className)}
+        className={cn(
+          'prose prose-sm dark:prose-invert max-w-none p-4',
+          className
+        )}
         html={content}
       />
     );
@@ -163,7 +166,7 @@ export function RichTextEditor({
             '[&_p]:mb-2 [&_p]:leading-relaxed',
             '[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3',
             '[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3',
-            '[&_a]:text-primary-emphasis [&_a]:underline [&_a]:underline-offset-2',
+            '[&_a]:text-primary-accessible [&_a]:underline [&_a]:underline-offset-2',
             '[&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-3',
             '[&_pre]:bg-secondary [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:my-3 [&_pre]:overflow-x-auto',
             '[&_code]:bg-secondary [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm',

@@ -12,6 +12,7 @@ import {
   deleteNodeComment,
   type ResearchComment,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { formatDistanceToNow } from 'date-fns';
 
 interface CommentsPanelProps {
@@ -39,7 +40,7 @@ function CommentBubble({
         {comment.authorAvatar ? (
           <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
         ) : (
-          <span className="text-2xs font-semibold text-primary-emphasis">
+          <span className="text-2xs font-semibold text-primary-accessible">
             {(comment.authorName ?? 'U')[0].toUpperCase()}
           </span>
         )}
@@ -71,19 +72,19 @@ function CommentBubble({
           {!comment.resolved && (
             <button
               onClick={() => onResolve(comment.id)}
-              className="p-0.5 rounded text-muted-foreground hover:text-green-500 transition-colors"
+              className="p-0.5 rounded text-muted-foreground hover:text-status-success transition-colors"
               title="Mark as resolved"
             >
-              <Check className="icon-2xs" aria-hidden="true" />
+              <Check className="icon-sm" />
             </button>
           )}
           {isOwn && (
             <button
               onClick={() => onDelete(comment.id)}
-              className="p-0.5 rounded text-muted-foreground hover:text-destructive-emphasis transition-colors"
+              className="p-0.5 rounded text-muted-foreground hover:text-destructive-accessible transition-colors"
               title="Delete comment"
             >
-              <Trash2 className="icon-2xs" aria-hidden="true" />
+              <Trash2 className="icon-sm" />
             </button>
           )}
         </div>
@@ -96,11 +97,15 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState('');
   const [showResolved, setShowResolved] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
     queryKey: ['node-comments', nodeId],
     queryFn: () => listNodeComments(nodeId),
-    refetchInterval: 15000,
+    enabled: apiAvailable && !!nodeId,
+    refetchInterval: pollInterval(15_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const createMutation = useMutation({
@@ -137,12 +142,12 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <MessageCircle className="icon-sm text-primary-emphasis" aria-hidden="true" />
+          <MessageCircle className="icon-sm text-primary-accessible" />
           <span className="text-sm font-semibold truncate max-w-[180px]">
             {nodeTitle ? `Comments: ${nodeTitle}` : 'Comments'}
           </span>
           {active.length > 0 && (
-            <span className="text-xs bg-primary/15 text-primary-emphasis px-1.5 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-primary/15 text-primary-accessible px-1.5 py-0.5 rounded-full font-medium">
               {active.length}
             </span>
           )}
@@ -157,7 +162,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
             </button>
           )}
           <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
-            <X className="icon-sm" aria-hidden="true" />
+            <X className="icon-sm" />
           </Button>
         </div>
       </div>
@@ -166,11 +171,11 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0" style={{ maxHeight: '360px' }}>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" />
+            <Loader2 className="icon-md animate-spin text-muted-foreground" />
           </div>
         ) : displayed.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <MessageCircle className="icon-xl text-muted-foreground/40 mb-2" aria-hidden="true" />
+            <MessageCircle className="icon-xl text-muted-foreground/40 mb-2" />
             <p className="text-sm text-muted-foreground">No comments yet</p>
             <p className="text-xs text-muted-foreground/60 mt-1">Start the conversation below</p>
           </div>
@@ -211,8 +216,8 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
             className="h-9 w-9 p-0 shrink-0"
           >
             {createMutation.isPending
-              ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
-              : <Send className="icon-sm" aria-hidden="true" />
+              ? <Loader2 className="icon-sm animate-spin" />
+              : <Send className="icon-sm" />
             }
           </Button>
         </div>

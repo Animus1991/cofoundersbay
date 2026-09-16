@@ -13,6 +13,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "dev:web": "npm run dev --prefix apps/web",
+    "dev:stack": "node ./scripts/dev-stack.cjs",
+    "dev:deps": "node ./scripts/ensure-dev-deps.cjs",
     "dev:api": "node ./scripts/dev-api.cjs",
     "dev:api:fast": "node ./scripts/dev-api.cjs",
     "dev:api:setup": "node ./scripts/dev-api.cjs --force-db",

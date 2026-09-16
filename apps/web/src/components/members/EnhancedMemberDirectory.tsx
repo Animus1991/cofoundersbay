@@ -149,14 +149,14 @@ export function EnhancedMemberDirectory() {
             size="icon"
             onClick={() => setViewMode('grid')}
           >
-            <Grid className="icon-sm" aria-hidden="true" />
+            <Grid className="icon-sm" />
           </Button>
           <Button aria-label="List view"
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="icon"
             onClick={() => setViewMode('list')}
           >
-            <List className="icon-sm" aria-hidden="true" />
+            <List className="icon-sm" />
           </Button>
         </div>
       </div>
@@ -165,7 +165,7 @@ export function EnhancedMemberDirectory() {
       <div className="flex flex-col gap-4">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search by name, skills, or industry..."
               value={searchQuery}
@@ -178,7 +178,7 @@ export function EnhancedMemberDirectory() {
             onClick={() => setShowFilters(!showFilters)}
             className="gap-2"
           >
-            <SlidersHorizontal className="icon-sm" aria-hidden="true" />
+            <SlidersHorizontal className="icon-sm" />
             Filters
             {Object.values(filters).filter(v => v !== 'all' && v !== false).length > 0 && (
               <Badge variant="secondary" className="ml-1">
@@ -339,7 +339,7 @@ export function EnhancedMemberDirectory() {
                   )}
                   {member.verified && (
                     <span className="absolute -top-1 -right-1 h-6 w-6 bg-primary rounded-full flex items-center justify-center">
-                      <Award className="icon-2xs text-primary-foreground" aria-hidden="true" />
+                      <Award className="icon-sm text-primary-foreground" />
                     </span>
                   )}
                 </div>
@@ -350,7 +350,7 @@ export function EnhancedMemberDirectory() {
                       <h3 className="font-semibold">{member.name}</h3>
                       {member.matchScore && (
                         <Badge variant="secondary" className="gap-1">
-                          <Star className="icon-2xs fill-current" aria-hidden="true" />
+                          <Star className="icon-sm fill-current" />
                           {member.matchScore}%
                         </Badge>
                       )}
@@ -366,15 +366,15 @@ export function EnhancedMemberDirectory() {
 
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="icon-2xs" aria-hidden="true" />
+                      <MapPin className="icon-sm" />
                       {member.location}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="icon-2xs" aria-hidden="true" />
+                      <Users className="icon-sm" />
                       {member.connections} connections
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Briefcase className="icon-2xs" aria-hidden="true" />
+                      <Briefcase className="icon-sm" />
                       {member.experience}
                     </div>
                   </div>
@@ -405,11 +405,11 @@ export function EnhancedMemberDirectory() {
 
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" className="flex-1 gap-2">
-                      <UserPlus className="icon-sm" aria-hidden="true" />
+                      <UserPlus className="icon-sm" />
                       Connect
                     </Button>
                     <Button size="sm" variant="outline" className="gap-2">
-                      <MessageSquare className="icon-sm" aria-hidden="true" />
+                      <MessageSquare className="icon-sm" />
                       Message
                     </Button>
                   </div>
@@ -425,7 +425,7 @@ export function EnhancedMemberDirectory() {
         <Card className="p-12">
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-              <Users className="icon-xl text-muted-foreground" aria-hidden="true" />
+              <Users className="icon-xl text-muted-foreground" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">No members found</h3>

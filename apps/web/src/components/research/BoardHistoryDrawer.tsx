@@ -30,6 +30,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { LocalTime } from '@/components/common/LocalTime';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -95,9 +97,9 @@ function timeAgo(iso: string) {
 
 function triggerMeta(type: string) {
   switch (type) {
-    case 'checkpoint': return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-green-600 bg-green-50 border-green-200' };
-    case 'autosave':   return { label: 'Autosave',   icon: Zap,         color: 'text-blue-500 bg-blue-50 border-blue-200' };
-    default:           return { label: 'Manual',     icon: Camera,      color: 'text-purple-600 bg-purple-50 border-purple-200' };
+    case 'checkpoint': return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-status-success bg-status-success-bg border-status-success-border' };
+    case 'autosave':   return { label: 'Autosave',   icon: Zap,         color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    default:           return { label: 'Manual',     icon: Camera,      color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
   }
 }
 
@@ -122,8 +124,8 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <History className="icon-sm text-primary-emphasis" aria-hidden="true" />
-            {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString()}`}
+            <History className="icon-sm text-primary-accessible" />
+            {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
           </DialogTitle>
           <DialogDescription>
             {snapshot.nodeCount} nodes · saved {timeAgo(snapshot.createdAt)}
@@ -141,12 +143,12 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
           <div className="py-2 space-y-3">
             <div className="flex gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5" aria-hidden="true" />
+                <Layers className="icon-sm" />
                 {data.nodeCount} nodes
               </span>
               {Array.isArray(data.connectors) && (
                 <span className="flex items-center gap-1.5">
-                  <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  <ChevronRight className="icon-sm" />
                   {(data.connectors as unknown[]).length} connectors
                 </span>
               )}
@@ -204,12 +206,15 @@ export function BoardHistoryDrawer({
   const [snapshotLabel, setSnapshotLabel] = useState('');
   const [previewSnapshot, setPreviewSnapshot] = useState<BoardSnapshot | null>(null);
   const [creatingSnapshot, setCreatingSnapshot] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['snapshots', boardId],
     queryFn: () => listSnapshots(boardId),
-    enabled: open && !!boardId,
-    refetchInterval: 60_000,
+    enabled: open && !!boardId && apiAvailable,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const snapshots: BoardSnapshot[] = data ?? [];
@@ -231,9 +236,7 @@ export function BoardHistoryDrawer({
   // Group snapshots by date
   const grouped: Record<string, BoardSnapshot[]> = {};
   for (const snap of snapshots) {
-    const dateKey = new Date(snap.createdAt).toLocaleDateString(undefined, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
+    const dateKey = new Date(snap.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     if (!grouped[dateKey]) grouped[dateKey] = [];
     grouped[dateKey].push(snap);
   }
@@ -244,7 +247,7 @@ export function BoardHistoryDrawer({
         <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <History className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <History className="icon-sm text-primary-accessible" />
               Canvas History
             </SheetTitle>
             <SheetDescription>
@@ -270,8 +273,8 @@ export function BoardHistoryDrawer({
                 disabled={creatingSnapshot}
               >
                 {creatingSnapshot
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                  : <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                  ? <Loader2 className="icon-sm animate-spin" />
+                  : <Camera className="icon-sm" />
                 }
               </Button>
             </div>
@@ -289,7 +292,7 @@ export function BoardHistoryDrawer({
               onClick={() => refetch()}
               disabled={isFetching}
             >
-              <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />
+              <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />
               Refresh
             </Button>
           </div>
@@ -302,7 +305,7 @@ export function BoardHistoryDrawer({
               </div>
             ) : snapshots.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <History className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
+                <History className="icon-xl mx-auto mb-2 opacity-30" />
                 <p className="text-sm">No snapshots yet</p>
                 <p className="text-xs mt-1">Save your first snapshot to start tracking history.</p>
               </div>
@@ -325,7 +328,7 @@ export function BoardHistoryDrawer({
                           'h-7 w-7 rounded-full flex items-center justify-center shrink-0 border',
                           meta.color,
                         )}>
-                          <Icon className="h-3.5 w-3.5" />
+                          <Icon className="icon-sm" />
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -333,9 +336,10 @@ export function BoardHistoryDrawer({
                             {snap.label ?? `Snapshot`}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(snap.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <LocalTime
+                              value={snap.createdAt}
+                              className="text-xs text-muted-foreground"
+                            />
                             <span className="text-xs text-muted-foreground">·</span>
                             <span className="text-xs text-muted-foreground">
                               {snap.nodeCount} node{snap.nodeCount !== 1 ? 's' : ''}
@@ -365,7 +369,7 @@ export function BoardHistoryDrawer({
                           className="h-7 w-7 p-0 shrink-0 opacity-60 hover:opacity-100"
                           onClick={(e) => { e.stopPropagation(); setPreviewSnapshot(snap); }}
                         >
-                          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                          <Eye className="icon-sm" />
                         </Button>
                       </div>
                     );

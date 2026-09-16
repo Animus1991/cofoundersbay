@@ -90,7 +90,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
           </p>
         </div>
         <Button onClick={addField} size="sm">
-          <Plus className="icon-sm mr-2" aria-hidden="true" />
+          <Plus className="icon-sm mr-2" />
           Add Field
         </Button>
       </div>
@@ -114,7 +114,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="cursor-move mt-2">
-                    <GripVertical className="icon-md text-muted-foreground" aria-hidden="true" />
+                    <GripVertical className="icon-md text-muted-foreground" />
                   </div>
 
                   <div className="flex-1 space-y-3">
@@ -158,7 +158,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     <div className="space-y-2">
                       <Label>Value</Label>
                       <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <Icon className="icon-sm text-muted-foreground" />
                         <Input
                           type={field.type === 'date' ? 'date' : field.type === 'url' ? 'url' : 'text'}
                           placeholder={
@@ -182,9 +182,9 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     variant="ghost"
                     size="sm"
                     onClick={() => removeField(field.id)}
-                    className="text-destructive-emphasis hover:text-destructive-emphasis"
+                    className="text-destructive-accessible hover:text-destructive-accessible"
                   >
-                    <X className="icon-sm" aria-hidden="true" />
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               </CardContent>
@@ -201,7 +201,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                 Add custom fields to showcase additional information
               </p>
               <Button onClick={addField} variant="outline">
-                <Plus className="icon-sm mr-2" aria-hidden="true" />
+                <Plus className="icon-sm mr-2" />
                 Add Your First Field
               </Button>
             </CardContent>

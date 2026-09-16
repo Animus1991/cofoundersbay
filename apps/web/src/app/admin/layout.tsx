@@ -16,24 +16,25 @@ const ADMIN_NAV = [
 ];
 
 function AdminSubNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/admin';
   return (
     <div className="border-b border-border/50 bg-card/60 px-4">
-      <nav className="flex gap-1 overflow-x-auto max-w-7xl mx-auto">
+      <nav aria-label="Admin sections" className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-[84rem] mx-auto">
         {ADMIN_NAV.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
           return (
             <Link
               key={href}
               href={href}
+              aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap',
                 active
-                  ? 'border-primary text-primary-emphasis'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
               )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="icon-sm" />
               {label}
             </Link>
           );
@@ -47,11 +48,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <AdminGuard>
       {/* The frame is mounted here rather than by each admin page, so the
-          sub-nav sits inside the shell (it previously rendered above a
-          min-h-screen AppShell, leaving it visually detached) and the sidebar
-          survives navigation between admin sections. */}
+          sub-nav sits inside the shell (it previously rendered above the
+          page's own AppShell, leaving it visually detached) and the sidebar
+          survives navigation between admin sections. The negative margins
+          cancel appShellMainClasses' padding so the bar spans the column. */}
       <AppShellFrame>
-        <div className="-mx-4 -mt-4 mb-4 sm:-mx-6 lg:-mx-8">
+        <div className="-mx-3 -mt-3 mb-4 sm:-mx-6 lg:-mx-[1.2rem]">
           <AdminSubNav />
         </div>
         {children}

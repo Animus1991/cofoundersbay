@@ -310,11 +310,9 @@ export default function DataRoomPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
+    return new Date(dateString).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
       day: 'numeric',
-      year: 'numeric',
-    });
+      year: 'numeric' });
   };
 
   const getFileIcon = (type: string) => {
@@ -342,20 +340,19 @@ export default function DataRoomPage() {
 
   return (
     <AppShell
-      title="Investor Data Room"
-      description="Secure document sharing for investors"
+      showHelp
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsShareDialogOpen(true)}
           >
-            <Share2 className="icon-sm mr-2" aria-hidden="true" />
+            <Share2 className="icon-sm mr-2" />
             Share Access
           </Button>
           <Button size="sm" onClick={() => setIsUploadDialogOpen(true)}>
-            <Upload className="icon-sm mr-2" aria-hidden="true" />
+            <Upload className="icon-sm mr-2" />
             Upload
           </Button>
         </div>
@@ -375,7 +372,7 @@ export default function DataRoomPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <FileText className="icon-sm text-muted-foreground" aria-hidden="true" />
+                  <FileText className="icon-sm text-muted-foreground" />
                   <span className="text-sm font-medium">Storage Usage</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
@@ -405,7 +402,7 @@ export default function DataRoomPage() {
                       : 'hover:bg-muted'
                   )}
                 >
-                  <Folder className="icon-sm" aria-hidden="true" />
+                  <Folder className="icon-sm" />
                   All Documents
                   <Badge variant="secondary" className="ml-auto">
                     {documents.length}
@@ -422,9 +419,9 @@ export default function DataRoomPage() {
                         : 'hover:bg-muted'
                     )}
                   >
-                    <Folder className="icon-sm" aria-hidden="true" />
+                    <Folder className="icon-sm" />
                     {folder.name}
-                    {!folder.isPublic && <Lock className="icon-2xs ml-1" aria-hidden="true" />}
+                    {!folder.isPublic && <Lock className="icon-sm ml-1" />}
                     <Badge variant="secondary" className="ml-auto">
                       {folder.documentCount}
                     </Badge>
@@ -438,7 +435,7 @@ export default function DataRoomPage() {
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                     <Input
                       placeholder="Search documents..."
                       value={searchQuery}
@@ -453,14 +450,14 @@ export default function DataRoomPage() {
                     size="sm"
                     onClick={() => setViewMode('list')}
                   >
-                    <List className="icon-sm" aria-hidden="true" />
+                    <List className="icon-sm" />
                   </Button>
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
                   >
-                    <Grid className="icon-sm" aria-hidden="true" />
+                    <Grid className="icon-sm" />
                   </Button>
                 </div>
               </CardHeader>
@@ -485,7 +482,7 @@ export default function DataRoomPage() {
                           <TableRow key={document.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <FileIcon className="h-5 w-5 text-muted-foreground" />
+                                <FileIcon className="icon-md text-muted-foreground" />
                                 <div>
                                   <p className="font-medium">{document.name}</p>
                                   {document.description && (
@@ -514,13 +511,13 @@ export default function DataRoomPage() {
                             </TableCell>
                             <TableCell>
                               {document.isPublic ? (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                  <Unlock className="icon-2xs mr-1" aria-hidden="true" />
+                                <Badge variant="outline" className="bg-status-success-bg text-status-success border-status-success-border">
+                                  <Unlock className="icon-sm mr-1" />
                                   Public
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                                  <Lock className="icon-2xs mr-1" aria-hidden="true" />
+                                <Badge variant="outline" className="bg-status-warning-bg text-status-warning border-status-warning-border">
+                                  <Lock className="icon-sm mr-1" />
                                   Private
                                 </Badge>
                               )}
@@ -528,11 +525,11 @@ export default function DataRoomPage() {
                             <TableCell>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <Eye className="icon-2xs" aria-hidden="true" />
+                                  <Eye className="icon-sm" />
                                   {document.viewCount}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <Download className="icon-2xs" aria-hidden="true" />
+                                  <Download className="icon-sm" />
                                   {document.downloadCount}
                                 </span>
                               </div>
@@ -540,30 +537,30 @@ export default function DataRoomPage() {
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem>
-                                    <Eye className="icon-sm mr-2" aria-hidden="true" />
+                                    <Eye className="icon-sm mr-2" />
                                     View
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
-                                    <Download className="icon-sm mr-2" aria-hidden="true" />
+                                    <Download className="icon-sm mr-2" />
                                     Download
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
-                                    <Share2 className="icon-sm mr-2" aria-hidden="true" />
+                                    <Share2 className="icon-sm mr-2" />
                                     Share
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem>
-                                    <Edit className="icon-sm mr-2" aria-hidden="true" />
+                                    <Edit className="icon-sm mr-2" />
                                     Edit
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem className="text-destructive-emphasis">
-                                    <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+                                  <DropdownMenuItem className="text-destructive-accessible">
+                                    <Trash2 className="icon-sm mr-2" />
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -590,7 +587,7 @@ export default function DataRoomPage() {
                                     size="icon"
                                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
-                                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                                    <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -598,7 +595,7 @@ export default function DataRoomPage() {
                                   <DropdownMenuItem>Download</DropdownMenuItem>
                                   <DropdownMenuItem>Share</DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-destructive-emphasis">
+                                  <DropdownMenuItem className="text-destructive-accessible">
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -611,16 +608,16 @@ export default function DataRoomPage() {
                               </p>
                               <div className="flex items-center gap-2 mt-3">
                                 {document.isPublic ? (
-                                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                  <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
                                     Public
                                   </Badge>
                                 ) : (
-                                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                  <Badge variant="outline" className="text-xs bg-status-warning-bg text-status-warning border-status-warning-border">
                                     Private
                                   </Badge>
                                 )}
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <Eye className="icon-2xs" aria-hidden="true" />
+                                  <Eye className="icon-sm" />
                                   {document.viewCount}
                                 </span>
                               </div>
@@ -641,7 +638,7 @@ export default function DataRoomPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Investor Access</CardTitle>
               <Button size="sm">
-                <Users className="icon-sm mr-2" aria-hidden="true" />
+                <Users className="icon-sm mr-2" />
                 Add Investor
               </Button>
             </CardHeader>
@@ -679,10 +676,10 @@ export default function DataRoomPage() {
                           variant="outline"
                           className={cn(
                             investor.accessLevel === 'admin'
-                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              ? 'bg-status-accent-bg text-status-accent border-status-accent-border'
                               : investor.accessLevel === 'download'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
-                              : 'bg-gray-50 text-gray-700 border-gray-200'
+                              ? 'bg-status-info-bg text-status-info border-status-info-border'
+                              : 'bg-muted text-foreground border-border'
                           )}
                         >
                           {investor.accessLevel.charAt(0).toUpperCase() + investor.accessLevel.slice(1)}
@@ -700,11 +697,11 @@ export default function DataRoomPage() {
                       <TableCell>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <Eye className="icon-2xs" aria-hidden="true" />
+                            <Eye className="icon-sm" />
                             {investor.documentsViewed} viewed
                           </span>
                           <span className="flex items-center gap-1">
-                            <Download className="icon-2xs" aria-hidden="true" />
+                            <Download className="icon-sm" />
                             {investor.documentsDownloaded} downloaded
                           </span>
                         </div>
@@ -712,8 +709,8 @@ export default function DataRoomPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="icon-sm" aria-hidden="true" />
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="icon-sm" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -721,7 +718,7 @@ export default function DataRoomPage() {
                             <DropdownMenuItem>Edit Access</DropdownMenuItem>
                             <DropdownMenuItem>Resend Invite</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive-emphasis">
+                            <DropdownMenuItem className="text-destructive-accessible">
                               Revoke Access
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -760,10 +757,10 @@ export default function DataRoomPage() {
                           variant="outline"
                           className={cn(
                             log.action === 'download'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              ? 'bg-status-info-bg text-status-info border-status-info-border'
                               : log.action === 'view'
-                              ? 'bg-green-50 text-green-700 border-green-200'
-                              : 'bg-gray-50 text-gray-700 border-gray-200'
+                              ? 'bg-status-success-bg text-status-success border-status-success-border'
+                              : 'bg-muted text-foreground border-border'
                           )}
                         >
                           {log.action.charAt(0).toUpperCase() + log.action.slice(1)}
@@ -842,7 +839,7 @@ export default function DataRoomPage() {
                 </div>
                 <div className="pt-4 border-t">
                   <Button variant="destructive" size="sm">
-                    <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+                    <Trash2 className="icon-sm mr-2" />
                     Delete Room
                   </Button>
                 </div>
@@ -863,7 +860,7 @@ export default function DataRoomPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              <Upload className="icon-xl mx-auto mb-2 text-muted-foreground" aria-hidden="true" />
+              <Upload className="icon-xl mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 Drop files here or click to browse
               </p>

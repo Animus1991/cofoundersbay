@@ -32,7 +32,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ManagedGroup = {
   id: string;
@@ -49,9 +51,9 @@ type ManagedGroup = {
 };
 
 const PRIVACY_CONFIG = {
-  public: { label: 'Public', icon: Globe, color: 'text-green-500' },
-  private: { label: 'Private', icon: Lock, color: 'text-amber-500' },
-  secret: { label: 'Secret', icon: Shield, color: 'text-red-500' },
+  public: { label: 'Public', icon: Globe, iconClass: STATUS.success.icon },
+  private: { label: 'Private', icon: Lock, iconClass: STATUS.warning.icon },
+  secret: { label: 'Secret', icon: Shield, iconClass: STATUS.danger.icon },
 };
 
 const MOCK_GROUPS: ManagedGroup[] = [
@@ -70,19 +72,19 @@ function GroupCard({ group }: { group: ManagedGroup }) {
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Avatar className="h-10 w-10 rounded-lg shrink-0">
-              <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">
+            <Avatar className="h-10 w-10 rounded-xl shrink-0">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">
                 {group.name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary-emphasis transition-colors">
+                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                   {group.name}
                 </Link>
                 <Badge variant="secondary" className="text-xs">{group.category}</Badge>
-                <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.color)}>
-                  <PrivacyIcon className="h-3 w-3" />
+                <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.iconClass)}>
+                  <PrivacyIcon className="icon-sm" />
                   {privacyCfg.label}
                 </Badge>
                 <Badge variant="secondary" className="text-xs capitalize">{group.role}</Badge>
@@ -90,9 +92,9 @@ function GroupCard({ group }: { group: ManagedGroup }) {
               </div>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{group.description}</p>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{group.memberCount.toLocaleString()} members</span>
-                <span className="flex items-center gap-1"><MessageSquare className="icon-2xs" aria-hidden="true" />{group.postCount} posts</span>
-                <span className="flex items-center gap-1"><TrendingUp className="icon-2xs" aria-hidden="true" />Active {group.lastActivity}</span>
+                <span className="flex items-center gap-1"><Users className="icon-sm" />{group.memberCount.toLocaleString('en-GB')} members</span>
+                <span className="flex items-center gap-1"><MessageSquare className="icon-sm" />{group.postCount} posts</span>
+                <span className="flex items-center gap-1"><TrendingUp className="icon-sm" />Active {group.lastActivity}</span>
                 {group.pendingRequests && group.pendingRequests > 0 && (
                   <Badge variant="destructive" className="text-xs">{group.pendingRequests} pending</Badge>
                 )}
@@ -102,21 +104,21 @@ function GroupCard({ group }: { group: ManagedGroup }) {
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/groups/${group.id}`}>
-                <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />View
+                <Eye className="mr-1.5 icon-sm" />View
               </Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="icon-sm" aria-hidden="true" />
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${group.name}`}>
+                  <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Group</DropdownMenuItem>
-                <DropdownMenuItem><UserPlus className="mr-2 icon-sm" aria-hidden="true" />Invite Members</DropdownMenuItem>
-                <DropdownMenuItem><Settings className="mr-2 icon-sm" aria-hidden="true" />Group Settings</DropdownMenuItem>
+                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Group</DropdownMenuItem>
+                <DropdownMenuItem><UserPlus className="mr-2 icon-sm" />Invite Members</DropdownMenuItem>
+                <DropdownMenuItem><Settings className="mr-2 icon-sm" />Group Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete Group</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete Group</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -137,30 +139,24 @@ export default function ManageGroupsPage() {
   const pendingTotal = MOCK_GROUPS.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Settings className="icon-lg text-primary-emphasis" aria-hidden="true" />
-              Manage Communities
-            </h1>
-            <p className="text-muted-foreground">Groups you own or administer</p>
-          </div>
-          <Button asChild>
-            <Link href="/groups">
-              <Plus className="mr-2 icon-sm" aria-hidden="true" />
-              Create Group
-            </Link>
-          </Button>
-        </div>
-
+    <AppShell
+      title="Manage communities"
+      description="Communities you own or administer — review members, pending requests, and activity at a glance."
+      actions={(
+        <Button asChild>
+          <Link href="/groups">
+            <Plus className="mr-2 icon-sm" />
+            Create community
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
             { label: 'Groups Managed', value: MOCK_GROUPS.length },
-            { label: 'Total Members', value: totalMembers.toLocaleString() },
+            { label: 'Total Members', value: totalMembers.toLocaleString('en-GB') },
             { label: 'Pending Requests', value: pendingTotal },
           ].map(stat => (
             <Card key={stat.label}>
@@ -174,7 +170,7 @@ export default function ManageGroupsPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -184,13 +180,24 @@ export default function ManageGroupsPage() {
             <GroupCard key={group.id} group={group} />
           ))}
           {filtered.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <p className="font-medium">No groups found</p>
-                <p className="text-sm text-muted-foreground mt-1">Create a community to get started</p>
-              </CardContent>
-            </Card>
+            search ? (
+              <NoFilterResults entity="communities" onClear={() => setSearch('')} />
+            ) : (
+              <ListEmptyState
+                icon={Users}
+                tone="primary"
+                title="You don't manage any communities yet"
+                description="Create a community to bring people together. As owner you control privacy, membership, and moderation."
+                action={(
+                  <Button asChild className="gap-2">
+                    <Link href="/groups">
+                      <Plus className="icon-sm" />
+                      Create community
+                    </Link>
+                  </Button>
+                )}
+              />
+            )
           )}
         </div>
       </div>

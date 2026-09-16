@@ -56,12 +56,12 @@ export function VideoCall({ className }: VideoCallProps) {
               {state === 'error' && 'Error'}
             </Badge>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Users className="icon-sm" aria-hidden="true" />
+              <Users className="icon-sm" />
               {participants.length} participant{participants.length !== 1 ? 's' : ''}
             </div>
             {isScreenSharing && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                <Monitor className="icon-2xs mr-1" aria-hidden="true" />
+              <Badge variant="outline" className="bg-status-info-bg text-status-info border-status-info-border">
+                <Monitor className="icon-sm mr-1" />
                 Sharing
               </Badge>
             )}
@@ -69,10 +69,10 @@ export function VideoCall({ className }: VideoCallProps) {
           
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">
-              <Settings className="icon-sm" aria-hidden="true" />
+              <Settings className="icon-sm" />
             </Button>
             <Button variant="ghost" size="sm">
-              <Maximize2 className="icon-sm" aria-hidden="true" />
+              <Maximize2 className="icon-sm" />
             </Button>
             <Button 
               variant="destructive" 
@@ -80,7 +80,7 @@ export function VideoCall({ className }: VideoCallProps) {
               onClick={endCall}
               className="gap-1"
             >
-              <Phone className="icon-sm" aria-hidden="true" />
+              <Phone className="icon-sm" />
               Leave
             </Button>
           </div>
@@ -127,7 +127,7 @@ export function VideoCall({ className }: VideoCallProps) {
           )}
 
           {state === 'error' && (
-            <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-status-danger-bg flex items-center justify-center">
               <div className="text-center text-white">
                 <div className="text-red-300 mb-4">
                   <Phone className="h-12 w-12 mx-auto" aria-hidden="true" />
@@ -148,7 +148,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isMuted ? <MicOff className="icon-sm" aria-hidden="true" /> : <Mic className="icon-sm" aria-hidden="true" />}
+            {isMuted ? <MicOff className="icon-sm" /> : <Mic className="icon-sm" />}
             {isMuted ? 'Unmute' : 'Mute'}
           </Button>
           
@@ -159,7 +159,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isVideoOff ? <VideoOff className="icon-sm" aria-hidden="true" /> : <Video className="icon-sm" aria-hidden="true" />}
+            {isVideoOff ? <VideoOff className="icon-sm" /> : <Video className="icon-sm" />}
             {isVideoOff ? 'Start Video' : 'Stop Video'}
           </Button>
           
@@ -170,7 +170,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isScreenSharing ? <MonitorOff className="icon-sm" aria-hidden="true" /> : <Monitor className="icon-sm" aria-hidden="true" />}
+            {isScreenSharing ? <MonitorOff className="icon-sm" /> : <Monitor className="icon-sm" />}
             {isScreenSharing ? 'Stop Share' : 'Share Screen'}
           </Button>
         </div>
@@ -179,7 +179,7 @@ export function VideoCall({ className }: VideoCallProps) {
         {participants.length > 0 && (
           <div className="w-64 border-l bg-muted/30 p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Users className="icon-sm" aria-hidden="true" />
+              <Users className="icon-sm" />
               Participants
             </h3>
             <div className="space-y-2">
@@ -188,8 +188,8 @@ export function VideoCall({ className }: VideoCallProps) {
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   <span className="font-medium">{participant.userName}</span>
                   <div className="flex gap-1 ml-auto">
-                    {participant.audio && <Mic className="icon-2xs text-green-500" aria-hidden="true" />}
-                    {participant.video && <Video className="icon-2xs text-green-500" aria-hidden="true" />}
+                    {participant.audio && <Mic className="icon-sm text-status-success" />}
+                    {participant.video && <Video className="icon-sm text-status-success" />}
                   </div>
                 </div>
               ))}

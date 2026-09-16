@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   BrainCircuit, Calendar, Clock, CheckCircle2, XCircle, AlertTriangle,
@@ -10,6 +11,7 @@ import {
   ClipboardList, Zap, BookOpen,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +58,19 @@ interface CoachProfile {
   isVerified: boolean;
 }
 
+/* Why the two disabled controls are disabled, in both languages. Stated as
+   constants because each is used in two places and a `title` that disagreed
+   with its `aria-label` would read differently to a mouse and a screen
+   reader. */
+const JOIN_HINT = bilingualAria(
+  'Meeting links arrive when coaching sessions are live',
+  'Οι σύνδεσμοι συνεδρίας θα είναι διαθέσιμοι όταν ενεργοποιηθεί το coaching',
+);
+const RATE_HINT = bilingualAria(
+  'Rating opens when coaching sessions are live',
+  'Η βαθμολόγηση θα είναι διαθέσιμη όταν ενεργοποιηθεί το coaching',
+);
+
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
 const DEMO_SESSIONS: CoachingSession[] = [
@@ -66,7 +81,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     sessionType: 'execution',
     status: 'scheduled',
     title: 'Q1 OKR Review & Sprint Planning',
-    scheduledAt: '2026-03-25T10:00:00Z',
+    scheduledAt: '2026-09-16T10:00:00.000Z',
     durationMinutes: 60,
     meetingUrl: 'https://meet.example.com/coaching-001',
     agenda: 'Review Q1 OKR progress, identify blockers, plan Q2 sprint priorities',
@@ -83,7 +98,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     sessionType: 'clarity',
     status: 'completed',
     title: 'Vision Alignment Session',
-    scheduledAt: '2026-03-18T14:00:00Z',
+    scheduledAt: '2026-09-02T14:00:00.000Z',
     durationMinutes: 45,
     keyInsights: 'Core tension identified: growth velocity vs. team culture. Decision: prioritize culture first for 60 days.',
     actionItems: [
@@ -100,7 +115,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     sessionType: 'accountability',
     status: 'completed',
     title: 'Weekly Accountability Check-in',
-    scheduledAt: '2026-03-11T10:00:00Z',
+    scheduledAt: '2026-08-26T10:00:00.000Z',
     durationMinutes: 30,
     actionItems: [
       { task: 'Launch waitlist page', done: true },
@@ -153,21 +168,43 @@ const DEMO_COACHES: CoachProfile[] = [
   },
 ];
 
+/** Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch. */
+function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }) {
+  const [label, setLabel] = useState('—');
+
+  useEffect(() => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) {
+      setLabel('—');
+      return;
+    }
+    if (variant === 'banner') {
+      const day = d.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'short' });
+      const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      setLabel(`${day} at ${time}`);
+      return;
+    }
+    setLabel(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+  }, [iso, variant]);
+
+  return <span>{label}</span>;
+}
+
 // ── Configs ───────────────────────────────────────────────────────────────────
 
 const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; color: string; icon: React.ElementType }> = {
-  accountability: { label: 'Accountability', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: ListChecks },
-  clarity:        { label: 'Clarity',        color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: Lightbulb },
-  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20', icon: Users },
-  execution:      { label: 'Execution',      color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: Zap },
-  strategy:       { label: 'Strategy',       color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20', icon: Target },
-  wellbeing:      { label: 'Wellbeing',      color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: BrainCircuit },
+  accountability: { label: 'Accountability', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: ListChecks },
+  clarity:        { label: 'Clarity',        color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Lightbulb },
+  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Users },
+  execution:      { label: 'Execution',      color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Zap },
+  strategy:       { label: 'Strategy',       color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Target },
+  wellbeing:      { label: 'Wellbeing',      color: 'bg-status-success-bg text-status-success border-status-success-border', icon: BrainCircuit },
 };
 
 const STATUS_CONFIG: Record<SessionStatus, { label: string; color: string; icon: React.ElementType }> = {
-  scheduled:   { label: 'Scheduled',   color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',    icon: Calendar },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',  icon: Clock },
-  completed:   { label: 'Completed',   color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
+  scheduled:   { label: 'Scheduled',   color: 'bg-status-info-bg text-status-info',    icon: Calendar },
+  in_progress: { label: 'In Progress', color: 'bg-status-warning-bg text-status-warning',  icon: Clock },
+  completed:   { label: 'Completed',   color: 'bg-status-success-bg text-status-success', icon: CheckCircle2 },
   cancelled:   { label: 'Cancelled',   color: 'bg-muted text-muted-foreground',  icon: XCircle },
 };
 
@@ -188,7 +225,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             {session.coachAvatar && <AvatarImage src={session.coachAvatar} />}
-            <AvatarFallback className="bg-primary/10 text-primary-emphasis text-xs font-semibold">
+            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
               {session.coachName.split(' ').map((n) => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
@@ -209,8 +246,8 @@ function SessionCard({ session }: { session: CoachingSession }) {
                 <TypeIcon className="icon-sm" />{type.label}
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="icon-sm" aria-hidden="true" />
-                {new Date(session.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                <Clock className="icon-sm" />
+                <LocalWhen iso={session.scheduledAt} variant="card" />
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="icon-sm" aria-hidden="true" />
@@ -240,7 +277,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             {session.rating && (
               <div className="mt-2 flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} aria-hidden="true" />
+                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-amber-400' : 'text-muted-foreground/30')} />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">Your rating</span>
               </div>
@@ -252,17 +289,24 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex gap-2">
             {session.status === 'scheduled' && session.meetingUrl && (
-              <Button size="sm" className="gap-1">
-                <Video className="icon-sm" aria-hidden="true" /> Join session
+              <Button size="sm" className="gap-1" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
+                <Video className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
               </Button>
             )}
             {session.status === 'completed' && !session.rating && (
-              <Button size="sm" variant="outline" className="gap-1">
-                <Star className="icon-sm" aria-hidden="true" /> Rate session
+              <Button size="sm" variant="outline" className="gap-1" disabled title={RATE_HINT} aria-label={RATE_HINT}>
+                <Star className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="gap-1">
-              <MessageCircle className="icon-sm" aria-hidden="true" /> Message coach
+            {/* Messaging is real, and it lives with the mentors a founder can
+                actually reach today. */}
+            <Button size="sm" variant="ghost" className="gap-1" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Find a mentor" el="Εύρεση μέντορα" compact wrap />
+              </Link>
             </Button>
           </div>
           <button
@@ -296,7 +340,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
               <ul className="space-y-1.5">
                 {session.actionItems.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-xs">
-                    <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/40')} aria-hidden="true" />
+                    <CheckCircle2 className={cn('icon-sm shrink-0', item.done ? 'text-status-success' : 'text-muted-foreground/40')} />
                     <span className={item.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{item.task}</span>
                   </li>
                 ))}
@@ -315,7 +359,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           {coach.avatar && <AvatarImage src={coach.avatar} />}
-          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-semibold">
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
             {coach.name.split(' ').map((n) => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -325,7 +369,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
               <div className="flex items-center gap-1.5">
                 <p className="text-sm font-semibold text-foreground">{coach.name}</p>
                 {coach.isVerified && (
-                  <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary-emphasis border-primary/20">Verified</Badge>
+                  <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary-accessible border-primary/20">Verified</Badge>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{coach.title}</p>
@@ -350,19 +394,28 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="icon-sm fill-amber-400 text-amber-400" aria-hidden="true" /> {coach.rating} ({coach.sessionCount} sessions)
+              <Star className="icon-sm fill-status-warning text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="icon-2xs" aria-hidden="true" /> Responds {coach.responseTime}
+              <Clock className="icon-sm" /> Responds {coach.responseTime}
             </span>
           </div>
 
+          {/* These coaches are constants with demo ids, so neither booking nor
+              a conversation can be opened with them. `/mentoring` is the same
+              offer against real people. */}
           <div className="mt-3 flex gap-2">
-            <Button size="sm" className="gap-1 flex-1">
-              <Calendar className="icon-sm" aria-hidden="true" /> Book session
+            <Button size="sm" className="flex-1 gap-1" asChild>
+              <Link href="/mentoring">
+                <Calendar className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Book with a mentor" el="Κράτηση με μέντορα" compact wrap />
+              </Link>
             </Button>
-            <Button size="sm" variant="outline" className="gap-1">
-              <MessageCircle className="icon-sm" aria-hidden="true" /> Message
+            <Button size="sm" variant="outline" className="gap-1" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+              </Link>
             </Button>
           </div>
         </div>
@@ -376,7 +429,11 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState('sessions');
   const { showDemoData } = useDemoData();
+  const [specialtyFilter, setSpecialtyFilter] = useState<SessionType | null>(null);
   const sessions = showDemoData ? DEMO_SESSIONS : [];
+  const visibleCoaches = specialtyFilter
+    ? DEMO_COACHES.filter((c) => c.specialties.includes(specialtyFilter))
+    : DEMO_COACHES;
   const upcoming = sessions.filter((s) => s.status === 'scheduled' || s.status === 'in_progress');
   const completed = sessions.filter((s) => s.status === 'completed');
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);
@@ -392,19 +449,19 @@ export default function CoachingPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total sessions', value: sessions.length, icon: Calendar, color: 'text-primary-emphasis', bg: 'bg-primary/10' },
-            { label: 'Upcoming', value: upcoming.length, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Action items done', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Avg rating', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <Card key={label} className="shadow-sm border-border/50">
+            { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
+            { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+          ].map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
+            <Card key={labelEn} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
                   <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -413,20 +470,19 @@ export default function CoachingPage() {
 
         {/* Upcoming session banner */}
         {upcoming.length > 0 && (
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+          <div className="rounded-xl border border-status-info-border bg-status-info-bg p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">Next Session</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-status-info mb-1"><BilingualText en="Next Session" el="Επόμενη συνεδρία" compact /></p>
                 <p className="text-sm font-semibold text-foreground">{upcoming[0].title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  with {upcoming[0].coachName} ·{' '}
-                  {new Date(upcoming[0].scheduledAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}{' '}
-                  at {new Date(upcoming[0].scheduledAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  with {upcoming[0].coachName} · <LocalWhen iso={upcoming[0].scheduledAt} variant="banner" />
                 </p>
               </div>
               {upcoming[0].meetingUrl && (
-                <Button size="sm" className="gap-1.5 shrink-0">
-                  <Video className="h-3.5 w-3.5" aria-hidden="true" /> Join
+                <Button size="sm" className="shrink-0 gap-1.5" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
+                  <Video className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Join" el="Σύνδεση" compact wrap />
                 </Button>
               )}
             </div>
@@ -436,13 +492,16 @@ export default function CoachingPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between gap-3">
             <TabsList className="h-9">
-              <TabsTrigger value="sessions" className="text-xs">My Sessions</TabsTrigger>
-              <TabsTrigger value="find" className="text-xs">Find a Coach</TabsTrigger>
-              <TabsTrigger value="actions" className="text-xs">Action Items</TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
+              <TabsTrigger value="sessions" className="text-xs"><BilingualText en="My Sessions" el="Οι συνεδρίες μου" compact /></TabsTrigger>
+              <TabsTrigger value="find" className="text-xs"><BilingualText en="Find a Coach" el="Εύρεση coach" compact /></TabsTrigger>
+              <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs"><BilingualText en="Insights" el="Αναλύσεις" compact /></TabsTrigger>
             </TabsList>
-            <Button size="sm" className="h-8 gap-1.5 text-xs">
-              <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Book session
+            <Button size="sm" className="h-8 gap-1.5 text-xs" asChild>
+              <Link href="/mentoring">
+                <Plus className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Book a session" el="Κράτηση συνεδρίας" compact wrap />
+              </Link>
             </Button>
           </div>
 
@@ -451,25 +510,25 @@ export default function CoachingPage() {
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <BrainCircuit className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
+                  <BrainCircuit className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">No coaching sessions yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Book your first session with a coach to get started.</p>
+                  <p className="font-medium text-foreground"><BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" /></p>
+                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Book your first session with a coach to get started." el="Κλείστε την πρώτη σας συνεδρία με coach για να ξεκινήσετε." /></p>
                 </div>
-                <Button size="sm" onClick={() => setActiveTab('find')}>Find a coach</Button>
+                <Button size="sm" onClick={() => setActiveTab('find')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Button>
               </div>
             ) : (
               <>
                 {upcoming.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Upcoming</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
                     <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} session={s} />)}</div>
                   </div>
                 )}
                 {completed.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Completed</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
                     <div className="space-y-3">{completed.map((s) => <SessionCard key={s.id} session={s} />)}</div>
                   </div>
                 )}
@@ -480,23 +539,52 @@ export default function CoachingPage() {
           {/* Find a Coach */}
           <TabsContent value="find" className="mt-4 space-y-4">
             {/* Session type filter chips */}
+            {/* Filtering needs no server — the list is right here. These chips
+                looked like filters and did nothing; now they are filters. */}
             <div className="flex flex-wrap gap-2">
-              {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => (
-                <button key={key} className={cn('flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80', cfg.color)}>
-                  <cfg.icon className="icon-sm" />{cfg.label}
-                </button>
-              ))}
+              {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
+                const on = specialtyFilter === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setSpecialtyFilter((prev) => (prev === key ? null : key))}
+                    className={cn(
+                      'flex min-h-11 items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80 md:min-h-0',
+                      cfg.color,
+                      on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
+                    )}
+                  >
+                    <cfg.icon className="icon-sm" aria-hidden="true" />{cfg.label}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="space-y-3">
-              {DEMO_COACHES.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
+              {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
+              {visibleCoaches.length === 0 && (
+                <p className="rounded-xl border border-dashed border-border/60 py-10 text-center text-sm text-muted-foreground">
+                  <BilingualText
+                    en="No coaches with that specialty. Clear the filter to see all of them."
+                    el="Κανένας coach με αυτή την ειδίκευση. Καθαρίστε το φίλτρο για να τους δείτε όλους."
+                  />
+                </p>
+              )}
             </div>
 
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
-              <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" aria-hidden="true" />
-              <p className="text-sm font-medium text-foreground mb-1">Become a coach on CoFounderBay</p>
-              <p className="text-xs text-muted-foreground mb-3">Share your expertise and earn while helping founders grow.</p>
-              <Button variant="outline" size="sm">Apply as coach</Button>
+              <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
+              <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
+              {/* Mentor signup is the real version of this — the form exists
+                  and is wired. */}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/mentor/profile-setup">
+                  <BilingualText en="Apply as coach" el="Αίτηση ως coach" compact wrap />
+                </Link>
+              </Button>
             </div>
           </TabsContent>
 
@@ -504,19 +592,19 @@ export default function CoachingPage() {
           <TabsContent value="actions" className="mt-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">All Action Items</CardTitle>
+                <CardTitle className="text-sm"><BilingualText en="All Action Items" el="Όλες οι ενέργειες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-1">
                 {sessions.flatMap((session) =>
                   (session.actionItems ?? []).map((item, idx) => (
                     <div key={`${session.id}-${idx}`} className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-muted/50 transition-colors">
-                      <CheckCircle2 className={cn('mt-0.5 h-4 w-4 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/30')} aria-hidden="true" />
+                      <CheckCircle2 className={cn('mt-0.5 icon-sm shrink-0', item.done ? 'text-status-success' : 'text-muted-foreground/30')} />
                       <div className="flex-1 min-w-0">
                         <p className={cn('text-sm', item.done ? 'line-through text-muted-foreground' : 'text-foreground')}>{item.task}</p>
                         <p className="text-2xs text-muted-foreground">From: {session.title}</p>
                       </div>
                       {!item.done && (
-                        <Badge variant="outline" className="shrink-0 text-2xs">Pending</Badge>
+                        <Badge variant="outline" className="shrink-0 text-2xs"><BilingualText en="Pending" el="Εκκρεμεί" compact /></Badge>
                       )}
                     </div>
                   ))
@@ -531,7 +619,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" /> Session Themes
+                    <TrendingUp className="icon-sm text-primary-accessible" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -553,7 +641,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <ListChecks className="icon-sm text-emerald-500" aria-hidden="true" /> Execution Rate
+                    <ListChecks className="icon-sm text-status-success" /> <BilingualText en="Execution Rate" el="Ποσοστό εκτέλεσης" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -564,7 +652,7 @@ export default function CoachingPage() {
                         <circle
                           cx="18" cy="18" r="15.5" fill="none" strokeWidth="3"
                           strokeDasharray={`${(completedActions / Math.max(totalActionItems.length, 1)) * 97.4} 97.4`}
-                          className="stroke-emerald-500" strokeLinecap="round"
+                          className="stroke-status-success" strokeLinecap="round"
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -574,9 +662,9 @@ export default function CoachingPage() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-semibold text-foreground">Action completion</p>
+                      <p className="text-sm font-semibold text-foreground"><BilingualText en="Action completion" el="Ολοκλήρωση ενεργειών" compact /></p>
                       <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Keep the momentum going!</p>
+                      <p className="text-xs text-status-success font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact /></p>
                     </div>
                   </div>
                 </CardContent>
@@ -588,7 +676,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Lightbulb className="icon-sm text-amber-500" aria-hidden="true" /> Key Insights
+                    <Lightbulb className="icon-sm text-status-warning" /> <BilingualText en="Key Insights" el="Βασικές αναλύσεις" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

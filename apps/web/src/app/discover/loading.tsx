@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function DiscoverLoading() {
   return (
     <div className="min-h-screen bg-hero-radial pb-20 lg:pb-16">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-6">
+      <div className="mx-auto w-full min-w-0 px-4 pt-6">
         {/* TopNav skeleton */}
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-40" />

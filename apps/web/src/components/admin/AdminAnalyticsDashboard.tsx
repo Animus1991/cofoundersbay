@@ -43,20 +43,20 @@ function StatCard({
   color?: 'indigo' | 'green' | 'amber' | 'rose';
 }) {
   const colorMap = {
-    indigo: 'bg-indigo-50 text-indigo-600',
-    green: 'bg-green-50 text-green-600',
-    amber: 'bg-amber-50 text-amber-600',
-    rose: 'bg-rose-50 text-rose-600',
+    indigo: 'bg-status-accent-bg text-status-accent',
+    green: 'bg-status-success-bg text-status-success',
+    amber: 'bg-status-warning-bg text-status-warning',
+    rose: 'bg-status-danger-bg text-status-danger',
   };
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4">
+    <div className="bg-white rounded-xl border border-border p-5 flex items-start gap-4">
       <div className={`rounded-lg p-2.5 ${colorMap[color]}`}>
-        <Icon className="w-5 h-5" />
+        <Icon className="icon-md" />
       </div>
       <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-2xl font-semibold text-gray-900">{value}</p>
-        {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-2xl font-semibold text-foreground">{value}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -122,15 +122,15 @@ export function AdminAnalyticsDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="icon-lg text-indigo-500 animate-spin" aria-hidden="true" />
-        <span className="ml-2 text-gray-500">Loading analytics…</span>
+        <RefreshCw className="icon-lg text-status-accent animate-spin" />
+        <span className="ml-2 text-muted-foreground">Loading analytics…</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div className="rounded-xl border border-status-danger-border bg-status-danger-bg p-6 text-status-danger">
         Failed to load analytics: {error}
         <button onClick={load} className="ml-4 underline text-sm">Retry</button>
       </div>
@@ -142,14 +142,14 @@ export function AdminAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Gamification Analytics</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Platform-wide scoring health and engagement metrics</p>
+          <h2 className="text-xl font-semibold text-foreground">Gamification Analytics</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Platform-wide scoring health and engagement metrics</p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 dark:text-indigo-400 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent transition-colors"
         >
-          <RefreshCw className="icon-sm" aria-hidden="true" />
+          <RefreshCw className="icon-sm" />
           Refresh
         </button>
       </div>
@@ -181,8 +181,8 @@ export function AdminAnalyticsDashboard() {
       </div>
 
       {/* XP Distribution Histogram */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">XP Distribution Histogram</h3>
+      <div className="bg-white rounded-xl border border-border p-5">
+        <h3 className="text-sm font-semibold text-foreground mb-4">XP Distribution Histogram</h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={xpDist} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
             <XAxis dataKey="bucket" tick={{ fontSize: 11 }} />
@@ -194,7 +194,7 @@ export function AdminAnalyticsDashboard() {
             <Bar dataKey="count" fill={theme.series[0]} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           Each bar shows how many users fall within that XP range.
           A healthy platform shows a gradual right-tail, not a spike at 0.
         </p>
@@ -202,10 +202,10 @@ export function AdminAnalyticsDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Badge Unlock Rates */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Badge Unlock Rates (Top 6)</h3>
+        <div className="bg-white rounded-xl border border-border p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Badge Unlock Rates (Top 6)</h3>
           {topBadges.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">No badges defined yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No badges defined yet.</p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -242,12 +242,12 @@ export function AdminAnalyticsDashboard() {
         </div>
 
         {/* Badge Rate Table */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">All Badge Rates</h3>
+        <div className="bg-white rounded-xl border border-border p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">All Badge Rates</h3>
           <div className="overflow-auto max-h-[220px]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                <tr className="text-left text-xs text-muted-foreground border-b border-border">
                   <th className="pb-2 font-medium">Badge</th>
                   <th className="pb-2 font-medium">Rarity</th>
                   <th className="pb-2 font-medium text-right">Unlocks</th>
@@ -257,12 +257,12 @@ export function AdminAnalyticsDashboard() {
               <tbody>
                 {badgeRates.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-gray-400">No badges yet</td>
+                    <td colSpan={4} className="py-6 text-center text-muted-foreground">No badges yet</td>
                   </tr>
                 ) : (
                   badgeRates.map((b) => (
-                    <tr key={b.badgeId} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="py-1.5 font-medium text-gray-800">{b.name}</td>
+                    <tr key={b.badgeId} className="border-b border-border hover:bg-muted">
+                      <td className="py-1.5 font-medium text-foreground">{b.name}</td>
                       <td className="py-1.5">
                         <span
                           className="text-xs px-1.5 py-0.5 rounded"
@@ -275,7 +275,7 @@ export function AdminAnalyticsDashboard() {
                         </span>
                       </td>
                       <td className="py-1.5 text-right tabular-nums">{b.unlockCount}</td>
-                      <td className="py-1.5 text-right tabular-nums text-gray-500">
+                      <td className="py-1.5 text-right tabular-nums text-muted-foreground">
                         {b.unlockRate}%
                       </td>
                     </tr>
@@ -288,8 +288,8 @@ export function AdminAnalyticsDashboard() {
       </div>
 
       {/* Shield indicator */}
-      <div className="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
-        <Shield className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
+      <div className="flex items-start gap-3 bg-status-accent-bg border border-status-accent-border rounded-xl p-4 text-sm text-status-accent">
+        <Shield className="icon-sm mt-0.5 shrink-0" />
         <div>
           <span className="font-semibold">Explainability note: </span>
           All scores are computed from real user actions — no synthetic inflation.

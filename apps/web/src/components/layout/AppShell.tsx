@@ -1,15 +1,20 @@
 'use client';
 
 import { ReactNode, createContext, useContext, memo } from 'react';
-import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
-import { useTopBannerHeight, TOP_BANNER_STACK } from './useTopBannerHeight';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { resolvePageHeader } from '@/lib/page-registry';
+import { BilingualText } from '@/components/common/BilingualText';
+import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
+import { appShellMainClasses } from '@/lib/layout-config';
+import { CfbGlyph, glyphForHref } from '@/components/icons/CfbGlyph';
+import { AIComposer } from '@/components/ai/AIComposer';
+import { CommandPaletteHost } from './CommandPaletteHost';
+import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -17,41 +22,10 @@ const MemoMobileBottomNav = memo(MobileBottomNav);
 
 /**
  * True inside an <AppShellFrame>. Lets a page keep writing `<AppShell title=…>`
- * while the chrome actually lives in the segment layout above it.
+ * while the chrome actually lives in the segment layout above it — adopted
+ * from origin/claude/project-audit-upgrade-y2ebnr (029642e, 7c9c97d).
  */
 const InAppShellFrame = createContext(false);
-
-type PageHeaderProps = {
-  title?: string;
-  description?: string;
-  actions?: ReactNode;
-};
-
-function PageHeader({ title, description, actions }: PageHeaderProps) {
-  if (!title && !description && !actions) return null;
-  return (
-    // Every page's title and description come through here, so this is where
-    // the type scale earns its steps: 20 -> 24 -> 30px for the title, and a
-    // description that reads at 16px on a phone before returning to the
-    // desktop density of 14px. The row also goes inline at `sm` rather than
-    // `lg`, so a tablet in portrait stops stacking what it has room for.
-    <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4 lg:px-6 lg:py-5">
-      <div className="min-w-0">
-        {title && (
-          <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl xl:text-3xl">
-            {title}
-          </h1>
-        )}
-        {description && (
-          <p className="mt-1 text-base leading-normal text-muted-foreground sm:mt-0.5 sm:text-sm">
-            {description}
-          </p>
-        )}
-      </div>
-      {actions && <div className="flex flex-wrap items-center gap-2 sm:shrink-0">{actions}</div>}
-    </section>
-  );
-}
 
 export type AppShellFrameProps = {
   children: ReactNode;
@@ -62,13 +36,14 @@ export type AppShellFrameProps = {
 };
 
 /**
- * The persistent application chrome: sidebar, demo banner, top bar, mobile nav
- * and the <main> landmark.
+ * The persistent application chrome: sidebar, top bar, mobile nav and the
+ * <main> landmark.
  *
  * Rendered by a segment `layout.tsx` rather than by each page, so navigating
  * between two pages in the same section no longer unmounts and remounts the
- * whole navigation — the sidebar keeps its scroll position, its queries are not
- * refetched, and `loading.tsx` renders inside the shell instead of replacing it.
+ * whole navigation — the sidebar keeps its scroll position, its queries are
+ * not refetched, and `loading.tsx` renders inside the shell instead of
+ * replacing it.
  */
 export function AppShellFrame({
   children,
@@ -76,116 +51,176 @@ export function AppShellFrame({
   contentClassName,
 }: AppShellFrameProps) {
   const { expanded, mounted } = useSidebar();
-  const user = useCurrentUser();
-  const isDemo = user?.email === 'demo@cofounderbay.com';
-  const demoBannerRef = useTopBannerHeight<HTMLDivElement>('--banner-demo', isDemo);
-  // Purely CSS so the gutter is right on first paint: the 68px rail starts at
-  // `sm`, and only `lg` and up can widen to the 240px drawer. Keep these steps
-  // in lockstep with SideNav's `hidden sm:flex` and SidebarContext's RAIL_QUERY.
-  const offset = (mounted ? expanded : true)
-    ? 'sm:ml-[68px] lg:ml-[240px]'
-    : 'sm:ml-[68px] lg:ml-[68px]';
 
   return (
     <InAppShellFrame.Provider value={true}>
-      <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
-        {/* Fixed left nav — icon rail from sm, full drawer from lg, hidden below sm */}
+      <CommandPaletteHost>
+      <div
+        className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}
+        style={{ paddingTop: TOP_BANNER_STACK }}
+      >
+        {/* Skip link lives once in app/layout.tsx so it is never duplicated in the tab order. */}
+
+        {/* Fixed left sidebar — rail from `sm`, drawer from `lg`; hidden below `sm` */}
         <MemoSideNav />
 
-        {/* Demo mode banner — stacked under the network banner, not over it */}
-        {isDemo && (
-          <div
-            ref={demoBannerRef}
-            style={{ top: 'var(--banner-network, 0px)' }}
-            className={cn(
-              'fixed right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
-              'bg-amber-500/95 text-amber-950 text-[13px] font-medium backdrop-blur-sm shadow-sm',
-              'transition-[margin-left] duration-200 ease-out',
-              offset,
-              'left-0 lg:left-auto',
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="icon-xs shrink-0" aria-hidden="true" />
-              <span>Demo mode — changes are not saved and data resets periodically.</span>
-            </div>
-            <Link
-              href="/register"
-              className="shrink-0 rounded-md bg-amber-900/15 px-2.5 py-0.5 text-xs font-semibold hover:bg-amber-900/25 transition-colors"
-            >
-              Create free account
-            </Link>
-          </div>
-        )}
-
-        {/* Main column — offset by the sidebar width on lg+ */}
+        {/* Main column — offset by sidebar width on lg+ */}
         <div
           className={cn(
-            'flex flex-col overflow-x-clip',
-            fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
+            'flex min-w-0 flex-col',
+            fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
             'transition-[margin-left] duration-200 ease-out',
-            offset,
+            // Rail from `sm` (68px), drawer from `lg`. Below `sm` the nav is the
+            // bottom bar and the column takes the full width.
+            'sm:ml-[4.25rem]',
+            (mounted ? expanded : true) ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
           )}
-          style={{ paddingTop: TOP_BANNER_STACK }}
         >
           <MemoTopBar />
 
           {fullHeight ? (
             <main
               id="main-content"
-              className={cn('flex flex-col flex-1 overflow-hidden', contentClassName)}
+              // tabIndex keeps this the skip-link target: focusable without
+              // painting an outline ring.
+              tabIndex={-1}
+              className={cn(
+                'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
+                // MobileBottomNav stops at `sm`, so its clearance does too.
+                'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
+                contentClassName,
+              )}
             >
               {children}
             </main>
           ) : (
             <main
               id="main-content"
-              className={cn(
-                'flex-1 mx-auto w-full max-w-screen-2xl',
-                'px-4 sm:px-6 lg:px-8',
-                'pt-4 pb-24 sm:pb-10',
-                contentClassName,
-              )}
+              tabIndex={-1}
+              // No width cap. The column is already offset by the sidebar's own
+              // width, so "full width" here means exactly the space the sidebar
+              // leaves, never over it.
+              className={cn(appShellMainClasses, contentClassName)}
             >
               {children}
             </main>
           )}
 
-          {/* Mobile bottom nav — hides itself on lg+ via lg:hidden */}
           <MemoMobileBottomNav />
         </div>
       </div>
+      </CommandPaletteHost>
     </InAppShellFrame.Provider>
   );
 }
 
-export type AppShellProps = PageHeaderProps &
-  AppShellFrameProps & {
-    children: ReactNode;
-  };
+type AppShellProps = {
+  title?: string;
+  description?: string;
+  /**
+   * Greek heading, for the rare page whose header cannot be a constant — a
+   * count folded into the sentence, say. Everywhere else the pair lives in the
+   * page registry and neither of these is passed: `resolvePageHeader` already
+   * took overrides for them, but there was no prop to supply one, so a page
+   * with a dynamic English description had no way to make the Greek match.
+   */
+  titleEl?: string;
+  descriptionEl?: string;
+  actions?: ReactNode;
+  children: ReactNode;
+  /** Show contextual help from page registry when available */
+  showHelp?: boolean;
+  /** Full-height layout (messages page) — no scroll, fills viewport */
+  fullHeight?: boolean;
+  /** Extra class on the content wrapper */
+  contentClassName?: string;
+  /**
+   * Contextual Ask AI prompt. Defaults to the page title when omitted.
+   * Pass `false` to hide (AI workspace, pages that already own the CTA).
+   */
+  askAi?: string | false;
+};
 
 /**
  * Page-level shell.
  *
  * Inside an <AppShellFrame> (i.e. the segment layout already mounted the
- * chrome) this renders only the page header and body, so the 130 existing
- * `<AppShell title=…>` call sites keep working unchanged and never produce a
+ * chrome) this renders only the page header and body, so every existing
+ * `<AppShell title=…>` call site keeps working unchanged and never produces a
  * second sidebar. Outside a frame it renders the frame itself, which is how
  * pages in sections that have no layout frame continue to work.
  */
 export function AppShell({
   title,
   description,
+  titleEl,
+  descriptionEl,
   actions,
   children,
+  showHelp = false,
   fullHeight = false,
   contentClassName,
+  askAi,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
+  const pathname = usePathname() ?? '/';
+  const resolved = resolvePageHeader(pathname, { title, description, titleEl, descriptionEl });
+  const pageTitle = resolved.title;
+  const pageTitleEl = resolved.titleEl;
+  const pageDescription = resolved.description;
+  const pageDescriptionEl = resolved.descriptionEl;
+  const showAskAi = Boolean(pageTitle) && askAi !== false;
+  const askAiPrompt =
+    typeof askAi === 'string'
+      ? askAi
+      : `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`;
 
-  const body = (
-    <div className={cn(fullHeight ? 'flex min-h-0 flex-1 flex-col' : 'space-y-5')}>
-      <PageHeader title={title} description={description} actions={actions} />
+  const body = fullHeight ? (
+    children
+  ) : (
+    // Inside a frame the <main> belongs to the layout above, so a page-level
+    // contentClassName (e.g. overflow-x-clip on /analytics, /discover,
+    // /matches, pitch-deck) lands on this wrapper instead — same clipping.
+    <div className={cn('space-y-5', insideFrame && contentClassName)}>
+      {(pageTitle || pageDescription || actions || showAskAi || showHelp) && (
+        <header className="space-y-3">
+          <section className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 items-start gap-2.5">
+              <CfbGlyph
+                name={glyphForHref(pathname)}
+                className="mt-1 icon-md shrink-0 text-primary-accessible"
+              />
+              <div className="min-w-0">
+                {pageTitle && (
+                  <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">
+                    <BilingualText en={pageTitle} el={pageTitleEl} />
+                  </h1>
+                )}
+                {pageDescription && (
+                  <p className="mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
+                    <BilingualText
+                      en={pageDescription}
+                      el={pageDescriptionEl}
+                      stacked
+                      wrap
+                      secondaryFrom="lg"
+                    />
+                  </p>
+                )}
+              </div>
+            </div>
+            {(showHelp || showAskAi) && (
+              <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:max-w-[18rem] sm:shrink-0 sm:justify-end">
+                {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                {showAskAi && <AIComposer prompt={askAiPrompt} className="w-full sm:w-[16.5rem]" />}
+              </div>
+            )}
+          </section>
+          {actions ? (
+            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+          ) : null}
+        </header>
+      )}
       {children}
     </div>
   );

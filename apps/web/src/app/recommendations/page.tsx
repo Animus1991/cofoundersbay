@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -30,6 +30,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,10 +60,10 @@ const ROLE_ICON: Record<string, typeof Users> = {
 };
 
 const ROLE_COLOR: Record<string, string> = {
-  founder: 'bg-blue-50 text-blue-700 border-blue-200',
-  mentor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-  investor: 'bg-amber-50 text-amber-700 border-amber-200',
-  org: 'bg-purple-50 text-purple-700 border-purple-200',
+  founder: 'bg-status-info-bg text-status-info border-status-info-border',
+  mentor: 'bg-status-info-bg text-status-info border-status-info-border',
+  investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  org: 'bg-status-accent-bg text-status-accent border-status-accent-border',
 };
 
 function MatchScoreBadge({ score }: { score: number }) {
@@ -70,7 +71,7 @@ function MatchScoreBadge({ score }: { score: number }) {
     score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-muted-foreground';
   return (
     <div className={cn('flex items-center gap-1 text-white text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
-      <Star className="icon-2xs fill-current" aria-hidden="true" />
+      <Star className="icon-sm fill-current" />
       {score}%
     </div>
   );
@@ -111,13 +112,13 @@ function BreakdownModal({
   explanation: MatchExplanationItem[];
   reasons: string[];
 }) {
-  const color = score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : score >= 60 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400';
+  const color = score >= 80 ? 'text-status-success' : score >= 60 ? 'text-status-info' : 'text-status-warning';
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <Star className="icon-sm text-primary-accessible" />
             Match Score Breakdown
           </DialogTitle>
         </DialogHeader>
@@ -139,7 +140,7 @@ function BreakdownModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
               <div className="flex flex-wrap gap-1.5">
                 {reasons.map((r, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary-emphasis px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
+                  <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
                 ))}
               </div>
             </div>
@@ -154,12 +155,12 @@ function BreakdownModal({
 }
 
 // Rich feedback dropdown
-const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: LucideIcon; color?: string }[] = [
-  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600 dark:text-emerald-400' },
+const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: any; color?: string }[] = [
+  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-status-success' },
   { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
   { label: 'Not now', value: 'not_now', icon: Clock },
   { label: 'Better fit wanted', value: 'better_fit_wanted', icon: Search },
-  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-red-500' },
+  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-status-danger' },
 ];
 
 function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => void }) {
@@ -173,7 +174,7 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
         onClick={() => setOpen(p => !p)}
         title="Feedback"
       >
-        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+        <ChevronDown className="icon-sm" />
       </Button>
       {open && (
         <>
@@ -283,7 +284,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
           <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
               <AvatarImage src={avatarUrl ?? undefined} />
-              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-emphasis">
+              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-accessible">
                 {displayName?.[0]?.toUpperCase() ?? '?'}
               </AvatarFallback>
             </Avatar>
@@ -292,7 +293,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <Link href={`/profiles/${userId}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
+                <Link href={`/profiles/${userId}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {displayName}
                 </Link>
                 {headline && (
@@ -300,7 +301,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 )}
                 {location && (
                   <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="icon-2xs" aria-hidden="true" />
+                    <MapPin className="icon-sm" />
                     {location}
                   </p>
                 )}
@@ -309,13 +310,13 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 {score > 0 && <MatchScoreBadge score={score} />}
                 {confidence !== null && (
                   <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                    <ShieldCheck className="icon-2xs" aria-hidden="true" />
+                    <ShieldCheck className="icon-sm" />
                     {confidence}%
                   </span>
                 )}
                 {role && (
                   <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
-                    <RoleIcon className="h-3 w-3 mr-1" />
+                    <RoleIcon className="icon-sm mr-1" />
                     {role}
                   </Badge>
                 )}
@@ -334,7 +335,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   onClick={() => setShowExplanation(p => !p)}
                   className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
                 >
-                  <Info className="icon-2xs" aria-hidden="true" />
+                  <Info className="icon-sm" />
                   {showExplanation ? 'Hide' : 'Why this match?'}
                 </button>
               </div>
@@ -359,11 +360,11 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
 
             <div className="flex items-center gap-2">
               <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-                <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                <UserPlus className="icon-sm" />
                 Connect
               </Button>
               <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
-                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+                <TrendingUp className="icon-sm" />
                 Score Breakdown
               </Button>
               <div className="ml-auto flex items-center gap-1">
@@ -371,21 +372,21 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   <Button aria-label="Save match"
                     size="icon"
                     variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-blue-600 dark:text-blue-400"
+                    className="h-7 w-7 text-muted-foreground hover:text-status-info"
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >
-                    <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                    <BookmarkPlus className="icon-sm" />
                   </Button>
                 )}
                 <Button aria-label="Good match"
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-emerald-600 dark:text-emerald-400"
+                  className="h-7 w-7 text-muted-foreground hover:text-status-success"
                   title="Good match"
                   onClick={() => onFeedback(userId, 'accepted')}
                 >
-                  <ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />
+                  <ThumbsUp className="icon-sm" />
                 </Button>
                 <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
               </div>
@@ -491,12 +492,12 @@ export default function RecommendationsPage() {
 
   return (
     <AppShell
-      title="Recommendations"
-      description="AI-powered matches based on your profile, skills, and goals"
+      title="For you"
+      description="AI-powered picks based on your profile, skills, and recent activity. Refreshes daily."
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
-          Refresh
+          <RefreshCw className="icon-sm mr-2" />
+          <BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       }
     >
@@ -504,19 +505,19 @@ export default function RecommendationsPage() {
         {/* Stats header */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:grid-rows-1">
           {[
-            { label: 'New Matches', value: recommendations.length, icon: Target },
-            { label: 'This Week', value: weeklyRecs.length, icon: Sparkles },
-            { label: 'Connections', value: stats?.totalConnections ?? 0, icon: Users },
-            { label: 'Acceptance Rate', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
-          ].map(({ label, value, icon: Icon }) => (
-            <Card key={label}>
+            { labelEn: 'New Matches', labelEl: 'Νέες αντιστοιχίσεις', value: recommendations.length, icon: Target },
+            { labelEn: 'This Week', labelEl: 'Αυτή την εβδομάδα', value: weeklyRecs.length, icon: Sparkles },
+            { labelEn: 'Connections', labelEl: 'Συνδέσεις', value: stats?.totalConnections ?? 0, icon: Users },
+            { labelEn: 'Acceptance Rate', labelEl: 'Ποσοστό αποδοχής', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
+          ].map(({ labelEn, labelEl, value, icon: Icon }) => (
+            <Card key={labelEn}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Icon className="h-4 w-4 text-primary-emphasis" />
+                  <Icon className="icon-sm text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-xl font-bold leading-none">{value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5"><BilingualText en={labelEn} el={labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -528,10 +529,10 @@ export default function RecommendationsPage() {
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
-                <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
+                <Sparkles className="icon-sm text-primary-accessible" />
+                <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
-                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Today'}
+                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' }) : 'Today'}
                 </Badge>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1">
@@ -541,7 +542,7 @@ export default function RecommendationsPage() {
                       <div className="relative">
                         <Avatar className="h-11 w-11 ring-2 ring-border group-hover:ring-primary transition-all">
                           <AvatarImage src={m.profile?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary-emphasis">
+                          <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                             {m.profile?.displayName?.[0] ?? '?'}
                           </AvatarFallback>
                         </Avatar>
@@ -568,9 +569,9 @@ export default function RecommendationsPage() {
             className="gap-1.5"
             onClick={() => setShowFilter(p => !p)}
           >
-            <Filter className="h-3.5 w-3.5" aria-hidden="true" />
+            <Filter className="icon-sm" />
             Filter
-            {minScore > 0 && <span className="ml-1 text-xs text-primary-emphasis font-semibold">≥{minScore}%</span>}
+            {minScore > 0 && <span className="ml-1 text-xs text-primary-accessible font-semibold">≥{minScore}%</span>}
           </Button>
           {showFilter && (
             <div className="flex items-center gap-3 flex-1 bg-secondary/40 rounded-lg px-3 py-2">
@@ -587,7 +588,7 @@ export default function RecommendationsPage() {
               <span className="text-xs font-semibold w-8 text-right">{minScore}%</span>
               {minScore > 0 && (
                 <button onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  <X className="icon-sm" />
                 </button>
               )}
             </div>
@@ -602,24 +603,24 @@ export default function RecommendationsPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList>
             <TabsTrigger value="all" className="gap-1.5">
-              <Target className="h-3.5 w-3.5" aria-hidden="true" />
-              All
+              <Target className="icon-sm" />
+              <BilingualText en="All" el="Όλοι" compact />
             </TabsTrigger>
             <TabsTrigger value="founders" className="gap-1.5">
-              <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
-              Founders
+              <Briefcase className="icon-sm" />
+              <BilingualText en="Founders" el="Ιδρυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="mentors" className="gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5" aria-hidden="true" />
-              Mentors
+              <GraduationCap className="icon-sm" />
+              <BilingualText en="Mentors" el="Μέντορες" compact />
             </TabsTrigger>
             <TabsTrigger value="investors" className="gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
-              Investors
+              <DollarSign className="icon-sm" />
+              <BilingualText en="Investors" el="Επενδυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="saved" className="gap-1.5">
-              <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
-              Saved
+              <BookmarkPlus className="icon-sm" />
+              <BilingualText en="Saved" el="Αποθηκευμένα" compact />
               {savedIds.size > 0 && (
                 <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                   {savedIds.size}
@@ -633,14 +634,14 @@ export default function RecommendationsPage() {
               <Skeleton3 />
             ) : recsError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load recommendations.</p>
-                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}>Retry</Button>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load recommendations." el="Αποτυχία φόρτωσης συστάσεων." /></p>
+                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
               <Card><CardContent className="py-14 text-center">
-                <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <h3 className="font-semibold mb-1">No saved matches yet</h3>
-                <p className="text-sm text-muted-foreground">Bookmark matches you want to revisit later.</p>
+                <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                <h3 className="font-semibold mb-1"><BilingualText en="No saved matches yet" el="Δεν υπάρχουν αποθηκευμένες αντιστοιχίσεις" /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Bookmark matches you want to revisit later." el="Αποθηκεύστε αντιστοιχίσεις που θέλετε να επαναξεταστούν αργότερα." /></p>
               </CardContent></Card>
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
@@ -655,16 +656,16 @@ export default function RecommendationsPage() {
             ) : (
               <Card>
                 <CardContent className="py-14 text-center">
-                  <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" aria-hidden="true" />
-                  <h3 className="font-semibold mb-1">No recommendations yet</h3>
+                  <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν συστάσεις ακόμα" /></h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}
                   </p>
                   {minScore > 0 ? (
-                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}>Clear Filter</Button>
+                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>
                   ) : (
                     <Button size="sm" asChild>
-                      <Link href="/profile/edit">Complete Profile</Link>
+                      <Link href="/profile/edit"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Link>
                     </Button>
                   )}
                 </CardContent>

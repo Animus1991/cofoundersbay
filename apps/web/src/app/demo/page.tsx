@@ -1,71 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import { apiRequest } from '@/lib/api';
+import { useEffect, useRef } from 'react';
+import { Loader2, Sparkles } from 'lucide-react';
+import { applyPreviewDemoSession } from '@/lib/preview-demo';
 
+/**
+ * Demo entry point — fallback UI.
+ *
+ * The handoff itself is done by middleware, which sets the demo cookies and
+ * redirects to the dashboard in a single response (see `middleware.ts`). It has
+ * to happen there: the auth guard reads those cookies server-side, and doing the
+ * redirect from a client effect meant racing the provider tree's hydration —
+ * a race this page lost, leaving it re-rendering on "Loading demo…" forever.
+ *
+ * This component therefore normally never renders. It stays as a safety net for
+ * the case where middleware does not run (e.g. a static export), and the latch
+ * keeps the redirect one-shot if it ever does.
+ */
 export default function DemoPage() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const handedOff = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function startDemo() {
-      try {
-        await apiRequest('/api/auth/demo', { method: 'POST' });
-        if (!cancelled) router.replace('/dashboard');
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Demo login failed. Please try again.');
-        }
-      }
-    }
-
-    startDemo();
-    return () => { cancelled = true; };
-  }, [router]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <div className="max-w-sm w-full text-center space-y-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 mx-auto">
-            <AlertCircle className="h-7 w-7 text-destructive-emphasis" aria-hidden="true" />
-          </div>
-          <h2 className="text-xl font-semibold text-foreground">Demo unavailable</h2>
-          <p className="text-sm text-muted-foreground">{error}</p>
-          <div className="flex gap-3 justify-center pt-2">
-            <button
-              onClick={() => { setError(null); window.location.reload(); }}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              Try again
-            </button>
-            <button
-              onClick={() => router.push('/')}
-              className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-secondary/50 transition-colors"
-            >
-              Back to home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    if (handedOff.current) return;
+    handedOff.current = true;
+    applyPreviewDemoSession();
+    window.location.replace('/dashboard/founder');
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
-        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
-          <Sparkles className="icon-xl text-primary-emphasis animate-pulse" aria-hidden="true" />
+        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+          <Sparkles className="icon-xl text-primary-accessible animate-pulse" />
         </div>
         <div className="space-y-1">
           <h2 className="text-xl font-semibold text-foreground">Loading demo…</h2>
-          <p className="text-sm text-muted-foreground">Setting up your demo environment</p>
+          <p className="text-sm text-muted-foreground">Opening the full product with sample data</p>
         </div>
-        <Loader2 className="icon-md animate-spin text-muted-foreground mx-auto" aria-hidden="true" />
+        <Loader2 className="icon-md animate-spin text-muted-foreground mx-auto" />
       </div>
     </div>
   );

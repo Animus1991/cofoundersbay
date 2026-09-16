@@ -254,15 +254,16 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
         onClick={onToggle}
         className={cn(
           'flex w-full items-center justify-between py-4 text-left transition-colors',
-          isOpen ? 'text-primary-emphasis' : 'hover:text-primary-emphasis text-foreground',
+          isOpen ? 'text-primary-accessible' : 'hover:text-primary-accessible text-foreground',
         )}
       >
         <span className="text-sm font-medium pr-4">{faq.question}</span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
-            isOpen && 'rotate-180 text-primary-emphasis',
-          )} aria-hidden="true" />
+            'icon-sm shrink-0 text-muted-foreground transition-transform duration-200',
+            isOpen && 'rotate-180 text-primary-accessible',
+          )}
+        />
       </button>
       {isOpen && (
         <div className="pb-4 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
@@ -312,7 +313,7 @@ export default function HelpPage() {
       actions={
         <a href="mailto:support@cofounderbay.com">
           <Button size="sm" className="gap-2">
-            <Mail className="icon-sm" aria-hidden="true" />
+            <Mail className="icon-sm" />
             Contact Support
           </Button>
         </a>
@@ -322,13 +323,13 @@ export default function HelpPage() {
 
         {/* Search Hero */}
         <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <HelpCircle className="icon-lg text-primary-emphasis" aria-hidden="true" />
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
           <p className="text-sm text-muted-foreground mb-4">Search our knowledge base or browse topics below</p>
           <div className="mx-auto max-w-lg relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search for help (e.g. matching, billing, profile...)"
@@ -394,7 +395,7 @@ export default function HelpPage() {
             </p>
             <button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-              className="text-xs text-primary-emphasis hover:underline"
+              className="text-xs text-primary-accessible hover:underline"
             >
               Clear all filters
             </button>
@@ -419,8 +420,8 @@ export default function HelpPage() {
               <Card key={category.id} className="shadow-sm border-border/50">
                 <CardHeader className="border-b border-border/50 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                      <category.icon className="h-4 w-4 text-primary-emphasis" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <category.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-sm font-semibold">{category.title}</CardTitle>
@@ -449,8 +450,8 @@ export default function HelpPage() {
         {/* Contact Support */}
         <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
           <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-              <Mail className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <Mail className="icon-lg text-primary-accessible" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>
             <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
@@ -459,13 +460,13 @@ export default function HelpPage() {
             <div className="flex flex-wrap justify-center gap-3">
               <a href="mailto:support@cofounderbay.com">
                 <Button className="gap-2">
-                  <Mail className="icon-sm" aria-hidden="true" />
+                  <Mail className="icon-sm" />
                   Email Support
                 </Button>
               </a>
               <Button variant="outline" className="gap-2" asChild>
                 <Link href="/messages">
-                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <MessageCircle className="icon-sm" />
                   Live Chat
                 </Link>
               </Button>
@@ -478,7 +479,7 @@ export default function HelpPage() {
           <Link href="/terms" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-emphasis transition-colors mb-2" aria-hidden="true" />
+                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5">Terms of Service</h3>
                 <p className="text-xs text-muted-foreground">Read our terms and conditions</p>
               </CardContent>
@@ -487,7 +488,7 @@ export default function HelpPage() {
           <Link href="/privacy" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-emphasis transition-colors mb-2" aria-hidden="true" />
+                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5">Privacy Policy</h3>
                 <p className="text-xs text-muted-foreground">Learn how we protect your data</p>
               </CardContent>
@@ -496,7 +497,7 @@ export default function HelpPage() {
           <Link href="/settings" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-emphasis transition-colors mb-2" aria-hidden="true" />
+                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5">Account Settings</h3>
                 <p className="text-xs text-muted-foreground">Manage your preferences</p>
               </CardContent>

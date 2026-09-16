@@ -399,11 +399,19 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     try {
       await builderApi.updateDocumentSection(documentId, sectionKey, { content });
       setState((prev) => {
-        if (prev.activeDocument?.id !== documentId) return prev;
-        const updatedContent = { ...prev.activeDocument.content, [sectionKey]: content };
+        const mergeContent = (existing?: Record<string, any>) => ({
+          ...(existing ?? {}),
+          [sectionKey]: content,
+        });
         return {
           ...prev,
-          activeDocument: { ...prev.activeDocument, content: updatedContent },
+          documents: prev.documents.map((d) =>
+            d.id === documentId ? { ...d, content: mergeContent(d.content) } : d,
+          ),
+          activeDocument:
+            prev.activeDocument?.id === documentId
+              ? { ...prev.activeDocument, content: mergeContent(prev.activeDocument.content) }
+              : prev.activeDocument,
         };
       });
       // Broadcast to collaborators

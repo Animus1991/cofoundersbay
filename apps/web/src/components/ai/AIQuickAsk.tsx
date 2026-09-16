@@ -71,7 +71,7 @@ export function AIQuickAsk({
         onClick={() => setIsOpen(true)}
         className={cn('gap-1.5', className)}
       >
-        <Sparkles className="h-3.5 w-3.5 text-violet-500" aria-hidden="true" />
+        <Sparkles className="icon-sm text-status-accent" />
         Ask AI
       </Button>
     );
@@ -81,7 +81,7 @@ export function AIQuickAsk({
     <div className={cn('relative', className)}>
       <div className="bg-card border border-border rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-b border-border/60">
+        <div className="flex items-center justify-between px-3 py-2 bg-status-accent-bg border-b border-border/60">
           <span className="text-xs font-medium flex items-center gap-1.5">
             <span>{getAgentIcon(agentId)}</span>
             Quick AI Ask
@@ -90,7 +90,7 @@ export function AIQuickAsk({
             onClick={handleClose}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
+            <X className="icon-sm" />
           </button>
         </div>
 
@@ -107,7 +107,7 @@ export function AIQuickAsk({
 
         {/* Error */}
         {error && (
-          <div className="px-3 py-2 text-xs text-destructive-emphasis bg-destructive/10 border-b border-border/60">
+          <div className="px-3 py-2 text-xs text-destructive-accessible bg-destructive/10 border-b border-border/60">
             {error}
           </div>
         )}
@@ -120,19 +120,19 @@ export function AIQuickAsk({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 h-8 text-sm border-0 bg-muted/50 focus-visible:ring-1 focus-visible:ring-violet-500"
+              className="flex-1 h-8 text-sm border-0 bg-muted/50 focus-visible:ring-1 focus-visible:ring-ring"
               disabled={isLoading}
             />
             <Button aria-label="Send"
               type="submit"
               size="icon"
               disabled={!input.trim() || isLoading}
-              className="h-8 w-8 bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+              className="h-8 w-8 bg-primary hover:bg-primary/90"
             >
               {isLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                <Loader2 className="icon-sm animate-spin" />
               ) : (
-                <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                <Send className="icon-sm" />
               )}
             </Button>
           </div>

@@ -2,10 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Bell, CheckCheck, MessageCircle, UserPlus, Star, Calendar,
-  Briefcase, Users, Zap, Info,
-} from 'lucide-react';
+import { CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,36 +18,42 @@ import {
   type NotificationItem,
 } from '@/lib/api';
 import { useHasSession } from '@/hooks/useSession';
+import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 
-const TYPE_ICON: Record<string, React.ElementType> = {
-  message: MessageCircle,
-  connection_request: UserPlus,
-  connection_accepted: UserPlus,
-  match: Star,
-  event: Calendar,
-  job: Briefcase,
-  group: Users,
-  mention: Zap,
+const TYPE_GLYPH: Record<string, CfbGlyphName> = {
+  message: 'messages',
+  connection_request: 'people',
+  connection_accepted: 'people',
+  match: 'matches',
+  event: 'calendar',
+  job: 'briefcase',
+  group: 'community',
+  mention: 'spark',
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  message: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
-  connection_request: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
-  connection_accepted: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
-  match: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
-  event: 'bg-purple-500/15 text-purple-700 dark:text-purple-400',
-  job: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
-  group: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400',
-  mention: 'bg-pink-500/15 text-pink-700 dark:text-pink-400',
+  message: STATUS.info.chip,
+  connection_request: STATUS.success.chip,
+  connection_accepted: STATUS.success.chip,
+  match: STATUS.warning.chip,
+  event: STATUS.accent.chip,
+  job: STATUS.warning.chip,
+  group: STATUS.info.chip,
+  mention: STATUS.accent.chip,
 };
 
 function NotifIcon({ type }: { type: string }) {
-  const Icon = TYPE_ICON[type] ?? Info;
+  const name = TYPE_GLYPH[type] ?? 'bell';
   const color = TYPE_COLOR[type] ?? 'bg-secondary text-muted-foreground';
   return (
-    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', color)}>
-      <Icon className="h-3.5 w-3.5" />
+    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', color)}>
+      <CfbGlyph name={name} className="icon-sm" />
     </div>
   );
 }
@@ -59,6 +62,8 @@ export function NotificationsBell({ className }: { className?: string }) {
   const router = useRouter();
   const { error: showError } = useToast();
   const hasSession = useHasSession();
+  const { isAuthenticated, isChecking } = useAuthenticatedSession();
+  const apiAvailable = useApiAvailability();
 
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -68,13 +73,14 @@ export function NotificationsBell({ className }: { className?: string }) {
   const MIN_RELOAD_MS = 30_000; // minimum 30 s between background reloads
 
   const unread = items.filter((notification) => !notification.readAt).length;
+  const ready = hasSession && !isChecking && isAuthenticated && apiAvailable;
 
   const load = async (force = false) => {
     if (loadingRef.current) return;
     const now = Date.now();
     if (!force && now - lastLoadedAt.current < MIN_RELOAD_MS) return;
 
-    if (!hasSession) {
+    if (!ready) {
       setItems([]);
       setHasNew(false);
       return;
@@ -95,7 +101,7 @@ export function NotificationsBell({ className }: { className?: string }) {
   };
 
   useEffect(() => {
-    if (!hasSession) {
+    if (!ready) {
       setItems([]);
       setHasNew(false);
       return;
@@ -119,9 +125,9 @@ export function NotificationsBell({ className }: { className?: string }) {
       document.removeEventListener('visibilitychange', refreshIfVisible);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSession]);
+  }, [ready]);
 
-  if (!hasSession) return null;
+  if (!hasSession || isChecking || !isAuthenticated) return null;
 
   return (
     <DropdownMenu
@@ -137,9 +143,13 @@ export function NotificationsBell({ className }: { className?: string }) {
           variant="ghost"
           size="icon"
           className={cn('relative', className)}
-          aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
+          aria-label={
+            unread > 0
+              ? bilingualAria(`Notifications (${unread} unread)`, `Ειδοποιήσεις (${unread} μη αναγνωσμένες)`)
+              : bilingualAria('Notifications', 'Ειδοποιήσεις')
+          }
         >
-          <Bell className={cn('h-5 w-5', hasNew && 'animate-pulse')} aria-hidden="true" />
+          <CfbGlyph name="bell" className={cn('icon-md', hasNew && 'animate-pulse')} />
           {unread > 0 && (
             <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground ring-2 ring-background">
               {unread > 9 ? '9+' : unread}
@@ -148,13 +158,15 @@ export function NotificationsBell({ className }: { className?: string }) {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="flex max-h-[520px] w-[380px] flex-col overflow-hidden p-0">
+      <DropdownMenuContent align="end" className="flex max-h-[min(70dvh,520px)] w-[min(380px,calc(100vw-1.5rem))] flex-col overflow-hidden p-0">
         <div className="flex flex-shrink-0 items-center justify-between px-4 py-3">
           <div>
-            <span className="text-sm font-semibold text-foreground">Notifications</span>
+            <span className="text-sm font-semibold text-foreground">
+              <BilingualText en="Notifications" el="Ειδοποιήσεις" compact />
+            </span>
             {unread > 0 && (
-              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary-emphasis">
-                {unread} new
+              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary-accessible">
+                <BilingualText en={`${unread} new`} el={`${unread} νέες`} compact />
               </span>
             )}
           </div>
@@ -175,8 +187,8 @@ export function NotificationsBell({ className }: { className?: string }) {
               }
             }}
           >
-            <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            Mark all read
+            <CheckCheck className="icon-sm" />
+            <BilingualText en="Mark all read" el="Ανάγνωση όλων" compact />
           </Button>
         </div>
         <DropdownMenuSeparator className="my-0" />
@@ -185,7 +197,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           {items.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/60">
-                <Bell className="icon-md text-muted-foreground" aria-hidden="true" />
+                <CfbGlyph name="bell" className="icon-md text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
                 {loading ? 'Loading...' : "You're all caught up!"}
@@ -252,7 +264,7 @@ export function NotificationsBell({ className }: { className?: string }) {
             <DropdownMenuSeparator className="my-0" />
             <div className="flex-shrink-0 px-4 py-2.5">
               <button
-                className="w-full text-center text-xs text-primary-emphasis underline underline-offset-2"
+                className="w-full text-center text-xs text-primary-accessible hover:underline"
                 onClick={() => router.push('/notifications')}
               >
                 View all notifications

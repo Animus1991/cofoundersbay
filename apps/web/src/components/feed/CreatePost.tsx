@@ -85,7 +85,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-emphasis">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible">
                 {user.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -108,7 +108,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <Send className="icon-md text-primary-accessible" />
               Create Post
             </DialogTitle>
           </DialogHeader>
@@ -136,7 +136,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-emphasis">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible">
                 {user.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -160,7 +160,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Add tags (press Enter)"
@@ -184,8 +184,8 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-emphasis">
-                      <X className="icon-2xs" aria-hidden="true" />
+                    <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+                      <X className="icon-sm" />
                     </button>
                   </Badge>
                 ))}
@@ -199,11 +199,11 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
               <Button aria-label="Add image" variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <Image className="icon-sm" aria-hidden="true" />
               </Button>
-              <Button aria-label="Copy link" variant="ghost" size="icon" className="h-9 w-9" disabled>
-                <Link2 className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+                <Link2 className="icon-sm" />
               </Button>
-              <Button aria-label="Mention someone" variant="ghost" size="icon" className="h-9 w-9" disabled>
-                <AtSign className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+                <AtSign className="icon-sm" />
               </Button>
             </div>
             <div className="flex items-center gap-2">

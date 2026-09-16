@@ -1,0 +1,372 @@
+'use client';
+
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Bot,
+  Loader2,
+  Maximize2,
+  Plus,
+  RefreshCw,
+  Send,
+  Settings,
+  Sparkles,
+  Trash2,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { getAgentIcon } from '@/lib/ai-api';
+import { useAIChat, type AIMessage } from '@/hooks/useAIChat';
+import { usePageContext } from '@/hooks/usePageContext';
+import { ActionCard } from '@/components/ai/ActionCard';
+import { CitationChip } from '@/components/ai/CitationChip';
+import type { CopilotAction } from '@/lib/copilot-types';
+import { getActionSpec } from '@/lib/action-registry';
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
+
+const STARTERS = [
+  { en: 'What should I do next?', el: 'Τι να κάνω μετά;' },
+  { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα' },
+  { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
+  { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
+  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist' },
+  { en: 'Connect with Elena', el: 'Σύνδεση με την Elena' },
+];
+
+function formatTime(d: Date) {
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function AssistantBody({
+  message,
+  pendingActionId,
+  onConfirm,
+  onDismiss,
+  onUndo,
+}: {
+  message: AIMessage;
+  pendingActionId: string | null;
+  onConfirm: (action: CopilotAction) => void;
+  onDismiss: (action: CopilotAction) => void;
+  onUndo: (action: CopilotAction) => void;
+}) {
+  const html = useMemo(() => {
+    const escaped = message.content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />');
+  }, [message.content]);
+
+  return (
+    <div className="space-y-2">
+      {message.isStreaming && !message.content ? (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <BilingualText en="Working across your graph…" el="Εργασία στο γράφο σας…" compact />
+        </div>
+      ) : (
+        <SanitizedHtml
+          className="text-sm leading-relaxed text-foreground"
+          html={html}
+        />
+      )}
+      {message.citations && message.citations.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {message.citations.map((c) => (
+            <CitationChip key={`${c.type}-${c.id}`} citation={c} />
+          ))}
+        </div>
+      )}
+      {message.actions && message.actions.length > 0 && (
+        <div className="grid gap-2 pt-1">
+          {message.actions.map((action) => (
+            <ActionCard
+              key={action.id}
+              action={action}
+              busyId={pendingActionId}
+              onConfirm={onConfirm}
+              onDismiss={onDismiss}
+              onUndo={onUndo}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type CopilotWorkspaceProps = {
+  variant?: 'page' | 'popup';
+  initialPrompt?: string;
+  onExpand?: () => void;
+};
+
+export function CopilotWorkspace({
+  variant = 'page',
+  initialPrompt,
+  onExpand,
+}: CopilotWorkspaceProps) {
+  const router = useRouter();
+  const sayOne = useBilingualString();
+  const isPage = variant === 'page';
+  const pageContext = usePageContext();
+  const [input, setInput] = useState(initialPrompt ?? '');
+  const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const chat = useAIChat({
+    agentId: 'general',
+    autoCreateConversation: true,
+    enableCopilot: true,
+    pageContext,
+  });
+  const agentList = chat.agents ?? [];
+  const currentAgentConfig = agentList.find((a) => a.id === chat.currentAgent);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chat.messages, chat.isStreaming]);
+
+  const handleConfirm = async (action: CopilotAction) => {
+    const result = await chat.confirmAction(action);
+    // Whether confirming takes you somewhere is declared with the action, not
+    // listed here. This read the two tool ids that existed when it was written,
+    // so any capability added afterwards returned an href this component threw
+    // away. `shortlist_add` still returns `/shortlist` and still leaves you
+    // where you are, because it declares `navigatesOnSuccess` false.
+    if (result?.href && getActionSpec(action.tool)?.navigatesOnSuccess) {
+      router.push(result.href);
+    }
+  };
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || chat.isStreaming) return;
+    const value = input;
+    setInput('');
+    void chat.sendMessage(value);
+  };
+
+  return (
+    <div className={cn('flex min-h-0 flex-1 overflow-hidden', isPage ? 'flex-col lg:flex-row' : 'flex-col')}>
+      {isPage && (
+        <aside className="flex w-full shrink-0 flex-col border-b border-border/60 bg-card/80 lg:w-72 lg:border-b-0 lg:border-r">
+          <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
+            <p className="text-sm font-semibold">
+              <BilingualText en="Threads" el="Νήματα" compact />
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="min-h-11 gap-1.5"
+              onClick={() => chat.clearMessages()}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <BilingualText en="New" el="Νέα" compact />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2">
+            {chat.conversations.length === 0 ? (
+              <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+                <BilingualText
+                  en="New conversations appear here after you send a message."
+                  el="Οι νέες συνομιλίες εμφανίζονται εδώ αφού στείλετε μήνυμα."
+                />
+              </p>
+            ) : (
+              <ul className="space-y-1">
+                {chat.conversations.map((conv) => (
+                  <li key={conv.id}>
+                    <button
+                      type="button"
+                      onClick={() => void chat.loadConversation(conv.id)}
+                      className={cn(
+                        'tap-target min-h-11 w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted/70',
+                        chat.conversationId === conv.id && 'bg-primary/10 text-primary',
+                      )}
+                    >
+                      <span className="line-clamp-2">
+                        {conv.title && conv.title !== 'New Conversation' && conv.title !== 'New conversation'
+                          ? conv.title
+                          : sayOne('New conversation', 'Νέα συνομιλία')}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="border-t border-border/60 p-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2"
+              onClick={() => router.push('/settings/ai')}
+            >
+              <Settings className="h-4 w-4" />
+              <BilingualText en="AI preferences" el="Προτιμήσεις AI" compact />
+            </Button>
+          </div>
+        </aside>
+      )}
+
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex items-center justify-between gap-2 border-b border-border/40 bg-muted/30 px-3 py-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
+              {getAgentIcon(chat.currentAgent)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {currentAgentConfig?.name || 'CoFounderBay Assistant'}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">
+                {chat.isAIAvailable
+                  ? sayOne('Live model + platform tools', 'Ζωντανό μοντέλο + εργαλεία πλατφόρμας')
+                  : sayOne('Platform copilot · tools online', 'Βοηθός πλατφόρμας · εργαλεία ενεργά')}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {agentList.length > 1 && (
+              <select
+                value={chat.currentAgent}
+                onChange={(e) => chat.setAgent(e.target.value)}
+                className="h-8 max-w-[9rem] rounded-md border border-border bg-background px-2 text-xs"
+                aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
+              >
+                {agentList.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {chat.messages.length > 0 && (
+              <>
+                <button type="button" onClick={chat.retryLastMessage} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Retry', 'Επανάληψη')} aria-label={bilingualAria('Retry', 'Επανάληψη')}>
+                  <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                <button type="button" onClick={chat.clearMessages} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Clear', 'Καθαρισμός')} aria-label={bilingualAria('Clear', 'Καθαρισμός')}>
+                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </>
+            )}
+            {onExpand && (
+                <button type="button" onClick={onExpand} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
+                <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
+          {chat.messages.length === 0 ? (
+            <div className="mx-auto flex max-w-lg flex-col gap-4 py-6">
+              <div className="flex gap-2">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div className="rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-sm">
+                  <BilingualText
+                    en="I can search the network, explain matches, send intros, open threads, and jump to any page — using the same data as the rest of CoFounderBay. Writes wait for your confirm."
+                    el="Μπορώ να ψάξω στο δίκτυο, να εξηγήσω αντιστοιχίσεις, να στείλω συστάσεις, να ανοίξω νήματα και να μεταβώ σε οποιαδήποτε σελίδα — με τα ίδια δεδομένα της πλατφόρμας. Οι εγγραφές περιμένουν επιβεβαίωση."
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {STARTERS.map((q) => (
+                  <button
+                    key={q.en}
+                    type="button"
+                    onClick={() => void chat.sendMessage(q.en)}
+                    className="min-h-11 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
+                  >
+                    {sayOne(q.en, q.el)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            chat.messages.map((msg) => (
+              <div key={msg.id} className={cn('flex gap-2', msg.role === 'user' && 'justify-end')}>
+                {msg.role === 'assistant' && (
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] text-muted-foreground">
+                    {getAgentIcon(chat.currentAgent)}
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    'max-w-[min(100%,36rem)] rounded-2xl px-3 py-2',
+                    msg.role === 'user'
+                      ? 'rounded-tr-sm bg-primary text-primary-foreground'
+                      : 'rounded-tl-sm bg-muted/70',
+                  )}
+                >
+                  {msg.role === 'user' ? (
+                    <p className="text-sm">{msg.content}</p>
+                  ) : (
+                    <AssistantBody
+                      message={msg}
+                      pendingActionId={chat.pendingActionId}
+                      onConfirm={(a) => void handleConfirm(a)}
+                      onDismiss={chat.dismissAction}
+                      onUndo={(a) => void chat.undoAction(a)}
+                    />
+                  )}
+                  <p className={cn('mt-1 text-2xs', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
+                    {formatTime(msg.timestamp)}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+          <div ref={endRef} />
+        </div>
+
+        {chat.error && (
+          <p className="px-3 text-xs text-destructive">{chat.error}</p>
+        )}
+
+        <form onSubmit={onSubmit} className="shrink-0 border-t border-border/60 p-3">
+          <div className="flex items-center gap-2">
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={sayOne(
+                'Ask AI to search, intro, message, or navigate…',
+                'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…',
+              )}
+              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1"
+              disabled={chat.isStreaming}
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!input.trim() || chat.isStreaming}
+              className="h-11 w-11 rounded-full"
+              aria-label={bilingualAria('Send', 'Αποστολή')}
+            >
+              {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="mt-2 flex items-center justify-center gap-1 text-center text-2xs text-muted-foreground">
+            <Sparkles className="h-3 w-3" />
+            <BilingualText
+              en="Tools use your real Connections, Matches, and Messages APIs. Destructive steps need confirm."
+              el="Τα εργαλεία χρησιμοποιούν τις πραγματικές συνδέσεις, αντιστοιχίσεις και μηνύματα. Οι καταστροφικές ενέργειες θέλουν επιβεβαίωση."
+            />
+          </p>
+        </form>
+      </section>
+    </div>
+  );
+}

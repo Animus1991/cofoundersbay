@@ -137,7 +137,7 @@ async function reset() {
 async function setPersonProperties(props: Record<string, unknown>) {
   try {
     const ph = await getPostHog();
-    ph?.people.set(props);
+    ph?.people?.set(props);
   } catch { /* never throw */ }
 }
 

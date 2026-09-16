@@ -7,12 +7,21 @@ import Link from 'next/link';
 import {
   ArrowLeft, MoreVertical, AlertTriangle, Bookmark, Send,
   Clock, TrendingUp, CheckCircle, Info, Brain, Zap, MessageCircle, ExternalLink,
+  Link as LinkIcon, UserRound,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import {
   getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
@@ -24,7 +33,7 @@ import {
 function SectionLabel({ label }: { label: string }) {
   return (
     <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground"
-      style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      style={{ fontFamily: 'var(--font-mono)' }}>
       {label}
     </p>
   );
@@ -36,11 +45,11 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
           {item.label}
         </span>
         <span className="text-2xs font-semibold tabular-nums text-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ fontFamily: 'var(--font-mono)' }}>
           {item.score}%
         </span>
       </div>
@@ -58,17 +67,17 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
 
 function CompatBadge({ label }: { label: string }) {
   const icon = label.toLowerCase().includes('vision') ? (
-    <Brain className="h-3.5 w-3.5" aria-hidden="true" />
+    <Brain className="icon-sm" />
   ) : (
-    <Zap className="h-3.5 w-3.5" aria-hidden="true" />
+    <Zap className="icon-sm" />
   );
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded"
       style={{
-        background: 'rgba(34,211,238,0.08)',
-        border: '1px solid rgba(34,211,238,0.2)',
-        color: '#22D3EE',
-        fontFamily: "'JetBrains Mono', monospace",
+        background: 'hsl(var(--status-info-bg))',
+        border: '1px solid hsl(var(--status-info-border))',
+        color: 'hsl(var(--status-info-fg))',
+        fontFamily: 'var(--font-mono)',
         fontSize: 11,
         fontWeight: 600,
       }}>
@@ -83,9 +92,9 @@ function CompatBadge({ label }: { label: string }) {
 function TraitChip({ item }: { item: MatchVsStrength }) {
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-border bg-card">
-      <span style={{ color: '#4ADE80', fontSize: 10 }}>■</span>
+      <span className="text-status-success" style={{ fontSize: 11 }} aria-hidden="true">■</span>
       <span className="text-2xs font-medium text-foreground"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        style={{ fontFamily: 'var(--font-mono)' }}>
         {item.label}
       </span>
     </div>
@@ -107,22 +116,22 @@ function FrictionSection({ points }: { points: MatchVsFrictionPoint[] }) {
   if (points.length === 0) return null;
   return (
     <div className="rounded-lg overflow-hidden border"
-      style={{ background: 'rgba(251,146,60,0.05)', borderColor: 'rgba(251,146,60,0.2)' }}>
+      style={{ background: 'hsl(var(--status-warning-bg))', borderColor: 'hsl(var(--status-warning-border))' }}>
       {points.map((point, i) => (
         <div key={point.title}>
           <div className="flex gap-3 p-4">
-            <div className="shrink-0 mt-0.5" style={{ color: '#FB923C' }}>
+            <div className="shrink-0 mt-0.5" style={{ color: 'hsl(var(--status-warning-fg))' }}>
               <FrictionIcon icon={point.icon} />
             </div>
             <div className="flex flex-col gap-1 flex-1">
-              <span className="text-sm font-semibold leading-none" style={{ color: '#FB923C' }}>
+              <span className="text-sm font-semibold leading-none" style={{ color: 'hsl(var(--status-warning-fg))' }}>
                 {point.title}
               </span>
               <span className="text-sm text-foreground leading-relaxed">{point.description}</span>
             </div>
           </div>
           {i < points.length - 1 && (
-            <div className="mx-4" style={{ height: 1, background: 'rgba(251,146,60,0.13)' }} />
+            <div className="mx-4" style={{ height: 1, background: 'hsl(var(--status-warning-border))' }} />
           )}
         </div>
       ))}
@@ -164,37 +173,37 @@ function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
             stroke="rgba(107,114,128,0.15)" strokeWidth={1} />
         ))}
         {/* Source line */}
-        <path d={smoothPath(source)} fill="none" stroke="#4ADE80" strokeWidth={2}
+        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-fg))" strokeWidth={2}
           strokeLinecap="round" strokeLinejoin="round" />
         {/* Target line */}
-        <path d={smoothPath(target)} fill="none" stroke="#22D3EE" strokeWidth={2}
+        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-fg))" strokeWidth={2}
           strokeLinecap="round" strokeLinejoin="round" />
         {/* Source dots */}
         {source.map((v, i) => (
-          <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="#4ADE80" />
+          <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="hsl(var(--status-success-fg))" />
         ))}
         {/* Target dots */}
         {target.map((v, i) => (
-          <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="#22D3EE" />
+          <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="hsl(var(--status-info-fg))" />
         ))}
         {/* X-axis labels */}
         {axes.map((axis, i) => (
           <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9}
             fill="rgba(107,114,128,0.7)"
-            fontFamily="'JetBrains Mono', monospace">
+            fontFamily="var(--font-mono)">
             {axis}
           </text>
         ))}
       </svg>
       <div className="flex justify-center gap-6 mt-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <div className="w-5 h-0.5 rounded-full" style={{ background: '#4ADE80' }} />
+          style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="w-5 h-0.5 rounded-full" style={{ background: 'hsl(var(--status-success-fg))' }} />
           You
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <div className="w-5 h-0.5 rounded-full" style={{ background: '#22D3EE' }} />
+          style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="w-5 h-0.5 rounded-full" style={{ background: 'hsl(var(--status-info-fg))' }} />
           Match
         </div>
       </div>
@@ -214,20 +223,22 @@ function DonutScore({ score }: { score: number }) {
         {/* Background track */}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#333333" strokeWidth={10} />
         {/* Score arc — rotated so 0% starts at top */}
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#22D3EE" strokeWidth={10}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--status-info-fg))" strokeWidth={10}
           strokeDasharray={`${filled} ${circ - filled}`}
           strokeDashoffset={circ / 4}
           strokeLinecap="round"
           style={{ transformOrigin: '50px 50px', transition: 'stroke-dasharray 1s ease' }} />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      {/* `gap-1.5` on the column, and the label loses its `mt-0.5`: the two
+          lines inside this ring were 1.6px apart. */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
         <span className="font-extrabold tabular-nums leading-none"
-          style={{ color: '#22D3EE', fontSize: 22, fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ color: 'hsl(var(--status-info-fg))', fontSize: 22, fontFamily: 'var(--font-mono)' }}>
           {score}%
         </span>
-        <span className="uppercase tracking-wider mt-0.5"
-          style={{ color: 'var(--muted-foreground)', fontSize: 9, fontWeight: 600,
-            fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="uppercase tracking-wider"
+          style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600,
+            fontFamily: 'var(--font-mono)' }}>
           MATCH
         </span>
       </div>
@@ -321,13 +332,24 @@ export default function MatchDetailPage() {
     );
   }
 
-  // The whole render below dereferences these three unconditionally, so a 200
-  // with a partial body has to take the same path as an outright failure.
-  if (isError || !data?.overall || !data.sourceProfile || !data.targetProfile) {
+  // The whole render below dereferences these unconditionally, so a 200 with a
+  // partial body has to take the same path as an outright failure.
+  //
+  // Guard `overall.score`, not `overall`. `overall` is { score, confidence }
+  // (see MatchCompatibility in lib/api.ts), so an earlier `typeof data?.overall
+  // !== 'number'` was true for every well-formed response — it sent the page to
+  // "Could not load compatibility data." always, and narrowed `overall` to
+  // `never`, which is where the three type errors came from.
+  if (
+    isError ||
+    typeof data?.overall?.score !== 'number' ||
+    !data.sourceProfile ||
+    !data.targetProfile
+  ) {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <Info className="icon-xl text-muted-foreground" aria-hidden="true" />
+          <Info className="icon-xl text-muted-foreground" />
           <p className="text-muted-foreground">Could not load compatibility data.</p>
           <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
         </div>
@@ -348,18 +370,53 @@ export default function MatchDetailPage() {
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors"
             aria-label="Back"
           >
-            <ArrowLeft className="icon-md text-foreground" aria-hidden="true" />
+            <ArrowLeft className="icon-md text-foreground" />
           </button>
           <span className="text-sm font-semibold"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            style={{ fontFamily: 'var(--font-mono)' }}>
             Compatibility Analysis
           </span>
-          <button
-            className="p-1.5 -mr-1.5 rounded-lg hover:bg-muted transition-colors"
-            aria-label="More options"
-          >
-            <MoreVertical className="icon-md text-foreground" aria-hidden="true" />
-          </button>
+          {/* This offered "More options" and had no menu behind it. The two
+              things this screen can actually do beyond the buttons already on
+              it are: hand someone the link, and open the full profile. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="p-1.5 -mr-1.5 rounded-lg transition-colors hover:bg-muted focus-ring"
+                aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
+              >
+                <MoreVertical className="icon-md text-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    addToast({
+                      type: 'success',
+                      title: bilingualInline('Link copied', 'Ο σύνδεσμος αντιγράφηκε'),
+                    });
+                  } catch {
+                    addToast({
+                      type: 'error',
+                      title: bilingualInline('Could not copy the link', 'Δεν αντιγράφηκε ο σύνδεσμος'),
+                    });
+                  }
+                }}
+              >
+                <LinkIcon className="mr-2 icon-sm" />
+                <BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/profiles/${targetUserId}`}>
+                  <UserRound className="mr-2 icon-sm" />
+                  <BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact />
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* ── Hero section ───────────────────────────────────────────────────── */}
@@ -379,7 +436,7 @@ export default function MatchDetailPage() {
                   {sourceProfile.displayName}
                 </span>
                 <span className="text-2xs text-muted-foreground capitalize"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  style={{ fontFamily: 'var(--font-mono)' }}>
                   {sourceProfile.role}
                 </span>
               </div>
@@ -391,9 +448,9 @@ export default function MatchDetailPage() {
             {/* Target user — accent ring */}
             <div className="flex flex-col items-center gap-3">
               <Link href={`/profiles/${targetProfile.id}`}>
-                <Avatar className="h-20 w-20 rounded-2xl ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': '#22D3EE' } as React.CSSProperties}>
+                <Avatar className="h-20 w-20 rounded-lg ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': 'hsl(var(--status-info-fg))' } as React.CSSProperties}>
                   <AvatarImage src={targetProfile.avatarUrl ?? undefined} alt={targetProfile.displayName} />
-                  <AvatarFallback className="rounded-2xl text-base font-semibold" style={{ background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>
+                  <AvatarFallback className="rounded-lg text-base font-semibold" style={{ background: 'hsl(var(--status-info-bg))', color: 'hsl(var(--status-info-fg))' }}>
                     {targetProfile.displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -403,13 +460,13 @@ export default function MatchDetailPage() {
                   {targetProfile.displayName}
                 </span>
                 <span className="text-2xs text-muted-foreground capitalize"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  style={{ fontFamily: 'var(--font-mono)' }}>
                   {targetProfile.role}
                 </span>
                 <Link href={`/profiles/${targetProfile.id}`}
                   className="flex items-center gap-0.5 text-2xs mt-0.5 transition-colors"
-                  style={{ color: '#22D3EE' }}>
-                  <ExternalLink className="h-2.5 w-2.5" aria-hidden="true" />
+                  style={{ color: 'hsl(var(--status-info-fg))' }}>
+                  <ExternalLink className="h-2.5 w-2.5" />
                   View profile
                 </Link>
               </div>
@@ -419,7 +476,7 @@ export default function MatchDetailPage() {
           {/* Confidence indicator */}
           <div className="flex flex-col items-center gap-1.5 mt-4">
             <span className="text-2xs text-muted-foreground"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              style={{ fontFamily: 'var(--font-mono)' }}>
               {overall.confidence}% CONFIDENCE
             </span>
             <div className="w-28 h-0.5 rounded-full bg-border overflow-hidden">
@@ -480,7 +537,7 @@ export default function MatchDetailPage() {
               <div className="bg-card border border-border rounded-lg p-4 space-y-3">
                 {data.reasons.map(r => (
                   <div key={r} className="flex items-start gap-2.5">
-                    <CheckCircle className="icon-sm mt-0.5 shrink-0" style={{ color: '#4ADE80' }} aria-hidden="true" />
+                    <CheckCircle className="icon-sm mt-0.5 shrink-0" style={{ color: 'hsl(var(--status-success-fg))' }} />
                     <span className="text-sm text-muted-foreground leading-relaxed">{r}</span>
                   </div>
                 ))}
@@ -499,22 +556,22 @@ export default function MatchDetailPage() {
             className="gap-1.5 text-sm"
             onClick={handleShortlist}
           >
-            <Bookmark className={`h-4 w-4 ${shortlisted ? 'fill-current text-amber-400' : ''}`} aria-hidden="true" />
+            <Bookmark className={`icon-sm ${shortlisted ? 'fill-current text-amber-400' : ''}`} />
             {shortlisted ? 'Saved' : 'Shortlist'}
           </Button>
           <Button variant="outline" className="gap-1.5 text-sm w-full" asChild>
             <Link href={`/messages?to=${targetUserId}`} className="contents">
-              <MessageCircle className="icon-sm" aria-hidden="true" />
+              <MessageCircle className="icon-sm" />
               Message
             </Link>
           </Button>
           <Button
             className="gap-1.5 font-bold text-black text-sm"
-            style={{ background: '#22D3EE' }}
+            style={{ background: 'hsl(var(--status-info-fg))' }}
             onClick={handlePropose}
             disabled={connectMutation.isPending}
           >
-            <Send className="icon-sm" aria-hidden="true" />
+            <Send className="icon-sm" />
             Collaborate
           </Button>
         </div>

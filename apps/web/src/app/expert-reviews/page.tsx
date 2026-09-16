@@ -6,7 +6,7 @@ import {
   Star, Clock, CheckCircle2, XCircle, AlertTriangle, FileText,
   Plus, ChevronRight, TrendingUp, Award, MessageCircle, Eye,
   BarChart3, Lightbulb, DollarSign, Scale, Palette, Code2,
-  Target, Search, Filter, RefreshCw, ExternalLink,
+  Target, Search, RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
+import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+
+/** Why the one disabled control is disabled, in both languages. */
+const MESSAGE_HINT = bilingualAria(
+  'A conversation opens once expert reviews are live',
+  'Η συνομιλία θα είναι διαθέσιμη όταν ενεργοποιηθούν οι αξιολογήσεις ειδικών',
+);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -62,25 +72,46 @@ interface ExpertProfile {
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; color: string }> = {
-  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
-  business_model:         { label: 'Business Model',        icon: Target,      color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' },
-  financial_model:        { label: 'Financial Model',       icon: DollarSign,  color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' },
-  legal_structure:        { label: 'Legal Structure',       icon: Scale,       color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
-  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20' },
-  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20' },
-  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' },
-  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   color: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20' },
-  general:                { label: 'General Review',        icon: Eye,         color: 'bg-muted text-muted-foreground border-border' },
+const REVIEW_TYPE_TONE: Record<ReviewType, StatusTone> = {
+  pitch_deck: 'info',
+  business_model: 'accent',
+  financial_model: 'success',
+  legal_structure: 'warning',
+  market_analysis: 'info',
+  go_to_market: 'warning',
+  technical_architecture: 'accent',
+  product_strategy: 'accent',
+  general: 'neutral',
 };
 
-const STATUS_CONFIG: Record<ReviewStatus, { label: string; color: string; icon: React.ElementType }> = {
-  requested:   { label: 'Requested',   color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',    icon: Clock },
-  accepted:    { label: 'Accepted',    color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',    icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',  icon: RefreshCw },
-  submitted:   { label: 'Submitted',   color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
-  declined:    { label: 'Declined',    color: 'bg-destructive/10 text-destructive-emphasis', icon: XCircle },
-  expired:     { label: 'Expired',     color: 'bg-muted text-muted-foreground',  icon: AlertTriangle },
+const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; tone: StatusTone }> = {
+  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    tone: 'info' },
+  business_model:         { label: 'Business Model',        icon: Target,      tone: 'accent' },
+  financial_model:        { label: 'Financial Model',       icon: DollarSign,  tone: 'success' },
+  legal_structure:        { label: 'Legal Structure',       icon: Scale,       tone: 'warning' },
+  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   tone: 'info' },
+  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  tone: 'warning' },
+  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       tone: 'accent' },
+  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   tone: 'accent' },
+  general:                { label: 'General Review',        icon: Eye,         tone: 'neutral' },
+};
+
+const REVIEW_STATUS_TONE: Record<ReviewStatus, StatusTone> = {
+  requested: 'info',
+  accepted: 'success',
+  in_progress: 'warning',
+  submitted: 'success',
+  declined: 'danger',
+  expired: 'neutral',
+};
+
+const STATUS_CONFIG: Record<ReviewStatus, { label: string; tone: StatusTone; icon: React.ElementType }> = {
+  requested:   { label: 'Requested',   tone: 'info',    icon: Clock },
+  accepted:    { label: 'Accepted',    tone: 'success', icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', tone: 'warning', icon: RefreshCw },
+  submitted:   { label: 'Submitted',   tone: 'success', icon: CheckCircle2 },
+  declined:    { label: 'Declined',    tone: 'danger',  icon: XCircle },
+  expired:     { label: 'Expired',     tone: 'neutral', icon: AlertTriangle },
 };
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -201,7 +232,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
       <div className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-primary/10 text-primary-emphasis text-xs font-semibold">
+            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
               {review.expertName.split(' ').map((n) => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
@@ -211,28 +242,28 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium shrink-0', status.color)}>
-                <StatusIcon className="h-3 w-3" />
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
+                <StatusIcon className="icon-sm" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', type.color)}>
-                <TypeIcon className="h-3 w-3" />{type.label}
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
+                <TypeIcon className="icon-sm" />{type.label}
               </span>
               {review.isPaid && review.agreedFee && (
                 <span className="text-2xs text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="icon-2xs" aria-hidden="true" /> €{review.agreedFee}
+                  <DollarSign className="icon-sm" /> €{review.agreedFee}
                 </span>
               )}
               {!review.isPaid && (
                 <Badge variant="outline" className="text-2xs h-4 px-1.5">Free</Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
-                <span className="text-2xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                  <Clock className="icon-2xs" aria-hidden="true" />
-                  Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
+                  <Clock className="icon-sm" />
+                  Due {new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
                 </span>
               )}
             </div>
@@ -242,19 +273,14 @@ function ReviewCard({ review }: { review: ExpertReview }) {
               <div className="mt-2 flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground">Overall score:</span>
-                  <span className={cn(
-                    'text-sm font-bold',
-                    review.scoreOverall >= 8 ? 'text-emerald-600 dark:text-emerald-400'
-                      : review.scoreOverall >= 6 ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-destructive-emphasis',
-                  )}>
+                  <span className={cn('text-sm font-bold', scoreTenPointClass(review.scoreOverall))}>
                     {review.scoreOverall}/10
                   </span>
                 </div>
                 {review.rating && (
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} aria-hidden="true" />
+                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} />
                     ))}
                   </div>
                 )}
@@ -269,14 +295,24 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
             <div className="mt-3 flex items-center justify-between">
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                  <MessageCircle className="icon-2xs" aria-hidden="true" /> Message expert
+                {/* A review carries the expert's name but no user id, so there
+                    is no conversation to open. Disabled and labelled beats a
+                    button that looks live. */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1 text-xs"
+                  disabled
+                  title={MESSAGE_HINT}
+                  aria-label={MESSAGE_HINT}
+                >
+                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
                 </Button>
-                {review.status === 'submitted' && (
-                  <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                    <ExternalLink className="icon-2xs" aria-hidden="true" /> View full review
-                  </Button>
-                )}
+                {/* "View full review" is gone rather than wired: the control
+                    immediately to its right — "See feedback" — already expands
+                    the full review in place, and did so while this one did
+                    nothing. Two buttons for one action is the defect. */}
               </div>
               {review.strengthsJson || review.improvementsJson ? (
                 <button
@@ -284,7 +320,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
                 >
                   {expanded ? 'Collapse' : 'See feedback'}
-                  <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} aria-hidden="true" />
+                  <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
                 </button>
               ) : null}
             </div>
@@ -304,7 +340,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   <div key={area} className="flex items-center gap-2">
                     <span className="text-2xs text-muted-foreground capitalize w-24 shrink-0">{area}</span>
                     <Progress value={score * 10} className="flex-1 h-1.5" />
-                    <span className={cn('text-xs font-semibold w-8 text-right', score >= 8 ? 'text-emerald-600 dark:text-emerald-400' : score >= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-destructive-emphasis')}>
+                    <span className={cn('text-xs font-semibold w-8 text-right', scoreTenPointClass(score))}>
                       {score}/10
                     </span>
                   </div>
@@ -316,7 +352,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">✅ Strengths</p>
+              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.success.icon)}>✅ Strengths</p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -331,7 +367,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">⚡ Recommendations</p>
+              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.warning.icon)}>⚡ Recommendations</p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -353,7 +389,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
     <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-semibold">
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
             {expert.name.split(' ').map((n) => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -363,7 +399,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold text-foreground">{expert.name}</p>
                 {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-emphasis border-primary/20">Verified</Badge>
+                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-accessible border-primary/20">Verified</Badge>
                 )}
                 {expert.badges?.map((b) => (
                   <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-2xs">{b}</Badge>
@@ -382,7 +418,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', cfg.color)}>
+                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
                   {cfg.label}
                 </span>
               );
@@ -391,19 +427,28 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="icon-2xs fill-amber-400 text-amber-400" aria-hidden="true" /> {expert.rating} ({expert.completedReviews} reviews)
+              <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} /> {expert.rating} ({expert.completedReviews} reviews)
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="icon-2xs" aria-hidden="true" /> Turnaround: {expert.responseTime}
+              <Clock className="icon-sm" /> Turnaround: {expert.responseTime}
             </span>
           </div>
 
+          {/* These experts are constants. Mentors are real, bookable and
+              messageable, and a structured review is one of the things they
+              do — so that is where both buttons lead. */}
           <div className="mt-3 flex gap-2">
-            <Button size="sm" className="h-7 gap-1 text-xs flex-1">
-              <Plus className="icon-2xs" aria-hidden="true" /> Request review
+            <Button size="sm" className="h-auto min-h-7 flex-1 gap-1 py-1 text-xs leading-snug" asChild>
+              <Link href="/mentoring">
+                <Plus className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
+              </Link>
             </Button>
-            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-              <MessageCircle className="icon-2xs" aria-hidden="true" /> Message
+            <Button size="sm" variant="outline" className="h-auto min-h-7 gap-1 py-1 text-xs leading-snug" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+              </Link>
             </Button>
           </div>
         </div>
@@ -436,24 +481,21 @@ export default function ExpertReviewsPage() {
     : null;
 
   return (
-    <AppShell
-      title="Expert Reviews"
-      description="Get structured feedback on your pitch, financials, strategy, and more from domain experts"
-    >
+    <AppShell>
       <div className="space-y-6 pb-10">
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total reviews', value: myReviews.length, icon: FileText, color: 'text-primary-emphasis', bg: 'bg-primary/10' },
-            { label: 'In progress', value: pending.length, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Completed', value: submitted.length, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Avg score', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
+            { label: 'Total reviews', value: myReviews.length, icon: FileText, tone: 'accent' as StatusTone },
+            { label: 'In progress', value: pending.length, icon: Clock, tone: 'warning' as StatusTone },
+            { label: 'Completed', value: submitted.length, icon: CheckCircle2, tone: 'success' as StatusTone },
+            { label: 'Avg score', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'info' as StatusTone },
+          ].map(({ label, value, icon: Icon, tone }) => (
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
-                  <Icon className="h-4 w-4" />
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', STATUS[tone].bg, STATUS[tone].icon)}>
+                  <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
@@ -472,7 +514,7 @@ export default function ExpertReviewsPage() {
               <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-              <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Request review
+              <Plus className="icon-sm" /> Request review
             </Button>
           </div>
 
@@ -493,7 +535,7 @@ export default function ExpertReviewsPage() {
             {myReviews.length === 0 && (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <Award className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
+                  <Award className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">No reviews yet</p>
@@ -509,7 +551,7 @@ export default function ExpertReviewsPage() {
             {/* Search + domain filter */}
             <div className="flex gap-2 flex-wrap">
               <div className="relative flex-1 min-w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input placeholder="Search experts…" value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-8 h-9 text-sm" />
               </div>
             </div>
@@ -528,7 +570,7 @@ export default function ExpertReviewsPage() {
                   onClick={() => setSelectedDomain(key)}
                   className={cn(
                     'flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all',
-                    selectedDomain === key ? cfg.color + ' border-current' : 'border-border/60 text-muted-foreground hover:border-border',
+                    selectedDomain === key ? cn(STATUS[cfg.tone].chip, 'border-current') : 'border-border/60 text-muted-foreground hover:border-border',
                   )}
                 >
                   <cfg.icon className="h-3 w-3" />{cfg.label}
@@ -540,17 +582,29 @@ export default function ExpertReviewsPage() {
               {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
               {filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  No experts match your search. <button className="text-primary-emphasis hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}>Clear filters</button>
+                  No experts match your search. <button className="text-primary-accessible hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}>Clear filters</button>
                 </div>
               )}
             </div>
 
             {/* CTA for becoming an expert */}
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
-              <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" aria-hidden="true" />
-              <p className="text-sm font-medium text-foreground mb-1">Are you a domain expert?</p>
-              <p className="text-xs text-muted-foreground mb-3">Join as an expert reviewer and earn while helping founders.</p>
-              <Button variant="outline" size="sm">Apply as expert</Button>
+              <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
+              <p className="mb-1 text-sm font-medium text-foreground">
+                <BilingualText en="Are you a domain expert?" el="Είστε ειδικός στον τομέα σας;" />
+              </p>
+              <p className="mb-3 text-xs leading-snug text-muted-foreground">
+                <BilingualText
+                  en="Join as an expert reviewer and earn while helping founders."
+                  el="Γίνετε αξιολογητής και κερδίστε βοηθώντας ιδρυτές."
+                />
+              </p>
+              {/* Mentor signup is the form that exists and is wired. */}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/mentor/profile-setup">
+                  <BilingualText en="Apply as expert" el="Αίτηση ως ειδικός" compact wrap />
+                </Link>
+              </Button>
             </div>
           </TabsContent>
 
@@ -567,7 +621,7 @@ export default function ExpertReviewsPage() {
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <BarChart3 className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                        <BarChart3 className="icon-sm text-primary-accessible" />
                         {REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores
                       </CardTitle>
                     </CardHeader>
@@ -578,7 +632,7 @@ export default function ExpertReviewsPage() {
                           <Progress value={score * 10} className="flex-1 h-2" />
                           <span className={cn(
                             'text-xs font-bold w-8 text-right',
-                            score >= 8 ? 'text-emerald-600 dark:text-emerald-400' : score >= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-destructive-emphasis',
+                            scoreTenPointClass(score),
                           )}>
                             {score}/10
                           </span>
@@ -593,13 +647,13 @@ export default function ExpertReviewsPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Lightbulb className="icon-sm text-amber-500" aria-hidden="true" /> Top Recommendations
+                        <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} /> Top Recommendations
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {submitted.flatMap((r) => (r.improvementsJson ?? []).slice(0, 2).map((imp, i) => (
-                        <div key={`${r.id}-${i}`} className="flex gap-2 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
-                          <AlertTriangle className="icon-sm text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                        <div key={`${r.id}-${i}`} className={cn('flex gap-2 rounded-lg border px-3 py-2', STATUS.warning.border, STATUS.warning.bg)}>
+                          <AlertTriangle className={cn('icon-sm shrink-0 mt-0.5', STATUS.warning.icon)} />
                           <div>
                             <p className="text-xs font-semibold text-foreground">{imp.area}</p>
                             <p className="text-xs text-muted-foreground">{imp.recommendation}</p>

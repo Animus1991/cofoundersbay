@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Bot,
   Sparkles,
   Sliders,
   MessageSquare,
@@ -17,9 +16,11 @@ import {
   Loader2,
   Info,
   CheckCircle2,
+  Bot,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -32,8 +33,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
-import { getAIModels, getAIAgents, getAIHealth, type AgentConfig } from '@/lib/ai-api';
+import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 type AIPreferences = {
   preferredModel: string;
@@ -78,44 +83,16 @@ const RESPONSE_STYLES = [
   { value: 'formal', label: 'Formal', desc: 'Professional, business-like' },
 ];
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'el', label: 'Greek (Ελληνικά)' },
-  { value: 'es', label: 'Spanish (Español)' },
-  { value: 'fr', label: 'French (Français)' },
-  { value: 'de', label: 'German (Deutsch)' },
-  { value: 'it', label: 'Italian (Italiano)' },
-  { value: 'pt', label: 'Portuguese (Português)' },
-  { value: 'zh', label: 'Chinese (中文)' },
-  { value: 'ja', label: 'Japanese (日本語)' },
-];
-
+/** The product's switch, with this page's prop names. See the note on the same
+    wrapper in `settings/page.tsx`: the hand-rolled copy this replaces had a
+    square track, so `rounded-full` drew a circle. */
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => !disabled && onChange(!checked)}
-      className={cn(
-        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        checked ? 'bg-primary' : 'bg-secondary',
-        disabled && 'opacity-50 cursor-not-allowed'
-      )}
-    >
-      <span
-        className={cn(
-          'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
-          checked ? 'translate-x-5' : 'translate-x-0'
-        )}
-      />
-    </button>
-  );
+  return <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />;
 }
 
 export default function AISettingsPage() {
   const { success, error: showError } = useToast();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [prefs, setPrefs] = useState<AIPreferences>(DEFAULT_PREFS);
   const [hasChanges, setHasChanges] = useState(false);
@@ -151,27 +128,47 @@ export default function AISettingsPage() {
   };
 
   const handleSave = async () => {
-    // In a real implementation, this would save to the API
-    // For now, we'll just save to localStorage and show success
     try {
+      await updateAIPreferences(prefs);
       localStorage.setItem('ai-preferences', JSON.stringify(prefs));
-      success('AI preferences saved successfully');
+      void queryClient.invalidateQueries({ queryKey: ['ai', 'preferences'] });
+      success('AI preferences saved');
       setHasChanges(false);
-    } catch (err) {
+    } catch {
       showError('Failed to save preferences');
     }
   };
 
-  // Load saved preferences on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ai-preferences');
-      if (saved) {
-        setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+    let cancelled = false;
+    (async () => {
+      try {
+        const remote = await getAIPreferences();
+        if (cancelled) return;
+        if (remote?.preferences) {
+          setPrefs({
+            ...DEFAULT_PREFS,
+            ...Object.fromEntries(
+              Object.entries(remote.preferences).filter(([, v]) => v !== null && v !== undefined),
+            ),
+          } as AIPreferences);
+          return;
+        }
+      } catch {
+        /* local fallback */
       }
-    } catch {
-      // Ignore parse errors
-    }
+      try {
+        const saved = localStorage.getItem('ai-preferences');
+        if (saved && !cancelled) {
+          setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -183,49 +180,57 @@ export default function AISettingsPage() {
             href="/settings"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
-            <ArrowLeft className="icon-sm" aria-hidden="true" />
-            Back to Settings
+            <ArrowLeft className="icon-sm" />
+            {t('Back to Settings')}
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
-                  <Bot className="icon-md text-white" aria-hidden="true" />
+              <h1 className="text-2xl font-bold flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <CfbGlyph name="spark" className="icon-md" />
                 </div>
-                AI Assistant Settings
+                {t('AI Assistant Settings')}
               </h1>
               <p className="mt-1 text-muted-foreground">
                 Customize how the AI assistant works for you
               </p>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" className="gap-2">
+              <Link href="/ai">
+                <Bot className="h-4 w-4" />
+                Open assistant
+              </Link>
+            </Button>
             <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
-              {hasChanges ? <Save className="icon-sm" aria-hidden="true" /> : <CheckCircle2 className="icon-sm" aria-hidden="true" />}
+              {hasChanges ? <Save className="icon-sm" /> : <CheckCircle2 className="icon-sm" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>
+            </div>
           </div>
         </div>
 
         {/* AI Status Banner */}
         <Card className={cn(
           'mb-6 border-2',
-          isAIAvailable ? 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20' : 'border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20'
+          isAIAvailable ? 'border-status-success-border bg-status-success-bg' : 'border-status-warning-border bg-status-warning-bg'
         )}>
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
               <div className={cn(
                 'flex h-10 w-10 items-center justify-center rounded-full',
-                isAIAvailable ? 'bg-emerald-500/20' : 'bg-amber-500/20'
+                isAIAvailable ? 'bg-status-success-bg' : 'bg-status-warning-bg'
               )}>
                 {isAIAvailable ? (
-                  <Zap className="icon-md text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                  <Zap className="icon-md text-status-success" />
                 ) : (
-                  <Info className="icon-md text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                  <Info className="icon-md text-status-warning" />
                 )}
               </div>
               <div>
                 <p className={cn(
                   'font-medium',
-                  isAIAvailable ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'
+                  isAIAvailable ? 'text-status-success' : 'text-status-warning'
                 )}>
                   {isAIAvailable ? 'AI Assistant is Online' : 'AI Assistant is Offline'}
                 </p>
@@ -244,7 +249,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="icon-md text-violet-500" aria-hidden="true" />
+                <Sparkles className="icon-md text-primary-accessible" />
                 Model Configuration
               </CardTitle>
               <CardDescription>
@@ -321,7 +326,7 @@ export default function AISettingsPage() {
               {/* Temperature Selection */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <ThermometerSun className="icon-sm text-muted-foreground" aria-hidden="true" />
+                  <ThermometerSun className="icon-sm text-muted-foreground" />
                   Creativity (Temperature)
                 </Label>
                 <Select
@@ -370,7 +375,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="icon-md text-blue-500" aria-hidden="true" />
+                <MessageSquare className="icon-md text-blue-500" />
                 Response Style
               </CardTitle>
               <CardDescription>
@@ -400,24 +405,19 @@ export default function AISettingsPage() {
               {/* Language */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <Languages className="icon-sm text-muted-foreground" aria-hidden="true" />
-                  Response Language
+                  <Languages className="icon-sm text-muted-foreground" />
+                  {t('Response Language')}
                 </Label>
-                <Select
+                <p className="text-sm text-muted-foreground">
+                  {t('Tap a language. The same setting is in the header globe and in Settings.')}
+                </p>
+                <LanguageChipGrid
                   value={prefs.responseLanguage}
-                  onValueChange={(v) => updatePref('responseLanguage', v)}
-                >
-                  <SelectTrigger className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => {
+                    updatePref('responseLanguage', v);
+                    applyLocale(v);
+                  }}
+                />
               </div>
 
               {/* Use Emoji */}
@@ -440,7 +440,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sliders className="icon-md text-emerald-500" aria-hidden="true" />
+                <Sliders className="icon-md text-status-success" />
                 Features
               </CardTitle>
               <CardDescription>
@@ -472,7 +472,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="icon-md text-amber-500" aria-hidden="true" />
+                <Shield className="icon-md text-status-warning" />
                 Privacy & Data
               </CardTitle>
               <CardDescription>
@@ -503,7 +503,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bot className="icon-md text-purple-500" aria-hidden="true" />
+                <CfbGlyph name="spark" className="icon-md text-primary-accessible" />
                 Available AI Agents
               </CardTitle>
               <CardDescription>
@@ -524,8 +524,8 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-                      <Bot className="icon-sm text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+                      <CfbGlyph name="spark" className="icon-sm" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>

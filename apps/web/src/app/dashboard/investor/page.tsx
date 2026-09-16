@@ -31,6 +31,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -58,18 +59,18 @@ function StatCard({
     <Card className="relative overflow-hidden transition-all hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
-              <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
+              <p className={cn('text-xs', trend.positive ? 'text-status-success' : 'text-status-danger')}>
                 {trend.positive ? '+' : ''}{trend.value}% this month
               </p>
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary-emphasis" />
+            <Icon className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -79,42 +80,12 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-type TrendingStartup = {
-  id: string;
-  name: string;
-  description: string;
-  stage: string;
-  industry: string;
-  raising: string;
-  matchScore: number;
-  isHot: boolean;
-  logoUrl: string | null;
-};
-
-type Deal = {
-  id: string;
-  name: string;
-  stage: string;
-  amount: string;
-  status: string;
-  logoUrl: string | null;
-};
-
-type PortfolioCompany = {
-  id: string;
-  name: string;
-  investedDate: string;
-  returnMultiple: number;
-  currentValue: string;
-  logoUrl: string | null;
-};
-
-function StartupCard({ startup }: { startup: TrendingStartup }) {
+function StartupCard({ startup }: { startup: any }) {
   const stageColors: Record<string, string> = {
-    'pre-seed': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    'seed': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    'series-a': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    'series-b': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    'pre-seed': 'bg-status-accent-bg text-status-accent border-status-accent-border',
+    'seed': 'bg-status-info-bg text-status-info border-status-info-border',
+    'series-a': 'bg-status-success-bg text-status-success border-status-success-border',
+    'series-b': 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   return (
@@ -123,8 +94,8 @@ function StartupCard({ startup }: { startup: TrendingStartup }) {
       className="group flex items-start gap-3 rounded-lg border p-3 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={startup.logoUrl ?? undefined} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
+        <AvatarImage src={startup.logoUrl} />
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
           {startup.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -144,26 +115,26 @@ function StartupCard({ startup }: { startup: TrendingStartup }) {
         </div>
       </div>
       <div className="text-right">
-        <p className="text-sm font-semibold text-primary-emphasis">{startup.raising}</p>
+        <p className="text-sm font-semibold text-primary-accessible">{startup.raising}</p>
         <p className="text-xs text-muted-foreground">{startup.matchScore}% match</p>
       </div>
     </Link>
   );
 }
 
-function DealCard({ deal }: { deal: Deal }) {
+function DealCard({ deal }: { deal: any }) {
   const statusColors: Record<string, string> = {
-    'reviewing': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    'due-diligence': 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    'negotiating': 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-    'closed': 'bg-green-500/10 text-green-600 dark:text-green-400',
-    'passed': 'bg-gray-500/10 text-gray-600',
+    'reviewing': 'bg-status-info-bg text-status-info',
+    'due-diligence': 'bg-status-warning-bg text-status-warning',
+    'negotiating': 'bg-status-accent-bg text-status-accent',
+    'closed': 'bg-status-success-bg text-status-success',
+    'passed': 'bg-gray-500/10 text-muted-foreground',
   };
 
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={deal.logoUrl ?? undefined} />
+        <AvatarImage src={deal.logoUrl} />
         <AvatarFallback className="rounded-lg bg-muted">
           {deal.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -179,12 +150,12 @@ function DealCard({ deal }: { deal: Deal }) {
   );
 }
 
-function PortfolioItem({ company }: { company: PortfolioCompany }) {
+function PortfolioItem({ company }: { company: any }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={company.logoUrl ?? undefined} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis">
+        <AvatarImage src={company.logoUrl} />
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible">
           {company.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -195,7 +166,7 @@ function PortfolioItem({ company }: { company: PortfolioCompany }) {
       <div className="text-right">
         <p className={cn(
           'text-sm font-semibold',
-          company.returnMultiple >= 1 ? 'text-green-500' : 'text-red-500'
+          company.returnMultiple >= 1 ? 'text-status-success' : 'text-status-danger'
         )}>
           {company.returnMultiple}x
         </p>
@@ -210,7 +181,7 @@ export default function InvestorDashboard() {
   const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -256,7 +227,7 @@ export default function InvestorDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -267,26 +238,20 @@ export default function InvestorDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h1>
-            <p className="text-muted-foreground">
-              Your investment portfolio and deal flow
-            </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5">
-            <DollarSign className="icon-sm" aria-hidden="true" />
-            Investor
-          </Badge>
-        </div>
+    <AppShell
+      title={`${getTimeBasedGreeting()}, ${displayName}`}
+      description="Pipeline health, deal flow, and portfolio performance — in one view."
+      actions={
+        <Badge variant="outline" className="gap-1.5">
+          <DollarSign className="icon-sm" />
+          Investor
+        </Badge>
+      }
+    >
+      <div className="space-y-6">
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             icon={Briefcase}
             label="Deal Flow"
@@ -314,7 +279,7 @@ export default function InvestorDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Trending Startups */}
@@ -322,17 +287,17 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Rocket className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <Rocket className="icon-sm text-primary-accessible" />
                     Trending Startups
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">
-                      <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
+                      <Filter className="mr-1.5 icon-sm" />
                       Filter
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/discover">
-                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -350,12 +315,12 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <BarChart3 className="icon-sm text-primary-accessible" />
                     Active Deals
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/pipeline">
-                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -377,12 +342,12 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <PieChart className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <PieChart className="icon-sm text-primary-accessible" />
                     Portfolio Companies
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/portfolio">
-                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -405,31 +370,31 @@ export default function InvestorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/scouting">
-                    <Search className="mr-2 icon-sm" aria-hidden="true" />
+                    <Search className="mr-2 icon-sm" />
                     Scout Startups
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/watchlist">
-                    <Star className="mr-2 icon-sm" aria-hidden="true" />
+                    <Star className="mr-2 icon-sm" />
                     My Watchlist
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/pipeline">
-                    <Target className="mr-2 icon-sm" aria-hidden="true" />
+                    <Target className="mr-2 icon-sm" />
                     Deal Pipeline
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/portfolio">
-                    <LineChart className="mr-2 icon-sm" aria-hidden="true" />
+                    <LineChart className="mr-2 icon-sm" />
                     Portfolio
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/analytics">
-                    <BarChart3 className="mr-2 icon-sm" aria-hidden="true" />
+                    <BarChart3 className="mr-2 icon-sm" />
                     Analytics
                   </Link>
                 </Button>
@@ -473,7 +438,7 @@ export default function InvestorDashboard() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="icon-sm" aria-hidden="true" />
+                  <Eye className="icon-sm" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>

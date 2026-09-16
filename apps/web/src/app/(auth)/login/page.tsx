@@ -119,7 +119,10 @@ function LoginPageContent() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-emphasis flex items-start gap-2">
+              <div
+                role="alert"
+                className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2"
+              >
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -145,7 +148,7 @@ function LoginPageContent() {
             {ssoDiscovery?.ssoAvailable && ssoDiscovery.provider && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-primary-emphasis">
+                  <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-primary-accessible">
                     SSO
                   </span>
                   <span className="font-medium text-sm">
@@ -162,7 +165,7 @@ function LoginPageContent() {
                   {ssoDiscovery.provider.logoUrl && (
                     <img src={ssoDiscovery.provider.logoUrl} alt="" className="h-4 w-4" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={16} height={16} />
                   )}
-                  {ssoDiscovery.provider.loginButtonText || 'Continue with SSO'}
+                  {ssoDiscovery.provider?.loginButtonText || 'Continue with SSO'}
                 </Button>
                 {ssoDiscovery.ssoRequired && !ssoDiscovery.allowPasswordLogin ? (
                   <p className="text-xs text-muted-foreground text-center">
@@ -182,7 +185,7 @@ function LoginPageContent() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label htmlFor="password" className="text-sm font-medium">Password</label>
-                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary-emphasis transition-colors">Forgot password?</Link>
+                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary-accessible transition-colors">Forgot password?</Link>
                   </div>
                   <div className="relative">
                     <Input
@@ -206,7 +209,7 @@ function LoginPageContent() {
                   </div>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full" size="lg">
+                <Button type="submit" loading={loading} className="w-full" size="lg">
                   {loading ? 'Signing in…' : 'Sign in'}
                 </Button>
               </>
@@ -218,7 +221,7 @@ function LoginPageContent() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-medium text-primary-emphasis hover:underline">
+            <Link href="/register" className="font-medium text-primary-accessible hover:underline">
               Create one free
             </Link>
           </p>

@@ -59,7 +59,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     mutedForeground: '215.4 16.3% 46.9%',
     accent: '210 40% 96.1%',
     accentForeground: '222.2 47.4% 11.2%',
-    destructive: '0 84.2% 60.2%',
+    destructive: '0 84.2% 50.2%', /* WCAG AA with white foreground */
     destructiveForeground: '210 40% 98%',
     border: '214.3 31.8% 91.4%',
     input: '214.3 31.8% 91.4%',
@@ -73,41 +73,41 @@ export const themes: Record<ThemeName, ThemeColors> = {
     cardForeground: '210 20% 98%',
     popover: '215 25% 20%',
     popoverForeground: '210 20% 98%',
-    primary: '199 89% 48%', // Bright cyan-blue
+    primary: '199 89% 36%',
     primaryForeground: '0 0% 100%',
     secondary: '215 20% 25%',
     secondaryForeground: '210 20% 98%',
     muted: '215 20% 25%',
     mutedForeground: '215 16% 70%',
-    accent: '199 89% 48%',
+    accent: '199 89% 36%',
     accentForeground: '0 0% 100%',
     destructive: '0 70% 50%',
     destructiveForeground: '0 0% 100%',
     border: '215 20% 30%',
     input: '215 20% 30%',
-    ring: '199 89% 48%',
+    ring: '199 89% 36%',
   },
   alliance: {
-    // Alliance WordPress theme inspired colors
+    // Alliance WordPress theme inspired colors — amber primary uses dark foreground (WCAG AA)
     background: '195 26% 96%', // #eef6f7
     foreground: '220 100% 3%', // #000724
     card: '0 0% 100%', // #ffffff
     cardForeground: '220 100% 3%',
     popover: '180 25% 98%', // #f8fbfc
     popoverForeground: '220 100% 3%',
-    primary: '34 100% 66%', // #efa758 (accent color)
-    primaryForeground: '0 0% 100%',
+    primary: '34 100% 52%', // amber accent — pair with dark primaryForeground
+    primaryForeground: '220 100% 3%',
     secondary: '200 15% 88%', // #d9e0e3
     secondaryForeground: '220 100% 3%',
     muted: '180 25% 98%',
-    mutedForeground: '210 5% 51%', // #7a7e83
-    accent: '34 100% 66%',
-    accentForeground: '0 0% 100%',
-    destructive: '0 84% 60%',
+    mutedForeground: '210 5% 44%', // WCAG AA on cream background
+    accent: '34 100% 52%',
+    accentForeground: '220 100% 3%',
+    destructive: '0 84% 50%',
     destructiveForeground: '0 0% 100%',
     border: '200 15% 88%',
     input: '200 15% 88%',
-    ring: '34 100% 66%',
+    ring: '34 100% 52%',
   },
   cofounder: {
     // Cofounder-startapp inspired theme (modern, vibrant)
@@ -123,7 +123,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     secondaryForeground: '240 10% 4%',
     muted: '240 6% 15%',
     mutedForeground: '240 5% 65%',
-    accent: '280 100% 70%', // Bright magenta
+    accent: '280 100% 55%', // WCAG AA with white foreground (was 70%)
     accentForeground: '0 0% 100%',
     destructive: '0 72% 51%',
     destructiveForeground: '0 0% 100%',
@@ -132,6 +132,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '262 83% 58%',
   },
   minimal: {
+    // Warm paper, near-monochrome, one teal-ink accent (Claude 803ddb2)
     background: '40 20% 98%',
     foreground: '30 8% 12%',
     card: '0 0% 100%',
@@ -189,8 +190,8 @@ export function applyTheme(themeName: ThemeName) {
       root.setAttribute('data-theme', 'cofounder');
       break;
     case 'minimal':
-      // Light-first: the `light` class supplies the base, and the data-theme
-      // attribute carries both the palette and the component layer.
+      // Light-first: the `light` class supplies the base, and data-theme
+      // carries both the palette and the component layer.
       root.classList.add('light');
       root.setAttribute('data-theme', 'minimal');
       break;

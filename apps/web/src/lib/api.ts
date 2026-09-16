@@ -1,8 +1,11 @@
+import { resolvePreviewApi } from '@/lib/preview-api';
+
 // Returns the API base URL evaluated at call time — not module load time.
-// Always uses NEXT_PUBLIC_API_URL if set (set it to http://localhost:3001 in .env.local).
-// Never derives host from window.location to avoid LAN IP (192.168.x.x) mismatches.
+// Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
+import { getApiOrigin } from './api-origin';
+
 function getApiBase(): string {
-  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return getApiOrigin();
 }
 
 export type AuthUser = { id: string; email: string; role: string; emailVerified?: boolean };
@@ -52,14 +55,29 @@ function clearLegacyTokens() {
   // Note: 'user' key is kept as display data, not a security concern
 }
 
+function isPreviewDemoSession() {
+  if (typeof document === 'undefined') return false;
+  try {
+    return (
+      document.cookie.includes('cfb_preview_demo=1') ||
+      document.cookie.includes('cfb_session=preview-demo') ||
+      window.localStorage.getItem('cfb_demo_data') === '1' ||
+      window.location.hostname.endsWith('.trycloudflare.com')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function clearSessionIndicators() {
   if (typeof document === 'undefined') return;
+  if (isPreviewDemoSession()) return;
   document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
   document.cookie = 'cfb_csrf=; Max-Age=0; path=/; SameSite=Lax';
 }
 
 function broadcastLogout() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !isPreviewDemoSession()) {
     window.dispatchEvent(new CustomEvent('cfb:logout'));
   }
 }
@@ -174,6 +192,45 @@ function markApiReachable() {
   }
 }
 
+/** True while the client-side circuit breaker is suppressing API calls. */
+export function isApiCircuitOpen(): boolean {
+  if (typeof window === 'undefined') return false;
+  return Date.now() < apiUnavailableUntil;
+}
+
+/**
+ * True when the API is believed reachable. Unlike `isApiCircuitOpen`, this does
+ * NOT flip back to "reachable" merely because a backoff window elapsed — only a
+ * successful request/probe (markApiReachable) can do that. This prevents the
+ * re-enable→burst→fail oscillation that floods the console with connection-refused
+ * errors while the backend is down.
+ */
+export function isApiReachable(): boolean {
+  if (typeof window === 'undefined') return true;
+  return apiReachable;
+}
+
+/** Lightweight liveness probe — used to recover after API restarts. */
+export async function probeApiHealth(): Promise<boolean> {
+  if (typeof window === 'undefined') return true;
+  try {
+    const res = await fetchWithTimeout(`${getApiBase()}/api/health/liveness`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      markApiReachable();
+      return true;
+    }
+  } catch {
+    // fall through to re-arm backoff below
+  }
+  // Probe failed: re-arm/extend the circuit breaker so callers keep gating
+  // their requests instead of bursting and re-flooding the network.
+  markApiUnavailable();
+  return false;
+}
+
 function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -214,13 +271,29 @@ async function fetchWithNetworkRetry(url: string, init: RequestInit): Promise<Re
   throw new ApiNetworkError('Unable to reach the API server.');
 }
 
-export async function apiRequest<T>(
-  path: string,
-  init?: RequestInit,
-  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
-): Promise<T> {
-  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
+export function withApiAbort<T>(operation: Promise<T>, signal?: AbortSignal | null): Promise<T> {
+  if (!signal) return operation;
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener('abort', onAbort);
+      reject(signal.reason ?? new DOMException('Request cancelled', 'AbortError'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    operation.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+    if (signal.aborted) onAbort();
+  });
+}
 
+function authenticatedRequestInit(init?: RequestInit): RequestInit {
   const headers = new Headers(init?.headers ?? {});
   const isForm = typeof FormData !== 'undefined' && init?.body instanceof FormData;
   if (!headers.has('Content-Type') && !isForm) headers.set('Content-Type', 'application/json');
@@ -232,27 +305,48 @@ export async function apiRequest<T>(
     if (csrf) headers.set('x-csrf-token', csrf);
   }
 
-  const doFetch = opts?.skipNetworkRetry
-    ? (u: string, i: RequestInit) => fetchWithTimeout(u, i)
-    : fetchWithNetworkRetry;
+  return { ...init, headers, credentials: 'include' };
+}
 
-  const res = await doFetch(url, { ...init, headers, credentials: 'include' });
+export async function apiFetch(
+  path: string,
+  init?: RequestInit,
+  opts?: {
+    retryOn401?: boolean;
+    skipNetworkRetry?: boolean;
+    fetcher?: (url: string, init: RequestInit) => Promise<Response>;
+  },
+): Promise<Response> {
+  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
+  const doFetch = opts?.fetcher ?? (opts?.skipNetworkRetry ? fetchWithTimeout : fetchWithNetworkRetry);
+  const request = () => {
+    init?.signal?.throwIfAborted();
+    return withApiAbort(doFetch(url, authenticatedRequestInit(init)), init?.signal);
+  };
+  const checkResponse = async (res: Response) => {
+    if (!res.ok) {
+      const errorInfo = await withApiAbort(safeReadErrorMessage(res), init?.signal);
+      throw new ApiError(res.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
+    }
+    return res;
+  };
+
+  const res = await request();
   if (res.status === 401 && (opts?.retryOn401 ?? true)) {
+    let refreshed = false;
     try {
+      await withApiAbort(res.body?.cancel().catch(() => {}) ?? Promise.resolve(), init?.signal);
+      init?.signal?.throwIfAborted();
       refreshInFlight ??= refreshAccessToken().finally(() => {
         refreshInFlight = null;
       });
-      await refreshInFlight;
+      await withApiAbort(refreshInFlight, init?.signal);
+      refreshed = true;
 
       // Retry with new cookie (set by refresh response)
-      const retryRes = await doFetch(url, { ...init, headers, credentials: 'include' });
-      if (!retryRes.ok) {
-        const errorInfo = await safeReadErrorMessage(retryRes);
-        throw new ApiError(retryRes.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
-      }
-      return (await readJsonIfAny<T>(retryRes)) as T;
+      return await checkResponse(await request());
     } catch (e) {
-      if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
+      if (e instanceof ApiError && (e.status === 401 || (!refreshed && [400, 403].includes(e.status)))) {
         clearLegacyTokens();
         clearSessionIndicators();
         broadcastLogout();
@@ -261,11 +355,21 @@ export async function apiRequest<T>(
     }
   }
 
-  if (!res.ok) {
-    const errorInfo = await safeReadErrorMessage(res);
-    throw new ApiError(res.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
+  return checkResponse(res);
+}
+
+export async function apiRequest<T>(
+  path: string,
+  init?: RequestInit,
+  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
+): Promise<T> {
+  init?.signal?.throwIfAborted();
+  if (isPreviewDemoSession()) {
+    return resolvePreviewApi(path.startsWith('/') ? path : `/${path}`, init) as T;
   }
-  return (await readJsonIfAny<T>(res)) as T;
+
+  const res = await apiFetch(path, init, opts);
+  return withApiAbort(readJsonIfAny<T>(res), init?.signal);
 }
 
 export async function register(body: { email: string; password: string; role?: string }) {
@@ -310,6 +414,16 @@ export async function logout() {
 
 /** Get current user from HttpOnly cookie session */
 export async function getMe(): Promise<{ user: AuthUser }> {
+  if (isPreviewDemoSession()) {
+    return {
+      user: {
+        id: 'preview-demo-user',
+        email: 'demo@cofounderbay.com',
+        role: 'founder',
+        emailVerified: true,
+      },
+    };
+  }
   return apiRequest<{ user: AuthUser }>(
     '/api/auth/me',
     { method: 'GET' },
@@ -359,6 +473,32 @@ export type OwnProfile = {
 export type PublicProfile = OwnProfile & { email?: string };
 
 export async function getMeProfile(): Promise<{ profile: OwnProfile | null; hasCompletedOnboarding: boolean }> {
+  if (isPreviewDemoSession()) {
+    return {
+      hasCompletedOnboarding: true,
+      profile: {
+        id: 'preview-demo-profile',
+        userId: 'preview-demo-user',
+        displayName: 'Alex Demo',
+        headline: 'Founder exploring CoFounderBay',
+        bio: 'This is a preview profile with sample data so you can walk the product without a backend.',
+        location: 'Athens, Greece',
+        timezone: 'Europe/Athens',
+        languages: ['English', 'Greek'],
+        avatarUrl: null,
+        rolePayload: { stage: 'idea', lookingFor: ['cofounder', 'mentor'] },
+        visibilityRules: null,
+        role: 'founder',
+        email: 'demo@cofounderbay.com',
+        skills: [
+          { skillId: 'product', skillName: 'Product', slug: 'product', level: 'advanced' },
+          { skillId: 'growth', skillName: 'Growth', slug: 'growth', level: 'intermediate' },
+        ],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    };
+  }
   return apiRequest('/api/me/profile');
 }
 
@@ -1120,35 +1260,58 @@ export async function getVentureReadiness(): Promise<VentureReadiness> {
   return apiRequest('/api/dashboard/venture-readiness');
 }
 
+export interface GraphMeResponse {
+  me: {
+    id: string;
+    displayName: string | null;
+    headline: string | null;
+    avatarUrl: string | null;
+    primaryRole: string | null;
+    organizations: Array<{ id: string; name: string; type: string; role: string }>;
+    tenants: Array<{ id: string; name: string; slug: string; role: string }>;
+  };
+  unreadMessages: number;
+  pendingConnections: number;
+  unreadNotifications: number;
+  readiness: VentureReadiness | null;
+}
+
+/** Single-call summary used by the get_graph AI tool and available for any
+ * surface that needs "what does this user see right now" without stitching
+ * together profile + connections + messages + readiness itself. */
+export async function getGraphMe(): Promise<GraphMeResponse> {
+  return apiRequest('/api/graph/me');
+}
+
 // --- Analytics ---
 
 export interface UserMetrics {
   profileViews: number;
-  profileViewsChange: number;
+  profileViewsChange: number | null;
   newConnections: number;
-  newConnectionsChange: number;
+  newConnectionsChange: number | null;
   messagesSent: number;
-  messagesSentChange: number;
-  engagementRate: number;
-  engagementRateChange: number;
-  searchAppearances: number;
-  searchAppearancesChange: number;
-  activityScore: number;
-  activityScoreChange: number;
+  messagesSentChange: number | null;
+  engagementRate: number | null;
+  engagementRateChange: number | null;
+  searchAppearances: number | null;
+  searchAppearancesChange: number | null;
+  activityScore: number | null;
+  activityScoreChange: number | null;
 }
 
 export interface AnalyticsProfileView {
   date: string;
   views: number;
-  uniqueVisitors: number;
+  uniqueVisitors: number | null;
 }
 
 export interface AnalyticsEngagement {
   connections: number;
   messages: number;
-  likes: number;
-  comments: number;
-  shares: number;
+  likes: number | null;
+  comments: number | null;
+  shares: number | null;
 }
 
 export interface AnalyticsTopContent {
@@ -1165,22 +1328,22 @@ export interface AnalyticsAchievement {
   title: string;
   description: string;
   icon: string;
-  unlocked: boolean;
+  unlocked: boolean | null;
   unlockedAt?: string;
 }
 
 export interface WeeklySummary {
-  mostActiveDay: string;
-  peakHour: string;
-  avgResponseTime: string;
-  totalInteractions: number;
+  mostActiveDay: string | null;
+  peakHour: string | null;
+  avgResponseTime: string | null;
+  totalInteractions: number | null;
 }
 
 export interface AnalyticsOverview {
   metrics: UserMetrics;
   profileViews: AnalyticsProfileView[];
   engagement: AnalyticsEngagement;
-  topContent: AnalyticsTopContent[];
+  topContent: AnalyticsTopContent[] | null;
   weeklySummary: WeeklySummary;
 }
 
@@ -1208,7 +1371,7 @@ export async function getAnalyticsEngagement(period = '7d'): Promise<AnalyticsEn
   return apiRequest(`/api/analytics/engagement?period=${period}`);
 }
 
-export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[]> {
+export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[] | null> {
   return apiRequest(`/api/analytics/top-content?limit=${limit}`);
 }
 

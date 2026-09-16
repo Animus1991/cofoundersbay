@@ -17,8 +17,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/useModalA11y";
+import { bilingualAria } from "@/lib/i18n/format";
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
-import { useModalA11y } from '@/hooks/useModalA11y';
 
 /* ─── Types ──────────────────────────────────────────────────── */
 type NodeType = "document" | "image" | "pdf" | "text" | "note" | "folder" | "link";
@@ -142,7 +143,7 @@ function fmtSize(bytes: number) {
 }
 
 function nodeIcon(type: NodeType, colorKey: string, size = "w-5 h-5") {
-  const col = NODE_COLORS[colorKey]?.icon ?? "text-primary-emphasis";
+  const col = NODE_COLORS[colorKey]?.icon ?? "text-primary-accessible";
   switch (type) {
     case "image":    return <ImageIcon className={cn(size, col)} />;
     case "pdf":      return <FileType className={cn(size, col)} />;
@@ -158,7 +159,7 @@ function genId() {
   return `node_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`; 
 }
 
-function saveToLocalStorage(key: string, data: unknown) {
+function saveToLocalStorage(key: string, data: any) {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (e) {
@@ -182,7 +183,7 @@ interface RichTextEditorProps {
   readOnly?: boolean;
 }
 
-function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -191,10 +192,30 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
     }
   }, []);
 
-  const exec = (command: string, val?: string) => {
+  const exec = (command: string, val?: string, range?: Range) => {
     editorRef.current?.focus();
+    if (range) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
     document.execCommand(command, false, val);
     if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const insertLink = () => {
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : undefined;
+    const savedRange = range && editorRef.current?.contains(range.commonAncestorContainer) ? range : undefined;
+    const url = window.prompt("Enter URL")?.trim();
+    if (!url) return;
+    try {
+      const protocol = new URL(url, document.baseURI).protocol;
+      if (protocol === "javascript:" || protocol === "data:") return;
+    } catch {
+      return;
+    }
+    exec("createLink", url, savedRange);
   };
 
   const ToolBtn = ({ cmd, val, title, children }: { cmd: string; val?: string; title: string; children: React.ReactNode }) => (
@@ -212,28 +233,35 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
     <div className="flex flex-col flex-1 min-h-0">
       {!readOnly && (
         <div className="flex flex-wrap gap-0.5 p-2 border-b border-border bg-card sticky top-0 z-10">
-          <ToolBtn cmd="undo" title="Undo"><RotateCcw className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="redo" title="Redo"><RotateCw className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="undo" title="Undo"><RotateCcw className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="redo" title="Redo"><RotateCw className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="bold" title="Bold"><Bold className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="italic" title="Italic"><Italic className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="underline" title="Underline"><Underline className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="bold" title="Bold"><Bold className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="italic" title="Italic"><Italic className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="underline" title="Underline"><Underline className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
           <ToolBtn cmd="formatBlock" val="h2" title="Heading 1"><span className="text-2xs font-bold">H1</span></ToolBtn>
           <ToolBtn cmd="formatBlock" val="h3" title="Heading 2"><span className="text-2xs font-bold">H2</span></ToolBtn>
           <ToolBtn cmd="formatBlock" val="p" title="Paragraph"><span className="text-2xs">P</span></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="justifyLeft" title="Align left"><AlignLeft className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="justifyLeft" title="Align left"><AlignLeft className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="createLink" val={prompt("Enter URL") || undefined} title="Insert link">
-            <Link2 className="w-3.5 h-3.5" />
-          </ToolBtn>
+          <button
+            type="button"
+            title="Insert link"
+            aria-label={bilingualAria("Insert link", "Εισαγωγή συνδέσμου")}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={insertLink}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Link2 className="icon-sm" />
+          </button>
         </div>
       )}
       <div
@@ -247,7 +275,7 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
           "prose prose-sm max-w-none",
           "[&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1.5",
           "[&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4",
-          "[&_a]:text-primary-emphasis [&_a]:underline",
+          "[&_a]:text-primary-accessible [&_a]:underline",
           !readOnly && "cursor-text"
         )}
       />
@@ -304,27 +332,27 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
   const isPdf = node.type === "pdf";
   const isText = node.type === "text" || node.type === "note";
   const isDoc = node.type === "document" && !isPdf && !isImage;
-
-  // Focus trap, Escape, scroll lock and focus restore for this hand-rolled
-  // overlay. It stays hand-rolled rather than moving to the Dialog primitive
-  // because of the framer-motion exit animation it shares with the canvas.
   const viewerRef = useModalA11y<HTMLDivElement>(true, onClose);
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* Escape was handled by hand here; the rest of what a dialog owes a
+          keyboard user was not. `useModalA11y` adds the semantics, the focus
+          move, the trap and the scroll lock — it was written for exactly this
+          kind of overlay, welded into a canvas with exit animations. */}
       <motion.div
         ref={viewerRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`${node.title || "Untitled"} — node details`}
+        aria-label="Node viewer"
         tabIndex={-1}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         className={cn(
-          "flex flex-col gap-0 p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl focus:outline-none",
+          "flex flex-col gap-0 p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
           isImage ? "max-w-5xl" : "max-w-4xl",
-          "h-[90dvh] w-full"
+          "h-[90vh] w-full"
         )}
       >
         {/* Header */}
@@ -340,7 +368,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             <div className="flex items-center gap-2 flex-none">
               {!saved && (
                 <span className="text-2xs text-amber-500 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Unsaved
+                  <AlertCircle className="icon-sm" /> Unsaved
                 </span>
               )}
               {(isText || isDoc) && (
@@ -348,24 +376,24 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   onClick={handleSave}
                   className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                 >
-                  <Save className="w-3.5 h-3.5" /> Save
+                  <Save className="icon-sm" /> Save
                 </button>
               )}
               {node.url && (
                 <a
                   href={node.url}
                   download={node.title}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                   title="Download"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="icon-sm" />
                 </a>
               )}
               <button
                 onClick={onClose}
-                className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="icon-sm" />
               </button>
             </div>
           </div>
@@ -375,13 +403,13 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             {tags.map(tag => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-emphasis text-2xs font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-accessible text-2xs font-medium"
               >
-                <Tag className="w-3 h-3" />
+                <Tag className="icon-sm" />
                 {tag}
                 <button
                   onClick={() => removeTag(tag)}
-                  className="ml-0.5 hover:text-primary-emphasis/70 transition-colors"
+                  className="ml-0.5 hover:text-primary/70 transition-colors"
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>
@@ -397,9 +425,9 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               />
               <button
                 onClick={addTag}
-                className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary-emphasis transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible transition-colors"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="icon-sm" />
               </button>
             </div>
           </div>
@@ -411,17 +439,17 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             <div className="flex flex-col items-center min-h-full p-4 gap-3">
               <div className="flex items-center gap-2">
                 <button onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <ZoomOut className="w-3.5 h-3.5" />
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
+                  <ZoomOut className="icon-sm" />
                 </button>
                 <span className="text-xs text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
                 <button onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <ZoomIn className="w-3.5 h-3.5" />
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
+                  <ZoomIn className="icon-sm" />
                 </button>
                 <button onClick={() => setImgZoom(1)}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <Maximize2 className="w-3.5 h-3.5" />
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
+                  <Maximize2 className="icon-sm" />
                 </button>
               </div>
               <div className="overflow-auto flex-1 flex items-start justify-center w-full">
@@ -430,7 +458,8 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   alt={node.title}
                   style={{ transform: `scale(${imgZoom})`, transformOrigin: "top center", transition: "transform 0.2s" }}
                   className="max-w-full rounded-lg shadow-md"
-                  draggable={false} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+                  draggable={false}
+                />
               </div>
             </div>
           )}
@@ -458,7 +487,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               {node.url && (
                 <a href={node.url} download={node.title}
                   className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5">
-                  <Download className="w-3.5 h-3.5" /> Download
+                  <Download className="icon-sm" /> Download
                 </a>
               )}
             </div>
@@ -469,7 +498,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
         <div className="flex-none px-4 py-2 border-t border-border bg-card/50 backdrop-blur-sm">
           <div className="flex items-center justify-between text-2xs text-muted-foreground">
             <span>
-              {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString()}`}
+              {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
             </span>
             {node.fileSize && <span>{fmtSize(node.fileSize)}</span>}
           </div>
@@ -515,8 +544,7 @@ export default function ResearchCanvas() {
   const [showMinimap, setShowMinimap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const closeShortcuts = useCallback(() => setShowShortcuts(false), []);
-  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, closeShortcuts);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, () => setShowShortcuts(false));
   
   // History for undo/redo
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -1027,8 +1055,8 @@ export default function ResearchCanvas() {
       {/* Toolbar */}
       <div className="flex-none px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-            <Layers className="w-5 h-5 text-primary-emphasis" />
+          <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Layers className="icon-md text-primary-accessible" />
             Research Canvas
           </h1>
           <span className="text-xs text-muted-foreground">
@@ -1038,7 +1066,7 @@ export default function ResearchCanvas() {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1063,45 +1091,45 @@ export default function ResearchCanvas() {
           <button
             onClick={undo}
             disabled={historyIndex <= 0}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Undo (Ctrl+Z)"
           >
-            <Undo2 className="w-3.5 h-3.5" />
+            <Undo2 className="icon-sm" />
           </button>
           <button
             onClick={redo}
             disabled={historyIndex >= history.length - 1}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Redo (Ctrl+Y)"
           >
-            <Redo2 className="w-3.5 h-3.5" />
+            <Redo2 className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
 
           <button
             onClick={() => handleZoom(-ZOOM_STEP)}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
           >
-            <ZoomOut className="w-3.5 h-3.5" />
+            <ZoomOut className="icon-sm" />
           </button>
           <span className="text-xs text-muted-foreground min-w-[42px] text-center">
             {Math.round(zoom * 100)}%
           </span>
           <button
             onClick={() => handleZoom(ZOOM_STEP)}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
           >
-            <ZoomIn className="w-3.5 h-3.5" />
+            <ZoomIn className="icon-sm" />
           </button>
           <button
             onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset view"
           >
-            <Maximize2 className="w-3.5 h-3.5" />
+            <Maximize2 className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1109,22 +1137,22 @@ export default function ResearchCanvas() {
           <button
             onClick={() => setShowGrid(!showGrid)}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-md transition-colors",
-              showGrid ? "bg-primary/10 text-primary-emphasis" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
+              showGrid ? "bg-primary/10 text-primary-accessible" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle grid"
           >
-            <Grid3x3 className="w-3.5 h-3.5" />
+            <Grid3x3 className="icon-sm" />
           </button>
           <button
             onClick={() => setShowMinimap(!showMinimap)}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-md transition-colors",
-              showMinimap ? "bg-primary/10 text-primary-emphasis" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
+              showMinimap ? "bg-primary/10 text-primary-accessible" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle minimap"
           >
-            <Layout className="w-3.5 h-3.5" />
+            <Layout className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1133,38 +1161,38 @@ export default function ResearchCanvas() {
             onClick={() => createNode("note", 100, 100)}
             className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
-            <Plus className="w-3.5 h-3.5" /> Note
+            <Plus className="icon-sm" /> Note
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
-            <Upload className="w-3.5 h-3.5" /> Upload
+            <Upload className="icon-sm" /> Upload
           </button>
 
           <div className="w-px h-5 bg-border" />
 
           <button
             onClick={exportCanvas}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Export canvas"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="icon-sm" />
           </button>
           <button
             onClick={importCanvas}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Import canvas"
           >
-            <FileOutput className="w-3.5 h-3.5" />
+            <FileOutput className="icon-sm" />
           </button>
 
           <button
             onClick={() => setShowShortcuts(true)}
-            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Keyboard shortcuts"
           >
-            <Keyboard className="w-3.5 h-3.5" />
+            <Keyboard className="icon-sm" />
           </button>
         </div>
       </div>
@@ -1230,15 +1258,15 @@ export default function ResearchCanvas() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 flex-none">
-                  {node.pinned && <Pin className="w-3 h-3 text-primary-emphasis" />}
-                  {node.starred && <Star className="w-3 h-3 text-amber-500" fill="currentColor" />}
-                  {node.locked && <Lock className="w-3 h-3 text-muted-foreground" />}
+                  {node.pinned && <Pin className="icon-sm text-primary-accessible" />}
+                  {node.starred && <Star className="icon-sm text-amber-500" fill="currentColor" />}
+                  {node.locked && <Lock className="icon-sm text-muted-foreground" />}
                 </div>
               </div>
 
               <div className="flex-1 p-3 overflow-hidden text-xs text-muted-foreground leading-relaxed">
                 {node.type === "image" && node.url && (
-                  <img src={node.url} alt={node.title} className="w-full h-full object-cover rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+                  <img src={node.url} alt={node.title} className="w-full h-full object-cover rounded" />
                 )}
                 {node.type === "pdf" && (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
@@ -1257,7 +1285,7 @@ export default function ResearchCanvas() {
               {node.tags && node.tags.length > 0 && (
                 <div className="flex-none px-3 py-1.5 border-t border-border/50 bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
                   {node.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary-emphasis">
+                    <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary-accessible">
                       {tag}
                     </span>
                   ))}
@@ -1275,7 +1303,7 @@ export default function ResearchCanvas() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity shadow-md"
                   title="Create connection"
                 >
-                  <GitBranch className="w-3 h-3" />
+                  <GitBranch className="icon-sm" />
                 </button>
               )}
               {connectionStart && connectionStart !== node.id && (
@@ -1284,7 +1312,7 @@ export default function ResearchCanvas() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md animate-pulse"
                   title="Complete connection"
                 >
-                  <Check className="w-4 h-4" />
+                  <Check className="icon-sm" />
                 </button>
               )}
             </motion.div>
@@ -1365,32 +1393,32 @@ export default function ResearchCanvas() {
                   onClick={() => { setViewerNode(nodes.find(n => n.id === contextMenu.nodeId) || null); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Eye className="w-4 h-4" /> Open
+                  <Eye className="icon-sm" /> Open
                 </button>
                 <button
                   onClick={() => { duplicateNodes([contextMenu.nodeId!]); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Copy className="w-4 h-4" /> Duplicate
+                  <Copy className="icon-sm" /> Duplicate
                 </button>
                 <button
                   onClick={() => { updateNode(contextMenu.nodeId!, { pinned: !nodes.find(n => n.id === contextMenu.nodeId)?.pinned }); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Pin className="w-4 h-4" /> {nodes.find(n => n.id === contextMenu.nodeId)?.pinned ? "Unpin" : "Pin"}
+                  <Pin className="icon-sm" /> {nodes.find(n => n.id === contextMenu.nodeId)?.pinned ? "Unpin" : "Pin"}
                 </button>
                 <button
                   onClick={() => { updateNode(contextMenu.nodeId!, { starred: !nodes.find(n => n.id === contextMenu.nodeId)?.starred }); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Star className="w-4 h-4" /> {nodes.find(n => n.id === contextMenu.nodeId)?.starred ? "Unstar" : "Star"}
+                  <Star className="icon-sm" /> {nodes.find(n => n.id === contextMenu.nodeId)?.starred ? "Unstar" : "Star"}
                 </button>
                 <div className="h-px bg-border my-1" />
                 <button
                   onClick={() => { deleteNodes([contextMenu.nodeId!]); setContextMenu(null); }}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-emphasis transition-colors flex items-center gap-2"
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
                 >
-                  <Trash className="w-4 h-4" /> Delete
+                  <Trash className="icon-sm" /> Delete
                 </button>
               </>
             ) : (
@@ -1399,13 +1427,13 @@ export default function ResearchCanvas() {
                   onClick={() => { createNode("note", (contextMenu.x - panX) / zoom, (contextMenu.y - panY) / zoom); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <StickyNote className="w-4 h-4" /> New Note
+                  <StickyNote className="icon-sm" /> New Note
                 </button>
                 <button
                   onClick={() => { fileInputRef.current?.click(); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Upload className="w-4 h-4" /> Upload File
+                  <Upload className="icon-sm" /> Upload File
                 </button>
               </>
             )}
@@ -1433,24 +1461,23 @@ export default function ResearchCanvas() {
               ref={shortcutsRef}
               role="dialog"
               aria-modal="true"
-              aria-labelledby="canvas-shortcuts-title"
+              aria-label="Keyboard shortcuts"
               tabIndex={-1}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden focus:outline-none"
+              className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
             >
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-                <h2 id="canvas-shortcuts-title" className="text-lg font-semibold flex items-center gap-2">
-                  <Keyboard className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Keyboard className="icon-md text-primary-accessible" />
                   Keyboard Shortcuts
                 </h2>
                 <button
                   onClick={() => setShowShortcuts(false)}
-                  aria-label="Close keyboard shortcuts"
-                  className="focus-ring w-8 h-8 flex items-center justify-center rounded-md hover:bg-secondary transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
                 >
-                  <X className="icon-sm" aria-hidden="true" />
+                  <X className="icon-sm" />
                 </button>
               </div>
               <div className="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
@@ -1488,7 +1515,7 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-2 border-t border-border bg-card/30 backdrop-blur-sm flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
           <span>{filteredNodes.length} nodes visible</span>
-          {selected.size > 0 && <span className="text-primary-emphasis">{selected.size} selected</span>}
+          {selected.size > 0 && <span className="text-primary-accessible">{selected.size} selected</span>}
           {connectionStart && <span className="text-amber-500">Drawing connection...</span>}
         </div>
         <div className="flex items-center gap-4">

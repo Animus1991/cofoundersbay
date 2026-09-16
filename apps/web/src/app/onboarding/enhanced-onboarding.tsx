@@ -400,7 +400,7 @@ export default function EnhancedOnboardingPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Sparkles className="icon-lg text-primary-emphasis" aria-hidden="true" />
+                <Sparkles className="icon-lg text-primary-accessible" />
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">CoFounderBay Onboarding</h1>
@@ -426,7 +426,7 @@ export default function EnhancedOnboardingPage() {
                   )}
                 >
                   {index < currentStep ? (
-                    <CheckCircle className="icon-sm" aria-hidden="true" />
+                    <CheckCircle className="icon-sm" />
                   ) : (
                     index + 1
                   )}
@@ -466,7 +466,7 @@ export default function EnhancedOnboardingPage() {
             disabled={currentStep === 0}
             className="gap-2"
           >
-            <ArrowLeft className="icon-sm" aria-hidden="true" />
+            <ArrowLeft className="icon-sm" />
             Previous
           </Button>
           
@@ -481,7 +481,7 @@ export default function EnhancedOnboardingPage() {
               }
             >
               Next
-              <ArrowRight className="icon-sm" aria-hidden="true" />
+              <ArrowRight className="icon-sm" />
             </Button>
           ) : (
             <Button
@@ -496,7 +496,7 @@ export default function EnhancedOnboardingPage() {
                 </>
               ) : (
                 <>
-                  <Rocket className="icon-sm" aria-hidden="true" />
+                  <Rocket className="icon-sm" />
                   Launch Profile
                 </>
               )}
@@ -514,7 +514,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
     <Card className="text-center">
       <CardHeader>
         <CardTitle className="flex items-center justify-center gap-3 text-2xl">
-          <Sparkles className="icon-xl text-primary-emphasis" aria-hidden="true" />
+          <Sparkles className="icon-xl text-primary-accessible" />
           Welcome to CoFounderBay
         </CardTitle>
       </CardHeader>
@@ -524,22 +524,22 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950">
-            <Users className="icon-xl text-blue-600 dark:text-blue-400 mb-2 mx-auto" aria-hidden="true" />
+          <div className="p-4 rounded-lg bg-status-info-bg dark:bg-blue-950">
+            <Users className="icon-xl text-status-info mb-2 mx-auto" />
             <h3 className="font-semibold mb-1">Smart Matching</h3>
             <p className="text-sm text-muted-foreground">
               AI-powered connections based on skills and goals
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950">
-            <Shield className="icon-xl text-green-600 dark:text-green-400 mb-2 mx-auto" aria-hidden="true" />
+          <div className="p-4 rounded-lg bg-status-success-bg dark:bg-green-950">
+            <Shield className="icon-xl text-status-success mb-2 mx-auto" />
             <h3 className="font-semibold mb-1">Verified Profiles</h3>
             <p className="text-sm text-muted-foreground">
               Trust and quality through verification system
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950">
-            <Zap className="icon-xl text-purple-600 dark:text-purple-400 mb-2 mx-auto" aria-hidden="true" />
+          <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-purple-950">
+            <Zap className="icon-xl text-status-accent mb-2 mx-auto" />
             <h3 className="font-semibold mb-1">Real-time Chat</h3>
             <p className="text-sm text-muted-foreground">
               Instant communication with potential partners
@@ -551,19 +551,19 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           <h3 className="font-semibold">What you'll get:</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
             <div className="flex items-center gap-2">
-              <CheckCircle className="icon-sm text-green-500" aria-hidden="true" />
+              <CheckCircle className="icon-sm text-status-success" />
               <span className="text-sm">Personalized match recommendations</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="icon-sm text-green-500" aria-hidden="true" />
+              <CheckCircle className="icon-sm text-status-success" />
               <span className="text-sm">Access to exclusive events</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="icon-sm text-green-500" aria-hidden="true" />
+              <CheckCircle className="icon-sm text-status-success" />
               <span className="text-sm">Mentorship opportunities</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="icon-sm text-green-500" aria-hidden="true" />
+              <CheckCircle className="icon-sm text-status-success" />
               <span className="text-sm">Investor connections</span>
             </div>
           </div>
@@ -571,7 +571,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
         <Button onClick={onNext} size="lg" className="w-full gap-2">
           Let's Get Started
-          <ArrowRight className="icon-sm" aria-hidden="true" />
+          <ArrowRight className="icon-sm" />
         </Button>
       </CardContent>
     </Card>
@@ -604,7 +604,7 @@ function RoleStep({ selectedRole, onSelect }: { selectedRole: string; onSelect: 
               >
                 <div className="flex items-center gap-4">
                   <div className={cn('p-3 rounded-lg', role.color)}>
-                    <Icon className="h-6 w-6 text-white" />
+                    <Icon className="icon-lg text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold">{role.title}</h3>
@@ -950,7 +950,7 @@ function ReviewStep({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Star className="icon-lg text-yellow-500" aria-hidden="true" />
+          <Star className="icon-lg text-status-warning" />
           Review & Launch
         </CardTitle>
         <p className="text-muted-foreground">
@@ -962,7 +962,7 @@ function ReviewStep({
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className={cn('p-3 rounded-lg', selectedRole?.color)}>
-              <RoleIcon className="h-6 w-6 text-white" />
+              <RoleIcon className="icon-lg text-white" />
             </div>
             <div>
               <h3 className="font-semibold text-lg">{data.displayName}</h3>
@@ -1091,7 +1091,7 @@ function ReviewStep({
             </div>
             <div className="flex justify-between">
               <span>Commitment:</span>
-              <span>{data.preferences.commitment || 'Not set'}</span>
+              <span>{data.preferences?.commitment || 'Not set'}</span>
             </div>
             <div className="flex justify-between">
               <span>Notifications:</span>
@@ -1109,7 +1109,7 @@ function ReviewStep({
             </>
           ) : (
             <>
-              <Rocket className="icon-sm" aria-hidden="true" />
+              <Rocket className="icon-sm" />
               Launch Profile
             </>
           )}
@@ -1142,7 +1142,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Heart className="icon-md text-rose-500" aria-hidden="true" />
+          <Heart className="icon-md text-status-danger" />
           Values & Work Style
         </CardTitle>
         <p className="text-muted-foreground">Help us find people who match your working rhythm and values</p>
@@ -1150,7 +1150,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
       <CardContent className="space-y-8">
         {/* Availability */}
         <div>
-          <label className="block text-sm font-medium mb-3">Availability <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-3">Availability <span className="text-status-danger">*</span></label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {AVAILABILITY_OPTIONS.map(opt => (
               <button
@@ -1172,7 +1172,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
 
         {/* Work Style */}
         <div>
-          <label className="block text-sm font-medium mb-1">Work Style <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1">Work Style <span className="text-status-danger">*</span></label>
           <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {WORK_STYLES.map(ws => (
@@ -1226,7 +1226,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
             })}
           </div>
           {data.values.coreValues.length >= 5 && (
-            <p className="text-xs text-amber-500 mt-2">Maximum 5 values selected</p>
+            <p className="text-xs text-status-warning mt-2">Maximum 5 values selected</p>
           )}
         </div>
       </CardContent>
@@ -1245,7 +1245,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Search className="icon-md text-primary-emphasis" aria-hidden="true" />
+          <Search className="icon-md text-primary-accessible" />
           Match Preferences
         </CardTitle>
         <p className="text-muted-foreground">Tell us what you're looking for so we can find your best matches</p>
@@ -1290,7 +1290,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
                   data.matchPrefs.industries.includes(ind)
-                    ? 'border-primary bg-primary/10 border-primary text-primary-emphasis'
+                    ? 'border-primary bg-primary/10 border-primary text-primary-accessible'
                     : 'border-border hover:border-primary/40'
                 )}
               >
@@ -1313,7 +1313,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm border-2 font-medium transition-all',
                   data.matchPrefs.stages.includes(stage)
-                    ? 'border-primary bg-primary/5 text-primary-emphasis'
+                    ? 'border-primary bg-primary/5 text-primary-accessible'
                     : 'border-border hover:border-primary/40'
                 )}
               >

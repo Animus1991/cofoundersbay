@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link2, Twitter, Linkedin, Facebook, Mail, Check, Share2, QrCode, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface ShareModalProps {
@@ -46,7 +46,7 @@ const SHARE_CHANNELS = [
     id: 'email',
     label: 'Email',
     icon: Mail,
-    color: 'hover:bg-primary/10 hover:text-primary-emphasis hover:border-primary/30',
+    color: 'hover:bg-primary/10 hover:text-primary-accessible hover:border-primary/30',
     getUrl: (url: string, title: string, _: string[], desc: string) =>
       `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${desc ? desc + '\n\n' : ''}${url}`)}`,
   },
@@ -108,9 +108,12 @@ export function ShareModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="icon-sm" aria-hidden="true" />
+            <Share2 className="icon-sm" />
             Share
           </DialogTitle>
+          <DialogDescription>
+            Copy the link or share this page on your preferred channel.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
@@ -122,8 +125,8 @@ export function ShareModal({
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{title}</p>
-                {description && <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mt-0.5">{description}</p>}
-                <p className="text-xs text-primary-emphasis truncate mt-1">{url}</p>
+                {description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{description}</p>}
+                <p className="text-xs text-primary-accessible truncate mt-1">{url}</p>
               </div>
             </div>
           )}
@@ -139,7 +142,7 @@ export function ShareModal({
                 onClick={handleCopy}
                 className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-green-600 hover:bg-green-600 border-green-600')}
               >
-                {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Link2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                {copied ? <Check className="icon-sm" /> : <Link2 className="icon-sm" />}
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
@@ -169,7 +172,7 @@ export function ShareModal({
           {/* Native share (mobile) */}
           {typeof navigator !== 'undefined' && !!navigator.share && (
             <Button variant="outline" className="w-full gap-2" onClick={handleNativeShare}>
-              <ExternalLink className="icon-sm" aria-hidden="true" />
+              <ExternalLink className="icon-sm" />
               More options…
             </Button>
           )}
@@ -196,19 +199,8 @@ export function ShareButton({ url, title, description, imageUrl, hashtags, child
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button
-        variant={variant}
-        size={size}
-        aria-label="Share"
-        className={className}
-        onClick={() => setOpen(true)}
-      >
-        {children ?? (
-          <>
-            <Share2 className="icon-sm mr-1.5" aria-hidden="true" />
-            Share
-          </>
-        )}
+      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)}>
+        {children ?? <><Share2 className="icon-sm mr-1.5" />Share</>}
       </Button>
       <ShareModal open={open} onClose={() => setOpen(false)} url={url} title={title} description={description} imageUrl={imageUrl} hashtags={hashtags} />
     </>

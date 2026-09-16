@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EmptyTenantMembers } from '@/components/common/EmptyStates';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,9 +64,9 @@ type Member = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active:    'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-  pending:   'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-  suspended: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+  active:    'bg-status-success-bg text-status-success border-status-success-border',
+  pending:   'bg-status-warning-bg text-status-warning border-status-warning-border',
+  suspended: 'bg-status-danger-bg text-status-danger border-status-danger-border',
 };
 
 function EngagementBar({ score }: { score: number }) {
@@ -118,7 +119,7 @@ function MemberCard({ member }: { member: Member }) {
                   <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
                   <DropdownMenuItem><Shield className="mr-2 icon-sm" aria-hidden="true" />Change Role</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive-emphasis"><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive-accessible"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -131,8 +132,8 @@ function MemberCard({ member }: { member: Member }) {
                 <Activity className="icon-sm" aria-hidden="true" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
-                <span className="text-2xs text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
-                  <CheckCircle2 className="icon-sm" aria-hidden="true" />{member.milestonesCompleted} milestones
+                <span className="text-2xs text-status-success flex items-center gap-0.5">
+                  <CheckCircle2 className="icon-sm" />{member.milestonesCompleted} milestones
                 </span>
               )}
             </div>
@@ -155,7 +156,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-primary-emphasis" aria-hidden="true" /> Invite Members
+            <Send className="icon-md text-primary-accessible" /> Invite Members
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
@@ -186,7 +187,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             <div className="flex items-center gap-2">
               <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
-                {copied ? <CheckCircle2 className="icon-sm text-green-500" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
+                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
@@ -195,7 +196,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button className="gap-1.5" disabled={!emails.trim()}>
-            <Send className="icon-sm" aria-hidden="true" /> Send Invites
+            <Send className="icon-sm" /> Send Invites
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -242,7 +243,7 @@ export default function TenantMembersPage() {
       description="Manage and track your organization's member engagement"
       actions={
         <Button onClick={() => setShowInvite(true)} className="gap-1.5">
-          <Plus className="icon-sm" aria-hidden="true" /> Invite Member
+          <Plus className="icon-sm" /> Invite Member
         </Button>
       }
     >
@@ -251,10 +252,10 @@ export default function TenantMembersPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-emphasis' },
-            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-green-600 dark:text-green-400' },
-            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-amber-600 dark:text-amber-400' },
+            { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-accessible' },
+            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-status-success' },
+            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">
@@ -273,7 +274,7 @@ export default function TenantMembersPage() {
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -309,13 +310,10 @@ export default function TenantMembersPage() {
                 <MemberCard key={member.id} member={member} />
               ))}
               {filteredMembers.length === 0 && (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                    <h3 className="font-medium">No members found</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
-                  </CardContent>
-                </Card>
+                <EmptyTenantMembers
+                  filtersActive={!!search || roleFilter !== 'all' || statusFilter !== 'all'}
+                  onClearFilters={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); }}
+                />
               )}
             </div>
           </TabsContent>

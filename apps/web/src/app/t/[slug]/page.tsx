@@ -109,21 +109,21 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
                 onClick={handleSSOLogin}
                 className="gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
               >
-                <Building2 className="icon-sm" aria-hidden="true" />
-                {sso.provider.loginButtonText || 'Sign in with Organization SSO'}
+                <Building2 className="icon-sm" />
+                {sso.provider?.loginButtonText || 'Sign in with Organization SSO'}
               </Button>
             )}
 
-            <Button size="lg" className="bg-white text-primary-emphasis hover:bg-white/90 gap-2 shadow" asChild>
+            <Button size="lg" className="bg-white text-primary-accessible hover:bg-white/90 gap-2 shadow" asChild>
               <Link href={b?.ctaUrl || '/register'}>
                 {b?.ctaLabel || 'Get Started'}
-                <ChevronRight className="icon-sm" aria-hidden="true" />
+                <ChevronRight className="icon-sm" />
               </Link>
             </Button>
 
             <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2" asChild>
               <Link href="/login">
-                <LogIn className="icon-sm" aria-hidden="true" />
+                <LogIn className="icon-sm" />
                 Sign In
               </Link>
             </Button>
@@ -140,8 +140,8 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
         <section className="bg-muted/30 border-b border-border/60">
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 mt-1">
-                <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
+                <Building2 className="icon-md text-primary-accessible" />
               </div>
               <div>
                 <h2 className="text-xl font-bold mb-3">About {tenant.displayName || tenant.name}</h2>
@@ -164,8 +164,8 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           ].map((f) => (
             <Card key={f.title} className="text-center border-border/60 hover:shadow-md transition-shadow">
               <CardContent className="pt-6 pb-6">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <f.icon className="h-6 w-6 text-primary-emphasis" />
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <f.icon className="h-6 w-6 text-primary-accessible" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
@@ -179,7 +179,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
       <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-8 pb-8">
-            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-emphasis" aria-hidden="true" />
+            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
             <h2 className="text-2xl font-bold mb-2">
               {b?.dashboardWelcomeText || `Ready to join ${tenant.displayName || tenant.name}?`}
             </h2>
@@ -189,14 +189,14 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <div className="flex flex-wrap justify-center gap-3">
               {sso?.ssoAvailable && sso.provider && (
                 <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
-                  <Building2 className="icon-sm" aria-hidden="true" />
-                  {sso.provider.loginButtonText || 'SSO Login'}
+                  <Building2 className="icon-sm" />
+                  {sso.provider?.loginButtonText || 'SSO Login'}
                 </Button>
               )}
               <Button size="lg" className="gap-2" asChild>
                 <Link href={b?.ctaUrl || '/register'}>
                   {b?.ctaLabel || 'Join Now'}
-                  <ChevronRight className="icon-sm" aria-hidden="true" />
+                  <ChevronRight className="icon-sm" />
                 </Link>
               </Button>
             </div>
@@ -216,43 +216,43 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <div className="flex flex-wrap items-center gap-4">
             {b?.supportEmail && (
               <a href={`mailto:${b.supportEmail}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="icon-sm" aria-hidden="true" />
+                <Mail className="icon-sm" />
               </a>
             )}
             {(b?.websiteUrl || tenant.website) && (
               <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Globe className="icon-sm" aria-hidden="true" />
+                <Globe className="icon-sm" />
               </a>
             )}
             {b?.linkedinUrl && (
               <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Linkedin className="icon-sm" aria-hidden="true" />
+                <Linkedin className="icon-sm" />
               </a>
             )}
             {b?.twitterUrl && (
               <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Twitter className="icon-sm" aria-hidden="true" />
+                <Twitter className="icon-sm" />
               </a>
             )}
             {b?.instagramUrl && (
               <a href={b.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Instagram className="icon-sm" aria-hidden="true" />
+                <Instagram className="icon-sm" />
               </a>
             )}
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {b?.privacyPolicyUrl && (
                 <a href={b.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Privacy <ExternalLink className="icon-2xs" aria-hidden="true" />
+                  Privacy <ExternalLink className="icon-sm" />
                 </a>
               )}
               {b?.termsUrl && (
                 <a href={b.termsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Terms <ExternalLink className="icon-2xs" aria-hidden="true" />
+                  Terms <ExternalLink className="icon-sm" />
                 </a>
               )}
               {b?.cookiePolicyUrl && (
                 <a href={b.cookiePolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Cookies <ExternalLink className="icon-2xs" aria-hidden="true" />
+                  Cookies <ExternalLink className="icon-sm" />
                 </a>
               )}
             </div>

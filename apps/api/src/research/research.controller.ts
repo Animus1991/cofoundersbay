@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ResearchService } from './research.service';
 import { CanvasSynthesisService } from './canvas-synthesis.service';
+import { GamificationEventsService } from '../gamification/gamification-events.service';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 import type { ResearchNodeType } from '@prisma/client';
@@ -177,6 +178,7 @@ export class ResearchController {
     private readonly research: ResearchService,
     private readonly config: ConfigService,
     private readonly synthesis: CanvasSynthesisService,
+    private readonly gamificationEvents: GamificationEventsService,
   ) {}
 
   // ─── Boards ────────────────────────────────────────────────────────────────
@@ -204,6 +206,8 @@ export class ResearchController {
   async createBoard(@CurrentUser() user: { id: string }, @Body() body: unknown) {
     const data = createBoardSchema.parse(body);
     const board = await this.research.createBoard(user.id, data);
+    // Record XP for board creation
+    this.gamificationEvents.onBoardCreated(user.id, board.id).catch(() => {});
     return { board };
   }
 
@@ -241,6 +245,9 @@ export class ResearchController {
       ? { ...existingMeta, displayType: raw.type }
       : existingMeta;
     const node = await this.research.createNode(user.id, boardId, { ...raw, type: prismaType, metadata });
+    // Record XP for node creation (quality based on content length)
+    const qualityScore = raw.content ? Math.min(1.0 + (raw.content.length / 1000), 1.5) : 1.0;
+    this.gamificationEvents.onNodeCreated(user.id, node.id, boardId, raw.type, qualityScore).catch(() => {});
     // Return the original type to the frontend so the canvas renders correctly
     return { node: { ...node, type: raw.type } };
   }
@@ -264,6 +271,12 @@ export class ResearchController {
   ) {
     const data = updateNodeSchema.parse(body);
     const node = await this.research.updateNode(user.id, nodeId, data);
+    // Record XP for meaningful node improvements (content/title changes)
+    if (data.content || data.title) {
+      const improvementDelta = data.content ? Math.min(data.content.length / 10, 50) : 10;
+      const boardId = (node as any).boardId || '';
+      this.gamificationEvents.onNodeImproved(user.id, nodeId, boardId, improvementDelta).catch(() => {});
+    }
     // Re-hydrate displayType → type so the frontend always sees the extended type.
     const meta = node.metadata as Record<string, unknown> | null;
     const displayType = meta?.displayType as string | undefined;

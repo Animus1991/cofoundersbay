@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { isApiCircuitOpen } from '@/lib/api';
+import { getSocketOrigin } from '@/lib/api-origin';
 
 export interface CollaboratorPresence {
   userId: string;
@@ -94,12 +96,12 @@ export function useResearchCollaboration({
   useEffect(() => {
     if (!enabled || !boardId) return;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-    const socket = io(`${apiBase}/research`, {
+    const socket = io(`${getSocketOrigin()}/research`, {
       withCredentials: true,
       transports: ['websocket'] as string[],
-      reconnection: true,
-      reconnectionAttempts: 8,
+      autoConnect: !isApiCircuitOpen(),
+      reconnection: !isApiCircuitOpen(),
+      reconnectionAttempts: isApiCircuitOpen() ? 0 : 8,
       reconnectionDelay: 3_000,
       reconnectionDelayMax: 60_000,
       randomizationFactor: 0.4,

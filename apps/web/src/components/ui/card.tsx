@@ -6,7 +6,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-border bg-card text-card-foreground shadow-sm',
+        'rounded-2xl border border-border/70 bg-card/90 text-card-foreground shadow-sm',
         className,
       )}
       {...props}
@@ -17,16 +17,17 @@ Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col gap-1.5 card-comfortable', className)} {...props} />
+    /* `card-header` carries one thing: the seam to the body below. It cannot
+       live at the call site — `.card-comfortable` is declared after Tailwind's
+       own utilities in the same layer, so every `pb-2`/`pb-3` passed here has
+       been silently losing to it at every width. See globals.css. */
+    <div ref={ref} className={cn('flex flex-col gap-1.5 card-comfortable card-header', className)} {...props} />
   ),
 );
 CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    // 16px on a phone, 18px from `sm`: at 320px an 18px card title sat within
-    // 2px of the 20px page title, which flattened the hierarchy exactly where
-    // there is least room to establish it.
     <h3 ref={ref} className={cn('text-base font-semibold leading-tight sm:text-lg', className)} {...props} />
   ),
 );
@@ -54,3 +55,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardFooter.displayName = 'CardFooter';
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
+

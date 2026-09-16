@@ -92,7 +92,7 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
       }
 
       markdown += `---\n\n`;
-      markdown += `*Exported on ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}*\n\n`;
+      markdown += `*Exported on ${new Date().toLocaleDateString('en-GB', { timeZone: 'UTC' })}*\n\n`;
 
       // Group nodes by type
       const nodesByType: Record<string, typeof board.nodes> = {};
@@ -172,35 +172,35 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={isExporting}>
           {isExporting ? (
-            <Loader2 className="icon-sm animate-spin mr-2" aria-hidden="true" />
+            <Loader2 className="icon-sm animate-spin mr-2" />
           ) : (
-            <Download className="icon-sm mr-2" aria-hidden="true" />
+            <Download className="icon-sm mr-2" />
           )}
           Export
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={exportAsImage} disabled={isExporting}>
-          <FileImage className="icon-sm mr-2" aria-hidden="true" />
+          <FileImage className="icon-sm mr-2" />
           Export as PNG
-          {exportFormat === 'png' && <Loader2 className="icon-sm ml-auto animate-spin" aria-hidden="true" />}
+          {exportFormat === 'png' && <Loader2 className="icon-sm ml-auto animate-spin" />}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={exportAsJSON} disabled={isExporting}>
-          <FileText className="icon-sm mr-2" aria-hidden="true" />
+          <FileText className="icon-sm mr-2" />
           Export as JSON
-          {exportFormat === 'json' && <Loader2 className="icon-sm ml-auto animate-spin" aria-hidden="true" />}
+          {exportFormat === 'json' && <Loader2 className="icon-sm ml-auto animate-spin" />}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={exportAsMarkdown} disabled={isExporting}>
-          <FileText className="icon-sm mr-2" aria-hidden="true" />
+          <FileText className="icon-sm mr-2" />
           Export as Markdown
-          {exportFormat === 'markdown' && <Loader2 className="icon-sm ml-auto animate-spin" aria-hidden="true" />}
+          {exportFormat === 'markdown' && <Loader2 className="icon-sm ml-auto animate-spin" />}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={copyShareLink}>
           {copied ? (
-            <Check className="icon-sm mr-2 text-green-500" aria-hidden="true" />
+            <Check className="icon-sm mr-2 text-status-success" />
           ) : (
-            <Copy className="icon-sm mr-2" aria-hidden="true" />
+            <Copy className="icon-sm mr-2" />
           )}
           Copy Share Link
         </DropdownMenuItem>

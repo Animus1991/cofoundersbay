@@ -29,7 +29,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgMembers } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -45,13 +47,13 @@ type OrgMember = {
   status: 'active' | 'invited' | 'inactive';
 };
 
-const ROLE_CONFIG: Record<MemberRole, { label: string; icon: React.ElementType; color: string }> = {
-  owner: { label: 'Owner', icon: Crown, color: 'text-amber-500' },
-  admin: { label: 'Admin', icon: ShieldCheck, color: 'text-purple-500' },
-  manager: { label: 'Manager', icon: Shield, color: 'text-blue-500' },
-  member: { label: 'Member', icon: Users, color: 'text-gray-500' },
-  mentor: { label: 'Mentor', icon: Users, color: 'text-green-500' },
-  viewer: { label: 'Viewer', icon: Users, color: 'text-muted-foreground' },
+const ROLE_CONFIG: Record<MemberRole, { label: string; icon: React.ElementType; tone: StatusTone }> = {
+  owner: { label: 'Owner', icon: Crown, tone: 'warning' },
+  admin: { label: 'Admin', icon: ShieldCheck, tone: 'accent' },
+  manager: { label: 'Manager', icon: Shield, tone: 'info' },
+  member: { label: 'Member', icon: Users, tone: 'neutral' },
+  mentor: { label: 'Mentor', icon: Users, tone: 'success' },
+  viewer: { label: 'Viewer', icon: Users, tone: 'neutral' },
 };
 
 const MOCK_MEMBERS: OrgMember[] = [
@@ -77,13 +79,16 @@ function MemberRow({ member }: { member: OrgMember }) {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium">{member.name}</p>
           {member.status === 'invited' && (
-            <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">Invited</Badge>
+            <Badge variant="outline" className={cn('text-xs border', STATUS.warning.chip)}>Invited</Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">{member.email}</p>
+        <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
+          {roleCfg.label}{member.department ? ` · ${member.department}` : ''} · {member.lastActive}
+        </p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
-        <RoleIcon className={cn('icon-sm', roleCfg.color)} />
+        <RoleIcon className={cn('icon-sm', roleCfg.tone === 'neutral' && member.role === 'viewer' ? 'text-muted-foreground' : STATUS[roleCfg.tone].icon)} />
         <span className="text-xs font-medium">{roleCfg.label}</span>
       </div>
       <div className="hidden lg:block w-32 shrink-0">
@@ -103,8 +108,8 @@ function MemberRow({ member }: { member: OrgMember }) {
           <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</DropdownMenuItem>
           <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive-emphasis">
-            <UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member
+          <DropdownMenuItem className="text-destructive-accessible">
+            <UserMinus className="mr-2 icon-sm" />Remove Member
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -128,23 +133,21 @@ export default function OrgMembersPage() {
     return acc;
   }, {} as Record<string, number>);
 
+  const filtersActive = !!search || activeTab !== 'all';
+  const clearFilters = () => { setSearch(''); setActiveTab('all'); };
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Users className="icon-lg text-primary-emphasis" aria-hidden="true" />
-              Team Members
-            </h1>
-            <p className="text-muted-foreground">Manage your organization's team and permissions</p>
-          </div>
-          <Button>
-            <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
-            Invite Member
-          </Button>
-        </div>
+    <AppShell
+      title="Team Members"
+      description="Invite and manage who can run programs, review applications, and access workspace settings."
+      actions={(
+        <Button>
+          <UserPlus className="mr-2 icon-sm" />
+          Invite Member
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -165,7 +168,7 @@ export default function OrgMembersPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -193,10 +196,7 @@ export default function OrgMembersPage() {
                   <MemberRow key={member.id} member={member} />
                 ))}
                 {filtered.length === 0 && (
-                  <div className="py-12 text-center">
-                    <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                    <p className="font-medium text-sm">No members found</p>
-                  </div>
+                  <EmptyOrgMembers filtersActive={filtersActive} onClearFilters={clearFilters} />
                 )}
               </CardContent>
             </Card>

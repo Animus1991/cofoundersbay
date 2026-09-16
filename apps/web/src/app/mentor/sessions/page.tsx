@@ -30,10 +30,10 @@ import {
 
 function SessionCard({ session }: { session: MentorshipSessionItem }) {
   const statusColors: Record<string, string> = {
-    scheduled: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    completed: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    cancelled: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-    no_show: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    scheduled: 'bg-status-info-bg text-status-info border-status-info-border',
+    completed: 'bg-status-success-bg text-status-success border-status-success-border',
+    cancelled: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+    no_show: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   const meetingIcons: Record<string, React.ElementType> = {
@@ -45,11 +45,9 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
   const MeetingIcon = meetingIcons[session.meetingType || 'video'] || Video;
 
   const scheduledDate = new Date(session.scheduledAt);
-  const formattedDate = scheduledDate.toLocaleDateString('en-US', {
-    month: 'short',
+  const formattedDate = scheduledDate.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
     day: 'numeric',
-    year: 'numeric',
-  });
+    year: 'numeric' });
   const formattedTime = scheduledDate.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
@@ -61,7 +59,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
         <div className="flex gap-4">
           <div className="flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg bg-primary/5">
             <span className="text-xs text-muted-foreground uppercase">
-              {scheduledDate.toLocaleDateString('en-US', { month: 'short' })}
+              {scheduledDate.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short' })}
             </span>
             <span className="text-xl font-bold">{scheduledDate.getDate()}</span>
           </div>
@@ -80,12 +78,12 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
 
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                <Clock className="icon-sm" />
                 {session.duration} min
               </span>
               {session.meetingType && (
                 <span className="flex items-center gap-1">
-                  <MeetingIcon className="h-3.5 w-3.5" />
+                  <MeetingIcon className="icon-sm" />
                   {session.meetingType.replace('_', ' ')}
                 </span>
               )}
@@ -102,7 +100,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
                 {session.meetingUrl && (
                   <Button size="sm" variant="default" className="h-7 text-xs" asChild>
                     <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
-                      <Video className="icon-2xs mr-1" aria-hidden="true" />
+                      <Video className="icon-sm mr-1" />
                       Join Meeting
                     </a>
                   </Button>
@@ -110,7 +108,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
                 <Button size="sm" variant="outline" className="h-7 text-xs">
                   Reschedule
                 </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-emphasis">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-accessible">
                   Cancel
                 </Button>
               </div>
@@ -150,7 +148,7 @@ export default function MentorSessionsPage() {
     return (
       <AppShell>
         <div className="py-6 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
       </AppShell>
     );
@@ -162,13 +160,13 @@ export default function MentorSessionsPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive-emphasis mb-4" aria-hidden="true" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
               <h3 className="font-medium">Failed to load sessions</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
+                <RefreshCw className="icon-sm mr-2" />
                 Try Again
               </Button>
             </CardContent>
@@ -193,12 +191,12 @@ export default function MentorSessionsPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-              <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} aria-hidden="true" />
+              <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
               Refresh
             </Button>
             <Button asChild>
               <Link href="/mentor/sessions/new">
-                <Plus className="mr-2 icon-sm" aria-hidden="true" />
+                <Plus className="mr-2 icon-sm" />
                 Schedule Session
               </Link>
             </Button>
@@ -209,8 +207,8 @@ export default function MentorSessionsPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2">
-                <Calendar className="icon-md text-blue-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-info-bg p-2">
+                <Calendar className="icon-md text-status-info" />
               </div>
               <div>
                 <p className="text-xl font-bold">{upcomingSessions.length}</p>
@@ -220,8 +218,8 @@ export default function MentorSessionsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <CheckCircle2 className="icon-md text-green-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <CheckCircle2 className="icon-md text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">
@@ -234,7 +232,7 @@ export default function MentorSessionsPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Clock className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Clock className="icon-md text-primary-accessible" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalDuration} min</p>
@@ -261,7 +259,7 @@ export default function MentorSessionsPage() {
           <TabsContent value="upcoming" className="space-y-3 mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+                <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : upcomingSessions.length > 0 ? (
               upcomingSessions.map((session) => (
@@ -277,7 +275,7 @@ export default function MentorSessionsPage() {
                   </p>
                   <Button className="mt-4" asChild>
                     <Link href="/mentor/sessions/new">
-                      <Plus className="mr-2 icon-sm" aria-hidden="true" />
+                      <Plus className="mr-2 icon-sm" />
                       Schedule Session
                     </Link>
                   </Button>
@@ -289,7 +287,7 @@ export default function MentorSessionsPage() {
           <TabsContent value="past" className="space-y-3 mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+                <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : pastSessions.length > 0 ? (
               pastSessions.map((session) => (

@@ -41,6 +41,8 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -60,7 +62,7 @@ function SocialLinkButton({
       rel="noopener noreferrer"
       className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="icon-sm" />
       {label}
     </a>
   );
@@ -183,10 +185,17 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     return (
       <AppShell>
         <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <p className="text-lg font-semibold text-foreground">Profile not found</p>
-          <p className="text-sm text-muted-foreground">This profile may have been removed or is not publicly visible.</p>
-          <button onClick={() => router.back()} className="text-sm text-primary-emphasis hover:underline">
-            ← Go back
+          <p className="text-lg font-semibold text-foreground">
+            <BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en="This profile may have been removed or is not publicly visible."
+              el="Αυτό το προφίλ μπορεί να έχει αφαιρεθεί ή να μην είναι δημόσια ορατό."
+            />
+          </p>
+          <button onClick={() => router.back()} className="text-sm text-primary-accessible hover:underline">
+            <BilingualText en="Go back" el="Επιστροφή" compact />
           </button>
         </div>
       </AppShell>
@@ -220,16 +229,28 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   return (
     <AppShell
       title={profile.displayName}
-      description={profile.headline ?? `${profile.role} on CoFounderBay`}
+      // `??` guarded the headline but not the role, so a profile payload without
+      // one interpolated the word itself and the page header read "undefined on
+      // CoFounderBay". Passing undefined lets resolvePageHeader fall back to the
+      // registry's own description, the same way the title already does.
+      description={
+        profile.headline ?? (profile.role ? `${profile.role} on CoFounderBay` : undefined)
+      }
       actions={
-        <div className="flex items-center gap-2">
-          <Button aria-label="Copy link" variant="ghost" size="icon" onClick={handleShare} title="Copy link">
-            <Share2 className="icon-sm" aria-hidden="true" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleShare}
+            title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+            aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+          >
+            <Share2 className="icon-sm" />
           </Button>
           <Button variant="secondary" size="sm" className="gap-2" asChild>
             <Link href="/discover">
-              <ArrowLeft className="icon-sm" aria-hidden="true" />
-              Back
+              <ArrowLeft className="icon-sm" />
+              <BilingualText en="Back" el="Πίσω" compact />
             </Link>
           </Button>
         </div>
@@ -242,7 +263,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
               <Avatar className="h-20 w-20 ring-4 ring-primary/20">
                 <AvatarImage src={profile.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xl font-bold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-xl font-bold">
                   {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
@@ -260,19 +281,19 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               <div className="w-full space-y-2 text-sm text-muted-foreground">
                 {profile.location && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <MapPin className="icon-sm shrink-0" />
                     {profile.location}
                   </p>
                 )}
                 {profile.timezone && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <Clock className="icon-sm shrink-0" />
                     {profile.timezone}
                   </p>
                 )}
                 {profile.languages?.length ? (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Languages className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <Languages className="icon-sm shrink-0" />
                     {profile.languages.join(' · ')}
                   </p>
                 ) : null}
@@ -338,8 +359,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2 pt-0">
-                {profile.skills.map((s) => (
-                  <SkillChip key={s.skillId} label={s.skillName} />
+                {profile.skills.map((s, i) => (
+                  // skillId can be absent on a partially-populated payload, and
+                  // key={undefined} is the same as no key to React.
+                  <SkillChip key={s.skillId ?? s.skillName ?? i} label={s.skillName} />
                 ))}
               </CardContent>
             </Card>
@@ -365,7 +388,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-3">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="icon-sm text-primary-emphasis" />
+                  <RoleIcon className="icon-sm text-primary-accessible" />
                   {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} details
                 </CardTitle>
               </CardHeader>

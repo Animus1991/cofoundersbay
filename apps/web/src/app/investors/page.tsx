@@ -19,6 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -64,13 +65,13 @@ const TYPE_LABEL: Record<string, string> = {
   syndicate: 'Syndicate', cvc: 'CVC', family_office: 'Family Office',
 };
 
-const STAGE_COLOR: Record<string, string> = {
-  'pre-seed': 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20',
-  seed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-  'series-a': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-  'series-b': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
-  'series-c': 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-  growth: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+const STAGE_TONE: Record<string, StatusTone> = {
+  'pre-seed': 'accent',
+  seed: 'info',
+  'series-a': 'success',
+  'series-b': 'warning',
+  'series-c': 'danger',
+  growth: 'warning',
 };
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
@@ -151,7 +152,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
           {/* Avatar */}
           <Avatar className="h-11 w-11 rounded-lg shrink-0">
             <AvatarImage src={investor.avatarUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold text-sm">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -162,16 +163,16 @@ function InvestorCard({ investor }: { investor: Investor }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h3 className="font-semibold truncate">{investor.displayName}</h3>
-                  {investor.isVerified && <BadgeCheck className="icon-sm text-blue-500 shrink-0" aria-hidden="true" />}
+                  {investor.isVerified && <BadgeCheck className={cn('icon-sm shrink-0', STATUS.info.icon)} />}
                   {investor.isActivelyScouting && (
-                    <Badge className="text-2xs bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
-                      <Zap className="h-2.5 w-2.5 mr-1" aria-hidden="true" />Actively Scouting
+                    <Badge className={cn('text-2xs border', STATUS.success.chip)}>
+                      <Zap className="h-2.5 w-2.5 mr-1" />Actively Scouting
                     </Badge>
                   )}
                 </div>
                 {investor.firmName && (
                   <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <Building2 className="icon-2xs" aria-hidden="true" />
+                    <Building2 className="icon-sm" />
                     {investor.firmName}
                     {investor.firmRole && <span className="text-muted-foreground/60"> · {investor.firmRole}</span>}
                   </p>
@@ -182,7 +183,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   {TYPE_LABEL[investor.investorType] ?? investor.investorType}
                 </Badge>
                 <button onClick={() => setSaved(!saved)} className="p-1 rounded hover:bg-muted transition-colors">
-                  <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
+                  <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
                 </button>
               </div>
             </div>
@@ -193,15 +194,15 @@ function InvestorCard({ investor }: { investor: Investor }) {
             {/* Stages */}
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               {investor.stages.map(s => (
-                <Badge key={s} variant="outline" className={cn('text-2xs border', STAGE_COLOR[s] ?? '')}>
+                <Badge key={s} variant="outline" className={cn('text-2xs border', STATUS[STAGE_TONE[s] ?? 'neutral'].chip)}>
                   {s.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </Badge>
               ))}
               <Badge variant="outline" className="text-2xs">
-                <DollarSign className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />{formatCheckSize(investor.checkSizeMin, investor.checkSizeMax)}
+                <DollarSign className="h-2.5 w-2.5 mr-0.5" />{formatCheckSize(investor.checkSizeMin, investor.checkSizeMax)}
               </Badge>
               <Badge variant="outline" className="text-2xs">
-                <Globe className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />{investor.geographies.slice(0, 2).join(', ')}
+                <Globe className="h-2.5 w-2.5 mr-0.5" />{investor.geographies.slice(0, 2).join(', ')}
               </Badge>
             </div>
 
@@ -213,20 +214,20 @@ function InvestorCard({ investor }: { investor: Investor }) {
             </div>
 
             {/* Stats & Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-3 pt-3 border-t border-border/40">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Briefcase className="icon-2xs" aria-hidden="true" />{investor.portfolioCount} investments</span>
-                <span className="flex items-center gap-1"><Eye className="icon-2xs" aria-hidden="true" />{investor.viewCount.toLocaleString()} views</span>
-                <span className="flex items-center gap-1"><BarChart3 className="icon-2xs" aria-hidden="true" />{investor.dealsThisYear} deals / yr</span>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><Briefcase className="icon-sm" />{investor.portfolioCount} investments</span>
+                <span className="flex items-center gap-1"><Eye className="icon-sm" />{investor.viewCount.toLocaleString('en-GB')} views</span>
+                <span className="flex items-center gap-1"><BarChart3 className="icon-sm" />{investor.dealsThisYear} deals / yr</span>
               </div>
               <div className="flex shrink-0 gap-2">
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
                   <Link href={`/p/${investor.userId}`}>
-                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />Profile
+                    <Eye className="icon-sm" />Profile
                   </Link>
                 </Button>
                 <Button size="sm" className="h-7 text-xs gap-1">
-                  <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />Request Intro
+                  <UserPlus className="icon-sm" />Request Intro
                 </Button>
               </div>
             </div>
@@ -281,7 +282,7 @@ export default function InvestorsPage() {
           ].map(s => (
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-2">
-                <s.icon className="h-4 w-4 text-primary-emphasis shrink-0" />
+                <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
                 <div><p className="text-xs font-bold">{s.value}</p><p className="text-2xs text-muted-foreground">{s.label}</p></div>
               </CardContent>
             </Card>
@@ -292,7 +293,7 @@ export default function InvestorsPage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input placeholder="Search by name, firm, or focus area..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={investorType} onValueChange={setInvestorType}>
@@ -320,7 +321,7 @@ export default function InvestorsPage() {
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-[150px]">
-                <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
+                <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -337,7 +338,7 @@ export default function InvestorsPage() {
               className="h-8"
               onClick={() => setScoutingOnly(!scoutingOnly)}
             >
-              <Zap className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Actively Scouting Only
+              <Zap className="mr-1.5 icon-sm" />Actively Scouting Only
             </Button>
             <p className="text-xs text-muted-foreground ml-auto">
               {filtered.length} of {MOCK_INVESTORS.length} investors

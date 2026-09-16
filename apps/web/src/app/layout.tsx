@@ -1,127 +1,100 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
-import { Inter, Space_Grotesk } from 'next/font/google';
+import { Inter, Commissioner, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+
+/*
+ * Brand typography.
+ *
+ * Both families are self-hosted by next/font (no runtime request to Google,
+ * no layout shift, size-adjusted fallback). Both cover Greek — a hard
+ * requirement for a bilingual UI: the previous display fonts (Space Grotesk,
+ * Sora) have no Greek glyphs, so mixed-language headings would have fallen
+ * back mid-string. Until now none of the fonts were actually loaded and the
+ * whole product rendered in the OS default.
+ *
+ *  - Inter        body / UI text: neutral, excellent Greek, tabular figures
+ *  - Commissioner display: a humanist grotesque by Kostas Bartsokas with
+ *                 Greek designed in, not bolted on. Distinct from Inter at
+ *                 heading sizes without being ornamental.
+ *  - JetBrains Mono  the technical voice on the match-analysis screens. Those
+ *                 screens already asked for it in 17 inline `fontFamily`
+ *                 declarations, but nothing ever loaded it, so every one of
+ *                 them fell through to whatever generic monospace the device
+ *                 happened to have — Consolas on Windows, Menlo on iOS, Roboto
+ *                 Mono on Android. Self-hosting it makes that screen look the
+ *                 same everywhere, which was the point of self-hosting the
+ *                 other two.
+ */
+const inter = Inter({
+  subsets: ['latin', 'latin-ext', 'greek', 'greek-ext'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin', 'latin-ext', 'greek'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-mono',
+});
+
+const commissioner = Commissioner({
+  subsets: ['latin', 'latin-ext', 'greek'],
+  weight: ['500', '600', '700'],
+  display: 'swap',
+  variable: '--font-display-brand',
+});
 import { RoleTheme } from '@/components/layout/RoleTheme';
-import { SkipToContent } from '@/components/layout/SkipToContent';
 import { ToastProvider } from '@/components/ui/toast';
-import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { RoleProvider } from '@/contexts/RoleContext';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
+import { SkipToContent } from '@/components/layout/SkipToContent';
 import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
 import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
+import { PageSnapshotProvider } from '@/contexts/PageSnapshotContext';
+import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
-
-/**
- * Self-hosted via next/font: the files are emitted into the build output and
- * served from our own origin, so there is no render-blocking request to
- * fonts.googleapis.com and no third-party connection at runtime.
- * `display: swap` + the CSS-variable binding means the fallback metrics are
- * adjusted automatically, so swapping in the real face causes no layout shift.
- */
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter-loaded',
-  weight: ['400', '500', '600', '700'],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-space-grotesk-loaded',
-  weight: ['500', '600', '700'],
-});
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://cofounderbay.com';
-
-const description =
-  'CoFounderBay is the startup ecosystem network where founders find co-founders, ' +
-  'mentors and investors — with AI matching, readiness scoring, fundraising tools ' +
-  'and multi-tenant workspaces for accelerators and universities.';
+import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
+import { LocaleSync } from '@/components/common/LocaleSync';
+import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
+import { I18nProvider } from '@/components/common/I18nProvider';
+import { DomI18n } from '@/components/common/DomI18n';
+import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
   title: {
-    default: 'CoFounderBay — Find your co-founder, mentor and investor',
+    default: 'CoFounderBay',
     template: '%s | CoFounderBay',
   },
-  description,
-  applicationName: 'CoFounderBay',
-  keywords: [
-    'startup',
-    'founder',
-    'cofounder',
-    'co-founder matching',
-    'mentor',
-    'investor',
-    'accelerator',
-    'incubator',
-    'venture',
-    'networking',
-    'entrepreneurship',
-  ],
+  description: 'Startup ecosystem networking for founders, mentors, and investors',
+  keywords: ['startup', 'founder', 'cofounder', 'mentor', 'investor', 'networking', 'entrepreneurship'],
   authors: [{ name: 'CoFounderBay' }],
-  creator: 'CoFounderBay',
-  publisher: 'CoFounderBay',
-  formatDetection: { email: false, address: false, telephone: false },
   icons: {
     icon: [
       { url: '/icons/icon.svg', type: 'image/svg+xml' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: [{ url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+    apple: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: siteUrl,
     siteName: 'CoFounderBay',
-    title: 'CoFounderBay — Find your co-founder, mentor and investor',
-    description,
-    images: [
-      {
-        url: '/icons/icon-512x512.png',
-        width: 512,
-        height: 512,
-        alt: 'CoFounderBay',
-      },
-    ],
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'CoFounderBay — Find your co-founder, mentor and investor',
-    description,
-    images: ['/icons/icon-512x512.png'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
-    },
-  },
-  alternates: { canonical: '/' },
   manifest: '/manifest.json',
 };
 
-/**
- * Note: `maximumScale` / `userScalable` are deliberately NOT set.
- * Locking zoom fails WCAG 2.2 SC 1.4.4 (Resize Text) and is the single most
- * common mobile-accessibility defect in production SaaS.
- */
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
@@ -129,8 +102,10 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
+  // Do NOT lock zoom: maximumScale/userScalable:false fails WCAG 2.2 SC 1.4.4 (Resize Text)
+  // and SC 1.4.10 (Reflow). Users must be able to pinch-zoom up to at least 5x.
+  maximumScale: 5,
   viewportFit: 'cover',
-  colorScheme: 'light dark',
 };
 
 export default function RootLayout({
@@ -141,43 +116,62 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-bilingual="en-el"
       data-scroll-behavior="smooth"
-      className={`scroll-smooth ${inter.variable} ${spaceGrotesk.variable}`}
+      className={`scroll-smooth ${inter.variable} ${commissioner.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <body
         suppressHydrationWarning
         className="bg-background text-foreground font-sans antialiased"
       >
-        {/* Must be the first focusable node in the document. */}
+        {/* Single skip link for the whole app (WCAG 2.4.1). AppShell used to render
+            a second one, so keyboard users hit the same link twice. */}
         <SkipToContent />
         <ErrorBoundary>
           <QueryProvider>
-            <TenantProvider>
-              <SidebarProvider>
-                <ServiceWorkerRegistration />
-                <NetworkProvider>
-                  <ToastProvider>
-                    <ConfirmProvider>
-                    <PopupChatProvider>
-                      <MessagingProvider>
-                        <DemoDataProvider>
-                          <RoleTheme>
-                            <OfflineBanner />
-                            {children}
-                            <GlobalFloatingUi />
-                            <Suspense fallback={null}>
-                              <PostHogProvider />
-                            </Suspense>
-                          </RoleTheme>
-                        </DemoDataProvider>
-                      </MessagingProvider>
-                    </PopupChatProvider>
-                    </ConfirmProvider>
-                  </ToastProvider>
-                </NetworkProvider>
-              </SidebarProvider>
-            </TenantProvider>
+            <LanguagePreferenceProvider>
+              <I18nProvider>
+                <LocaleSync />
+                <TenantProvider>
+                  <RoleProvider>
+                    <SidebarProvider>
+                      <ServiceWorkerRegistration />
+                      <NetworkProvider>
+                        <ApiHealthProbe />
+                        <ToastProvider>
+                          <ConfirmProvider>
+                            <PopupChatProvider>
+                              <MessagingProvider>
+                                <DemoDataProvider>
+                                  <RoleTheme>
+                                    <PreviewSessionGuard />
+                                    <DomI18n>
+                                      {/* Above both the page and the floating
+                                          assistant, because the page writes
+                                          what is on screen and the assistant
+                                          reads it. */}
+                                      <PageSnapshotProvider>
+                                      <OfflineBanner />
+                                      {children}
+                                      <GlobalFloatingUi />
+                                      <Suspense fallback={null}>
+                                        <PostHogProvider />
+                                      </Suspense>
+                                      </PageSnapshotProvider>
+                                    </DomI18n>
+                                  </RoleTheme>
+                                </DemoDataProvider>
+                              </MessagingProvider>
+                            </PopupChatProvider>
+                          </ConfirmProvider>
+                        </ToastProvider>
+                      </NetworkProvider>
+                    </SidebarProvider>
+                  </RoleProvider>
+                </TenantProvider>
+              </I18nProvider>
+            </LanguagePreferenceProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>

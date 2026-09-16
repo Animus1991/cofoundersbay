@@ -6,11 +6,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Check,
   X,
@@ -31,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { listBillingPlans, createBillingCheckout, type BillingPlanItem } from '@/lib/api';
 import { formatCents, annualSavingsPct } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
+import { LandingNav } from '@/components/layout/LandingNav';
 
 type PlanFeature = {
   name: string;
@@ -68,7 +67,7 @@ const PLANS = [
     priceMonthly: 0,
     priceAnnual: 0,
     icon: Zap,
-    color: 'text-slate-500',
+    color: 'text-muted-foreground',
     bgColor: 'bg-slate-500/10',
     popular: false,
     cta: 'Get Started',
@@ -88,7 +87,7 @@ const PLANS = [
     priceMonthly: 19,
     priceAnnual: 159,
     icon: Sparkles,
-    color: 'text-primary-emphasis',
+    color: 'text-primary-accessible',
     bgColor: 'bg-primary/10',
     popular: true,
     cta: 'Start Free Trial',
@@ -110,8 +109,8 @@ const PLANS = [
     priceMonthly: 99,
     priceAnnual: 899,
     icon: Users,
-    color: 'text-violet-500',
-    bgColor: 'bg-violet-500/10',
+    color: 'text-status-accent',
+    bgColor: 'bg-status-accent-bg',
     popular: false,
     cta: 'Start Free Trial',
     features: [
@@ -131,8 +130,8 @@ const PLANS = [
     priceMonthly: null,
     priceAnnual: null,
     icon: Building2,
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
+    color: 'text-status-warning',
+    bgColor: 'bg-status-warning-bg',
     popular: false,
     cta: 'Contact Sales',
     features: [
@@ -150,10 +149,10 @@ const PLANS = [
 
 function FeatureCheck({ value }: { value: boolean | string }) {
   if (value === true) {
-    return <Check className="icon-sm text-green-500" aria-hidden="true" />;
+    return <Check className="icon-sm text-status-success" />;
   }
   if (value === false) {
-    return <X className="icon-sm text-muted-foreground/40" aria-hidden="true" />;
+    return <X className="icon-sm text-muted-foreground/40" />;
   }
   return <span className="text-xs font-medium text-foreground">{value}</span>;
 }
@@ -201,11 +200,12 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LandingNav />
       {/* Header */}
-      <div className="border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent">
+      <div className="border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent pt-[52px]">
         <div className="mx-auto max-w-7xl px-6 py-16 text-center">
           <Badge variant="secondary" className="mb-4">
-            <Crown className="mr-1.5 icon-2xs" aria-hidden="true" />
+            <Crown className="mr-1.5 icon-sm" />
             Simple, transparent pricing
           </Badge>
           <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
@@ -216,25 +216,31 @@ export default function PricingPage() {
           </p>
 
           {/* Billing toggle */}
-          <div className="mt-8 flex items-center justify-center gap-3">
-            <span
-              id="billing-monthly-label"
-              className={cn('text-sm font-medium', !annual ? 'text-foreground' : 'text-muted-foreground')}
+          <div className="mt-8 inline-flex items-center rounded-full border border-border/60 bg-secondary/40 p-0.5">
+            <button
+              type="button"
+              onClick={() => setAnnual(false)}
+              className={cn(
+                'rounded-full px-3 py-1 text-sm font-medium',
+                !annual ? 'bg-background text-foreground' : 'text-muted-foreground',
+              )}
             >
               Monthly
-            </span>
-            <Switch
-              checked={annual}
-              onCheckedChange={setAnnual}
-              aria-label="Bill annually instead of monthly"
-            />
-            <span className={cn('text-sm font-medium', annual ? 'text-foreground' : 'text-muted-foreground')}>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnnual(true)}
+              className={cn(
+                'rounded-full px-3 py-1 text-sm font-medium',
+                annual ? 'bg-background text-foreground' : 'text-muted-foreground',
+              )}
+            >
               Annual
-            </span>
+            </button>
             {annual && (
-              <Badge variant="secondary" className="ml-2 bg-green-500/10 text-green-600 dark:text-green-400">
+              <span className="ml-2 pr-2 text-xs text-status-success">
                 Save up to {Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)))}%
-              </Badge>
+              </span>
             )}
           </div>
         </div>
@@ -266,7 +272,7 @@ export default function PricingPage() {
 
                 <CardHeader className="pb-4">
                   <div className={cn('mb-3 flex h-10 w-10 items-center justify-center rounded-lg', plan.bgColor)}>
-                    <Icon className={cn('h-5 w-5', plan.color)} />
+                    <Icon className={cn('icon-md', plan.color)} />
                   </div>
                   <CardTitle className="text-xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
@@ -284,7 +290,7 @@ export default function PricingPage() {
                       </div>
                     )}
                     {!isEnterprise && !isFree && annual && savings > 0 && (
-                      <p className="mt-1 text-xs text-green-600 dark:text-green-400 font-medium">{savings}% off vs monthly</p>
+                      <p className="mt-1 text-xs text-status-success font-medium">{savings}% off vs monthly</p>
                     )}
                     {!isEnterprise && !isFree && !annual && (
                       <p className="mt-1 text-xs text-muted-foreground">Save {savings}% with annual billing</p>
@@ -295,7 +301,7 @@ export default function PricingPage() {
                   <ul className="mb-6 flex-1 space-y-2.5">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 icon-sm shrink-0 text-green-500" aria-hidden="true" />
+                        <Check className="mt-0.5 icon-sm shrink-0 text-status-success" />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}
@@ -309,7 +315,7 @@ export default function PricingPage() {
                     onClick={() => handleCheckout(plan)}
                   >
                     {checkoutLoading === plan.id ? 'Redirecting…' : plan.cta}
-                    {checkoutLoading !== plan.id && <ArrowRight className="icon-sm" aria-hidden="true" />}
+                    {checkoutLoading !== plan.id && <ArrowRight className="icon-sm" />}
                   </Button>
                 </CardContent>
               </Card>
@@ -340,7 +346,7 @@ export default function PricingPage() {
                 <tr className="border-b border-border/60">
                   <th className="py-4 text-left text-sm font-semibold text-foreground">Feature</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Free</th>
-                  <th className="py-4 text-center text-sm font-semibold text-primary-emphasis">Pro</th>
+                  <th className="py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Team</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
                 </tr>
@@ -431,7 +437,7 @@ export default function PricingPage() {
             <Button size="lg" className="gap-2" asChild>
               <Link href="/register">
                 Start free trial
-                <ArrowRight className="icon-sm" aria-hidden="true" />
+                <ArrowRight className="icon-sm" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>

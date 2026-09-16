@@ -37,7 +37,7 @@ import {
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
+  return d.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }) +
     ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
@@ -64,9 +64,9 @@ function VersionCard({
       {/* Version icon */}
       <div className={cn(
         'mt-0.5 p-1.5 rounded-md shrink-0',
-        current ? 'bg-primary/20 text-primary-emphasis' : 'bg-muted text-muted-foreground',
+        current ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
       )}>
-        <GitCommitHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+        <GitCommitHorizontal className="icon-sm" />
       </div>
 
       {/* Content */}
@@ -76,7 +76,7 @@ function VersionCard({
             {v.versionLabel ?? `v${v.version}`}
           </span>
           {current && (
-            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-emphasis">
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-accessible">
               Current
             </Badge>
           )}
@@ -88,22 +88,22 @@ function VersionCard({
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Clock className="icon-2xs" aria-hidden="true" />
+            <Clock className="icon-sm" />
             {fmtDate(v.createdAt)}
           </span>
           {v.changedBy ? (
             <span className="flex items-center gap-1">
               <Avatar className="h-3.5 w-3.5">
-                <AvatarImage src={v.changedBy.avatarUrl ?? undefined} />
+                <AvatarImage src={v.changedBy?.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-2xs">
-                  {(v.changedBy.displayName ?? 'U').charAt(0)}
+                  {(v.changedBy?.displayName ?? 'U').charAt(0)}
                 </AvatarFallback>
               </Avatar>
               {v.changedBy.displayName}
             </span>
           ) : (
             <span className="flex items-center gap-1">
-              <User className="icon-2xs" aria-hidden="true" />
+              <User className="icon-sm" />
               System
             </span>
           )}
@@ -119,7 +119,7 @@ function VersionCard({
           onClick={() => onRestore(v)}
           disabled={restoring}
         >
-          {restoring ? <Loader2 className="icon-2xs animate-spin" aria-hidden="true" /> : <RotateCcw className="icon-2xs mr-1" aria-hidden="true" />}
+          {restoring ? <Loader2 className="icon-sm animate-spin" /> : <RotateCcw className="icon-sm mr-1" />}
           Restore
         </Button>
       )}
@@ -184,7 +184,7 @@ export function VersionHistoryDrawer({
         <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle className="flex items-center gap-2">
-              <History className="icon-sm" aria-hidden="true" />
+              <History className="icon-sm" />
               Version History
             </SheetTitle>
             {documentTitle && (
@@ -207,7 +207,7 @@ export function VersionHistoryDrawer({
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                <AlertCircle className="icon-xl text-destructive-emphasis/50" aria-hidden="true" />
+                <AlertCircle className="icon-xl text-destructive/50" />
                 <p className="text-sm text-muted-foreground">Failed to load version history</p>
               </div>
             ) : versions.length === 0 ? (
@@ -262,8 +262,8 @@ export function VersionHistoryDrawer({
               disabled={restoreMutation.isPending}
               className="gap-2"
             >
-              {restoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              {restoreMutation.isPending && <Loader2 className="icon-sm animate-spin" />}
+              <RotateCcw className="icon-sm" />
               Restore Version
             </Button>
           </DialogFooter>

@@ -214,7 +214,7 @@ function CoverSlide({ slide }: { slide: SlideBase }) {
   const c = contentOf<CoverContent>(slide);
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-gradient-to-br from-primary/10 via-background to-primary/5">
-      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-emphasis font-medium">
+      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible font-medium">
         {c.stage} • Raising {c.raising}
       </div>
       {/* 48px fixed left roughly six characters per line on a 320px screen. */}
@@ -230,8 +230,8 @@ function ProblemSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-          <Target className="icon-lg text-red-600 dark:text-red-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-danger-bg ">
+          <Target className="icon-lg text-status-danger" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -239,16 +239,16 @@ function ProblemSlide({ slide }: { slide: SlideBase }) {
       <div className="space-y-4 mb-10">
         {c.points.map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <div className="mt-1 h-5 w-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-red-600 dark:text-red-400">{i + 1}</span>
+            <div className="mt-1 h-5 w-5 rounded-full bg-status-danger-bg flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-status-danger">{i + 1}</span>
             </div>
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
       </div>
       {c.stat && (
-        <div className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 inline-block">
-          <p className="text-4xl font-bold text-red-600 dark:text-red-400">{c.stat}</p>
+        <div className="rounded-2xl bg-status-danger-bg border border-status-danger-border p-6 inline-block">
+          <p className="text-4xl font-bold text-status-danger">{c.stat}</p>
           <p className="text-muted-foreground mt-1">{c.statLabel}</p>
         </div>
       )}
@@ -261,8 +261,8 @@ function SolutionSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Lightbulb className="icon-lg text-green-600 dark:text-green-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-success-bg ">
+          <Lightbulb className="icon-lg text-status-success" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -270,7 +270,7 @@ function SolutionSlide({ slide }: { slide: SlideBase }) {
       <div className="space-y-4">
         {(c.points as string[]).map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <CheckCircle2 className="icon-md text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
+            <CheckCircle2 className="icon-md text-status-success mt-0.5 flex-shrink-0" />
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
@@ -284,8 +284,8 @@ function TractionSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-          <TrendingUp className="icon-lg text-blue-600 dark:text-blue-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-info-bg ">
+          <TrendingUp className="icon-lg text-status-info" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -294,7 +294,7 @@ function TractionSlide({ slide }: { slide: SlideBase }) {
           <div key={i} className="rounded-2xl border bg-card p-6">
             <p className="text-4xl font-bold text-foreground">{m.value}</p>
             <p className="text-muted-foreground mt-1">{m.label}</p>
-            <Badge className="mt-3 bg-green-100 text-green-800 border-green-200">{m.growth} YoY</Badge>
+            <Badge className="mt-3 bg-status-success-bg text-status-success border-status-success-border">{m.growth} YoY</Badge>
           </div>
         ))}
       </div>
@@ -307,8 +307,8 @@ function MarketSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-          <Globe className="icon-lg text-purple-600 dark:text-purple-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-accent-bg ">
+          <Globe className="icon-lg text-status-accent" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -335,8 +335,8 @@ function BusinessModelSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-          <DollarSign className="icon-lg text-amber-600 dark:text-amber-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-warning-bg ">
+          <DollarSign className="icon-lg text-status-warning" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -363,8 +363,8 @@ function TeamSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30">
-          <Users className="icon-lg text-teal-600 dark:text-teal-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-success-bg ">
+          <Users className="icon-lg text-status-success" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -377,7 +377,7 @@ function TeamSlide({ slide }: { slide: SlideBase }) {
               </AvatarFallback>
             </Avatar>
             <p className="font-semibold">{member.name}</p>
-            <p className="text-sm text-primary-emphasis mt-1">{member.role}</p>
+            <p className="text-sm text-primary-accessible mt-1">{member.role}</p>
             <p className="text-xs text-muted-foreground mt-2">{member.background}</p>
           </div>
         ))}
@@ -391,17 +391,17 @@ function AskSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-          <BarChart2 className="icon-lg text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+        <div className="p-2 rounded-lg bg-status-accent-bg ">
+          <BarChart2 className="icon-lg text-status-accent" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
       <div className="flex items-center gap-8 mb-8">
         <div>
-          <p className="text-5xl font-bold text-primary-emphasis">{c.amount}</p>
+          <p className="text-5xl font-bold text-primary-accessible">{c.amount}</p>
           <p className="text-muted-foreground mt-1">Raising</p>
         </div>
-        <ArrowRight className="icon-xl text-muted-foreground" aria-hidden="true" />
+        <ArrowRight className="icon-xl text-muted-foreground" />
         <div>
           <p className="text-2xl font-semibold">{c.valuation}</p>
           <p className="text-muted-foreground mt-1">Pre-money valuation</p>
@@ -517,24 +517,42 @@ export default function PitchDeckPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mr-2">
-              <span className="flex items-center gap-1"><Eye className="icon-2xs" aria-hidden="true" />{deck.stats.views}</span>
-              <span className="flex items-center gap-1"><Share2 className="icon-2xs" aria-hidden="true" />{deck.stats.shares}</span>
+              <span className="flex items-center gap-1"><Eye className="icon-sm" />{deck.stats.views}</span>
+              <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-              <Share2 className="icon-sm mr-1.5" aria-hidden="true" />Share
+              <Share2 className="icon-sm mr-1.5" />Share
             </Button>
             {deck.allowContact && (
               <Button size="sm" onClick={() => setShowContact(true)}>
-                <Mail className="icon-sm mr-1.5" aria-hidden="true" />Contact
+                <Mail className="icon-sm mr-1.5" />Contact
               </Button>
             )}
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 py-6 gap-6">
+      <div className="flex flex-1 flex-col xl:flex-row max-w-7xl mx-auto w-full px-4 py-6 gap-6">
+        <div className="flex gap-2 overflow-x-auto pb-2 xl:hidden -mx-1 px-1">
+          {slides.map((slide, i) => (
+            <button
+              key={slide.id}
+              onClick={() => setCurrentSlide(i)}
+              className={cn(
+                'min-w-[8.5rem] rounded-lg border p-2 text-left text-xs transition-all',
+                i === currentSlide
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border bg-card',
+              )}
+            >
+              <div className="text-2xs text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="font-medium truncate">{slide.title}</div>
+            </button>
+          ))}
+        </div>
+
         {/* Slide thumbnails sidebar */}
-        <aside className="hidden lg:flex flex-col gap-2 w-36 flex-shrink-0">
+        <aside className="hidden xl:flex flex-col gap-2 w-36 flex-shrink-0">
           {slides.map((slide, i) => (
             <button
               key={slide.id}
@@ -565,7 +583,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.max(s - 1, 0))}
               disabled={currentSlide === 0}
             >
-              <ChevronLeft className="icon-sm mr-1" aria-hidden="true" />Previous
+              <ChevronLeft className="icon-sm mr-1" />Previous
             </Button>
 
             <div className="flex items-center gap-1.5">
@@ -588,7 +606,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.min(s + 1, slides.length - 1))}
               disabled={currentSlide === slides.length - 1}
             >
-              Next<ChevronRight className="icon-sm ml-1" aria-hidden="true" />
+              Next<ChevronRight className="icon-sm ml-1" />
             </Button>
           </div>
 
@@ -599,7 +617,7 @@ export default function PitchDeckPage() {
         </main>
 
         {/* Author sidebar */}
-        <aside className="hidden xl:flex flex-col gap-4 w-56 flex-shrink-0">
+        <aside className="flex flex-col gap-4 w-full xl:w-56 flex-shrink-0">
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-center gap-3 mb-3">
               <Avatar className="h-10 w-10">
@@ -615,7 +633,7 @@ export default function PitchDeckPage() {
             </div>
             {deck.allowContact && (
               <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="icon-sm mr-2" aria-hidden="true" />Get in Touch
+                <Mail className="icon-sm mr-2" />Get in Touch
               </Button>
             )}
           </div>
@@ -634,16 +652,16 @@ export default function PitchDeckPage() {
             <div className="flex gap-2">
               <Button aria-label="Share on X" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Twitter className="icon-sm" />
                 </a>
               </Button>
               <Button aria-label="Share on LinkedIn" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Linkedin className="icon-sm" />
                 </a>
               </Button>
-              <Button aria-label="Confirm" variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" aria-hidden="true" /> : <Link2 className="h-3.5 w-3.5" aria-hidden="true" />}
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
+                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>
           </div>
@@ -713,19 +731,19 @@ export default function PitchDeckPage() {
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
                 <Button variant="outline" onClick={copyLink}>
-                  {copied ? <CheckCircle2 className="icon-sm text-green-600 dark:text-green-400" aria-hidden="true" /> : <Link2 className="icon-sm" aria-hidden="true" />}
+                  {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
                 </Button>
               </div>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="icon-sm mr-2" aria-hidden="true" />Twitter
+                  <Twitter className="icon-sm mr-2" />Twitter
                 </a>
               </Button>
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="icon-sm mr-2" aria-hidden="true" />LinkedIn
+                  <Linkedin className="icon-sm mr-2" />LinkedIn
                 </a>
               </Button>
             </div>

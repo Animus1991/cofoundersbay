@@ -6,11 +6,8 @@ import {
   Briefcase, TrendingUp, TrendingDown, DollarSign,
   MoreVertical, ExternalLink, Users, PieChart, Download,
 } from 'lucide-react';
-import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-  CartesianGrid, Tooltip as RechartsTooltip, PieChart as RPieChart,
-  Pie, Cell, Legend,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +20,16 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
-import { useChartTheme } from '@/lib/chart-theme';
+
+const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
+const PortfolioValueChart = dynamic(
+  () => import('./InvestorPortfolioCharts').then((m) => ({ default: m.PortfolioValueChart })),
+  { ssr: false, loading: ChartFallback },
+);
+const SectorMixChart = dynamic(
+  () => import('./InvestorPortfolioCharts').then((m) => ({ default: m.SectorMixChart })),
+  { ssr: false, loading: ChartFallback },
+);
 
 const PORTFOLIO_VALUE_HISTORY = [
   { month: 'Oct', value: 200 },
@@ -35,10 +41,10 @@ const PORTFOLIO_VALUE_HISTORY = [
 ];
 
 const SECTOR_DISTRIBUTION = [
-  { name: 'FoodTech', value: 50 },
-  { name: 'Cybersecurity', value: 100 },
-  { name: 'Enterprise', value: 75 },
-  { name: 'Logistics', value: 50 },
+  { name: 'FoodTech', value: 50, color: '#f97316' },
+  { name: 'Cybersecurity', value: 100, color: '#6366f1' },
+  { name: 'Enterprise', value: 75, color: '#0ea5e9' },
+  { name: 'Logistics', value: 50, color: '#22c55e' },
 ];
 
 type Investment = {
@@ -65,9 +71,9 @@ const MOCK_INVESTMENTS: Investment[] = [
 
 function InvestmentCard({ investment }: { investment: Investment }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    exited: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    written_off: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    exited: 'bg-status-info-bg text-status-info border-status-info-border',
+    written_off: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
   };
 
   const isPositive = investment.returnPct >= 0;
@@ -78,7 +84,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
         <div className="flex gap-4">
           <Avatar className="h-12 w-12 rounded-lg">
             <AvatarImage src={investment.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {investment.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -86,7 +92,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/startups/${investment.id}`} className="font-semibold hover:text-primary-emphasis transition-colors">
+                  <Link href={`/startups/${investment.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                     {investment.name}
                   </Link>
                   <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
@@ -97,8 +103,8 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -123,8 +129,8 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Return</p>
-                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
-                  {isPositive ? <TrendingUp className="icon-2xs" aria-hidden="true" /> : <TrendingDown className="icon-2xs" aria-hidden="true" />}
+                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-status-success' : 'text-status-danger')}>
+                  {isPositive ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
                   {isPositive ? '+' : ''}{investment.returnPct}%
                 </p>
               </div>
@@ -136,7 +142,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                <Users className="icon-sm" />
                 {investment.teamSize} team members
               </span>
               <span>Last update: {investment.lastUpdate}</span>
@@ -149,7 +155,6 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 }
 
 export default function InvestorPortfolioPage() {
-  const theme = useChartTheme();
   const { showDemoData } = useDemoData();
   const investments = showDemoData ? MOCK_INVESTMENTS : [];
   const valueHistory = showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
@@ -166,7 +171,8 @@ export default function InvestorPortfolioPage() {
           illustration="default"
           title="No portfolio companies yet"
           description="Start investing through your deal pipeline to build your portfolio."
-          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" aria-hidden="true" />View Pipeline</Link></Button>}
+          askAiPrompt="My investor portfolio is empty. What should I review in the pipeline before marking a company as invested?"
+          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" />View Pipeline</Link></Button>}
         />
       </AppShell>
     );
@@ -178,22 +184,22 @@ export default function InvestorPortfolioPage() {
       description="Track your investments and returns"
       actions={
         <Button variant="outline" size="sm">
-          <Download className="mr-2 icon-sm" aria-hidden="true" />Export Report
+          <Download className="mr-2 icon-sm" />Export Report
         </Button>
       }
     >
       <div className="space-y-6">
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-4">
           {[
             { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
-            { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-emphasis' },
-            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-green-600 dark:text-green-400' },
-            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-accessible' },
+            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-status-success' },
+            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-status-info' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-xl font-bold tabular-nums">{value}</p>
                   <p className="text-xs text-muted-foreground">{label}</p>
@@ -215,21 +221,7 @@ export default function InvestorPortfolioPage() {
                 <CardTitle className="text-sm">Portfolio Value (K USD)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={valueHistory}>
-                    <defs>
-                      <linearGradient id="portGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}K`} />
-                    <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Value']} />
-                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#portGrad)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <PortfolioValueChart data={valueHistory} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -239,17 +231,7 @@ export default function InvestorPortfolioPage() {
                 <CardTitle className="text-sm">Investment by Sector (K USD)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <RPieChart>
-                    <Pie data={sectorData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: $${value}K`} labelLine={false}>
-                      {sectorData.map((entry, i) => (
-                        <Cell key={entry.name} fill={theme.series[i % theme.series.length]} />
-                      ))}
-                    </Pie>
-                    <Legend />
-                    <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Invested']} />
-                  </RPieChart>
-                </ResponsiveContainer>
+                <SectorMixChart data={sectorData} />
               </CardContent>
             </Card>
           </TabsContent>

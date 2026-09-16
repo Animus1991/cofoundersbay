@@ -2,13 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Font fallbacks ──
+   The real values are injected on <html> by next/font (app/layout.tsx) via a
+   generated class. This rule uses the `html` type selector on purpose: at
+   specificity (0,0,1) it can never beat that class, so it only applies when the
+   layout is not mounted (isolated component rendering, tests). Without a
+   definition, `var(--font-inter)` would be invalid-at-computed-value-time and the
+   entire font-family declaration — including its system-ui fallback — would be
+   discarded. */
+html {
+  --font-inter: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display-brand: var(--font-inter);
+  --banner-network: 0px;
+  --banner-demo: 0px;
+}
+
 @layer base {
   /* iOS Safari zooms the whole page whenever a focused form control renders
-     below 16px, and the user has to pinch back out — it is a platform rule, not
-     a style preference. The primitives express this as `text-base sm:text-sm`;
-     this catches the raw <input>/<select>/<textarea> elements that bypass them.
-     `!important` because a Tailwind text utility on the element would otherwise
-     win on specificity, which is exactly the case being corrected. */
+     below 16px. Primitives already use `text-base sm:text-sm`; this catches
+     raw <input>/<select>/<textarea> that bypass them. `!important` because a
+     Tailwind text utility on the element would otherwise win. */
   @media (max-width: 639.98px) {
     input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
     select,
@@ -18,14 +31,6 @@
   }
 
   :root {
-    /* ── Font family CSS variables (set here since next/font/google is not used) ── */
-    /* Bound to the self-hosted next/font faces loaded in app/layout.tsx.
-       The `-loaded` variables are injected on <html>; the fallbacks keep the
-       stack valid if a face fails to load. */
-    --font-inter: var(--font-inter-loaded), 'Inter', system-ui, -apple-system, sans-serif;
-    --font-sora: var(--font-space-grotesk-loaded), 'Sora', system-ui, sans-serif;
-    --font-space-grotesk: var(--font-space-grotesk-loaded), 'Space Grotesk', system-ui, sans-serif;
-
     /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
     --background:       220 16% 96%;
     --foreground:       220 26% 9%;
@@ -42,7 +47,12 @@
        Every pair below is verified at >= 4.5:1 (WCAG 1.4.3). */
     --primary:          236 72% 55%;   /* #3a45df — white on it: 6.78 */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 236 72% 48%;   /* #222ed3 — on white: 8.75 */
+    /* Accent text on dark/tinted surfaces (avatars, active nav, badges) — distinct from
+       --primary because a single lightness can't satisfy both "text on dark background"
+       (needs high luminance) and "white text on primary-colored button" (needs low
+       luminance) against the same background — verified via axe-core, computed per theme.
+       Light theme's own --primary already clears 4.5:1 as text, so this matches it. */
+    --primary-accessible: 236 72% 55%;
 
     /* Secondary: subtle gray for secondary actions */
     --secondary:        220 13% 94%;
@@ -56,67 +66,42 @@
     --accent:           236 72% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 84% 49%;   /* surface — white on it: 4.70 (60% gave 3.78) */
+    --destructive:      0 84% 49%; /* WCAG AA: white on destructive 4.70 (50% was 4.53) */
     --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 0 84% 45%; /* text on a light surface — 5.43 on white */
+    /* Text-only destructive (headings, labels, ghost-button labels) — same tension as
+       --primary-accessible: text needs to be darker than the button's own fill for
+       contrast against a light surface, while the button fill must stay light enough
+       for white text on it. Slightly darker than --destructive. */
+    --destructive-accessible: 0 84% 46%;
 
-    /* ── Borders ──────────────────────────────────────────────────────────
-       Every theme used to put its border between 1.27 and 1.41:1 against its
-       own card, and the codebase reaches for `border-border/60`, `/50` and
-       `/40` constantly, which dropped those to 1.10-1.23:1 -- a hairline most
-       people cannot resolve on a typical display. Measured across all 134
-       routes that was ~4,200 borders being painted and roughly 500 of them
-       being painted for nothing, which is why the product had taken to
-       stacking a border, a fill and a shadow on the same card to make an
-       edge read at all.
-       Each theme's border now clears 1.45:1 on its card -- GitHub Primer's
-       level, visible as a boundary without reading as an outline -- so the
-       opacity variants become a real three-step hierarchy instead of four
-       values crowded into the invisible band:
-         border-border     1.45   a boundary between two things
-         border-border/60  1.24   a quieter edge (where the plain one was)
-         border-border/40  1.15   an internal rule inside one thing
-       Borders are decorative under WCAG unless they are a control's only
-       boundary, and that case is carried by --input, which is held at 3:1
-       for SC 1.4.11 separately. */
-    --border:           220 13% 85%;
+    /* Borders: subtle, consistent */
+    /* Measured against this theme's own --card: every theme sat between 1.27
+       and 1.41:1, and the codebase reaches for `border-border/60` constantly,
+       which dropped those to 1.10-1.23:1 -- a hairline most displays cannot
+       resolve, which is why cards had taken to stacking a border, a fill and a
+       shadow to make one edge read. Each theme now clears 1.45:1 on its card
+       (GitHub Primer's level: a boundary, not an outline), so the /60 and /40
+       variants become a real hierarchy instead of four values crowded into the
+       invisible band. Borders are decorative under WCAG unless they are a
+       control's only boundary, and that case is carried by --input, held at
+       3:1 for SC 1.4.11 separately. Values from origin/claude 1501b70,
+       re-derived here. */
+    --border:           220 13% 85%;   /* 1.44 on card */
     --input:            0 0% 100%;
     --ring:             236 72% 55%;
-    /* ── Corner radius ladder ──────────────────────────────────────────
-       One geometric scale, all of it in px. Before this, half the scale was
-       px (--radius and its calc() children: 4/6/8) and half was Tailwind's
-       rem defaults (rounded / -xl / -2xl), which the 82% desktop root shrank
-       to 3.28/9.84/13.12 -- so on desktop the product drew six different
-       corner sizes between 3 and 13px. Six steps inside a 10px span is not a
-       scale; adjacent components differed by 2px, too little to read as a
-       decision and enough to read as an accident. The ladder below steps by
-       ~1.35x, which is the smallest ratio two radii can differ by and still
-       look deliberate, and it is unitless-of-root so a corner is the same
-       curve at every viewport. Curvature is the same everywhere too -- see
-       the `corner-shape` layer further down this file.  */
-    --radius-xs:         5px;   /* checkbox, heat-map cells, inline code    */
-    --radius-sm:         7px;   /* chips and anything under ~24px tall      */
-    --radius-md:        10px;   /* controls: button, input, select, menu    */
-    --radius-lg:        13px;   /* rows, list items, small panels, tabs     */
-    --radius-xl:        18px;   /* cards, dialogs, popovers, page sections  */
-    --radius-2xl:       24px;   /* sheets, hero and feature blocks          */
-    --radius-3xl:       32px;   /* marketing surfaces                       */
-    /* Kept as the control-sized alias: everything that reads `var(--radius)`
-       directly (the skip link, the minimal theme layer) wants a control. */
-    --radius:           var(--radius-md);
-
-    /* Native UI (scrollbars, autofill, date pickers) follows the theme */
-    color-scheme: light;
+    /* Base radius. All Tailwind rounded-* steps derive from this (tailwind.config.ts):
+       sm 6 · DEFAULT 8 · md 10 · lg 12 · xl 16 · 2xl 20 · 3xl 26. */
+    --radius:           12px;
 
     /* Typography scale — refined for readability */
-    --font-size-xs:     0.75rem;    /* 12px */
-    --font-size-sm:     0.875rem;   /* 14px */
-    --font-size-base:   0.9375rem;  /* 15px */
-    --font-size-lg:     1rem;       /* 16px */
-    --font-size-xl:     1.125rem;   /* 18px */
-    --font-size-2xl:    1.25rem;    /* 20px */
-    --font-size-3xl:    1.5rem;     /* 24px */
-    --font-size-4xl:    2rem;       /* 32px */
+    --font-size-xs:     0.735rem;   /* 11.76px */
+    --font-size-sm:     0.8575rem;  /* 13.72px */
+    --font-size-base:   0.91875rem; /* 14.7px */
+    --font-size-lg:     0.98rem;    /* 15.68px */
+    --font-size-xl:     1.1025rem;  /* 17.64px */
+    --font-size-2xl:    1.225rem;   /* 19.6px */
+    --font-size-3xl:    1.47rem;    /* 23.52px */
+    --font-size-4xl:    1.96rem;    /* 31.36px */
 
     /* Gradients */
     --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
@@ -128,27 +113,22 @@
        black shadow over a tinted ground reads as grey haze, a shadow that
        carries the ground's hue reads as depth. `--shadow-strength` scales
        every step at once, which is how the dark themes get shadows that are
-       visible at all without each of them restating the whole ladder. */
+       visible at all without each of them restating the whole ladder. Both
+       are read by the box-shadow ladder in tailwind.config.ts, so every
+       theme has to declare them. */
     --shadow-color:     220 40% 18%;
     --shadow-strength:  1;
 
-    /* A quiet lift, not a second outline. This used to be
-       `0 0 0 1px hsl(var(--border))`, a 1px ring sitting exactly on top of
-       the border that every element carrying it already had -- two hairlines
-       painted at the same coordinates on every outline button in the
-       product. The dark themes override it with their primary glow, which is
-       a deliberate effect and is left alone. */
+    /* A quiet lift, not a second outline. This was
+       `0 0 0 1px hsl(var(--border) / 0.8)`: a 1px ring drawn exactly on top
+       of the border that every element carrying it already declares — two
+       hairlines at the same coordinates on every outline button. The dark
+       themes override it with their primary glow, which is a deliberate
+       effect and is left alone. */
     --shadow-glow:      0 1px 2px -1px hsl(var(--shadow-color) / 0.07);
-    /* --shadow-card also carried a coincident `0 0 0 1px border` ring, on top
-       of the border its four users (tooltip, dropdown, EmptyState, the
-       landing feature cards) already declare in their class lists. Dropped
-       for the same reason as --shadow-glow's; the lift is what was wanted. */
-    --shadow-card:      0 1px 2px -1px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%)),
-                        0 2px 8px -3px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%));
-    --shadow-elevated:  0 2px 6px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%)),
-                        0 10px 24px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 9%));
-    --shadow-modal:     0 8px 18px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 10%)),
-                        0 28px 56px -18px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 14%));
+    --shadow-card:      0 1px 2px hsl(220 20% 10% / 0.04), 0 8px 24px hsl(220 20% 10% / 0.04);
+    --shadow-elevated:  0 8px 28px hsl(220 20% 10% / 0.08), 0 2px 8px hsl(220 20% 10% / 0.04);
+    --shadow-modal:     0 20px 48px hsl(220 20% 10% / 0.12), 0 6px 16px hsl(220 20% 10% / 0.06);
 
     /* ── Standardized spacing scale ── */
     --spacing-card-compact: 1rem;      /* 16px - p-4 */
@@ -169,28 +149,37 @@
   .dark {
     --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 10%) 50%, hsl(235 80% 15%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(222 30% 14% / 0.8), hsl(222 30% 10% / 0.6));
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
     --shadow-color: 222 60% 2%;
     --shadow-strength: 3;
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
+    /* The trailing `0 1px 0 border` was a hairline under every card that
+       already draws a border on all four sides. The ambient pair is the
+       elevation; the border is the boundary. */
+    --shadow-card: 0 8px 28px hsl(0 0% 0% / 0.28);
     --background: 222 35% 8%;
     --foreground: 210 40% 96%;
     --card: 222 30% 12%;
     --card-foreground: 210 40% 96%;
     --popover: 222 30% 10%;
     --popover-foreground: 210 40% 96%;
-    --primary: 235 88% 64%;            /* #5260f4 — white on it: 4.84 (was 66%: 4.38, failed) */
+    --primary: 235 88% 62%; /* WCAG AA: white on primary ≥4.5:1 (was 66%) */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 235 88% 78%;   /* #969ef8 — on card 7.01, on page 7.62, and 5.10 on a bg-primary/20 tint (74% gave only 4.20 there) */
+    /* Text-on-dark variant. 71% was tuned against the page and sidebar only and
+       still failed the case that matters most for this token — accent text on a
+       `bg-primary/20` tint (avatar fallbacks, active chips): 3.70:1. Raised to
+       78%, which clears every surface it is actually drawn on:
+       tint 5.18 · sidebar 6.53 · card 7.01 · page 7.63. */
+    --primary-accessible: 235 88% 78%;
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;
     --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
-    --accent: 292 84% 66%;
-    --accent-foreground: 292 60% 20%;  /* on #de5ff1: 4.65 (white was 2.99) */
-    --destructive: 0 62% 46%;          /* surface */
+    --accent: 292 84% 48%; /* WCAG AA: white on accent ≥4.5:1 (was 66%) */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 46%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 0 62% 66%; /* text on a dark surface — 5.58 on card, 5.10 on a destructive/15 tint (46% gave 2.95, a fail) */
-    --border: 220 18% 23%;             /* 1.45 on card, 1.58 on page */
+    --destructive-accessible: 0 62% 61%; /* text-on-dark variant — 46% measures ~2.9:1 as inline text (axe-core) */
+    --border: 220 18% 23%;             /* 1.44 on card, 1.58 on page */
     --input: 220 18% 20%;
     --ring: 235 88% 66%;
     color-scheme: dark;
@@ -206,26 +195,27 @@
     --card-foreground: 210 20% 98%;
     --popover: 215 25% 21%;
     --popover-foreground: 210 20% 98%;
-    --primary: 199 89% 36%;            /* #0a7aae — white on it: 4.76 (was 48%: 2.86, failed) */
+    --primary: 199 89% 36%; /* WCAG AA: white on cyan primary ≥4.5:1 (was 48%) */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 199 89% 62%;   /* clears a bg-primary/20 tint as well as the card */
+    --primary-accessible: 199 89% 50%; /* text-on-dark — 48% was 4.46 on this theme's card */
     --secondary: 215 20% 26%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 20% 26%;
     --muted-foreground: 215 16% 70%;
-    --accent: 199 89% 48%;
-    --accent-foreground: 199 60% 16%;  /* on #0da2e7: 4.75 (white was 2.85) */
+    --accent: 199 89% 36%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 0 70% 70%;  /* 4.64 on this theme's card (68% gave 4.33) */
-    --border: 215 20% 31%;             /* 1.45 on card, 1.67 on page */
+    --destructive-accessible: 0 70% 70%; /* text-on-dark — 69% was 4.48 on this theme's card */
+    --border: 215 20% 31%;             /* 1.47 on card, 1.69 on page */
     --input: 215 20% 30%;
-    --ring: 199 89% 48%;
+    --ring: 199 89% 36%;
     --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
     color-scheme: dark;
   }
 
-  /* ── Alliance theme: warm cream & amber ── */
+  /* ── Alliance theme: warm cream & amber ──
+     Amber primary uses dark foreground — white on amber fails WCAG AA (~2.2:1). */
   [data-theme="alliance"] {
     --shadow-color: 200 40% 18%;
     --shadow-strength: 1;
@@ -235,22 +225,20 @@
     --card-foreground: 220 100% 3%;
     --popover: 180 25% 98%;
     --popover-foreground: 220 100% 3%;
-    /* The brand orange cannot carry white text at any usable lightness
-       (2.20:1 at its brand value), so the foreground goes dark instead of
-       shifting the hue off-brand. */
-    --primary: 34 100% 52%;            /* #ff950a */
-    --primary-foreground: 24 60% 12%;  /* #311b0c — on the orange: 7.39 */
-    --primary-emphasis: 34 100% 30%;   /* #995700 — on white: 5.65 */
+    --primary: 34 100% 52%;
+    --primary-foreground: 220 100% 3%; /* dark on amber — ≥9:1 */
+    --primary-accessible: 34 100% 28%; /* amber is a light hue even at moderate lightness —
+       52% measures ~1.9:1 as text on this theme's near-white background; darkened to clear 4.5:1 */
     --secondary: 200 15% 88%;
     --secondary-foreground: 220 100% 3%;
     --muted: 180 25% 94%;
-    --muted-foreground: 210 5% 43%;    /* 4.62 on muted, 4.77 on page (46% gave 4.14) */
+    --muted-foreground: 210 5% 43%; /* WCAG AA on muted fill (44% was 4.46) */
     --accent: 34 100% 52%;
-    --accent-foreground: 34 60% 21%;   /* on #ff950a: 4.76 (white was 2.20) */
-    --destructive: 0 84% 49%;          /* white on it: 4.70 (60% gave 3.78) */
+    --accent-foreground: 220 100% 3%;
+    --destructive: 0 84% 49%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 0 84% 45%;
-    --border: 200 15% 84%;             /* 1.45 on card, 1.33 on page */
+    --destructive-accessible: 0 84% 46%; /* text-on-light variant, darkened like light theme above */
+    --border: 200 15% 84%;             /* 1.44 on card, 1.33 on page */
     --input: 200 15% 88%;
     --ring: 34 100% 52%;
     --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
@@ -269,17 +257,17 @@
     --popover-foreground: 0 0% 98%;
     --primary: 262 83% 58%;            /* #7c3bed — white on it: 5.67 */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 262 83% 76%;   /* clears a bg-primary/20 tint as well as the card */
+    --primary-accessible: 262 83% 68%; /* text-on-dark variant, same pattern as .dark above */
     --secondary: 240 6% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 15%;
     --muted-foreground: 240 5% 65%;
-    --accent: 280 100% 70%;
-    --accent-foreground: 280 60% 21%;  /* on #cc66ff: 4.72 (white was 3.04) */
+    --accent: 280 100% 55%; /* WCAG AA: white on magenta accent ≥4.5:1 (was 70%) */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 0 72% 70%;
-    --border: 240 6% 21%;              /* 1.45 on card, 1.55 on page */
+    --destructive-accessible: 0 72% 58%; /* text-on-dark variant, same pattern as .dark above */
+    --border: 240 6% 21%;              /* 1.47 on card, 1.57 on page */
     --input: 240 6% 18%;
     --ring: 262 83% 58%;
     --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
@@ -335,47 +323,124 @@
     color-scheme: light;
   }
 
-  .role-founder {
-    --primary: 235 88% 64%;
+  /* ── "minimal" ────────────────────────────────────────────────────────────
+     Light-first, near-monochrome on warm paper, one teal-ink accent.
+     Scoped to [data-theme="minimal"] so alliance/cofounder/system are untouched.
+     Token names on this line: --primary-accessible / --destructive-accessible
+     (Claude 803ddb2 used --primary-emphasis / --destructive-emphasis). ──── */
+  [data-theme="minimal"] {
+    --background:        40 20% 98%;
+    --foreground:        30 8% 12%;
+    --card:              0 0% 100%;
+    --card-foreground:   30 8% 12%;
+    --popover:           0 0% 100%;
+    --popover-foreground: 30 8% 12%;
+
+    --primary:           190 48% 26%;   /* white on it: 8.00 */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 235 88% 63%;  /* light ground — 5.08 on card, 4.63 on page */
-    --accent: 292 84% 66%;
-    --accent-foreground: 292 60% 20%;  /* on #de5ff1: 4.65 (white was 2.99) */
+    --primary-accessible:  190 48% 24%; /* link text — 8.82 on card */
+
+    --secondary:         40 14% 94%;
+    --secondary-foreground: 30 8% 16%;
+    --muted:             40 14% 95%;
+    --muted-foreground:  30 6% 38%;     /* 5.51 on muted, 6.12 on card */
+
+    --accent:            40 16% 93%;
+    --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
+
+    --destructive:       6 60% 42%;     /* white on it: 6.30 */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 6 60% 36%; /* 7.83 on card */
+
+    --border:            36 12% 83%;   /* 1.47 on card, 1.41 on page */
+    --input:             36 10% 55%;    /* 3.21 on card — a visible field edge */
+    --ring:              190 48% 32%;   /* 5.75 on page */
+
+    /* 8px, not 0.5rem: the desktop root is 82%, which silently shrank this
+       theme's radius to 6.56px and every calc() step with it (cards at
+       10.6px instead of 16). The whole ladder is px so a corner is the same
+       curve at every viewport; this is the same 8px 0.5rem meant at the
+       default root. */
+    --radius: 8px;
+    color-scheme: light;
+  }
+
+  .role-founder {
+    --primary: 235 88% 62%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 292 84% 48%;
+    --accent-foreground: 0 0% 100%;
   }
 
   .role-mentor {
-    --primary: 200 84% 38%;            /* white on it: 4.55 */
-    --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 200 84% 36%;  /* light ground — 5.05 on card, 4.60 on page */
+    --primary: 200 84% 55%;
+    --primary-foreground: 220 26% 9%; /* dark on bright cyan — warm primaries */
     --accent: 180 72% 52%;
-    --accent-foreground: 180 60% 22%;  /* on #2cdddd: 4.73 (white was 1.68) */
+    --accent-foreground: 220 26% 9%;
   }
 
   .role-investor {
     /* Amber, like the alliance orange, cannot carry white text on brand. */
     --primary: 32 92% 60%;
-    --primary-foreground: 25 60% 12%;
-    --primary-emphasis: 32 92% 33%;  /* light ground — 5.29 on card, 4.82 on page */
+    --primary-foreground: 220 100% 3%; /* dark on orange — ≥9:1 */
     --accent: 14 82% 54%;
-    --accent-foreground: 14 60% 12%;   /* on #ea562a: 4.73 (white was 3.58) */
+    --accent-foreground: 220 100% 3%;
   }
 
   .role-org {
-    --primary: 268 84% 58%;            /* white on it: 5.06 */
-    --primary-emphasis: 268 84% 59%;  /* light ground — 5.08 on card, 4.63 on page */
+    --primary: 268 84% 62%; /* WCAG AA: white on purple ≥4.5:1 (was 68%) */
     --primary-foreground: 0 0% 100%;
     --accent: 248 70% 60%;
     --accent-foreground: 0 0% 100%;
   }
 
-  /* The role palettes are applied *alongside* `light` or `dark`, so the
-     emphasis tint has to exist for both grounds. The role block above
-     carries the light value; these restore the dark-tuned one, and win on
-     specificity (0,2,0) over the single class. */
-  .dark.role-founder { --primary-emphasis: 235 88% 78%; }
-  .dark.role-mentor { --primary-emphasis: 200 84% 66%; }
-  .dark.role-investor { --primary-emphasis: 32 92% 72%; }
-  .dark.role-org { --primary-emphasis: 268 84% 76%; }
+  /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)
+     Light surfaces: :root + alliance. Dark surfaces: .dark + cofounder + system. ── */
+  :root,
+  [data-theme="alliance"],
+  [data-theme="minimal"] {
+    --status-success-fg:     142 64% 30%;
+    --status-success-bg:     142 55% 94%;
+    --status-success-border: 142 45% 78%;
+    --status-warning-fg:     32 95% 34%;
+    --status-warning-bg:     38 92% 95%;
+    --status-warning-border: 38 80% 78%;
+    --status-danger-fg:      0 72% 42%;
+    --status-danger-bg:      0 80% 96%;
+    --status-danger-border:  0 65% 82%;
+    --status-info-fg:        217 85% 40%;
+    --status-info-bg:        217 80% 96%;
+    --status-info-border:    217 60% 82%;
+    --status-accent-fg:      263 70% 42%;
+    --status-accent-bg:      263 60% 96%;
+    --status-accent-border:  263 50% 82%;
+    --status-neutral-fg:     220 10% 42%;
+    --status-neutral-bg:     220 12% 94%;
+    --status-neutral-border: 220 13% 85%;
+  }
+
+  .dark,
+  [data-theme="cofounder"],
+  [data-theme="system"] {
+    --status-success-fg:     142 55% 58%;
+    --status-success-bg:     142 35% 14%;
+    --status-success-border: 142 30% 26%;
+    --status-warning-fg:     38 92% 58%;
+    --status-warning-bg:     38 60% 14%;
+    --status-warning-border: 38 50% 26%;
+    --status-danger-fg:      0 75% 62%;
+    --status-danger-bg:      0 45% 14%;
+    --status-danger-border:  0 40% 28%;
+    --status-info-fg:        217 85% 65%;
+    --status-info-bg:        217 50% 14%;
+    --status-info-border:    217 45% 28%;
+    --status-accent-fg:      263 75% 68%;
+    --status-accent-bg:      263 40% 16%;
+    --status-accent-border:  263 35% 28%;
+    --status-neutral-fg:     215 16% 65%;
+    --status-neutral-bg:     218 18% 16%;
+    --status-neutral-border: 220 18% 24%;
+  }
 
   * {
     @apply border-border;
@@ -419,6 +484,43 @@
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Desktop density from origin/claude 141552e: 82% of the phone/tablet
+     scale from `lg` up, as a percentage so a raised browser default still
+     applies. Body stays in rem so it participates. Two floors they measured
+     but did not hold: 11px type (our documented minimum) and 24px controls
+     (WCAG 2.5.8 — 24px becomes 19.7px at 82%). */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 82%;
+    }
+    button,
+    [type='button'],
+    [type='submit'],
+    [type='reset'],
+    [role='button'],
+    [role='switch'],
+    [role='tab'],
+    [role='menuitem'],
+    [role='checkbox'],
+    [role='radio'] {
+      min-height: 24px;
+    }
+    [role='switch'] {
+      min-width: 24px;
+    }
+  }
+
+  @media (max-width: 639.98px) {
+    h1.text-base, h2.text-base, h3.text-base { font-size: 0.93168306rem; }
+    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.02718057rem; }
+    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.14131175rem; }
+    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.36957410rem; }
+    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.66905430rem; }
+    h1.text-4xl,  h2.text-4xl                { font-size: 2.00323038rem; }
   }
 
   /* ── Desktop density ──────────────────────────────────────────────────────
@@ -455,15 +557,30 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    min-height: 100vh;
+    min-height: 100dvh;
     font-feature-settings: 'cv11', 'ss01';
-    /* rem, not px, so it participates in the desktop scale below. */
-    font-size: 0.875rem;
+    /* 15px at the default 16px root; 12.3px once html is 82% on desktop.
+       −2% pass: 14.7px at 16px root; 12.05px at the desktop root. */
+    font-size: 0.91875rem;
     line-height: 1.55;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.011em;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-image:
+      radial-gradient(ellipse 90% 55% at 50% -18%, hsl(var(--primary) / 0.07), transparent 58%),
+      radial-gradient(ellipse 50% 40% at 100% 0%, hsl(var(--accent) / 0.04), transparent 48%);
+    background-attachment: fixed;
+  }
+
+  /* Body copy joins the web view's increase (0.9375rem x 1.2182660). It has to sit
+     after the rule above, not inside the `min-width: 1024px` block further up:
+     same layer, same specificity, so source order decides and that block comes
+     first. */
+  @media (min-width: 1024px) {
+    body {
+      font-size: 1.11928192rem;
+    }
   }
 
   /* Custom scrollbar — thin & minimal */
@@ -570,6 +687,10 @@
       border-box;
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(18px);
+  }
+
+  .cfb-page-header {
+    @apply flex flex-col justify-between gap-3 sm:flex-row sm:items-end;
   }
 
   /* Staggered animation delays */
@@ -728,32 +849,50 @@
   .bg-white\/12 { background-color: rgb(255 255 255 / 0.12); }
   .bg-white\/15 { background-color: rgb(255 255 255 / 0.15); }
 
-  /* Skip-to-content — screen reader + keyboard accessible */
-  .skip-to-content {
+  /* Skip-to-content — stays in the tab order, but has no paint until focused (WCAG 2.4.1) */
+  .skip-to-content:not(:focus) {
     position: absolute;
-    left: 50%;
-    /* -120% of a 38px pill against `top: 0.75rem` left 4px of it poking
-       below the top edge on every page. -200% is proportional to the
-       element's own height, so it clears any `top` offset up to 100% of
-       that height and cannot regress if the padding or font changes. */
-    transform: translateX(-50%) translateY(-200%);
+    left: -10000px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .skip-to-content:focus {
+    position: fixed;
     top: 0.75rem;
+    left: 50%;
     z-index: 9999;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    clip-path: none;
+    overflow: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%);
     padding: 0.5rem 1.25rem;
     border-radius: var(--radius);
     /* The foreground token is theme-aware (dark on the orange themes, white
        elsewhere), so this pair clears 4.5:1 in every theme. */
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    outline: 2px solid hsl(var(--foreground));
-    outline-offset: 2px;
-    font-size: 0.875rem;
+    font-size: 0.87473575rem;
     font-weight: 600;
-    transition: transform 0.15s ease;
     white-space: nowrap;
-  }
-  .skip-to-content:focus {
-    transform: translateX(-50%) translateY(0);
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Hide scrollbar while keeping scroll functionality */
@@ -839,8 +978,91 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shimmer {
+    animation: none !important;
+  }
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Reduced motion (WCAG 2.3.3 Animation from Interactions)
+   Honors the OS "Reduce motion" setting. Decorative entrance/loop animations
+   are removed so the UI is calm and stable, while functional loading spinners
+   (.animate-spin) keep rotating so progress is still communicated. This also
+   eliminates the idle GPU cost of infinite loops (shimmer/pulse/bounce).
+   ────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  html.scroll-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  /* Decorative entrance + infinite loop animations → render final state instantly */
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-fade-in-down,
+  .animate-fade-in-left,
+  .animate-scale-in,
+  .animate-bounce-subtle,
+  .animate-pulse-glow,
+  .shimmer,
+  .focus-ring-animated:focus-visible {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Hover lifts / interactive card translation → no movement */
+  .hover-lift,
+  .hover-lift-sm,
+  .card-interactive,
+  .card-hover {
+    transition: none !important;
+  }
+  .hover-lift:hover,
+  .hover-lift-sm:hover,
+  .card-interactive:hover,
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  /* Collapse generic transitions to near-instant (keeps state changes legible) */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  /* Keep functional spinners animating — progress feedback must survive */
+  .animate-spin {
+    animation: spin 0.8s linear infinite !important;
+  }
+
+  /* Disable View Transition page animations */
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none !important;
+    }
+  }
 }
 
 /* ── Enhanced component utilities ── */
@@ -880,16 +1102,711 @@
   }
 
   /* ── Standardized icon sizes ── */
-  .icon-2xs { @apply h-3 w-3; }    /* 12px - inline chip glyphs, counters */
-  .icon-xs { @apply h-3.5 w-3.5; } /* 14px - dense meta rows, chips */
+  /* ── One stroke weight across both icon families ──
+     The product draws from two sets: its own `CfbGlyph`, deliberately drawn at
+     1.75, and lucide, which ships every glyph at 2. They sit side by side in
+     the same row — on /readiness it was 40 icons at 2 against 27 at 1.75 — and
+     two weights at one size is what makes a set look unruly rather than drawn.
+     CSS wins over the presentation attribute, so this needs no change at any
+     call site, and charts are untouched: their widths are on `path`, not on a
+     `svg.lucide`. */
+  svg.lucide {
+    stroke-width: 1.75;
+  }
+
   .icon-sm { @apply h-4 w-4; }  /* 16px - inline icons, badges */
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
   .icon-xl { @apply h-8 w-8; }  /* 32px - hero sections, large CTAs */
 
-  /* ── Card padding standards ── */
-  .card-compact { @apply p-4; }      /* Compact cards - lists, dense info */
-  .card-comfortable { @apply p-6; }  /* Comfortable cards - default */
+  /* Quiet wells for original glyphs — identity without decoration. */
+  .icon-well {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible;
+  }
+  .icon-well-sm {
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible;
+  }
+
+  /* ── Bilingual secondary text ──
+     The secondary language must read as subordinate to the primary without
+     becoming illegible. Sizing is relative (0.85em) so the ratio holds in an
+     h1, in body copy and in a badge alike, with an 11px floor via max() so it
+     never drops below a readable size in already-small containers.
+     Replaces the previous hardcoded text-[9px] / text-[10px].
+     Colour is deliberately NOT set here: it stays a Tailwind class on the
+     element so tailwind-merge can resolve a caller-supplied override
+     (e.g. secondaryClassName="text-primary-foreground" on an active chip). */
+  .bilingual-secondary {
+    font-size: max(11px, 0.67375rem, 0.85em);
+    line-height: 1.35;                 /* room for Greek diacritics */
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  /* Separator between primary and secondary in inline mode. */
+  .bilingual-separator {
+    @apply select-none text-muted-foreground/40;
+    font-size: max(11px, 0.67375rem, 0.85em);
+  }
+
+  /* Hold the 11px floor when html is 82% on desktop (0.68729238rem → 9.02px). */
+  .text-2xs {
+    font-size: max(0.68729238rem, 11px);
+    line-height: max(1.01rem, 16px);
+  }
+
+  /* `text-xs` needed the same floor and did not have it. 0.735rem against the 82%
+     desktop root is 9.64px, and it is the most common size in the product -- 111
+     text nodes on the founder dashboard alone were rendering below the
+     documented 11px minimum on every desktop. */
+  .text-xs {
+    font-size: max(0.7497735rem, 11px);
+    line-height: max(1.01rem, 16px);
+  }
+
+  /* ── Phone/tablet type scale: −2% pass, then −2% again on the display half ──
+     Every step below `lg` is the class's own size x0.98; the px floors keep the
+     documented 11px/16px minimums, so `2xs`/`xs` stay pinned at 11px on mobile
+     and the floor, not the multiplier, is what they render. Steps `3xl` and up
+     follow `tailwind.config.ts`'s display values, not Tailwind's defaults.
+     `text-lg` and up then took a second x0.98 — see the web view block below
+     for what that pass was for; the phone scale takes it too so a stat card
+     does not change proportion when the viewport crosses `lg`.
+     Two later passes pull the ladder's two ends toward each other: each time
+     the steps below `base` (2xs, xs, sm) take x1.01 and `base` and everything
+     above take x0.99, so adjacent steps sit closer without losing the gaps
+     between them. `base` travels with the larger half on purpose — `text-sm` is
+     what the product's body copy actually uses (~1,870 sites against base's
+     ~250), so `base` is a title-adjacent step. The second of those passes is
+     page content only: the rail keeps the values the first pass left it with.
+     The 11px legibility floor does not move: it is a minimum, not a size, and
+     the rem intent above it still rose — `2xs` simply stays floor-bound.
+     The `min-width: 1024px` block further down still wins on desktop — same
+     layer, same specificity, later source order. */
+  .text-sm  { font-size: 0.87473575rem; }
+  .text-base { font-size: 0.960498rem; }
+  .text-lg  { font-size: 1.05894905rem; }
+  .text-xl  { font-size: 1.17661005rem; }
+  .text-2xl { font-size: 1.41193206rem; }
+  .text-3xl { font-size: 1.51782696rem; }
+  .text-4xl { font-size: 1.69996620rem; }
+  .text-5xl { font-size: 1.90396215rem; }
+  .text-6xl { font-size: 2.13243760rem; }
+  .text-7xl { font-size: 2.38833011rem; }
+
+  /* Same pass for the responsive variants while the desktop block is inactive:
+     `sm:`/`md:` utilities match at 640px+ / 768px+, which still includes phones
+     in landscape and every tablet up to `lg`. */
+  @media (max-width: 1023.98px) {
+    .sm\:text-xs  { font-size: max(0.7497735rem, 11px); }
+    .sm\:text-sm  { font-size: 0.87473575rem; }
+    .sm\:text-lg  { font-size: 1.05894905rem; }
+    .sm\:text-xl  { font-size: 1.17661005rem; }
+    .sm\:text-2xl { font-size: 1.41193206rem; }
+    .sm\:text-4xl { font-size: 1.69996620rem; }
+    .sm\:text-5xl { font-size: 1.90396215rem; }
+    .sm\:text-6xl { font-size: 2.13243760rem; }
+    .md\:text-lg  { font-size: 1.05894905rem; }
+    .md\:text-xl  { font-size: 1.17661005rem; }
+    .md\:text-2xl { font-size: 1.41193206rem; }
+    .md\:text-6xl { font-size: 2.13243760rem; }
+  }
+
+  /* ── Web view type scale ────────────────────────────────────────────────
+     Desktop only, built up over nine requested passes, then one uniform x0.98
+     pass over every step, every responsive variant, the rail, and body copy:
+       page, below `text-lg`  x1.05, x1.03, x1.02 x4, x1.01, x1.02, x1.01, x0.98 = x1.19390076
+       `text-lg` and up        held, held, x0.98, x0.98, then held, x0.98  = x0.941192
+       the sidebar             frozen at pass 7, x1.02, then x0.98
+       the sidebar's headings  frozen at pass 6, held since, then x0.98
+
+     The threshold came from measuring what the named elements are: "Your
+     founder journey" is `text-lg`, and the page title and the stat numerals
+     ("Founder dashboard", "1840", "0/4") are `text-2xl`.
+
+     THE ORDER IS RESTORED HERE. Nine passes had taken the steps below the
+     threshold to x1.2182660 while `text-lg` and up went to x0.9604, which put
+     body copy above both the section heading (`text-lg`) and the card heading
+     (`text-xl`) -- only weight still separated them.
+
+     Neither remedy this comment used to propose actually works, and both were
+     checked before choosing a third: letting `text-lg` travel with the lower
+     steps puts it at 17.98px, and moving the threshold up to `text-xl` puts
+     `text-xl` at 19.98px. Both land above the `text-2xl` anchor of 18.90px, so
+     each one only moves the inversion up a step. The two halves of the scale
+     have drifted 23% apart, and no threshold placed inside the ladder closes
+     that.
+
+     What closes it is interpolating the two orphaned steps back into the room
+     that is actually available -- between `text-base` (15.984) and the
+     `text-2xl` anchor (18.901) -- at the geometric ratio those two imply,
+     x1.0574676. `text-2xl` and every display step above it are unchanged to the
+     digit, since those are the elements that were named in each pass, and
+     nothing below `text-lg` moves either. A later requested pass then moved
+     every step, variant, the rail and body copy by a uniform x0.98, so the
+     ladder still ascends. As rendered now, smallest first:
+
+       text-2xs 13.133 | text-xs 13.133 | text-sm 13.706 | body   14.685
+       text-base 15.664 | text-lg 16.233 | text-xl 17.166 | text-2xl 18.152
+
+     The display half — `text-lg` and up, every variant, and the `h1/h2/h3`
+     overrides on phones — then took one more x0.98. The request named the stat
+     pairs ("24% Ολοκλήρωση", "42% Ετοιμότητα", "0 Ολοκληρωμένα",
+     "1 Συνεργάτες"), whose numerals are `text-xl sm:text-2xl` and whose labels
+     are `text-2xs`; 187 call sites use `text-xl font-bold`, 71 use `text-2xl`,
+     38 use `text-3xl`, so the only way to reach every one of them without
+     omission is the scale itself. Body copy and the two smallest steps stay
+     where they are, which also narrows the numeral-to-label ratio rather than
+     shifting the whole page down with it.
+
+     `text-2xs` and `text-xs` still land on the same value: both sit under the
+     scaled 11px floor, which is what a floor does rather than a fault. They are
+     the one pair `typeScaleOrder.test.ts` permits to be equal.
+
+     Sizes are rem x multiplier, not fixed px, so a reader who raises their
+     browser default still gets the scale; the px halves of the `max()` on the
+     two smallest steps are the 11px/16px legibility floors, scaled alongside,
+     so the floor travels with the type instead of swallowing the change.
+
+     `.bilingual-secondary` needs no entry -- it is sized in `em` against its
+     own parent, so it follows whichever side of the threshold that parent is
+     on. */
+  @media (min-width: 1024px) {
+    /* ── below the threshold: x1.1251926, then x0.98, then x1.01 twice ── */
+    .text-2xs {
+      font-size: max(0.83730494rem, 13.39687977px);
+      line-height: max(1.24275323rem, 19.88405163px);
+    }
+
+    .text-xs {
+      font-size: max(0.91342363rem, 13.39687977px);
+      line-height: max(1.24275323rem, 19.88405163px);
+    }
+
+    .text-sm {
+      font-size: 1.06566089rem;
+      line-height: 1.55344154rem;
+    }
+
+    .text-base {
+      font-size: 1.17014213rem;
+      line-height: 1.79103388rem;
+    }
+
+    /* ── the two steps that had fallen under body: interpolated back in ──
+       Line heights keep the ratio each step carried before (28/18 for `lg`,
+       1.4 for `xl`), so the leading travels with the size instead of staying
+       pinned to the 1.6807rem both had been sharing. */
+    .text-lg {
+      font-size: 1.21263969rem;
+      line-height: 1.92482490rem;
+    }
+
+    .text-xl {
+      font-size: 1.28232723rem;
+      line-height: 1.83189605rem;
+    }
+
+    /* ── the display steps: x0.9604, then x0.98, then evened out ──────────
+       `2xl` is the anchor and does not move; `3xl` and up were rebuilt from it
+       on a fixed ratio, because the ladder's own steps had drifted far apart at
+       the top while staying almost flat at the bottom:
+
+                    before            after
+         xs  → sm   1.044 (both floored)   unchanged
+         sm  → base 1.142                  unchanged
+         base→ lg   1.036                  unchanged
+         lg  → xl   1.058                  unchanged
+         xl  → 2xl  1.057                  unchanged
+         2xl → 3xl  1.219  22.12px         1.075  19.51px
+         3xl → 4xl  1.200  26.55px         1.120  21.86px
+         4xl → 5xl  1.333  35.39px         1.120  24.48px
+         5xl → 6xl  1.250  44.24px         1.120  27.42px
+         6xl → 7xl  1.200  53.10px         1.120  30.71px
+
+       So a step at the top of the scale now differs from its neighbour by
+       about as much as one at the bottom does, and every size sits closer to
+       body copy — the request was to leave the small steps alone and bring the
+       large ones down toward them, not to flatten the ladder: 1.075 and 1.120
+       still separate two adjacent levels plainly at these sizes (1.4px and
+       2.4px), which is what a heading needs over its body and no more.
+
+       `2xl` holds because it is where the app's own hierarchy tops out — stat
+       numerals are `text-xl sm:text-2xl` — so moving it would move the figures
+       on every dashboard without evening anything. The four steps above it are
+       26 call sites, nearly all marketing headlines, and they carried the whole
+       disproportion. The phone scale takes the same two ratios against its own
+       100% root, so a heading keeps its proportion across `lg`.
+
+       Then the ends were drawn closer twice: every step above `base` took x0.99
+       and the three below it took x1.01 each time (see the phone-scale comment
+       for why `base` rides with the top half). The second of those is page
+       content only — the rail is left where the first pass put it. On desktop
+       the rendered page ladder is now: 13.40 (2xs/xs share the floor) ·
+       13.98 sm · 15.35 base · 15.91 lg · 16.82 xl · 17.79 2xl · 19.13 3xl ·
+       21.42 4xl · 23.99 5xl · 26.87 6xl · 30.09 7xl. Body copy stays 14.69,
+       between sm and base. Adjacent ratios still run x1.036 to x1.120 — every
+       gap distinct, none disproportionate. The 13.3969px floor moved with the
+       steps because on this root it IS the rendered size of `2xs`/`xs`, not a
+       minimum: leaving it would have meant the two most-used sizes never
+       changed. */
+    .text-2xl {
+      font-size: 1.35601955rem;
+      line-height: 1.84492456rem;
+    }
+
+    .text-3xl {
+      font-size: 1.45772102rem;
+      line-height: 1.78529054rem;
+    }
+
+    .text-4xl {
+      font-size: 1.63264754rem;
+      line-height: 1.85124254rem;
+    }
+
+    .text-5xl {
+      font-size: 1.82856523rem;
+    }
+
+    .text-6xl {
+      font-size: 2.04799307rem;
+    }
+
+    .text-7xl {
+      font-size: 2.29375224rem;
+    }
+
+    /* ── Responsive variants ──────────────────────────────────────────────
+       Nine passes tuned the unprefixed utilities only, so every `sm:`/`md:`
+       type class fell through to the raw Tailwind scale against the 82% root
+       and none of this work reached it. Measured at 1024px, the drift was:
+
+         sm:text-xs   9.84px vs 13.40   sm:text-sm  11.48px vs 13.99
+         sm:text-lg  14.76px vs 16.90   sm:text-xl  16.40px vs 17.87
+         sm:text-2xl 19.68px vs 18.90   sm:text-4xl 28.79px vs 27.65
+
+       The first two broke the documented 11px floor outright. The three
+       `sm:text-xs` call sites are written `text-[11px] ... sm:text-xs`, so the
+       variant was *lowering* an explicitly-set 11px to 9.84px on exactly the
+       viewport it was meant to grow on -- twice on the founder dashboard, once
+       on `/discover`.
+
+       Every `sm:`/`md:` breakpoint is already active at 1024px, so each variant
+       simply takes its unprefixed value. Declared after all of them, and `sm:`
+       before `md:`, so `text-base sm:text-sm` and `sm:text-lg md:text-xl` still
+       resolve the way Tailwind's own ordering resolves them. Only the variants
+       the product actually uses are listed; `typeScaleOrder.test.ts` fails if a
+       component starts using one that is missing here. */
+    .sm\:text-xs {
+      font-size: max(0.91342363rem, 13.39687977px);
+      line-height: max(1.24275323rem, 19.88405163px);
+    }
+
+    .sm\:text-sm {
+      font-size: 1.06566089rem;
+      line-height: 1.55344154rem;
+    }
+
+    .sm\:text-lg {
+      font-size: 1.21263969rem;
+      line-height: 1.92482490rem;
+    }
+
+    .sm\:text-xl {
+      font-size: 1.28232723rem;
+      line-height: 1.83189605rem;
+    }
+
+    .sm\:text-2xl {
+      font-size: 1.35601955rem;
+      line-height: 1.84492456rem;
+    }
+
+    .sm\:text-4xl {
+      font-size: 1.63264754rem;
+      line-height: 1.85124254rem;
+    }
+
+    /* Marketing hero sizes: `/` and `/t/[slug]` headlines, `/pricing`,
+       `/themes/alliance`. Line height is left alone -- the display steps carry
+       `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
+    .sm\:text-5xl {
+      font-size: 1.82856523rem;
+    }
+
+    .sm\:text-6xl {
+      font-size: 2.04799307rem;
+    }
+
+    .md\:text-lg {
+      font-size: 1.21263969rem;
+      line-height: 1.92482490rem;
+    }
+
+    .md\:text-xl {
+      font-size: 1.28232723rem;
+      line-height: 1.83189605rem;
+    }
+
+    .md\:text-2xl {
+      font-size: 1.35601955rem;
+      line-height: 1.84492456rem;
+    }
+
+    .md\:text-6xl {
+      font-size: 2.04799307rem;
+    }
+
+    /* `lg:text-xs` — the Network Velocity labels, which step up from `text-2xs`
+       when that card stacks into rows at `lg` and has the width for it. Takes
+       the same value as the unprefixed step, declared after it so it wins. */
+    .lg\:text-xs {
+      font-size: max(0.91342363rem, 13.39687977px);
+      line-height: max(1.24275323rem, 19.88405163px);
+    }
+
+    .lg\:text-6xl {
+      font-size: 2.04799307rem;
+    }
+
+    .lg\:text-7xl {
+      font-size: 2.29375224rem;
+    }
+
+    /* The sidebar's uppercase section headings run the other way: they take the
+       display steps' x0.98 per pass while the links beneath them take the
+       x1.02 of `text-sm`. Declared after `.text-xs` above, whose size the
+       element would otherwise inherit -- same layer and specificity, so source
+       order is what decides. Written out as its own class, never assembled from
+       parts, because Tailwind drops a custom utility whose name it cannot find
+       literally in the source. */
+    /* The rail moves on its own multiplier: x1.02 this pass against the page's
+       x1.01, and its uppercase section headings stay where pass six left them. `aside .text-*` is
+       (0,1,1) against the (0,1,0) of the rules above, so it wins on specificity
+       rather than order -- and `.nav-section-label` therefore needs the same
+       weight, declared after, or the frozen `aside .text-xs` would capture the
+       section headings too. */
+    aside .text-2xs {
+      font-size: max(0.81254522rem, 13.00072357px);
+      line-height: max(1.20600404rem, 19.29606467px);
+    }
+
+    aside .text-xs {
+      font-size: max(0.88641297rem, 13.00072357px);
+      line-height: max(1.20600404rem, 19.29606467px);
+    }
+
+    aside .text-sm {
+      font-size: 1.03414847rem;
+      line-height: 1.50750505rem;
+    }
+
+    /* The logo wordmark is `text-base`; the rest are frozen so the rail cannot
+       drift if it later uses one of them. */
+    aside .text-base {
+      font-size: 1.18188396rem;
+      line-height: 1.80900607rem;
+    }
+
+    /* The rail had inherited the same inversion: its own `text-base` wordmark
+       (15.823px) outran both of these. Interpolated between that wordmark and
+       the page's `text-2xl` anchor, which the rail has no override for and so
+       falls through to -- ratio x1.0610395. */
+    aside .text-lg {
+      font-size: 1.25402556rem;
+      line-height: 1.99051676rem;
+    }
+
+    aside .text-xl {
+      font-size: 1.33057064rem;
+      line-height: 1.90081520rem;
+    }
+
+    /* Icons in the rail and the top bar, +2% then +3% = x1.0506.
+       The icon scale is rem-based (`icon-sm` is `h-4 w-4`), so the 82% desktop
+       root renders it at 13.12px where the class comment says 16px -- and it has
+       stayed there while the type around it grew, so the glyphs had drifted small
+       against their own labels. This lifts only the two chrome surfaces; the
+       page's icons are untouched, and so is every viewport below `lg`, where the
+       root is 100% and the icons are already their nominal size.
+
+       These two surfaces are now the only place the icon scale differs from the
+       page's, which is deliberate: the chrome carries labels that have grown
+       nine times while the glyphs beside them never moved. */
+    aside .icon-sm,
+    header .icon-sm,
+    aside svg.h-4,
+    header svg.h-4 {
+      height: 1.0506rem;
+      width: 1.0506rem;
+    }
+
+    aside .icon-md,
+    header .icon-md {
+      height: 1.31325rem;
+      width: 1.31325rem;
+    }
+
+    aside .icon-lg,
+    header .icon-lg {
+      height: 1.5759rem;
+      width: 1.5759rem;
+    }
+
+    aside .nav-section-label {
+      font-size: max(0.79458454rem, 11.65390657px);
+      line-height: max(1.0810674rem, 17.2970784px);
+    }
+  }
+
+  /* ── Desktop spatial scale, anchored in pixels ──────────────────────────
+     The 82% desktop root shrinks every rem, and the type scale has been
+     retuned nine times to compensate. The *spatial* scales never were, so
+     they had all quietly drifted about a fifth smaller than the values their
+     own comments state, while the text beside them stayed put:
+
+       .icon-sm says 16px, rendered 13.12px
+       .card-comfortable says p-6 = 24px, rendered 19.68px
+       Button size="sm" says h-8 = 32px, rendered 26.24px
+       Button size="xs" says h-7 = 28px, rendered 22.96px -- under the 24px
+         floor of WCAG 2.5.8, which is a pixel floor and not a rem one
+
+     That is the whole of the "cramped" feeling: glyphs too small for their
+     labels, controls too short for their text, and cards whose padding lost
+     a fifth of its breathing room. Restoring the declared sizes is not a
+     redesign -- it is making the rendered value equal the documented one.
+
+     Type is deliberately untouched here. It is the one scale that was tuned
+     on purpose, and it stays exactly where it was set. */
+  @media (min-width: 1024px) {
+    .icon-sm  { height: 16px; width: 16px; }
+    .icon-md  { height: 20px; width: 20px; }
+    .icon-lg  { height: 24px; width: 24px; }
+    .icon-xl  { height: 32px; width: 32px; }
+
+    /* Tailwind's bare h-3/h-4/h-5/h-6 on an svg is the same intent written a
+       different way, and roughly half the product's glyphs are written that
+       way. Left to drift they would now be visibly smaller than the icon-*
+       beside them, which is a worse inconsistency than the one being fixed. */
+    svg.h-3 { height: 12px; }
+    svg.w-3 { width: 12px; }
+    svg.h-4 { height: 16px; }
+    svg.w-4 { width: 16px; }
+    svg.h-5 { height: 20px; }
+    svg.w-5 { width: 20px; }
+    svg.h-6 { height: 24px; }
+    svg.w-6 { width: 24px; }
+
+    /* The chrome no longer needs its own, larger icon scale: it existed only
+       because the page's glyphs were stuck at 13.12px, and the rail's were
+       lifted to 13.78px to compensate. Both are 16px now, which is what the
+       rail asked for and what puts the two surfaces back in agreement. */
+    aside .icon-sm,
+    header .icon-sm,
+    aside svg.h-4,
+    header svg.h-4 { height: 16px; width: 16px; }
+
+    aside .icon-md,
+    header .icon-md { height: 20px; width: 20px; }
+
+    aside .icon-lg,
+    header .icon-lg { height: 24px; width: 24px; }
+
+  }
+
+  /* WCAG 2.5.8 is a CSS-pixel floor, not a rem one, so a `h-6`/`min-h-6` target
+     is 19.67px once the desktop root is 82% -- and because these are utilities
+     they also beat the `min-height: 24px` base rule that was meant to hold the
+     line. Use these instead on anything a pointer has to hit.
+     `tap-target` for an icon-only control, `tap-target-y` where only the height
+     is short (a text button or a name link in a row). */
+  .tap-target {
+    min-height: max(1.5rem, 24px);
+    min-width: max(1.5rem, 24px);
+  }
+
+  .tap-target-y {
+    min-height: max(1.5rem, 24px);
+  }
+
+  /* ── Phones: one language on the inline variants ──
+     Both languages on a single line makes every string roughly twice as long.
+     Measured on a 360px viewport, that was the single biggest source of broken
+     layout on this product: 35 clipped text nodes and 48 elements past the
+     viewport edge on the founder dashboard alone. Milestone titles were losing
+     ~94% of their width — "Complete MVP v1" rendered as "C…" — and
+     "Open tracker · Άνοιγμα παρακολούθησης" ran to x=539 in a 360px window.
+     Hiding the secondary here takes those to 4 and 10.
+
+     Only the inline variants are affected. `stacked` puts the second language on
+     its own line, which fits and is what the mobile bottom nav uses, so it keeps
+     both. No information is lost either way: the primary line is already the
+     reader's chosen language, and the top-bar switcher changes which one that is.
+
+     !important because a call site may pass a display utility through
+     secondaryClassName; the intent here is not overridable per-site. */
+  @media (max-width: 639.98px) {
+    .bilingual-secondary--inline,
+    .bilingual-separator--inline {
+      display: none !important;
+    }
+  }
+
+  /* A control paints its own foreground; the page's muted token is not readable
+     on it. Measured on the primary fill: #94a3b8 on #4957f3 is 2.07:1, and axe
+     flagged it on /discover, /profile, /connections, /projects, /milestones,
+     /fundraising and /readiness -- every filled button with a bilingual label
+     had an unreadable second line. Inheriting keeps whatever the control chose
+     (5.32:1 on the primary fill); the size difference still carries the
+     hierarchy, which is what the smaller line was for. */
+  button .bilingual-secondary,
+  button .bilingual-separator,
+  [role='button'] .bilingual-secondary,
+  [role='button'] .bilingual-separator,
+  [role='tab'] .bilingual-secondary,
+  [role='tab'] .bilingual-separator,
+  /* Any element that declares its own foreground has taken responsibility for
+     the contrast on it -- a filled Button rendered `asChild` is an <a>, not a
+     <button>, so the element selectors above miss it. Keying on the foreground
+     class is both broader and more precise than tagging the component: it says
+     "wherever the surface sets its own text colour, the second language uses
+     that colour too". */
+  .text-primary-foreground .bilingual-secondary,
+  .text-primary-foreground .bilingual-separator,
+  .text-secondary-foreground .bilingual-secondary,
+  .text-secondary-foreground .bilingual-separator,
+  .text-destructive-foreground .bilingual-secondary,
+  .text-destructive-foreground .bilingual-separator,
+  .text-accent-foreground .bilingual-secondary,
+  .text-accent-foreground .bilingual-separator {
+    color: inherit;
+  }
+
+  /* The same argument, one level up: a call site may put the muted token on a
+     wrapper *around* a bilingual label, which colours both languages and not
+     just the second. The Readiness CTA "Άνοιγμα Builder" does exactly that for
+     its subtitle, measuring the same 2.07:1 on the primary fill — it went
+     unseen only because the text was escaping the button's box entirely and
+     axe was comparing it against the page.
+
+     Scoped to surfaces that declare their own foreground, deliberately: an
+     `outline` or `ghost` button sits on the page background, where the muted
+     token is both readable and the right choice, and those variants carry
+     `text-foreground` rather than a `*-foreground` pair. Size still carries
+     the hierarchy the muted colour was providing. */
+  .text-primary-foreground .text-muted-foreground,
+  .text-secondary-foreground .text-muted-foreground,
+  .text-destructive-foreground .text-muted-foreground,
+  .text-accent-foreground .text-muted-foreground {
+    color: inherit;
+  }
+
+  /* Top-bar chips hold their second language only where the bar has room.
+     Measured at 834px: the header's right-hand cluster is `shrink-0` and the
+     two demo chips rendered both languages in full, taking it to 794px and the
+     header to 988px inside an 834px viewport -- the whole page scrolled
+     sideways. The bar is already at capacity on a tablet, so these chips join
+     the one-language rule up to `lg` instead of `sm`. Nothing is lost: each
+     chip carries a Tooltip with the full bilingual text. */
+  @media (max-width: 1279.98px) {
+    .bilingual-secondary--chrome,
+    .bilingual-separator--chrome {
+      display: none !important;
+    }
+  }
+
+  /* ── Card padding standards ──
+     Responsive on purpose. CardContent/CardFooter apply .card-comfortable
+     unconditionally, and because these are declared in @layer utilities *after*
+     Tailwind emits .p-3/.p-4, they also beat a per-card `p-3` passed at the call
+     site — so this rule alone decided the padding of every card in the product.
+     At 24px a side on a 360px phone, a stat card in a two-column grid spent 48 of
+     its 160px on padding and left the label 72px, which truncated
+     "Κορυφαίες αντιστοιχίσεις" by 47%. Stepping down to 16px on phones returns
+     that space and keeps the roomier desktop rhythm above sm. */
+  .card-compact { @apply p-3 sm:p-4; }      /* Compact cards - lists, dense info */
+  .card-comfortable { @apply p-4 sm:p-6; }  /* Comfortable cards - default */
+
+  /* ── The seam under a card heading ──
+     `CardContent` carries `pt-0`, so the whole distance from a card's title to
+     its first line of body is this one value: the header's bottom padding. It
+     was the card's full padding — 24px above the title and 24px below it — and
+     equal space on both sides is what makes a heading read as floating between
+     two blocks instead of belonging to the one under it. Proximity is the only
+     thing marking that ownership, so the space below has to be the smaller of
+     the two.
+
+     Two thirds: 16px under 24px of padding, 12px under 16px. Call sites cannot
+     express this — the 23 headers on the founder pages ask for `pb-2`, `pb-3`
+     or nothing and every one of them rendered 24px, because `.card-comfortable`
+     above is declared after Tailwind's `pb-*` in the same layer and wins on
+     source order. Stated here, once, it is the same distance on every card in
+     the product.
+
+     Two classes, not one: `p-6`/`sm:p-6` at a call site carries (0,1,0) and a
+     `sm:` variant lands late enough in the sheet to beat a single-class rule.
+     (0,2,0) settles it for good. A card that genuinely needs a different seam
+     asks with `!pb-…`, which is the honest way to say "this one is special". */
+  .card-comfortable.card-header { padding-bottom: 12px; }
+  @media (min-width: 640px) {
+    .card-comfortable.card-header { padding-bottom: 16px; }
+  }
+
+  /* ── The same padding, in the pixels it claims ──
+     `p-6` is 24px everywhere but the desktop app, where the 82% root renders
+     it 19.68px — so the roomier desktop rhythm this comment describes was the
+     one place that never got it. Stated after the definitions above because
+     these carry the same specificity and source order decides between them.
+
+     Vertical rhythm goes with it: a card whose padding grows while the space
+     around it stays put reads as more crowded, not less. */
+  @media (min-width: 1024px) {
+    .card-comfortable { padding: 24px; }
+    .card-compact { padding: 16px; }
+    .card-comfortable.card-header { padding-bottom: 16px; }
+
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px; }
+    .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px; }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 24px; }
+    .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 32px; }
+
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .gap-5 { gap: 20px; }
+    .gap-6 { gap: 24px; }
+
+    /* The raw padding utilities, for the same reason. A card written `p-4` was
+       getting 13.12px of breathing room where it asked for 16, and `p-3` was
+       down to 9.84px — which is where the crowding that survived the
+       card-level fix above was coming from. Only the steps the product
+       actually uses are restated; anything else keeps its rem. */
+    .p-2   { padding: 8px; }
+    .p-2\.5 { padding: 10px; }
+    .p-3   { padding: 12px; }
+    .p-3\.5 { padding: 14px; }
+    .p-4   { padding: 16px; }
+    .p-5   { padding: 20px; }
+    .p-6   { padding: 24px; }
+
+    .px-2   { padding-left: 8px; padding-right: 8px; }
+    .px-2\.5 { padding-left: 10px; padding-right: 10px; }
+    .px-3   { padding-left: 12px; padding-right: 12px; }
+    .px-3\.5 { padding-left: 14px; padding-right: 14px; }
+    .px-4   { padding-left: 16px; padding-right: 16px; }
+    .px-5   { padding-left: 20px; padding-right: 20px; }
+    .px-6   { padding-left: 24px; padding-right: 24px; }
+
+    .py-1   { padding-top: 4px; padding-bottom: 4px; }
+    .py-1\.5 { padding-top: 6px; padding-bottom: 6px; }
+    .py-2   { padding-top: 8px; padding-bottom: 8px; }
+    .py-2\.5 { padding-top: 10px; padding-bottom: 10px; }
+    .py-3   { padding-top: 12px; padding-bottom: 12px; }
+    .py-3\.5 { padding-top: 14px; padding-bottom: 14px; }
+    .py-4   { padding-top: 16px; padding-bottom: 16px; }
+    .py-5   { padding-top: 20px; padding-bottom: 20px; }
+    .py-6   { padding-top: 24px; padding-bottom: 24px; }
+  }
 
   /* ── Spacing rhythm ── */
   .section-spacing { @apply space-y-8; }    /* Major sections */
@@ -903,134 +1820,40 @@
   .hover-lift-sm:hover {
     @apply -translate-y-0.5; /* 2px lift - subtle, professional */
   }
-}
 
-
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Accessibility: honour the OS "reduce motion" preference.
-   WCAG 2.3.3 — animation from interactions must be disable-able.
-   Everything decorative collapses to an instant state change; nothing that
-   conveys meaning (opacity end-states, transforms' final position) is lost
-   because animations are forced to their last frame rather than removed.
-   ──────────────────────────────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto !important;
+  /* ── Safe areas + mobile ergonomics ── */
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
   }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   }
-
-  /* Infinite ambient motion is purely decorative — stop it outright. */
-  .animate-bounce-subtle,
-  .animate-pulse-glow,
-  .animate-float,
-  .animate-spin-slow,
-  .shimmer {
-    animation: none !important;
+  .safe-x {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
   }
-
-  /* Hover lifts and card translations become no-ops. */
-  .hover-lift:hover,
-  .hover-lift-sm:hover,
-  .card-interactive:hover {
-    transform: none !important;
-  }
-
-  @supports (view-transition-name: none) {
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-      animation: none !important;
+  @media (min-width: 1024px) {
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
   }
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Forced-colors (Windows High Contrast) — keep focus and borders visible.
-   ──────────────────────────────────────────────────────────────────────────── */
-@media (forced-colors: active) {
-  :focus-visible {
-    outline: 2px solid CanvasText;
-    outline-offset: 2px;
+  .tap-target {
+    min-width: 44px;
+    min-height: 44px;
   }
-  .shimmer {
-    animation: none;
-    background: Canvas;
-    border: 1px solid CanvasText;
-  }
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Print — strip the app chrome so any page prints as a clean document.
-   ──────────────────────────────────────────────────────────────────────────── */
-@media print {
-  aside,
-  nav,
-  [data-print-hidden],
-  .skip-to-content {
-    display: none !important;
-  }
-
-  main {
-    margin: 0 !important;
-    padding: 0 !important;
-    max-width: none !important;
-  }
-
-  body {
-    background: #fff !important;
-    color: #000 !important;
-  }
-
-  a[href^='http']::after {
-    content: ' (' attr(href) ')';
-    font-size: 0.75em;
-    word-break: break-all;
+  .overflow-touch {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   "minimal" — component layer
+   "minimal" — component layer (Claude 803ddb2)
 
    Everything here is scoped to [data-theme="minimal"]. No other theme sees a
-   single one of these rules, and nothing is removed: every control, route and
-   affordance is still present. What changes is how much visual weight each one
-   is allowed to spend.
-
-   The seven decisions behind it:
-
-   1. One elevation. The product currently stacks border + shadow + fill on
-      nearly every block, which flattens the hierarchy — when everything is a
-      card, nothing is. Here a card is white on warm paper with a hairline, and
-      shadow is reserved for things that genuinely float: dialogs, popovers,
-      dropdowns.
-
-   2. The page title is not a box. PageHeader renders as a bordered, shadowed
-      card on every page, so each page opens with a container around its own
-      name. It becomes a plain heading block with a hairline under it.
-
-   3. One filled button per view. A filled control means "this is the thing to
-      do". Secondary and outline variants go quiet so the primary reads first.
-
-   4. Badges outline, not filled. Dozens of saturated pills per page is the
-      single loudest thing in the current UI. They keep their colour as a thin
-      border and coloured text, which still encodes state at a glance.
-
-   5. Focus you cannot miss. A 2px ring in the accent plus a 2px offset, on
-      everything focusable — the one place this theme spends contrast freely.
-
-   6. Fewer weights. 700 and 800 collapse to 600. Hierarchy comes from size,
-      space and colour, not from heaviness.
-
-   7. Calm by default. Decorative gradients, lift-on-hover and bounce/pulse
-      animations are stood down; transitions that communicate state are kept.
+   single one of these rules, and nothing is removed. Token name on this line
+   is --primary-accessible (not Claude's --primary-emphasis).
    ═══════════════════════════════════════════════════════════════════════════ */
 
 [data-theme="minimal"] {
@@ -1079,7 +1902,7 @@
   [class*='bg-primary\/20'] {
     background: transparent;
     box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.35);
-    color: hsl(var(--primary-emphasis));
+    color: hsl(var(--primary-accessible));
   }
 
   /* ── 5. Focus you cannot miss ────────────────────────────────────────── */
@@ -1128,12 +1951,56 @@
     backdrop-filter: none;
   }
 
-  /* ── Room to breathe ─────────────────────────────────────────────────── */
+  /* ── Room to breathe ───────────────────────────────────────────────────
+     Was a flat 28px on every card at every width: on a 360px phone a
+     two-column stat card spent 56 of its ~160px on padding, which is what
+     squeezed the labels. 20px below sm, the intended 28px from sm up. */
   .card-comfortable {
-    padding: 1.75rem;
+    padding: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .card-comfortable {
+      padding: 1.75rem;
+    }
+  }
+  /* Stated in pixels from `lg`, where the 82% root turns the 28px intended
+     just above into 22.96px — narrower than the 24px every other theme gets,
+     which inverts what this theme is for. This rule is unlayered and carries
+     (0,2,0), so it also has to restate the anchor the utilities layer applies
+     to the other themes; it cannot simply fall through to it. */
+  @media (min-width: 1024px) {
+    .card-comfortable {
+      padding: 28px;
+    }
+  }
+  /* The seam, restated for this theme for the same reason the padding is: these
+     rules are unlayered and carry (0,2,0), so the `.card-header` rule in the
+     utilities layer cannot reach a card inside it. Two thirds again. */
+  .card-comfortable.card-header {
+    padding-bottom: 14px;
+  }
+  @media (min-width: 640px) {
+    .card-comfortable.card-header {
+      padding-bottom: 18px;
+    }
   }
 
   #main-content {
     padding-top: 1.5rem;
   }
 }
+
+/* CardContent/CardFooter carry `pt-0` so a card's body and footer sit under
+   the header's own bottom padding — but `.card-comfortable` is declared after
+   Tailwind's utilities in the same layer (and again, unlayered, inside the
+   minimal theme), so `pt-0` never won and every header↔body seam paid the
+   padding twice. Restoring the intent for every theme: a second
+   card-comfortable block drops only its top padding. A headerless
+   CardContent is a first child, so it keeps its full padding. */
+.card-comfortable ~ .card-comfortable {
+  padding-top: 0;
+}
+
+
+
+

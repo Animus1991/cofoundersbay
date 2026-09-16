@@ -1,3 +1,12 @@
+'use client';
+
+// Required: the `asChild` branch below hands `onClickCapture` / `onKeyDownCapture`
+// to Radix's Slot. Without this directive Button compiles as a Server Component
+// wherever a server tree imports it (app/not-found.tsx and
+// app/investor/dashboard/page.tsx both render <Button asChild>), and React
+// rejects the render with "Event handlers cannot be passed to Client Component
+// props" — which is what broke the /login response.
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -5,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -16,28 +25,43 @@ const buttonVariants = cva(
         ghost:
           'text-foreground/70 hover:text-foreground hover:bg-secondary/50',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80 shadow-glow',
+          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80 shadow-sm',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         link:
-          'text-primary-emphasis underline-offset-4 hover:underline p-0 h-auto font-medium',
+          'text-primary-accessible underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
+      /*
+       * Heights and horizontal padding are re-stated in pixels from `lg` up.
+       *
+       * The desktop root is 82%, so every rem here rendered about a fifth
+       * short of the value it names: `h-8` came out 26.24px, `h-7` came out
+       * 22.96px — under the 24px floor of WCAG 2.5.8, which counts CSS pixels
+       * and not rems. Buttons therefore sat tight around their own text while
+       * the type beside them had been retuned to stay legible, which is what
+       * made the controls feel cramped.
+       *
+       * Nothing below `lg` changes: there the root is 100%, the rem values
+       * already render at their nominal size, and the 44px touch heights are
+       * deliberate. The ladder is 28 / 32 / 36 / 40 / 48.
+       *
+       * Expressed as `min-height` with `height: auto`, not as a fixed height.
+       * A fixed one is indistinguishable from the ladder for an ordinary
+       * button — its text is far shorter than 32px — but it overrides the
+       * `h-auto` that call sites pass for a stacked control, and the three
+       * Readiness CTAs (glyph over label over subtitle) were pushed clean
+       * outside their own 36px box by it. A floor gives the ladder where the
+       * ladder applies and gets out of the way where the author asked it to.
+       */
       size: {
-        // Radius tracks height. One `rounded-md` across eight sizes made a
-        // 28px button look rounder than a 48px one at the same number; the
-        // overrides below hold every size in a 0.25-0.33 radius/height band,
-        // which is what makes them read as the same button at two scales.
-        xs:   'h-7 px-2.5 text-xs rounded',      /*  7 / 28 = .25 */
-        sm:   'h-8 px-3 text-xs',                /* 10 / 32 = .31 */
-        md:   'h-9 px-4',                        /* 10 / 36 = .28 */
-        lg:   'h-10 px-6 text-base rounded-lg',  /* 13 / 40 = .33 */
-        xl:   'h-12 px-8 text-base rounded-lg',  /* 13 / 48 = .27 */
-        icon: 'h-9 w-9',
-        'icon-sm': 'h-8 w-8',
-        'icon-xs': 'h-7 w-7 rounded',
-      },
-      fullWidth: {
-        true: 'w-full',
+        xs:   'h-7 min-h-7 px-2.5 text-xs rounded lg:h-auto lg:min-h-[28px] lg:px-[10px]',
+        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[32px] lg:px-[12px]',
+        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[36px] lg:px-[16px]',
+        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[40px] lg:px-[24px]',
+        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[48px] lg:px-[32px]',
+        // An icon button has no text to outgrow its box, so it stays a fixed
+        // square — that is the shape, not a floor.
+        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[36px] lg:w-[36px]',
       },
     },
     defaultVariants: {
@@ -47,37 +71,12 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-    /**
-     * Shows a spinner, blocks interaction and sets aria-busy.
-     * Label text is kept in the DOM (hidden visually) so the button keeps its
-     * width and assistive tech keeps its accessible name.
-     */
-    loading?: boolean;
-    /** Announced while `loading` is true. */
-    loadingText?: string;
-  };
-
-/**
- * Icon-only sizes have no text node, so they need an explicit accessible name.
- * The type system enforces it rather than leaving it to review: picking an
- * icon size without `aria-label` (or `aria-labelledby`) is a compile error.
- */
-type IconOnlySize = 'icon' | 'icon-sm' | 'icon-xs';
-
-type ButtonSize = NonNullable<ButtonBaseProps['size']>;
-
-export type ButtonProps = ButtonBaseProps &
-  (
-    // Text buttons: any non-icon size, no extra requirement.
-    | { size?: Exclude<ButtonSize, IconOnlySize> }
-    // Icon sizes (including a size prop whose union merely *may* be an icon
-    // size, as in wrapper components that forward `size`) must name themselves.
-    | { size: ButtonSize; 'aria-label': string }
-    | { size: ButtonSize; 'aria-labelledby': string }
-  );
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  loading?: boolean;
+}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -85,45 +84,57 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant,
       size,
-      fullWidth,
       asChild = false,
       loading = false,
-      loadingText,
-      disabled,
       children,
+      disabled,
       ...props
     },
     ref,
   ) => {
-    const Comp = asChild ? Slot : 'button';
-
-    // `asChild` forwards to an arbitrary element (usually a Link), which can
-    // only take a single child — so the spinner treatment is skipped there.
     if (asChild) {
+      const inactive = disabled || loading;
       return (
-        <Comp
-          className={cn(buttonVariants({ variant, size, fullWidth, className }))}
-          ref={ref}
+        <Slot
           {...props}
+          // Conventional identity hook for tooling and tests. Note it does NOT
+          // reach the DOM on this branch -- Radix's Slot does not forward it to
+          // the child -- so nothing in CSS may depend on it here.
+          data-slot="button"
+          className={cn(buttonVariants({ variant, size, className }), inactive && 'pointer-events-none opacity-50')}
+          ref={ref}
+          aria-disabled={inactive || props['aria-disabled']}
+          aria-busy={loading || props['aria-busy']}
+          tabIndex={inactive ? -1 : props.tabIndex}
+          onClickCapture={(event) => {
+            if (inactive) { event.preventDefault(); event.stopPropagation(); }
+            else props.onClickCapture?.(event as React.MouseEvent<HTMLButtonElement>);
+          }}
+          onKeyDownCapture={(event) => {
+            if (inactive && ['Enter', ' '].includes(event.key)) { event.preventDefault(); event.stopPropagation(); }
+            else props.onKeyDownCapture?.(event as React.KeyboardEvent<HTMLButtonElement>);
+          }}
         >
           {children}
-        </Comp>
+        </Slot>
       );
     }
 
     return (
       <button
-        className={cn(buttonVariants({ variant, size, fullWidth, className }))}
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
         aria-busy={loading || undefined}
+        aria-disabled={disabled || loading || undefined}
         {...props}
       >
         {loading && (
-          <>
-            <Loader2 className="icon-sm shrink-0 animate-spin" aria-hidden="true" />
-            <span className="sr-only">{loadingText ?? 'Loading'}</span>
-          </>
+          <span
+            className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+            aria-hidden="true"
+          />
         )}
         {children}
       </button>

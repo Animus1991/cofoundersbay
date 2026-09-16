@@ -121,8 +121,9 @@ export function ResearchGroupFrame({
       >
         {/* Drag grip */}
         <GripVertical
-          className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
-          style={{ color: group.color }} aria-hidden="true" />
+          className="icon-sm opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
+          style={{ color: group.color }}
+        />
 
         {/* Label — inline editable */}
         {editingLabel ? (
@@ -165,7 +166,7 @@ export function ResearchGroupFrame({
               className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
               title="Change color"
             >
-              <Palette className="icon-2xs" style={{ color: group.color }} aria-hidden="true" />
+              <Palette className="icon-sm" style={{ color: group.color }} />
             </button>
             {showColorPicker && (
               <div
@@ -195,8 +196,8 @@ export function ResearchGroupFrame({
             title={group.collapsed ? 'Expand' : 'Collapse'}
           >
             {group.collapsed
-              ? <Maximize2 className="icon-2xs text-muted-foreground" aria-hidden="true" />
-              : <Minimize2 className="icon-2xs text-muted-foreground" aria-hidden="true" />
+              ? <Maximize2 className="icon-sm text-muted-foreground" />
+              : <Minimize2 className="icon-sm text-muted-foreground" />
             }
           </button>
 
@@ -207,8 +208,8 @@ export function ResearchGroupFrame({
             title={group.locked ? 'Unlock' : 'Lock'}
           >
             {group.locked
-              ? <Lock className="icon-2xs text-muted-foreground" aria-hidden="true" />
-              : <Unlock className="icon-2xs text-muted-foreground" aria-hidden="true" />
+              ? <Lock className="icon-sm text-muted-foreground" />
+              : <Unlock className="icon-sm text-muted-foreground" />
             }
           </button>
 
@@ -218,7 +219,7 @@ export function ResearchGroupFrame({
             className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-destructive/20 transition-colors"
             title="Delete group"
           >
-            <X className="icon-2xs text-destructive-emphasis" aria-hidden="true" />
+            <X className="icon-sm text-destructive-accessible" />
           </button>
         </div>
       </div>

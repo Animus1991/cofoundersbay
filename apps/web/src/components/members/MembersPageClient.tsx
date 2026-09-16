@@ -68,8 +68,8 @@ const SKILL_PILLS = [
 ];
 
 function scoreColor(score: number) {
-  if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
-  if (score >= 50) return 'text-amber-600 dark:text-amber-400';
+  if (score >= 80) return 'text-status-success';
+  if (score >= 50) return 'text-status-warning';
   return 'text-muted-foreground';
 }
 
@@ -97,7 +97,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <Link href={`/profiles/${member.userId}`} className="relative inline-block">
               <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={member.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold text-base">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-base">
                   {member.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -110,7 +110,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             <Link
               href={`/profiles/${member.userId}`}
-              className="font-display text-lg font-semibold text-foreground hover:text-primary-emphasis transition-colors mb-1"
+              className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors mb-1"
             >
               {member.displayName}
             </Link>
@@ -146,12 +146,12 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
               {member.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="icon-2xs" aria-hidden="true" />
+                  <MapPin className="icon-sm" />
                   {member.location}
                 </div>
               )}
               {isOnline && (
-                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                <span className="flex items-center gap-1 text-status-success">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Online
                 </span>
@@ -174,11 +174,11 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             <div className="flex gap-2 w-full">
               <Button size="sm" onClick={onConnect} className="flex-1 gap-1.5">
-                <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                <UserPlus className="icon-sm" />
                 Connect
               </Button>
               <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-                <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                <MessageCircle className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -194,7 +194,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
           <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
               <AvatarImage src={member.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold text-sm">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
                 {member.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -210,7 +210,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <div>
                 <Link
                   href={`/profiles/${member.userId}`}
-                  className="font-display text-lg font-semibold text-foreground hover:text-primary-emphasis transition-colors"
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {member.displayName}
                 </Link>
@@ -222,11 +222,11 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={onConnect} className="gap-1.5">
-                  <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                  <UserPlus className="icon-sm" />
                   Connect
                 </Button>
                 <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                  <MessageCircle className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -256,18 +256,18 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               {member.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                  <MapPin className="icon-sm" />
                   {member.location}
                 </div>
               )}
               {member.industries && member.industries.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Briefcase className="icon-sm" />
                   {member.industries.slice(0, 2).join(', ')}
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+                <Activity className="icon-sm" />
                 <span className={scoreColor(contribScore)}>Score {contribScore}</span>
               </div>
             </div>
@@ -385,8 +385,13 @@ export function MembersPageClient() {
 
   return (
     <AppShell
+      /* The count belongs in both halves. Leaving `descriptionEl` to the
+         registry would pair "…with 1,240 members" against a Greek line with no
+         number in it, which reads as two different sentences rather than one
+         sentence twice. */
       title="Member Directory"
-      description={`Discover and connect with ${total.toLocaleString()} members`}
+      description={`Discover and connect with ${total.toLocaleString('en-GB')} members`}
+      descriptionEl={`Ανακαλύψτε και συνδεθείτε με ${total.toLocaleString('el-GR')} μέλη`}
     >
       <div className="space-y-4 pb-10">
 
@@ -394,17 +399,17 @@ export function MembersPageClient() {
         {!isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-violet-500',  bg: 'bg-violet-500/10'  },
-              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
-              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
+              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-status-accent',  bg: 'bg-status-accent-bg'  },
+              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-status-success', bg: 'bg-status-success-bg' },
+              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-status-info',   bg: 'bg-status-info-bg'   },
+              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-status-warning',  bg: 'bg-status-warning-bg'  },
             ].map((s) => {
               const SIcon = s.icon;
               return (
                 <Card key={s.label} className="shadow-sm border-border/50">
                   <CardContent className="flex items-center gap-3 p-3">
-                    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
-                      <SIcon className="h-4 w-4" />
+                    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                      <SIcon className="icon-sm" />
                     </div>
                     <div>
                       <p className="text-base font-bold leading-none text-foreground">{s.value}</p>
@@ -438,7 +443,7 @@ export function MembersPageClient() {
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Sparkles className="icon-sm text-primary-accessible" />
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Members</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -447,14 +452,14 @@ export function MembersPageClient() {
                   <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
                     <Avatar className="h-10 w-10 ring-1 ring-primary/30">
                       <AvatarImage src={member.avatarUrl ?? undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-emphasis transition-colors line-clamp-1">{member.displayName}</Link>
-                    <p className="text-2xs text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
+                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
+                    <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="icon-sm text-primary-emphasis shrink-0" aria-hidden="true" />
+                  <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />
                 </div>
               ))}
             </div>
@@ -464,7 +469,7 @@ export function MembersPageClient() {
         {/* Search and View Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search members by name, skills, or bio..."
               value={searchQuery}
@@ -479,7 +484,7 @@ export function MembersPageClient() {
               onClick={() => setShowFilters(!showFilters)}
               className="gap-2"
             >
-              <Filter className="icon-sm" aria-hidden="true" />
+              <Filter className="icon-sm" />
               Filters
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
@@ -495,7 +500,7 @@ export function MembersPageClient() {
                 onClick={() => setViewMode('grid')}
                 className="rounded-r-none"
               >
-                <Grid3x3 className="icon-sm" aria-hidden="true" />
+                <Grid3x3 className="icon-sm" />
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -503,7 +508,7 @@ export function MembersPageClient() {
                 onClick={() => setViewMode('list')}
                 className="rounded-l-none"
               >
-                <List className="icon-sm" aria-hidden="true" />
+                <List className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -591,7 +596,7 @@ export function MembersPageClient() {
                     {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
                   </span>
                   <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
-                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    <X className="icon-sm" />
                     Clear all
                   </Button>
                 </div>
@@ -603,7 +608,7 @@ export function MembersPageClient() {
         {/* Results Header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${total.toLocaleString()} member${total !== 1 ? 's' : ''} found`}
+            {isLoading ? 'Loading...' : `${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`}
           </p>
 
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
@@ -622,7 +627,7 @@ export function MembersPageClient() {
         {isError ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <Users className="icon-xl text-muted-foreground/40" aria-hidden="true" />
+              <Users className="icon-xl text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">Failed to load members. Please check your connection.</p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
             </CardContent>

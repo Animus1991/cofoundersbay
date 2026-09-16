@@ -46,7 +46,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
         <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', color)}>
-          <Icon className="h-5 w-5 text-white" />
+          <Icon className="icon-md text-white" />
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{title}</p>
@@ -86,7 +86,7 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={140} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
                 <Tooltip />
                 <Bar dataKey="shown" name="Shown" fill={theme.series[0]} radius={[0, 2, 2, 0]} />
                 <Bar dataKey="converted" name="Converted" fill={theme.series[2]} radius={[0, 2, 2, 0]} />
@@ -130,7 +130,7 @@ function UserClassifyTab() {
           className="flex-1"
         />
         <Button onClick={() => setQueried(userId)} disabled={!userId.trim()}>
-          <Search className="mr-2 icon-sm" aria-hidden="true" /> Classify
+          <Search className="mr-2 icon-sm" /> Classify
         </Button>
       </div>
 
@@ -173,7 +173,7 @@ function UserClassifyTab() {
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>
                   {log.converted && <Badge className="bg-emerald-500 text-xs text-white">converted</Badge>}
                   {log.dismissed && <Badge className="bg-rose-500 text-xs text-white">dismissed</Badge>}
-                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                 </div>
               ))}
             </div>
@@ -196,14 +196,14 @@ export function BehaviorAdminPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Brain className="icon-md text-primary-emphasis" aria-hidden="true" /> Behavioral AI Optimizer
+            <Brain className="icon-md text-primary-accessible" /> Behavioral AI Optimizer
           </h2>
           <p className="text-sm text-muted-foreground">
             Platform-wide nudge performance, user state classification, and fatigue signals.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('mr-2 h-4 w-4', isFetching && 'animate-spin')} aria-hidden="true" />
+          <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} />
           Refresh
         </Button>
       </div>
@@ -211,10 +211,10 @@ export function BehaviorAdminPanel() {
       <Tabs defaultValue="stats">
         <TabsList>
           <TabsTrigger value="stats" className="gap-2">
-            <TrendingUp className="icon-sm" aria-hidden="true" /> Nudge Stats
+            <TrendingUp className="icon-sm" /> Nudge Stats
           </TabsTrigger>
           <TabsTrigger value="classify" className="gap-2">
-            <Search className="icon-sm" aria-hidden="true" /> Classify User
+            <Search className="icon-sm" /> Classify User
           </TabsTrigger>
         </TabsList>
 

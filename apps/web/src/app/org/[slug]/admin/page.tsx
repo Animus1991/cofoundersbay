@@ -40,6 +40,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 
 type OrgMember = {
   id: string;
@@ -133,17 +134,25 @@ const MOCK_MEMBERS: OrgMember[] = [
   },
 ];
 
-const ROLE_COLORS: Record<string, string> = {
-  owner: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
-  admin: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
-  member: 'bg-muted text-muted-foreground border-border',
+const ROLE_TONE: Record<string, StatusTone | 'neutral'> = {
+  owner: 'warning',
+  admin: 'info',
+  member: 'neutral',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-  pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
-  suspended: 'bg-destructive/10 text-destructive-emphasis border-destructive/30',
+const MEMBER_STATUS_TONE: Record<string, StatusTone | 'neutral'> = {
+  active: 'success',
+  pending: 'warning',
+  suspended: 'danger',
 };
+
+function roleChip(role: string) {
+  return STATUS[ROLE_TONE[role] ?? 'neutral'].chip;
+}
+
+function memberStatusChip(status: string) {
+  return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
+}
 
 function StatCard({ title, value, change, icon: Icon, trend }: {
   title: string;
@@ -162,8 +171,8 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
             {change && (
               <p className={cn(
                 'text-xs mt-1',
-                trend === 'up' && 'text-emerald-600 dark:text-emerald-400',
-                trend === 'down' && 'text-destructive-emphasis',
+                trend === 'up' && TREND.up,
+                trend === 'down' && TREND.down,
                 trend === 'neutral' && 'text-muted-foreground'
               )}>
                 {change}
@@ -171,7 +180,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
             )}
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <Icon className="icon-lg text-primary-emphasis" />
+            <Icon className="icon-lg text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -225,7 +234,7 @@ export default function OrgAdminPage() {
           <div className="flex items-center gap-4 flex-1">
             <Avatar className="h-12 w-12">
               <AvatarImage src={org.logo} />
-              <AvatarFallback className="bg-primary/10 text-primary-emphasis text-lg">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible text-lg">
                 {org.name[0]}
               </AvatarFallback>
             </Avatar>
@@ -357,7 +366,7 @@ export default function OrgAdminPage() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={member.avatar} />
-                            <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm">
+                            <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
                               {member.name[0]}
                             </AvatarFallback>
                           </Avatar>
@@ -368,22 +377,22 @@ export default function OrgAdminPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[member.role])}>
-                          {member.role === 'owner' && <Crown className="icon-sm mr-1" aria-hidden="true" />}
+                        <Badge variant="outline" className={cn('capitalize border', roleChip(member.role))}>
+                          {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
                           {member.role}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize', STATUS_COLORS[member.status])}>
+                        <Badge variant="outline" className={cn('capitalize border', memberStatusChip(member.status))}>
                           {member.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {member.joinedAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {member.joinedAt.toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {member.lastActive
-                          ? member.lastActive.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                          ? member.lastActive.toLocaleDateString('en-GB', { timeZone: 'UTC' })
                           : '—'}
                       </TableCell>
                       <TableCell>
@@ -416,7 +425,7 @@ export default function OrgAdminPage() {
                             ) : null}
                             <DropdownMenuItem
                               onClick={() => handleRemoveMember(member.id)}
-                              className="text-destructive-emphasis"
+                              className="text-destructive-accessible"
                             >
                               <UserMinus className="icon-sm mr-2" aria-hidden="true" />
                               Remove
@@ -485,8 +494,8 @@ export default function OrgAdminPage() {
                 {['owner', 'admin', 'member'].map((role) => (
                   <div key={role} className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[role])}>
-                        {role === 'owner' && <Crown className="icon-2xs mr-1" aria-hidden="true" />}
+                      <Badge variant="outline" className={cn('capitalize border', roleChip(role))}>
+                        {role === 'owner' && <Crown className="icon-sm mr-1" />}
                         {role}
                       </Badge>
                     </div>
@@ -501,7 +510,7 @@ export default function OrgAdminPage() {
                       ].map((perm, i) => (
                         <div key={perm} className="flex items-center gap-2">
                           {(role === 'owner' || (role === 'admin' && i < 5) || (role === 'member' && i > 3)) ? (
-                            <CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" />
+                            <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
                           ) : (
                             <XCircle className="icon-sm text-muted-foreground" aria-hidden="true" />
                           )}

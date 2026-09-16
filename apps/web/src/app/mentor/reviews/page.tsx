@@ -45,8 +45,9 @@ function StarRating({ rating }: { rating: number }) {
           key={star}
           className={cn(
             'h-4 w-4',
-            star <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
-          )} aria-hidden="true" />
+            star <= rating ? 'fill-status-warning text-amber-400' : 'text-muted-foreground/30'
+          )}
+        />
       ))}
     </div>
   );
@@ -75,11 +76,11 @@ function ReviewCard({ review }: { review: Review }) {
             <p className="text-sm text-muted-foreground mt-2">{review.comment}</p>
             <div className="flex items-center gap-4 mt-3">
               <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <ThumbsUp className="mr-1 icon-2xs" aria-hidden="true" />
+                <ThumbsUp className="mr-1 icon-sm" />
                 Helpful ({review.helpful})
               </Button>
               <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <MessageSquare className="mr-1 icon-2xs" aria-hidden="true" />
+                <MessageSquare className="mr-1 icon-sm" />
                 Reply
               </Button>
             </div>
@@ -129,6 +130,7 @@ export default function MentorReviewsPage() {
           illustration="default"
           title="No reviews yet"
           description="Reviews will appear here after your mentees complete sessions and leave feedback."
+          askAiPrompt="I have no mentor reviews yet. What should I do in sessions so mentees leave useful feedback?"
         />
       </AppShell>
     );
@@ -152,7 +154,7 @@ export default function MentorReviewsPage() {
                   {ratingDistribution.map((item) => (
                     <div key={item.rating} className="flex items-center gap-2">
                       <span className="text-sm w-3">{item.rating}</span>
-                      <Star className="icon-2xs fill-amber-400 text-amber-400" aria-hidden="true" />
+                      <Star className="icon-sm fill-status-warning text-amber-400" />
                       <Progress value={item.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">{item.count}</span>
                     </div>
@@ -189,7 +191,7 @@ export default function MentorReviewsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search reviews..."
               value={search}

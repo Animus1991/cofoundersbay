@@ -15,6 +15,7 @@ import { useToast } from '@/components/ui/toast';
 import { listEvents, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent } from '@/components/ui/card';
 
 type ViewMode = 'grid' | 'list';
@@ -32,7 +33,7 @@ function toEventData(item: EventItem): EventData {
     meetingUrl: item.meetingUrl ?? undefined,
     coverImage: item.coverImageUrl ?? undefined,
     hostName: item.host.displayName,
-    hostAvatar: item.host.avatarUrl ?? undefined,
+    hostAvatar: item.host?.avatarUrl ?? undefined,
     hostRole: item.host.role,
     attendeesCount: item.attendeesCount,
     maxAttendees: item.capacity ?? undefined,
@@ -108,36 +109,38 @@ export default function EventsPage() {
 
   return (
     <AppShell
-      title="Events"
-      description="Discover networking events, workshops, and meetups"
       actions={
         <Button className="gap-2" asChild>
           <Link href="/events/create">
-            <Plus className="icon-sm" aria-hidden="true" />
-            Create Event
+            <Plus className="icon-sm" />
+            <BilingualText en="Create Event" el="Δημιουργία εκδήλωσης" />
           </Link>
         </Button>
       }
     >
       <div className="space-y-6 pb-10">
       {/* Stats bar */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Four across waits for `md`, as on /connections: at 640px each tile
+          is 145px and a bilingual label has about 80px to live in. */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          { label: 'Total Events', value: events.length || '40+', icon: Calendar, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Online', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'In-Person', value: events.filter((e) => e.type === 'in-person').length || '20+', icon: MapPin, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'RSVP\'d', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { labelEn: 'Total Events', labelEl: 'Συνολικές εκδηλώσεις', value: events.length || '40+', icon: Calendar, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+          { labelEn: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-status-success', bg: 'bg-status-success-bg' },
+          { labelEn: 'In-Person', labelEl: 'Δια ζώσης', value: events.filter((e) => e.type === 'in-person').length || '20+', icon: MapPin, color: 'text-status-info', bg: 'bg-status-info-bg' },
+          { labelEn: "RSVP'd", labelEl: 'Δηλώσεις', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
         ].map((s) => {
           const SIcon = s.icon;
           return (
-            <Card key={s.label} className="shadow-sm border-border/50">
+            <Card key={s.labelEn} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
                   <SIcon className="icon-sm" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -147,16 +150,19 @@ export default function EventsPage() {
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <TabsList>
+          {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without
+              it the list sat at min-content and the last trigger sat 8px past
+              the viewport at 640px. */}
+          <TabsList className="min-w-0">
             <TabsTrigger value="upcoming" className="gap-2">
-              <Calendar className="icon-sm" aria-hidden="true" />
-              Upcoming
+              <Calendar className="icon-sm" />
+              <BilingualText en="Upcoming" el="Επερχόμενες" compact />
             </TabsTrigger>
             <TabsTrigger value="my-events" className="gap-2">
-              My Events
+              <BilingualText en="My Events" el="Οι εκδηλώσεις μου" compact />
             </TabsTrigger>
             <TabsTrigger value="past" className="gap-2">
-              Past
+              <BilingualText en="Past" el="Παρελθούσες" compact />
             </TabsTrigger>
           </TabsList>
 
@@ -191,7 +197,7 @@ export default function EventsPage() {
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">Filter:</span>
+            <span className="shrink-0 text-sm text-muted-foreground">Filter:</span>
             {(['all', 'online', 'in-person', 'hybrid'] as EventFilter[]).map((f) => (
               <Button
                 key={f}
@@ -213,7 +219,7 @@ export default function EventsPage() {
             {isError ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <p className="text-sm text-muted-foreground">Failed to load events.</p>
-                <button onClick={() => refetch()} className="text-sm text-primary-emphasis hover:underline">Try again</button>
+                <button onClick={() => refetch()} className="text-sm text-primary-accessible hover:underline">Try again</button>
               </div>
             ) : loading ? (
               <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}>
@@ -234,6 +240,7 @@ export default function EventsPage() {
                       : 'No events available right now'
                 }
                 illustration="calendar"
+                askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."
                 action={
                   tab === 'my-events' && !hasToken ? (
                     <Button asChild>

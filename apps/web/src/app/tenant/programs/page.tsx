@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyTenantPrograms } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 type Program = {
@@ -42,10 +43,10 @@ type Program = {
 
 function ProgramCard({ program }: { program: Program }) {
   const statusColors: Record<string, string> = {
-    draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    archived: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    completed: 'bg-status-info-bg text-status-info border-status-info-border',
+    archived: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   return (
@@ -54,7 +55,7 @@ function ProgramCard({ program }: { program: Program }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Link href={`/tenant/programs/${program.id}`} className="font-semibold hover:text-primary-emphasis transition-colors">
+              <Link href={`/tenant/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                 {program.name}
               </Link>
               <Badge variant="outline" className={cn('text-xs', statusColors[program.status])}>
@@ -102,8 +103,8 @@ function ProgramCard({ program }: { program: Program }) {
                 <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Program
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-emphasis">
-                <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+              <DropdownMenuItem className="text-destructive-accessible">
+                <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -189,25 +190,21 @@ export default function TenantProgramsPage() {
   );
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Programs</h1>
-            <p className="text-muted-foreground">
-              Manage your accelerator and incubator programs
-            </p>
-          </div>
-          <Button>
-            <Plus className="mr-2 icon-sm" aria-hidden="true" />
-            Create Program
-          </Button>
-        </div>
+    <AppShell
+      title="Programs"
+      description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
+      actions={(
+        <Button>
+          <Plus className="mr-2 icon-sm" />
+          Create Program
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search programs..."
             value={search}
@@ -227,7 +224,7 @@ export default function TenantProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-xl font-bold text-status-success">
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -256,15 +253,7 @@ export default function TenantProgramsPage() {
             <ProgramCard key={program.id} program={program} />
           ))}
           {filteredPrograms.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No programs found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your search or create a new program
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyTenantPrograms filtersActive={!!search} onClearFilters={() => setSearch('')} />
           )}
         </div>
       </div>

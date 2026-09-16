@@ -49,15 +49,15 @@ type Community = {
 
 function CommunityCard({ community }: { community: Community }) {
   const visibilityIcons: Record<string, React.ReactNode> = {
-    public: <Globe className="h-3.5 w-3.5" aria-hidden="true" />,
-    private: <Lock className="h-3.5 w-3.5" aria-hidden="true" />,
-    tenant: <Shield className="h-3.5 w-3.5" aria-hidden="true" />,
+    public: <Globe className="icon-sm" />,
+    private: <Lock className="icon-sm" />,
+    tenant: <Shield className="icon-sm" />,
   };
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    archived: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    flagged: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    archived: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    flagged: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
   return (
@@ -65,7 +65,7 @@ function CommunityCard({ community }: { community: Community }) {
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Avatar className="h-12 w-12 rounded-lg">
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {community.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -73,7 +73,7 @@ function CommunityCard({ community }: { community: Community }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/communities/${community.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
+                  <Link href={`/communities/${community.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                     {community.name}
                   </Link>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -100,8 +100,8 @@ function CommunityCard({ community }: { community: Community }) {
                     <DropdownMenuItem>Edit Settings</DropdownMenuItem>
                     <DropdownMenuItem>Manage Members</DropdownMenuItem>
                     <DropdownMenuItem>View Reports</DropdownMenuItem>
-                    <DropdownMenuItem className="text-amber-600 dark:text-amber-400">Archive</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-emphasis">Delete</DropdownMenuItem>
+                    <DropdownMenuItem className="text-status-warning">Archive</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -115,20 +115,20 @@ function CommunityCard({ community }: { community: Community }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <Users2 className="icon-sm" />
                 {community.memberCount} members
               </span>
               <span className="flex items-center gap-1">
-                <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+                <MessageSquare className="icon-sm" />
                 {community.postCount} posts
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+                <Calendar className="icon-sm" />
                 {community.createdAt}
               </span>
               {community.tenant && (
                 <span className="flex items-center gap-1">
-                  <Shield className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Shield className="icon-sm" />
                   {community.tenant}
                 </span>
               )}
@@ -233,7 +233,7 @@ export default function AdminCommunitiesPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Members</p>
               <p className="text-xl font-bold">
-                {communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString()}
+                {communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB')}
               </p>
             </CardContent>
           </Card>
@@ -241,14 +241,14 @@ export default function AdminCommunitiesPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Posts</p>
               <p className="text-xl font-bold">
-                {communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString()}
+                {communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB')}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Flagged</p>
-              <p className="text-xl font-bold text-red-600 dark:text-red-400">
+              <p className="text-xl font-bold text-status-danger">
                 {communities.filter((c) => c.status === 'flagged').length}
               </p>
             </CardContent>

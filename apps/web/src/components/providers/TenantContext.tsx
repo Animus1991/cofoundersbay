@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   getUserTenantMemberships,
@@ -11,6 +11,7 @@ import {
   type TenantMembershipItem,
 } from '@/lib/api';
 import { useSession } from '@/hooks/useSession';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 
 // ── Domain detection (client-side only) ──────────────────────────────────────
 
@@ -136,8 +137,14 @@ function applyBrandingFonts(branding: TenantBranding | null) {
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
+/** Stable empty fallback, so "no memberships" keeps one identity across renders. */
+const EMPTY_MEMBERSHIPS: NonNullable<
+  Awaited<ReturnType<typeof getUserTenantMemberships>>['memberships']
+> = [];
+
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { hasSession } = useSession();
+  const apiAvailable = useApiAvailability();
 
   // Detect if we're on a tenant-owned domain (subdomain or custom)
   const [domainCtx] = useState(() => detectDomainContext());
@@ -162,11 +169,19 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const { data: membershipsData, isLoading: membershipsLoading } = useQuery({
     queryKey: ['tenant', 'memberships'],
     queryFn: getUserTenantMemberships,
-    enabled: hasSession && domainCtx.type === 'none',
+    enabled: hasSession && domainCtx.type === 'none' && apiAvailable,
     staleTime: 5 * 60 * 1000,
   });
 
-  const memberships = membershipsData?.memberships ?? [];
+  // Must be memoised: `?? []` allocates a fresh array on every render, and this
+  // value is a dependency of the context `value` memo below. An unstable identity
+  // there meant the tenant context object was recreated on every single render of
+  // this provider, which re-rendered every useTenant() consumer in the app —
+  // defeating memoisation everywhere downstream for a value that had not changed.
+  const memberships = useMemo(
+    () => membershipsData?.memberships ?? EMPTY_MEMBERSHIPS,
+    [membershipsData],
+  );
 
   const membershipActiveTenant = useMemo(
     () => {
@@ -212,8 +227,15 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       : membershipsLoading;
 
   const communityLabel = branding?.communityNaming ?? 'Community';
-  const roleLabels: Record<string, string> = branding?.roleLabels ?? {};
-  const getRoleLabel = (role: string) => roleLabels[role] ?? (role.charAt(0).toUpperCase() + role.slice(1));
+  // Same reasoning as `memberships`: this is handed to consumers through the
+  // context value, so it needs a stable identity per branding, not per render.
+  const getRoleLabel = useCallback(
+    (role: string) => {
+      const roleLabels: Record<string, string> = branding?.roleLabels ?? {};
+      return roleLabels[role] ?? role.charAt(0).toUpperCase() + role.slice(1);
+    },
+    [branding],
+  );
 
   useEffect(() => {
     if (branding?.isBrandingActive) {
@@ -227,7 +249,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<TenantContextValue>(
     () => ({ activeTenant, activeMembership, memberships, branding, isLoading, communityLabel, getRoleLabel }),
-    [activeTenant, activeMembership, memberships, branding, isLoading, communityLabel],
+    [activeTenant, activeMembership, memberships, branding, isLoading, communityLabel, getRoleLabel],
   );
 
   return <TenantCtx.Provider value={value}>{children}</TenantCtx.Provider>;

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,13 +20,20 @@ import {
   type TenantItem, type TenantBranding,
 } from '@/lib/api';
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
-import { analytics } from '@/lib/analytics';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { BilingualText } from '@/components/common/BilingualText';
+import { analytics } from '@/lib/analytics';
+
+const TENANT_DELETE_DESCRIPTION = (
+  <BilingualText
+    en="All their members, programs and data are removed permanently. This cannot be undone."
+    el="Όλα τα μέλη, προγράμματα και δεδομένα τους αφαιρούνται οριστικά. Δεν μπορεί να αναιρεθεί."
+  />
+);
 
 export default function TenantsAdminPage() {
-  const confirm = useConfirm();
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [selectedTenant, setSelectedTenant] = useState<TenantItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -63,11 +71,9 @@ export default function TenantsAdminPage() {
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
         const ok = await confirm({
-          title: `Delete ${ids.length} tenant${ids.length === 1 ? '' : 's'}?`,
-          description:
-            'Every workspace, member and program under the selected tenants will be removed. This cannot be undone.',
-          confirmLabel: `Delete ${ids.length} tenant${ids.length === 1 ? '' : 's'}`,
-          intent: 'destructive',
+          title: <BilingualText en={`Delete ${ids.length} tenants?`} el={`Διαγραφή ${ids.length} tenants;`} />,
+          description: TENANT_DELETE_DESCRIPTION,
+          confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
         });
         if (!ok) return;
         await Promise.all(ids.map(id => deleteTenant(id)));
@@ -80,11 +86,11 @@ export default function TenantsAdminPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30">Active</Badge>;
+        return <Badge className="bg-status-success-bg text-status-success border-status-success-border">Active</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30">Pending</Badge>;
+        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border">Pending</Badge>;
       case 'suspended':
-        return <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30">Suspended</Badge>;
+        return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border">Suspended</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -96,12 +102,12 @@ export default function TenantsAdminPage() {
       description="Manage organizations and their white-label branding"
       actions={
         <Button onClick={() => setIsCreating(true)} className="gap-2">
-          <Plus className="icon-sm" aria-hidden="true" />
+          <Plus className="icon-sm" />
           Create Tenant
         </Button>
       }
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Overview Stats */}
         <Card>
           <CardHeader className="pb-2">
@@ -109,7 +115,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <Building2 className="icon-md text-primary-accessible" />
               <span className="text-xl font-bold">{tenants?.length || 0}</span>
             </div>
           </CardContent>
@@ -121,7 +127,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Check className="icon-md text-green-500" aria-hidden="true" />
+              <Check className="icon-md text-status-success" />
               <span className="text-xl font-bold">
                 {tenants?.filter(t => t.status === 'active').length || 0}
               </span>
@@ -135,7 +141,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Palette className="icon-md text-purple-500" aria-hidden="true" />
+              <Palette className="icon-md text-status-accent" />
               <span className="text-xl font-bold">
                 {tenants?.filter(t => t.logoUrl).length || 0}
               </span>
@@ -161,7 +167,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-emphasis" aria-hidden="true" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" />
               <p>Failed to load tenants</p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
                 Retry
@@ -169,10 +175,10 @@ export default function TenantsAdminPage() {
             </div>
           ) : !tenants?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <Building2 className="icon-xl mx-auto mb-2" />
               <p>No tenants configured yet</p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
-                <Plus className="icon-sm" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 Create First Tenant
               </Button>
             </div>
@@ -191,10 +197,10 @@ export default function TenantsAdminPage() {
                       className="shrink-0"
                     />
                     {tenant.logoUrl ? (
-                      <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
+                      <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
+                        <Building2 className="icon-md text-primary-accessible" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -205,7 +211,7 @@ export default function TenantsAdminPage() {
                   <div className="flex items-center gap-3">
                     {getStatusBadge(tenant.status)}
                     <Button variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
-                      <Settings className="icon-sm" aria-hidden="true" />
+                      <Settings className="icon-sm" />
                     </Button>
                   </div>
                 </div>
@@ -254,8 +260,9 @@ function TenantEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
-  const confirm = useConfirm();
+  const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const isNew = !tenant;
   const [activeTab, setActiveTab] = useState('general');
   const [previewMode, setPreviewMode] = useState(false);
@@ -353,18 +360,18 @@ function TenantEditor({
   };
 
   return (
-    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <DialogContent
-        size="xl"
-        // The editor supplies its own header row with a close control, and its
-        // Card body handles the internal scrolling.
-        showCloseButton={false}
-        className="max-h-[90dvh] overflow-hidden border-0 bg-transparent p-0 shadow-none"
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      {/* `useModalA11y`: focus in on open, Tab trapped, Escape closes,
+          scroll locked, focus returned. This was a bare overlay with a
+          close handler and nothing else a dialog owes a keyboard user. */}
+      <Card
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tenant details"
+        tabIndex={-1}
+        className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
       >
-        <DialogTitle className="sr-only">
-          {isNew ? 'Create tenant' : `Edit ${general.displayName || general.name}`}
-        </DialogTitle>
-      <Card className="flex max-h-[90dvh] w-full flex-col overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between border-b shrink-0">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -380,12 +387,12 @@ function TenantEditor({
           <div className="flex items-center gap-2">
             {!isNew && (
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)} className="gap-2">
-                <Eye className="icon-sm" aria-hidden="true" />
+                <Eye className="icon-sm" />
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             )}
-            <Button aria-label="Close" variant="ghost" size="icon" onClick={onClose}>
-              <X className="icon-sm" aria-hidden="true" />
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="icon-sm" />
             </Button>
           </div>
         </CardHeader>
@@ -396,17 +403,17 @@ function TenantEditor({
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
               <TabsList className="mb-6 flex-wrap h-auto gap-1">
-                <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" aria-hidden="true" />General</TabsTrigger>
-                <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" aria-hidden="true" />Colors & Fonts</TabsTrigger>
-                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />Media</TabsTrigger>
-                <TabsTrigger value="content" className="gap-1.5"><FileText className="h-3.5 w-3.5" aria-hidden="true" />Content</TabsTrigger>
-                <TabsTrigger value="links" className="gap-1.5"><Globe className="h-3.5 w-3.5" aria-hidden="true" />Links & Legal</TabsTrigger>
-                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" aria-hidden="true" />Email</TabsTrigger>}
+                <TabsTrigger value="general" className="gap-1.5"><Settings className="icon-sm" />General</TabsTrigger>
+                <TabsTrigger value="branding" className="gap-1.5"><Palette className="icon-sm" />Colors & Fonts</TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="icon-sm" />Media</TabsTrigger>
+                <TabsTrigger value="content" className="gap-1.5"><FileText className="icon-sm" />Content</TabsTrigger>
+                <TabsTrigger value="links" className="gap-1.5"><Globe className="icon-sm" />Links & Legal</TabsTrigger>
+                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="icon-sm" />Email</TabsTrigger>}
               </TabsList>
 
               {saveError && (
-                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-emphasis flex items-center gap-2">
-                  <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
+                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-accessible flex items-center gap-2">
+                  <AlertTriangle className="icon-sm shrink-0" />
                   {saveError}
                 </div>
               )}
@@ -462,7 +469,7 @@ function TenantEditor({
                     <div className="flex gap-2">
                       {(['draft', 'active', 'suspended'] as const).map(s => (
                         <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                           {s.charAt(0).toUpperCase() + s.slice(1)}
                         </button>
                       ))}
@@ -471,7 +478,7 @@ function TenantEditor({
                 )}
                 <div className="flex justify-end pt-2">
                   <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
-                    <Save className="icon-sm" aria-hidden="true" />
+                    <Save className="icon-sm" />
                     {isSaving ? 'Saving…' : isNew ? 'Create Tenant' : 'Save General'}
                   </Button>
                 </div>
@@ -486,15 +493,15 @@ function TenantEditor({
                       <div key={key} className="space-y-2">
                         <label className="text-sm font-medium">{label}</label>
                         <div className="flex gap-2">
-                          <input type="color" value={branding[key as keyof typeof branding] as string} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
-                          <Input value={branding[key as keyof typeof branding] as string} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
+                          <input type="color" value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
+                          <Input value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
                         </div>
                       </div>
                     ))}
                   </div>
                   <div className="p-3 rounded-lg border flex gap-2">
                     {['primaryColor', 'secondaryColor', 'accentColor'].map(k => (
-                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: branding[k as keyof typeof branding] as string }} />
+                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: (branding as any)[k] }} />
                     ))}
                   </div>
                 </div>
@@ -504,7 +511,7 @@ function TenantEditor({
                   <div className="flex gap-2 flex-wrap">
                     {BG_STYLES.map(s => (
                       <button key={s} type="button" onClick={() => setBranding(p => ({ ...p, backgroundStyle: s }))}
-                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
+                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                         {s.charAt(0).toUpperCase() + s.slice(1)}
                       </button>
                     ))}
@@ -512,7 +519,7 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" aria-hidden="true" />Typography</h4>
+                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" />Typography</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Heading Font</label>
@@ -533,7 +540,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2 gap-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" aria-hidden="true" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Colors & Fonts'}
                     </Button>
                   </div>
@@ -549,13 +556,13 @@ function TenantEditor({
                 </div>
                 {branding.heroImageUrl && (
                   <div className="rounded-lg overflow-hidden border">
-                    <img src={branding.heroImageUrl} alt="Hero preview" className="w-full h-40 object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+                    <img src={branding.heroImageUrl} alt="Hero preview" className="w-full h-40 object-cover" />
                   </div>
                 )}
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" aria-hidden="true" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Media'}
                     </Button>
                   </div>
@@ -604,7 +611,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" aria-hidden="true" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Content'}
                     </Button>
                   </div>
@@ -656,7 +663,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" aria-hidden="true" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Links'}
                     </Button>
                   </div>
@@ -678,7 +685,7 @@ function TenantEditor({
                   </div>
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" aria-hidden="true" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Email Settings'}
                     </Button>
                   </div>
@@ -694,17 +701,17 @@ function TenantEditor({
               <>
                 <Button variant="outline" size="sm" className="gap-2" asChild>
                   <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="icon-sm" aria-hidden="true" />
+                    <ExternalLink className="icon-sm" />
                     View Public Page
                   </a>
                 </Button>
                 {b?.isBrandingActive ? (
-                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50">
+                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-status-warning border-status-warning-border hover:bg-status-warning-bg">
                     Unpublish Branding
                   </Button>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
-                    <Check className="icon-sm" aria-hidden="true" />
+                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-status-success border-status-success-border hover:bg-status-success-bg">
+                    <Check className="icon-sm" />
                     Publish Branding
                   </Button>
                 )}
@@ -713,37 +720,28 @@ function TenantEditor({
           </div>
           <div className="flex gap-2">
             {tenant && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-2 text-destructive-emphasis hover:text-destructive-emphasis"
-                onClick={async () => {
-                  const ok = await confirm({
-                    title: `Delete "${tenant.name}"?`,
-                    description:
-                      'Every workspace, member and program under this tenant will be removed. This cannot be undone.',
-                    confirmLabel: 'Delete tenant',
-                    intent: 'destructive',
-                  });
-                  if (ok) deleteMut.mutate();
-                }}
-              >
-                <Trash2 className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={async () => {
+                if (await confirm({
+                  title: <BilingualText en={`Delete tenant “${tenant.name}”?`} el={`Διαγραφή tenant “${tenant.name}”;`} />,
+                  description: TENANT_DELETE_DESCRIPTION,
+                  confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+                })) deleteMut.mutate();
+              }}>
+                <Trash2 className="icon-sm" />
                 Delete
               </Button>
             )}
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             {isNew && (
               <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
-                <Plus className="icon-sm" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 {isSaving ? 'Creating…' : 'Create Tenant'}
               </Button>
             )}
           </div>
         </div>
       </Card>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }
 
@@ -761,7 +759,7 @@ function TenantPreview({
         {/* Preview Header */}
         <div className="p-4 flex items-center justify-between" style={{ backgroundColor: branding.primaryColor }}>
           {general.logoUrl ? (
-            <img src={general.logoUrl} alt="" className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+            <img src={general.logoUrl} alt="" className="h-8 object-contain" />
           ) : (
             <span className="text-white font-semibold">{displayName}</span>
           )}
@@ -776,7 +774,7 @@ function TenantPreview({
           className="p-8 text-center relative"
           style={branding.heroImageUrl ? { backgroundImage: `url(${branding.heroImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: `linear-gradient(135deg, ${branding.primaryColor}22, ${branding.secondaryColor}22)` }}
         >
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
+          <h1 className="text-2xl font-bold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
           <p className="text-muted-foreground max-w-md mx-auto">{branding.heroSubtitle || 'Connect with founders, mentors, and investors in our ecosystem.'}</p>
           <div className="mt-6 flex justify-center gap-3">
             <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: branding.primaryColor }}>

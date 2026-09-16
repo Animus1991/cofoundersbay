@@ -21,8 +21,8 @@ export default function Error({
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-6 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-emphasis">
-          <AlertTriangle className="icon-md" aria-hidden="true" />
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-accessible">
+          <AlertTriangle className="icon-md" />
         </div>
         <h1 className="mt-4 text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">This page hit an unexpected error</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -30,7 +30,7 @@ export default function Error({
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
           <Button onClick={() => reset()} className="gap-2">
-            <RefreshCw className="icon-sm" aria-hidden="true" />
+            <RefreshCw className="icon-sm" />
             Try again
           </Button>
           <Button variant="secondary" asChild>

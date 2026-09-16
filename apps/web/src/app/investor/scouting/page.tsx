@@ -77,7 +77,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold text-sm">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
               {startup.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -85,35 +85,35 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-emphasis transition-colors">
+                  <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                     {startup.name}
                   </Link>
                   {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 px-1.5">🔥 HOT</Badge>}
-                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-emphasis border-primary/30">Featured</Badge>}
+                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30">Featured</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button aria-label="Show" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
-                  <Eye className={cn('h-3.5 w-3.5', inWatchlist ? 'text-primary-emphasis fill-primary/20' : 'text-muted-foreground')} aria-hidden="true" />
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
+                  <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-label="More options" variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/startups/${startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" />View Details</Link>
+                      <Link href={`/startups/${startup.id}`}><Eye className="mr-2 icon-sm" />View Details</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem><GanttChart className="mr-2 icon-sm" aria-hidden="true" />Add to Pipeline</DropdownMenuItem>
+                    <DropdownMenuItem><GanttChart className="mr-2 icon-sm" />Add to Pipeline</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setInWatchlist(!inWatchlist)}>
-                      <Eye className="mr-2 icon-sm" aria-hidden="true" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                      <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem><MessageCircle className="mr-2 icon-sm" aria-hidden="true" />Request Intro</DropdownMenuItem>
-                    <DropdownMenuItem><GitCompare className="mr-2 icon-sm" aria-hidden="true" />Compare</DropdownMenuItem>
+                    <DropdownMenuItem><MessageCircle className="mr-2 icon-sm" />Request Intro</DropdownMenuItem>
+                    <DropdownMenuItem><GitCompare className="mr-2 icon-sm" />Compare</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -128,11 +128,11 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             </div>
 
             <div className="flex flex-wrap gap-4 mt-2.5 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{startup.location}</span>
-              <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{startup.teamSize} founders</span>
-              <span className="flex items-center gap-1 font-medium text-primary-emphasis"><DollarSign className="icon-2xs" aria-hidden="true" />Raising {startup.raisingAmount}</span>
+              <span className="flex items-center gap-1"><MapPin className="icon-sm" />{startup.location}</span>
+              <span className="flex items-center gap-1"><Users className="icon-sm" />{startup.teamSize} founders</span>
+              <span className="flex items-center gap-1 font-medium text-primary-accessible"><DollarSign className="icon-sm" />Raising {startup.raisingAmount}</span>
               {startup.revenue !== 'Pre-revenue' && (
-                <span className="flex items-center gap-1 text-green-600 dark:text-green-400"><TrendingUp className="icon-2xs" aria-hidden="true" />{startup.revenue}</span>
+                <span className="flex items-center gap-1 text-status-success"><TrendingUp className="icon-sm" />{startup.revenue}</span>
               )}
             </div>
 
@@ -146,7 +146,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground">Match Score</p>
-                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-green-500' : startup.matchScore >= 70 ? 'text-primary-emphasis' : 'text-muted-foreground')}>
+                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
                   {startup.matchScore}%
                 </p>
               </div>
@@ -154,13 +154,13 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
             <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border">
               <Button size="sm" variant="default" className="h-7 text-xs flex-1" asChild>
-                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-2xs" aria-hidden="true" />View</Link>
+                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" />View</Link>
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-                <GanttChart className="mr-1 icon-2xs" aria-hidden="true" />Pipeline
+                <GanttChart className="mr-1 icon-sm" />Pipeline
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-                <MessageCircle className="mr-1 icon-2xs" aria-hidden="true" />Intro
+                <MessageCircle className="mr-1 icon-sm" />Intro
               </Button>
             </div>
           </div>
@@ -218,18 +218,18 @@ export default function InvestorScoutingPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Compass className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              <Compass className="icon-lg text-primary-accessible" />
               Scout Startups
             </h1>
             <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button aria-label="List view" variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
-              <List className="icon-sm" aria-hidden="true" />
+            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
+              <List className="icon-sm" />
             </Button>
-            <Button aria-label="Grid view" variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
-              <LayoutGrid className="icon-sm" aria-hidden="true" />
+            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
+              <LayoutGrid className="icon-sm" />
             </Button>
           </div>
         </div>
@@ -238,20 +238,20 @@ export default function InvestorScoutingPage() {
         {featured.length > 0 && (
           <Card className="border-primary/20 bg-primary/2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-emphasis" aria-hidden="true" />Featured Startups</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" />Featured Startups</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {featured.map(s => (
                 <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border bg-background">
                   <Avatar className="h-10 w-10 rounded-lg">
-                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">{s.name[0]}</AvatarFallback>
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-bold">{s.name[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{s.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{s.tagline}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-primary-emphasis font-bold">{s.matchScore}% match</p>
+                    <p className="text-xs text-primary-accessible font-bold">{s.matchScore}% match</p>
                     <p className="text-xs text-muted-foreground">{s.raisingAmount}</p>
                   </div>
                 </div>
@@ -264,7 +264,7 @@ export default function InvestorScoutingPage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input placeholder="Search by name, industry, or keyword..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
@@ -287,7 +287,7 @@ export default function InvestorScoutingPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" /><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm" /><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="match">Best Match</SelectItem>
                 <SelectItem value="readiness">Readiness</SelectItem>
@@ -302,7 +302,7 @@ export default function InvestorScoutingPage() {
                 <Badge key={f} variant="secondary" className="gap-1 text-xs">
                   {f}
                   <button onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
-                    <X className="icon-2xs" aria-hidden="true" />
+                    <X className="icon-sm" />
                   </button>
                 </Badge>
               ))}
@@ -315,10 +315,10 @@ export default function InvestorScoutingPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{filtered.length}</span> startup{filtered.length !== 1 ? 's' : ''} found
-            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-orange-500">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
+            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-status-warning">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
           </p>
-          <Link href="/investor/pipeline" className="text-xs text-primary-emphasis hover:underline flex items-center gap-1">
-            <GanttChart className="h-3.5 w-3.5" aria-hidden="true" />View Pipeline
+          <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
+            <GanttChart className="icon-sm" />View Pipeline
           </Link>
         </div>
 

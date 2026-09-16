@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function LearningLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-10">
-      <div className="mx-auto w-full max-w-[1638px] px-4 sm:px-6 lg:px-8 pt-4 space-y-5">
+      <div className="mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 space-y-5">
         <div className="flex items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm">
           <div className="space-y-1.5"><Skeleton className="h-5 w-32" /><Skeleton className="h-3.5 w-60" /></div>
           <Skeleton className="h-9 w-32 rounded-lg" />

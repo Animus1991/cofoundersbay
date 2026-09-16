@@ -47,17 +47,17 @@ const badgeIcons = {
 };
 
 const tierColors = {
-  bronze: 'text-orange-700 dark:text-orange-400',
-  silver: 'text-gray-600 dark:text-gray-300',
-  gold: 'text-yellow-700 dark:text-yellow-400',
-  platinum: 'text-cyan-700 dark:text-cyan-300',
+  bronze: 'text-status-warning ',
+  silver: 'text-muted-foreground ',
+  gold: 'text-status-warning ',
+  platinum: 'text-status-info ',
 };
 
 const tierBgColors = {
-  bronze: 'bg-orange-100 dark:bg-orange-950',
-  silver: 'bg-gray-100 dark:bg-gray-800',
-  gold: 'bg-yellow-100 dark:bg-yellow-950',
-  platinum: 'bg-cyan-100 dark:bg-cyan-950',
+  bronze: 'bg-status-warning-bg ',
+  silver: 'bg-muted ',
+  gold: 'bg-status-warning-bg ',
+  platinum: 'bg-status-info-bg ',
 };
 
 function rarityToTier(rarity: string): BadgeItem['tier'] {
@@ -231,7 +231,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Trophy className="icon-md text-primary-accessible" />
                 Achievements & Badges
               </CardTitle>
               <CardDescription>
@@ -260,19 +260,19 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="engagement">
-            <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
+            <MessageCircle className="icon-sm mr-1" />
             Engage
           </TabsTrigger>
           <TabsTrigger value="achievement">
-            <Trophy className="icon-sm mr-1" aria-hidden="true" />
+            <Trophy className="icon-sm mr-1" />
             Achieve
           </TabsTrigger>
           <TabsTrigger value="social">
-            <Users className="icon-sm mr-1" aria-hidden="true" />
+            <Users className="icon-sm mr-1" />
             Social
           </TabsTrigger>
           <TabsTrigger value="professional">
-            <Briefcase className="icon-sm mr-1" aria-hidden="true" />
+            <Briefcase className="icon-sm mr-1" />
             Pro
           </TabsTrigger>
         </TabsList>
@@ -298,7 +298,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   {badge.earned && (
                     <div className="absolute top-2 right-2">
                       <Badge variant="default" className="gap-1">
-                        <Award className="icon-2xs" aria-hidden="true" />
+                        <Award className="icon-sm" />
                         Earned
                       </Badge>
                     </div>
@@ -309,13 +309,13 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                       'w-16 h-16 rounded-full flex items-center justify-center mb-3',
                       tierBgColors[badge.tier]
                     )}>
-                      <Icon className={cn('h-8 w-8', tierColors[badge.tier])} />
+                      <Icon className={cn('icon-xl', tierColors[badge.tier])} />
                     </div>
                     
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
-                      {badge.tier === 'platinum' && <Crown className="icon-sm text-cyan-400" aria-hidden="true" />}
-                      {badge.tier === 'gold' && <Sparkles className="icon-sm text-yellow-500" aria-hidden="true" />}
+                      {badge.tier === 'platinum' && <Crown className="icon-sm text-cyan-400" />}
+                      {badge.tier === 'gold' && <Sparkles className="icon-sm text-status-warning" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>
                   </CardHeader>
@@ -323,7 +323,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   <CardContent>
                     {badge.earned ? (
                       <div className="text-sm text-muted-foreground">
-                        Earned on {new Date(badge.earnedAt!).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        Earned on {new Date(badge.earnedAt!).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                       </div>
                     ) : hasProgress ? (
                       <div className="space-y-2">

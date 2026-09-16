@@ -52,10 +52,10 @@ type User = {
 
 function UserRow({ user }: { user: User }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    active: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
-    suspended: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: null },
-    banned: { color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: <Ban className="icon-sm" aria-hidden="true" /> },
+    active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: <CheckCircle2 className="icon-sm" /> },
+    suspended: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: <AlertTriangle className="icon-sm" /> },
+    pending: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: null },
+    banned: { color: 'bg-status-danger-bg text-status-danger border-status-danger-border', icon: <Ban className="icon-sm" /> },
   };
 
   const config = statusConfig[user.status];
@@ -69,12 +69,15 @@ function UserRow({ user }: { user: User }) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
+          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary-accessible transition-colors">
             {user.name}
           </Link>
-          {user.verified && <CheckCircle2 className="icon-sm text-primary-emphasis" aria-hidden="true" />}
+          {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" />}
         </div>
-        <p className="text-sm text-muted-foreground">{user.email}</p>
+        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        <p className="mt-0.5 text-xs capitalize text-muted-foreground md:hidden">
+          {user.role} · {user.status}{user.tenant ? ` · ${user.tenant}` : ''}
+        </p>
       </div>
       <div className="hidden md:block text-sm text-muted-foreground w-24">
         {user.role}
@@ -109,19 +112,19 @@ function UserRow({ user }: { user: User }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.status === 'active' && (
-            <DropdownMenuItem className="text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
+            <DropdownMenuItem className="text-status-warning">
+              <AlertTriangle className="mr-2 icon-sm" />
               Suspend User
             </DropdownMenuItem>
           )}
           {user.status === 'suspended' && (
-            <DropdownMenuItem className="text-green-600 dark:text-green-400">
-              <CheckCircle2 className="mr-2 icon-sm" aria-hidden="true" />
+            <DropdownMenuItem className="text-status-success">
+              <CheckCircle2 className="mr-2 icon-sm" />
               Reactivate User
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem className="text-destructive-emphasis">
-            <UserX className="mr-2 icon-sm" aria-hidden="true" />
+          <DropdownMenuItem className="text-destructive-accessible">
+            <UserX className="mr-2 icon-sm" />
             Ban User
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -232,19 +235,19 @@ export default function AdminUsersPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">{statusCounts.active}</p>
+              <p className="text-xl font-bold text-status-success">{statusCounts.active}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-xl font-bold text-gray-600">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-muted-foreground">{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Suspended</p>
-              <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.suspended}</p>
+              <p className="text-xl font-bold text-status-warning">{statusCounts.suspended}</p>
             </CardContent>
           </Card>
         </div>

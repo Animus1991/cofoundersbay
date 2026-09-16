@@ -1,0 +1,100 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+
+/**
+ * A clock time in the reader's own time zone, rendered safely under SSR.
+ *
+ * Dates elsewhere in the product are pinned to UTC (see `formatDate` in
+ * lib/i18n/format.ts) because a date is a date whoever reads it. A *time* is
+ * not: "14:32" only means anything in the reader's own zone, so it cannot be
+ * pinned the same way — and `toLocaleTimeString` on the server (UTC) against
+ * the browser (anything) is exactly the mismatch React refuses to hydrate.
+ *
+ * So this renders UTC on the server and during the first client render — the
+ * two agree, hydration passes — then swaps to local time in an effect, which
+ * React treats as an ordinary update. The slot is never empty, so there is no
+ * layout shift and no blank first paint; only the digits change, within a frame
+ * of hydration. `dateTime` carries the exact instant either way, which is what
+ * a machine reader should be taking.
+ */
+export function LocalTime({
+  value,
+  className,
+}: {
+  value: string | number | Date | null | undefined;
+  className?: string;
+}) {
+  const [local, setLocal] = useState(false);
+
+  useEffect(() => {
+    setLocal(true);
+  }, []);
+
+  if (value === null || value === undefined) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const text = date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(local ? {} : { timeZone: 'UTC' }),
+  });
+
+  return (
+    <time dateTime={date.toISOString()} className={className}>
+      {text}
+    </time>
+  );
+}
+
+/**
+ * "2 hours ago", rendered safely under SSR.
+ *
+ * The same hazard as `LocalTime`, from the other direction: a relative time is
+ * computed against *now*, and the server's now is not the browser's. Two
+ * renders a minute apart produce "2 hours ago" and "3 hours ago", and React
+ * refuses to hydrate the difference — /feed threw a hydration error on every
+ * load for exactly this, which makes React discard the tree and rebuild it.
+ *
+ * The server and the first client render agree on an absolute date, pinned to
+ * UTC the way `formatDate` pins every other date in the product. The relative
+ * phrasing arrives in an effect, which React treats as an ordinary update. The
+ * slot is never empty, so nothing shifts; `dateTime` carries the exact instant
+ * throughout, which is what a machine reader should take.
+ */
+export function RelativeTime({
+  value,
+  addSuffix = true,
+  className,
+}: {
+  value: string | number | Date | null | undefined;
+  addSuffix?: boolean;
+  className?: string;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (value === null || value === undefined) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const text = mounted
+    ? formatDistanceToNow(date, { addSuffix })
+    : date.toLocaleDateString('en-GB', {
+        timeZone: 'UTC',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+  return (
+    <time dateTime={date.toISOString()} className={className}>
+      {text}
+    </time>
+  );
+}

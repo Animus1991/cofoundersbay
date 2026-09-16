@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { TREND } from '@/lib/semantic-colors';
 import { Slot } from '@radix-ui/react-slot';
 import { Badge } from './badge';
 import { Button } from './button';
@@ -243,8 +244,8 @@ export const ProfileCard = React.forwardRef<
           <Button size="sm" variant="outline" className="flex-1">
             Connect
           </Button>
-          <Button aria-label="Message" variant="ghost" size="icon">
-            <MessageCircle className="icon-sm" aria-hidden="true" />
+          <Button variant="ghost" size="icon">
+            <MessageCircle className="icon-sm" />
           </Button>
         </div>
       )}
@@ -268,9 +269,9 @@ export const StatsCard = React.forwardRef<
   }
 >(({ title, value, change, icon, trend, className, ...props }, ref) => {
   const getTrendColor = () => {
-    if (trend === 'up') return 'text-green-600 dark:text-green-400';
-    if (trend === 'down') return 'text-red-600 dark:text-red-400';
-    return 'text-muted-foreground';
+    if (trend === 'up') return TREND.up;
+    if (trend === 'down') return TREND.down;
+    return TREND.flat;
   };
 
   const getTrendIcon = () => {
@@ -296,7 +297,7 @@ export const StatsCard = React.forwardRef<
               <span
                 className={cn(
                   'text-xs font-medium',
-                  change.type === 'increase' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                  change.type === 'increase' ? TREND.up : TREND.down
                 )}
               >
                 {change.type === 'increase' ? '+' : '-'}{change.value}%

@@ -24,6 +24,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { achievementsEn, achievementsEl } from '@/lib/i18n/strings-achievements';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +44,7 @@ interface Achievement {
   points: number;
   progress: number;
   total: number;
-  unlocked: boolean;
+  unlocked: boolean | null;
   unlockedAt?: Date;
   rarity: number;
 }
@@ -59,17 +61,17 @@ interface UserStats {
 }
 
 const TIER_COLORS = {
-  bronze: 'text-orange-600 dark:text-orange-400',
-  silver: 'text-gray-400',
-  gold: 'text-yellow-500',
+  bronze: 'text-status-warning',
+  silver: 'text-muted-foreground',
+  gold: 'text-status-warning',
   platinum: 'text-cyan-400',
 };
 
 const TIER_BG = {
-  bronze: 'bg-orange-500/10',
+  bronze: 'bg-status-warning-bg',
   silver: 'bg-gray-400/10',
-  gold: 'bg-yellow-500/10',
-  platinum: 'bg-cyan-400/10',
+  gold: 'bg-status-warning-bg',
+  platinum: 'bg-status-info-bg',
 };
 
 const CATEGORY_ICONS = {
@@ -251,7 +253,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     <Card
       className={cn(
         'transition-all shadow-sm border-border/50',
-        achievement.unlocked ? 'hover:shadow-md' : 'opacity-75'
+        achievement.unlocked && 'hover:shadow-md'
       )}
     >
       <CardContent className="p-5">
@@ -263,13 +265,13 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               achievement.unlocked ? 'ring-2 ring-primary/20' : ''
             )}
           >
-            <Icon className={cn('h-8 w-8', TIER_COLORS[achievement.tier])} />
+            <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} />
             {achievement.unlocked && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
                 <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
               </div>
             )}
-            {!achievement.unlocked && achievement.progress === 0 && (
+            {achievement.unlocked === false && achievement.progress === 0 && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
                 <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
               </div>
@@ -289,10 +291,11 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </Badge>
             </div>
 
-            {!achievement.unlocked && (
+            {achievement.unlocked === null && <p className="mb-3 text-xs text-muted-foreground"><BilingualText en="Eligibility not yet verified" el="Η επιλεξιμότητα δεν έχει ακόμη επαληθευτεί" compact /></p>}
+            {achievement.unlocked === false && (
               <div className="space-y-1.5 mb-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Progress</span>
+                  <span><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                   <span>
                     {achievement.progress} / {achievement.total}
                   </span>
@@ -301,7 +304,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </div>
             )}
 
-            <div className="flex items-center gap-3 text-xs">
+            {/* flex-wrap: four items (two badges, the rarity note and the unlock
+                date) needed 375px on a 334px card and had nowhere to go, so this
+                row was what made /achievements the one page that scrolled
+                horizontally on a phone — the fixed bottom nav then stretched with
+                the grown layout viewport, which made it look like the nav's fault. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
               <Badge variant="outline" className="gap-1">
                 <CategoryIcon className="icon-sm" />
                 {achievement.category}
@@ -314,11 +322,11 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
                 {achievement.tier}
               </Badge>
               <span className="text-muted-foreground">
-                {achievement.rarity}% have this
+                {achievement.rarity}% <BilingualText en="have this" el="έχουν αυτό" compact />
               </span>
               {achievement.unlocked && achievement.unlockedAt && (
                 <span className="text-muted-foreground ml-auto">
-                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                 </span>
               )}
             </div>
@@ -342,10 +350,10 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="icon-lg text-primary-emphasis" aria-hidden="true" />
+                <Trophy className="icon-lg text-primary-accessible" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Current Level</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('current_level')} el={achievementsEl('current_level')} compact /></p>
                 <h2 className="text-xl font-bold">Level {stats.level}</h2>
               </div>
             </div>
@@ -373,23 +381,23 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Total Points</p>
-              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('total_points')} el={achievementsEl('total_points')} compact /></p>
+              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString('en-GB')}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Achievements</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('achievements')} el={achievementsEl('achievements')} compact /></p>
               <p className="text-xl font-bold">
                 {stats.achievementsUnlocked}/{stats.totalAchievements}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Completion</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('completion')} el={achievementsEl('completion')} compact /></p>
               <p className="text-xl font-bold">
                 {Math.round((stats.achievementsUnlocked / stats.totalAchievements) * 100)}%
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Rank</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('rank')} el={achievementsEl('rank')} compact /></p>
               <p className="text-xl font-bold">#{stats.percentile}</p>
             </div>
           </div>
@@ -507,12 +515,12 @@ export default function AchievementsPage() {
   });
 
   const categories = [
-    { value: 'all', label: 'All' },
-    { value: 'networking', label: 'Networking', icon: Users },
-    { value: 'engagement', label: 'Engagement', icon: Heart },
-    { value: 'profile', label: 'Profile', icon: Star },
-    { value: 'activity', label: 'Activity', icon: Zap },
-    { value: 'special', label: 'Special', icon: Crown },
+    { value: 'all', labelEn: 'All', labelEl: 'Όλες', icon: undefined as (typeof Users | undefined) },
+    { value: 'networking', labelEn: 'Networking', labelEl: 'Δικτύωση', icon: Users },
+    { value: 'engagement', labelEn: 'Engagement', labelEl: 'Αφοσίωση', icon: Heart },
+    { value: 'profile', labelEn: 'Profile', labelEl: 'Προφίλ', icon: Star },
+    { value: 'activity', labelEn: 'Activity', labelEl: 'Δραστηριότητα', icon: Zap },
+    { value: 'special', labelEn: 'Special', labelEl: 'Ειδικά', icon: Crown },
   ];
 
   const LEADERBOARD = [
@@ -523,14 +531,14 @@ export default function AchievementsPage() {
     { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: '', isMe: true },
   ].sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
 
-  const RANK_COLORS: Record<number, string> = { 1: 'text-yellow-500', 2: 'text-gray-400', 3: 'text-orange-600 dark:text-orange-400' };
+  const RANK_COLORS: Record<number, string> = { 1: 'text-status-warning', 2: 'text-muted-foreground', 3: 'text-status-warning' };
 
   const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
 
   return (
     <AppShell
-      title="Achievements & Badges"
-      description="Track your progress, unlock badges, and climb the leaderboard"
+      title={achievementsEn('page_title')}
+      description={achievementsEn('page_description')}
     >
       <div className="space-y-4 pb-10">
         {isLoading ? (
@@ -541,24 +549,29 @@ export default function AchievementsPage() {
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
+                {/* min-w-0/max-w-full are what let the overflow-x-auto engage. As a
+                    flex child this defaults to min-width:auto, so it refused to
+                    shrink below its content, never scrolled, and pushed the document
+                    76px wide instead — achievements was the one page in the sweep
+                    that scrolled horizontally on a phone. */}
+                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto scrollbar-hide min-w-0 max-w-full">
                   <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" aria-hidden="true" /> All ({achievements?.length})
+                    <Award className="icon-sm" /> <BilingualText en={`All (${achievements?.length})`} el={`Όλα (${achievements?.length})`} compact />
                   </TabsTrigger>
                   <TabsTrigger value="unlocked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Unlocked ({achievements?.filter((a) => a.unlocked).length})
+                    <CheckCircle2 className="icon-sm" /> <BilingualText en={`Unlocked (${achievements?.filter((a) => a.unlocked).length})`} el={`Ξεκλειδωμένα (${achievements?.filter((a) => a.unlocked).length})`} compact />
                   </TabsTrigger>
                   <TabsTrigger value="locked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Lock className="h-3.5 w-3.5" aria-hidden="true" /> In Progress ({achievements?.filter((a) => !a.unlocked).length})
+                    <Lock className="icon-sm" /> <BilingualText en={`In Progress (${achievements?.filter((a) => !a.unlocked).length})`} el={`Σε εξέλιξη (${achievements?.filter((a) => !a.unlocked).length})`} compact />
                   </TabsTrigger>
                   <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Trophy className="h-3.5 w-3.5" aria-hidden="true" /> Leaderboard
+                    <Trophy className="icon-sm" /> <BilingualText en={achievementsEn('tab_leaderboard')} el={achievementsEl('tab_leaderboard')} compact />
                   </TabsTrigger>
                   <TabsTrigger value="reputation" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" /> Reputation
+                    <TrendingUp className="icon-sm" /> <BilingualText en={achievementsEn('tab_reputation')} el={achievementsEl('tab_reputation')} compact />
                   </TabsTrigger>
                   <TabsTrigger value="badges" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" aria-hidden="true" /> Badges
+                    <Award className="icon-sm" /> <BilingualText en={achievementsEn('tab_badges')} el={achievementsEl('tab_badges')} compact />
                   </TabsTrigger>
                 </TabsList>
 
@@ -574,7 +587,12 @@ export default function AchievementsPage() {
                           onClick={() => setCategoryFilter(category.value)}
                         >
                           {Icon && <Icon className="icon-sm" />}
-                          {category.label}
+                          <BilingualText
+                            en={category.labelEn}
+                            el={category.labelEl}
+                            compact
+                            secondaryClassName={categoryFilter === category.value ? 'text-primary-foreground' : undefined}
+                          />
                         </Badge>
                       );
                     })}
@@ -590,9 +608,9 @@ export default function AchievementsPage() {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-                      <h3 className="text-lg font-semibold mb-2">No achievements found</h3>
-                      <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+                      <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
+                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('try_adjusting_filters')} el={achievementsEl('try_adjusting_filters')} /></p>
                     </CardContent>
                   </Card>
                 )}
@@ -606,9 +624,9 @@ export default function AchievementsPage() {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-                      <h3 className="text-lg font-semibold mb-2">No unlocked achievements</h3>
-                      <p className="text-sm text-muted-foreground">Start engaging to unlock your first badge!</p>
+                      <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
+                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('start_engaging')} el={achievementsEl('start_engaging')} /></p>
                     </CardContent>
                   </Card>
                 )}
@@ -622,8 +640,8 @@ export default function AchievementsPage() {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-                      <p className="text-sm text-muted-foreground">All badges unlocked in this category!</p>
+                      <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('all_badges_unlocked')} el={achievementsEl('all_badges_unlocked')} /></p>
                     </CardContent>
                   </Card>
                 )}
@@ -636,7 +654,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Trophy className="icon-sm text-yellow-500" aria-hidden="true" /> Community Leaderboard
+                          <Trophy className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-1 px-2">
@@ -651,17 +669,17 @@ export default function AchievementsPage() {
                             <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
                               {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
                             </span>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-emphasis">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
                               {user.name[0]}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary-emphasis')}>
+                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary-accessible')}>
                                 {user.name}{(user as any).isMe && ' (You)'}
                               </p>
                               <p className="text-xs text-muted-foreground">Level {user.level} · {user.badge}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString()}</p>
+                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString('en-GB')}</p>
                               <p className="text-xs text-muted-foreground">pts</p>
                             </div>
                           </div>
@@ -675,7 +693,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Zap className="icon-sm text-amber-500" aria-hidden="true" /> Recently Unlocked
+                          <Zap className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('recently_unlocked')} el={achievementsEl('recently_unlocked')} compact />
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
@@ -689,14 +707,14 @@ export default function AchievementsPage() {
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{a.title}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {a.unlockedAt?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                  {a.unlockedAt?.toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
                                 </p>
                               </div>
                               <Badge variant="secondary" size="sm" className="px-1.5 shrink-0">{a.points}pts</Badge>
                             </div>
                           );
                         }) : (
-                          <p className="text-xs text-muted-foreground text-center py-4">No unlocks yet</p>
+                          <p className="text-xs text-muted-foreground text-center py-4"><BilingualText en={achievementsEn('no_unlocks_yet')} el={achievementsEl('no_unlocks_yet')} /></p>
                         )}
                       </CardContent>
                     </Card>
@@ -704,7 +722,7 @@ export default function AchievementsPage() {
                     {/* Tier breakdown */}
                     <Card className="mt-4">
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">Tier Breakdown</CardTitle>
+                        <CardTitle className="text-sm"><BilingualText en={achievementsEn('tier_breakdown')} el={achievementsEl('tier_breakdown')} compact /></CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2">
                         {(['platinum','gold','silver','bronze'] as const).map((tier) => {

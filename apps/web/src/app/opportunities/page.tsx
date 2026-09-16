@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase,
@@ -38,6 +39,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -96,22 +100,22 @@ const DEMO_PROPOSALS: Proposal[] = [
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-const OPP_TYPE_DISPLAY: Record<OpportunityType, { label: string; className: string; icon: typeof Briefcase }> = {
-  cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-700 border-indigo-500/20 dark:text-indigo-400', icon: Handshake },
-  job: { label: 'Job', className: 'bg-primary/20 text-primary-emphasis border-primary/20', icon: Building2 },
-  investment: { label: 'Investment', className: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/20 dark:text-emerald-400', icon: Coins },
-  partnership: { label: 'Partnership', className: 'bg-purple-500/20 text-purple-700 border-purple-500/20 dark:text-purple-400', icon: Users },
-  mentorship: { label: 'Mentorship', className: 'bg-amber-500/20 text-amber-700 border-amber-500/20 dark:text-amber-400', icon: Rocket },
-  other: { label: 'Other', className: 'bg-muted text-muted-foreground border-border/40', icon: FileText },
+const OPP_TYPE_DISPLAY: Record<OpportunityType, { labelKey: `type_${OpportunityType}`; className: string; icon: typeof Briefcase }> = {
+  cofounder: { labelKey: 'type_cofounder', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Handshake },
+  job: { labelKey: 'type_job', className: 'bg-primary/20 text-primary-accessible border-primary/20', icon: Building2 },
+  investment: { labelKey: 'type_investment', className: 'bg-status-success-bg text-status-success border-status-success-border ', icon: Coins },
+  partnership: { labelKey: 'type_partnership', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Users },
+  mentorship: { labelKey: 'type_mentorship', className: 'bg-status-warning-bg text-status-warning border-status-warning-border ', icon: Rocket },
+  other: { labelKey: 'type_other', className: 'bg-muted text-muted-foreground border-border/40', icon: FileText },
 };
 
 function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
   const { success } = useToast();
   const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
   const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
-  const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
   const deadline = opportunity.deadline
-    ? new Date(opportunity.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? new Date(opportunity.deadline).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
     : null;
 
   return (
@@ -119,8 +123,8 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
       <CardContent className="p-4 sm:p-5 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 shrink-0 rounded-lg ring-2 ring-border/60">
-              <AvatarFallback className="rounded-lg bg-primary/20 text-primary-emphasis font-bold text-sm">{initials}</AvatarFallback>
+            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
+              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-accessible font-bold text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div>
               <h3 className="font-display text-base font-semibold text-foreground">{opportunity.title}</h3>
@@ -129,17 +133,19 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                   <span className="text-sm text-muted-foreground">{opportunity.company}</span>
                 )}
                 <Badge variant="outline" className={cn('text-2xs px-1.5', cfg.className)}>
-                  <cfg.icon className="mr-1 h-3 w-3" />
-                  {cfg.label}
+                  <cfg.icon className="mr-1 icon-sm" />
+                  <BilingualText en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />
                 </Badge>
                 {opportunity.isRemote && (
-                  <Badge variant="secondary" className="text-2xs bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs bg-status-success-bg text-status-success ">
+                    <BilingualText en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact />
+                  </Badge>
                 )}
               </div>
             </div>
           </div>
           <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
-            <Clock className="icon-2xs" aria-hidden="true" />
+            <Clock className="icon-sm" />
             {postedAgo}
           </span>
         </div>
@@ -161,7 +167,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           {opportunity.location && (
             <span className="flex items-center gap-1">
-              <MapPin className="icon-2xs" aria-hidden="true" />
+              <MapPin className="icon-sm" />
               {opportunity.location}
             </span>
           )}
@@ -170,18 +176,22 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
               'flex items-center gap-1',
               (() => {
                 const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
-                return daysLeft <= 3 ? 'text-red-500 font-medium' : 'text-amber-600 dark:text-amber-400';
+                return daysLeft <= 3 ? 'text-status-danger font-medium' : 'text-status-warning ';
               })()
             )}>
-              <AlertCircle className="icon-2xs" aria-hidden="true" />
+              <AlertCircle className="icon-sm" />
               {(() => {
                 const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
-                return daysLeft <= 0 ? 'Expired' : daysLeft <= 3 ? `${daysLeft}d left!` : `Deadline: ${deadline}`;
+                return daysLeft <= 0
+                  ? opportunitiesEn('expired')
+                  : daysLeft <= 3
+                    ? opportunitiesEn('days_left').replace('{n}', String(daysLeft))
+                    : opportunitiesEn('deadline').replace('{date}', deadline);
               })()}
             </span>
           )}
           <span className="flex items-center gap-1">
-            <Users className="icon-2xs" aria-hidden="true" />
+            <Users className="icon-sm" />
             {opportunity.createdBy.displayName}
           </span>
         </div>
@@ -190,22 +200,35 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
           {opportunity.url ? (
             <Button size="sm" className="gap-1.5 text-xs" asChild>
               <a href={opportunity.url} target="_blank" rel="noopener noreferrer">
-                Apply Now <ArrowRight className="icon-2xs" aria-hidden="true" />
+                <BilingualText en={opportunitiesEn('apply_now')} el={opportunitiesEl('apply_now')} compact /> <ArrowRight className="icon-sm" />
               </a>
             </Button>
           ) : (
-            <Button size="sm" className="gap-1.5 text-xs">
-              Apply Now <ArrowRight className="icon-2xs" aria-hidden="true" />
+            /* No link was posted, and there is no apply endpoint to call — so
+               the button said "Apply Now" and did nothing. The assistant can
+               actually draft the approach from what this listing says, and the
+               label now names that rather than promising a form. */
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild>
+              <Link
+                href={`/ai?q=${encodeURIComponent(
+                  `Draft my approach for this opportunity: "${opportunity.title}"` +
+                    `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
+                    `Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
+                )}`}
+              >
+                <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
+                <ArrowRight className="icon-sm" />
+              </Link>
             </Button>
           )}
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5 text-xs"
-            onClick={() => success('Saved', `${opportunity.title} saved to bookmarks.`)}
+            onClick={() => success(opportunitiesEn('saved'), opportunitiesEn('saved_body').replace('{title}', opportunity.title))}
           >
-            <Bookmark className="icon-2xs" aria-hidden="true" />
-            Save
+            <Bookmark className="icon-sm" />
+            <BilingualText en={opportunitiesEn('save')} el={opportunitiesEl('save')} compact />
           </Button>
         </div>
       </CardContent>
@@ -220,8 +243,8 @@ function JobCard({ job }: { job: JobPostingView }) {
       <CardContent className="p-4 sm:p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 shrink-0 rounded-lg ring-2 ring-border/60">
-              <AvatarFallback className="rounded-lg bg-primary/20 text-primary-emphasis font-bold text-sm">
+            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
+              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-accessible font-bold text-sm">
                 {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
               </AvatarFallback>
             </Avatar>
@@ -229,12 +252,14 @@ function JobCard({ job }: { job: JobPostingView }) {
               <h3 className="font-display text-base font-semibold text-foreground">{job.title}</h3>
               <div className="mt-1 flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{job.creator.displayName}</span>
-                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary-emphasis border-primary/20">
-                  <Building2 className="mr-1 icon-2xs" aria-hidden="true" />
-                  Job
+                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary-accessible border-primary/20">
+                  <Building2 className="mr-1 icon-sm" />
+                  <BilingualText en={opportunitiesEn('job')} el={opportunitiesEl('job')} compact />
                 </Badge>
                 {job.isRemote && (
-                  <Badge variant="secondary" className="text-2xs">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs">
+                    <BilingualText en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact />
+                  </Badge>
                 )}
               </div>
             </div>
@@ -244,31 +269,41 @@ function JobCard({ job }: { job: JobPostingView }) {
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           {job.location && (
             <span className="flex items-center gap-1">
-              <MapPin className="icon-2xs" aria-hidden="true" />
+              <MapPin className="icon-sm" />
               {job.location}
             </span>
           )}
           {job.role && (
             <span className="flex items-center gap-1">
-              <Briefcase className="icon-2xs" aria-hidden="true" />
+              <Briefcase className="icon-sm" />
               {job.role}
             </span>
           )}
         </div>
 
         <div className="flex gap-2 pt-1">
-          <Button size="sm" className="gap-1.5 text-xs">
-            Apply Now
-            <ArrowRight className="icon-2xs" aria-hidden="true" />
+          {/* Same here: the job feed has no apply route and the posting
+              carries no creator id to message, so the honest useful action is
+              the one the assistant can perform. */}
+          <Button size="sm" className="gap-1.5 text-xs" asChild>
+            <Link
+              href={`/ai?q=${encodeURIComponent(
+                `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
+                  'Use my profile and tell me what is missing before I send it.',
+              )}`}
+            >
+              <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5 text-xs"
-            onClick={() => success('Saved', `${job.title} saved to bookmarks.`)}
+            onClick={() => success(opportunitiesEn('saved'), opportunitiesEn('saved_body').replace('{title}', job.title))}
           >
-            <Bookmark className="icon-2xs" aria-hidden="true" />
-            Save
+            <Bookmark className="icon-sm" />
+            <BilingualText en={opportunitiesEn('save')} el={opportunitiesEl('save')} compact />
           </Button>
         </div>
       </CardContent>
@@ -286,10 +321,10 @@ function ProposalCard({
   onDecline: (id: string) => void;
 }) {
   const isPending = proposal.status === 'pending';
-  const PROPOSAL_STATUS: Record<string, { label: string; className: string }> = {
-    pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
-    accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
-    declined: { label: 'Declined', className: 'bg-destructive/20 text-destructive-emphasis' },
+  const PROPOSAL_STATUS: Record<string, { labelKey: 'status_pending' | 'status_accepted' | 'status_declined'; className: string }> = {
+    pending: { labelKey: 'status_pending', className: 'bg-muted text-muted-foreground' },
+    accepted: { labelKey: 'status_accepted', className: 'bg-status-success-bg text-status-success ' },
+    declined: { labelKey: 'status_declined', className: 'bg-destructive/20 text-status-danger dark:text-destructive-accessible' },
   };
   const statusCfg = PROPOSAL_STATUS[proposal.status] ?? PROPOSAL_STATUS.pending;
 
@@ -299,7 +334,7 @@ function ProposalCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xs font-bold">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs font-bold">
                 {proposal.fromInitials}
               </AvatarFallback>
             </Avatar>
@@ -310,7 +345,7 @@ function ProposalCard({
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className={cn('text-xs', statusCfg.className)}>
-              {statusCfg.label}
+              <BilingualText en={opportunitiesEn(statusCfg.labelKey)} el={opportunitiesEl(statusCfg.labelKey)} compact />
             </Badge>
             <span className="text-xs text-muted-foreground">{proposal.date}</span>
           </div>
@@ -320,11 +355,11 @@ function ProposalCard({
           <p className="text-sm text-foreground leading-relaxed">{proposal.scope}</p>
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-1">
             <span className="flex items-center gap-1">
-              <Clock className="icon-2xs" aria-hidden="true" />
+              <Clock className="icon-sm" />
               {proposal.timeframe}
             </span>
             <span className="flex items-center gap-1">
-              <Coins className="icon-2xs" aria-hidden="true" />
+              <Coins className="icon-sm" />
               {proposal.compensation}
             </span>
           </div>
@@ -337,8 +372,8 @@ function ProposalCard({
               className="flex-1 gap-2"
               onClick={() => onAccept(proposal.id)}
             >
-              <Check className="h-3.5 w-3.5" aria-hidden="true" />
-              Accept
+              <Check className="icon-sm" />
+              <BilingualText en={opportunitiesEn('accept')} el={opportunitiesEl('accept')} compact />
             </Button>
             <Button
               variant="outline"
@@ -346,8 +381,8 @@ function ProposalCard({
               className="flex-1 gap-2"
               onClick={() => onDecline(proposal.id)}
             >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-              Decline
+              <X className="icon-sm" />
+              <BilingualText en={opportunitiesEn('decline')} el={opportunitiesEl('decline')} compact />
             </Button>
           </div>
         )}
@@ -390,7 +425,9 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Post an opportunity</DialogTitle>
+          <DialogTitle>
+            <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
@@ -404,12 +441,12 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
                   className={cn(
                     'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                     form.type === key
-                      ? 'border-primary bg-primary/20 text-primary-emphasis'
+                      ? 'border-primary bg-primary/20 text-primary-accessible'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
-                  <cfg.icon className="h-3.5 w-3.5" />
-                  {cfg.label}
+                  <cfg.icon className="icon-sm" />
+                  <BilingualText en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />
                 </button>
               ))}
             </div>
@@ -458,7 +495,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
-              {mutation.isPending ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Rocket className="icon-sm" aria-hidden="true" />}
+              {mutation.isPending ? <Loader2 className="icon-sm animate-spin" /> : <Rocket className="icon-sm" />}
               Post
             </Button>
         </DialogFooter>
@@ -506,7 +543,7 @@ export default function OpportunitiesPage() {
     setProposals((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'accepted' as const } : p)),
     );
-    success('Proposal accepted!', 'You can now message them to coordinate next steps.');
+    success(opportunitiesEn('proposal_accepted'), opportunitiesEn('proposal_accepted_body'));
   };
 
   const handleDeclineProposal = (id: string) => {
@@ -516,10 +553,10 @@ export default function OpportunitiesPage() {
   };
 
   const tabs = [
-    { key: 'listings' as const, label: 'Co-founder & Freelance', icon: Handshake },
-    { key: 'jobs' as const, label: 'Jobs', icon: Briefcase },
-    { key: 'applications' as const, label: 'My Applications', icon: FileText },
-    { key: 'proposals' as const, label: 'Proposals', icon: Check, badge: pendingProposals },
+    { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake },
+    { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase },
+    { key: 'applications' as const, labelKey: 'tab_applications' as const, icon: FileText },
+    { key: 'proposals' as const, labelKey: 'tab_proposals' as const, icon: Check, badge: pendingProposals },
   ];
 
   return (
@@ -531,12 +568,11 @@ export default function OpportunitiesPage() {
         />
       )}
       <AppShell
-        title="Opportunities"
-        description="Co-founder listings, jobs, freelance contracts, and collaboration proposals"
+        showHelp
         actions={
           <Button className="gap-2" onClick={() => setShowPostForm(true)}>
-            <Plus className="icon-sm" aria-hidden="true" />
-            Post opportunity
+            <Plus className="icon-sm" />
+            <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
           </Button>
         }
       >
@@ -544,21 +580,23 @@ export default function OpportunitiesPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Total Listings', value: opportunities.length || '50+', icon: Briefcase, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Remote Roles', value: opportunities.filter((o) => o.isRemote).length || '20+', icon: Globe, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Co-founder', value: opportunities.filter((o) => o.type === 'cofounder').length || '15+', icon: Handshake, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Proposals', value: pendingProposals, icon: TrendingUp, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { labelKey: 'stat_listings' as const, value: opportunities.length || '—', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+            { labelKey: 'stat_remote' as const, value: opportunities.filter((o) => o.isRemote).length || '—', icon: Globe, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { labelKey: 'stat_cofounder' as const, value: opportunities.filter((o) => o.type === 'cofounder').length || '—', icon: Handshake, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { labelKey: 'stat_proposals' as const, value: pendingProposals, icon: TrendingUp, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
           ].map((s) => {
             const SIcon = s.icon;
             return (
-              <Card key={s.label} className="shadow-sm border-border/50">
+              <Card key={s.labelKey} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
-                    <SIcon className="h-4 w-4" />
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                    <SIcon className="icon-sm" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
+                    <p className="mt-0.5 text-2xs text-muted-foreground">
+                      <BilingualText en={opportunitiesEn(s.labelKey)} el={opportunitiesEl(s.labelKey)} compact />
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -568,7 +606,7 @@ export default function OpportunitiesPage() {
 
         {/* Tabs */}
         <div className="flex gap-1 rounded-xl bg-secondary/50 p-1 mb-6 overflow-x-auto">
-          {tabs.map(({ key, label, icon: Icon, badge }) => (
+          {tabs.map(({ key, labelKey, icon: Icon, badge }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -579,10 +617,10 @@ export default function OpportunitiesPage() {
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              <Icon className="h-4 w-4" />
-              {label}
+              <Icon className="icon-sm" />
+              <BilingualText en={opportunitiesEn(labelKey)} el={opportunitiesEl(labelKey)} compact />
               {badge !== undefined && badge > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-emphasis">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-accessible">
                   {badge}
                 </span>
               )}
@@ -596,9 +634,9 @@ export default function OpportunitiesPage() {
             {/* Search + filter */}
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search roles, skills, companies…"
+                  placeholder={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -612,11 +650,15 @@ export default function OpportunitiesPage() {
                     className={cn(
                       'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                       oppTypeFilter === t
-                        ? 'border-primary bg-primary/20 text-primary-emphasis'
+                        ? 'border-primary bg-primary/20 text-primary-accessible'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40',
                     )}
                   >
-                    {t === 'all' ? 'All types' : t.charAt(0).toUpperCase() + t.slice(1)}
+                    {t === 'all' ? (
+                      <BilingualText en={opportunitiesEn('all_types')} el={opportunitiesEl('all_types')} compact />
+                    ) : (
+                      <BilingualText en={opportunitiesEn(OPP_TYPE_DISPLAY[t].labelKey)} el={opportunitiesEl(OPP_TYPE_DISPLAY[t].labelKey)} compact />
+                    )}
                   </button>
                 ))}
                 <button
@@ -624,19 +666,23 @@ export default function OpportunitiesPage() {
                   className={cn(
                     'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                     remoteOnly
-                      ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                      ? 'border-status-success-border bg-status-success-bg text-status-success '
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
-                  Remote only
+                  <BilingualText en={opportunitiesEn('remote_only')} el={opportunitiesEl('remote_only')} compact />
                 </button>
               </div>
             </div>
 
             {oppError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load opportunities.</p>
-                <Button variant="secondary" size="sm" onClick={() => refetchOpp()}>Try again</Button>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={opportunitiesEn('load_failed')} el={opportunitiesEl('load_failed')} compact />
+                </p>
+                <Button variant="secondary" size="sm" onClick={() => refetchOpp()}>
+                  <BilingualText en={opportunitiesEn('try_again')} el={opportunitiesEl('try_again')} compact />
+                </Button>
               </CardContent></Card>
             ) : oppLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
@@ -651,17 +697,25 @@ export default function OpportunitiesPage() {
               ))
             ) : opportunities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Handshake className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
-                <p className="font-medium">No opportunities found</p>
-                <p className="text-sm mt-1">Try adjusting your search or filters, or post the first opportunity.</p>
+                <Handshake className="h-10 w-10 mb-3 opacity-30" />
+                <p className="font-medium">
+                  <BilingualText en={opportunitiesEn('none_found')} el={opportunitiesEl('none_found')} compact />
+                </p>
+                <p className="text-sm mt-1">
+                  <BilingualText en={opportunitiesEn('none_found_hint')} el={opportunitiesEl('none_found_hint')} compact />
+                </p>
                 <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
-                  <Plus className="icon-sm" aria-hidden="true" />
-                  Post opportunity
+                  <Plus className="icon-sm" />
+                  <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-xs text-muted-foreground">{opportunities.length} opportunit{opportunities.length === 1 ? 'y' : 'ies'}</p>
+                <p className="text-xs text-muted-foreground">
+                  {opportunities.length === 1
+                    ? opportunitiesEn('count_one')
+                    : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
+                </p>
                 {opportunities.map((opp) => (
                   <OpportunityCard key={opp.id} opportunity={opp} />
                 ))}
@@ -674,9 +728,9 @@ export default function OpportunitiesPage() {
         {activeTab === 'jobs' && (
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search jobs…"
+                placeholder={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -684,8 +738,12 @@ export default function OpportunitiesPage() {
             </div>
             {jobsError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load jobs.</p>
-                <Button variant="secondary" size="sm" onClick={() => refetchJobs()}>Try again</Button>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={opportunitiesEn('jobs_failed')} el={opportunitiesEl('jobs_failed')} compact />
+                </p>
+                <Button variant="secondary" size="sm" onClick={() => refetchJobs()}>
+                  <BilingualText en={opportunitiesEn('try_again')} el={opportunitiesEl('try_again')} compact />
+                </Button>
               </CardContent></Card>
             ) : jobsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
@@ -701,12 +759,16 @@ export default function OpportunitiesPage() {
               ))
             ) : !jobsData?.jobs?.length ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Briefcase className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
-                <p className="font-medium">No jobs posted yet</p>
-                <p className="text-sm mt-1">Be the first to post a role in the community.</p>
+                <Briefcase className="h-10 w-10 mb-3 opacity-30" />
+                <p className="font-medium">
+                  <BilingualText en={opportunitiesEn('none_jobs')} el={opportunitiesEl('none_jobs')} compact />
+                </p>
+                <p className="text-sm mt-1">
+                  <BilingualText en={opportunitiesEn('none_jobs_hint')} el={opportunitiesEl('none_jobs_hint')} compact />
+                </p>
                 <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
-                  <Plus className="icon-sm" aria-hidden="true" />
-                  Post a job
+                  <Plus className="icon-sm" />
+                  <BilingualText en={opportunitiesEn('post_job')} el={opportunitiesEl('post_job')} compact />
                 </Button>
               </div>
             ) : (
@@ -726,12 +788,20 @@ export default function OpportunitiesPage() {
         {activeTab === 'applications' && (
           <div className="space-y-4">
             <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-              <FileText className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
-              <p className="font-medium">Applications tracked here</p>
-              <p className="text-sm mt-1">When you apply to listings or program applications, they appear here.</p>
+              <FileText className="h-10 w-10 mb-3 opacity-30" />
+              <p className="font-medium">
+                <BilingualText en={opportunitiesEn('applications_title')} el={opportunitiesEl('applications_title')} compact />
+              </p>
+              <p className="text-sm mt-1">
+                <BilingualText en={opportunitiesEn('applications_hint')} el={opportunitiesEl('applications_hint')} compact />
+              </p>
               <div className="flex gap-3 mt-4">
-                <Button variant="outline" size="sm" onClick={() => setActiveTab('listings')}>Browse Opportunities</Button>
-                <Button size="sm" onClick={() => setActiveTab('jobs')}>Browse Jobs</Button>
+                <Button variant="outline" size="sm" onClick={() => setActiveTab('listings')}>
+                  <BilingualText en={opportunitiesEn('browse_opportunities')} el={opportunitiesEl('browse_opportunities')} compact />
+                </Button>
+                <Button size="sm" onClick={() => setActiveTab('jobs')}>
+                  <BilingualText en={opportunitiesEn('browse_jobs')} el={opportunitiesEl('browse_jobs')} compact />
+                </Button>
               </div>
             </div>
           </div>
@@ -740,11 +810,20 @@ export default function OpportunitiesPage() {
         {/* Proposals tab */}
         {activeTab === 'proposals' && (
           <div className="space-y-4">
+            <SampleDataNotice
+              surface="Proposals"
+              detail="Incoming collaboration proposals are not a live API yet. These two cards show the layout so you can learn Accept and Decline."
+              askAiPrompt="These collaboration proposals are samples. How should I evaluate a real co-founder or investment proposal when one arrives?"
+            />
             {proposals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <FileText className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
-                <p className="font-medium">No proposals yet</p>
-                <p className="text-sm mt-1">Collaboration proposals from other members will appear here.</p>
+                <FileText className="h-10 w-10 mb-3 opacity-30" />
+                <p className="font-medium">
+                  <BilingualText en={opportunitiesEn('none_proposals')} el={opportunitiesEl('none_proposals')} compact />
+                </p>
+                <p className="text-sm mt-1">
+                  <BilingualText en={opportunitiesEn('none_proposals_hint')} el={opportunitiesEl('none_proposals_hint')} compact />
+                </p>
               </div>
             ) : (
               proposals.map((proposal) => (

@@ -49,7 +49,7 @@ type EventCardProps = {
 };
 
 function formatEventDate(date: Date): string {
-  return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 function formatEventTime(start: Date, end: Date): string {
@@ -61,14 +61,14 @@ function formatEventTime(start: Date, end: Date): string {
 function EventTypeIcon({ type }: { type: EventData['type'] }) {
   switch (type) {
     case 'online':
-      return <Video className="icon-sm" aria-hidden="true" />;
+      return <Video className="icon-sm" />;
     case 'in-person':
-      return <MapPin className="icon-sm" aria-hidden="true" />;
+      return <MapPin className="icon-sm" />;
     case 'hybrid':
       return (
         <div className="flex">
-          <Video className="icon-sm" aria-hidden="true" />
-          <MapPin className="icon-sm -ml-1" aria-hidden="true" />
+          <Video className="icon-sm" />
+          <MapPin className="icon-sm -ml-1" />
         </div>
       );
   }
@@ -106,11 +106,11 @@ export function EventCard({
           <div className="flex gap-4">
             {/* Date box */}
             <div className="flex-shrink-0 text-center">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-                <span className="text-xs font-medium text-primary-emphasis">
-                  {event.startDate.toLocaleDateString([], { month: 'short' })}
+              <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
+                <span className="text-xs font-medium text-primary-accessible">
+                  {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
-                <span className="text-lg font-bold text-primary-emphasis">
+                <span className="text-lg font-bold text-primary-accessible">
                   {event.startDate.getDate()}
                 </span>
               </div>
@@ -120,12 +120,12 @@ export function EventCard({
             <div className="flex-1 min-w-0">
               <Link
                 href={`/events/${event.id}`}
-                className="font-semibold text-foreground hover:text-primary-emphasis transition-colors line-clamp-1"
+                className="font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1"
               >
                 {event.title}
               </Link>
               <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="icon-2xs" aria-hidden="true" />
+                <Clock className="icon-sm" />
                 {formatEventTime(event.startDate, event.endDate)}
               </div>
               <div className="mt-1 flex items-center gap-2">
@@ -149,7 +149,7 @@ export function EventCard({
             >
               {rsvped ? (
                 <>
-                  <CheckCircle className="icon-sm mr-1" aria-hidden="true" />
+                  <CheckCircle className="icon-sm mr-1" />
                   Going
                 </>
               ) : isFull ? (
@@ -179,8 +179,8 @@ export function EventCard({
             {/* Date badge */}
             <div className="absolute top-4 left-4">
               <div className="rounded-lg bg-background/90 backdrop-blur-sm px-3 py-2 text-center">
-                <span className="text-xs font-medium text-primary-emphasis block">
-                  {event.startDate.toLocaleDateString([], { month: 'short' })}
+                <span className="text-xs font-medium text-primary-accessible block">
+                  {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
                 <span className="text-xl font-bold text-foreground">
                   {event.startDate.getDate()}
@@ -200,7 +200,7 @@ export function EventCard({
         <CardContent className="pt-4">
           <Link
             href={`/events/${event.id}`}
-            className="text-xl font-bold text-foreground hover:text-primary-emphasis transition-colors"
+            className="text-xl font-bold text-foreground hover:text-primary-accessible transition-colors"
           >
             {event.title}
           </Link>
@@ -212,12 +212,12 @@ export function EventCard({
           {/* Meta */}
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="icon-sm" aria-hidden="true" />
+              <Clock className="icon-sm" />
               {formatEventDate(event.startDate)} • {formatEventTime(event.startDate, event.endDate)}
             </div>
             {event.location && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="icon-sm" aria-hidden="true" />
+                <MapPin className="icon-sm" />
                 {event.location}
               </div>
             )}
@@ -227,7 +227,7 @@ export function EventCard({
           <div className="mt-4 flex items-center gap-3">
             <Avatar className="h-8 w-8">
               <AvatarImage src={event.hostAvatar || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xs">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs">
                 {event.hostName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -251,10 +251,10 @@ export function EventCard({
           {/* Actions */}
           <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="icon-sm" aria-hidden="true" />
+              <Users className="icon-sm" />
               {event.attendeesCount} attending
               {spotsLeft !== null && spotsLeft > 0 && spotsLeft <= 10 && (
-                <span className="text-amber-600 dark:text-amber-400">• {spotsLeft} spots left</span>
+                <span className="text-status-warning ">• {spotsLeft} spots left</span>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -262,12 +262,12 @@ export function EventCard({
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
-                className={cn(bookmarked && 'text-amber-500 dark:text-amber-400')}
+                className={cn(bookmarked && 'text-status-warning ')}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
+                <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
               </Button>
-              <Button aria-label="Share" variant="ghost" size="icon" onClick={onShare}>
-                <Share2 className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" onClick={onShare}>
+                <Share2 className="icon-sm" />
               </Button>
               <Button
                 variant={rsvped ? 'secondary' : 'default'}
@@ -276,7 +276,7 @@ export function EventCard({
               >
                 {rsvped ? (
                   <>
-                    <CheckCircle className="icon-sm mr-2" aria-hidden="true" />
+                    <CheckCircle className="icon-sm mr-2" />
                     Going
                   </>
                 ) : isFull ? (
@@ -300,10 +300,10 @@ export function EventCard({
           {/* Date box */}
           <div className="flex-shrink-0 text-center">
             <div className="w-16 h-16 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-              <span className="text-xs font-medium text-primary-emphasis">
-                {event.startDate.toLocaleDateString([], { month: 'short' })}
+              <span className="text-xs font-medium text-primary-accessible">
+                {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
               </span>
-              <span className="text-2xl font-bold text-primary-emphasis">
+              <span className="text-2xl font-bold text-primary-accessible">
                 {event.startDate.getDate()}
               </span>
             </div>
@@ -314,7 +314,7 @@ export function EventCard({
             <div className="flex items-start justify-between gap-2">
               <Link
                 href={`/events/${event.id}`}
-                className="font-semibold text-foreground hover:text-primary-emphasis transition-colors line-clamp-2"
+                className="font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
               >
                 {event.title}
               </Link>
@@ -326,12 +326,12 @@ export function EventCard({
             
             <div className="mt-2 space-y-1">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                <Clock className="icon-sm" />
                 {formatEventTime(event.startDate, event.endDate)}
               </div>
               {event.location && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                  <MapPin className="icon-sm" />
                   <span className="truncate">{event.location}</span>
                 </div>
               )}
@@ -342,7 +342,7 @@ export function EventCard({
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={event.hostAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary-emphasis text-2xs">
+                  <AvatarFallback className="bg-primary/20 text-primary-accessible text-2xs">
                     {event.hostName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -361,9 +361,9 @@ export function EventCard({
             variant="ghost"
             size="icon"
             onClick={handleBookmark}
-            className={cn('h-8 w-8', bookmarked && 'text-amber-500 dark:text-amber-400')}
+            className={cn('h-8 w-8', bookmarked && 'text-status-warning ')}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </Button>
           <Button
             variant={rsvped ? 'secondary' : 'default'}
@@ -373,7 +373,7 @@ export function EventCard({
           >
             {rsvped ? (
               <>
-                <CheckCircle className="icon-sm mr-1" aria-hidden="true" />
+                <CheckCircle className="icon-sm mr-1" />
                 Going
               </>
             ) : isFull ? (

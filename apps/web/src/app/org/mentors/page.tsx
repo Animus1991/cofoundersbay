@@ -24,7 +24,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgMentors } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Mentor = {
   id: string;
@@ -41,6 +43,12 @@ type Mentor = {
   isVerified: boolean;
 };
 
+const MENTOR_STATUS_TONE: Record<Mentor['status'], StatusTone> = {
+  active: 'success',
+  inactive: 'neutral',
+  pending: 'warning',
+};
+
 function MentorCard({ mentor }: { mentor: Mentor }) {
   const initials = mentor.name
     ?.split(' ')
@@ -49,11 +57,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
     .join('')
     .toUpperCase() || '??';
 
-  const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    inactive: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-  };
+  const statusColors = STATUS[MENTOR_STATUS_TONE[mentor.status]];
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
@@ -62,7 +66,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
           <Link href={`/p/${mentor.userId}`}>
             <Avatar className="icon-md">
               <AvatarImage src={mentor.avatar} />
-              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -71,11 +75,11 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/p/${mentor.userId}`} className="font-medium hover:text-primary-emphasis transition-colors">
+                  <Link href={`/p/${mentor.userId}`} className="font-medium hover:text-primary-accessible transition-colors">
                     {mentor.name}
                   </Link>
                   {mentor.isVerified && (
-                    <CheckCircle2 className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <CheckCircle2 className="icon-sm text-primary-accessible" />
                   )}
                 </div>
                 {mentor.headline && (
@@ -83,7 +87,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn('text-xs', statusColors[mentor.status])}>
+                <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                   {mentor.status}
                 </Badge>
                 <DropdownMenu>
@@ -99,7 +103,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                     <DropdownMenuItem>Assign to Startup</DropdownMenuItem>
                     <DropdownMenuItem>View Sessions</DropdownMenuItem>
                     <DropdownMenuItem>Send Message</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-emphasis">Remove from Pool</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Remove from Pool</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -129,7 +133,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
               </span>
               {mentor.rating && (
                 <span className="flex items-center gap-1">
-                  <Star className="icon-sm text-amber-500" aria-hidden="true" />
+                  <Star className={cn('icon-sm', STATUS.warning.icon)} />
                   {mentor.rating.toFixed(1)}
                 </span>
               )}
@@ -210,23 +214,19 @@ export default function OrgMentorsPage() {
   const currentMentees = mentors.reduce((acc, m) => acc + m.activeMentees, 0);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Mentor Pool</h1>
-            <p className="text-muted-foreground">
-              Manage mentors in your organization
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/org/mentors/invite">
-              <Plus className="mr-2 icon-sm" aria-hidden="true" />
-              Invite Mentor
-            </Link>
-          </Button>
-        </div>
+    <AppShell
+      title="Mentor Pool"
+      description="Manage mentors available to your cohorts. Invite by email or onboard from the platform directory."
+      actions={(
+        <Button asChild>
+          <Link href="/org/mentors/invite">
+            <Plus className="mr-2 icon-sm" />
+            Invite Mentor
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -239,7 +239,7 @@ export default function OrgMentorsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">{activeMentors.length}</p>
+              <p className={cn('text-xl font-bold', STATUS.success.icon)}>{activeMentors.length}</p>
             </CardContent>
           </Card>
           <Card>
@@ -275,21 +275,7 @@ export default function OrgMentorsPage() {
             <MentorCard key={mentor.id} mentor={mentor} />
           ))}
           {filteredMentors.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <GraduationCap className="icon-lg mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No mentors found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Invite mentors to join your organization
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href="/org/mentors/invite">
-                    <Plus className="mr-2 icon-sm" aria-hidden="true" />
-                    Invite Mentor
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <EmptyOrgMentors filtersActive={!!search} onClearFilters={() => setSearch('')} />
           )}
         </div>
       </div>

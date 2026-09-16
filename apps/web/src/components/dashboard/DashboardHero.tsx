@@ -43,7 +43,7 @@ export function DashboardHero({
       <Card className="bg-hero-radial">
         <CardHeader>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             Momentum
           </div>
           <CardTitle className="font-display text-2xl">{mom.title}</CardTitle>

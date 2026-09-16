@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
+import { BilingualText } from '@/components/common/BilingualText';
+import { translate } from '@/lib/i18n/translate';
 
 const themeConfig = [
   {
@@ -41,7 +44,7 @@ const themeConfig = [
     label: 'Alliance',
     description: 'Professional & clean',
     icon: Palette,
-    swatch: ['#eef6f7', '#efa758', '#fafdfd'],
+    swatch: ['#eef6f7', '#e8940a', '#fafdfd'],
   },
   {
     name: 'cofounder' as ThemeName,
@@ -50,11 +53,19 @@ const themeConfig = [
     icon: Sparkles,
     swatch: ['#0a0a14', '#9333ea', '#00ccff'],
   },
+  {
+    name: 'minimal' as ThemeName,
+    label: 'Minimal',
+    description: 'Warm paper, quiet chrome',
+    icon: Minus,
+    swatch: ['#faf8f5', '#237a86', '#e8e4dc'],
+  },
 ];
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ className }: { className?: string }) {
   const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark');
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -70,8 +81,8 @@ export function ThemeSwitcher() {
 
   if (!mounted) {
     return (
-      <Button aria-label="Toggle theme" variant="ghost" size="icon" className="relative">
-        <Moon className="icon-md" aria-hidden="true" />
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
+        <Moon className="icon-sm" />
       </Button>
     );
   }
@@ -81,15 +92,17 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Toggle theme" variant="ghost" size="icon" className="relative">
-          <CurrentIcon className="h-5 w-5 transition-all" />
-          <span className="sr-only">Toggle theme</span>
+        <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
+          <CurrentIcon className="icon-sm transition-all" />
+          <span className="sr-only">{t('Theme')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Choose Theme</DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal">
+          <BilingualText en="Choose Theme" el={translate('el', 'Choose Theme')} compact />
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {themeConfig.map((theme, idx) => {
           const isActive = currentTheme === theme.name;
           return (
@@ -98,7 +111,12 @@ export function ThemeSwitcher() {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
-                    Custom Themes
+                    <BilingualText
+                      en="Custom Themes"
+                      el={translate('el', 'Custom Themes')}
+                      compact
+                      secondaryClassName="text-muted-foreground/60"
+                    />
                   </DropdownMenuLabel>
                 </>
               )}
@@ -114,11 +132,23 @@ export function ThemeSwitcher() {
                   <div style={{ background: theme.swatch[1], width: 8 }} />
                   <div style={{ background: theme.swatch[2], width: 8 }} />
                 </div>
-                <div className="flex flex-col gap-0">
-                  <span className="text-sm font-medium leading-tight">{theme.label}</span>
-                  <span className="text-2xs text-muted-foreground leading-tight">{theme.description}</span>
+                <div className="min-w-0 flex-1">
+                  <BilingualText
+                    en={theme.label}
+                    el={translate('el', theme.label)}
+                    stacked
+                    primaryClassName="text-sm font-medium leading-tight"
+                    secondaryClassName="leading-tight"
+                  />
+                  <BilingualText
+                    en={theme.description}
+                    el={translate('el', theme.description)}
+                    stacked
+                    primaryClassName="text-[11px] leading-tight text-muted-foreground"
+                    secondaryClassName="text-[11px] leading-tight text-muted-foreground"
+                  />
                 </div>
-                {isActive && <Check className="ml-auto h-3.5 w-3.5 text-primary-emphasis shrink-0" aria-hidden="true" />}
+                {isActive && <Check className="ml-auto icon-sm text-primary-accessible shrink-0" />}
               </DropdownMenuItem>
             </div>
           );

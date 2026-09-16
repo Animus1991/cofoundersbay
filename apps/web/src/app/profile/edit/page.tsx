@@ -27,7 +27,9 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -220,8 +222,8 @@ function TagInput({
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
-            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-emphasis">
-              <X className="icon-2xs" aria-hidden="true" />
+            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+              <X className="icon-sm" />
             </button>
           </Badge>
         ))}
@@ -300,7 +302,7 @@ function SelectButtons({
             className={cn(
               'px-3 py-1.5 rounded-full border text-sm transition-colors',
               selected.includes(opt.value)
-                ? 'border-primary bg-primary/10 text-primary-emphasis'
+                ? 'border-primary bg-primary/10 text-primary-accessible'
                 : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
@@ -338,9 +340,11 @@ export default function ProfileEditPage() {
     }
   };
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  // Bumped to open the cropper from the button beside the photo.
+  const [cropperSignal, setCropperSignal] = useState(0);
 
   const { data: meData, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
   });
@@ -468,7 +472,7 @@ export default function ProfileEditPage() {
         rolePayload: Object.keys(rolePayload).length ? rolePayload : undefined,
         skillIds,
       });
-      queryClient.invalidateQueries({ queryKey: ['me', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() });
       // Sync updated name/avatar to localStorage so TopNav UserMenu reflects changes immediately
       if (typeof window !== 'undefined') {
         try {
@@ -508,7 +512,7 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="icon-xl animate-spin text-primary-emphasis" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-primary-accessible" />
         </div>
       </AppShell>
     );
@@ -529,21 +533,26 @@ export default function ProfileEditPage() {
       title="Edit Profile"
       description="Update your personal details and how you appear to others"
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2" asChild>
-            <Link href="/profile" className="hidden sm:block">
-              <ArrowLeft className="icon-sm" aria-hidden="true" />
-              Cancel
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel" asChild>
+            <Link href="/profile">
+              <ArrowLeft className="icon-sm" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/profile">
+              <ArrowLeft className="icon-sm" />
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Link>
           </Button>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
-            {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
-            Save changes
+            {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
+            <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
           </Button>
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px] pb-10">
+      <div className="grid gap-6 pb-24 lg:grid-cols-[1fr_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -552,29 +561,29 @@ export default function ProfileEditPage() {
                 value="basic" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <User className="icon-sm" aria-hidden="true" />
-                Basic Info
+                <User className="icon-sm" />
+                <BilingualText en="Basic Info" el="Βασικά στοιχεία" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="role" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <Briefcase className="icon-sm" aria-hidden="true" />
-                Role Details
+                <Briefcase className="icon-sm" />
+                <BilingualText en="Role Details" el="Λεπτομέρειες ρόλου" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="links" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <Globe className="icon-sm" aria-hidden="true" />
-                Social Links
+                <Globe className="icon-sm" />
+                <BilingualText en="Social Links" el="Κοινωνικοί σύνδεσμοι" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolio" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <LayoutDashboard className="icon-sm" aria-hidden="true" />
-                Portfolio
+                <LayoutDashboard className="icon-sm" />
+                <BilingualText en="Portfolio" el="Χαρτοφυλάκιο" compact />
               </TabsTrigger>
             </TabsList>
 
@@ -584,7 +593,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <Camera className="icon-md text-primary-accessible" />
                     Profile Photo
                   </CardTitle>
                   <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
@@ -596,6 +605,8 @@ export default function ProfileEditPage() {
                       aspectRatio={1}
                       outputSize={400}
                       title="Crop Profile Photo"
+                      label="Crop and upload your profile photo"
+                      openSignal={cropperSignal}
                       onCrop={async (blob, dataUrl) => {
                         setUploadingAvatar(true);
                         try {
@@ -614,12 +625,12 @@ export default function ProfileEditPage() {
                       <div className="relative group cursor-pointer">
                         <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
                           <AvatarImage src={form.avatarUrl || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-3xl font-semibold">
+                          <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-semibold">
                             {form.displayName[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Camera className="icon-xl text-white" aria-hidden="true" />
+                          <Camera className="icon-xl text-white" />
                         </div>
                       </div>
                     </ImageCropperTrigger>
@@ -631,18 +642,25 @@ export default function ProfileEditPage() {
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
                           className="flex-1"
                         />
+                        {/* It said "Crop & Upload" and did nothing: the only
+                            way in was the photo, which the help text below had
+                            to explain. Now both open the same dialog. */}
                         <Button
                           type="button"
                           variant="secondary"
                           className="gap-2 sm:w-auto w-full"
                           disabled={uploadingAvatar}
+                          onClick={() => setCropperSignal((n) => n + 1)}
                         >
-                          {uploadingAvatar ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Camera className="icon-sm" aria-hidden="true" />}
-                          Crop & Upload
+                          {uploadingAvatar ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
+                          <BilingualText en="Crop & Upload" el="Περικοπή και μεταφόρτωση" compact />
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Click the photo to crop & upload. Recommended size: 400x400px. JPG, PNG or WebP. Max 5MB.
+                        <BilingualText
+                          en="Use the photo or the button to crop & upload. Recommended size: 400×400px. JPG, PNG or WebP. Max 5MB."
+                          el="Χρησιμοποιήστε τη φωτογραφία ή το κουμπί για περικοπή και μεταφόρτωση. Προτεινόμενο μέγεθος: 400×400px. JPG, PNG ή WebP. Έως 5MB."
+                        />
                       </p>
                     </div>
                   </div>
@@ -655,7 +673,7 @@ export default function ProfileEditPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <User className="icon-md text-primary-emphasis" aria-hidden="true" />
+                        <User className="icon-md text-primary-accessible" />
                         Personal Identity
                       </CardTitle>
                       <CardDescription>How you'll appear across the platform</CardDescription>
@@ -664,18 +682,18 @@ export default function ProfileEditPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-primary-emphasis border-primary/30 hover:bg-primary/10 self-start"
+                      className="gap-2 text-primary-accessible border-primary/30 hover:bg-primary/10 self-start"
                       onClick={handleAISuggest}
                       disabled={aiLoading}
                     >
-                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />}
+                      {aiLoading ? <Loader2 className="icon-sm animate-spin" /> : <Sparkles className="icon-sm" />}
                       {aiLoading ? 'Analyzing Profile...' : 'AI Suggestions'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name <span className="text-destructive-emphasis">*</span></label>
+                    <label className="text-sm font-medium">Display Name <span className="text-destructive-accessible">*</span></label>
                     <Input
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
@@ -714,15 +732,15 @@ export default function ProfileEditPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
-                            <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                            <Sparkles className="icon-sm text-primary-accessible" />
                           </div>
                           <span className="font-semibold text-foreground">AI Review</span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
                             {aiSuggestions.completionScore}% Optimization Score
                           </Badge>
                         </div>
-                        <Button aria-label="Close" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
-                          <X className="icon-sm" aria-hidden="true" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
+                          <X className="icon-sm" />
                         </Button>
                       </div>
 
@@ -736,7 +754,7 @@ export default function ProfileEditPage() {
                               </p>
                               <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
                                 onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
-                                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Apply
+                                <CheckCircle2 className="icon-sm" /> Apply
                               </Button>
                             </div>
                           </div>
@@ -751,7 +769,7 @@ export default function ProfileEditPage() {
                               </p>
                               <Button size="sm" variant="secondary" className="gap-1.5 self-start"
                                 onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
-                                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Apply Bio
+                                <CheckCircle2 className="icon-sm" /> Apply Bio
                               </Button>
                             </div>
                           </div>
@@ -780,7 +798,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <MapPin className="icon-md text-primary-accessible" />
                     Location & Timezone
                   </CardTitle>
                 </CardHeader>
@@ -808,7 +826,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <Target className="icon-md text-primary-accessible" />
                     Skills & Expertise
                   </CardTitle>
                   <CardDescription>What are your core strengths and areas of focus?</CardDescription>
@@ -850,7 +868,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-primary/20 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <Briefcase className="icon-md text-primary-accessible" />
                     Your Primary Role
                   </CardTitle>
                   <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
@@ -873,9 +891,9 @@ export default function ProfileEditPage() {
                         >
                           <div className={cn(
                             'rounded-lg p-2',
-                            form.role === opt.value ? 'bg-primary/20 text-primary-emphasis' : 'bg-secondary text-muted-foreground'
+                            form.role === opt.value ? 'bg-primary/20 text-primary-accessible' : 'bg-secondary text-muted-foreground'
                           )}>
-                            <Icon className="h-5 w-5" />
+                            <Icon className="icon-md" />
                           </div>
                           <div>
                             <p className="font-medium text-foreground">{opt.label}</p>
@@ -893,7 +911,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Rocket className="icon-sm" aria-hidden="true" />
+                      <Rocket className="icon-sm" />
                       Founder Details
                     </CardTitle>
                   </CardHeader>
@@ -926,7 +944,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <GraduationCap className="icon-sm" aria-hidden="true" />
+                      <GraduationCap className="icon-sm" />
                       Mentor Details
                     </CardTitle>
                   </CardHeader>
@@ -977,7 +995,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <TrendingUp className="icon-sm" aria-hidden="true" />
+                      <TrendingUp className="icon-sm" />
                       Investor Details
                     </CardTitle>
                   </CardHeader>
@@ -1031,7 +1049,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Building2 className="icon-sm" aria-hidden="true" />
+                      <Building2 className="icon-sm" />
                       Organization Details
                     </CardTitle>
                   </CardHeader>
@@ -1059,7 +1077,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <Globe className="icon-md text-primary-accessible" />
                     Web & Social Links
                   </CardTitle>
                   <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
@@ -1068,7 +1086,7 @@ export default function ProfileEditPage() {
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Globe className="icon-sm text-muted-foreground" aria-hidden="true" /> Personal Website
+                        <Globe className="icon-sm text-muted-foreground" /> Personal Website
                       </label>
                       <Input
                         value={form.websiteUrl}
@@ -1078,7 +1096,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Linkedin className="icon-sm text-blue-600 dark:text-blue-400" aria-hidden="true" /> LinkedIn
+                        <Linkedin className="icon-sm text-blue-600" /> LinkedIn
                       </label>
                       <Input
                         value={form.linkedinUrl}
@@ -1088,7 +1106,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Github className="icon-sm" aria-hidden="true" /> GitHub
+                        <Github className="icon-sm" /> GitHub
                       </label>
                       <Input
                         value={form.githubUrl}
@@ -1118,8 +1136,8 @@ export default function ProfileEditPage() {
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               <Card className="shadow-sm border-border/50 text-center py-12">
                 <CardContent className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-emphasis mb-4">
-                    <LayoutDashboard className="icon-xl" aria-hidden="true" />
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-accessible mb-4">
+                    <LayoutDashboard className="icon-xl" />
                   </div>
                   <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
@@ -1143,7 +1161,7 @@ export default function ProfileEditPage() {
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="text-2xl font-bold text-primary-emphasis">{completionPercentage}%</span>
+                  <span className="text-2xl font-bold text-primary-accessible">{completionPercentage}%</span>
                   <span className="text-sm text-muted-foreground pb-1">Complete</span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
@@ -1162,13 +1180,13 @@ export default function ProfileEditPage() {
                 <p className="text-sm font-medium text-foreground">Missing items:</p>
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
-                    <li className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-2 rounded-md">
-                      <CheckCircle2 className="icon-sm" aria-hidden="true" /> Your profile is fully complete!
+                    <li className="flex items-center gap-2 text-sm text-status-success bg-status-success-bg p-2 rounded-md">
+                      <CheckCircle2 className="icon-sm" /> Your profile is fully complete!
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
                       <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ShieldAlert className="icon-sm text-amber-500" aria-hidden="true" />
+                        <ShieldAlert className="icon-sm text-status-warning" />
                         <span className="capitalize">{item.label}</span>
                       </li>
                     ))
@@ -1183,7 +1201,7 @@ export default function ProfileEditPage() {
 
               <div className="pt-4 border-t border-border/50 space-y-3">
                 <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
-                  {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
+                  {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
                   Save Changes
                 </Button>
                 <div className="flex gap-2">
@@ -1200,6 +1218,12 @@ export default function ProfileEditPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border/60 bg-card/95 p-3 backdrop-blur-md lg:hidden">
+        <Button onClick={handleSave} disabled={saving} className="min-h-11 w-full gap-2">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Save changes
+        </Button>
       </div>
     </AppShell>
   );

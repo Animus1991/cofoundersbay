@@ -29,6 +29,7 @@ import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { LandingNav } from '@/components/layout/LandingNav';
 
 const FEATURES: Array<{ icon: LucideIcon; title: string; desc: string }> = [
   {
@@ -75,7 +76,7 @@ const PERSONAS: Array<{
     icon: Briefcase,
     role: 'Founder',
     color: 'text-indigo-400',
-    bg: 'bg-indigo-500/10 border-indigo-500/20',
+    bg: 'bg-status-accent-bg border-status-accent-border',
     headline: 'Find your co-founder',
     bullets: [
       'Get matched with complementary skill sets',
@@ -87,7 +88,7 @@ const PERSONAS: Array<{
     icon: GraduationCap,
     role: 'Mentor',
     color: 'text-cyan-400',
-    bg: 'bg-cyan-500/10 border-cyan-500/20',
+    bg: 'bg-status-info-bg border-status-info-border',
     headline: 'Scale your impact',
     bullets: [
       'Set availability and get booked instantly',
@@ -99,7 +100,7 @@ const PERSONAS: Array<{
     icon: TrendingUp,
     role: 'Investor',
     color: 'text-orange-400',
-    bg: 'bg-orange-500/10 border-orange-500/20',
+    bg: 'bg-status-warning-bg border-status-warning-border',
     headline: 'Source deals smarter',
     bullets: [
       'Filter by stage, sector, and geography',
@@ -111,7 +112,7 @@ const PERSONAS: Array<{
     icon: Building2,
     role: 'Accelerator',
     color: 'text-purple-400',
-    bg: 'bg-purple-500/10 border-purple-500/20',
+    bg: 'bg-status-accent-bg border-status-accent-border',
     headline: 'Run your cohort',
     bullets: [
       'Organize events and office hours at scale',
@@ -127,21 +128,21 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
     icon: UserCheck,
     title: 'Build your profile',
     desc: 'Complete your guided onboarding. Define your role, expertise, startup stage, work style, and what you\'re looking for in a co-founder or collaborator.',
-    color: 'text-indigo-400 bg-indigo-500/10',
+    color: 'text-indigo-400 bg-status-accent-bg',
   },
   {
     step: 2,
     icon: Target,
     title: 'Get matched intelligently',
     desc: 'Our multi-dimension matching engine scores compatibility across skills, stage, industry, location, values, and goals — with full transparency on why each match appears.',
-    color: 'text-emerald-400 bg-emerald-500/10',
+    color: 'text-emerald-400 bg-status-success-bg',
   },
   {
     step: 3,
     icon: Rocket,
     title: 'Start building together',
     desc: 'Send a connection request, open a private conversation, set shared milestones, and access mentors, investors, and communities — all in one workspace.',
-    color: 'text-primary-emphasis bg-primary/10',
+    color: 'text-primary-accessible bg-primary/10',
   },
 ];
 
@@ -279,42 +280,25 @@ const PRICING_PLANS: Array<{
 // The -400 steps rather than -500: at -500, dimmed by the row's opacity, every
 // one of these fell below 4.5:1 on the dark page background.
 const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
-  { name: 'Y Combinator',    abbr: 'YC',  color: 'text-orange-400' },
-  { name: 'Techstars',       abbr: 'TS',  color: 'text-blue-400'   },
-  { name: 'EIT Digital',     abbr: 'EIT', color: 'text-cyan-400'   },
-  { name: 'Innovate UK',     abbr: 'IUK', color: 'text-green-400'  },
-  { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary-emphasis' },
-  { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-red-400'    },
+  { name: 'Y Combinator',    abbr: 'YC',  color: 'text-status-warning' },
+  { name: 'Techstars',       abbr: 'TS',  color: 'text-status-info'   },
+  { name: 'EIT Digital',     abbr: 'EIT', color: 'text-status-info'   },
+  { name: 'Innovate UK',     abbr: 'IUK', color: 'text-status-success'  },
+  { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary-accessible' },
+  { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-status-danger'    },
 ];
 
 export function LandingHome() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* ── Navigation ─────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-          <Link href="/">
-            <Logo size="sm" />
-          </Link>
-          <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-            <a href="#how-it-works" className="transition-colors hover:text-foreground">How it works</a>
-            <a href="#features" className="transition-colors hover:text-foreground">Features</a>
-            <a href="#roles" className="transition-colors hover:text-foreground">Who it&apos;s for</a>
-            <a href="#pricing" className="transition-colors hover:text-foreground">Pricing</a>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button size="sm" className="gap-1.5" asChild>
-              <Link href="/register">Join free <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+    <div
+      className="min-h-screen bg-background"
+      style={{ paddingTop: 'calc(var(--banner-network, 0px) + var(--banner-demo, 0px))' }}
+    >
+      <LandingNav />
+      <main id="main-content">
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="relative flex min-h-screen items-center overflow-hidden pt-14">
+      <section className="relative flex min-h-screen items-center overflow-hidden pt-[52px]">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/4 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
           <div className="absolute bottom-0 right-1/4 h-96 w-96 translate-x-1/2 rounded-full bg-accent/8 blur-3xl" />
@@ -322,8 +306,8 @@ export function LandingHome() {
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-emphasis">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible">
+              <Sparkles className="icon-sm" />
               The startup ecosystem, connected
             </span>
           </div>
@@ -355,24 +339,24 @@ export function LandingHome() {
             className="mt-10 flex animate-fade-in flex-col items-center justify-center gap-4 sm:flex-row"
             style={{ animationDelay: '300ms' }}
           >
-            <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25" asChild>
+            <Button size="lg" className="gap-2 px-8 py-6 text-base" asChild>
               <Link href="/register">
                 Get started free
-                <ArrowRight className="icon-sm" aria-hidden="true" />
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5" asChild>
-              <Link href="/demo">
-                <Play className="icon-sm text-primary-emphasis" aria-hidden="true" />
-                Try Demo
+                <ArrowRight className="icon-sm" />
               </Link>
             </Button>
             <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
-              <Link href="/discover">
-                Explore profiles
+              <Link href="/demo">
+                <Play className="icon-sm" />
+                Try Demo
               </Link>
             </Button>
           </div>
+          <p className="mt-4 text-sm">
+            <Link href="/discover" className="text-muted-foreground hover:text-foreground hover:underline">
+              Explore profiles
+            </Link>
+          </p>
 
           <div
             className="mt-16 grid animate-fade-in grid-cols-3 gap-4"
@@ -419,7 +403,7 @@ export function LandingHome() {
       <section id="how-it-works" className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-14 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">How it works</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">How it works</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               From profile to co-founder in 3 steps
             </h2>
@@ -458,7 +442,7 @@ export function LandingHome() {
       <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Roles</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Roles</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Built for every role in the ecosystem
             </h2>
@@ -475,8 +459,8 @@ export function LandingHome() {
               >
                 <Card className={`h-full border ${bg} card-interactive hover-lift`}>
                   <CardHeader className="pb-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${bg}`}>
-                      <Icon className={`h-5 w-5 ${color}`} />
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
+                      <Icon className={`icon-md ${color}`} />
                     </div>
                     <Badge variant="outline" className={`mt-2 w-fit border-current text-xs ${color}`}>
                       {role}
@@ -486,7 +470,7 @@ export function LandingHome() {
                   <CardContent className="space-y-2 pt-0">
                     {bullets.map((bullet) => (
                       <div key={bullet} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${color}`} aria-hidden="true" />
+                        <CheckCircle className={`mt-0.5 icon-sm shrink-0 ${color}`} />
                         {bullet}
                       </div>
                     ))}
@@ -502,7 +486,7 @@ export function LandingHome() {
       <section id="features" className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Platform</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Platform</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Everything your startup network needs
             </h2>
@@ -517,8 +501,8 @@ export function LandingHome() {
                 className="group flex animate-fade-in gap-4 rounded-2xl border border-border/60 bg-card/70 p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-glow-sm"
                 style={{ animationDelay: `${index * 70}ms` }}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">
-                  <Icon className="h-5 w-5 text-primary-emphasis" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                  <Icon className="icon-md text-primary-accessible" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">{title}</h3>
@@ -534,7 +518,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">By the numbers</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">By the numbers</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               A thriving ecosystem
             </h2>
@@ -549,7 +533,7 @@ export function LandingHome() {
                 className="animate-fade-in rounded-2xl border border-border/60 bg-card/80 p-6 text-center backdrop-blur-sm"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
-                <p className="font-display text-4xl font-bold text-primary-emphasis">{value}</p>
+                <p className="font-display text-4xl font-bold text-primary-accessible">{value}</p>
                 <p className="mt-2 font-semibold text-foreground">{label}</p>
                 {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
               </div>
@@ -562,7 +546,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Testimonials</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Testimonials</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Loved by founders, mentors & investors
             </h2>
@@ -580,7 +564,7 @@ export function LandingHome() {
                 <div className="flex items-center justify-between">
                   <div className="flex gap-0.5">
                     {Array.from({ length: rating }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                      <Star key={i} className="icon-sm fill-status-warning text-amber-400" />
                     ))}
                   </div>
                   <Badge variant="secondary" className="text-xs">{tag}</Badge>
@@ -589,7 +573,7 @@ export function LandingHome() {
                   &ldquo;{quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 border-t border-border/40 pt-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-emphasis">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-accessible">
                     {avatar}
                   </div>
                   <div>
@@ -607,7 +591,7 @@ export function LandingHome() {
       <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Pricing</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Pricing</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Simple, transparent pricing
             </h2>
@@ -642,18 +626,15 @@ export function LandingHome() {
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle className="mt-0.5 icon-sm shrink-0 text-emerald-500" aria-hidden="true" />
+                      <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
                       {f}
                     </li>
                   ))}
                 </ul>
-                <Button
-                    variant={highlight ? 'default' : 'outline'}
-                    className="w-full"
-                   asChild>
+                <Button variant={highlight ? 'default' : 'outline'} className="w-full" asChild>
                   <Link href={href}>
                     {cta}
-                    {highlight && <ArrowRight className="ml-1.5 icon-sm" aria-hidden="true" />}
+                    {highlight && <ArrowRight className="ml-1.5 icon-sm" />}
                   </Link>
                 </Button>
               </div>
@@ -669,8 +650,8 @@ export function LandingHome() {
       <section id="cta" className="border-t border-border/40 px-6 py-24">
         <div className="mx-auto max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Network className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <Network className="h-7 w-7 text-primary-accessible" />
             </div>
           </div>
           <h2 className="font-display text-4xl font-bold text-foreground">
@@ -684,22 +665,24 @@ export function LandingHome() {
             <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25" asChild>
               <Link href="/register">
                 Create free account
-                <ArrowRight className="icon-sm" aria-hidden="true" />
+                <ArrowRight className="icon-sm" />
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base" asChild>
               <Link href="/discover">
-                <Users className="icon-sm" aria-hidden="true" />
+                <Users className="icon-sm" />
                 Browse profiles
               </Link>
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary-emphasis hover:underline font-medium">Sign in</Link>
+            <Link href="/login" className="text-primary-accessible hover:underline font-medium">Sign in</Link>
           </p>
         </div>
       </section>
+
+      </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="border-t border-border/40 bg-secondary/10 px-6 py-12">
@@ -713,24 +696,20 @@ export function LandingHome() {
               </p>
               <div className="flex items-center gap-3">
                 <a href="https://twitter.com" target="_blank" rel="noreferrer"
-                  aria-label="CoFounderBay on X (formerly Twitter) (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  <Twitter className="icon-sm" />
                 </a>
                 <a href="https://linkedin.com" target="_blank" rel="noreferrer"
-                  aria-label="CoFounderBay on LinkedIn (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  <Linkedin className="icon-sm" />
                 </a>
                 <a href="https://github.com" target="_blank" rel="noreferrer"
-                  aria-label="CoFounderBay on GitHub (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Github className="h-3.5 w-3.5" aria-hidden="true" />
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  <Github className="icon-sm" />
                 </a>
                 <a href="https://globe.app" target="_blank" rel="noreferrer"
-                  aria-label="CoFounderBay on our website (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  <Globe className="icon-sm" />
                 </a>
               </div>
             </div>
@@ -798,7 +777,7 @@ export function LandingHome() {
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="icon-2xs text-primary-emphasis" aria-hidden="true" />
+              <Zap className="icon-sm text-primary-accessible" />
               Built for founders, by founders
             </div>
           </div>

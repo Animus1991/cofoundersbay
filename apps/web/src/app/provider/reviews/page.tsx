@@ -53,7 +53,7 @@ function ReviewCard({ review }: { review: Review }) {
                         className={cn(
                           'h-4 w-4',
                           i < review.rating
-                            ? 'fill-amber-500 text-amber-500'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-muted-foreground/30'
                         )} aria-hidden="true" />
                     ))}
@@ -81,12 +81,12 @@ function ReviewCard({ review }: { review: Review }) {
 
             <div className="flex items-center gap-4 mt-3">
               <Button variant="ghost" size="sm" className="h-8 text-xs">
-                <ThumbsUp className="mr-1 icon-2xs" aria-hidden="true" />
+                <ThumbsUp className="mr-1 icon-sm" />
                 Helpful ({review.helpful})
               </Button>
               {!review.response && (
                 <Button variant="ghost" size="sm" className="h-8 text-xs">
-                  <MessageSquare className="mr-1 icon-2xs" aria-hidden="true" />
+                  <MessageSquare className="mr-1 icon-sm" />
                   Respond
                 </Button>
               )}
@@ -169,6 +169,7 @@ export default function ProviderReviewsPage() {
           illustration="default"
           title="No client reviews yet"
           description="Reviews will appear here once clients rate your completed service engagements."
+          askAiPrompt="I have no client reviews yet. What should I do in inquiries and projects so reviews start appearing?"
         />
       </AppShell>
     );
@@ -192,7 +193,7 @@ export default function ProviderReviewsPage() {
                         className={cn(
                           'h-4 w-4',
                           i < Math.round(avgRating)
-                            ? 'fill-amber-500 text-amber-500'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-muted-foreground/30'
                         )} aria-hidden="true" />
                     ))}
@@ -205,7 +206,7 @@ export default function ProviderReviewsPage() {
                   {ratingDistribution.map((dist) => (
                     <div key={dist.rating} className="flex items-center gap-2">
                       <span className="text-xs w-3">{dist.rating}</span>
-                      <Star className="icon-2xs fill-amber-500 text-amber-500" aria-hidden="true" />
+                      <Star className="icon-sm fill-status-warning text-status-warning" />
                       <Progress value={dist.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">
                         {dist.count}
@@ -225,7 +226,7 @@ export default function ProviderReviewsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">5-Star Reviews</p>
-                  <p className="text-xl font-bold text-amber-600 dark:text-amber-400">
+                  <p className="text-xl font-bold text-status-warning">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>
@@ -248,7 +249,7 @@ export default function ProviderReviewsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search reviews..."
             value={search}

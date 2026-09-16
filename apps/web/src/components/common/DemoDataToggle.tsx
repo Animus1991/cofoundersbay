@@ -1,6 +1,6 @@
 'use client';
 
-import { Database, DatabaseZap, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -8,57 +8,69 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 /**
- * Global toggle button for showing/hiding sample demo data across all pages.
- * Positioned in the TopBar for consistent access.
- * 
- * When ON: Shows full sample data for all components on every page
- * When OFF: Shows empty/skeleton states for components
+ * Global toggle for showing/hiding sample data across all pages.
+ *
+ * Labelled "Sample data", not "Demo": the top bar also shows a "Demo account"
+ * badge for the shared preview login, and two controls both reading "Demo"
+ * were indistinguishable. The ON state is the visually "filled" one — the old
+ * styling used ghost+muted for ON and a dashed outline for OFF, which inverted
+ * the affordance.
  */
-export function DemoDataToggle({ className }: { className?: string }) {
+export function DemoDataToggle({ className, iconOnly = false }: { className?: string; iconOnly?: boolean }) {
   const { showDemoData, toggleDemoData } = useDemoData();
+  const label = showDemoData
+    ? bilingualAria('Sample data is on — click to hide it', 'Τα δείγματα δεδομένων είναι ενεργά — κλικ για απόκρυψη')
+    : bilingualAria('Sample data is off — click to show it', 'Τα δείγματα δεδομένων είναι ανενεργά — κλικ για εμφάνιση');
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant={showDemoData ? 'default' : 'outline'}
-            size="sm"
+            type="button"
+            variant="ghost"
+            size={iconOnly ? 'icon' : 'sm'}
             onClick={toggleDemoData}
+            aria-pressed={showDemoData}
+            aria-label={label}
             className={cn(
-              'h-8 gap-1.5 px-2.5 text-xs font-medium transition-all',
-              showDemoData 
-                ? 'bg-primary/90 hover:bg-primary text-primary-foreground shadow-sm' 
-                : 'border-dashed text-muted-foreground hover:text-foreground hover:border-solid',
-              className
+              iconOnly ? 'px-0' : 'gap-1.5 px-2 font-medium',
+              showDemoData
+                ? 'bg-secondary text-foreground hover:bg-secondary/80'
+                : 'text-muted-foreground hover:text-foreground',
+              className,
             )}
-            aria-label={showDemoData ? 'Hide sample data' : 'Show sample data'}
           >
-            {showDemoData ? (
-              <>
-                <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="sr-only sm:not-sr-only sm:inline">Demo</span>
-              </>
-            ) : (
-              <>
-                <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="sr-only sm:not-sr-only sm:inline">Demo</span>
-              </>
-            )}
+            {showDemoData
+              ? <Eye className="icon-sm" aria-hidden="true" />
+              : <EyeOff className="icon-sm" aria-hidden="true" />}
+            <span className={cn(!iconOnly && 'hidden sm:inline', iconOnly && 'sr-only')}>
+              <BilingualText en="Sample data" el="Δείγμα" compact secondaryFrom="lg" />
+            </span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom" align="center" className="max-w-[200px]">
-          <p className="text-xs font-medium mb-1">
-            {showDemoData ? 'Sample Data: ON' : 'Sample Data: OFF'}
+        <TooltipContent side="bottom" align="center" className="max-w-[240px]">
+          <p className="mb-1 text-xs font-medium">
+            <BilingualText
+              en={showDemoData ? 'Sample data: on' : 'Sample data: off'}
+              el={showDemoData ? 'Δείγμα δεδομένων: ενεργό' : 'Δείγμα δεδομένων: ανενεργό'}
+            />
           </p>
           <p className="text-2xs text-muted-foreground">
-            {showDemoData 
-              ? 'Click to hide sample data and see empty component states' 
-              : 'Click to show sample data across all pages'}
+            <BilingualText
+              en={showDemoData
+                ? 'Shows examples where supported. This display setting does not disable saving or account actions.'
+                : 'Hides examples where supported. Your account actions remain available.'}
+              el={showDemoData
+                ? 'Εμφανίζει παραδείγματα όπου υποστηρίζεται. Η ρύθμιση προβολής δεν απενεργοποιεί την αποθήκευση ή τις ενέργειες λογαριασμού.'
+                : 'Κρύβει παραδείγματα όπου υποστηρίζεται. Οι ενέργειες λογαριασμού παραμένουν διαθέσιμες.'}
+            />
           </p>
         </TooltipContent>
       </Tooltip>

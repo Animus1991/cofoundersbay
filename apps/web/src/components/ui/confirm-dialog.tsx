@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,108 +10,201 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
-export type ConfirmOptions = {
-  title: string;
-  description?: React.ReactNode;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  /** `destructive` styles the confirm button red and shows a warning icon. */
-  intent?: 'default' | 'destructive';
-};
-
-type ConfirmState = ConfirmOptions & {
+export interface ConfirmDialogProps {
   open: boolean;
-  resolve?: (value: boolean) => void;
-};
-
-const ConfirmContext = React.createContext<((options: ConfirmOptions) => Promise<boolean>) | null>(
-  null,
-);
-
-/**
- * Promise-based replacement for `window.confirm`.
- *
- * `confirm()` is synchronous, unstyled, unthemed, blocks the main thread, is
- * suppressible by the browser and is invisible to screen-reader users who have
- * scrolled away. This renders a real, focus-trapped, themed dialog instead.
- *
- *   const confirm = useConfirm();
- *   if (!(await confirm({ title: 'Delete rule?', intent: 'destructive' }))) return;
- */
-export function useConfirm() {
-  const ctx = React.useContext(ConfirmContext);
-  if (!ctx) throw new Error('useConfirm must be used within <ConfirmProvider>');
-  return ctx;
+  onOpenChange: (open: boolean) => void;
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  confirmLabel?: React.ReactNode;
+  cancelLabel?: React.ReactNode;
+  variant?: 'default' | 'destructive';
+  loading?: boolean;
+  onConfirm: () => void | Promise<void>;
+  onCloseAutoFocus?: React.ComponentPropsWithoutRef<typeof DialogContent>['onCloseAutoFocus'];
 }
 
-export function ConfirmProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<ConfirmState>({ open: false, title: '' });
+export function ConfirmDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  confirmLabel,
+  cancelLabel,
+  variant = 'destructive',
+  loading = false,
+  onConfirm,
+  onCloseAutoFocus,
+}: ConfirmDialogProps) {
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const confirmRef = React.useRef<HTMLButtonElement>(null);
 
-  const confirm = React.useCallback(
-    (options: ConfirmOptions) =>
-      new Promise<boolean>((resolve) => {
-        setState({ ...options, open: true, resolve });
-      }),
-    [],
+  return (
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!loading) onOpenChange(nextOpen); }}>
+      <DialogContent
+        className="max-w-md"
+        hideClose={loading}
+        aria-busy={loading}
+        {...(!description && { 'aria-describedby': undefined })}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          (variant === 'destructive' ? cancelRef : confirmRef).current?.focus();
+        }}
+        onCloseAutoFocus={onCloseAutoFocus}
+        onEscapeKeyDown={(event) => { if (loading) event.preventDefault(); }}
+        onInteractOutside={(event) => { if (loading) event.preventDefault(); }}
+      >
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            ref={cancelRef}
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
+            {cancelLabel ?? <BilingualText en="Cancel" el="Άκυρο" compact />}
+          </Button>
+          <Button
+            ref={confirmRef}
+            type="button"
+            variant={variant}
+            loading={loading}
+            onClick={() => void onConfirm()}
+          >
+            {confirmLabel ?? <BilingualText en="Confirm" el="Επιβεβαίωση" compact secondaryClassName={variant === 'destructive' ? 'text-destructive-foreground' : 'text-primary-foreground'} />}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
+}
 
-  const settle = React.useCallback((result: boolean) => {
-    setState((prev) => {
-      prev.resolve?.(result);
-      return { ...prev, open: false, resolve: undefined };
+/* ── Imperative API ─────────────────────────────────────────────────────────
+ *
+ * `const confirm = useConfirm(); if (await confirm({...})) doIt();`
+ *
+ * Drop-in replacement for the native `window.confirm()`, which the app used
+ * for every destructive action. The native dialog cannot be styled or
+ * translated, gives screen-reader users an unlabelled OK/Cancel, and its
+ * one-line message ("Delete this domain?") never said what would actually be
+ * lost. This renders the app's ConfirmDialog with a real title, a description
+ * that explains the consequence, and bilingual buttons.
+ */
+
+export interface ConfirmOptions {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  confirmLabel?: React.ReactNode;
+  cancelLabel?: React.ReactNode;
+  variant?: 'default' | 'destructive';
+}
+
+type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>;
+
+const ConfirmContext = React.createContext<ConfirmFn | null>(null);
+
+type ConfirmRequest = ConfirmOptions & {
+  resolve: (value: boolean) => void;
+  returnFocus: HTMLElement | null;
+};
+
+export function ConfirmProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = React.useState<ConfirmRequest | null>(null);
+  const requests = React.useRef<ConfirmRequest[]>([]);
+  const mounted = React.useRef(true);
+
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      requests.current.splice(0).forEach((request) => request.resolve(false));
+    };
+  }, []);
+
+  const confirm = React.useCallback<ConfirmFn>((options) => {
+    if (!mounted.current) return Promise.resolve(false);
+    const returnFocus = requests.current[0]?.returnFocus ??
+      (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    return new Promise<boolean>((resolve) => {
+      const request = { ...options, resolve, returnFocus };
+      requests.current.push(request);
+      if (requests.current.length === 1) setState(request);
     });
   }, []);
 
-  const isDestructive = state.intent === 'destructive';
+  const close = (request: ConfirmRequest, value: boolean) => {
+    if (requests.current[0] !== request) return;
+    requests.current.shift();
+    setState(requests.current[0] ?? null);
+    request.resolve(value);
+  };
 
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      <Dialog
-        open={state.open}
-        // Covers Escape, overlay click and the close button — all resolve false.
-        onOpenChange={(open) => {
-          if (!open) settle(false);
-        }}
-      >
-        <DialogContent size="sm" role="alertdialog">
-          <DialogHeader>
-            <div className="flex items-start gap-3">
-              {isDestructive && (
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive-emphasis">
-                  <AlertTriangle className="icon-sm" aria-hidden="true" />
-                </span>
-              )}
-              <div className="min-w-0 space-y-1.5">
-                <DialogTitle>{state.title}</DialogTitle>
-                {state.description && (
-                  <DialogDescription>{state.description}</DialogDescription>
-                )}
-              </div>
-            </div>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => settle(false)}>
-              {state.cancelLabel ?? 'Cancel'}
-            </Button>
-            <Button
-              // Focus lands here on open; for destructive actions that is the
-              // intended target because the dialog is only ever opened by an
-              // explicit user gesture on the destructive control.
-              autoFocus
-              variant={isDestructive ? 'destructive' : 'default'}
-              onClick={() => settle(true)}
-              className={cn(isDestructive && 'min-w-[96px]')}
-            >
-              {state.confirmLabel ?? (isDestructive ? 'Delete' : 'Confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {state && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => { if (!open) close(state, false); }}
+          title={state.title}
+          description={state.description}
+          confirmLabel={state.confirmLabel}
+          cancelLabel={state.cancelLabel}
+          variant={state.variant ?? 'destructive'}
+          onConfirm={() => close(state, true)}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (requests.current.length === 0 && state.returnFocus?.isConnected) {
+              state.returnFocus.focus();
+            }
+          }}
+        />
+      )}
     </ConfirmContext.Provider>
   );
+}
+
+/**
+ * Returns a promise-based confirm. Falls back to `window.confirm` when used
+ * outside a ConfirmProvider so a missing provider degrades, never breaks.
+ */
+export function useConfirm(): ConfirmFn {
+  const ctx = React.useContext(ConfirmContext);
+  return React.useMemo<ConfirmFn>(() => {
+    if (ctx) return ctx;
+    return async ({ title, description }) =>
+      typeof window !== 'undefined' &&
+      window.confirm([toText(title), toText(description)].filter(Boolean).join('\n\n'));
+  }, [ctx]);
+}
+
+function toText(node: React.ReactNode): string {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(toText).join('');
+  if (React.isValidElement<{ en?: string; children?: React.ReactNode }>(node)) {
+    return node.props?.en ?? toText(node.props.children);
+  }
+  return '';
+}
+
+/** Ready-made bilingual copy for the common "delete X" case. */
+export function deleteConfirmCopy(what: { en: string; el: string }, name?: string): ConfirmOptions {
+  const quoted = name ? ` “${name}”` : '';
+  return {
+    title: <BilingualText en={`Delete ${what.en}${quoted}?`} el={`Διαγραφή ${what.el}${quoted};`} />,
+    description: (
+      <BilingualText
+        en="This permanently removes it for everyone who has access. It cannot be undone."
+        el="Αφαιρείται οριστικά για όλους όσοι έχουν πρόσβαση. Δεν μπορεί να αναιρεθεί."
+      />
+    ),
+    confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact secondaryClassName="text-destructive-foreground" />,
+    variant: 'destructive',
+  };
 }

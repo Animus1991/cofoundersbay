@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/select';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
 import { cn } from '@/lib/utils';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
 
@@ -314,23 +316,26 @@ export default function NotificationPreferencesPage() {
 
   return (
     <AppShell
-      title="Notification Preferences"
-      description="Control how and when you receive notifications"
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2" asChild>
-            <Link href="/settings" className="hidden sm:block">
-              <ArrowLeft className="icon-sm" aria-hidden="true" />
-              Settings
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Settings" asChild>
+            <Link href="/settings">
+              <ArrowLeft className="icon-sm" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/settings">
+              <ArrowLeft className="icon-sm" />
+              <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
             </Link>
           </Button>
           <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
             {savePrefs.isPending ? (
-              <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+              <Loader2 className="icon-sm animate-spin" />
             ) : (
-              <Save className="icon-sm" aria-hidden="true" />
+              <Save className="icon-sm" />
             )}
-            Save Changes
+            <BilingualText en={savePrefs.isPending ? settingsEn('saving') : 'Save Changes'} el={savePrefs.isPending ? settingsEl('saving') : 'Αποθήκευση αλλαγών'} />
           </Button>
         </div>
       }
@@ -341,7 +346,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <Bell className="icon-md text-primary-accessible" />
               Global Settings
             </CardTitle>
           </CardHeader>
@@ -372,7 +377,7 @@ export default function NotificationPreferencesPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base flex items-center gap-2">
-                    {quietHoursEnabled ? <VolumeX className="icon-sm" aria-hidden="true" /> : <Volume2 className="icon-sm" aria-hidden="true" />}
+                    {quietHoursEnabled ? <VolumeX className="icon-sm" /> : <Volume2 className="icon-sm" />}
                     Quiet Hours
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -425,7 +430,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <Zap className="icon-md text-primary-accessible" />
               Automation Notifications
             </CardTitle>
             <CardDescription>
@@ -436,7 +441,7 @@ export default function NotificationPreferencesPage() {
             {AUTOMATION_CATEGORIES.map(({ key, label, description, icon: Icon }) => (
               <div key={key} className="flex items-center justify-between py-3 gap-4">
                 <div className="flex items-start gap-3 min-w-0">
-                  <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <Icon className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium">{label}</p>
                     <p className="text-xs text-muted-foreground">{description}</p>
@@ -455,15 +460,15 @@ export default function NotificationPreferencesPage() {
         {/* Channel Legend */}
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Smartphone className="icon-sm" aria-hidden="true" />
+            <Smartphone className="icon-sm" />
             <span>Push</span>
           </div>
           <div className="flex items-center gap-2">
-            <Mail className="icon-sm" aria-hidden="true" />
+            <Mail className="icon-sm" />
             <span>Email</span>
           </div>
           <div className="flex items-center gap-2">
-            <Monitor className="icon-sm" aria-hidden="true" />
+            <Monitor className="icon-sm" />
             <span>In-App</span>
           </div>
         </div>
@@ -477,7 +482,7 @@ export default function NotificationPreferencesPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <CategoryIcon className="h-5 w-5 text-primary-emphasis" />
+                      <CategoryIcon className="icon-md text-primary-accessible" />
                     </div>
                     <div>
                       <CardTitle className="text-base">{category.title}</CardTitle>
@@ -502,7 +507,7 @@ export default function NotificationPreferencesPage() {
                       </div>
                       <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-start">
                         <div className="flex items-center gap-1.5">
-                          <Smartphone className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                          <Smartphone className="icon-sm text-muted-foreground" />
                           <Switch
                             checked={setting.channels.push}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'push')}
@@ -510,7 +515,7 @@ export default function NotificationPreferencesPage() {
                           />
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Mail className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                          <Mail className="icon-sm text-muted-foreground" />
                           <Switch
                             checked={setting.channels.email}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'email')}
@@ -518,7 +523,7 @@ export default function NotificationPreferencesPage() {
                           />
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Monitor className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                          <Monitor className="icon-sm text-muted-foreground" />
                           <Switch
                             checked={setting.channels.inApp}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'inApp')}
@@ -538,9 +543,9 @@ export default function NotificationPreferencesPage() {
         <div className="sm:hidden">
           <Button className="w-full" onClick={handleSave} disabled={savePrefs.isPending}>
             {savePrefs.isPending ? (
-              <Loader2 className="icon-sm mr-2 animate-spin" aria-hidden="true" />
+              <Loader2 className="icon-sm mr-2 animate-spin" />
             ) : (
-              <Save className="icon-sm mr-2" aria-hidden="true" />
+              <Save className="icon-sm mr-2" />
             )}
             Save Changes
           </Button>

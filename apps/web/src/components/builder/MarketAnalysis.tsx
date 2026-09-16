@@ -6,23 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  TrendingUp, 
-  Users, 
-  Target,
-  Globe,
-  BarChart3,
-  Zap,
-  AlertTriangle,
+import {
   CheckCircle2,
-  Sparkles,
   Save,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
 interface MarketData {
   // TAM/SAM/SOM Analysis
@@ -113,6 +108,7 @@ const defaultMarketData: MarketData = {
 };
 
 export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
+  const t = useBuilderPrimaryText();
   const [data, setData] = useState<MarketData>({ ...defaultMarketData, ...initialData });
   const [activeTab, setActiveTab] = useState('market-size');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -246,48 +242,36 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-500/10 rounded-lg">
-            <TrendingUp className="icon-md text-green-600 dark:text-green-400" aria-hidden="true" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Market Analysis</h2>
-            <p className="text-sm text-muted-foreground">
-              Comprehensive market sizing, competitive landscape, and positioning
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1">
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            {completionPercentage.toFixed(0)}% Complete
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={generateWithAI}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
-            ) : (
-              <Sparkles className="icon-sm mr-2" aria-hidden="true" />
-            )}
-            AI Generate
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="icon-sm mr-2" aria-hidden="true" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <BuilderStageHeader
+        glyph="chart"
+        titleEn={builderEn('mkt_title')}
+        titleEl={builderEl('mkt_title')}
+        subtitleEn={builderEn('mkt_sub')}
+        subtitleEl={builderEl('mkt_sub')}
+        completion={completionPercentage}
+        extraActions={
+          <>
+            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+              {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+              <BilingualText
+                en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
+                el={isGenerating ? builderEl('generating') : builderEl('ai_generate')}
+                compact
+              />
+            </Button>
+            <Button size="sm" onClick={handleSave}>
+              <Save className="icon-sm mr-2" />
+              <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
+            </Button>
+          </>
+        }
+      />
 
-      {/* Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>Market Analysis Completion</span>
+          <span className="text-muted-foreground">
+            <BilingualText en={builderEn('mkt_complete')} el={builderEl('mkt_complete')} compact />
+          </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
         <Progress value={completionPercentage} className="h-2" />
@@ -295,26 +279,26 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-5 rounded-xl">
           <TabsTrigger value="market-size" className="gap-1">
-            <BarChart3 className="icon-2xs" aria-hidden="true" />
-            Market Size
+            <CfbGlyph name="chart" className="icon-sm" />
+            <BilingualText en={builderEn('mkt_tab_size')} el={builderEl('mkt_tab_size')} compact />
           </TabsTrigger>
           <TabsTrigger value="competitors" className="gap-1">
-            <Target className="icon-2xs" aria-hidden="true" />
-            Competitors
+            <CfbGlyph name="shield" className="icon-sm" />
+            <BilingualText en={builderEn('mkt_tab_comp')} el={builderEl('mkt_tab_comp')} compact />
           </TabsTrigger>
           <TabsTrigger value="customers" className="gap-1">
-            <Users className="icon-2xs" aria-hidden="true" />
-            Customers
+            <CfbGlyph name="people" className="icon-sm" />
+            <BilingualText en={builderEn('mkt_tab_cust')} el={builderEl('mkt_tab_cust')} compact />
           </TabsTrigger>
           <TabsTrigger value="trends" className="gap-1">
-            <TrendingUp className="icon-2xs" aria-hidden="true" />
-            Trends
+            <CfbGlyph name="flag" className="icon-sm" />
+            <BilingualText en={builderEn('mkt_tab_trends')} el={builderEl('mkt_tab_trends')} compact />
           </TabsTrigger>
           <TabsTrigger value="positioning" className="gap-1">
-            <Zap className="icon-2xs" aria-hidden="true" />
-            Positioning
+            <CfbGlyph name="target" className="icon-sm" />
+            <BilingualText en={builderEn('mkt_tab_pos')} el={builderEl('mkt_tab_pos')} compact />
           </TabsTrigger>
         </TabsList>
 
@@ -324,16 +308,16 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             {/* TAM */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="icon-md text-blue-500" aria-hidden="true" />
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CfbGlyph name="discover" className="icon-md text-status-info" />
                   TAM (Total Addressable Market)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Market Value</Label>
+                  <Label><BilingualText en={builderEn('mkt_value')} el={builderEl('mkt_value')} compact /></Label>
                   <Input
-                    placeholder="e.g., $50B"
+                    placeholder={t(builderEn('mkt_ph_value'), builderEl('mkt_ph_value'))}
                     value={data.tam.value}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -342,9 +326,9 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <Label><BilingualText en={builderEn('mkt_desc')} el={builderEl('mkt_desc')} compact /></Label>
                   <Textarea
-                    placeholder="Describe the total market opportunity..."
+                    placeholder={t(builderEn('mkt_ph_tam'), builderEl('mkt_ph_tam'))}
                     value={data.tam.description}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -354,9 +338,9 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Sources</Label>
+                  <Label><BilingualText en={builderEn('mkt_sources')} el={builderEl('mkt_sources')} compact /></Label>
                   <Input
-                    placeholder="Research sources and reports..."
+                    placeholder={t(builderEn('mkt_ph_sources'), builderEl('mkt_ph_sources'))}
                     value={data.tam.sources}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -370,16 +354,16 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             {/* SAM */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="icon-md text-green-500" aria-hidden="true" />
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CfbGlyph name="target" className="icon-md text-status-success" />
                   SAM (Serviceable Addressable Market)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Market Value</Label>
+                  <Label><BilingualText en={builderEn('mkt_value')} el={builderEl('mkt_value')} compact /></Label>
                   <Input
-                    placeholder="e.g., $8B"
+                    placeholder={t(builderEn('mkt_ph_value'), builderEl('mkt_ph_value'))}
                     value={data.sam.value}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -388,9 +372,9 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <Label><BilingualText en={builderEn('mkt_desc')} el={builderEl('mkt_desc')} compact /></Label>
                   <Textarea
-                    placeholder="Describe your serviceable market..."
+                    placeholder={t(builderEn('mkt_ph_sam'), builderEl('mkt_ph_sam'))}
                     value={data.sam.description}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -400,9 +384,9 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Methodology</Label>
+                  <Label><BilingualText en={builderEn('mkt_method')} el={builderEl('mkt_method')} compact /></Label>
                   <Input
-                    placeholder="How did you calculate this?"
+                    placeholder={t(builderEn('mkt_ph_method'), builderEl('mkt_ph_method'))}
                     value={data.sam.methodology}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -416,16 +400,16 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             {/* SOM */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="icon-md text-orange-500" aria-hidden="true" />
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CfbGlyph name="flag" className="icon-md text-status-warning" />
                   SOM (Serviceable Obtainable Market)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Market Value</Label>
+                  <Label><BilingualText en={builderEn('mkt_value')} el={builderEl('mkt_value')} compact /></Label>
                   <Input
-                    placeholder="e.g., $200M"
+                    placeholder={t(builderEn('mkt_ph_value'), builderEl('mkt_ph_value'))}
                     value={data.som.value}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -434,9 +418,9 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <Label><BilingualText en={builderEn('mkt_desc')} el={builderEl('mkt_desc')} compact /></Label>
                   <Textarea
-                    placeholder="Describe your realistic obtainable market..."
+                    placeholder={t(builderEn('mkt_ph_som'), builderEl('mkt_ph_som'))}
                     value={data.som.description}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -446,9 +430,9 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Key Assumptions</Label>
+                  <Label><BilingualText en={builderEn('mkt_assumptions')} el={builderEl('mkt_assumptions')} compact /></Label>
                   <Input
-                    placeholder="What assumptions drive this estimate?"
+                    placeholder={t(builderEn('mkt_ph_assumptions'), builderEl('mkt_ph_assumptions'))}
                     value={data.som.assumptions}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -461,28 +445,30 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
           </div>
 
           {/* Market Size Visualization */}
-          {(data.tam.value || data.sam.value || data.som.value) && (
+          {(data.tam?.value || data.sam?.value || data.som.value) && (
             <Card>
               <CardHeader>
-                <CardTitle>Market Size Overview</CardTitle>
+                <CardTitle className="text-base">
+                  <BilingualText en={builderEn('mkt_overview')} el={builderEl('mkt_overview')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end justify-center gap-8 h-48">
                   <div className="flex flex-col items-center">
-                    <div className="w-32 bg-blue-500/20 border-2 border-blue-500 rounded-t-lg flex items-end justify-center" style={{ height: '160px' }}>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">{data.tam.value || '—'}</span>
+                    <div className="flex w-32 items-end justify-center rounded-t-xl border-2 border-status-info bg-status-info-bg" style={{ height: '160px' }}>
+                      <span className="text-lg font-bold text-status-info mb-2">{data.tam?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">TAM</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-32 bg-green-500/20 border-2 border-green-500 rounded-t-lg flex items-end justify-center" style={{ height: '100px' }}>
-                      <span className="text-lg font-bold text-green-600 dark:text-green-400 mb-2">{data.sam.value || '—'}</span>
+                    <div className="flex w-32 items-end justify-center rounded-t-xl border-2 border-status-success bg-status-success-bg" style={{ height: '100px' }}>
+                      <span className="text-lg font-bold text-status-success mb-2">{data.sam?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SAM</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-32 bg-orange-500/20 border-2 border-orange-500 rounded-t-lg flex items-end justify-center" style={{ height: '40px' }}>
-                      <span className="text-lg font-bold text-orange-600 dark:text-orange-400 mb-2">{data.som.value || '—'}</span>
+                    <div className="flex w-32 items-end justify-center rounded-t-xl border-2 border-status-warning bg-status-warning-bg" style={{ height: '40px' }}>
+                      <span className="text-lg font-bold text-status-warning mb-2">{data.som?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SOM</span>
                   </div>
@@ -496,31 +482,33 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
         <TabsContent value="competitors" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Direct Competitors</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('mkt_direct')} el={builderEl('mkt_direct')} compact />
+              </CardTitle>
               <Button variant="outline" size="sm" onClick={() => addCompetitor('direct')}>
-                + Add Competitor
+                <BilingualText en={builderEn('mkt_add_comp')} el={builderEl('mkt_add_comp')} compact />
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {data.directCompetitors.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Target className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
-                  <p>No competitors added yet. Click "Add Competitor" to start.</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyph name="shield" className="icon-xl mx-auto mb-2 opacity-50" />
+                  <p><BilingualText en={builderEn('mkt_no_comp')} el={builderEl('mkt_no_comp')} /></p>
                 </div>
               ) : (
                 data.directCompetitors.map((competitor, index) => (
                   <Card key={index} className="p-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
-                        <Label>Name</Label>
+                        <Label><BilingualText en={builderEn('mkt_name')} el={builderEl('mkt_name')} compact /></Label>
                         <Input
                           value={competitor.name}
                           onChange={(e) => updateCompetitor('direct', index, 'name', e.target.value)}
-                          placeholder="Competitor name"
+                          placeholder={t(builderEn('mkt_ph_comp_name'), builderEl('mkt_ph_comp_name'))}
                         />
                       </div>
                       <div>
-                        <Label>Market Share</Label>
+                        <Label><BilingualText en={builderEn('mkt_share')} el={builderEl('mkt_share')} compact /></Label>
                         <Input
                           value={competitor.marketShare}
                           onChange={(e) => updateCompetitor('direct', index, 'marketShare', e.target.value)}
@@ -528,15 +516,15 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <Label>Description</Label>
+                        <Label><BilingualText en={builderEn('mkt_desc')} el={builderEl('mkt_desc')} compact /></Label>
                         <Textarea
                           value={competitor.description}
                           onChange={(e) => updateCompetitor('direct', index, 'description', e.target.value)}
-                          placeholder="Brief description of the competitor"
+                          placeholder={t(builderEn('mkt_ph_desc'), builderEl('mkt_ph_desc'))}
                         />
                       </div>
                       <div>
-                        <Label>Pricing</Label>
+                        <Label><BilingualText en={builderEn('mkt_pricing')} el={builderEl('mkt_pricing')} compact /></Label>
                         <Input
                           value={competitor.pricing}
                           onChange={(e) => updateCompetitor('direct', index, 'pricing', e.target.value)}
@@ -555,15 +543,15 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
         <TabsContent value="customers" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="icon-md" aria-hidden="true" />
-                Ideal Customer Profile (ICP)
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CfbGlyph name="people" className="icon-md" />
+                <BilingualText en={builderEn('mkt_icp')} el={builderEl('mkt_icp')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <Label>Demographics</Label>
+                  <Label><BilingualText en={builderEn('mkt_demo')} el={builderEl('mkt_demo')} compact /></Label>
                   <Textarea
                     placeholder="Age, location, company size, industry..."
                     value={data.idealCustomerProfile.demographics}
@@ -574,7 +562,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Psychographics</Label>
+                  <Label><BilingualText en={builderEn('mkt_psycho')} el={builderEl('mkt_psycho')} compact /></Label>
                   <Textarea
                     placeholder="Values, motivations, behaviors..."
                     value={data.idealCustomerProfile.psychographics}
@@ -585,7 +573,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Buying Behavior</Label>
+                  <Label><BilingualText en={builderEn('mkt_buying')} el={builderEl('mkt_buying')} compact /></Label>
                   <Textarea
                     placeholder="How do they make purchasing decisions?"
                     value={data.idealCustomerProfile.buyingBehavior}
@@ -596,7 +584,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <Label>Budget Range</Label>
+                  <Label><BilingualText en={builderEn('mkt_budget')} el={builderEl('mkt_budget')} compact /></Label>
                   <Input
                     placeholder="e.g., $50-500/month"
                     value={data.idealCustomerProfile.budget}
@@ -612,16 +600,18 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>User Personas</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('mkt_personas')} el={builderEl('mkt_personas')} compact />
+              </CardTitle>
               <Button variant="outline" size="sm" onClick={addPersona}>
-                + Add Persona
+                <BilingualText en={builderEn('mkt_add_persona')} el={builderEl('mkt_add_persona')} compact />
               </Button>
             </CardHeader>
             <CardContent>
               {data.personas.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
-                  <p>No personas created yet. Click "Add Persona" to start.</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyph name="people" className="icon-xl mx-auto mb-2 opacity-50" />
+                  <p><BilingualText en={builderEn('mkt_no_persona')} el={builderEl('mkt_no_persona')} /></p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -629,7 +619,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                     <Card key={index} className="p-4">
                       <div className="space-y-3">
                         <Input
-                          placeholder="Persona name (e.g., 'Technical Tom')"
+                          placeholder={t(builderEn('mkt_ph_persona_name'), builderEl('mkt_ph_persona_name'))}
                           value={persona.name}
                           onChange={(e) => {
                             const newPersonas = [...data.personas];
@@ -638,7 +628,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                           }}
                         />
                         <Input
-                          placeholder="Role (e.g., 'CTO at early-stage startup')"
+                          placeholder={t(builderEn('mkt_ph_role'), builderEl('mkt_ph_role'))}
                           value={persona.role}
                           onChange={(e) => {
                             const newPersonas = [...data.personas];
@@ -647,7 +637,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                           }}
                         />
                         <Textarea
-                          placeholder="Key quote that represents this persona"
+                          placeholder={t(builderEn('mkt_ph_quote'), builderEl('mkt_ph_quote'))}
                           value={persona.quote}
                           onChange={(e) => {
                             const newPersonas = [...data.personas];
@@ -668,28 +658,30 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
         <TabsContent value="trends" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Market Trends</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('mkt_trends')} el={builderEl('mkt_trends')} compact />
+              </CardTitle>
               <Button variant="outline" size="sm" onClick={addTrend}>
-                + Add Trend
+                <BilingualText en={builderEn('mkt_add_trend')} el={builderEl('mkt_add_trend')} compact />
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {data.trends.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <TrendingUp className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
-                  <p>No trends added yet. Click "Add Trend" to start.</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyph name="chart" className="icon-xl mx-auto mb-2 opacity-50" />
+                  <p><BilingualText en={builderEn('mkt_no_trend')} el={builderEl('mkt_no_trend')} /></p>
                 </div>
               ) : (
                 data.trends.map((trend, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 border rounded-lg">
+                  <div key={index} className="flex items-center gap-4 rounded-xl border p-4">
                     <div className={cn(
-                      'w-3 h-3 rounded-full',
-                      trend.impact === 'positive' ? 'bg-green-500' :
-                      trend.impact === 'negative' ? 'bg-red-500' : 'bg-yellow-500'
+                      'h-3 w-3 rounded-full',
+                      trend.impact === 'positive' ? 'bg-status-success' :
+                      trend.impact === 'negative' ? 'bg-status-danger' : 'bg-status-warning'
                     )} />
                     <div className="flex-1">
                       <Input
-                        placeholder="Describe the trend..."
+                        placeholder={t(builderEn('mkt_ph_trend'), builderEl('mkt_ph_trend'))}
                         value={trend.trend}
                         onChange={(e) => {
                           const newTrends = [...data.trends];
@@ -707,12 +699,12 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                       }}
                       className="px-3 py-2 border rounded-md text-sm"
                     >
-                      <option value="positive">Positive</option>
-                      <option value="negative">Negative</option>
-                      <option value="neutral">Neutral</option>
+                      <option value="positive">{t(builderEn('mkt_positive'), builderEl('mkt_positive'))}</option>
+                      <option value="negative">{t(builderEn('mkt_negative'), builderEl('mkt_negative'))}</option>
+                      <option value="neutral">{t(builderEn('mkt_neutral'), builderEl('mkt_neutral'))}</option>
                     </select>
                     <Input
-                      placeholder="Timeframe"
+                      placeholder={t(builderEn('mkt_timeframe'), builderEl('mkt_timeframe'))}
                       value={trend.timeframe}
                       onChange={(e) => {
                         const newTrends = [...data.trends];
@@ -733,22 +725,24 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Market Positioning</CardTitle>
+                <CardTitle className="text-base">
+                  <BilingualText en={builderEn('mkt_positioning')} el={builderEl('mkt_positioning')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Positioning Statement</Label>
+                  <Label><BilingualText en={builderEn('mkt_pos_stmt')} el={builderEl('mkt_pos_stmt')} compact /></Label>
                   <Textarea
-                    placeholder="For [target customer] who [need], [product] is a [category] that [key benefit]. Unlike [competitors], we [differentiator]."
+                    placeholder={t(builderEn('mkt_ph_pos'), builderEl('mkt_ph_pos'))}
                     value={data.positioning}
                     onChange={(e) => setData(prev => ({ ...prev, positioning: e.target.value }))}
                     className="min-h-[120px]"
                   />
                 </div>
                 <div>
-                  <Label>Competitive Advantage</Label>
+                  <Label><BilingualText en={builderEn('mkt_advantage')} el={builderEl('mkt_advantage')} compact /></Label>
                   <Textarea
-                    placeholder="What is your sustainable competitive advantage?"
+                    placeholder={t(builderEn('mkt_ph_adv'), builderEl('mkt_ph_adv'))}
                     value={data.competitiveAdvantage}
                     onChange={(e) => setData(prev => ({ ...prev, competitiveAdvantage: e.target.value }))}
                     className="min-h-[100px]"
@@ -759,12 +753,14 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Key Differentiators</CardTitle>
+                <CardTitle className="text-base">
+                  <BilingualText en={builderEn('mkt_diffs')} el={builderEl('mkt_diffs')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {data.differentiators.map((diff, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle2 className="icon-sm text-green-500 shrink-0" aria-hidden="true" />
+                    <CheckCircle2 className="icon-sm text-status-success shrink-0" />
                     <Input
                       value={diff}
                       onChange={(e) => {
@@ -772,7 +768,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                         newDiffs[index] = e.target.value;
                         setData(prev => ({ ...prev, differentiators: newDiffs }));
                       }}
-                      placeholder="Enter a key differentiator..."
+                      placeholder={t(builderEn('mkt_ph_diff'), builderEl('mkt_ph_diff'))}
                     />
                     <Button
                       aria-label="Remove item"
@@ -797,7 +793,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                     differentiators: [...prev.differentiators, '']
                   }))}
                 >
-                  + Add Differentiator
+                  <BilingualText en={builderEn('mkt_add_diff')} el={builderEl('mkt_add_diff')} compact />
                 </Button>
               </CardContent>
             </Card>

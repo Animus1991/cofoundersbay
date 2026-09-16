@@ -86,17 +86,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-400' },
-  fake: { label: 'Fake Profile', color: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400' },
-  other: { label: 'Other', color: 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400' },
+  spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  harassment: { label: 'Harassment', color: 'bg-status-danger-bg text-status-danger border-status-danger-border ' },
+  fake: { label: 'Fake Profile', color: 'bg-status-accent-bg text-status-accent border-status-accent-border ' },
+  inappropriate: { label: 'Inappropriate', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  other: { label: 'Other', color: 'bg-gray-500/15 text-foreground border-gray-500/30 ' },
 };
 
 const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'text-amber-600 dark:text-amber-400', icon: Clock },
-  reviewed: { label: 'Under Review', color: 'text-blue-600 dark:text-blue-400', icon: Eye },
-  resolved: { label: 'Resolved', color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle },
+  pending: { label: 'Pending', color: 'text-status-warning ', icon: Clock },
+  reviewed: { label: 'Under Review', color: 'text-status-info ', icon: Eye },
+  resolved: { label: 'Resolved', color: 'text-status-success ', icon: CheckCircle },
   dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
 };
 
@@ -268,15 +268,15 @@ function ReportCard({
           <div className="flex items-start gap-3">
             <Link href={`/profiles/${report.reported.id}`}>
               <Avatar className="icon-md">
-                <AvatarFallback className="bg-destructive/20 text-destructive-emphasis">
+                <AvatarFallback className="bg-destructive/20 text-destructive-accessible">
                   {report.reported.name?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
-                  {report.reported.name || report.reported.email}
+                <Link href={`/profiles/${report.reported.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                  {report.reported?.name || report.reported.email}
                 </Link>
                 <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
                 <Badge variant="outline" className={cn('text-xs', typeConf.color)}>
@@ -284,7 +284,7 @@ function ReportCard({
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
+                Reported by {report.reporter?.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
               </p>
             </div>
           </div>
@@ -316,8 +316,8 @@ function ReportCard({
                   Dismiss
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onBanUser} className="text-destructive-emphasis">
-                  <Ban className="icon-sm mr-2" aria-hidden="true" />
+                <DropdownMenuItem onClick={onBanUser} className="text-destructive-accessible">
+                  <Ban className="icon-sm mr-2" />
                   Ban user
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -364,23 +364,23 @@ function UserRow({
       <Link href={`/profiles/${user.id}`}>
         <Avatar className="icon-md shrink-0">
           <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary-emphasis">
+          <AvatarFallback className="bg-primary/20 text-primary-accessible">
             {displayName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary-emphasis transition-colors">
+          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary-accessible transition-colors">
             {displayName}
           </Link>
           <Badge
             variant="outline"
             className={cn(
               'text-xs',
-              user.moderationStatus === 'active' ? 'text-emerald-400 border-emerald-500/30' :
-              user.moderationStatus === 'suspended' ? 'text-amber-400 border-amber-500/30' :
-              'text-red-400 border-red-500/30',
+              user.moderationStatus === 'active' ? 'text-emerald-400 border-status-success-border' :
+              user.moderationStatus === 'suspended' ? 'text-amber-400 border-status-warning-border' :
+              'text-red-400 border-status-danger-border',
             )}
           >
             {user.moderationStatus}
@@ -415,26 +415,26 @@ function UserRow({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
-            <DropdownMenuItem onClick={onSuspend} className="text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
+            <DropdownMenuItem onClick={onSuspend} className="text-status-warning ">
+              <AlertTriangle className="mr-2 icon-sm" />
               Suspend
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
-              <CheckCircle className="mr-2 icon-sm" aria-hidden="true" />
+            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
+              <CheckCircle className="mr-2 icon-sm" />
               Reactivate
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
-            <DropdownMenuItem onClick={onBan} className="text-destructive-emphasis">
-              <Ban className="mr-2 icon-sm" aria-hidden="true" />
+            <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
+              <Ban className="mr-2 icon-sm" />
               Ban permanently
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
-              <CheckCircle className="mr-2 icon-sm" aria-hidden="true" />
+            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
+              <CheckCircle className="mr-2 icon-sm" />
               Unban
             </DropdownMenuItem>
           )}
@@ -605,6 +605,7 @@ export default function AdminPage() {
     <AppShell
       title="Admin Dashboard"
       description="Manage users, moderate content, and monitor platform health"
+      showHelp
       actions={
         <Button
           variant="secondary"
@@ -621,14 +622,14 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         <StatCard
           label="Total Users"
-          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" aria-hidden="true" />}
+          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
+          icon={<Users className="icon-md" />}
           trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
         />
         <StatCard
           label="Active Today"
-          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" aria-hidden="true" />}
+          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
+          icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Pending Reports"
@@ -638,18 +639,18 @@ export default function AdminPage() {
         />
         <StatCard
           label="Connections"
-          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" aria-hidden="true" />}
+          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
+          icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Messages"
-          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" aria-hidden="true" />}
+          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
+          icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Events"
-          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" aria-hidden="true" />}
+          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
+          icon={<Users className="icon-md" />}
         />
       </div>
 
@@ -777,7 +778,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-base">User Management</CardTitle>
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
                     placeholder="Search users…"
                     value={userSearch}
@@ -822,11 +823,11 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
+                <Calendar className="icon-sm text-muted-foreground" />
                 Events
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchEvents()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> Refresh
               </Button>
             </div>
             {eventsLoading ? (
@@ -837,7 +838,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-emphasis">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No events found</CardContent></Card>
             ) : (
@@ -852,19 +853,19 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost" size="sm"
-                          className={ev.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          className={ev.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {ev.isFeatured ? <StarOff className="icon-sm mr-1" aria-hidden="true" /> : <Star className="icon-sm mr-1" aria-hidden="true" />}
+                          {ev.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
                           {ev.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive-emphasis"
+                          variant="ghost" size="sm" className="text-destructive-accessible"
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="icon-sm mr-1" aria-hidden="true" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -878,11 +879,11 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Briefcase className="icon-sm text-muted-foreground" aria-hidden="true" />
+                <Briefcase className="icon-sm text-muted-foreground" />
                 Job Postings
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchJobs()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> Refresh
               </Button>
             </div>
             {jobsLoading ? (
@@ -893,7 +894,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-emphasis">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No job postings found</CardContent></Card>
             ) : (
@@ -908,19 +909,19 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost" size="sm"
-                          className={job.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          className={job.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {job.isFeatured ? <StarOff className="icon-sm mr-1" aria-hidden="true" /> : <Star className="icon-sm mr-1" aria-hidden="true" />}
+                          {job.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
                           {job.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive-emphasis"
+                          variant="ghost" size="sm" className="text-destructive-accessible"
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="icon-sm mr-1" aria-hidden="true" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -935,7 +936,7 @@ export default function AdminPage() {
         <TabsContent value="cohorts" className="mt-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
                 placeholder="Search cohorts…"
                 value={cohortSearch}
@@ -944,7 +945,7 @@ export default function AdminPage() {
               />
             </div>
             <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
-              <Plus className="icon-sm" aria-hidden="true" />
+              <Plus className="icon-sm" />
               New Cohort
             </Button>
           </div>
@@ -1026,13 +1027,13 @@ export default function AdminPage() {
                         )}
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Badge variant="secondary" className="gap-1 text-xs">
-                            <UserCheck className="icon-2xs" aria-hidden="true" />
+                            <UserCheck className="icon-sm" />
                             {cohort._count.members} members
                           </Badge>
                           {cohort.startDate && (
                             <Badge variant="outline" className="gap-1 text-xs">
-                              <Calendar className="icon-2xs" aria-hidden="true" />
-                              {new Date(cohort.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              <Calendar className="icon-sm" />
+                              {new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                             </Badge>
                           )}
                           {cohort.capacity && (
@@ -1043,11 +1044,11 @@ export default function AdminPage() {
                       <Button aria-label="Delete"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0 text-destructive-emphasis opacity-0 group-hover:opacity-100"
+                        className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100"
                         onClick={() => deleteCohortMutation.mutate(cohort.id)}
                         disabled={deleteCohortMutation.isPending}
                       >
-                        <Trash2 className="icon-sm" aria-hidden="true" />
+                        <Trash2 className="icon-sm" />
                       </Button>
                     </div>
                   </CardContent>
@@ -1130,7 +1131,7 @@ export default function AdminPage() {
                   disabled={!auditData?.logs?.length}
                   className="gap-1.5"
                 >
-                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Download className="icon-sm" />
                   Export CSV
                 </Button>
               </div>
@@ -1155,7 +1156,7 @@ export default function AdminPage() {
                 (auditData?.logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                      <Shield className="icon-sm text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

@@ -42,7 +42,7 @@ export function DashboardActivity({ items = defaultActivity, className }: Dashbo
                 className="flex items-start gap-3 rounded-lg p-2 text-sm transition-colors hover:bg-secondary/60"
               >
                 <span className="mt-0.5 flex shrink-0 text-muted-foreground">
-                  {a.type === 'event' ? <Calendar className="icon-sm" aria-hidden="true" /> : a.type === 'connection' ? <UserPlus className="icon-sm" aria-hidden="true" /> : <MessageSquare className="icon-sm" aria-hidden="true" />}
+                  {a.type === 'event' ? <Calendar className="icon-sm" /> : a.type === 'connection' ? <UserPlus className="icon-sm" /> : <MessageSquare className="icon-sm" />}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-foreground truncate">{a.title}</p>

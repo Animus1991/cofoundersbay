@@ -44,12 +44,12 @@ interface Activity {
 }
 
 const ACTIVITY_CONFIG = {
-  post: { icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  connection: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
-  opportunity: { icon: Briefcase, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  event: { icon: Calendar, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-  achievement: { icon: Award, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-  milestone: { icon: Rocket, color: 'text-pink-500', bg: 'bg-pink-500/10' },
+  post: { icon: MessageSquare, color: 'text-status-info', bg: 'bg-status-info-bg' },
+  connection: { icon: UserPlus, color: 'text-status-success', bg: 'bg-status-success-bg' },
+  opportunity: { icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+  event: { icon: Calendar, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  achievement: { icon: Award, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  milestone: { icon: Rocket, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
 };
 
 export function ActivityFeed() {
@@ -94,7 +94,7 @@ export function ActivityFeed() {
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}d ago`;
     
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' });
   };
 
   if (isLoading) {
@@ -147,13 +147,13 @@ export function ActivityFeed() {
                       </span>
                     </div>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="icon-sm" aria-hidden="true" />
+                      <MoreHorizontal className="icon-sm" />
                     </Button>
                   </div>
 
                   <div className="flex items-center gap-2 mb-3">
                     <div className={cn('p-1.5 rounded-lg', config.bg)}>
-                      <Icon className={cn('h-4 w-4', config.color)} />
+                      <Icon className={cn('icon-sm', config.color)} />
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {activity.type === 'post' && 'shared a post'}
@@ -207,20 +207,20 @@ export function ActivityFeed() {
                       onClick={() => handleLike(activity.id)}
                       className={cn(
                         'flex-1',
-                        activity.isLiked && 'text-red-500'
+                        activity.isLiked && 'text-status-danger'
                       )}
                     >
-                      <Heart className={cn('h-4 w-4 mr-2', activity.isLiked && 'fill-current')} aria-hidden="true" />
+                      <Heart className={cn('icon-sm mr-2', activity.isLiked && 'fill-current')} />
                       {activity.metadata?.stats?.likes || 0}
                     </Button>
 
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <MessageSquare className="icon-sm mr-2" aria-hidden="true" />
+                      <MessageSquare className="icon-sm mr-2" />
                       {activity.metadata?.stats?.comments || 0}
                     </Button>
 
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="icon-sm mr-2" aria-hidden="true" />
+                      <Share2 className="icon-sm mr-2" />
                       {activity.metadata?.stats?.shares || 0}
                     </Button>
                   </div>

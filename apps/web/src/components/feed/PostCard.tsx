@@ -61,12 +61,12 @@ type PostCardProps = {
 };
 
 const postTypeConfig: Record<PostType, { label: string; color: string; emoji: string }> = {
-  update: { label: 'Update', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30', emoji: '📢' },
-  ask: { label: 'Ask', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30', emoji: '❓' },
-  offer: { label: 'Offer', color: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30', emoji: '🎁' },
-  hiring: { label: 'Hiring', color: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30', emoji: '👥' },
-  milestone: { label: 'Milestone', color: 'bg-pink-500/15 text-pink-700 dark:text-pink-400 border-pink-500/30', emoji: '🎉' },
-  pitch: { label: 'Pitch', color: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30', emoji: '🚀' },
+  update: { label: 'Update', color: 'bg-status-info-bg text-status-info border-status-info-border', emoji: '📢' },
+  ask: { label: 'Ask', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', emoji: '❓' },
+  offer: { label: 'Offer', color: 'bg-status-success-bg text-status-success border-status-success-border', emoji: '🎁' },
+  hiring: { label: 'Hiring', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', emoji: '👥' },
+  milestone: { label: 'Milestone', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', emoji: '🎉' },
+  pitch: { label: 'Pitch', color: 'bg-status-info-bg text-status-info border-status-info-border', emoji: '🚀' },
 };
 
 function formatTimeAgo(date: Date): string {
@@ -80,7 +80,7 @@ function formatTimeAgo(date: Date): string {
   if (minutes < 60) return `${minutes}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 export function PostCard({
@@ -130,7 +130,7 @@ export function PostCard({
             <Link href={`/profiles/${author.id}`}>
               <Avatar className="h-11 w-11 ring-2 ring-border/40">
                 <AvatarImage src={author.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                   {author.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -139,7 +139,7 @@ export function PostCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${author.id}`}
-                  className="font-semibold text-foreground hover:text-primary-emphasis transition-colors"
+                  className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {author.displayName}
                 </Link>
@@ -160,24 +160,24 @@ export function PostCard({
             </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreHorizontal className="icon-sm" aria-hidden="true" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.origin + `/post/${id}`)}>
-                  <Copy className="icon-sm mr-2" aria-hidden="true" />
+                  <Copy className="icon-sm mr-2" />
                   Copy link
                 </DropdownMenuItem>
                 {isMine ? (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onEdit}>
-                      <Edit className="icon-sm mr-2" aria-hidden="true" />
+                      <Edit className="icon-sm mr-2" />
                       Edit post
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDelete} className="text-destructive-emphasis">
-                      <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+                    <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+                      <Trash2 className="icon-sm mr-2" />
                       Delete post
                     </DropdownMenuItem>
                   </>
@@ -185,11 +185,11 @@ export function PostCard({
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onReport}>
-                      <Flag className="icon-sm mr-2" aria-hidden="true" />
+                      <Flag className="icon-sm mr-2" />
                       Report post
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <UserMinus className="icon-sm mr-2" aria-hidden="true" />
+                      <UserMinus className="icon-sm mr-2" />
                       Unfollow {author.displayName}
                     </DropdownMenuItem>
                   </>
@@ -211,7 +211,7 @@ export function PostCard({
               <Link
                 key={tag}
                 href={`/discover?tag=${encodeURIComponent(tag)}`}
-                className="text-xs text-primary-emphasis hover:underline"
+                className="text-xs text-primary-accessible hover:underline"
               >
                 #{tag}
               </Link>
@@ -257,28 +257,28 @@ export function PostCard({
               onClick={handleLike}
               className={cn(
                 'gap-1.5 h-8',
-                liked ? 'text-pink-500' : 'text-muted-foreground hover:text-pink-500'
+                liked ? 'text-status-accent' : 'text-muted-foreground hover:text-status-accent'
               )}
             >
-              <Heart className={cn('h-4 w-4', liked && 'fill-current')} aria-hidden="true" />
+              <Heart className={cn('icon-sm', liked && 'fill-current')} />
               <span className="text-xs">{localLikesCount > 0 ? localLikesCount : ''}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onComment}
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-emphasis"
+              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
-              <MessageCircle className="icon-sm" aria-hidden="true" />
+              <MessageCircle className="icon-sm" />
               <span className="text-xs">{commentsCount > 0 ? commentsCount : ''}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onShare}
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-emphasis"
+              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
-              <Share2 className="icon-sm" aria-hidden="true" />
+              <Share2 className="icon-sm" />
             </Button>
           </div>
           <Button aria-label="Save"
@@ -287,10 +287,10 @@ export function PostCard({
             onClick={handleBookmark}
             className={cn(
               'h-8 w-8',
-              bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+              bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
             )}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </Button>
         </div>
       </CardContent>

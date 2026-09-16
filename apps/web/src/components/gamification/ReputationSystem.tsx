@@ -158,7 +158,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
     ? xpData.recentEvents.slice(0, 8).map(xpEventToActivity)
     : [];
 
-  const currentStreak = xpData?.streak.currentStreak ?? 0;
+  const currentStreak = xpData?.streak?.currentStreak ?? 0;
 
   if (isLoading && externalPoints === undefined) {
     return (
@@ -178,19 +178,19 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                <Award className="icon-xl text-primary-emphasis" aria-hidden="true" />
+                <Award className="icon-xl text-primary-accessible" />
               </div>
               <div>
                 <CardTitle className="text-2xl">Level {currentLevel.level}: {currentLevel.name}</CardTitle>
                 <CardDescription className="text-base">
-                  {currentPoints.toLocaleString()} reputation points
+                  {currentPoints.toLocaleString('en-GB')} reputation points
                 </CardDescription>
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge variant="default" className="text-base px-3 py-1">
-                <Zap className="icon-sm mr-1" aria-hidden="true" />
-                {currentPoints.toLocaleString()} XP
+                <Zap className="icon-sm mr-1" />
+                {currentPoints.toLocaleString('en-GB')} XP
               </Badge>
               {currentStreak > 0 && (
                 <Badge variant="secondary" className="text-xs gap-1">
@@ -207,7 +207,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progress to {nextLevel.name}</span>
                   <span className="font-medium">
-                    {pointsToNextLevel.toLocaleString()} points needed
+                    {pointsToNextLevel.toLocaleString('en-GB')} points needed
                   </span>
                 </div>
                 <Progress value={levelProgress} className="h-3" />
@@ -219,7 +219,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Star className="icon-2xs text-primary-emphasis" aria-hidden="true" />
+                  <Star className="icon-sm text-primary-accessible" />
                 </div>
                 <span>{perk}</span>
               </div>
@@ -271,7 +271,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       <div className="flex-1">
                         <div className="font-semibold">{level.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {level.minPoints.toLocaleString()} - {level.maxPoints === Infinity ? '∞' : level.maxPoints.toLocaleString()} points
+                          {level.minPoints.toLocaleString('en-GB')} - {level.maxPoints === Infinity ? '∞' : level.maxPoints.toLocaleString('en-GB')} points
                         </div>
                       </div>
                       {isCurrentLevel && (
@@ -313,26 +313,26 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           'flex h-10 w-10 items-center justify-center rounded-full',
-                          isEarned ? 'bg-green-100 dark:bg-green-950' : 'bg-red-100 dark:bg-red-950'
+                          isEarned ? 'bg-status-success-bg ' : 'bg-status-danger-bg '
                         )}>
                           <Icon className={cn(
-                            'h-5 w-5',
-                            isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            'icon-md',
+                            isEarned ? 'text-status-success ' : 'text-status-danger '
                           )} />
                         </div>
                         <div>
                           <div className="font-medium">{activity.action}</div>
                           <div className="text-sm text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at{' '}
-                            {new Date(activity.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { timeZone: 'UTC' })} at{' '}
+                            {new Date(activity.timestamp).toLocaleTimeString()}
                           </div>
                         </div>
                       </div>
                       <div className={cn(
                         'flex items-center gap-1 font-bold',
-                        isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        isEarned ? 'text-status-success ' : 'text-status-danger '
                       )}>
-                        {isEarned ? <ArrowUp className="icon-sm" aria-hidden="true" /> : <ArrowDown className="icon-sm" aria-hidden="true" />}
+                        {isEarned ? <ArrowUp className="icon-sm" /> : <ArrowDown className="icon-sm" />}
                         {Math.abs(activity.points)}
                       </div>
                     </div>
@@ -360,12 +360,12 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                          <Icon className="h-5 w-5 text-primary-emphasis" />
+                          <Icon className="icon-md text-primary-accessible" />
                         </div>
                         <span className="font-medium">{item.action}</span>
                       </div>
                       <Badge variant="secondary" className="gap-1">
-                        <Zap className="icon-2xs" aria-hidden="true" />
+                        <Zap className="icon-sm" />
                         +{item.points}
                       </Badge>
                     </div>

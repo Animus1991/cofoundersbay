@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
+import { ListEmptyState } from '@/components/common/EmptyStates';
+import { STATUS } from '@/lib/semantic-colors';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import {
   getGroup,
@@ -78,15 +80,15 @@ function PostCard({
   return (
     <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
-        <div className="flex items-center gap-1.5 text-xs text-primary-emphasis font-medium">
-          <Pin className="icon-2xs" aria-hidden="true" />
+        <div className="flex items-center gap-1.5 text-xs text-primary-accessible font-medium">
+          <Pin className="icon-sm" />
           Pinned post
         </div>
       )}
 
       <div className="flex items-start gap-3">
         <Avatar className="h-9 w-9 shrink-0">
-          <AvatarImage src={post.author.avatarUrl ?? undefined} />
+          <AvatarImage src={post.author?.avatarUrl ?? undefined} />
           <AvatarFallback className="text-xs">{post.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -98,9 +100,9 @@ function PostCard({
             {isOwn && (
               <button
                 onClick={() => onDelete(post.id)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-emphasis transition-colors"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors"
               >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <Trash2 className="icon-sm" />
               </button>
             )}
           </div>
@@ -125,11 +127,11 @@ function PostCard({
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
               post.myReaction
-                ? 'bg-primary/15 text-primary-emphasis'
+                ? 'bg-primary/15 text-primary-accessible'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
-            {post.myReaction ?? <Heart className="h-3.5 w-3.5" aria-hidden="true" />}
+            {post.myReaction ?? <Heart className="icon-sm" />}
             {post.reactionCount > 0 && <span>{post.reactionCount}</span>}
           </button>
           {showReactions && (
@@ -154,7 +156,7 @@ function PostCard({
           onClick={() => setShowComments((p) => !p)}
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
         >
-          <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+          <MessageCircle className="icon-sm" />
           {post.commentCount > 0 && <span>{post.commentCount}</span>}
           {showComments ? 'Hide' : 'Comment'}
         </button>
@@ -164,12 +166,12 @@ function PostCard({
       {showComments && (
         <div className="space-y-3 pt-1">
           {commentsQuery.isLoading && (
-            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary-emphasis/50" aria-hidden="true" /></div>
+            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary/50" /></div>
           )}
           {(commentsQuery.data?.comments ?? []).map((c) => (
             <div key={c.id} className="flex items-start gap-2.5">
               <Avatar className="h-7 w-7 shrink-0">
-                <AvatarImage src={c.author.avatarUrl ?? undefined} />
+                <AvatarImage src={c.author?.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-2xs">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">
@@ -194,7 +196,7 @@ function PostCard({
                 disabled={submittingComment || !newComment.trim()}
                 onClick={handleAddComment}
               >
-                {submittingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Send className="h-3.5 w-3.5" aria-hidden="true" />}
+                {submittingComment ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
               </Button>
             </div>
           )}
@@ -300,7 +302,7 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="icon-xl animate-spin text-primary-emphasis/50" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-primary/50" />
         </div>
       </AppShell>
     );
@@ -327,7 +329,7 @@ export default function GroupDetailPage() {
           onClick={() => router.push('/groups')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="icon-sm" aria-hidden="true" />
+          <ArrowLeft className="icon-sm" />
           Back to Groups
         </button>
 
@@ -348,23 +350,23 @@ export default function GroupDetailPage() {
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (
-                    <Users className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
+                    <Users className="h-7 w-7 text-primary-accessible" />
                   )}
                 </div>
                 <div className="pb-1">
                   <h1 className="font-display text-xl sm:text-2xl xl:text-3xl font-bold">{group.name}</h1>
                   <div className="flex items-center gap-3 mt-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      {group.privacy === 'public' ? <Globe className="icon-2xs" aria-hidden="true" /> : <Lock className="icon-2xs" aria-hidden="true" />}
+                      {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
                       <span className="capitalize">{group.privacy}</span>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="icon-2xs" aria-hidden="true" />
-                      {group.memberCount.toLocaleString()} members
+                      <Users className="icon-sm" />
+                      {group.memberCount.toLocaleString('en-GB')} members
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MessageCircle className="icon-2xs" aria-hidden="true" />
-                      {group.postCount.toLocaleString()} posts
+                      <MessageCircle className="icon-sm" />
+                      {group.postCount.toLocaleString('en-GB')} posts
                     </span>
                   </div>
                 </div>
@@ -377,11 +379,11 @@ export default function GroupDetailPage() {
                 onClick={handleToggleMembership}
               >
                 {togglingMembership ? (
-                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : isMember ? (
-                  <><CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" /> Joined</>
+                  <><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} /> Joined</>
                 ) : (
-                  <><UserPlus className="icon-sm" aria-hidden="true" /> Join Group</>
+                  <><UserPlus className="icon-sm" /> Join Group</>
                 )}
               </Button>
             </div>
@@ -449,7 +451,7 @@ export default function GroupDetailPage() {
                       disabled={submittingPost || !newPost.trim()}
                       onClick={handleCreatePost}
                     >
-                      {submittingPost ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Send className="icon-sm" aria-hidden="true" />}
+                      {submittingPost ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
                       Post
                     </Button>
                   </div>
@@ -459,7 +461,7 @@ export default function GroupDetailPage() {
               {/* Posts */}
               {postsQuery.isLoading && (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="icon-lg animate-spin text-primary-emphasis/50" aria-hidden="true" />
+                  <Loader2 className="icon-lg animate-spin text-primary/50" />
                 </div>
               )}
 
@@ -467,19 +469,22 @@ export default function GroupDetailPage() {
                 <div className="flex flex-col items-center justify-center py-8 gap-3">
                   <p className="text-sm text-muted-foreground">Failed to load posts</p>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => postsQuery.refetch()}>
-                    <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" /> Retry
+                    <RefreshCw className="icon-sm" /> Retry
                   </Button>
                 </div>
               )}
 
-              {!postsQuery.isLoading && posts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <MessageCircle className="h-10 w-10 mb-3 text-muted-foreground/20" aria-hidden="true" />
-                  <p className="text-sm font-medium">No posts yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {isMember ? 'Be the first to post in this group!' : 'Join to start posting.'}
-                  </p>
-                </div>
+              {!postsQuery.isLoading && !postsQuery.isError && posts.length === 0 && (
+                <ListEmptyState
+                  icon={MessageCircle}
+                  tone="primary"
+                  variant="dashed"
+                  size="compact"
+                  title="No posts yet"
+                  description={isMember
+                    ? 'Be the first to start a discussion — share an update, ask a question, or post a resource.'
+                    : 'Join this community to read and start discussions.'}
+                />
               )}
 
               {posts.map((post) => (
@@ -504,7 +509,7 @@ export default function GroupDetailPage() {
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-emphasis text-2xs font-bold">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible text-2xs font-bold">
                           {i + 1}
                         </span>
                         <div>
@@ -531,7 +536,7 @@ export default function GroupDetailPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-2xs text-primary-emphasis capitalize">{m.role}</p>
+                            <p className="text-2xs text-primary-accessible capitalize">{m.role}</p>
                           )}
                         </div>
                       </div>
@@ -540,7 +545,7 @@ export default function GroupDetailPage() {
                   {group.memberCount > 6 && (
                     <button
                       onClick={() => setActiveSection('members')}
-                      className="text-xs text-primary-emphasis hover:underline"
+                      className="text-xs text-primary-accessible hover:underline"
                     >
                       View all {group.memberCount} members →
                     </button>
@@ -572,7 +577,7 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-2xs text-primary-emphasis capitalize font-medium">{m.role}</span>
+                      <span className="text-2xs text-primary-accessible capitalize font-medium">{m.role}</span>
                     )}
                   </div>
                 </div>

@@ -99,6 +99,20 @@ function getSchemaState() {
   };
 }
 
+/** Build shared package without npm -w (breaks when root script delegates to turbo). */
+async function buildSharedPackage() {
+  const sharedDir = path.join(rootDir, 'packages', 'shared');
+  const tscBin = require.resolve('typescript/bin/tsc', { paths: [sharedDir, rootDir] });
+  console.log('Building @cofounderbay/shared...');
+  await run(process.execPath, [tscBin, '-p', 'tsconfig.build.json'], { cwd: sharedDir });
+}
+
+/** Run an npm script inside a workspace package (cwd = package dir, no --prefix). */
+function runPackageScript(relativeDir, script) {
+  const pkgDir = path.join(rootDir, relativeDir);
+  return run(npmRunner.command, [...npmRunner.prefixArgs, 'run', script], { cwd: pkgDir });
+}
+
 async function main() {
   const forceDb = process.argv.includes('--force-db');
 
@@ -109,7 +123,7 @@ async function main() {
     origin: `http://localhost:${API_PORT}`,
   });
 
-  await run(npmRunner.command, [...npmRunner.prefixArgs, 'run', 'build', '-w', '@cofounderbay/shared']);
+  await buildSharedPackage();
 
   const state = getSchemaState();
   const hasRecordedSchemaState = state.savedSchemaMtimeMs !== null;
@@ -120,14 +134,14 @@ async function main() {
 
   if (shouldGenerate) {
     console.log('Running Prisma client generation...');
-    await run(npmRunner.command, [...npmRunner.prefixArgs, 'run', 'prisma:generate', '--prefix', 'apps/api']);
+    await runPackageScript('apps/api', 'prisma:generate');
   } else {
     console.log('Skipping Prisma client generation; schema unchanged.');
   }
 
   if (shouldPush) {
     console.log('Running Prisma schema push...');
-    await run(npmRunner.command, [...npmRunner.prefixArgs, 'run', 'prisma:push', '--prefix', 'apps/api']);
+    await runPackageScript('apps/api', 'prisma:push');
   } else {
     console.log('Skipping Prisma schema push; schema unchanged.');
   }
@@ -137,7 +151,7 @@ async function main() {
     updatedAt: new Date().toISOString(),
   });
 
-  await run(npmRunner.command, [...npmRunner.prefixArgs, 'run', 'start:dev', '--prefix', 'apps/api']);
+  await runPackageScript('apps/api', 'start:dev');
 }
 
 main().catch((error) => {

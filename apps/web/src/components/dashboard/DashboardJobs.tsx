@@ -45,12 +45,12 @@ export function DashboardJobs({ jobs, className }: DashboardJobsProps) {
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Briefcase className="icon-sm text-primary-emphasis" aria-hidden="true" />
+          <Briefcase className="icon-sm text-primary-accessible" />
           Current job offers
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>
           <Link href="/discover">
-            View all <ArrowRight className="ml-1 icon-2xs" aria-hidden="true" />
+            View all <ArrowRight className="ml-1 icon-sm" />
           </Link>
         </Button>
       </CardHeader>

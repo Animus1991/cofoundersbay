@@ -60,7 +60,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: Users,
     score: 85,
     maxScore: 100,
-    color: 'text-blue-500',
+    color: 'text-status-info',
     description: 'How complete and detailed your profile is',
     factors: [
       { name: 'Basic Info', value: 100, max: 100 },
@@ -75,7 +75,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: MessageCircle,
     score: 72,
     maxScore: 100,
-    color: 'text-emerald-500',
+    color: 'text-status-success',
     description: 'Your activity and contributions to the community',
     factors: [
       { name: 'Posts & Comments', value: 65, max: 100 },
@@ -90,7 +90,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: Shield,
     score: 90,
     maxScore: 100,
-    color: 'text-purple-500',
+    color: 'text-status-accent',
     description: 'How reliable and trustworthy you are',
     factors: [
       { name: 'Response Rate', value: 95, max: 100 },
@@ -105,7 +105,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: ThumbsUp,
     score: 68,
     maxScore: 100,
-    color: 'text-amber-500',
+    color: 'text-status-warning',
     description: 'Endorsements and recommendations from others',
     factors: [
       { name: 'Skill Endorsements', value: 75, max: 100 },
@@ -120,7 +120,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: Trophy,
     score: 55,
     maxScore: 100,
-    color: 'text-pink-500',
+    color: 'text-status-accent',
     description: 'Badges and milestones you have earned',
     factors: [
       { name: 'Badges Earned', value: 60, max: 100 },
@@ -137,7 +137,7 @@ const BADGES: Badge[] = [
     name: 'Verified Member',
     description: 'Completed identity verification',
     icon: CheckCircle,
-    color: 'text-emerald-500',
+    color: 'text-status-success',
     earnedAt: '2026-01-15',
   },
   {
@@ -145,7 +145,7 @@ const BADGES: Badge[] = [
     name: 'Early Adopter',
     description: 'Joined during beta phase',
     icon: Sparkles,
-    color: 'text-purple-500',
+    color: 'text-status-accent',
     earnedAt: '2026-01-01',
   },
   {
@@ -153,7 +153,7 @@ const BADGES: Badge[] = [
     name: 'Super Connector',
     description: 'Made 25+ successful connections',
     icon: Users,
-    color: 'text-blue-500',
+    color: 'text-status-info',
     earnedAt: '2026-03-10',
   },
   {
@@ -161,7 +161,7 @@ const BADGES: Badge[] = [
     name: 'Helpful Mentor',
     description: 'Completed 10+ mentoring sessions',
     icon: Award,
-    color: 'text-amber-500',
+    color: 'text-status-warning',
     progress: 70,
     requirement: '7/10 sessions',
   },
@@ -170,7 +170,7 @@ const BADGES: Badge[] = [
     name: 'Master Builder',
     description: 'Created 5 complete startup documents',
     icon: Briefcase,
-    color: 'text-cyan-500',
+    color: 'text-status-info',
     progress: 40,
     requirement: '2/5 documents',
   },
@@ -179,7 +179,7 @@ const BADGES: Badge[] = [
     name: 'Community Influencer',
     description: 'Posts received 100+ total likes',
     icon: Heart,
-    color: 'text-pink-500',
+    color: 'text-status-accent',
     progress: 85,
     requirement: '85/100 likes',
   },
@@ -234,10 +234,10 @@ function ScoreRing({ score, maxScore, size = 'lg' }: { score: number; maxScore: 
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const getScoreColor = (pct: number) => {
-    if (pct >= 80) return 'text-emerald-500';
-    if (pct >= 60) return 'text-blue-500';
-    if (pct >= 40) return 'text-amber-500';
-    return 'text-red-500';
+    if (pct >= 80) return 'text-status-success';
+    if (pct >= 60) return 'text-status-info';
+    if (pct >= 40) return 'text-status-warning';
+    return 'text-status-danger';
   };
 
   const dimensions = size === 'lg' ? 'w-32 h-32' : 'w-20 h-20';
@@ -268,8 +268,11 @@ function ScoreRing({ score, maxScore, size = 'lg' }: { score: number; maxScore: 
           className={getScoreColor(percentage)}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn('font-bold', textSize, getScoreColor(percentage))}>
+      {/* `gap-1` rather than nothing between the score and its denominator:
+          the two lines were touching, and a ring has the room to separate
+          them. Same correction as /readiness and the founder gauge. */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+        <span className={cn('font-bold leading-none', textSize, getScoreColor(percentage))}>
           {score}
         </span>
         {size === 'lg' && (
@@ -290,7 +293,7 @@ function CategoryCard({ category }: { category: ReputationCategory }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={cn('rounded-lg p-2', category.color.replace('text-', 'bg-').replace('500', '500/10'))}>
-              <Icon className={cn('h-5 w-5', category.color)} />
+              <Icon className={cn('icon-md', category.color)} />
             </div>
             <div>
               <CardTitle className="text-base">{category.name}</CardTitle>
@@ -345,7 +348,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
         >
           <Icon
             className={cn(
-              'h-6 w-6',
+              'icon-lg',
               isEarned ? badge.color : 'text-muted-foreground'
             )}
           />
@@ -354,7 +357,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
           <div className="flex items-center gap-2">
             <h4 className="font-semibold">{badge.name}</h4>
             {isEarned && (
-              <CheckCircle className="icon-sm text-emerald-500" aria-hidden="true" />
+              <CheckCircle className="icon-sm text-status-success" />
             )}
           </div>
           <p className="text-sm text-muted-foreground">{badge.description}</p>
@@ -371,7 +374,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
 
           {isEarned && badge.earnedAt && (
             <p className="text-xs text-muted-foreground mt-1">
-              Earned {new Date(badge.earnedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              Earned {new Date(badge.earnedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
             </p>
           )}
         </div>
@@ -379,7 +382,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
 
       {!isEarned && (
         <div className="absolute top-2 right-2">
-          <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
+          <Lock className="icon-sm text-muted-foreground" />
         </div>
       )}
     </div>
@@ -394,27 +397,27 @@ function HistoryItem({ event }: { event: ReputationEvent }) {
       <div
         className={cn(
           'rounded-full p-2',
-          isPositive ? 'bg-emerald-500/10' : 'bg-red-500/10'
+          isPositive ? 'bg-status-success-bg' : 'bg-status-danger-bg'
         )}
       >
         {isPositive ? (
-          <TrendingUp className="icon-sm text-emerald-500" aria-hidden="true" />
+          <TrendingUp className="icon-sm text-status-success" />
         ) : (
-          <TrendingUp className="icon-sm text-red-500 rotate-180" aria-hidden="true" />
+          <TrendingUp className="icon-sm text-status-danger rotate-180" />
         )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{event.reason}</p>
         <p className="text-xs text-muted-foreground">
-          {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} • {event.category}
+          {new Date(event.date).toLocaleDateString('en-GB', { timeZone: 'UTC' })} • {event.category}
         </p>
       </div>
       <Badge
         variant="secondary"
         className={cn(
           isPositive
-            ? 'bg-emerald-500/10 text-emerald-500'
-            : 'bg-red-500/10 text-red-500'
+            ? 'bg-status-success-bg text-status-success'
+            : 'bg-status-danger-bg text-status-danger'
         )}
       >
         {isPositive ? '+' : ''}{event.points}
@@ -435,13 +438,16 @@ export default function ReputationPage() {
 
   return (
     <AppShell
-      title="Reputation Score"
-      description="Your trust and credibility on CoFounderBay"
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2" asChild>
-            <Link href="/profile" className="hidden sm:block">
-              <Shield className="icon-sm" aria-hidden="true" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="My Profile" asChild>
+            <Link href="/profile">
+              <Shield className="icon-sm" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/profile">
+              <Shield className="icon-sm" />
               My Profile
             </Link>
           </Button>
@@ -449,7 +455,7 @@ export default function ReputationPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <Eye className="icon-sm" aria-hidden="true" />
+                  <Eye className="icon-sm" />
                   Public View
                 </Button>
               </TooltipTrigger>
@@ -477,17 +483,17 @@ export default function ReputationPage() {
                 </p>
                 <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Trophy className="icon-sm text-amber-500" aria-hidden="true" />
+                    <Trophy className="icon-sm text-status-warning" />
                     <span className="text-sm font-medium">
                       {earnedBadges}/{totalBadges} badges
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <TrendingUp className="icon-sm text-emerald-500" aria-hidden="true" />
+                    <TrendingUp className="icon-sm text-status-success" />
                     <span className="text-sm font-medium">+15 this month</span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Users className="icon-sm text-blue-500" aria-hidden="true" />
+                    <Users className="icon-sm text-status-info" />
                     <span className="text-sm font-medium">Top 20%</span>
                   </div>
                 </div>
@@ -500,15 +506,15 @@ export default function ReputationPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
             <TabsTrigger value="overview" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <Shield className="icon-sm" aria-hidden="true" />
+              <Shield className="icon-sm" />
               Overview
             </TabsTrigger>
             <TabsTrigger value="badges" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <Award className="icon-sm" aria-hidden="true" />
+              <Award className="icon-sm" />
               Badges ({earnedBadges}/{totalBadges})
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <TrendingUp className="icon-sm" aria-hidden="true" />
+              <TrendingUp className="icon-sm" />
               History
             </TabsTrigger>
           </TabsList>
@@ -550,23 +556,23 @@ export default function ReputationPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <Sparkles className="icon-md text-primary-accessible" />
               Tips to Improve Your Score
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', title: 'Complete your profile', desc: 'Add portfolio items and experience', href: '/profile/edit' },
-                { icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', title: 'Engage with community', desc: 'Post updates and help others', href: '/feed' },
-                { icon: ThumbsUp, color: 'text-purple-500', bg: 'bg-purple-500/10', title: 'Get endorsements', desc: 'Ask connections to endorse your skills', href: '/connections' },
+                { icon: Users, color: 'text-status-info', bg: 'bg-status-info-bg', title: 'Complete your profile', desc: 'Add portfolio items and experience', href: '/profile/edit' },
+                { icon: MessageCircle, color: 'text-status-success', bg: 'bg-status-success-bg', title: 'Engage with community', desc: 'Post updates and help others', href: '/feed' },
+                { icon: ThumbsUp, color: 'text-status-accent', bg: 'bg-status-accent-bg', title: 'Get endorsements', desc: 'Ask connections to endorse your skills', href: '/connections' },
               ].map((tip) => {
                 const TipIcon = tip.icon;
                 return (
                   <Link key={tip.title} href={tip.href}>
                     <div className="flex gap-3 rounded-xl border border-border/40 p-3 hover:bg-muted/40 hover:border-primary/30 transition-all cursor-pointer">
                       <div className={cn('rounded-lg p-2 h-fit', tip.bg)}>
-                        <TipIcon className={cn('h-4 w-4', tip.color)} />
+                        <TipIcon className={cn('icon-sm', tip.color)} />
                       </div>
                       <div>
                         <p className="font-medium text-sm">{tip.title}</p>

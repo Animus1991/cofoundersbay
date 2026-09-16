@@ -384,7 +384,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = node.upload.originalName || 'download';
+      a.download = node.upload?.originalName || 'download';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -406,7 +406,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {/* ── Header: icon + editable title + unsaved/save ── */}
         <div className="flex-none flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
           <div className="flex-none p-1.5 rounded-lg" style={{ background: `${nodeColor}20` }}>
-            <Icon className="w-4 h-4" style={{ color: nodeColor }} />
+            <Icon className="icon-sm" style={{ color: nodeColor }} />
           </div>
           {isEditable ? (
             <input
@@ -439,7 +439,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 title="Download"
               >
-                <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                <Download className="icon-sm" />
               </button>
             )}
             {node.upload?.sizeBytes && (
@@ -454,22 +454,22 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {/* ── Phase 10: Builder Document link bar ── */}
         {(node.builderDocumentId || showLinkInput) && (
           <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-xs">
-            <Link2 className="w-3.5 h-3.5 text-primary-emphasis shrink-0" aria-hidden="true" />
+            <Link2 className="icon-sm text-primary-accessible shrink-0" />
             {node.builderDocumentId ? (
               <>
-                <span className="text-primary-emphasis font-medium">Linked to Builder document</span>
+                <span className="text-primary-accessible font-medium">Linked to Builder document</span>
                 <button
                   onClick={() => router.push('/builder')}
-                  className="flex items-center gap-1 text-primary-emphasis hover:underline ml-1"
+                  className="flex items-center gap-1 text-primary-accessible hover:underline ml-1"
                 >
-                  <ExternalLink className="icon-2xs" aria-hidden="true" /> Open
+                  <ExternalLink className="icon-sm" /> Open
                 </button>
                 <button
                   onClick={() => { onUpdate({ builderDocumentId: null }); }}
-                  className="flex items-center gap-1 ml-auto text-muted-foreground hover:text-destructive-emphasis transition-colors"
+                  className="flex items-center gap-1 ml-auto text-muted-foreground hover:text-destructive-accessible transition-colors"
                   title="Remove link"
                 >
-                  <Link2Off className="w-3.5 h-3.5" aria-hidden="true" />
+                  <Link2Off className="icon-sm" />
                 </button>
               </>
             ) : (
@@ -502,7 +502,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   Link
                 </button>
                 <button onClick={() => setShowLinkInput(false)} className="text-muted-foreground hover:text-foreground">
-                  <X className="w-3.5 h-3.5" aria-hidden="true" />
+                  <X className="icon-sm" />
                 </button>
               </>
             )}
@@ -513,7 +513,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             onClick={() => setShowLinkInput(true)}
             className="flex-none flex items-center gap-1.5 px-4 py-1 border-b border-transparent hover:border-border bg-transparent hover:bg-muted/40 text-2xs text-muted-foreground hover:text-foreground transition-colors w-full text-left"
           >
-            <Link2 className="icon-2xs" aria-hidden="true" /> Link to Builder document…
+            <Link2 className="icon-sm" /> Link to Builder document…
           </button>
         )}
 
@@ -598,9 +598,9 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   />
                   <button
                     onClick={() => removeChecklistItem(item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded-sm hover:text-destructive-emphasis"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive-accessible"
                   >
-                    <X className="icon-2xs" aria-hidden="true" />
+                    <X className="icon-sm" />
                   </button>
                 </div>
               ))}
@@ -609,7 +609,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               onClick={addChecklistItem}
               className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> Add item
+              <Plus className="icon-sm" /> Add item
             </button>
           </div>
         )}
@@ -655,7 +655,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   onClick={() => setImgZoom((z) => Math.max(0.2, z - 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
-                  <ZoomOut className="w-3.5 h-3.5" aria-hidden="true" />
+                  <ZoomOut className="icon-sm" />
                 </button>
                 <span className="text-xs text-muted-foreground min-w-[44px] text-center">
                   {Math.round(imgZoom * 100)}%
@@ -664,13 +664,13 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   onClick={() => setImgZoom((z) => Math.min(4, z + 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
-                  <ZoomIn className="w-3.5 h-3.5" aria-hidden="true" />
+                  <ZoomIn className="icon-sm" />
                 </button>
                 <button
                   onClick={() => setImgZoom(1)}
                   className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
-                  <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
+                  <Maximize2 className="icon-sm" />
                 </button>
               </div>
               <div className="overflow-auto flex-1 flex items-start justify-center w-full">
@@ -706,7 +706,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 href={node.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary-emphasis hover:underline break-all text-center"
+                className="text-primary-accessible hover:underline break-all text-center"
               >
                 {node.url}
               </a>
@@ -733,7 +733,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   onClick={handleDownload}
                   className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5" aria-hidden="true" /> Download
+                  <Download className="icon-sm" /> Download
                 </button>
               )}
             </div>

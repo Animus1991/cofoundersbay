@@ -554,12 +554,12 @@ export function ResearchNodeCard({
       >
         <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-1.5">
-            <Spline className="w-3.5 h-3.5" style={{ color: '#EC4899' }} aria-hidden="true" />
+            <Spline className="icon-sm" style={{ color: '#EC4899' }} />
             <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-destructive/10 text-destructive-emphasis">
-              <Trash2 className="icon-2xs" aria-hidden="true" />
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-accessible">
+              <Trash2 className="icon-sm" />
             </button>
           </div>
         </div>
@@ -643,9 +643,9 @@ export function ResearchNodeCard({
             </button>
             <button
               onClick={handleDelete}
-              className="w-4 h-4 flex items-center justify-center rounded hover:bg-red-200/50"
+              className="w-4 h-4 flex items-center justify-center rounded hover:bg-status-danger/20"
             >
-              <X className="w-2.5 h-2.5 text-destructive-emphasis" aria-hidden="true" />
+              <X className="w-2.5 h-2.5 text-destructive-accessible" />
             </button>
           </div>
         </div>
@@ -730,7 +730,7 @@ export function ResearchNodeCard({
       {/* Type strip + actions */}
       <div className="flex items-center justify-between px-2.5 pt-2.5 pb-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Icon className="w-4 h-4 shrink-0" style={{ color: nodeColor }} />
+          <Icon className="icon-sm shrink-0" style={{ color: nodeColor }} />
           <span
             className="text-2xs font-semibold uppercase tracking-wide"
             style={{ color: nodeColor }}
@@ -739,12 +739,12 @@ export function ResearchNodeCard({
           </span>
         </div>
         <div ref={menuRef} className="relative flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          {node.locked && <Lock className="icon-2xs text-muted-foreground" aria-hidden="true" />}
+          {node.locked && <Lock className="icon-sm text-muted-foreground" />}
           <button
             onClick={(e) => { e.stopPropagation(); setShowMenu((p) => !p); setShowColorPicker(false); }}
             className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
-            <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+            <MoreHorizontal className="icon-sm text-muted-foreground" />
           </button>
 
           {/* Context menu */}
@@ -757,14 +757,14 @@ export function ResearchNodeCard({
                 onClick={() => { onDoubleClick(); setShowMenu(false); }}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
-                <BookOpen className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Open
+                <BookOpen className="icon-sm text-muted-foreground" /> Open
               </button>
               {node.builderDocumentId && (
                 <button
                   onClick={() => { router.push('/builder'); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary-emphasis hover:bg-primary/10 w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary-accessible hover:bg-primary/10 w-full text-left transition-colors"
                 >
-                  <Rocket className="w-3.5 h-3.5" aria-hidden="true" /> Open in Builder
+                  <Rocket className="icon-sm" /> Open in Builder
                 </button>
               )}
               <button
@@ -772,8 +772,8 @@ export function ResearchNodeCard({
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.locked
-                  ? <><Unlock className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Unlock</>
-                  : <><Lock className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Lock</>
+                  ? <><Unlock className="icon-sm text-muted-foreground" /> Unlock</>
+                  : <><Lock className="icon-sm text-muted-foreground" /> Lock</>
                 }
               </button>
               <button
@@ -781,31 +781,31 @@ export function ResearchNodeCard({
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.collapsed
-                  ? <><Eye className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Expand</>
-                  : <><EyeOff className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Collapse</>
+                  ? <><Eye className="icon-sm text-muted-foreground" /> Expand</>
+                  : <><EyeOff className="icon-sm text-muted-foreground" /> Collapse</>
                 }
               </button>
               <button
                 onClick={() => { setShowColorPicker(true); setShowMenu(false); }}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
-                <Palette className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Color
+                <Palette className="icon-sm text-muted-foreground" /> Color
               </button>
               {onCommentClick && (
                 <button
                   onClick={() => { onCommentClick(); setShowMenu(false); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" /> Comments
+                  <MessageCircle className="icon-sm text-muted-foreground" /> Comments
                 </button>
               )}
               <div className="my-1 border-t border-border/60" />
               <button
                 onClick={(e) => { handleDelete(e); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-emphasis hover:bg-destructive/10 w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"
                 disabled={node.locked}
               >
-                <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Delete
+                <Trash2 className="icon-sm" /> Delete
               </button>
             </div>
           )}
@@ -878,8 +878,11 @@ export function ResearchNodeCard({
             const status = (meta?.status as string) || 'todo';
             const priority = (meta?.priority as string) || 'medium';
             const dueDate = meta?.dueDate as string | undefined;
-            const STATUS_COLORS: Record<string, string> = { todo: 'bg-slate-100 text-slate-600', in_progress: 'bg-blue-100 text-blue-700', done: 'bg-green-100 text-green-700', blocked: 'bg-red-100 text-red-700' };
-            const PRIORITY_COLORS: Record<string, string> = { low: 'text-slate-400', medium: 'text-amber-500', high: 'text-orange-500', urgent: 'text-red-600 dark:text-red-400' };
+            const STATUS_COLORS: Record<string, string> = { todo: 'bg-status-neutral-bg text-status-neutral', in_progress: 'bg-status-info-bg text-status-info', done: 'bg-status-success-bg text-status-success', blocked: 'bg-status-danger-bg text-status-danger' };
+            // Four steps must stay visually distinct: amber and orange would both map to
+            // `warning`, collapsing medium into high. Opacity separates them without
+            // leaving the warm ramp the original intended.
+            const PRIORITY_COLORS: Record<string, string> = { low: 'text-status-neutral', medium: 'text-status-warning/70', high: 'text-status-warning', urgent: 'text-status-danger' };
             return (
               <div className="flex flex-wrap gap-1 items-center">
                 <span className={cn('text-2xs px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>
@@ -903,7 +906,7 @@ export function ResearchNodeCard({
           {/* Document/PDF file info — always show icon box for doc types */}
           {isDoc && (
             <div className="flex items-center gap-2 py-2 px-2 rounded-lg bg-secondary mb-1.5">
-              <Icon className="w-6 h-6 opacity-70 shrink-0" style={{ color: nodeColor }} />
+              <Icon className="icon-lg opacity-70 shrink-0" style={{ color: nodeColor }} />
               <div className="min-w-0">
                 <p className="text-2xs text-muted-foreground truncate">
                   {node.upload?.mimeType ?? 'Document'}
@@ -917,13 +920,13 @@ export function ResearchNodeCard({
 
           {/* Link preview */}
           {(effectiveType === 'link' || node.type === 'link') && node.url && (
-            <p className="text-2xs text-primary-emphasis truncate underline">{node.url}</p>
+            <p className="text-2xs text-primary-accessible truncate underline">{node.url}</p>
           )}
 
           {/* Reference preview */}
           {(effectiveType === 'reference' || node.type === 'reference') && (
             <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-secondary">
-              <Users className="icon-md text-muted-foreground shrink-0" aria-hidden="true" />
+              <Users className="icon-md text-muted-foreground shrink-0" />
               <span className="text-2xs text-muted-foreground truncate">Entity reference</span>
             </div>
           )}
@@ -952,8 +955,8 @@ export function ResearchNodeCard({
               onClick={(e) => { e.stopPropagation(); router.push('/builder'); }}
               title="Linked to a Builder document — click to open Builder"
             >
-              <Rocket className="w-2.5 h-2.5 text-primary-emphasis" aria-hidden="true" />
-              <span className="text-2xs font-medium text-primary-emphasis">Linked to Builder</span>
+              <Rocket className="w-2.5 h-2.5 text-primary-accessible" />
+              <span className="text-2xs font-medium text-primary-accessible">Linked to Builder</span>
             </div>
           )}
 
@@ -996,7 +999,7 @@ export function ResearchNodeCard({
       {/* Collapsed indicator */}
       {node.collapsed && (
         <div className="px-2.5 pb-2 flex items-center gap-1.5">
-          <Minimize2 className="icon-2xs text-muted-foreground" aria-hidden="true" />
+          <Minimize2 className="icon-sm text-muted-foreground" />
           <span className="text-2xs text-muted-foreground truncate">
             {node.title || 'Untitled'}
           </span>

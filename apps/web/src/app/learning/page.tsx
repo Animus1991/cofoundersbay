@@ -2,17 +2,22 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, Users, BarChart3 } from 'lucide-react';
+import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMeProfile, listLearningResources, getLearningCategories, type LearningResourceItem } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
+import { bilingualInline } from '@/lib/i18n/format';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 interface Resource {
   id: string;
@@ -33,31 +38,32 @@ interface Resource {
 const CATEGORIES = ['All', 'Fundraising', 'Product', 'Marketing', 'Sales', 'Leadership', 'Tech'];
 
 const TYPE_FILTERS = [
-  { key: 'all', label: 'All Types' },
-  { key: 'course', label: 'Courses' },
-  { key: 'guide', label: 'Guides' },
-  { key: 'video', label: 'Videos' },
-  { key: 'article', label: 'Articles' },
+  { key: 'all', labelKey: 'type_all' as const },
+  { key: 'course', labelKey: 'type_course' as const },
+  { key: 'guide', labelKey: 'type_guide' as const },
+  { key: 'video', labelKey: 'type_video' as const },
+  { key: 'article', labelKey: 'type_article' as const },
 ] as const;
 type TypeFilterKey = typeof TYPE_FILTERS[number]['key'];
 
 interface LearningPath {
   id: string;
-  title: string;
-  description: string;
+  titleKey: 'path_fast_title' | 'path_fund_title' | 'path_growth_title' | 'path_team_title';
+  descKey: 'path_fast_desc' | 'path_fund_desc' | 'path_growth_desc' | 'path_team_desc';
+  category: string;
   steps: number;
   duration: string;
   level: 'beginner' | 'intermediate' | 'advanced';
-  progress: number; // 0-100
+  progress: number;
   color: string;
-  icon: React.ElementType;
+  glyph: CfbGlyphName;
 }
 
 const LEARNING_PATHS: LearningPath[] = [
-  { id: 'lp1', title: 'Founder Fast Track', description: 'Go from idea to funded startup in structured steps', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'from-violet-500/20 to-purple-500/20 border-violet-500/30', icon: Target },
-  { id: 'lp2', title: 'Fundraising Mastery', description: 'Seed to Series A — pitching, term sheets, VC psychology', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30', icon: TrendingUp },
-  { id: 'lp3', title: 'Growth Playbook', description: 'Proven frameworks for user acquisition and retention', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'from-amber-500/20 to-orange-500/20 border-amber-500/30', icon: BarChart3 },
-  { id: 'lp4', title: 'Team & Culture Builder', description: 'Hire, retain, and lead high-performance startup teams', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30', icon: Users },
+  { id: 'lp1', titleKey: 'path_fast_title', descKey: 'path_fast_desc', category: 'Product', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'bg-status-accent-bg border-status-accent-border', glyph: 'spark' },
+  { id: 'lp2', titleKey: 'path_fund_title', descKey: 'path_fund_desc', category: 'Fundraising', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'bg-status-success-bg border-status-success-border', glyph: 'wallet' },
+  { id: 'lp3', titleKey: 'path_growth_title', descKey: 'path_growth_desc', category: 'Marketing', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'bg-status-warning-bg border-status-warning-border', glyph: 'chart' },
+  { id: 'lp4', titleKey: 'path_team_title', descKey: 'path_team_desc', category: 'Leadership', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'bg-status-info-bg border-status-info-border', glyph: 'people' },
 ];
 
 const DEMO_RESOURCES: Resource[] = [
@@ -150,16 +156,16 @@ const DEMO_RESOURCES: Resource[] = [
 ];
 
 const TYPE_CONFIG = {
-  article: { label: 'Article', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  video:   { label: 'Video',   icon: Video,    color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  course:  { label: 'Course',  icon: BookOpen, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  guide:   { label: 'Guide',   icon: Award,    color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  article: { labelKey: 'type_article' as const, icon: FileText, color: 'text-status-info', bg: 'bg-status-info-bg' },
+  video:   { labelKey: 'type_video' as const,   icon: Video,    color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+  course:  { labelKey: 'type_course' as const,  icon: BookOpen, color: 'text-status-success', bg: 'bg-status-success-bg' },
+  guide:   { labelKey: 'type_guide' as const,   icon: Award,    color: 'text-status-warning', bg: 'bg-status-warning-bg' },
 };
 
 const DIFFICULTY_CONFIG = {
-  beginner: { label: 'Beginner', color: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
-  intermediate: { label: 'Intermediate', color: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
-  advanced: { label: 'Advanced', color: 'bg-red-500/20 text-red-700 dark:text-red-400' },
+  beginner: { labelKey: 'difficulty_beginner' as const, color: 'bg-status-success-bg text-status-success ' },
+  intermediate: { labelKey: 'difficulty_intermediate' as const, color: 'bg-status-warning-bg text-status-warning ' },
+  advanced: { labelKey: 'difficulty_advanced' as const, color: 'bg-status-danger-bg text-status-danger ' },
 };
 
 function ResourceCard({ resource }: { resource: Resource }) {
@@ -173,7 +179,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
         {/* Type icon + title */}
         <div className="flex items-start gap-3">
           <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', typeConfig.bg, typeConfig.color)}>
-            <typeConfig.icon className="h-5 w-5" />
+            <typeConfig.icon className="icon-md" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm text-foreground line-clamp-2 mb-1.5 leading-snug">
@@ -181,30 +187,27 @@ function ResourceCard({ resource }: { resource: Resource }) {
             </h3>
             <div className="flex items-center gap-1.5 flex-wrap">
               <Badge variant="outline" className={cn('text-2xs h-4 px-1.5 border-0', typeConfig.bg, typeConfig.color)}>
-                {typeConfig.label}
+                <BilingualText en={learningEn(typeConfig.labelKey)} el={learningEl(typeConfig.labelKey)} compact />
               </Badge>
               <Badge variant="secondary" className={cn('text-2xs h-4 px-1.5', difficultyConfig.color)}>
-                {difficultyConfig.label}
+                <BilingualText en={learningEn(difficultyConfig.labelKey)} el={learningEl(difficultyConfig.labelKey)} compact />
               </Badge>
               {resource.isFeatured && (
-                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-emphasis">
-                  Featured
+                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-accessible">
+                  <BilingualText en={learningEn('featured_badge')} el={learningEl('featured_badge')} compact />
                 </Badge>
               )}
             </div>
           </div>
           <button
             onClick={() => setSaved(!saved)}
-            aria-label={saved ? 'Remove from saved' : 'Save for later'}
-            aria-pressed={saved}
+            // WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows.
             className={cn(
-              // 16x16 (the bare icon) failed WCAG 2.5.8's 24px floor and the
-              // aria-hidden icon left the control with no accessible name.
-              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors',
-              saved ? 'text-primary-emphasis' : 'text-muted-foreground/40 hover:text-muted-foreground',
+              'shrink-0 -m-1 mt-0.5 inline-flex tap-target items-center justify-center transition-colors',
+              saved ? 'text-primary-accessible' : 'text-muted-foreground/40 hover:text-muted-foreground',
             )}
           >
-            <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} aria-hidden="true" />
+            <Bookmark className={cn('icon-sm', saved && 'fill-current')} />
           </button>
         </div>
 
@@ -225,18 +228,18 @@ function ResourceCard({ resource }: { resource: Resource }) {
             <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
             <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
               {resource.duration && (
-                <span className="flex items-center gap-0.5"><Clock className="icon-2xs" aria-hidden="true" />{resource.duration}</span>
+                <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{resource.duration}</span>
               )}
               {resource.completedBy && (
-                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-2xs text-emerald-500" aria-hidden="true" />{resource.completedBy.toLocaleString()}</span>
+                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-sm text-status-success" />{resource.completedBy.toLocaleString('en-GB')}</span>
               )}
             </div>
           </div>
           <Button variant="default" size="sm" className="gap-1 h-7 text-xs shrink-0" onClick={() => window.open(resource.url, '_blank')}>
             {resource.type === 'video' || resource.type === 'course' ? (
-              <><Play className="icon-2xs" aria-hidden="true" />Start</>
+              <><Play className="icon-sm" /><BilingualText en={learningEn('start')} el={learningEl('start')} compact /></>
             ) : (
-              <><ExternalLink className="icon-2xs" aria-hidden="true" />Open</>
+              <><ExternalLink className="icon-sm" /><BilingualText en={learningEn('open')} el={learningEl('open')} compact /></>
             )}
           </Button>
         </div>
@@ -245,30 +248,44 @@ function ResourceCard({ resource }: { resource: Resource }) {
   );
 }
 
-function LearningPathCard({ path }: { path: LearningPath }) {
-  const Icon = path.icon;
+function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (category: string) => void }) {
   return (
-    <div className={cn('relative rounded-xl border bg-gradient-to-br p-4 transition-all hover:shadow-md cursor-pointer', path.color)}>
+    <button
+      type="button"
+      onClick={() => onSelect(path.category)}
+      className={cn('relative rounded-xl border p-4 text-left transition-all hover:shadow-md', path.color)}
+    >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className={cn('flex h-9 w-9 items-center justify-center rounded-md bg-background/60')}>
-          <Icon className="h-4.5 w-4.5 text-foreground" />
+        <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-background/60')}>
+          <CfbGlyph name={path.glyph} className="icon-md text-foreground" />
         </div>
         {path.progress > 0 && (
-          <Badge variant="secondary" className="text-2xs bg-background/60">{path.progress}% done</Badge>
+          <Badge variant="secondary" className="text-2xs bg-background/60">
+            {learningEn('percent_done').replace('{n}', String(path.progress))}
+          </Badge>
         )}
       </div>
-      <h3 className="font-semibold text-sm text-foreground mb-1">{path.title}</h3>
-      <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
+      <h3 className="font-semibold text-sm text-foreground mb-1">
+        <BilingualText en={learningEn(path.titleKey)} el={learningEl(path.titleKey)} compact />
+      </h3>
+      <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">
+        <BilingualText en={learningEn(path.descKey)} el={learningEl(path.descKey)} compact />
+      </p>
       <div className="flex items-center gap-3 text-2xs text-muted-foreground mb-2">
-        <span className="flex items-center gap-0.5"><BookOpen className="icon-2xs" aria-hidden="true" />{path.steps} modules</span>
-        <span className="flex items-center gap-0.5"><Clock className="icon-2xs" aria-hidden="true" />{path.duration}</span>
+        <span className="flex items-center gap-0.5">
+          <BookOpen className="icon-sm" />
+          {learningEn('modules').replace('{n}', String(path.steps))}
+        </span>
+        <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{path.duration}</span>
       </div>
       {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
-      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary-emphasis">
-        {path.progress > 0 ? 'Continue path' : 'Start path'}
-        <ChevronRight className="icon-2xs" aria-hidden="true" />
+      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary-accessible">
+        {path.progress > 0
+          ? <BilingualText en={learningEn('continue_path')} el={learningEl('continue_path')} compact />
+          : <BilingualText en={learningEn('start_path')} el={learningEl('start_path')} compact />}
+        <ChevronRight className="icon-sm" />
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -305,7 +322,7 @@ export default function LearningPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: meData } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
   });
@@ -346,7 +363,8 @@ export default function LearningPage() {
     const matchesSkill = userSkills.some((skill) =>
       r.tags.some((tag) => tag.toLowerCase().includes(skill) || skill.includes(tag.toLowerCase()))
     );
-    return matchesRole || matchesSkill;
+    const matchesPath = selectedCategory === 'All' || r.category === selectedCategory;
+    return (matchesRole || matchesSkill) && matchesPath;
   }).slice(0, 4);
 
   // If backend is handling filtering, skip client-side filter; otherwise apply client-side
@@ -373,29 +391,28 @@ export default function LearningPage() {
   }, 0));
 
   return (
-    <AppShell
-      title="Learning Hub"
-      description="Courses, guides, and resources to grow your startup"
-    >
+    <AppShell showHelp askAi="Which readiness gap should I study first, and which learning path or resource matches it?">
       <div className="space-y-6 pb-10">
       {/* Stats bar */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: 'Resources', value: totalResourceCount, icon: BookOpen, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Courses', value: courseCount, icon: Play, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Total Hours', value: `${totalHours}h`, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'In Progress', value: inProgressPaths.length, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+          { labelKey: 'stat_resources' as const, value: totalResourceCount, icon: BookOpen, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+          { labelKey: 'stat_courses' as const, value: courseCount, icon: Play, color: 'text-status-success', bg: 'bg-status-success-bg' },
+          { labelKey: 'stat_hours' as const, value: `${totalHours}h`, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+          { labelKey: 'stat_progress' as const, value: inProgressPaths.length, icon: Flame, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
         ].map((s) => {
           const SIcon = s.icon;
           return (
-            <Card key={s.label} className="shadow-sm border-border/50">
+            <Card key={s.labelKey} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <SIcon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">
+                    <BilingualText en={learningEn(s.labelKey)} el={learningEl(s.labelKey)} compact />
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -408,15 +425,30 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="icon-sm text-primary-emphasis" aria-hidden="true" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
+              <Target className="icon-sm text-primary-accessible" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                <BilingualText en={learningEn('paths')} el={learningEl('paths')} compact />
+              </h2>
             </div>
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
-              View all <ChevronRight className="icon-2xs" aria-hidden="true" />
-            </Button>
+            {/* "View all" had nothing to reveal — the grid below already
+                renders every path. A count says something true in the space
+                the promise was occupying. */}
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {LEARNING_PATHS.length}{' '}
+              <BilingualText en="paths" el="μονοπάτια" compact />
+            </span>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {LEARNING_PATHS.map((path) => <LearningPathCard key={path.id} path={path} />)}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {LEARNING_PATHS.map((path) => (
+              <LearningPathCard
+                key={path.id}
+                path={path}
+                onSelect={(category) => {
+                  setSelectedCategory(category);
+                  setActiveTab('all');
+                }}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -425,9 +457,9 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Recommended for you
+              <BilingualText en={learningEn('recommended')} el={learningEl('recommended')} compact />
             </h2>
             <Badge variant="secondary" className="text-2xs capitalize">{userRole}</Badge>
           </div>
@@ -442,18 +474,24 @@ export default function LearningPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4">
         <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="all">All Resources</TabsTrigger>
-          <TabsTrigger value="saved">Saved</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="all">
+            <BilingualText en={learningEn('tab_all')} el={learningEl('tab_all')} compact />
+          </TabsTrigger>
+          <TabsTrigger value="saved">
+            <BilingualText en={learningEn('tab_saved')} el={learningEl('tab_saved')} compact />
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4">
           {/* Search & Filters */}
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search courses, guides, topics..."
+                placeholder={bilingualInline(learningEn('search'), learningEl('search'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -469,10 +507,10 @@ export default function LearningPage() {
                   className={cn(
                     'rounded-full border px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
                     typeFilter === tf.key
-                      ? 'border-primary bg-primary/20 text-primary-emphasis'
+                      ? 'border-primary bg-primary/20 text-primary-accessible'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
-                >{tf.label}</button>
+                >{<BilingualText en={learningEn(tf.labelKey)} el={learningEl(tf.labelKey)} compact />}</button>
               ))}
             </div>
 
@@ -485,7 +523,7 @@ export default function LearningPage() {
                   className={cn(
                     'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
                     selectedCategory === category
-                      ? 'border-primary bg-primary/20 text-primary-emphasis'
+                      ? 'border-primary bg-primary/20 text-primary-accessible'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
@@ -518,9 +556,9 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                <TrendingUp className="icon-sm text-primary-accessible" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Featured Resources
+                  <BilingualText en={learningEn('featured')} el={learningEl('featured')} compact />
                 </h2>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -535,7 +573,7 @@ export default function LearningPage() {
           {!learningLoading && regularResources.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                All Resources
+                <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {regularResources.map((resource) => (
@@ -548,10 +586,12 @@ export default function LearningPage() {
           {/* Empty State */}
           {!learningLoading && filteredResources.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
-              <p className="font-medium text-foreground">No resources found</p>
+              <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
+              <p className="font-medium text-foreground">
+                <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
+              </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Try adjusting your search or filters
+                <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
               </p>
             </div>
           )}

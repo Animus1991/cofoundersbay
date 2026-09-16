@@ -1,10 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { createContext, useContext, useCallback, useState, useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -48,10 +50,7 @@ export function useToast() {
   return context;
 }
 
-/** More than this on screen at once is noise; the oldest are dropped. */
-const MAX_VISIBLE_TOASTS = 4;
-
-const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>> = {
+const toastIcons: Record<ToastType, typeof CheckCircle> = {
   success: CheckCircle,
   error: AlertCircle,
   warning: AlertTriangle,
@@ -59,63 +58,79 @@ const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>>
 };
 
 const toastStyles: Record<ToastType, string> = {
-  success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-  error: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400',
-  warning: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
-  info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
-};
-
-/** Prefix read out before the toast body so the type is not conveyed by colour alone. */
-const toastRoleLabel: Record<ToastType, string> = {
-  success: 'Success',
-  error: 'Error',
-  warning: 'Warning',
-  info: 'Information',
+  success: 'border-status-success-border/40 bg-status-success-bg text-status-success',
+  error: 'border-status-danger-border/40 bg-status-danger-bg text-status-danger',
+  warning: 'border-status-warning-border/40 bg-status-warning-bg text-status-warning',
+  info: 'border-status-info-border/40 bg-status-info-bg text-status-info',
 };
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
   const Icon = toastIcons[toast.type];
-  const [paused, setPaused] = useState(false);
-  const onRemoveRef = useRef(onRemove);
-  onRemoveRef.current = onRemove;
+  const { primary } = useLanguagePreference();
+  const urgent = toast.type === 'error' || toast.type === 'warning';
+  const dismissLabel = primary === 'el'
+    ? bilingualAria('Κλείσιμο ειδοποίησης', 'Dismiss notification')
+    : bilingualAria('Dismiss notification', 'Κλείσιμο ειδοποίησης');
+  const remove = React.useRef(onRemove);
+  remove.current = onRemove;
+  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const started = React.useRef(0);
+  const remaining = React.useRef(0);
+  const timed = React.useRef(false);
+  const paused = React.useRef({ hover: false, focus: false });
 
-  // Auto-dismiss, paused while the pointer or keyboard focus is inside the
-  // toast so a user reading it (or reaching its action button) is not cut off.
+  const stopTimer = useCallback(() => {
+    if (timer.current === null) return;
+    clearTimeout(timer.current);
+    timer.current = null;
+    remaining.current = Math.max(0, remaining.current - (Date.now() - started.current));
+  }, []);
+
+  const startTimer = useCallback(() => {
+    const { hover, focus } = paused.current;
+    if (!timed.current || timer.current !== null || hover || focus) return;
+    started.current = Date.now();
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      remove.current();
+    }, remaining.current);
+  }, []);
+
   useEffect(() => {
-    const duration = toast.duration ?? 5000;
-    if (duration <= 0 || paused) return;
-    const timer = setTimeout(() => onRemoveRef.current(), duration);
-    return () => clearTimeout(timer);
-  }, [toast.duration, paused]);
+    remaining.current = toast.duration ?? 5000;
+    timed.current = remaining.current > 0;
+    startTimer();
+    return stopTimer;
+  }, [toast.duration, startTimer, stopTimer]);
 
   return (
     <div
-      // Errors and warnings interrupt; success/info wait for a pause.
-      role={toast.type === 'error' || toast.type === 'warning' ? 'alert' : 'status'}
-      aria-atomic="true"
+      onMouseEnter={() => { paused.current.hover = true; stopTimer(); }}
+      onMouseLeave={() => { paused.current.hover = false; startTimer(); }}
+      onFocusCapture={() => { paused.current.focus = true; stopTimer(); }}
+      onBlurCapture={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        paused.current.focus = false;
+        startTimer();
+      }}
       className={cn(
-        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-xl animate-slide-in-right',
-        toastStyles[toast.type],
+        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-xl animate-slide-in-right motion-reduce:animate-none',
+        toastStyles[toast.type]
       )}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={() => setPaused(false)}
     >
-      <Icon className="icon-md mt-0.5 flex-shrink-0" aria-hidden="true" />
-      <div className="flex-1 space-y-1">
-        <p className="text-sm font-semibold text-foreground">
-          <span className="sr-only">{toastRoleLabel[toast.type]}: </span>
-          {toast.title}
-        </p>
-        {toast.description && (
-          <p className="text-sm text-muted-foreground">{toast.description}</p>
-        )}
+      <Icon className="icon-md flex-shrink-0 mt-0.5" aria-hidden="true" />
+      <div className="min-w-0 flex-1 space-y-1">
+        <div role={urgent ? 'alert' : 'status'} aria-live={urgent ? 'assertive' : 'polite'} aria-atomic="true" className="space-y-1 break-words">
+          <p className="text-sm font-semibold text-foreground">{toast.title}</p>
+          {toast.description && (
+            <p className="text-sm text-muted-foreground">{toast.description}</p>
+          )}
+        </div>
         {toast.action && (
           <button
             type="button"
             onClick={toast.action.onClick}
-            className="focus-ring mt-2 rounded text-sm font-medium underline-offset-2 hover:underline"
+            className="mt-2 rounded-md text-sm font-medium underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {toast.action.label}
           </button>
@@ -123,9 +138,9 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
       </div>
       <button
         type="button"
+        aria-label={dismissLabel}
         onClick={onRemove}
-        aria-label={`Dismiss ${toastRoleLabel[toast.type].toLowerCase()} notification`}
-        className="focus-ring rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <X className="icon-sm" aria-hidden="true" />
       </button>
@@ -143,38 +158,21 @@ function ToastPortal({ toasts, removeToast }: { toasts: Toast[]; removeToast: (i
   if (!container) return null;
 
   return createPortal(
-    // The live region must exist in the DOM before a toast is inserted into it,
-    // otherwise screen readers do not announce the insertion — so this wrapper
-    // renders unconditionally, empty, for the life of the app.
-    <div
-      role="region"
-      aria-label="Notifications"
-      aria-live="polite"
-      aria-relevant="additions text"
-      // Phones: pinned to the top, inset on both sides. `w-full max-w-sm`
-      // anchored to `right-4` resolved to 320px on a 320px screen and hung
-      // 16px off the left edge, and the bottom edge is already taken by the
-      // tab bar and the chat bubble. From `sm` it returns to bottom-right.
-      className="pointer-events-none fixed inset-x-4 top-4 z-[100] flex w-auto flex-col gap-2 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:top-auto sm:w-full sm:max-w-sm"
-    >
+    <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col gap-2 max-w-sm pointer-events-none sm:left-auto sm:right-4 sm:bottom-4">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
       ))}
     </div>,
-    container,
+    container
   );
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const idRef = useRef(0);
 
   const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
-    // Monotonic ids — Math.random() collides, and a collision silently drops a
-    // toast because React reuses the keyed element.
-    idRef.current += 1;
-    const id = `toast-${idRef.current}`;
-    setToasts((prev) => [...prev, { ...toast, id }].slice(-MAX_VISIBLE_TOASTS));
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { ...toast, id }]);
   }, []);
 
   const removeToast = useCallback((id: string) => {
@@ -182,38 +180,31 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const success = useCallback(
-    (title: string, description?: string, options?: ToastOptions) =>
+    (title: string, description?: string, options?: ToastOptions) => 
       addToast({ type: 'success', title, description, ...options }),
-    [addToast],
+    [addToast]
   );
 
   const error = useCallback(
-    (title: string, description?: string, options?: ToastOptions) =>
+    (title: string, description?: string, options?: ToastOptions) => 
       addToast({ type: 'error', title, description, ...options }),
-    [addToast],
+    [addToast]
   );
 
   const warning = useCallback(
-    (title: string, description?: string, options?: ToastOptions) =>
+    (title: string, description?: string, options?: ToastOptions) => 
       addToast({ type: 'warning', title, description, ...options }),
-    [addToast],
+    [addToast]
   );
 
   const info = useCallback(
-    (title: string, description?: string, options?: ToastOptions) =>
+    (title: string, description?: string, options?: ToastOptions) => 
       addToast({ type: 'info', title, description, ...options }),
-    [addToast],
-  );
-
-  // Memoised: this context sits above the whole tree, so an unstable value
-  // re-rendered every consumer on every toast.
-  const value = useMemo<ToastContextType>(
-    () => ({ toasts, addToast, removeToast, success, error, warning, info }),
-    [toasts, addToast, removeToast, success, error, warning, info],
+    [addToast]
   );
 
   return (
-    <ToastContext.Provider value={value}>
+    <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, warning, info }}>
       {children}
       <ToastPortal toasts={toasts} removeToast={removeToast} />
     </ToastContext.Provider>

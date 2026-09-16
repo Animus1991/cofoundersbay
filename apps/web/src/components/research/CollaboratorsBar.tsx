@@ -17,7 +17,7 @@ export function CollaboratorsBar({ collaborators, isConnected, className }: Coll
       {/* Connection indicator */}
       <div className={cn(
         'w-2 h-2 rounded-full transition-colors',
-        isConnected ? 'bg-green-500' : 'bg-muted-foreground/40',
+        isConnected ? 'bg-status-success' : 'bg-muted-foreground/40',
       )} title={isConnected ? 'Live collaboration active' : 'Connecting…'} />
 
       {/* Online collaborators */}

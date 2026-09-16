@@ -138,7 +138,7 @@ export function PdfAnnotationViewer({
             className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
             title="Previous page"
           >
-            <ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" />
+            <ChevronLeft className="icon-sm" />
           </button>
           <div className="flex items-center gap-1">
             <input
@@ -162,7 +162,7 @@ export function PdfAnnotationViewer({
             className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
             title="Next page"
           >
-            <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+            <ChevronRight className="icon-sm" />
           </button>
         </div>
 
@@ -173,7 +173,7 @@ export function PdfAnnotationViewer({
             className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
           >
-            <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+            <Minus className="icon-sm" />
           </button>
           <span className="text-2xs text-muted-foreground min-w-[42px] text-center tabular-nums">
             {pdfZoom}%
@@ -183,14 +183,14 @@ export function PdfAnnotationViewer({
             className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
           >
-            <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+            <Plus className="icon-sm" />
           </button>
           <button
             onClick={handleZoomReset}
             className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset zoom"
           >
-            <Maximize2 className="icon-2xs" aria-hidden="true" />
+            <Maximize2 className="icon-sm" />
           </button>
         </div>
 
@@ -201,24 +201,24 @@ export function PdfAnnotationViewer({
             className={cn(
               'w-7 h-7 flex items-center justify-center rounded transition-colors',
               annotationMode === 'highlight'
-                ? 'bg-amber-400/20 text-amber-500'
+                ? 'bg-status-warning/20 text-status-warning'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
             title="Highlight mode"
           >
-            <Highlighter className="w-3.5 h-3.5" aria-hidden="true" />
+            <Highlighter className="icon-sm" />
           </button>
           <button
             onClick={() => setAnnotationMode(annotationMode === 'note' ? null : 'note')}
             className={cn(
               'w-7 h-7 flex items-center justify-center rounded transition-colors',
               annotationMode === 'note'
-                ? 'bg-blue-400/20 text-blue-500'
+                ? 'bg-status-info/20 text-status-info'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
             title="Add note"
           >
-            <MessageSquare className="w-3.5 h-3.5" aria-hidden="true" />
+            <MessageSquare className="icon-sm" />
           </button>
 
           {/* Color picker (when in annotation mode) */}
@@ -247,13 +247,13 @@ export function PdfAnnotationViewer({
             className={cn(
               'h-7 px-2 flex items-center gap-1 rounded-lg text-2xs font-medium transition-colors',
               showAnnotationPanel
-                ? 'bg-primary/10 text-primary-emphasis'
+                ? 'bg-primary/10 text-primary-accessible'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
           >
-            <Type className="icon-2xs" aria-hidden="true" />
+            <Type className="icon-sm" />
             {annotations.length > 0 && (
-              <span className="text-2xs bg-primary/20 text-primary-emphasis rounded-full px-1.5 py-0">{annotations.length}</span>
+              <span className="text-2xs bg-primary/20 text-primary-accessible rounded-full px-1.5 py-0">{annotations.length}</span>
             )}
           </button>
         </div>
@@ -266,7 +266,7 @@ export function PdfAnnotationViewer({
           {isLoading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="icon-xl text-primary-emphasis animate-spin" aria-hidden="true" />
+                <Loader2 className="icon-xl text-primary-accessible animate-spin" />
                 <span className="text-sm text-muted-foreground">Loading PDF…</span>
               </div>
             </div>
@@ -284,8 +284,8 @@ export function PdfAnnotationViewer({
           {annotationMode && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/95 border border-border shadow-lg">
               {annotationMode === 'highlight'
-                ? <Highlighter className="w-3.5 h-3.5" style={{ color: activeColor }} aria-hidden="true" />
-                : <MessageSquare className="w-3.5 h-3.5 text-blue-500" aria-hidden="true" />
+                ? <Highlighter className="icon-sm" style={{ color: activeColor }} />
+                : <MessageSquare className="icon-sm text-status-info" />
               }
               <span className="text-2xs font-medium text-foreground">
                 {annotationMode === 'highlight' ? 'Click and drag to highlight' : 'Click to add note'}
@@ -294,7 +294,7 @@ export function PdfAnnotationViewer({
                 onClick={() => setAnnotationMode(null)}
                 className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-secondary"
               >
-                <X className="icon-2xs" aria-hidden="true" />
+                <X className="icon-sm" />
               </button>
             </div>
           )}
@@ -305,7 +305,7 @@ export function PdfAnnotationViewer({
           <div className="w-64 flex-none border-l border-border bg-card overflow-y-auto">
             <div className="p-3 border-b border-border">
               <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5 text-primary-emphasis" aria-hidden="true" />
+                <MessageSquare className="icon-sm text-primary-accessible" />
                 Annotations
                 <span className="text-2xs text-muted-foreground ml-auto">{annotations.length}</span>
               </h3>
@@ -313,7 +313,7 @@ export function PdfAnnotationViewer({
 
             {annotations.length === 0 ? (
               <div className="p-4 text-center">
-                <Highlighter className="icon-xl text-muted-foreground/20 mx-auto mb-2" aria-hidden="true" />
+                <Highlighter className="icon-xl text-muted-foreground/20 mx-auto mb-2" />
                 <p className="text-2xs text-muted-foreground">No annotations yet.</p>
                 <p className="text-2xs text-muted-foreground/60 mt-1">
                   Use the highlight or note tool to annotate the PDF.
@@ -330,7 +330,7 @@ export function PdfAnnotationViewer({
                       </div>
                       <button
                         onClick={() => removeAnnotation(a.id)}
-                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive-emphasis transition-colors"
+                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive-accessible transition-colors"
                       >
                         <X className="w-2.5 h-2.5" aria-hidden="true" />
                       </button>
@@ -361,9 +361,9 @@ export function PdfAnnotationViewer({
                     note: '',
                   });
                 }}
-                className="w-full h-7 rounded-lg bg-primary/10 text-primary-emphasis hover:bg-primary/20 text-2xs font-medium transition-colors flex items-center justify-center gap-1"
+                className="w-full h-7 rounded-lg bg-primary/10 text-primary-accessible hover:bg-primary/20 text-2xs font-medium transition-colors flex items-center justify-center gap-1"
               >
-                <Plus className="icon-2xs" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 Add note for page {currentPage}
               </button>
             </div>

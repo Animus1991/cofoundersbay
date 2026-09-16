@@ -9,21 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Rocket, 
-  Target,
-  Clock,
-  AlertTriangle,
+import {
   CheckCircle2,
-  Users,
-  Sparkles,
   Save,
   RefreshCw,
-  Layers,
-  Zap,
-  Calendar
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
 interface Feature {
   id: string;
@@ -91,6 +87,7 @@ const defaultMVPData: MVPData = {
 };
 
 export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
+  const t = useBuilderPrimaryText();
   const [data, setData] = useState<MVPData>({ ...defaultMVPData, ...initialData });
   const [activeTab, setActiveTab] = useState('scope');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -292,56 +289,44 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
   const getComplexityColor = (complexity: Feature['complexity']) => {
     switch (complexity) {
-      case 'low': return 'text-green-600 dark:text-green-400';
-      case 'medium': return 'text-yellow-600 dark:text-yellow-400';
-      case 'high': return 'text-red-600 dark:text-red-400';
+      case 'low': return 'text-status-success';
+      case 'medium': return 'text-status-warning';
+      case 'high': return 'text-status-danger';
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-500/10 rounded-lg">
-            <Rocket className="icon-md text-purple-600 dark:text-purple-400" aria-hidden="true" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">MVP Planner</h2>
-            <p className="text-sm text-muted-foreground">
-              Define scope, prioritize features, and plan your launch
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1">
-            <div className="w-2 h-2 rounded-full bg-purple-500" />
-            {completionPercentage.toFixed(0)}% Complete
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={generateWithAI}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
-            ) : (
-              <Sparkles className="icon-sm mr-2" aria-hidden="true" />
-            )}
-            AI Generate
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="icon-sm mr-2" aria-hidden="true" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <BuilderStageHeader
+        glyph="flag"
+        titleEn={builderEn('mvp_title')}
+        titleEl={builderEl('mvp_title')}
+        subtitleEn={builderEn('mvp_sub')}
+        subtitleEl={builderEl('mvp_sub')}
+        completion={completionPercentage}
+        extraActions={
+          <>
+            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+              {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+              <BilingualText
+                en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
+                el={isGenerating ? builderEl('generating') : builderEl('ai_generate')}
+                compact
+              />
+            </Button>
+            <Button size="sm" onClick={handleSave}>
+              <Save className="icon-sm mr-2" />
+              <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
+            </Button>
+          </>
+        }
+      />
 
-      {/* Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>MVP Planning Completion</span>
+          <span className="text-muted-foreground">
+            <BilingualText en={builderEn('mvp_complete')} el={builderEl('mvp_complete')} compact />
+          </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
         <Progress value={completionPercentage} className="h-2" />
@@ -349,26 +334,26 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-5 rounded-xl">
           <TabsTrigger value="scope" className="gap-1">
-            <Target className="icon-2xs" aria-hidden="true" />
-            Scope
+            <CfbGlyph name="target" className="icon-sm" />
+            <BilingualText en={builderEn('mvp_tab_scope')} el={builderEl('mvp_tab_scope')} compact />
           </TabsTrigger>
           <TabsTrigger value="features" className="gap-1">
-            <Layers className="icon-2xs" aria-hidden="true" />
-            Features
+            <CfbGlyph name="sliders" className="icon-sm" />
+            <BilingualText en={builderEn('mvp_tab_feat')} el={builderEl('mvp_tab_feat')} compact />
           </TabsTrigger>
           <TabsTrigger value="sprints" className="gap-1">
-            <Calendar className="icon-2xs" aria-hidden="true" />
-            Sprints
+            <CfbGlyph name="calendar" className="icon-sm" />
+            <BilingualText en={builderEn('mvp_tab_sprints')} el={builderEl('mvp_tab_sprints')} compact />
           </TabsTrigger>
           <TabsTrigger value="team" className="gap-1">
-            <Users className="icon-2xs" aria-hidden="true" />
-            Team Gaps
+            <CfbGlyph name="people" className="icon-sm" />
+            <BilingualText en={builderEn('mvp_tab_team')} el={builderEl('mvp_tab_team')} compact />
           </TabsTrigger>
           <TabsTrigger value="risks" className="gap-1">
-            <AlertTriangle className="icon-2xs" aria-hidden="true" />
-            Risks
+            <AlertTriangle className="icon-sm" />
+            <BilingualText en={builderEn('mvp_tab_risks')} el={builderEl('mvp_tab_risks')} compact />
           </TabsTrigger>
         </TabsList>
 
@@ -377,20 +362,22 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>MVP Scope Definition</CardTitle>
+                <CardTitle className="text-base">
+                  <BilingualText en={builderEn('mvp_scope_card')} el={builderEl('mvp_scope_card')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>MVP Scope Statement</Label>
+                  <Label><BilingualText en={builderEn('mvp_scope_label')} el={builderEl('mvp_scope_label')} compact /></Label>
                   <Textarea
-                    placeholder="Define the core scope of your MVP. What is the minimum set of features needed to validate your hypothesis?"
+                    placeholder={t(builderEn('mvp_scope_ph'), builderEl('mvp_scope_ph'))}
                     value={data.scope}
                     onChange={(e) => setData(prev => ({ ...prev, scope: e.target.value }))}
                     className="min-h-[150px]"
                   />
                 </div>
                 <div>
-                  <Label>Target Launch Date</Label>
+                  <Label><BilingualText en={builderEn('mvp_launch')} el={builderEl('mvp_launch')} compact /></Label>
                   <Input
                     type="date"
                     value={data.targetLaunchDate}
@@ -398,9 +385,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   />
                 </div>
                 <div>
-                  <Label>Technical Complexity Assessment</Label>
+                  <Label><BilingualText en={builderEn('mvp_complexity')} el={builderEl('mvp_complexity')} compact /></Label>
                   <Textarea
-                    placeholder="Describe the overall technical complexity and key technical challenges..."
+                    placeholder={t(builderEn('mvp_complexity_ph'), builderEl('mvp_complexity_ph'))}
                     value={data.technicalComplexity}
                     onChange={(e) => setData(prev => ({ ...prev, technicalComplexity: e.target.value }))}
                     className="min-h-[100px]"
@@ -411,12 +398,14 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Success Criteria</CardTitle>
+                <CardTitle className="text-base">
+                  <BilingualText en={builderEn('mvp_success')} el={builderEl('mvp_success')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {data.successCriteria.map((criteria, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle2 className="icon-sm text-green-500 shrink-0" aria-hidden="true" />
+                    <CheckCircle2 className="icon-sm text-status-success shrink-0" />
                     <Input
                       value={criteria}
                       onChange={(e) => {
@@ -424,7 +413,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                         newCriteria[index] = e.target.value;
                         setData(prev => ({ ...prev, successCriteria: newCriteria }));
                       }}
-                      placeholder="Define a measurable success criterion..."
+                      placeholder={t(builderEn('mvp_success_ph'), builderEl('mvp_success_ph'))}
                     />
                     <Button
                       aria-label="Remove item"
@@ -449,7 +438,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                     successCriteria: [...prev.successCriteria, '']
                   }))}
                 >
-                  + Add Success Criterion
+                  <BilingualText en={builderEn('mvp_add_success')} el={builderEl('mvp_add_success')} compact />
                 </Button>
               </CardContent>
             </Card>
@@ -460,16 +449,18 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="features" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Feature Backlog (MoSCoW Prioritization)</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('mvp_backlog')} el={builderEl('mvp_backlog')} compact />
+              </CardTitle>
               <Button variant="outline" size="sm" onClick={addFeature}>
-                + Add Feature
+                <BilingualText en={builderEn('mvp_add_feat')} el={builderEl('mvp_add_feat')} compact />
               </Button>
             </CardHeader>
             <CardContent>
               {data.features.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Layers className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
-                  <p>No features added yet. Click "Add Feature" or use AI Generate.</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyph name="sliders" className="icon-xl mx-auto mb-2 opacity-50" />
+                  <p><BilingualText en={builderEn('mvp_no_feat')} el={builderEl('mvp_no_feat')} /></p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -508,19 +499,19 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                     onChange={(e) => updateFeature(feature.id, 'priority', e.target.value)}
                                     className="w-full px-3 py-2 border rounded-md text-sm"
                                   >
-                                    <option value="must-have">Must Have</option>
-                                    <option value="should-have">Should Have</option>
-                                    <option value="could-have">Could Have</option>
-                                    <option value="wont-have">Won't Have</option>
+                                    <option value="must-have">{t(builderEn('mvp_must'), builderEl('mvp_must'))}</option>
+                                    <option value="should-have">{t(builderEn('mvp_should'), builderEl('mvp_should'))}</option>
+                                    <option value="could-have">{t(builderEn('mvp_could'), builderEl('mvp_could'))}</option>
+                                    <option value="wont-have">{t(builderEn('mvp_wont'), builderEl('mvp_wont'))}</option>
                                   </select>
                                   <select
                                     value={feature.complexity}
                                     onChange={(e) => updateFeature(feature.id, 'complexity', e.target.value)}
                                     className="w-full px-3 py-2 border rounded-md text-sm"
                                   >
-                                    <option value="low">Low Complexity</option>
-                                    <option value="medium">Medium Complexity</option>
-                                    <option value="high">High Complexity</option>
+                                    <option value="low">{t(builderEn('mvp_low_c'), builderEl('mvp_low_c'))}</option>
+                                    <option value="medium">{t(builderEn('mvp_med_c'), builderEl('mvp_med_c'))}</option>
+                                    <option value="high">{t(builderEn('mvp_high_c'), builderEl('mvp_high_c'))}</option>
                                   </select>
                                 </div>
                                 <div className="space-y-2">
@@ -553,7 +544,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                     {data.features.filter(f => f.priority === 'must-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">Must Have</div>
+                  <div className="text-xs text-muted-foreground">
+                    <BilingualText en={builderEn('mvp_must')} el={builderEl('mvp_must')} compact />
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -561,7 +554,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                     {data.features.filter(f => f.priority === 'should-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">Should Have</div>
+                  <div className="text-xs text-muted-foreground">
+                    <BilingualText en={builderEn('mvp_should')} el={builderEl('mvp_should')} compact />
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -569,7 +564,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {data.features.filter(f => f.priority === 'could-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">Could Have</div>
+                  <div className="text-xs text-muted-foreground">
+                    <BilingualText en={builderEn('mvp_could')} el={builderEl('mvp_could')} compact />
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -577,7 +574,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   <div className="text-2xl font-bold text-gray-600">
                     {data.features.filter(f => f.priority === 'wont-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">Won't Have</div>
+                  <div className="text-xs text-muted-foreground">
+                    <BilingualText en={builderEn('mvp_wont')} el={builderEl('mvp_wont')} compact />
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -588,23 +587,25 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="sprints" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Sprint Planning</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('mvp_sprints')} el={builderEl('mvp_sprints')} compact />
+              </CardTitle>
               <Button variant="outline" size="sm" onClick={addSprint}>
-                + Add Sprint
+                <BilingualText en={builderEn('mvp_add_sprint')} el={builderEl('mvp_add_sprint')} compact />
               </Button>
             </CardHeader>
             <CardContent>
               {data.sprints.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Calendar className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
-                  <p>No sprints planned yet. Click "Add Sprint" or use AI Generate.</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyph name="calendar" className="icon-xl mx-auto mb-2 opacity-50" />
+                  <p><BilingualText en={builderEn('mvp_no_sprint')} el={builderEl('mvp_no_sprint')} /></p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {data.sprints.map((sprint, index) => (
                     <Card key={sprint.id} className="p-4">
                       <div className="flex items-start gap-4">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary-emphasis font-bold">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary-accessible font-bold">
                           {index + 1}
                         </div>
                         <div className="flex-1 space-y-3">
@@ -644,7 +645,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                       };
                                       setData(prev => ({ ...prev, sprints: newSprints }));
                                     }}
-                                    className="ml-1 hover:text-destructive-emphasis"
+                                    className="ml-1 hover:text-destructive-accessible"
                                   >
                                     ×
                                   </button>
@@ -681,16 +682,16 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="team" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="icon-md" aria-hidden="true" />
-                Team Capability Gaps
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CfbGlyph name="people" className="icon-md" />
+                <BilingualText en={builderEn('mvp_gaps')} el={builderEl('mvp_gaps')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent>
               {data.teamGaps.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
-                  <p>No team gaps identified yet. Use AI Generate to analyze.</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyph name="people" className="icon-xl mx-auto mb-2 opacity-50" />
+                  <p><BilingualText en={builderEn('mvp_no_gaps')} el={builderEl('mvp_no_gaps')} /></p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -724,15 +725,15 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="risks" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="icon-md text-orange-500" aria-hidden="true" />
-                Risk Assessment
+              <CardTitle className="flex items-center gap-2 text-base">
+                <AlertTriangle className="icon-md text-status-warning" />
+                <BilingualText en={builderEn('mvp_risks')} el={builderEl('mvp_risks')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.risks.map((risk, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <AlertTriangle className="icon-sm text-orange-500 shrink-0" aria-hidden="true" />
+                  <AlertTriangle className="icon-sm text-status-warning shrink-0" />
                   <Input
                     value={risk}
                     onChange={(e) => {
@@ -740,7 +741,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                       newRisks[index] = e.target.value;
                       setData(prev => ({ ...prev, risks: newRisks }));
                     }}
-                    placeholder="Describe a potential risk..."
+                    placeholder={t(builderEn('mvp_risk_ph'), builderEl('mvp_risk_ph'))}
                   />
                   <Button
                     aria-label="Remove item"
@@ -765,7 +766,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   risks: [...prev.risks, '']
                 }))}
               >
-                + Add Risk
+                <BilingualText en={builderEn('mvp_add_risk')} el={builderEl('mvp_add_risk')} compact />
               </Button>
             </CardContent>
           </Card>

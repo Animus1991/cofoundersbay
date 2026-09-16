@@ -1,10 +1,5 @@
-import { AppShell } from '@/components/layout/AppShell';
-import { PageLoading } from '@/components/common/PageLoading';
+import { AppRouteLoading } from '@/components/common/AppRouteLoading';
 
 export default function Loading() {
-  return (
-    <AppShell>
-      <PageLoading label="Loading mentor workspace" />
-    </AppShell>
-  );
+  return <AppRouteLoading variant="dashboard" />;
 }

@@ -36,6 +36,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
@@ -82,7 +83,7 @@ export default function ProviderProfilePage() {
   const [selectedStages, setSelectedStages] = useState<string[]>(['Seed', 'Series A']);
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -120,14 +121,14 @@ export default function ProviderProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Briefcase className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              <Briefcase className="icon-lg text-primary-accessible" />
               Service Provider Profile
             </h1>
             <p className="text-muted-foreground">How startups discover your services</p>
           </div>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
         </div>
@@ -138,25 +139,25 @@ export default function ProviderProfilePage() {
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/20">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-lg">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-bold rounded-xl">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-semibold text-lg">{companyName || displayName}</h2>
-                  <BadgeCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                  <BadgeCheck className="icon-sm text-primary-accessible" />
                   <Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your service headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Star className="icon-2xs text-amber-400" aria-hidden="true" /> 4.8 (8 reviews)</span>
-                  <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" /> {clientsServed || '?'} clients</span>
-                  <span className="flex items-center gap-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> {yearsInBusiness}y in business</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" /> 4.8 (8 reviews)</span>
+                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {clientsServed || '?'} clients</span>
+                  <span className="flex items-center gap-1"><TrendingUp className="icon-sm" /> {yearsInBusiness}y in business</span>
                   {companyWebsite && (
-                    <span className="flex items-center gap-1"><Globe className="icon-2xs" aria-hidden="true" /> {companyWebsite}</span>
+                    <span className="flex items-center gap-1"><Globe className="icon-sm" /> {companyWebsite}</span>
                   )}
                 </div>
               </div>

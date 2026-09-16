@@ -13,6 +13,7 @@ import {
   DollarSign,
   Users,
   Sparkles,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -132,7 +133,7 @@ function MultiSelect({
           className={cn(
             'rounded-full border px-3 py-1 text-xs transition-colors',
             selected.includes(opt.value)
-              ? 'border-primary bg-primary/10 text-primary-emphasis'
+              ? 'border-primary bg-primary/10 text-primary-accessible'
               : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
           )}
         >
@@ -217,43 +218,44 @@ export function SearchFilters({
   return (
     <div className="space-y-4">
       {/* Main search bar */}
-      <div className="flex gap-3">
-        <div className="relative flex-1">
-          <Input
-            type="text"
-            placeholder="Search by name, skills, industry..."
-            value={filters.q}
-            onChange={(e) => updateFilter('q', e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-            className="pr-10"
-          />
-          {filters.q && (
-            <button
-              onClick={() => updateFilter('q', '')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="icon-sm" aria-hidden="true" />
-            </button>
-          )}
-        </div>
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:gap-3">
+        <div className="flex min-w-0 flex-1 gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Input
+              type="text"
+              placeholder="Search by name, skills, industry..."
+              value={filters.q}
+              onChange={(e) => updateFilter('q', e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+              className="min-h-10 pr-10"
+            />
+            {filters.q && (
+              <button
+                onClick={() => updateFilter('q', '')}
+                className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+              >
+                <X className="icon-sm" />
+              </button>
+            )}
+          </div>
 
-        {/* Filter button for mobile */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2 relative">
-              <Filter className="icon-sm" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only sm:inline">Filters</span>
-              {activeFiltersCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-2xs">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="relative min-h-10 shrink-0 gap-2 px-3">
+                <Filter className="icon-sm" />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Filter className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Filter className="icon-md text-primary-accessible" />
                 Search Filters
               </SheetTitle>
             </SheetHeader>
@@ -263,7 +265,7 @@ export function SearchFilters({
               <AccordionItem value="role">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Users className="icon-sm" aria-hidden="true" />
+                    <Users className="icon-sm" />
                     Role
                     {filters.role.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.role.length}</Badge>
@@ -283,7 +285,7 @@ export function SearchFilters({
               <AccordionItem value="skills">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="icon-sm" aria-hidden="true" />
+                    <Sparkles className="icon-sm" />
                     Skills
                     {filters.skills.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.skills.length}</Badge>
@@ -303,7 +305,7 @@ export function SearchFilters({
               <AccordionItem value="industry">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Briefcase className="icon-sm" aria-hidden="true" />
+                    <Briefcase className="icon-sm" />
                     Industry
                     {filters.industries.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.industries.length}</Badge>
@@ -323,7 +325,7 @@ export function SearchFilters({
               <AccordionItem value="stage">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Target className="icon-sm" aria-hidden="true" />
+                    <Target className="icon-sm" />
                     Startup Stage
                     {filters.stage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.stage.length}</Badge>
@@ -343,7 +345,7 @@ export function SearchFilters({
               <AccordionItem value="location">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <MapPin className="icon-sm" aria-hidden="true" />
+                    <MapPin className="icon-sm" />
                     Location
                     {filters.location && <Badge variant="secondary" size="sm">1</Badge>}
                   </div>
@@ -362,7 +364,7 @@ export function SearchFilters({
                         className={cn(
                           'rounded-full border px-3 py-1 text-xs transition-colors',
                           (i === 0 && filters.remote === true) || (i === 1 && filters.remote === false)
-                            ? 'border-primary bg-primary/10 text-primary-emphasis'
+                            ? 'border-primary bg-primary/10 text-primary-accessible'
                             : 'border-border/60 text-muted-foreground hover:border-primary/50'
                         )}
                       >
@@ -377,7 +379,7 @@ export function SearchFilters({
               <AccordionItem value="availability">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Clock className="icon-sm" aria-hidden="true" />
+                    <Clock className="icon-sm" />
                     Availability
                     {filters.availability.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.availability.length}</Badge>
@@ -397,7 +399,7 @@ export function SearchFilters({
               <AccordionItem value="funding">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="icon-sm" aria-hidden="true" />
+                    <DollarSign className="icon-sm" />
                     Funding Stage
                     {filters.fundingStage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.fundingStage.length}</Badge>
@@ -417,7 +419,7 @@ export function SearchFilters({
               <AccordionItem value="languages">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Languages className="icon-sm" aria-hidden="true" />
+                    <Languages className="icon-sm" />
                     Languages
                     {filters.languages.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.languages.length}</Badge>
@@ -434,18 +436,20 @@ export function SearchFilters({
               </AccordionItem>
             </Accordion>
 
-            <SheetFooter className="mt-6 flex gap-2">
-              <Button variant="ghost" onClick={clearFilters} className="flex-1">
+            <SheetFooter className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <Button variant="ghost" onClick={clearFilters} className="min-h-10 flex-1">
                 Clear all
               </Button>
-              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="flex-1">
+              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="min-h-10 flex-1">
                 Apply filters
               </Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
+        </div>
 
-        <Button onClick={onSearch} disabled={loading}>
+        <Button onClick={onSearch} disabled={loading} className="min-h-10 w-full gap-2 sm:w-auto">
+          <Search className="h-4 w-4 sm:hidden" />
           {loading ? 'Searching...' : 'Search'}
         </Button>
       </div>
@@ -458,6 +462,7 @@ export function SearchFilters({
             key={r.value}
             variant={filters.role.includes(r.value) ? 'default' : 'outline'}
             size="sm"
+            className="min-h-10"
             onClick={() => {
               if (filters.role.includes(r.value)) {
                 updateFilter('role', filters.role.filter((x) => x !== r.value));
@@ -486,7 +491,7 @@ export function SearchFilters({
                 onClick={pill.onRemove}
                 className="ml-1 rounded-full p-0.5 hover:bg-background/50"
               >
-                <X className="icon-2xs" aria-hidden="true" />
+                <X className="icon-sm" />
               </button>
             </Badge>
           ))}

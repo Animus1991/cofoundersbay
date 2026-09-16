@@ -5,21 +5,18 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import {
   MessageSquare,
-  Bot,
   X,
   ChevronDown,
   Send,
   Loader2,
-  RefreshCw,
-  Trash2,
   GripVertical,
-  ChevronRight,
   ArrowLeft,
   Search,
   MessageCircle,
   Maximize2,
   Check,
   CheckCheck,
+  Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -28,8 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDraggable } from '@/hooks/useDraggable';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useMessaging } from '@/contexts/MessagingContext';
-import { useAIChat, AIMessage } from '@/hooks/useAIChat';
-import { getAgentIcon } from '@/lib/ai-api';
+import { CopilotWorkspace } from '@/components/ai/CopilotWorkspace';
 import {
   getMe, listMessageConversations, listConversationMessages,
   getOrCreateDirectConversation,
@@ -37,6 +33,8 @@ import {
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
 import type { Conversation } from '@/components/messaging/ConversationList';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type TabType = 'messages' | 'ai';
 
@@ -87,8 +85,8 @@ function formatRelativeTime(d: Date) {
   const days = Math.floor(diff / 86400000);
   if (days === 0) return formatTime(d);
   if (days === 1) return 'Yesterday';
-  if (days < 7) return d.toLocaleDateString([], { weekday: 'short' });
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  if (days < 7) return d.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short' });
+  return d.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' });
 }
 
 // ── Messaging sub-components ───────────────────────────────────────────────────
@@ -105,7 +103,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
       <div className="relative shrink-0">
         <Avatar className="h-9 w-9">
           <AvatarImage src={conv.recipientAvatar ?? undefined} />
-          <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-emphasis">
+          <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
             {conv.recipientName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -159,110 +157,6 @@ function TypingIndicator() {
   );
 }
 
-// ── AI sub-components ──────────────────────────────────────────────────────────
-
-interface AgentSelectorProps {
-  agents: Array<{ id: string; name: string; description: string }>;
-  currentAgent: string;
-  onSelect: (agentId: string) => void;
-}
-
-function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const current = agents?.find((a) => a.id === currentAgent);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
-      >
-        <span>{getAgentIcon(currentAgent)}</span>
-        <span>{current?.name || 'Assistant'}</span>
-        <ChevronDown className={cn('h-3 w-3 transition-transform', isOpen && 'rotate-180')} aria-hidden="true" />
-      </button>
-
-      {isOpen && (
-        <>
-          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-lg shadow-lg z-50 py-1 animate-in fade-in slide-in-from-top-2">
-            {(agents ?? []).map((agent) => (
-              <button
-                key={agent.id}
-                onClick={() => { onSelect(agent.id); setIsOpen(false); }}
-                className={cn(
-                  'w-full flex items-start gap-3 px-3 py-2 text-left hover:bg-muted/50 transition-colors',
-                  agent.id === currentAgent && 'bg-muted/50'
-                )}
-              >
-                <span className="text-lg">{getAgentIcon(agent.id)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium">{agent.name}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-1">{agent.description}</div>
-                </div>
-                {agent.id === currentAgent && (
-                  <ChevronRight className="icon-sm text-violet-500 mt-0.5" aria-hidden="true" />
-                )}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function AIMessageBubble({ message }: { message: AIMessage }) {
-  const isUser = message.role === 'user';
-  return (
-    <div className={cn('flex gap-2', isUser && 'flex-row-reverse')}>
-      <div className={cn(
-        'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs',
-        isUser ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-violet-500 to-purple-600 text-white'
-      )}>
-        {isUser ? '👤' : '🤖'}
-      </div>
-      <div className={cn(
-        'flex-1 rounded-2xl px-3 py-2 max-w-[85%] text-sm',
-        isUser ? 'rounded-tr-sm bg-primary text-primary-foreground ml-auto' : 'rounded-tl-sm bg-muted/60'
-      )}>
-        {message.isStreaming && !message.content ? (
-          <div className="flex items-center gap-1.5">
-            <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
-            <span className="text-xs text-muted-foreground">Thinking...</span>
-          </div>
-        ) : (
-          <div className="whitespace-pre-wrap">
-            {message.content.split('**').map((part, i) =>
-              i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-            )}
-          </div>
-        )}
-        {message.model && !message.isStreaming && (
-          <div className="text-2xs text-muted-foreground mt-1 opacity-60">{message.model}</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function QuickActions({ questions, onSelect }: { questions: string[]; onSelect: (q: string) => void }) {
-  if (!questions.length) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5 px-3 py-2">
-      {questions.slice(0, 4).map((q) => (
-        <button
-          key={q}
-          onClick={() => onSelect(q)}
-          className="text-xs px-2.5 py-1 rounded-full border border-border bg-card hover:bg-muted transition-colors"
-        >
-          {q}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function UnifiedChatPopup() {
@@ -274,23 +168,6 @@ export function UnifiedChatPopup() {
 
   // ── Tab ────────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TabType>('ai');
-
-  // ── AI state ───────────────────────────────────────────────────────────────
-  const [aiInput, setAiInput] = useState('');
-  const aiMessagesEndRef = useRef<HTMLDivElement>(null);
-  const aiInputRef = useRef<HTMLInputElement>(null);
-
-  const {
-    messages: aiMessages,
-    isStreaming,
-    agents,
-    currentAgent,
-    isAIAvailable,
-    sendMessage: sendAIMessage,
-    setAgent,
-    clearMessages,
-    retryLastMessage,
-  } = useAIChat({ agentId: 'general' });
 
   // ── Messaging state ────────────────────────────────────────────────────────
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -313,6 +190,10 @@ export function UnifiedChatPopup() {
   const popupRef = useRef<HTMLDivElement>(null);
 
   // ── Draggable ──────────────────────────────────────────────────────────────
+  const dragLabel = bilingualAria(
+    'Drag to move, or use the arrow keys',
+    'Σύρετε για μετακίνηση ή χρησιμοποιήστε τα βελάκια',
+  );
   const { position, isDragging, dragHandleProps } = useDraggable({
     storageKey: 'cfb-unified-chat-position',
     initialPosition: { x: 0, y: 0 },
@@ -354,18 +235,9 @@ export function UnifiedChatPopup() {
     pathname?.startsWith('/onboarding') ||
     pathname?.startsWith('/auth') ||
     pathname?.startsWith('/forgot-password') ||
-    pathname?.startsWith('/reset-password');
-
-  // ── AI effects ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    aiMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [aiMessages]);
-
-  useEffect(() => {
-    if (isOpen && !isMinimized && activeTab === 'ai') {
-      setTimeout(() => aiInputRef.current?.focus(), 100);
-    }
-  }, [isOpen, isMinimized, activeTab]);
+    pathname?.startsWith('/reset-password') ||
+    pathname === '/ai' ||
+    pathname?.startsWith('/ai/');
 
   // ── Messaging: init socket + conversations on first open ───────────────────
   useEffect(() => {
@@ -599,12 +471,10 @@ export function UnifiedChatPopup() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleMsgSend(); }
   }, [handleMsgSend]);
 
-  const handleAISubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiInput.trim() || isStreaming) return;
-    sendAIMessage(aiInput);
-    setAiInput('');
-  }, [aiInput, isStreaming, sendAIMessage]);
+  const handleAIExpand = useCallback(() => {
+    close();
+    router.push('/ai');
+  }, [close, router]);
 
   const handleExpandToFullPage = useCallback(() => {
     const url = selected ? `/messages?c=${selected.id}` : '/messages';
@@ -613,7 +483,6 @@ export function UnifiedChatPopup() {
   }, [selected, close, router]);
 
   // Derived
-  const currentAgentConfig = agents?.find((a) => a.id === currentAgent);
   const selectedId = selected?.id ?? null;
   const filteredConvos = conversations.filter(
     c => !c.isArchived && c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -627,36 +496,42 @@ export function UnifiedChatPopup() {
   if (isMinimized) {
     return (
       <div
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-1 animate-in slide-in-from-bottom-2"
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex items-center gap-1 animate-in slide-in-from-bottom-2 lg:bottom-6 lg:right-6"
         style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
       >
         <div
           {...dragHandleProps}
+          role="button"
+          tabIndex={0}
+          aria-label={dragLabel}
+          title={dragLabel}
           className={cn(
-            'flex items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-500 text-white/80 shadow-md cursor-grab',
-            'hover:from-violet-500 hover:to-purple-600 transition-all',
+            'flex items-center justify-center rounded-full bg-primary text-primary-foreground/80 shadow-md cursor-grab',
+            'hover:bg-primary/90 transition-all',
             isDragging && 'scale-95 opacity-80 cursor-grabbing'
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="icon-2xs" aria-hidden="true" />
+          <GripVertical className="icon-sm" aria-hidden="true" />
         </div>
         <div
-          className="flex items-center gap-2 cursor-pointer rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg px-4 py-2.5 hover:shadow-xl transition-all"
+          className="flex items-center gap-2 cursor-pointer rounded-full bg-primary shadow-lg px-4 py-2.5 hover:bg-primary/90 hover:shadow-xl transition-all"
           onClick={restore}
         >
-          <Bot className="icon-sm text-white" aria-hidden="true" />
-          <span className="text-sm font-medium text-white">Chat</span>
-          {(totalMsgUnread > 0 || aiMessages.length > 0) && (
+          <Bot className="icon-sm text-primary-foreground" />
+          <span className="text-sm font-medium text-primary-foreground">
+            <BilingualText en="Chat" el="Συνομιλία" compact />
+          </span>
+          {totalMsgUnread > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
-              {totalMsgUnread > 0 ? totalMsgUnread : aiMessages.length}
+              {totalMsgUnread}
             </span>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); close(); }}
             className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
           >
-            <X className="h-3.5 w-3.5 text-white/80" aria-hidden="true" />
+            <X className="icon-sm text-white/80" />
           </button>
         </div>
       </div>
@@ -668,19 +543,21 @@ export function UnifiedChatPopup() {
     <div
       ref={popupRef}
       tabIndex={-1}
-      className="fixed z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 focus:outline-none"
+      className="fixed z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 focus:outline-none bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6"
       style={{
-        bottom: `calc(1.5rem + env(safe-area-inset-bottom, 0px))`,
-        right: '1.5rem',
         width: 'min(400px, calc(100vw - 2rem))',
-        height: 'min(560px, calc(100dvh - 6rem))',
+        height: 'min(560px, calc(100dvh - 8.5rem))',
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}
     >
       {/* ── Header ── */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/60 bg-gradient-to-r from-violet-500 to-purple-600 shrink-0">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/60 bg-primary shrink-0">
         <div
           {...dragHandleProps}
+          role="button"
+          tabIndex={0}
+          aria-label={dragLabel}
+          title={dragLabel}
           className={cn(
             'flex items-center justify-center rounded-md text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors cursor-grab',
             isDragging && 'text-white/90 bg-white/10 cursor-grabbing'
@@ -695,11 +572,11 @@ export function UnifiedChatPopup() {
             onClick={() => setActiveTab('messages')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'messages' ? 'bg-white text-violet-600 dark:text-violet-400' : 'text-white/80 hover:text-white hover:bg-white/10'
+              activeTab === 'messages' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <MessageSquare className="icon-2xs" aria-hidden="true" />
-            Messages
+            <MessageSquare className="icon-sm" />
+            <BilingualText en="Messages" el="Μηνύματα" compact />
             {totalMsgUnread > 0 && (
               <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-2xs font-bold px-1">
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
@@ -710,95 +587,24 @@ export function UnifiedChatPopup() {
             onClick={() => setActiveTab('ai')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'ai' ? 'bg-white text-violet-600 dark:text-violet-400' : 'text-white/80 hover:text-white hover:bg-white/10'
+              activeTab === 'ai' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <Bot className="icon-2xs" aria-hidden="true" />
-            AI Assistant
-            {!isAIAvailable && (
-              <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" title="Limited mode" />
-            )}
+            <Bot className="icon-sm" />
+            <BilingualText en="AI Assistant" el="Βοηθός AI" compact />
           </button>
         </div>
 
-        <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
-          <ChevronDown className="icon-sm text-white" aria-hidden="true" />
+        <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors" aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')} title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}>
+          <ChevronDown className="icon-sm text-white" />
         </button>
-        <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
-          <X className="icon-sm text-white" aria-hidden="true" />
+        <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors" aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')} title={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}>
+          <X className="icon-sm text-white" />
         </button>
       </div>
 
       {/* ── AI Tab ── */}
-      {activeTab === 'ai' && (
-        <>
-          <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/30 shrink-0">
-            <AgentSelector agents={agents ?? []} currentAgent={currentAgent} onSelect={setAgent} />
-            <div className="flex items-center gap-1">
-              {aiMessages.length > 0 && (
-                <>
-                  <button onClick={retryLastMessage} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Retry last message">
-                    <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  </button>
-                  <button onClick={clearMessages} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Clear conversation">
-                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {aiMessages.length === 0 ? (
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white text-xs">
-                    {getAgentIcon(currentAgent)}
-                  </div>
-                  <div className="flex-1 rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2">
-                    <p className="text-sm">
-                      Hi! 👋 I'm your {currentAgentConfig?.name || 'AI Assistant'}.
-                      {currentAgentConfig?.description && (
-                        <span className="text-muted-foreground"> {currentAgentConfig.description}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                {currentAgentConfig?.suggestedQuestions && (
-                  <QuickActions questions={currentAgentConfig.suggestedQuestions} onSelect={sendAIMessage} />
-                )}
-              </div>
-            ) : (
-              aiMessages.map((msg) => <AIMessageBubble key={msg.id} message={msg} />)
-            )}
-            <div ref={aiMessagesEndRef} />
-          </div>
-
-          <form onSubmit={handleAISubmit} className="border-t border-border/60 p-3 shrink-0">
-            <div className="flex items-center gap-2">
-              <Input
-                ref={aiInputRef}
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                placeholder="Ask me anything..."
-                className="flex-1 h-10 rounded-full bg-muted/50 border-0 px-4 text-sm focus-visible:ring-1 focus-visible:ring-violet-500"
-                disabled={isStreaming}
-              />
-              <Button aria-label="Send"
-                type="submit"
-                size="icon"
-                disabled={!aiInput.trim() || isStreaming}
-                className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
-              >
-                {isStreaming ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Send className="icon-sm" aria-hidden="true" />}
-              </Button>
-            </div>
-            <p className="text-2xs text-muted-foreground text-center mt-2">
-              {isAIAvailable ? <>Powered by local AI • Your data stays private</> : <>AI running in limited mode</>}
-            </p>
-          </form>
-        </>
-      )}
+      {activeTab === 'ai' && <CopilotWorkspace variant="popup" onExpand={handleAIExpand} />}
 
       {/* ── Messages Tab ── */}
       {activeTab === 'messages' && (
@@ -810,12 +616,12 @@ export function UnifiedChatPopup() {
                 onClick={() => { setSelected(null); setActiveConversationId(null); }}
                 className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                <ArrowLeft className="icon-sm" aria-hidden="true" />
+                <ArrowLeft className="icon-sm" />
               </button>
               <div className="relative shrink-0">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                  <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary-emphasis">
+                  <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary-accessible">
                     {selected.recipientName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -832,14 +638,14 @@ export function UnifiedChatPopup() {
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 title="Open full chat"
               >
-                <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <Maximize2 className="icon-sm" />
               </button>
             </div>
           )}
 
           {isInitializing ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="icon-md text-muted-foreground animate-spin" aria-hidden="true" />
+              <Loader2 className="icon-md text-muted-foreground animate-spin" />
             </div>
           ) : selected ? (
             /* Message thread */
@@ -847,12 +653,12 @@ export function UnifiedChatPopup() {
               <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scroll-smooth">
                 {loadingMessages ? (
                   <div className="flex justify-center pt-8">
-                    <Loader2 className="icon-sm text-muted-foreground animate-spin" aria-hidden="true" />
+                    <Loader2 className="icon-sm text-muted-foreground animate-spin" />
                   </div>
                 ) : msgMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="icon-md text-primary-emphasis" aria-hidden="true" />
+                      <MessageCircle className="icon-md text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">Say hello!</p>
                     <p className="text-xs text-muted-foreground">Start a conversation with {selected.recipientName}</p>
@@ -876,7 +682,7 @@ export function UnifiedChatPopup() {
                             {!isMe && (
                               <Avatar className="h-6 w-6 shrink-0 mb-0.5">
                                 <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                                <AvatarFallback className="text-2xs bg-primary/15 text-primary-emphasis">
+                                <AvatarFallback className="text-2xs bg-primary/15 text-primary-accessible">
                                   {selected.recipientName[0]?.toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -890,11 +696,11 @@ export function UnifiedChatPopup() {
                             {isMe && (
                               <span className="text-muted-foreground mb-0.5">
                                 {msg.status === 'sending' ? (
-                                  <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
+                                  <Loader2 className="icon-sm animate-spin" />
                                 ) : msg.status === 'read' ? (
-                                  <CheckCheck className="icon-2xs text-primary-emphasis" aria-hidden="true" />
+                                  <CheckCheck className="icon-sm text-primary-accessible" />
                                 ) : (
-                                  <Check className="icon-2xs" aria-hidden="true" />
+                                  <Check className="icon-sm" />
                                 )}
                               </span>
                             )}
@@ -924,7 +730,7 @@ export function UnifiedChatPopup() {
                     size="sm"
                     className="h-9 w-9 p-0 rounded-md shrink-0"
                   >
-                    <Send className="icon-sm" aria-hidden="true" />
+                    <Send className="icon-sm" />
                   </Button>
                 </div>
               </div>
@@ -934,7 +740,7 @@ export function UnifiedChatPopup() {
             <div className="flex-1 flex flex-col min-h-0">
               <div className="px-3 pt-2.5 pb-2 shrink-0">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -948,7 +754,7 @@ export function UnifiedChatPopup() {
                 {filteredConvos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="icon-md text-primary-emphasis" aria-hidden="true" />
+                      <MessageCircle className="icon-md text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">
                       {searchQuery ? 'No results' : 'No messages yet'}
@@ -974,7 +780,7 @@ export function UnifiedChatPopup() {
                   onClick={handleExpandToFullPage}
                   className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1 rounded-lg hover:bg-muted/40"
                 >
-                  <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  <Maximize2 className="icon-sm" />
                   Open full messaging view
                 </button>
               </div>

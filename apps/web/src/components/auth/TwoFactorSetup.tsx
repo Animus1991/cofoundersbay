@@ -81,8 +81,8 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
   if (step === 'initial') {
     return (
       <div className="space-y-4">
-        <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400">
-          <AlertTriangle className="icon-md shrink-0" aria-hidden="true" />
+        <div className="flex items-start gap-3 rounded-lg bg-status-warning-bg p-4 text-sm text-status-warning ">
+          <AlertTriangle className="icon-md shrink-0" />
           <div>
             <p className="font-medium">Secure your account</p>
             <p className="mt-1">
@@ -129,8 +129,8 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
             <code className="flex-1 rounded bg-secondary px-3 py-2 text-sm font-mono">
               {setupData?.secret}
             </code>
-            <Button aria-label="Confirm" variant="outline" size="icon" onClick={copySecret}>
-              {copied ? <Check className="icon-sm" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
+            <Button variant="outline" size="icon" onClick={copySecret}>
+              {copied ? <Check className="icon-sm" /> : <Copy className="icon-sm" />}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -169,8 +169,8 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
   if (step === 'backup') {
     return (
       <div className="space-y-6">
-        <div className="flex items-start gap-3 rounded-lg bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-400">
-          <Shield className="icon-md shrink-0" aria-hidden="true" />
+        <div className="flex items-start gap-3 rounded-lg bg-status-success-bg p-4 text-sm text-status-success ">
+          <Shield className="icon-md shrink-0" />
           <div>
             <p className="font-medium">2FA Enabled Successfully</p>
             <p className="mt-1">
@@ -189,14 +189,14 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
               disabled={isLoading}
               className="gap-1"
             >
-              <RefreshCw className="icon-2xs" aria-hidden="true" />
+              <RefreshCw className="icon-sm" />
               Regenerate
             </Button>
           </div>
 
           <div className="rounded-lg bg-secondary/50 p-4">
             <div className="grid grid-cols-2 gap-2">
-              {setupData?.backupCodes.map((code, i) => (
+              {setupData?.backupCodes?.map((code, i) => (
                 <code
                   key={i}
                   className="rounded bg-background px-2 py-1.5 text-center text-sm font-mono"
@@ -207,8 +207,8 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
-            <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
+          <div className="flex items-start gap-2 rounded-lg bg-status-warning-bg p-3 text-xs text-status-warning ">
+            <AlertTriangle className="icon-sm shrink-0" />
             <p>
               Save these backup codes in a secure location. They can be used to access your account
               if you lose access to your authenticator app. Each code can only be used once.

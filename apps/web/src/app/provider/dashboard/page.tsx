@@ -49,9 +49,9 @@ type Project = {
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   const statusColors: Record<string, string> = {
-    new: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    replied: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    converted: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    new: 'bg-status-info-bg text-status-info border-status-info-border',
+    replied: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    converted: 'bg-status-success-bg text-status-success border-status-success-border',
   };
 
   return (
@@ -82,9 +82,9 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
 
 function ProjectCard({ project }: { project: Project }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    on_hold: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    completed: 'bg-status-info-bg text-status-info border-status-info-border',
+    on_hold: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   return (
@@ -105,7 +105,7 @@ function ProjectCard({ project }: { project: Project }) {
       <div className="text-right">
         <p className="text-sm font-medium">{project.progress}%</p>
         <p className="text-xs text-muted-foreground flex items-center gap-1">
-          <Clock className="icon-2xs" aria-hidden="true" />
+          <Clock className="icon-sm" />
           {project.dueDate}
         </p>
       </div>
@@ -196,7 +196,7 @@ export default function ProviderDashboardPage() {
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href="/provider/services">
-                <Store className="mr-2 icon-sm" aria-hidden="true" />
+                <Store className="mr-2 icon-sm" />
                 Manage Services
               </Link>
             </Button>
@@ -209,7 +209,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <FolderKanban className="icon-md text-primary-emphasis" aria-hidden="true" />
+                  <FolderKanban className="icon-md text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Projects</p>
@@ -221,8 +221,8 @@ export default function ProviderDashboardPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <MessageSquare className="icon-md text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                <div className="p-2 rounded-lg bg-status-info-bg">
+                  <MessageSquare className="icon-md text-status-info" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Inquiries</p>
@@ -234,8 +234,8 @@ export default function ProviderDashboardPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <DollarSign className="icon-md text-green-600 dark:text-green-400" aria-hidden="true" />
+                <div className="p-2 rounded-lg bg-status-success-bg">
+                  <DollarSign className="icon-md text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
@@ -247,8 +247,8 @@ export default function ProviderDashboardPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Star className="icon-md text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                <div className="p-2 rounded-lg bg-status-warning-bg">
+                  <Star className="icon-md text-status-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Rating</p>
@@ -267,7 +267,7 @@ export default function ProviderDashboardPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/provider/inquiries">
                   View All
-                  <ChevronRight className="ml-1 icon-sm" aria-hidden="true" />
+                  <ChevronRight className="ml-1 icon-sm" />
                 </Link>
               </Button>
             </CardHeader>
@@ -290,7 +290,7 @@ export default function ProviderDashboardPage() {
                     <span className="font-medium text-sm">{review.client}</span>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} className="icon-2xs fill-amber-500 text-amber-500" aria-hidden="true" />
+                        <Star key={i} className="icon-sm fill-status-warning text-status-warning" />
                       ))}
                     </div>
                   </div>
@@ -311,7 +311,7 @@ export default function ProviderDashboardPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/provider/projects">
                 View All
-                <ChevronRight className="ml-1 icon-sm" aria-hidden="true" />
+                <ChevronRight className="ml-1 icon-sm" />
               </Link>
             </Button>
           </CardHeader>

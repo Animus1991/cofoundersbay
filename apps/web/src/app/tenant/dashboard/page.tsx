@@ -24,26 +24,18 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import {
-  AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts';
-import { useChartTheme } from '@/lib/chart-theme';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const MEMBER_GROWTH = [
-  { month: 'Oct', members: 98 },
-  { month: 'Nov', members: 112 },
-  { month: 'Dec', members: 125 },
-  { month: 'Jan', members: 134 },
-  { month: 'Feb', members: 145 },
-  { month: 'Mar', members: 156 },
-];
-
-const PROGRAM_ENGAGEMENT = [
-  { name: 'Spring Accel', sessions: 24, milestones: 18 },
-  { name: 'AI Lab', sessions: 12, milestones: 8 },
-  { name: 'Bootcamp', sessions: 32, milestones: 28 },
-];
+const ChartFallback = () => <Skeleton className="h-[160px] w-full rounded-lg" />;
+const MemberGrowthChart = dynamic(
+  () => import('./TenantDashboardCharts').then((m) => ({ default: m.MemberGrowthChart })),
+  { ssr: false, loading: ChartFallback },
+);
+const ProgramEngagementChart = dynamic(
+  () => import('./TenantDashboardCharts').then((m) => ({ default: m.ProgramEngagementChart })),
+  { ssr: false, loading: ChartFallback },
+);
 
 function StatCard({
   title,
@@ -63,7 +55,7 @@ function StatCard({
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className={cn('p-2 rounded-lg', iconColor || 'bg-primary/10')}>
-            <Icon className={cn('h-5 w-5', iconColor ? 'text-white' : 'text-primary-emphasis')} />
+            <Icon className={cn('icon-md', iconColor ? 'text-white' : 'text-primary-accessible')} />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
@@ -79,7 +71,6 @@ function StatCard({
 }
 
 export default function TenantDashboardPage() {
-  const theme = useChartTheme();
   // Mock data
   const stats = {
     totalMembers: 156,
@@ -111,12 +102,12 @@ export default function TenantDashboardPage() {
       title="Tenant Dashboard"
       description="Manage your organization on CoFounderBay"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/tenant/branding"><Building2 className="mr-1.5 icon-sm" aria-hidden="true" /> Branding</Link>
+            <Link href="/tenant/branding"><Building2 className="mr-1.5 icon-sm" /> Branding</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/tenant/settings"><Settings className="mr-1.5 icon-sm" aria-hidden="true" /> Settings</Link>
+            <Link href="/tenant/settings"><Settings className="mr-1.5 icon-sm" /> Settings</Link>
           </Button>
         </div>
       }
@@ -124,7 +115,7 @@ export default function TenantDashboardPage() {
       <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             title="Total Members"
             value={stats.totalMembers}
@@ -152,7 +143,7 @@ export default function TenantDashboardPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Active Programs */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -160,7 +151,7 @@ export default function TenantDashboardPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/tenant/programs">
                   View All
-                  <ChevronRight className="ml-1 icon-sm" aria-hidden="true" />
+                  <ChevronRight className="ml-1 icon-sm" />
                 </Link>
               </Button>
             </CardHeader>
@@ -212,7 +203,7 @@ export default function TenantDashboardPage() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -221,21 +212,7 @@ export default function TenantDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={160}>
-                <AreaChart data={MEMBER_GROWTH} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                  <defs>
-                    <linearGradient id="memberFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 13, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="members" stroke="hsl(var(--primary))" fill="url(#memberFill)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
+              <MemberGrowthChart />
             </CardContent>
           </Card>
 
@@ -247,16 +224,7 @@ export default function TenantDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={PROGRAM_ENGAGEMENT} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 13, fontSize: 12 }} />
-                  <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Sessions" />
-                  <Bar dataKey="milestones" fill={theme.series[2]} radius={[4, 4, 0, 0]} name="Milestones" />
-                </BarChart>
-              </ResponsiveContainer>
+              <ProgramEngagementChart />
             </CardContent>
           </Card>
         </div>
@@ -266,15 +234,15 @@ export default function TenantDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm">Upcoming Events</CardTitle>
             <Button variant="ghost" size="sm" className="gap-1.5">
-              <Calendar className="h-3.5 w-3.5" aria-hidden="true" /> Add Event
+              <Calendar className="icon-sm" /> Add Event
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-3">
               {upcomingEvents.map((event) => (
                 <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
+                    <Calendar className="icon-sm text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{event.date}</span>
                   </div>
                   <p className="font-medium text-sm">{event.name}</p>
@@ -288,14 +256,14 @@ export default function TenantDashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-purple-600 dark:text-purple-400' },
-            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-amber-600 dark:text-amber-400' },
+            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-status-info' },
+            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-status-accent' },
+            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-status-success' },
+            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-status-warning' },
           ].map(({ label, icon: Icon, href, color }) => (
             <Button key={label} variant="outline" className="h-auto py-3 flex-col gap-1.5" asChild>
               <Link href={href}>
-                <Icon className={cn('h-5 w-5', color)} />
+                <Icon className={cn('icon-md', color)} />
                 <span className="text-xs">{label}</span>
               </Link>
             </Button>

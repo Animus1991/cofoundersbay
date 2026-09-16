@@ -282,7 +282,7 @@ export function ShapeNode({
               title="Change color"
               onClick={() => setShowPalette((v) => !v)}
             >
-              <Palette className="w-3.5 h-3.5" aria-hidden="true" />
+              <Palette className="icon-sm" />
             </button>
             {showPalette && (
               <div className="absolute top-8 left-0 bg-card border border-border rounded-lg p-2 shadow-xl z-30 flex flex-wrap gap-1 w-[120px]">
@@ -310,11 +310,11 @@ export function ShapeNode({
 
           {/* Delete */}
           <button
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-emphasis transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
             title="Delete shape"
             onClick={onDelete}
           >
-            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+            <Trash2 className="icon-sm" />
           </button>
         </div>
       )}

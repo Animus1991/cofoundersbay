@@ -18,7 +18,7 @@ export default function MessagesLoading() {
               <div className="relative shrink-0">
                 <Skeleton className="h-12 w-12 rounded-full" />
                 {i < 2 && (
-                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-400/30 ring-2 ring-background" />
+                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-status-success-bg ring-2 ring-background" />
                 )}
               </div>
               <div className="flex-1 min-w-0 space-y-1.5">

@@ -25,11 +25,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts';
-import { useChartTheme } from '@/lib/chart-theme';
+import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
+const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
+const ApplicationsTrendChart = dynamic(
+  () => import('./OrgAnalyticsCharts').then((m) => ({ default: m.ApplicationsTrendChart })),
+  { ssr: false, loading: ChartFallback },
+);
+const MentorSessionsChart = dynamic(
+  () => import('./OrgAnalyticsCharts').then((m) => ({ default: m.MentorSessionsChart })),
+  { ssr: false, loading: ChartFallback },
+);
+const IndustryPieChart = dynamic(
+  () => import('./OrgAnalyticsCharts').then((m) => ({ default: m.IndustryPieChart })),
+  { ssr: false, loading: PieFallback },
+);
 
 function StatCard({
   title,
@@ -54,18 +67,18 @@ function StatCard({
             {change && (
               <div className={cn(
                 'flex items-center gap-1 text-xs mt-1',
-                changeType === 'positive' && 'text-green-600 dark:text-green-400',
-                changeType === 'negative' && 'text-red-600 dark:text-red-400',
+                changeType === 'positive' && TREND.up,
+                changeType === 'negative' && TREND.down,
                 changeType === 'neutral' && 'text-muted-foreground'
               )}>
-                {changeType === 'positive' && <ArrowUpRight className="icon-sm" aria-hidden="true" />}
-                {changeType === 'negative' && <ArrowDownRight className="icon-sm" aria-hidden="true" />}
+                {changeType === 'positive' && <ArrowUpRight className="icon-sm" />}
+                {changeType === 'negative' && <ArrowDownRight className="icon-sm" />}
                 {change}
               </div>
             )}
           </div>
           <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="icon-md text-primary-emphasis" />
+            <Icon className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -104,18 +117,31 @@ const SESSIONS_BY_MONTH = [
   { month: 'Mar', sessions: 38 },
 ];
 
+const CHART_SERIES_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--status-info-fg))',
+  'hsl(var(--status-success-fg))',
+  'hsl(var(--status-warning-fg))',
+  'hsl(var(--status-accent-fg))',
+] as const;
+
 const INDUSTRY_PIE = [
-  // Colour comes from the shared categorical palette by slot order, so the
-  // same sector keeps the same hue on every screen that charts it.
-  { name: 'AI/ML',          value: 14 },
-  { name: 'FinTech',        value: 10 },
-  { name: 'HealthTech',     value: 8  },
-  { name: 'CleanTech',      value: 7  },
-  { name: 'SaaS',           value: 6  },
+  { name: 'AI/ML',          value: 14, color: CHART_SERIES_COLORS[0] },
+  { name: 'FinTech',        value: 10, color: CHART_SERIES_COLORS[1] },
+  { name: 'HealthTech',     value: 8,  color: CHART_SERIES_COLORS[2] },
+  { name: 'CleanTech',      value: 7,  color: CHART_SERIES_COLORS[3] },
+  { name: 'SaaS',           value: 6,  color: CHART_SERIES_COLORS[4] },
 ];
 
+const FUNNEL_STEPS = [
+  { label: 'Applications', value: 120, bar: 'bg-status-neutral' },
+  { label: 'Reviewed', value: 95, bar: 'bg-status-warning' },
+  { label: 'Shortlisted', value: 45, bar: 'bg-status-info' },
+  { label: 'Interviewed', value: 30, bar: 'bg-status-accent' },
+  { label: 'Accepted', value: 15, bar: 'bg-status-success' },
+] as const;
+
 export default function OrgAnalyticsPage() {
-  const theme = useChartTheme();
   const [period, setPeriod] = useState('30d');
   // Mock data
   const stats = {
@@ -154,42 +180,36 @@ export default function OrgAnalyticsPage() {
   const maxIndustry = Math.max(...industryDistribution.map((i) => i.count));
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="icon-lg text-primary-emphasis" aria-hidden="true" /> Org Analytics
-            </h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              Track performance, cohort health, and program impact
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Time period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-                <SelectItem value="1y">Last year</SelectItem>
-                <SelectItem value="all">All time</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button aria-label="Refresh" variant="outline" size="icon" title="Refresh">
-              <RefreshCw className="icon-sm" aria-hidden="true" />
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Download className="icon-sm" aria-hidden="true" /> Export
-            </Button>
-          </div>
-        </div>
+    <AppShell
+      title="Org Analytics"
+      description="Cohort health, program impact, application funnel, and member growth in one dashboard."
+      actions={(
+        <>
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Time period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+              <SelectItem value="1y">Last year</SelectItem>
+              <SelectItem value="all">All time</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="icon" title="Refresh">
+            <RefreshCw className="icon-sm" />
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <Download className="icon-sm" /> Export
+          </Button>
+        </>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             title="Total Startups"
             value={stats.totalStartups}
@@ -221,7 +241,7 @@ export default function OrgAnalyticsPage() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           {/* Applications Trend */}
           <Card>
             <CardHeader className="pb-2">
@@ -231,26 +251,7 @@ export default function OrgAnalyticsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={APPLICATIONS_TREND} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                  <defs>
-                    <linearGradient id="appFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="accFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={theme.series[2]} stopOpacity={0.25} />
-                      <stop offset="95%" stopColor={theme.series[2]} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 13, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="applications" stroke="hsl(var(--primary))" fill="url(#appFill)" strokeWidth={2} name="Applications" />
-                  <Area type="monotone" dataKey="accepted" stroke={theme.series[2]} fill="url(#accFill)" strokeWidth={2} name="Accepted" />
-                </AreaChart>
-              </ResponsiveContainer>
+              <ApplicationsTrendChart data={APPLICATIONS_TREND} />
             </CardContent>
           </Card>
 
@@ -263,20 +264,12 @@ export default function OrgAnalyticsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={SESSIONS_BY_MONTH} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 13, fontSize: 12 }} />
-                  <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Sessions" />
-                </BarChart>
-              </ResponsiveContainer>
+              <MentorSessionsChart data={SESSIONS_BY_MONTH} />
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           {/* Program Performance */}
           <Card>
             <CardHeader>
@@ -321,21 +314,12 @@ export default function OrgAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
-                <ResponsiveContainer width={140} height={140}>
-                  <PieChart>
-                    <Pie data={INDUSTRY_PIE} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={60} strokeWidth={2}>
-                      {INDUSTRY_PIE.map((entry, i) => (
-                        <Cell key={entry.name} fill={theme.series[i % theme.series.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={theme.tooltipStyle} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <IndustryPieChart data={INDUSTRY_PIE} />
                 <div className="flex-1 space-y-2">
-                  {INDUSTRY_PIE.map((item, i) => (
+                  {INDUSTRY_PIE.map((item) => (
                     <div key={item.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: theme.series[i % theme.series.length] }} />
+                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
                         <span className="text-muted-foreground">{item.name}</span>
                       </div>
                       <span className="font-medium tabular-nums">{item.value}</span>
@@ -381,19 +365,13 @@ export default function OrgAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-4">
-              {[
-                { label: 'Applications', value: 120, color: 'bg-gray-500' },
-                { label: 'Reviewed', value: 95, color: 'bg-amber-500' },
-                { label: 'Shortlisted', value: 45, color: 'bg-blue-500' },
-                { label: 'Interviewed', value: 30, color: 'bg-purple-500' },
-                { label: 'Accepted', value: 15, color: 'bg-green-500' },
-              ].map((step, index) => (
+              {FUNNEL_STEPS.map((step, index) => (
                 <div key={step.label} className="flex-1 text-center">
-                  <div className={cn('h-24 rounded-lg flex items-center justify-center', step.color)}>
-                    <span className="text-xl font-bold text-white">{step.value}</span>
+                  <div className={cn('h-24 rounded-lg flex items-center justify-center', step.bar)}>
+                    <span className="text-xl font-bold text-primary-foreground">{step.value}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">{step.label}</p>
-                  {index < 4 && (
+                  {index < FUNNEL_STEPS.length - 1 && (
                     <p className="text-xs text-muted-foreground">
                       {Math.round((step.value / 120) * 100)}%
                     </p>

@@ -3,7 +3,7 @@
 # CoFounderBay Deployment Script
 # This script handles zero-downtime deployment with health checks and rollback
 
-set -e
+set -e -o pipefail
 
 echo "🚀 CoFounderBay Deployment Script"
 echo "================================="
@@ -56,7 +56,7 @@ check_prerequisites() {
     local errors=0
     
     # Check required commands
-    local required_commands=("git" "npm" "pm2" "node")
+    local required_commands=("git" "pnpm" "pm2" "node" "curl")
     for cmd in "${required_commands[@]}"; do
         if ! command -v "$cmd" &> /dev/null; then
             print_status "ERROR" "Required command not found: $cmd"
@@ -67,9 +67,8 @@ check_prerequisites() {
     # Check Node.js version
     if command -v node &> /dev/null; then
         local node_version=$(node --version | cut -d'v' -f2)
-        local required_version="18.0.0"
-        if [ "$(printf '%s\n' "$required_version" "$node_version" | sort -V | head -n1)" != "$required_version" ]; then
-            print_status "ERROR" "Node.js version $node_version is below required $required_version"
+        if ! node "$APP_DIR/scripts/ensure-supported-node.cjs" deployment; then
+            print_status "ERROR" "Node.js version $node_version is not supported by this workspace"
             errors=$((errors + 1))
         else
             print_status "OK" "Node.js version: $node_version"
@@ -120,9 +119,10 @@ update_code() {
     
     # Stash any local changes
     if [ -n "$(git status --porcelain)" ]; then
-        print_status "WARNING" "Local changes detected, stashing them"
-        git stash push -m "pre-deploy-stash-$(date +%Y%m%d_%H%M%S)"
+        print_status "ERROR" "Local changes detected; refusing to stash or overwrite operator changes"
+        exit 1
     fi
+    git rev-parse HEAD > "$(git rev-parse --git-path cfb-previous-deploy)"
     
     # Fetch latest changes
     git fetch origin
@@ -144,7 +144,7 @@ update_code() {
     fi
     
     # Pull latest changes
-    git pull origin "$target_branch"
+    git pull --ff-only origin "$target_branch"
     
     # Get deployment commit
     local deploy_commit=$(git rev-parse HEAD)
@@ -160,17 +160,13 @@ install_dependencies() {
     cd "$APP_DIR"
     
     # Install root dependencies
-    npm ci --production=false
+    pnpm install --frozen-lockfile --prod=false
     
     # Install API dependencies
-    cd apps/api
-    npm ci --production=false
+    pnpm --filter @cofounderbay/api exec prisma generate
     
     # Install Web dependencies
-    cd ../web
-    npm ci --production=false
-    
-    cd "$APP_DIR"
+    pnpm --filter @cofounderbay/web exec next --version
     
     print_status "OK" "Dependencies installed"
 }
@@ -182,17 +178,13 @@ build_applications() {
     cd "$APP_DIR"
     
     # Build shared packages
-    npm run build:shared
+    pnpm --filter @cofounderbay/shared build
     
     # Build API
-    cd apps/api
-    npm run build
+    pnpm --filter @cofounderbay/api build
     
     # Build Web
-    cd ../web
-    npm run build
-    
-    cd "$APP_DIR"
+    pnpm --filter @cofounderbay/web build
     
     print_status "OK" "Applications built successfully"
 }
@@ -204,12 +196,8 @@ run_migrations() {
     cd "$APP_DIR/apps/api"
     
     # Check if there are pending migrations
-    if npx prisma migrate status | grep -q "Pending migrations"; then
-        npx prisma migrate deploy
-        print_status "OK" "Database migrations applied"
-    else
-        print_status "INFO" "No pending migrations"
-    fi
+    pnpm exec prisma migrate deploy
+    print_status "OK" "Database migrations checked and applied"
 }
 
 # Function to deploy applications
@@ -233,6 +221,35 @@ deploy_applications() {
     print_status "OK" "Applications deployed"
 }
 
+api_health_check() {
+    curl --max-time 5 -fsS "http://localhost:3001/api/health/ready" 2>/dev/null | node -e '
+        let input = "";
+        process.stdin.on("data", chunk => input += chunk);
+        process.stdin.on("end", () => {
+            try {
+                const response = JSON.parse(input);
+                const data = response.data ?? response;
+                process.exit(response.success !== false && data.status === "ready" ? 0 : 1);
+            } catch { process.exit(1); }
+        });'
+}
+
+pm2_health_check() {
+    pm2 jlist | node -e '
+        let input = "";
+        process.stdin.on("data", chunk => input += chunk);
+        process.stdin.on("end", () => {
+            try {
+                const processes = JSON.parse(input);
+                const names = ["cofounderbay-api", "cofounderbay-web"];
+                process.exit(names.every(name => {
+                    const instances = processes.filter(item => item.name === name);
+                    return instances.length > 0 && instances.every(item => item.pm2_env?.status === "online");
+                }) ? 0 : 1);
+            } catch { process.exit(1); }
+        });'
+}
+
 # Function to health check
 health_check() {
     print_status "INFO" "Performing health checks..."
@@ -242,26 +259,27 @@ health_check() {
     local elapsed=0
     
     while [ $elapsed -lt $timeout ]; do
+        local api_ready=false
+        local web_ready=false
         # Check API health
-        if curl -s -f "http://localhost:3001/api/v1/health" > /dev/null 2>&1; then
+        if api_health_check; then
+            api_ready=true
             print_status "OK" "API health check passed"
         else
             print_status "WARNING" "API health check failed, retrying..."
         fi
         
         # Check Web health
-        if curl -s -f "http://localhost:3000" > /dev/null 2>&1; then
+        if curl --max-time 5 -fsS "http://localhost:3000" > /dev/null 2>&1; then
+            web_ready=true
             print_status "OK" "Web health check passed"
         else
             print_status "WARNING" "Web health check failed, retrying..."
         fi
         
         # Check PM2 processes
-        local api_status=$(pm2 jlist | jq -r '.[] | select(.name=="cofounderbay-api") | .pm2_env.status' 2>/dev/null || echo "unknown")
-        local web_status=$(pm2 jlist | jq -r '.[] | select(.name=="cofounderbay-web") | .pm2_env.status' 2>/dev/null || echo "unknown")
-        
-        if [ "$api_status" = "online" ] && [ "$web_status" = "online" ]; then
-            print_status "OK" "All PM2 processes are online"
+        if [ "$api_ready" = true ] && [ "$web_ready" = true ] && pm2_health_check; then
+            print_status "OK" "HTTP readiness and all application instances are healthy"
             return 0
         fi
         
@@ -281,14 +299,24 @@ rollback_deployment() {
     cd "$APP_DIR"
     
     # Get previous commit
-    local previous_commit=$(git rev-parse HEAD~1)
+    local marker
+    marker=$(git rev-parse --git-path cfb-previous-deploy)
+    local previous_commit=""
+    if [ -f "$marker" ]; then
+        read -r previous_commit < "$marker"
+    fi
+    if [ -n "$(git status --porcelain)" ]; then
+        print_status "ERROR" "Rollback refused: local changes must be preserved"
+        exit 1
+    fi
     
-    if [ -n "$previous_commit" ]; then
+    if [[ "$previous_commit" =~ ^[a-f0-9]{40,64}$ ]] && git cat-file -e "${previous_commit}^{commit}"; then
         print_status "INFO" "Rolling back to commit: $previous_commit"
         
-        git reset --hard "$previous_commit"
+        git switch --detach "$previous_commit"
         
         # Rebuild and redeploy
+        install_dependencies
         build_applications
         deploy_applications
         
@@ -312,14 +340,13 @@ cleanup() {
     cd "$APP_DIR"
     
     # Clean up node_modules in subdirectories
-    find . -name "node_modules" -type d -exec rm -rf {} + 2>/dev/null || true
+    print_status "INFO" "Preserving dependencies required by running applications"
     
     # Clean up build artifacts
-    find . -name "*.tsbuildinfo" -delete 2>/dev/null || true
-    find . -name ".next" -type d -exec rm -rf {} + 2>/dev/null || true
+    print_status "INFO" "Preserving the active build and incremental metadata"
     
     # Restart PM2 to ensure clean state
-    pm2 restart all
+    pm2_health_check || return 1
     
     print_status "OK" "Cleanup completed"
 }
@@ -345,7 +372,7 @@ show_status() {
     
     # Health check
     echo ""
-    if curl -s -f "http://localhost:3001/api/v1/health" > /dev/null 2>&1; then
+    if api_health_check; then
         print_status "OK" "API is healthy"
     else
         print_status "ERROR" "API is not responding"

@@ -95,10 +95,13 @@
 - [x] `/admin/programs` — Program management, stats, filters
 - [x] `/admin/taxonomy` — Skills management, categories, search
 
-## Phase 4C.7: Organization Pages 
-- [ ] /org/* pages
-- [ ] /tenant/* pages
-- [ ] /groups/* pages
+## Phase 4C.7: Organization & Tenant Pages ✅ MOSTLY COMPLETE
+- [x] /org/programs, /org/cohorts, /org/applications, /org/members, /org/mentors, /org/events, /org/startups, /org/analytics, /org/settings — AppShell title/description, empty states unified
+- [x] /org/[slug] public profile — 3 inline empty states replaced with `ListEmptyState`
+- [x] /tenant/branding, /tenant/sso, /tenant/domains, /tenant/automation, /tenant/programs, /tenant/members, /tenant/webhooks, /tenant/api-keys, /tenant/settings, /tenant/billing, /tenant/analytics — AppShell title/description, empty states unified
+- [x] Canonical `ListEmptyState` + `NoFilterResults` helpers in `EmptyStates.tsx`
+- [x] 13 entity-specific helpers: `EmptyOrgPrograms`, `EmptyOrgCohorts`, `EmptyOrgApplications`, `EmptyOrgMembers`, `EmptyOrgMentors`, `EmptyOrgStartups`, `EmptyOrgEvents`, `EmptyTenantMembers`, `EmptyTenantPrograms`, `EmptyTenantWebhooks`, `EmptyTenantApiKeys`, `EmptyTenantDomains`, `EmptyTenantAutomations`
+- [x] /groups/* pages — all 4 pages unified (see Phase 4D)
 
 ## Phase 4C.8: Remaining Pages 
 - [ ] /feed
@@ -112,20 +115,74 @@
 - [ ] /data-room/[id]
 - [ ] /org/cohorts/[id]
 
-## Phase 4D: Micro-Polish 
-## Phase 4D: Micro-Polish ⏳ PENDING
-- [ ] Animation audit and reduction
-- [ ] Focus state consistency
-- [ ] Empty/loading state standardization
-- [ ] Accessibility contrast check
+## Phase 4D: Micro-Polish ✅ COMPLETE
+- [x] Contextual help infrastructure (HelpCallout, page-registry, AppShell.showHelp)
+- [x] Sidebar nav tooltips (nav-descriptions.ts)
+- [x] Admin broken pages rebuilt (analytics, user-management, moderation, security, settings)
+- [x] Animation audit + reduction — added `prefers-reduced-motion: reduce` block in `globals.css`
+      (disables decorative/infinite loops: fade/scale/bounce/pulse/shimmer + View Transitions;
+      keeps functional `.animate-spin`; collapses transitions; removes idle GPU cost)
+- [x] Focus state consistency — skip-to-content link now rendered in `AppShell` (was CSS-only, WCAG 2.4.1);
+      `<main>` given `tabIndex={-1}` so skip-link focus lands correctly; icon-only buttons labelled
+- [x] Empty/loading state standardization — `/groups/*` (page, manage, moderation, [groupId]) unified
+      with `ListEmptyState` / `NoFilterResults`, now filter-aware with Clear-filters actions
+- [x] Accessibility — viewport zoom unlocked in `layout.tsx` (was `maximumScale:1, userScalable:false`,
+      a WCAG 1.4.4 / 1.4.10 failure → now `maximumScale:5`)
+- [x] Theme contrast audit (WCAG 2.2 AA 4.5:1) — all 5 themes + 4 role overrides fixed in `globals.css`:
+      Alliance amber: dark `--primary-foreground` (was white ~2.2:1); System cyan darkened 48%→36%;
+      Dark/Cofounder accents darkened; Investor/Mentor warm primaries use dark foreground;
+      Light/Alliance destructive 60%→50%; Alliance muted-foreground 46%→44%; `themes.ts` synced
+- [x] Semantic status tokens (`--status-*-fg/bg/border`) + `lib/semantic-colors.ts` + Tailwind `status.*` colors;
+      replaces hardcoded `text-emerald-600 dark:text-emerald-400` pattern — works on alliance/cofounder/system
+      (not just `.dark`). Migrated: Badge, Toast, StatCard, EmptyStates, NotificationsBell, groups/*, enhanced-card
 
-## Phase 5: Final Validation ⏳ PENDING
+## Phase 4E: Performance — Dev Compiler Swap ✅ COMPLETE
+- [x] Root cause: webpack dev mode recompiled 3,700–7,700 modules per route navigation
+      (0.7–2.6s each) → the dominant source of perceived latency when moving between pages
+- [x] Verified app-layer perf is already sound: React Query (staleTime 5m, no window-focus refetch,
+      circuit-breaker + 6s timeout in `lib/api.ts`), polling hooks pause on hidden/error (60s)
+- [x] Swapped dev compiler to **Turbopack** (`next dev --turbopack` in `scripts/dev.js`),
+      stable in Next 15.5; opt-out via `CFB_DISABLE_TURBOPACK=1`
+- [x] `next.config.ts`: added `turbopack: {}`, guarded webpack dev cache behind `!TURBOPACK`
+      (production `next build` still uses webpack + splitChunks — unchanged)
+- [x] Verified: `tsc` exit 0, `--turbopack` flag recognized by `next@15.5.13`
+- [ ] ACTION REQUIRED: restart `npm run dev` to activate Turbopack (per-route recompiles drop to ~50–200ms)
+
+## Phase B (Help/descriptions rollout) ✅ COMPLETE
+- [x] /builder — title, description, `showHelp` enabled, curated copy
+- [x] /readiness — header refactored into AppShell, Reassess in actions, `showHelp` on
+- [x] /discover — `showHelp` on, copy reviewed
+- [x] /fundraising — `showHelp` on, copy reviewed
+- [x] /settings — `showHelp` on, copy reviewed
+- [x] /matches/compare — title + description added (was bare)
+- [x] /compare — description updated with /matches/compare hint
+- [x] /connections — `showHelp` on, copy reviewed
+- [x] /milestones — `showHelp` on, copy reviewed
+- [x] /notifications, /profile, /recommendations, /search — copy improved (no longer marketing fluff)
+- [x] /dashboard/founder|mentor|investor — header moved into AppShell (title+desc+actions), `showHelp` on founder
+- [x] Onboarding registry entry: clearer purpose, `helpId=onboarding` with per-step rationale
+- [x] `page-registry.ts`: filled programs/jobs/events/learning/groups/posts/mentoring + mentor/investor/provider sub-pages, helpIds added to admin pages
+- [x] `PageContextualHelp.tsx`: curated, concrete copy for 15 helpIds (no fluff)
+- [x] Empty state unification: `ListEmptyState` + `NoFilterResults` + 13 entity helpers; replaced 14 hand-rolled blocks in org/tenant
+- [x] `page-registry.ts`: 12 tenant entries + 10 org entries (titles + concrete descriptions, no marketing fluff)
+- [x] TS check passes (tsc exit 0)
+
+## Phase 5: Final Validation ⏳ IN PROGRESS
+- [x] TypeScript build verification (tsc exit 0)
+- [x] Comprehensive UI/UX audit document (`docs/UI_UX_COMPREHENSIVE_AUDIT_AND_PLAN.md`)
 - [ ] Layout verification
 - [ ] Responsiveness testing
 - [ ] Functionality verification
 - [ ] Accessibility audit
 - [ ] Visual consistency check
 - [ ] Regression testing
+
+## Infrastructure status (verified live this session)
+- Docker Desktop: launched and running (server 29.5.2)
+- `docker compose`: postgres, redis, meilisearch — all Running
+- API `/api/health`: `{"status":"ok","services":{"database":"up","cache":"up"}}`
+- Web: localhost:3000 (Next.js dev)
+- API: localhost:3001 (NestJS dev)
 
 ---
 

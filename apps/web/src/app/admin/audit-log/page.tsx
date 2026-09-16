@@ -33,15 +33,15 @@ const ACTION_ICONS: Record<string, React.ElementType> = {
 };
 
 const ACTION_COLORS: Record<string, string> = {
-  create: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-  update: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-  delete: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-  view: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-  login: 'bg-primary/10 text-primary-emphasis border-primary/20',
+  create: 'bg-status-success-bg text-status-success border-status-success-border',
+  update: 'bg-status-info-bg text-status-info border-status-info-border',
+  delete: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+  view: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+  login: 'bg-primary/10 text-primary-accessible border-primary/20',
   logout: 'bg-muted text-muted-foreground border-border',
-  ban: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-  unban: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-  role_change: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+  ban: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  unban: 'bg-status-success-bg text-status-success border-status-success-border',
+  role_change: 'bg-status-accent-bg text-status-accent border-status-accent-border',
 };
 
 const ENTITY_TYPES = ['all', 'user', 'tenant', 'program', 'event', 'group', 'job', 'automation', 'sso', 'report'];
@@ -81,7 +81,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
   return (
     <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-0">
       <div className={cn('rounded-lg p-2 border shrink-0 mt-0.5', colorClass)}>
-        <ActionIcon className="h-3.5 w-3.5" />
+        <ActionIcon className="icon-sm" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -143,7 +143,7 @@ export default function AdminAuditLogPage() {
       title="Audit Log"
       description="Track all administrative actions on the platform"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} aria-hidden="true" />
             Refresh
@@ -193,7 +193,7 @@ export default function AdminAuditLogPage() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Shield className="icon-sm text-primary-accessible" />
               Activity Log
             </CardTitle>
             <span className="text-xs text-muted-foreground">{total} total entries</span>

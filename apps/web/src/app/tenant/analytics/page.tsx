@@ -58,28 +58,24 @@ export default function TenantAnalyticsPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground">
-              Track your organization's performance
-            </p>
-          </div>
-          <Select defaultValue="30d">
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Time period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+    <AppShell
+      title="Analytics"
+      description="Member growth, engagement, and program activity. Filter by time range to compare periods."
+      actions={(
+        <Select defaultValue="30d">
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Time period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+            <SelectItem value="90d">Last 90 days</SelectItem>
+            <SelectItem value="1y">Last year</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -87,7 +83,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="icon-md text-primary-emphasis" aria-hidden="true" />
+                  <Users className="icon-md text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Members</p>
@@ -99,8 +95,8 @@ export default function TenantAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Rocket className="icon-md text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                <div className="p-2 rounded-lg bg-status-info-bg">
+                  <Rocket className="icon-md text-status-info" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Startups</p>
@@ -112,8 +108,8 @@ export default function TenantAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Award className="icon-md text-purple-600 dark:text-purple-400" aria-hidden="true" />
+                <div className="p-2 rounded-lg bg-status-accent-bg">
+                  <Award className="icon-md text-status-accent" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Programs Run</p>
@@ -125,8 +121,8 @@ export default function TenantAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <Calendar className="icon-md text-green-600 dark:text-green-400" aria-hidden="true" />
+                <div className="p-2 rounded-lg bg-status-success-bg">
+                  <Calendar className="icon-md text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mentor Sessions</p>
@@ -194,7 +190,7 @@ export default function TenantAnalyticsPage() {
                     <p className="text-sm text-muted-foreground">{metric.name}</p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-xl font-bold">{metric.value}</span>
-                      <span className="text-xs text-green-600 dark:text-green-400">{metric.change}</span>
+                      <span className="text-xs text-status-success">{metric.change}</span>
                     </div>
                   </div>
                 ))}
@@ -224,7 +220,7 @@ export default function TenantAnalyticsPage() {
                         </div>
                       </div>
                       {index > 0 && (
-                        <span className="text-xs text-green-600 dark:text-green-400 w-12">+{growth}%</span>
+                        <span className="text-xs text-status-success w-12">+{growth}%</span>
                       )}
                     </div>
                   );

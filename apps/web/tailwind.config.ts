@@ -31,9 +31,7 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
-          // Text-on-surface variant. `bg-primary` and `text-primary` need
-          // opposite adjustments to clear 4.5:1, so brand text uses this.
-          emphasis: 'hsl(var(--primary-emphasis))',
+          accessible: 'hsl(var(--primary-accessible))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -50,41 +48,56 @@ const config: Config = {
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
-          // Text-on-surface variant, for the same reason as primary.emphasis:
-          // the step that carries white text is too dark to BE text.
-          emphasis: 'hsl(var(--destructive-emphasis))',
+          accessible: 'hsl(var(--destructive-accessible))',
+        },
+        status: {
+          success: {
+            DEFAULT: 'hsl(var(--status-success-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-success-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-success-border) / <alpha-value>)',
+          },
+          warning: {
+            DEFAULT: 'hsl(var(--status-warning-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-warning-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-warning-border) / <alpha-value>)',
+          },
+          danger: {
+            DEFAULT: 'hsl(var(--status-danger-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-danger-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-danger-border) / <alpha-value>)',
+          },
+          info: {
+            DEFAULT: 'hsl(var(--status-info-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-info-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-info-border) / <alpha-value>)',
+          },
+          accent: {
+            DEFAULT: 'hsl(var(--status-accent-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-accent-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-accent-border) / <alpha-value>)',
+          },
+          neutral: {
+            DEFAULT: 'hsl(var(--status-neutral-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-neutral-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-neutral-border) / <alpha-value>)',
+          },
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
       },
-      // The full radius scale, not a three-key patch on top of Tailwind's
-      // defaults. Overriding only lg/md/sm left `rounded`, `rounded-xl`,
-      // `rounded-2xl` and `rounded-3xl` on Tailwind's rem values, which the
-      // 82% desktop root shrank while the px-based lg/md/sm stayed put -- so
-      // the same utility drew a different curve depending on which half of
-      // the scale it came from. Every step now resolves from one ladder in
-      // src/app/globals.css, so a class name means the same corner
-      // everywhere, and moving the ladder moves the whole product at once.
-      //
-      // Each step names a component family rather than an abstract size:
-      //   sm  -> checkbox, heat-map cell        (5px)
-      //   DEF -> chip, tag, anything under 24px (7px)
-      //   md  -> button, input, select, menu    (9px)
-      //   lg  -> list row, small panel, tab     (12px)
-      //   xl  -> card, dialog, popover, section (16px)
-      //   2xl -> sheet, hero block              (22px)
-      //   3xl -> marketing surface              (30px)
+      // One token, one scale. Every step derives from --radius (globals.css) so a
+      // theme can soften or sharpen the whole product by changing a single value,
+      // and nested surfaces stay concentric: card 16 > row 12 > control 10 > item 6,
+      // i.e. each inner radius ≈ outer radius minus the padding between them.
       borderRadius: {
-        none: '0px',
-        sm: 'var(--radius-xs)',
-        DEFAULT: 'var(--radius-sm)',
-        md: 'var(--radius-md)',
-        lg: 'var(--radius-lg)',
-        xl: 'var(--radius-xl)',
-        '2xl': 'var(--radius-2xl)',
-        '3xl': 'var(--radius-3xl)',
-        full: '9999px',
+        sm: 'calc(var(--radius) - 6px)',       //  6px  menu items, tiny chips
+        DEFAULT: 'calc(var(--radius) - 4px)',  //  8px  small inline elements
+        md: 'calc(var(--radius) - 2px)',       // 10px  buttons, inputs, selects
+        lg: 'var(--radius)',                   // 12px  tab lists, list rows, tiles
+        xl: 'calc(var(--radius) + 4px)',       // 16px  cards, dialogs, toasts
+        '2xl': 'calc(var(--radius) + 8px)',    // 20px  sheets, hero surfaces
+        '3xl': 'calc(var(--radius) + 14px)',   // 26px  marketing blocks
       },
       keyframes: {
         'fade-in': {
@@ -200,26 +213,31 @@ const config: Config = {
         'glass-sheen':
           'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
       },
-      fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-space-grotesk)', 'var(--font-sora)', 'system-ui', 'sans-serif'],
-      },
+      // Hard legibility floor. Nothing in the product is set below 11px; this is the
+      // same floor .bilingual-secondary uses. Replaces ~550 arbitrary text-[Npx]
+      // values (8px–13px) that were scattered through the codebase.
       fontSize: {
-        // 11px step — the documented home for the 548 arbitrary `text-[10px]` /
-        // `text-[11px]` values scattered through the app.
-        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
-
-        // The top of the scale, pulled in 2.5%. Tailwind's defaults run
-        // 30/36/48/60/72px against a 14px body — 2.14x up to 5.14x — which
-        // reads as a gap rather than a progression next to the 11-16px steps
-        // that carry 96% of the product's text. Line heights move by the same
-        // factor so the leading ratio is unchanged; 5xl and up already use a
-        // unitless 1 and scale themselves. Nothing below 30px is touched.
-        '3xl': ['1.828rem', { lineHeight: '2.194rem' }],  // 30   -> 29.25px
-        '4xl': ['2.194rem', { lineHeight: '2.438rem' }],  // 36   -> 35.1px
-        '5xl': ['2.925rem', { lineHeight: '1' }],         // 48   -> 46.8px
-        '6xl': ['3.656rem', { lineHeight: '1' }],         // 60   -> 58.5px
-        '7xl': ['4.388rem', { lineHeight: '1' }],         // 72   -> 70.2px
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }], // 11px — counters, badges, micro-labels
+        // Top of the scale pulled in 2.5% (Claude 2e5b104). Tailwind defaults
+        // 30/36/48/60/72 against a ~14px body read as a jump next to the
+        // 11–16px steps that carry most of the product. Nothing below 30px.
+        '3xl': ['1.828rem', { lineHeight: '2.194rem' }],
+        '4xl': ['2.194rem', { lineHeight: '2.438rem' }],
+        '5xl': ['2.925rem', { lineHeight: '1' }],
+        '6xl': ['3.656rem', { lineHeight: '1' }],
+        '7xl': ['4.388rem', { lineHeight: '1' }],
+      },
+      fontFamily: {
+        // Outer var = per-tenant override written by TenantContext.applyBrandingFonts;
+        // inner var = self-hosted brand font injected by next/font in app/layout.tsx.
+        // The tenant vars were previously written but never read, so custom
+        // tenant fonts silently had no effect.
+        sans: ['var(--font-sans, var(--font-inter))', 'system-ui', 'sans-serif'],
+        display: ['var(--font-heading, var(--font-display-brand))', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        // Self-hosted by next/font in app/layout.tsx. The fallbacks matter: a
+        // missing --font-mono used to land on the device's generic monospace,
+        // which differs on every platform.
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       screens: {
         // Tall-and-narrow breakpoint used by the split-pane layouts.

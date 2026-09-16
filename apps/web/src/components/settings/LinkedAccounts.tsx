@@ -6,9 +6,8 @@ import { Link2, Unlink, Loader2, Check, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getLinkedAccounts, unlinkGoogleAccount, unlinkLinkedInAccount } from '@/lib/api';
+import { getAbsoluteApiOrigin } from '@/lib/api-origin';
 import { useHasSession } from '@/hooks/useSession';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function LinkedAccounts() {
   const queryClient = useQueryClient();
@@ -44,7 +43,7 @@ export function LinkedAccounts() {
   });
 
   const handleLink = (provider: 'google' | 'linkedin') => {
-    window.location.href = `${API_URL}/api/auth/${provider}`;
+    window.location.href = `${getAbsoluteApiOrigin()}/api/auth/${provider}`;
   };
 
   const handleUnlink = (provider: 'google' | 'linkedin') => {
@@ -60,7 +59,7 @@ export function LinkedAccounts() {
     return (
       <Card>
         <CardContent className="pt-6 flex items-center justify-center">
-          <Loader2 className="icon-lg animate-spin text-muted-foreground" aria-hidden="true" />
+          <Loader2 className="icon-lg animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
     );
@@ -70,8 +69,8 @@ export function LinkedAccounts() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-destructive-emphasis">
-            <AlertCircle className="icon-md" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-destructive-accessible">
+            <AlertCircle className="icon-md" />
             <span>Failed to load linked accounts</span>
           </div>
         </CardContent>
@@ -127,7 +126,7 @@ export function LinkedAccounts() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Link2 className="icon-md" aria-hidden="true" />
+          <Link2 className="icon-md" />
           Linked Accounts
         </CardTitle>
         <CardDescription>
@@ -159,9 +158,9 @@ export function LinkedAccounts() {
                 className="gap-2"
               >
                 {unlinkingProvider === provider.id ? (
-                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : (
-                  <Unlink className="icon-sm" aria-hidden="true" />
+                  <Unlink className="icon-sm" />
                 )}
                 Disconnect
               </Button>
@@ -172,7 +171,7 @@ export function LinkedAccounts() {
                 onClick={() => handleLink(provider.id)}
                 className="gap-2"
               >
-                <Link2 className="icon-sm" aria-hidden="true" />
+                <Link2 className="icon-sm" />
                 Connect
               </Button>
             )}
@@ -180,7 +179,7 @@ export function LinkedAccounts() {
         ))}
 
         {!data?.hasPassword && (
-          <p className="text-xs text-muted-foreground mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-xs text-muted-foreground mt-4 p-3 bg-status-warning-bg border border-status-warning-border rounded-lg">
             ⚠️ You don&apos;t have a password set. Set one in Security settings before unlinking your only connected account.
           </p>
         )}

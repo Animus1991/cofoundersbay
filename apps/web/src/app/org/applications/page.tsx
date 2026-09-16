@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EmptyOrgApplications } from '@/components/common/EmptyStates';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Application = {
   id: string;
@@ -51,16 +53,20 @@ type Application = {
   reviewedBy?: string;
 };
 
-function ApplicationCard({ application }: { application: Application }) {
-  const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" aria-hidden="true" /> },
-    under_review: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <Eye className="icon-sm" aria-hidden="true" /> },
-    shortlisted: { color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: <Star className="icon-sm" aria-hidden="true" /> },
-    accepted: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
-    rejected: { color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: <XCircle className="icon-sm" aria-hidden="true" /> },
-  };
+type ApplicationStatus = Application['status'];
 
-  const config = statusConfig[application.status];
+const APPLICATION_STATUS: Record<ApplicationStatus, { tone: StatusTone; icon: React.ElementType }> = {
+  pending: { tone: 'neutral', icon: Clock },
+  under_review: { tone: 'warning', icon: Eye },
+  shortlisted: { tone: 'info', icon: Star },
+  accepted: { tone: 'success', icon: CheckCircle2 },
+  rejected: { tone: 'danger', icon: XCircle },
+};
+
+function ApplicationCard({ application }: { application: Application }) {
+  const config = APPLICATION_STATUS[application.status];
+  const statusColors = STATUS[config.tone];
+  const StatusIcon = config.icon;
   const initials = application.startupName?.[0]?.toUpperCase() ?? '?';
 
   return (
@@ -69,14 +75,14 @@ function ApplicationCard({ application }: { application: Application }) {
         <div className="flex gap-4">
           <Avatar className="icon-md rounded-lg">
             <AvatarImage src={application.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/org/applications/${application.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
+                <Link href={`/org/applications/${application.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {application.startupName}
                 </Link>
                 <p className="text-sm text-muted-foreground">
@@ -84,8 +90,8 @@ function ApplicationCard({ application }: { application: Application }) {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn('text-xs flex items-center gap-1', config.color)}>
-                  {config.icon}
+                <Badge variant="outline" className={cn('text-xs flex items-center gap-1 border', statusColors.chip)}>
+                  <StatusIcon className="icon-sm" />
                   {application.status.replace('_', ' ')}
                 </Badge>
                 <DropdownMenu>
@@ -100,8 +106,8 @@ function ApplicationCard({ application }: { application: Application }) {
                     </DropdownMenuItem>
                     <DropdownMenuItem>Mark as Shortlisted</DropdownMenuItem>
                     <DropdownMenuItem>Schedule Interview</DropdownMenuItem>
-                    <DropdownMenuItem className="text-green-600 dark:text-green-400">Accept</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-emphasis">Reject</DropdownMenuItem>
+                    <DropdownMenuItem className={STATUS.success.text}>Accept</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Reject</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -116,7 +122,7 @@ function ApplicationCard({ application }: { application: Application }) {
               </span>
               {application.score !== undefined && (
                 <span className="flex items-center gap-1">
-                  <Star className="icon-sm text-amber-500" aria-hidden="true" />
+                  <Star className={cn('icon-sm', STATUS.warning.icon)} />
                   Score: {application.score}/100
                 </span>
               )}
@@ -212,18 +218,15 @@ export default function OrgApplicationsPage() {
     rejected: applications.filter((a) => a.status === 'rejected').length,
   };
 
+  const filtersActive = !!search || program !== 'all' || activeTab !== 'all';
+  const clearFilters = () => { setSearch(''); setProgram('all'); setActiveTab('all'); };
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Applications</h1>
-            <p className="text-muted-foreground">
-              Review and manage startup applications
-            </p>
-          </div>
-        </div>
+    <AppShell
+      title="Applications"
+      description="Review and score startup applications across all your open programs."
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
@@ -236,25 +239,25 @@ export default function OrgApplicationsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-xl font-bold text-gray-600">{statusCounts.pending}</p>
+              <p className={cn('text-xl font-bold', STATUS.neutral.icon)}>{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">In Review</p>
-              <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.under_review}</p>
+              <p className={cn('text-xl font-bold', STATUS.warning.icon)}>{statusCounts.under_review}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Shortlisted</p>
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{statusCounts.shortlisted}</p>
+              <p className={cn('text-xl font-bold', STATUS.info.icon)}>{statusCounts.shortlisted}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Accepted</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">{statusCounts.accepted}</p>
+              <p className={cn('text-xl font-bold', STATUS.success.icon)}>{statusCounts.accepted}</p>
             </CardContent>
           </Card>
         </div>
@@ -299,15 +302,7 @@ export default function OrgApplicationsPage() {
             <ApplicationCard key={application.id} application={application} />
           ))}
           {filteredApplications.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No applications found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyOrgApplications filtersActive={filtersActive} onClearFilters={clearFilters} />
           )}
         </div>
       </div>

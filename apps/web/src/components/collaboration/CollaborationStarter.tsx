@@ -150,13 +150,13 @@ export function CollaborationStarter({
             <div className="flex items-center gap-3 mb-2">
               <div className="relative">
                 <Avatar className="h-11 w-11 ring-2 ring-emerald-400/40">
-                  <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold text-sm">
+                  <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
                     {otherUser.displayName[0]?.toUpperCase()}
                   </AvatarFallback>
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}
                 </Avatar>
                 <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400 text-white">
-                  <Handshake className="icon-2xs" aria-hidden="true" />
+                  <Handshake className="icon-sm" />
                 </span>
               </div>
               <div>
@@ -195,7 +195,7 @@ export function CollaborationStarter({
                     <p className="text-sm font-medium text-foreground">{action.label}</p>
                     <p className="text-xs text-muted-foreground">{action.description}</p>
                   </div>
-                  <ChevronRight className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
+                  <ChevronRight className="icon-sm text-muted-foreground shrink-0" />
                 </button>
               );
             })}
@@ -220,10 +220,10 @@ export function CollaborationStarter({
   if (mode === 'banner') {
     return (
       <div className={cn(
-        'flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3',
+        'flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3',
         className,
       )}>
-        <Sparkles className="icon-sm shrink-0 text-emerald-500" aria-hidden="true" />
+        <Sparkles className="icon-sm shrink-0 text-status-success" />
         <p className="flex-1 text-sm text-foreground">
           <span className="font-medium">New connection:</span>{' '}
           {otherUser.displayName} accepted your request.
@@ -236,12 +236,12 @@ export function CollaborationStarter({
             onClick={handleMessage}
             disabled={loading === 'message'}
           >
-            <MessageCircle className="icon-2xs" aria-hidden="true" />
+            <MessageCircle className="icon-sm" />
             Message
           </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
             <Link href={`/projects/create?collaborator=${otherUser.id}`}>
-              <FolderPlus className="icon-2xs" aria-hidden="true" />
+              <FolderPlus className="icon-sm" />
               Collaborate
             </Link>
           </Button>
@@ -252,7 +252,7 @@ export function CollaborationStarter({
             className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Dismiss"
           >
-            <X className="icon-sm" aria-hidden="true" />
+            <X className="icon-sm" />
           </button>
         )}
       </div>
@@ -273,18 +273,18 @@ export function CollaborationStarter({
         onClick={handleMessage}
         disabled={loading === 'message'}
       >
-        <MessageCircle className="icon-2xs" aria-hidden="true" />
+        <MessageCircle className="icon-sm" />
         Message
       </Button>
       <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
         <Link href={`/projects/create?collaborator=${otherUser.id}`}>
-          <FolderPlus className="icon-2xs" aria-hidden="true" />
+          <FolderPlus className="icon-sm" />
           Start project
         </Link>
       </Button>
       <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-muted-foreground" asChild>
         <Link href={`/milestones/new?with=${otherUser.id}`}>
-          <Target className="icon-2xs" aria-hidden="true" />
+          <Target className="icon-sm" />
           Set milestone
         </Link>
       </Button>

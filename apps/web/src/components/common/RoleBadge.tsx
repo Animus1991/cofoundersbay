@@ -12,13 +12,26 @@ const roleConfig: Record<RoleType, { label: string; icon: React.ComponentType<{ 
 };
 
 type RoleBadgeProps = {
-  /** May legitimately be absent on a partially-populated profile payload. */
-  role: string | null | undefined;
+  role?: string | null;
   showIcon?: boolean;
   size?: BadgeProps['size'];
   className?: string;
   animated?: boolean;
 };
+
+function normalizeRole(raw: string): RoleType | null {
+  const key = raw.toLowerCase().replace(/[\s-]+/g, '_');
+  if (key === 'founder' || key === 'mentor' || key === 'investor' || key === 'org') return key;
+  if (key === 'cofounder' || key === 'co_founder' || key === 'technical_talent' || key === 'operator') {
+    return 'founder';
+  }
+  if (key === 'advisor' || key === 'coach') return 'mentor';
+  if (key === 'angel' || key === 'angel_investor' || key === 'vc' || key === 'vc_analyst' || key === 'vc_scout') {
+    return 'investor';
+  }
+  if (key === 'organization' || key === 'admin' || key === 'community_manager') return 'org';
+  return null;
+}
 
 export function RoleBadge({ 
   role, 
@@ -27,13 +40,14 @@ export function RoleBadge({
   className,
   animated = false,
 }: RoleBadgeProps) {
-  // `role` arrives straight from API payloads; a missing one must degrade to a
-  // neutral badge rather than throw inside render and blank the whole profile.
-  const roleKey = (role ?? '').toLowerCase() as RoleType;
-  const config = roleConfig[roleKey];
+  if (typeof role !== 'string' || !role.trim()) {
+    return null;
+  }
 
-  if (!config) {
-    if (!role) return null;
+  const roleKey = normalizeRole(role);
+  const config = roleKey ? roleConfig[roleKey] : undefined;
+  
+  if (!config || !roleKey) {
     return <Badge variant="secondary" size={size} className={className}>{role}</Badge>;
   }
 
@@ -49,7 +63,7 @@ export function RoleBadge({
         className
       )}
     >
-      {showIcon && <Icon className={cn('h-3 w-3', animated && 'animate-bounce-subtle')} />}
+      {showIcon && <Icon className={cn('icon-sm', animated && 'animate-bounce-subtle')} />}
       {config.label}
     </Badge>
   );

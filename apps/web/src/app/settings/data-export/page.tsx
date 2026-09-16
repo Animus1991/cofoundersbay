@@ -133,9 +133,9 @@ function formatDate(dateStr: string): string {
 function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
   const statusConfig: Record<ExportStatus, { label: string; color: string; icon: React.ElementType }> = {
     idle: { label: 'Pending', color: 'text-muted-foreground', icon: Clock },
-    processing: { label: 'Processing', color: 'text-amber-500', icon: Loader2 },
-    ready: { label: 'Ready', color: 'text-emerald-500', icon: Check },
-    expired: { label: 'Expired', color: 'text-destructive-emphasis', icon: AlertTriangle },
+    processing: { label: 'Processing', color: 'text-status-warning', icon: Loader2 },
+    ready: { label: 'Ready', color: 'text-status-success', icon: Check },
+    expired: { label: 'Expired', color: 'text-destructive-accessible', icon: AlertTriangle },
   };
 
   const config = statusConfig[exportReq.status];
@@ -148,12 +148,12 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
           <div className="flex items-start gap-3">
             <div className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-              exportReq.status === 'ready' ? 'bg-emerald-500/10' : 'bg-muted'
+              exportReq.status === 'ready' ? 'bg-status-success-bg' : 'bg-muted'
             )}>
               <Archive className={cn(
-                'h-5 w-5',
-                exportReq.status === 'ready' ? 'text-emerald-500' : 'text-muted-foreground'
-              )} aria-hidden="true" />
+                'icon-md',
+                exportReq.status === 'ready' ? 'text-status-success' : 'text-muted-foreground'
+              )} />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -163,7 +163,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
                   className={cn('text-xs', config.color)}
                 >
                   <StatusIcon className={cn(
-                    'h-3 w-3 mr-1',
+                    'icon-sm mr-1',
                     exportReq.status === 'processing' && 'animate-spin'
                   )} />
                   {config.label}
@@ -188,7 +188,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
           {exportReq.status === 'ready' && exportReq.downloadUrl && (
             <a href={exportReq.downloadUrl} download>
               <Button size="sm" className="gap-2">
-                <Download className="icon-sm" aria-hidden="true" />
+                <Download className="icon-sm" />
                 Download
               </Button>
             </a>
@@ -205,8 +205,8 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
         )}
 
         {exportReq.expiresAt && exportReq.status === 'ready' && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
-            <Clock className="icon-2xs" aria-hidden="true" />
+          <p className="text-xs text-status-warning mt-3 flex items-center gap-1">
+            <Clock className="icon-sm" />
             Download expires {formatDate(exportReq.expiresAt)}
           </p>
         )}
@@ -265,15 +265,15 @@ export default function DataExportPage() {
           href="/settings"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
-          <ArrowLeft className="icon-sm" aria-hidden="true" />
+          <ArrowLeft className="icon-sm" />
           Back to Settings
         </Link>
 
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-              <Database className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <Database className="icon-lg text-primary-accessible" />
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground">Export Your Data</h1>
@@ -288,7 +288,7 @@ export default function DataExportPage() {
         <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <Shield className="icon-md text-primary-emphasis shrink-0 mt-0.5" aria-hidden="true" />
+              <Shield className="icon-md text-primary-accessible shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-foreground mb-1">Your Data Rights</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -347,8 +347,8 @@ export default function DataExportPage() {
                       isSelected ? 'bg-primary/10' : 'bg-muted'
                     )}>
                       <Icon className={cn(
-                        'h-4 w-4',
-                        isSelected ? 'text-primary-emphasis' : 'text-muted-foreground'
+                        'icon-sm',
+                        isSelected ? 'text-primary-accessible' : 'text-muted-foreground'
                       )} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -361,7 +361,7 @@ export default function DataExportPage() {
                         ? 'border-primary bg-primary'
                         : 'border-border'
                     )}>
-                      {isSelected && <Check className="icon-2xs text-primary-foreground" aria-hidden="true" />}
+                      {isSelected && <Check className="icon-sm text-primary-foreground" />}
                     </div>
                   </label>
                 );
@@ -378,17 +378,17 @@ export default function DataExportPage() {
                 className="gap-2"
               >
                 {exportMutation.isPending ? (
-                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : (
-                  <Download className="icon-sm" aria-hidden="true" />
+                  <Download className="icon-sm" />
                 )}
                 {hasActiveExport ? 'Export in Progress' : 'Request Export'}
               </Button>
             </div>
 
             {hasActiveExport && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
-                <AlertTriangle className="icon-2xs" aria-hidden="true" />
+              <p className="text-xs text-status-warning mt-3 flex items-center gap-1">
+                <AlertTriangle className="icon-sm" />
                 Please wait for the current export to complete before requesting a new one.
               </p>
             )}
@@ -398,14 +398,14 @@ export default function DataExportPage() {
         {/* Delete Account Link */}
         <div className="mt-8 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
           <div className="flex items-start gap-3">
-            <Trash2 className="icon-md text-destructive-emphasis shrink-0 mt-0.5" aria-hidden="true" />
+            <Trash2 className="icon-md text-destructive-accessible shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-foreground mb-1">Delete Your Account</p>
               <p className="text-xs text-muted-foreground mb-3">
                 If you want to permanently delete your account and all associated data, 
                 you can do so from your account settings.
               </p>
-              <Button variant="outline" size="sm" className="text-destructive-emphasis border-destructive/30 hover:bg-destructive/10" asChild>
+              <Button variant="outline" size="sm" className="text-destructive-accessible border-destructive/30 hover:bg-destructive/10" asChild>
                 <Link href="/settings">
                   Go to Account Settings
                 </Link>

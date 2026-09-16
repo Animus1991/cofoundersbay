@@ -40,6 +40,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/layout/SidebarContext';
 import { SideNav } from '@/components/layout/SideNav';
+import { TopBar } from '@/components/layout/TopBar';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { useToast } from '@/components/ui/toast';
 import {
   getResearchBoard,
@@ -85,6 +88,17 @@ import { CanvasBranchSelector } from '@/components/research/CanvasBranchSelector
 import { CollaboratorsBar, LiveCursors } from '@/components/research/CollaboratorsBar';
 import { useResearchCollaboration } from '@/hooks/useResearchCollaboration';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import {
+  researchEn,
+  researchEl,
+  useResearchPrimaryText,
+  RESEARCH_NODE_CATEGORY_EL,
+  RESEARCH_NODE_LABEL_EL,
+} from '@/lib/i18n/strings-research';
 
 type Tool = DrawTool;
 
@@ -170,7 +184,6 @@ function getDefaultContent(type: string): string {
 /* ─── Categorised node types for the "Add Node" mega-menu ───────────── */
 import type { ResearchNodeType } from '@/lib/api';
 import type { LucideIcon } from 'lucide-react';
-import { useModalA11y } from '@/hooks/useModalA11y';
 
 interface NodeTypeItem { type: ResearchNodeType; label: string; icon: LucideIcon; color: string }
 interface NodeCategory { category: string; items: NodeTypeItem[] }
@@ -321,6 +334,8 @@ export default function ResearchBoardPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const t = useResearchPrimaryText();
+  const { open: openAskAi } = usePopupChat();
   const boardId = params?.boardId as string;
 
   // Canvas state
@@ -359,8 +374,7 @@ export default function ResearchBoardPage() {
 
   // Keyboard shortcuts help dialog
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const closeShortcuts = useCallback(() => setShowShortcuts(false), []);
-  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, closeShortcuts);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, () => setShowShortcuts(false));
 
   // Right-click context menu
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string } | null>(null);
@@ -780,7 +794,7 @@ export default function ResearchBoardPage() {
       
       // Move all selected nodes together if dragging one of the selection
       if (selectedNodeIds.size > 1 && selectedNodeIds.has(draggingNodeId)) {
-        const draggedNode = board?.nodes.find((n) => n.id === draggingNodeId);
+        const draggedNode = board?.nodes?.find((n) => n.id === draggingNodeId);
         if (draggedNode) {
           const dx = x - draggedNode.posX;
           const dy = y - draggedNode.posY;
@@ -873,7 +887,7 @@ export default function ResearchBoardPage() {
   const handleNodeDragStart = useCallback((nodeId: string, e: React.MouseEvent) => {
     if (activeTool !== 'select') return;
     
-    const node = board?.nodes.find((n) => n.id === nodeId);
+    const node = board?.nodes?.find((n) => n.id === nodeId);
     if (!node || node.locked) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -892,7 +906,7 @@ export default function ResearchBoardPage() {
 
   // Node resize handler
   const handleNodeResizeStart = useCallback((nodeId: string, e: React.MouseEvent, direction: 'right' | 'bottom' | 'corner') => {
-    const node = board?.nodes.find((n) => n.id === nodeId);
+    const node = board?.nodes?.find((n) => n.id === nodeId);
     if (!node || node.locked) return;
     e.preventDefault();
     setResizingNodeId(nodeId);
@@ -997,7 +1011,7 @@ export default function ResearchBoardPage() {
       // Delete selected nodes
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedNodeIds.size > 0) {
-          const toDelete = board?.nodes.filter((n) => selectedNodeIds.has(n.id) && !n.locked) ?? [];
+          const toDelete = board?.nodes?.filter((n) => selectedNodeIds.has(n.id) && !n.locked) ?? [];
           toDelete.forEach((n) => deleteNodeMutation.mutate(n.id));
         }
       }
@@ -1190,44 +1204,62 @@ export default function ResearchBoardPage() {
   const showLoading = !mounted || isLoading;
 
   return (
-    <div className="h-screen bg-background overflow-hidden">
+    <div className="h-[100dvh] bg-background overflow-hidden">
       {/* Sidebar */}
       <SideNav />
 
       {/* Main content area - offset by sidebar */}
       <div
         className={cn(
-          'h-screen flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
-          expanded ? 'sm:ml-[68px] lg:ml-[240px]' : 'sm:ml-[68px] lg:ml-[68px]',
+          'h-[100dvh] flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
+          'sm:ml-[4.25rem]',
+          expanded ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
         )}
       >
+        <TopBar />
+        <MobileBottomNav />
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="icon-xl animate-spin text-primary-emphasis" aria-hidden="true" />
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <Loader2 className="icon-xl animate-spin text-primary-accessible" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              <BilingualText en={researchEn('canvas_loading')} el={researchEl('canvas_loading')} compact />
+            </p>
           </div>
         )}
 
         {/* Error state — only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <p className="text-destructive-emphasis mb-4">Failed to load board</p>
-            <Button onClick={() => router.push('/research')}>Back to Boards</Button>
+            <p className="mb-4 text-destructive-accessible">
+              <BilingualText en={researchEn('canvas_fail')} el={researchEl('canvas_fail')} />
+            </p>
+            <Button className="rounded-xl" onClick={() => router.push('/research')}>
+              <BilingualText en={researchEn('canvas_back')} el={researchEl('canvas_back')} compact />
+            </Button>
           </div>
         )}
 
         {/* Board content */}
-        {!showLoading && board && <>
+        {!showLoading && board && (
+        <div className="flex min-h-0 flex-1 flex-col pb-16 lg:pb-0">
         {/* Toolbar — clean minimal design */}
-        <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-4 shrink-0 z-50 gap-3">
+        <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-3 sm:px-4 shrink-0 z-50 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
-            <Link href="/research" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Layers className="icon-md text-primary-emphasis shrink-0" aria-hidden="true" />
-              <span className="font-semibold text-sm text-foreground hidden sm:inline">Research Canvas</span>
+            <Link href="/research" className="flex items-center gap-2 transition-opacity hover:opacity-80" aria-label={bilingualAria(researchEn('canvas_back'), researchEl('canvas_back'))}>
+              <CfbGlyph name="research" className="icon-md text-primary-accessible shrink-0" />
+              <span className="hidden text-sm font-semibold text-foreground sm:inline">
+                <BilingualText en={researchEn('canvas_title')} el={researchEl('canvas_title')} compact />
+              </span>
             </Link>
-            <span className="text-2xs text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
-              {board.nodes.length} node{board.nodes.length !== 1 ? 's' : ''}
+            <span className="shrink-0 rounded-full bg-secondary/80 px-2 py-0.5 text-2xs tabular-nums text-muted-foreground">
+              {board.nodes.length}{' '}
+              <BilingualText
+                en={board.nodes.length === 1 ? researchEn('node') : researchEn('nodes')}
+                el={board.nodes.length === 1 ? researchEl('node') : researchEl('nodes')}
+                compact
+              />
             </span>
             <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1" />
           </div>
@@ -1239,20 +1271,24 @@ export default function ResearchBoardPage() {
             variant={activeTool === 'note' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTool(activeTool === 'note' ? 'select' : 'note')}
-            className="gap-1.5 h-8 text-xs"
-            title="Click canvas to place note (N)"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            title={t(researchEn('note_title'), researchEl('note_title'))}
           >
-            <StickyNote className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
-            <span className="sr-only md:not-sr-only md:inline">Note</span>
+            <StickyNote className="icon-sm text-amber-500" />
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('note')} el={researchEl('note')} compact />
+            </span>
           </Button>
 
           {/* Categorised Add Node mega-dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
-                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="sr-only md:not-sr-only md:inline">Add Node</span>
-                <ChevronDown className="icon-2xs opacity-60" aria-hidden="true" />
+              <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs">
+                <Plus className="icon-sm" />
+                <span className="hidden md:inline">
+                  <BilingualText en={researchEn('add_node')} el={researchEl('add_node')} compact />
+                </span>
+                <ChevronDown className="icon-sm opacity-60" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64 max-h-[70vh] overflow-y-auto">
@@ -1260,7 +1296,7 @@ export default function ResearchBoardPage() {
                 <div key={cat.category}>
                   {ci > 0 && <DropdownMenuSeparator />}
                   <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {cat.category}
+                    <BilingualText en={cat.category} el={RESEARCH_NODE_CATEGORY_EL[cat.category] ?? cat.category} compact />
                   </div>
                   {cat.items.map((item) => {
                     const Icon = item.icon;
@@ -1269,7 +1305,7 @@ export default function ResearchBoardPage() {
                         key={item.type}
                         onClick={() => {
                           if (item.type === 'link') {
-                            const url = prompt('Enter URL:');
+                            const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
                             if (url) {
                               createNodeMutation.mutate({
                                 type: 'link',
@@ -1302,8 +1338,8 @@ export default function ResearchBoardPage() {
                         }}
                         className="gap-2"
                       >
-                        <Icon className="h-4 w-4 shrink-0" style={{ color: item.color }} />
-                        {item.label}
+                        <Icon className="icon-sm shrink-0" style={{ color: item.color }} />
+                        <BilingualText en={item.label} el={RESEARCH_NODE_LABEL_EL[item.type] ?? item.label} compact />
                       </DropdownMenuItem>
                     );
                   })}
@@ -1317,10 +1353,12 @@ export default function ResearchBoardPage() {
             variant="default"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="gap-1.5 h-8 text-xs"
+            className="h-8 gap-1.5 rounded-xl text-xs"
           >
-            <Upload className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="sr-only md:not-sr-only md:inline">Upload</span>
+            <Upload className="icon-sm" />
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('upload')} el={researchEl('upload')} compact />
+            </span>
           </Button>
 
           {/* Connect tool */}
@@ -1328,22 +1366,38 @@ export default function ResearchBoardPage() {
             variant={activeTool === 'connect' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTool(activeTool === 'connect' ? 'select' : 'connect')}
-            className="gap-1.5 h-8 text-xs"
-            title="Draw connection (C)"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            title={t(researchEn('connect_title'), researchEl('connect_title'))}
           >
-            <GitBranch className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />
-            <span className="sr-only md:not-sr-only md:inline">Connect</span>
+            <GitBranch className="icon-sm text-emerald-500" />
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('connect')} el={researchEl('connect')} compact />
+            </span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            onClick={() => openAskAi()}
+            title={t(researchEn('ask_ai_canvas'), researchEl('ask_ai_canvas'))}
+          >
+            <CfbGlyph name="spark" className="icon-sm" />
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
+            </span>
           </Button>
 
           <div className="h-5 w-px bg-border/60" />
 
           {/* Undo / Redo */}
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={undo} disabled={historyIndex <= 0} title="Undo (Ctrl+Z)">
-              <Undo2 className="h-3.5 w-3.5" aria-hidden="true" />
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={undo} disabled={historyIndex <= 0} title={t(researchEn('undo'), researchEl('undo'))}>
+              <Undo2 className="icon-sm" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo (Ctrl+Y)">
-              <Redo2 className="h-3.5 w-3.5" aria-hidden="true" />
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={redo} disabled={historyIndex >= history.length - 1} title={t(researchEn('redo'), researchEl('redo'))}>
+              <Redo2 className="icon-sm" />
             </Button>
           </div>
 
@@ -1352,32 +1406,32 @@ export default function ResearchBoardPage() {
 
           {/* Zoom controls */}
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title="Zoom out">
-              <ZoomOut className="h-3.5 w-3.5" aria-hidden="true" />
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title={t(researchEn('zoom_out'), researchEl('zoom_out'))}>
+              <ZoomOut className="icon-sm" />
             </Button>
             <span className="text-2xs text-muted-foreground w-10 text-center tabular-nums select-none">
               {Math.round(zoom * 100)}%
             </span>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title="Zoom in">
-              <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title={t(researchEn('zoom_in'), researchEl('zoom_in'))}>
+              <ZoomIn className="icon-sm" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
               onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-              title="Reset view (1:1)"
+              title={t(researchEn('reset_view'), researchEl('reset_view'))}
             >
-              <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
+              <Maximize2 className="icon-sm" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
               onClick={fitToContent}
-              title="Fit all nodes in view"
+              title={t(researchEn('fit_nodes'), researchEl('fit_nodes'))}
             >
-              <Layers className="h-3.5 w-3.5" aria-hidden="true" />
+              <Layers className="icon-sm" />
             </Button>
           </div>
 
@@ -1389,9 +1443,9 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => setSnapToGrid((v) => !v)}
-            title={snapToGrid ? 'Snap to grid ON' : 'Snap to grid OFF'}
+            title={snapToGrid ? t(researchEn('snap_on'), researchEl('snap_on')) : t(researchEn('snap_off'), researchEl('snap_off'))}
           >
-            <Magnet className="h-3.5 w-3.5" aria-hidden="true" />
+            <Magnet className="icon-sm" />
           </Button>
 
           <div className="h-5 w-px bg-border/60" />
@@ -1402,9 +1456,9 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }}
-            title="AI Analysis"
+            title={t(researchEn('ai_analysis'), researchEl('ai_analysis'))}
           >
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            <Sparkles className="icon-sm" />
           </Button>
 
           {/* Board Summary toggle */}
@@ -1413,9 +1467,9 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }}
-            title="Board Summary & Health"
+            title={t(researchEn('board_summary'), researchEl('board_summary'))}
           >
-            <BarChart3 className="h-3.5 w-3.5" />
+            <BarChart3 className="icon-sm" />
           </Button>
 
           {/* Branch Selector */}
@@ -1432,21 +1486,21 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => setShowHistoryDrawer((v) => !v)}
-            title="Canvas History, Versions & Branches"
+            title={t(researchEn('canvas_history'), researchEl('canvas_history'))}
           >
-            <History className="h-3.5 w-3.5" aria-hidden="true" />
+            <History className="icon-sm" />
           </Button>
 
           {/* More menu — houses all secondary actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                <MoreHorizontal className="icon-sm" aria-hidden="true" />
+                <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => {
-                const url = prompt('Enter URL:');
+                const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
                 if (url) {
                   createNodeMutation.mutate({
                     type: 'link',
@@ -1457,25 +1511,33 @@ export default function ResearchBoardPage() {
                   });
                 }
               }}>
-                <LinkIcon className="icon-sm mr-2" aria-hidden="true" />
-                Add Link
+                <LinkIcon className="icon-sm mr-2" />
+                <BilingualText en={researchEn('add_link')} el={researchEl('add_link')} compact />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowEntitySelector(true)}>
-                <Users className="icon-sm mr-2" aria-hidden="true" />
-                Reference Entity
+                <Users className="icon-sm mr-2" />
+                <BilingualText en={researchEn('ref_entity')} el={researchEl('ref_entity')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowGrid(!showGrid)}>
-                <Grid3X3 className="icon-sm mr-2" aria-hidden="true" />
-                {showGrid ? 'Hide' : 'Show'} Grid
+                <Grid3X3 className="icon-sm mr-2" />
+                <BilingualText
+                  en={showGrid ? researchEn('hide_grid') : researchEn('show_grid')}
+                  el={showGrid ? researchEl('hide_grid') : researchEl('show_grid')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSnapToGrid((v) => !v)}>
-                <Magnet className="icon-sm mr-2" aria-hidden="true" />
-                {snapToGrid ? 'Disable' : 'Enable'} Snap to Grid
+                <Magnet className="icon-sm mr-2" />
+                <BilingualText
+                  en={snapToGrid ? researchEn('disable_snap') : researchEn('enable_snap')}
+                  el={snapToGrid ? researchEl('disable_snap') : researchEl('enable_snap')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={fitToContent}>
-                <Layers className="icon-sm mr-2" aria-hidden="true" />
-                Fit All Nodes in View
+                <Layers className="icon-sm mr-2" />
+                <BilingualText en={researchEn('fit_nodes')} el={researchEl('fit_nodes')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => {
@@ -1483,30 +1545,38 @@ export default function ResearchBoardPage() {
                 const cy = (window.innerHeight / 2 - pan.y) / zoom;
                 createGroup(cx - 200, cy - 150);
               }}>
-                <Grid3X3 className="icon-sm mr-2 text-blue-500" aria-hidden="true" />
-                Create Group Frame
+                <Grid3X3 className="icon-sm mr-2 text-blue-500" />
+                <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
                 const cx = (window.innerWidth / 2 - pan.x) / zoom;
                 const cy = (window.innerHeight / 2 - pan.y) / zoom;
                 createNodeMutation.mutate({ type: 'note' as any, title: '', content: '', posX: cx - 100, posY: cy - 100, width: 200, height: 200, color: '#F59E0B', metadata: { isSticky: true } });
               }}>
-                <StickyNote className="icon-sm mr-2 text-amber-500" aria-hidden="true" />
-                Add Sticky Note
+                <StickyNote className="icon-sm mr-2 text-amber-500" />
+                <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowFilterBar((v) => !v)}>
-                <Filter className="icon-sm mr-2" aria-hidden="true" />
-                {showFilterBar ? 'Hide' : 'Show'} Filters
+                <Filter className="icon-sm mr-2" />
+                <BilingualText
+                  en={showFilterBar ? researchEn('hide_filters') : researchEn('show_filters')}
+                  el={showFilterBar ? researchEl('hide_filters') : researchEl('show_filters')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowMiniMap((v) => !v)}>
-                <Map className="icon-sm mr-2" aria-hidden="true" />
-                {showMiniMap ? 'Hide' : 'Show'} Mini-Map
+                <Map className="icon-sm mr-2" />
+                <BilingualText
+                  en={showMiniMap ? researchEn('hide_map') : researchEn('show_map')}
+                  el={showMiniMap ? researchEl('hide_map') : researchEl('show_map')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowBoardSettings(true)}>
-                <Settings className="icon-sm mr-2" aria-hidden="true" />
-                Board Settings
+                <Settings className="icon-sm mr-2" />
+                <BilingualText en={researchEn('board_settings')} el={researchEl('board_settings')} compact />
               </DropdownMenuItem>
               {board && (
                 <DropdownMenuItem asChild>
@@ -1516,13 +1586,13 @@ export default function ResearchBoardPage() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={handleExportPng}>
-                <Download className="icon-sm mr-2 text-blue-500" aria-hidden="true" />
-                Export as PNG
+                <Download className="icon-sm mr-2 text-blue-500" />
+                <BilingualText en={researchEn('export_png')} el={researchEl('export_png')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {/* Auto Layout */}
               <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Auto Layout
+                <BilingualText en={researchEn('auto_layout')} el={researchEl('auto_layout')} compact />
               </div>
               {([
                 { alg: 'dagre-tb' as LayoutAlgorithm, label: '↓ Top → Bottom', icon: '↓' },
@@ -1533,14 +1603,14 @@ export default function ResearchBoardPage() {
                 { alg: 'radial'   as LayoutAlgorithm, label: '◎ Radial',        icon: '◎' },
               ]).map(({ alg, label }) => (
                 <DropdownMenuItem key={alg} onClick={() => handleAutoLayout(alg)} className="gap-2 text-xs">
-                  <Network className="h-3.5 w-3.5 text-violet-500" />
+                  <Network className="icon-sm text-violet-500" />
                   {label}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
-                <Keyboard className="icon-sm mr-2" aria-hidden="true" />
-                Keyboard Shortcuts
+                <Keyboard className="icon-sm mr-2" />
+                <BilingualText en={researchEn('shortcuts')} el={researchEl('shortcuts')} compact />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1562,7 +1632,7 @@ export default function ResearchBoardPage() {
       {/* Canvas → Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (
         <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
-          <Sparkles className="icon-sm shrink-0 text-violet-600 dark:text-violet-400" aria-hidden="true" />
+          <Sparkles className="icon-sm shrink-0 text-violet-600" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-foreground">
               {board.nodes.length} research nodes — ready to synthesise?
@@ -1571,9 +1641,9 @@ export default function ResearchBoardPage() {
               Turn your canvas insights into a fundable startup artifact.
             </span>
           </div>
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 shrink-0" asChild>
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 hover:bg-violet-500/10 shrink-0" asChild>
             <Link href="/builder">
-              Open Builder <ArrowRight className="icon-2xs" aria-hidden="true" />
+              Open Builder <ArrowRight className="icon-sm" />
             </Link>
           </Button>
           <button
@@ -1581,7 +1651,7 @@ export default function ResearchBoardPage() {
             className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
             title="Dismiss"
           >
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
+            <X className="icon-sm" />
           </button>
         </div>
       )}
@@ -1758,7 +1828,7 @@ export default function ResearchBoardPage() {
         {connectionStart && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium shadow-lg backdrop-blur-sm">
-              <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
+              <GitBranch className="icon-sm" />
               Click a node to connect · Press Esc to cancel
             </div>
           </div>
@@ -1786,7 +1856,7 @@ export default function ResearchBoardPage() {
           <div className="absolute top-4 left-4 z-40 pointer-events-auto" style={{ width: 340 }}>
             <CommentsPanel
               nodeId={commentsNodeId}
-              nodeTitle={board?.nodes.find((n) => n.id === commentsNodeId)?.title}
+              nodeTitle={board?.nodes?.find((n) => n.id === commentsNodeId)?.title}
               currentUserId={currentUser.id}
               onClose={() => setCommentsNodeId(null)}
             />
@@ -1797,26 +1867,31 @@ export default function ResearchBoardPage() {
         {isDragOver && (
           <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center bg-primary/5 backdrop-blur-[2px] transition-all duration-200">
             <div className="bg-card/95 border-2 border-dashed border-primary rounded-2xl p-10 text-center shadow-2xl">
-              <Upload className="h-14 w-14 text-primary-emphasis mx-auto mb-4 animate-bounce" aria-hidden="true" />
-              <p className="text-lg font-semibold">Drop files here</p>
-              <p className="text-sm text-muted-foreground mt-1">PDFs, images, documents, screenshots</p>
+              <Upload className="h-14 w-14 text-primary-accessible mx-auto mb-4 animate-bounce" />
+              <p className="text-lg font-semibold">
+                <BilingualText en={researchEn('drop_here')} el={researchEl('drop_here')} />
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                <BilingualText en={researchEn('drop_hint')} el={researchEl('drop_hint')} />
+              </p>
             </div>
           </div>
         )}
 
         {/* Bottom status bar */}
         <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-between px-3 z-30 pointer-events-none select-none">
-          <span className="text-2xs text-muted-foreground/70 tabular-nums">
-            {Math.round(zoom * 100)}% · {board.nodes.length} node{board.nodes.length !== 1 ? 's' : ''}
-            {board.connectors.length > 0 && ` · ${board.connectors.length} connection${board.connectors.length !== 1 ? 's' : ''}`}
-            {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} selected`}
-            {connectionStart && ' · Drawing connection…'}
-            {groups.length > 0 && ` · ${groups.length} group${groups.length !== 1 ? 's' : ''}`}
-            {snapToGrid && ' · ⊞ Snap'}
+          <span className="text-2xs tabular-nums text-muted-foreground/70">
+            {Math.round(zoom * 100)}% · {board.nodes.length}{' '}
+            {t(board.nodes.length === 1 ? researchEn('node') : researchEn('nodes'), board.nodes.length === 1 ? researchEl('node') : researchEl('nodes'))}
+            {board.connectors.length > 0 && ` · ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
+            {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} ${t(researchEn('selected'), researchEl('selected'))}`}
+            {connectionStart && ` · ${t(researchEn('drawing'), researchEl('drawing'))}`}
+            {groups.length > 0 && ` · ${groups.length} ${t(groups.length === 1 ? researchEn('group') : researchEn('groups'), groups.length === 1 ? researchEl('group') : researchEl('groups'))}`}
+            {snapToGrid && ` · ⊞ ${t(researchEn('snap'), researchEl('snap'))}`}
           </span>
-          <span className="text-2xs text-muted-foreground/50 tabular-nums">
-            {history.length > 0 && `History: ${historyIndex + 1}/${history.length} · `}
-            Scroll to zoom · Drag to pan · ? for shortcuts
+          <span className="text-2xs tabular-nums text-muted-foreground/50">
+            {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} · `}
+            {t(researchEn('hint_nav'), researchEl('hint_nav'))}
           </span>
         </div>
       </div>
@@ -1923,35 +1998,35 @@ export default function ResearchBoardPage() {
           {contextMenu.nodeId ? (
             <>
               <button
-                onClick={() => { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n) setViewingNode(n); setContextMenu(null); }}
+                onClick={() => { const n = board?.nodes?.find((nd) => nd.id === contextMenu.nodeId); if (n) setViewingNode(n); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Eye className="icon-sm" aria-hidden="true" /> Open
+                <Eye className="icon-sm" /> Open
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) { setSelectedNodeIds(new Set([contextMenu.nodeId])); duplicateSelected(); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Copy className="icon-sm" aria-hidden="true" /> Duplicate
+                <Copy className="icon-sm" /> Duplicate
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) { setConnectionStart(contextMenu.nodeId); setActiveTool('connect'); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <GitBranch className="icon-sm" aria-hidden="true" /> Connect from here
+                <GitBranch className="icon-sm" /> Connect from here
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) setCommentsNodeId(contextMenu.nodeId); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <MessageSquare className="icon-sm" aria-hidden="true" /> Comments
+                <MessageSquare className="icon-sm" /> Comments
               </button>
               <div className="h-px bg-border my-1" />
               <button
-                onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
-                className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-emphasis transition-colors flex items-center gap-2"
+                onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes?.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
+                className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
               >
-                <Trash2 className="icon-sm" aria-hidden="true" /> Delete
+                <Trash2 className="icon-sm" /> Delete
               </button>
             </>
           ) : (
@@ -1984,7 +2059,8 @@ export default function ResearchBoardPage() {
                     }}
                     className="w-full px-3 py-1.5 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                   >
-                    <Icon className="w-3.5 h-3.5" style={{ color: item.color }} /> {item.label}
+                    <Icon className="icon-sm" style={{ color: item.color }} />
+                    <BilingualText en={item.label} el={RESEARCH_NODE_LABEL_EL[item.type] ?? item.label} compact />
                   </button>
                 );
               })}
@@ -1993,7 +2069,8 @@ export default function ResearchBoardPage() {
                 onClick={() => { fileInputRef.current?.click(); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Upload className="icon-sm" aria-hidden="true" /> Upload File
+                <Upload className="icon-sm" />
+                <BilingualText en={researchEn('upload')} el={researchEl('upload')} compact />
               </button>
               <div className="h-px bg-border my-1" />
               <button
@@ -2008,7 +2085,7 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Grid3X3 className="icon-sm text-blue-500" aria-hidden="true" /> Create Group Frame
+                <Grid3X3 className="icon-sm text-blue-500" /> Create Group Frame
               </button>
               <button
                 onClick={() => {
@@ -2022,20 +2099,20 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <StickyNote className="icon-sm text-amber-500" aria-hidden="true" /> Add Sticky Note
+                <StickyNote className="icon-sm text-amber-500" /> Add Sticky Note
               </button>
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (board) setSelectedNodeIds(new Set(board.nodes.map((n) => n.id))); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Layers className="icon-sm" aria-hidden="true" /> Select All
+                <Layers className="icon-sm" /> Select All
               </button>
               <button
                 onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Maximize2 className="icon-sm" aria-hidden="true" /> Reset View
+                <Maximize2 className="icon-sm" /> Reset View
               </button>
             </>
           )}
@@ -2045,26 +2122,24 @@ export default function ResearchBoardPage() {
       {/* Keyboard Shortcuts Dialog */}
       {showShortcuts && (
         <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          {/* A hand-rolled overlay with no dialog semantics: a keyboard user
+              opened it and kept tabbing through the board behind it, and
+              Escape did nothing. `useModalA11y` supplies what Radix would. */}
           <div
             ref={shortcutsRef}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="board-shortcuts-title"
+            aria-labelledby="shortcuts-dialog-title"
             tabIndex={-1}
-            className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden focus:outline-none"
+            className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h2 id="board-shortcuts-title" className="text-lg font-semibold flex items-center gap-2">
-                <Keyboard className="icon-md text-primary-emphasis" aria-hidden="true" />
+              <h2 id="shortcuts-dialog-title" className="text-lg font-semibold flex items-center gap-2">
+                <Keyboard className="icon-md text-primary-accessible" />
                 Keyboard Shortcuts
               </h2>
-              <Button
-                aria-label="Close keyboard shortcuts"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setShowShortcuts(false)}
-              >
-                <X className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>
+                <X className="icon-sm" />
               </Button>
             </div>
             <div className="p-6 grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
@@ -2105,7 +2180,8 @@ export default function ResearchBoardPage() {
           </div>
         </div>
       )}
-      </>}
+        </div>
+        )}
 
       {/* Canvas Version Panel (Snapshots + Versions + Branches) */}
       <CanvasVersionPanel

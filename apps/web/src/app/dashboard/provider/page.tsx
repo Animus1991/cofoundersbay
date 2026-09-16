@@ -31,6 +31,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -58,18 +59,18 @@ function StatCard({
     <Card className="relative overflow-hidden transition-all hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
-              <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
+              <p className={cn('text-xs', trend.positive ? 'text-status-success' : 'text-status-danger')}>
                 {trend.positive ? '+' : ''}{trend.value}% this month
               </p>
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary-emphasis" />
+            <Icon className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -79,46 +80,11 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-type Service = {
-  id: string;
-  name: string;
-  category: string;
-  bookings: number;
-  price: string;
-  isActive: boolean;
-};
-
-type ProviderProject = {
-  id: string;
-  title: string;
-  clientName: string;
-  status: string;
-  value: string;
-  clientAvatar: string | null;
-};
-
-type Inquiry = {
-  id: string;
-  name: string;
-  service: string;
-  message: string;
-  avatarUrl: string | null;
-};
-
-type Review = {
-  id: string;
-  name: string;
-  rating: number;
-  comment: string;
-  date: string;
-  avatarUrl: string | null;
-};
-
-function ServiceCard({ service }: { service: Service }) {
+function ServiceCard({ service }: { service: any }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <div className="rounded-lg bg-primary/10 p-2">
-        <Package className="icon-md text-primary-emphasis" aria-hidden="true" />
+        <Package className="icon-md text-primary-accessible" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -130,29 +96,29 @@ function ServiceCard({ service }: { service: Service }) {
         <p className="text-xs text-muted-foreground mt-0.5">{service.category}</p>
         <div className="flex items-center gap-4 mt-1.5">
           <span className="text-xs text-muted-foreground">{service.bookings} bookings</span>
-          <span className="text-xs font-medium text-primary-emphasis">{service.price}</span>
+          <span className="text-xs font-medium text-primary-accessible">{service.price}</span>
         </div>
       </div>
-      <Button aria-label="Settings" variant="ghost" size="icon">
-        <Settings className="icon-sm" aria-hidden="true" />
+      <Button variant="ghost" size="icon">
+        <Settings className="icon-sm" />
       </Button>
     </div>
   );
 }
 
-function ProjectCard({ project }: { project: ProviderProject }) {
+function ProjectCard({ project }: { project: any }) {
   const statusColors: Record<string, string> = {
-    'active': 'bg-green-500/10 text-green-600 dark:text-green-400',
-    'pending': 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    'completed': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    'cancelled': 'bg-red-500/10 text-red-600 dark:text-red-400',
+    'active': 'bg-status-success-bg text-status-success',
+    'pending': 'bg-status-warning-bg text-status-warning',
+    'completed': 'bg-status-info-bg text-status-info',
+    'cancelled': 'bg-status-danger-bg text-status-danger',
   };
 
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={project.clientAvatar ?? undefined} />
-        <AvatarFallback className="bg-primary/10 text-primary-emphasis">
+        <AvatarImage src={project.clientAvatar} />
+        <AvatarFallback className="bg-primary/10 text-primary-accessible">
           {project.clientName?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -170,12 +136,12 @@ function ProjectCard({ project }: { project: ProviderProject }) {
   );
 }
 
-function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+function InquiryCard({ inquiry }: { inquiry: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+    <div className="flex items-start gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={inquiry.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600 dark:text-amber-400">
+        <AvatarImage src={inquiry.avatarUrl} />
+        <AvatarFallback className="bg-status-warning-bg text-status-warning">
           {inquiry.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -196,12 +162,12 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   );
 }
 
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({ review }: { review: any }) {
   return (
     <div className="rounded-lg border p-3">
       <div className="flex items-center gap-2 mb-2">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={review.avatarUrl ?? undefined} />
+          <AvatarImage src={review.avatarUrl} />
           <AvatarFallback className="bg-muted text-xs">
             {review.name?.[0]?.toUpperCase() ?? '?'}
           </AvatarFallback>
@@ -214,8 +180,9 @@ function ReviewCard({ review }: { review: Review }) {
                 key={i}
                 className={cn(
                   'icon-sm',
-                  i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
-                )} aria-hidden="true" />
+                  i < review.rating ? 'text-status-warning fill-status-warning' : 'text-muted-foreground'
+                )}
+              />
             ))}
           </div>
         </div>
@@ -231,7 +198,7 @@ export default function ProviderDashboard() {
   const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -281,7 +248,7 @@ export default function ProviderDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -297,7 +264,7 @@ export default function ProviderDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">
+            <h1 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
             </h1>
             <p className="text-muted-foreground">
@@ -305,13 +272,13 @@ export default function ProviderDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <Wrench className="icon-sm" aria-hidden="true" />
+            <Wrench className="icon-sm" />
             Service Provider
           </Badge>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4">
           <StatCard
             icon={Package}
             label="Active Services"
@@ -338,7 +305,7 @@ export default function ProviderDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Inquiries */}
@@ -347,12 +314,12 @@ export default function ProviderDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" aria-hidden="true" />
+                      <Zap className="icon-sm text-status-warning" />
                       New Inquiries ({pendingInquiries.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/provider/inquiries">
-                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -370,12 +337,12 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Briefcase className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <Briefcase className="icon-sm text-primary-accessible" />
                     Active Projects
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/provider/projects">
-                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -397,12 +364,12 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Package className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                    <Package className="icon-sm text-primary-accessible" />
                     Your Services
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/provider/services">
-                      Manage <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                      Manage <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -425,31 +392,31 @@ export default function ProviderDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/services">
-                    <Package className="mr-2 icon-sm" aria-hidden="true" />
+                    <Package className="mr-2 icon-sm" />
                     Manage Services
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/inquiries">
-                    <MessageCircle className="mr-2 icon-sm" aria-hidden="true" />
+                    <MessageCircle className="mr-2 icon-sm" />
                     View Inquiries
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/reviews">
-                    <Star className="mr-2 icon-sm" aria-hidden="true" />
+                    <Star className="mr-2 icon-sm" />
                     My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/analytics">
-                    <TrendingUp className="mr-2 icon-sm" aria-hidden="true" />
+                    <TrendingUp className="mr-2 icon-sm" />
                     Earnings & Analytics
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/profile/edit">
-                    <Settings className="mr-2 icon-sm" aria-hidden="true" />
+                    <Settings className="mr-2 icon-sm" />
                     Edit Provider Profile
                   </Link>
                 </Button>
@@ -461,7 +428,7 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="icon-sm" aria-hidden="true" />
+                    <Star className="icon-sm" />
                     Recent Reviews
                   </CardTitle>
                 </div>
@@ -499,8 +466,8 @@ export default function ProviderDashboard() {
                   <Progress value={95} className="h-2" />
                 </div>
                 <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                    <CheckCircle className="icon-sm" aria-hidden="true" />
+                  <div className="flex items-center gap-2 text-sm text-status-success">
+                    <CheckCircle className="icon-sm" />
                     <span>Top Rated Provider</span>
                   </div>
                 </div>

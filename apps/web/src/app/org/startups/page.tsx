@@ -32,7 +32,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgStartups } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Startup = {
   id: string;
@@ -49,13 +51,15 @@ type Startup = {
   readinessScore: number;
 };
 
+const STARTUP_STATUS_TONE: Record<Startup['status'], StatusTone> = {
+  active: 'success',
+  graduated: 'info',
+  paused: 'warning',
+  dropped: 'danger',
+};
+
 function StartupCard({ startup }: { startup: Startup }) {
-  const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    graduated: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    paused: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    dropped: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-  };
+  const statusColors = STATUS[STARTUP_STATUS_TONE[startup.status]];
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
@@ -63,14 +67,14 @@ function StartupCard({ startup }: { startup: Startup }) {
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 rounded-lg">
             <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {startup.name?.[0]?.toUpperCase() ?? '?'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/org/startups/${startup.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
+                <Link href={`/org/startups/${startup.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {startup.name}
                 </Link>
                 <p className="text-sm text-muted-foreground">
@@ -78,13 +82,13 @@ function StartupCard({ startup }: { startup: Startup }) {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn('text-xs', statusColors[startup.status])}>
+                <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                   {startup.status}
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="icon-sm" aria-hidden="true" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -209,23 +213,22 @@ export default function OrgStartupsPage() {
 
   const programs = [...new Set(startups.map((s) => s.program))];
 
+  const filtersActive = !!search || program !== 'all' || status !== 'all';
+  const clearFilters = () => { setSearch(''); setProgram('all'); setStatus('all'); };
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Portfolio Startups</h1>
-            <p className="text-muted-foreground">
-              Manage and track your portfolio companies
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/org/applications">
-              Review Applications
-            </Link>
-          </Button>
-        </div>
+    <AppShell
+      title="Portfolio Startups"
+      description="Startups currently in your programs and graduates. Track readiness, milestones, and program assignment."
+      actions={(
+        <Button asChild>
+          <Link href="/org/applications">
+            Review Applications
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -238,7 +241,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">
+              <p className={cn('text-xl font-bold', STATUS.success.icon)}>
                 {startups.filter((s) => s.status === 'active').length}
               </p>
             </CardContent>
@@ -246,7 +249,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Graduated</p>
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+              <p className={cn('text-xl font-bold', STATUS.info.icon)}>
                 {startups.filter((s) => s.status === 'graduated').length}
               </p>
             </CardContent>
@@ -306,15 +309,7 @@ export default function OrgStartupsPage() {
             <StartupCard key={startup.id} startup={startup} />
           ))}
           {filteredStartups.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Rocket className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No startups found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyOrgStartups filtersActive={filtersActive} onClearFilters={clearFilters} />
           )}
         </div>
       </div>

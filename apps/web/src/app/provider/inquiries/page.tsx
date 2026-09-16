@@ -46,10 +46,10 @@ type Inquiry = {
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
-    new: { color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: Mail },
-    replied: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: Clock },
-    converted: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: CheckCircle },
-    declined: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: XCircle },
+    new: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Mail },
+    replied: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock },
+    converted: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: CheckCircle },
+    declined: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: XCircle },
   };
 
   const config = statusConfig[inquiry.status];
@@ -69,7 +69,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{inquiry.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 h-3 w-3" />
+                    <StatusIcon className="mr-1 icon-sm" />
                     {inquiry.status}
                   </Badge>
                 </div>
@@ -81,15 +81,15 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 <span className="text-xs text-muted-foreground">{inquiry.receivedAt}</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="icon-sm" aria-hidden="true" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>Reply</DropdownMenuItem>
                     <DropdownMenuItem>Mark as Converted</DropdownMenuItem>
                     <DropdownMenuItem>View Profile</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-emphasis">Decline</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Decline</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -199,14 +199,14 @@ export default function ProviderInquiriesPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary-emphasis' },
-            { label: 'New', value: counts.new, icon: Mail, color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-amber-600 dark:text-amber-400' },
+            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
+            { label: 'New', value: counts.new, icon: Mail, color: 'text-status-info' },
+            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
+            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground">{label}</p>
@@ -218,7 +218,7 @@ export default function ProviderInquiriesPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search inquiries..."
             value={search}

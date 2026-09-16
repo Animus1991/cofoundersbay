@@ -205,8 +205,8 @@ export function EnhancedMessageThread({
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive-emphasis">
-                <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+              <DropdownMenuItem className="text-destructive-accessible">
+                <Trash2 className="icon-sm mr-2" />
                 Delete conversation
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -350,7 +350,7 @@ export function EnhancedMessageThread({
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-destructive-emphasis"
+                              className="text-destructive-accessible"
                               onClick={() => onDeleteMessage?.(message.id)}
                             >
                               <Trash2 className="icon-sm mr-2" aria-hidden="true" />
@@ -371,7 +371,7 @@ export function EnhancedMessageThread({
                     <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
                     {isOwn && (
                       message.readAt ? (
-                        <CheckCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
+                        <CheckCheck className="icon-sm text-primary-accessible" />
                       ) : (
                         <Check className="icon-sm" aria-hidden="true" />
                       )
@@ -401,7 +401,7 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => setReplyingTo(null)}
           >
-            <MoreVertical className="icon-sm rotate-45" aria-hidden="true" />
+            <MoreVertical className="icon-sm rotate-45" />
           </Button>
         </div>
       )}
@@ -416,9 +416,9 @@ export function EnhancedMessageThread({
                 className="flex items-center gap-2 px-3 py-2 bg-background rounded-lg"
               >
                 {file.type.startsWith('image/') ? (
-                  <ImageIcon className="icon-sm" aria-hidden="true" />
+                  <ImageIcon className="icon-sm" />
                 ) : (
-                  <Paperclip className="icon-sm" aria-hidden="true" />
+                  <Paperclip className="icon-sm" />
                 )}
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
@@ -429,7 +429,7 @@ export function EnhancedMessageThread({
                   className="h-6 w-6"
                   onClick={() => removeAttachment(index)}
                 >
-                  <MoreVertical className="icon-2xs rotate-45" aria-hidden="true" />
+                  <MoreVertical className="icon-sm rotate-45" />
                 </Button>
               </div>
             ))}
@@ -452,10 +452,10 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Paperclip className="icon-md" aria-hidden="true" />
+            <Paperclip className="icon-md" />
           </Button>
-          <Button aria-label="Add image" variant="ghost" size="icon">
-            <ImageIcon className="icon-md" aria-hidden="true" />
+          <Button variant="ghost" size="icon">
+            <ImageIcon className="icon-md" />
           </Button>
           
           <div className="flex-1 relative">
@@ -473,7 +473,7 @@ export function EnhancedMessageThread({
               size="icon"
               className="absolute right-2 bottom-2"
             >
-              <Smile className="icon-md" aria-hidden="true" />
+              <Smile className="icon-md" />
             </Button>
           </div>
 
@@ -482,7 +482,7 @@ export function EnhancedMessageThread({
             disabled={!messageText.trim() && attachments.length === 0}
             className="rounded-full h-12 w-12"
           >
-            <Send className="icon-md" aria-hidden="true" />
+            <Send className="icon-md" />
           </Button>
         </div>
       </div>

@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 
 interface CoverPhotoUploadProps {
   currentCover?: string;
@@ -13,7 +13,7 @@ interface CoverPhotoUploadProps {
 }
 
 export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhotoUploadProps) {
-  const toast = useToast();
+  const { error: toastError } = useToast();
   const [preview, setPreview] = useState<string | null>(currentCover || null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -48,12 +48,12 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      toast.error('Unsupported file', 'Choose a JPG, PNG, WebP or GIF image.');
+      toastError('Please upload an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image too large', 'Cover photos must be smaller than 5 MB.');
+      toastError('File size must be less than 5MB');
       return;
     }
 
@@ -68,7 +68,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
       await onUpload(file);
     } catch (error) {
       console.error('Upload failed:', error);
-      toast.error('Upload failed', 'We could not save that cover photo. Please try again.');
+      toastError('Upload failed. Please try again.');
       setPreview(currentCover || null);
     } finally {
       setUploading(false);
@@ -84,7 +84,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
       setPreview(null);
     } catch (error) {
       console.error('Remove failed:', error);
-      toast.error('Could not remove cover', 'Please try again in a moment.');
+      toastError('Remove failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -117,7 +117,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
               >
-                <Camera className="icon-sm mr-2" aria-hidden="true" />
+                <Camera className="icon-sm mr-2" />
                 Change
               </Button>
               {onRemove && (
@@ -127,7 +127,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
                   onClick={handleRemove}
                   disabled={uploading}
                 >
-                  <X className="icon-sm mr-2" aria-hidden="true" />
+                  <X className="icon-sm mr-2" />
                   Remove
                 </Button>
               )}
@@ -135,7 +135,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
-            <Upload className="h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
+            <Upload className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="font-semibold mb-2">Upload Cover Photo</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Drag and drop or click to browse
@@ -145,7 +145,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
-              <Camera className="icon-sm mr-2" aria-hidden="true" />
+              <Camera className="icon-sm mr-2" />
               Choose File
             </Button>
             <p className="text-xs text-muted-foreground mt-4">

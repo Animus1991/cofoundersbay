@@ -24,6 +24,17 @@
   // ],
 
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://cofounderbay-web.workers.dev"
+    "NEXT_PUBLIC_SITE_URL": "https://cofounderbay-web.workers.dev",
+    "NEXT_PUBLIC_APP_NAME": "CoFounderBay"
+  },
+
+  // Carried over from the retired wrangler.toml: a named preview environment
+  // so `wrangler deploy --env preview` stamps the app name distinctly.
+  "env": {
+    "preview": {
+      "vars": {
+        "NEXT_PUBLIC_APP_NAME": "CoFounderBay Preview"
+      }
+    }
   }
 }

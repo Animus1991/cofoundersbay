@@ -64,16 +64,16 @@ function ServiceCard({ service }: { service: Service }) {
             </p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm">
               <span className="flex items-center gap-1 text-muted-foreground">
-                <DollarSign className="icon-sm" aria-hidden="true" />
+                <DollarSign className="icon-sm" />
                 {service.price}
                 {service.priceType === 'hourly' && '/hr'}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
-                <Clock className="icon-sm" aria-hidden="true" />
+                <Clock className="icon-sm" />
                 {service.deliveryTime}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
-                <Star className="icon-sm fill-amber-500 text-amber-500" aria-hidden="true" />
+                <Star className="icon-sm fill-status-warning text-status-warning" />
                 {service.rating} ({service.reviews})
               </span>
             </div>
@@ -93,21 +93,21 @@ function ServiceCard({ service }: { service: Service }) {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="icon-sm" aria-hidden="true" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
-                  <Edit className="mr-2 icon-sm" aria-hidden="true" />
+                  <Edit className="mr-2 icon-sm" />
                   Edit Service
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Eye className="mr-2 icon-sm" aria-hidden="true" />
+                  <Eye className="mr-2 icon-sm" />
                   Preview
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive-emphasis">
-                  <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+                <DropdownMenuItem className="text-destructive-accessible">
+                  <Trash2 className="mr-2 icon-sm" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -187,7 +187,7 @@ export default function ProviderServicesPage() {
     <AppShell
       title="My Services"
       description="Manage your service offerings"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Service</Button>}
+      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Service</Button>}
     >
       <div className="space-y-6">
         {!showDemoData && services.length === 0 && (
@@ -195,13 +195,14 @@ export default function ProviderServicesPage() {
             illustration="default"
             title="No services listed"
             description="Create your first service offering to start receiving bookings."
-            action={<Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Service</Button>}
+            askAiPrompt="I have not listed any services. Help me describe a first offering based on a typical service provider on CoFounderBay."
+            action={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Service</Button>}
           />
         )}
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search services..."
             value={search}
@@ -221,7 +222,7 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-xl font-bold text-status-success">
                 {services.filter((s) => s.isActive).length}
               </p>
             </CardContent>

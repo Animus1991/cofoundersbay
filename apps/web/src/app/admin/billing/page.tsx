@@ -60,7 +60,7 @@ function SubRow({
           <Badge variant="outline" className="text-xs shrink-0">{sub.plan?.displayName ?? '—'}</Badge>
         </div>
         <p className="text-xs text-muted-foreground capitalize">
-          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
+          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
           {sub.seatLimit ? ` · ${sub.activeSeatCount}/${sub.seatLimit} seats` : ''}
         </p>
       </div>
@@ -80,8 +80,8 @@ function SubRow({
           </Button>
         )}
         {sub.status !== 'canceled' && (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-emphasis hover:text-destructive-emphasis" onClick={() => onCancel(sub.id, false)}>
-            <XCircle className="icon-sm mr-1" aria-hidden="true" />Cancel
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={() => onCancel(sub.id, false)}>
+            <XCircle className="icon-sm mr-1" />Cancel
           </Button>
         )}
       </div>
@@ -91,11 +91,11 @@ function SubRow({
 
 function InvRow({ inv }: { inv: BillingInvoice }) {
   const statusColors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
-    draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    void: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
+    paid: 'bg-status-success-bg text-status-success border-status-success-border',
+    open: 'bg-status-info-bg text-status-info border-status-info-border',
+    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    void: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
@@ -108,13 +108,13 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
           <span className="text-sm font-medium">{inv.invoiceNumber}</span>
           <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}>{inv.status}</Badge>
         </div>
-        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
       </div>
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
         <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
-          <Button aria-label="Download" variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-            <Download className="h-3.5 w-3.5" aria-hidden="true" />
+          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+            <Download className="icon-sm" />
           </Button>
         </a>
       )}
@@ -221,7 +221,7 @@ export default function AdminBillingPage() {
             <p className="text-sm text-muted-foreground">Subscriptions, invoices, plans, and coupons.</p>
           </div>
           <Button variant="outline" size="sm" className="gap-2" onClick={() => qc.invalidateQueries({ queryKey: ['admin', 'billing'] })}>
-            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+            <RefreshCw className="icon-sm" />
             Refresh
           </Button>
         </div>
@@ -229,10 +229,10 @@ export default function AdminBillingPage() {
         {/* Revenue Metrics */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[
-            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-green-600 dark:text-green-400' },
-            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-violet-600 dark:text-violet-400' },
-            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-amber-600 dark:text-amber-400' },
+            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-status-success' },
+            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-status-accent' },
+            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4">
@@ -259,7 +259,7 @@ export default function AdminBillingPage() {
             </TabsList>
             <div className="flex gap-2 sm:ml-auto">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   placeholder="Search…"
                   value={search}
@@ -350,8 +350,8 @@ export default function AdminBillingPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{plan.displayName}</span>
                             <Badge variant="outline" className="text-xs capitalize">{plan.planType.replace('_', ' ')}</Badge>
-                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>}
-                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-slate-500">Private</Badge>}
+                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground">Inactive</Badge>}
+                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-muted-foreground">Private</Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {formatCents(plan.priceMonthly)}/mo · {formatCents(plan.priceAnnual)}/yr
@@ -375,7 +375,7 @@ export default function AdminBillingPage() {
           <TabsContent value="coupons" className="mt-4 space-y-4">
             <div className="flex justify-end">
               <Button size="sm" className="gap-2" onClick={() => setShowCouponForm(!showCouponForm)}>
-                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 New coupon
               </Button>
             </div>
@@ -427,7 +427,7 @@ export default function AdminBillingPage() {
                   </div>
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" onClick={() => saveCoupon()} disabled={savingCoupon || !couponForm.code}>
-                      {savingCoupon && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
+                      {savingCoupon && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                       Create
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}>Cancel</Button>
@@ -452,22 +452,22 @@ export default function AdminBillingPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-mono font-semibold">{coupon.code}</span>
-                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>}
+                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground">Inactive</Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·
                             {coupon.timesRedeemed}/{coupon.maxRedemptions ?? '∞'} used
-                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
+                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
                           </p>
                         </div>
                         {coupon.isActive && (
                           <Button aria-label="Delete"
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive-emphasis hover:text-destructive-emphasis shrink-0"
+                            className="h-7 w-7 text-destructive-accessible hover:text-destructive-accessible shrink-0"
                             onClick={() => removeCoupon(coupon.id)}
                           >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            <Trash2 className="icon-sm" />
                           </Button>
                         )}
                       </div>
@@ -505,7 +505,7 @@ export default function AdminBillingPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setOverrideTarget(null)}>Cancel</Button>
             <Button onClick={() => applyOverride()} disabled={overriding || !overridePlanId}>
-              {overriding && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
+              {overriding && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
               Apply override
             </Button>
           </DialogFooter>

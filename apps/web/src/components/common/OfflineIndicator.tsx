@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { useTopBannerHeight } from '@/components/layout/useTopBannerHeight';
 
 // Network status context
@@ -64,10 +65,24 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Offline banner shown when user's browser is offline OR when the API server is down.
 export function OfflineBanner() {
   const { isOnline, isApiOnline, wasOffline } = useNetwork();
   const [showReconnected, setShowReconnected] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [previewDemo, setPreviewDemo] = useState(() => isPreviewDemo());
+
+  useEffect(() => {
+    const sync = () => setPreviewDemo(isPreviewDemo());
+    sync();
+    window.addEventListener('cfb:login', sync);
+    window.addEventListener('cfb:user', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('cfb:login', sync);
+      window.removeEventListener('cfb:user', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
 
   const fullyOnline = isOnline && isApiOnline;
   const wasEverOffline = wasOffline;
@@ -80,23 +95,27 @@ export function OfflineBanner() {
     }
   }, [fullyOnline, wasEverOffline]);
 
-  // One wrapper for all three states: it carries the fixed positioning and
-  // publishes its measured height, so the demo bar below it and the shell's
-  // content column can offset by however tall this actually renders.
+  // Preview demo is designed to run without a live API, so the API-down state
+  // must not cover the sticky header there. Real offline still shows.
   const variant = !isOnline
     ? ({
         tone: 'bg-amber-500 text-amber-950',
         icon: <WifiOff className="icon-sm shrink-0" aria-hidden="true" />,
         text: "You're offline. Some features may be unavailable.",
         action: { label: 'Retry', hover: 'hover:bg-amber-600', text: 'text-amber-950' },
+        dismiss: false,
       } as const)
-    : !isApiOnline
+    : !isApiOnline && !previewDemo && !dismissed
       ? ({
           // orange-700, not -600: white on -600 is 3.56:1, below AA for body text.
           tone: 'bg-orange-700 text-white',
           icon: <ServerCrash className="icon-sm shrink-0" aria-hidden="true" />,
-          text: 'API server is unavailable — pages will reload automatically when it recovers.',
-          action: { label: 'Reload now', hover: 'hover:bg-orange-800', text: 'text-white' },
+          text:
+            process.env.NODE_ENV === 'development'
+              ? 'API server is unavailable — pages will reload automatically when it recovers. Run: pnpm dev:stack (starts API on :3001 + web on :3000)'
+              : 'API server is unavailable — pages will reload automatically when it recovers.',
+          action: { label: 'Reload', hover: 'hover:bg-orange-800', text: 'text-white' },
+          dismiss: true,
         } as const)
       : showReconnected
         ? ({
@@ -104,43 +123,57 @@ export function OfflineBanner() {
             icon: <Wifi className="icon-sm shrink-0" aria-hidden="true" />,
             text: 'Back online!',
             action: null,
+            dismiss: false,
           } as const)
         : null;
 
   const bannerRef = useTopBannerHeight<HTMLDivElement>('--banner-network', variant !== null);
 
-  if (variant) {
-    return (
-      <div
-        ref={bannerRef}
-        role="status"
-        className={cn('fixed top-0 left-0 right-0 z-50 px-4 py-2', variant.tone)}
-      >
-        {/* Centred when there is nothing to act on — the "Back online" state
-            has no button, and `justify-between` left it hanging on the left. */}
-        <div className={cn('container mx-auto flex items-center gap-3',
-                            variant.action ? 'justify-between' : 'justify-center')}>
-          <div className="flex min-w-0 items-center gap-2">
-            {variant.icon}
-            <span className="text-sm font-medium">{variant.text}</span>
-          </div>
-          {variant.action && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className={cn('h-7 shrink-0', variant.action.text, variant.action.hover)}
-              onClick={() => window.location.reload()}
-            >
-              <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
-              {variant.action.label}
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
+  if (!variant) return null;
 
-  return null;
+  return (
+    <div
+      ref={bannerRef}
+      role="status"
+      className={cn('fixed left-0 right-0 top-0 z-50 px-3 py-1.5 sm:px-4', variant.tone)}
+    >
+      <div className={cn(
+        'mx-auto flex max-w-screen-2xl items-center gap-2',
+        variant.action || variant.dismiss ? 'justify-between' : 'justify-center',
+      )}>
+        <div className="flex min-w-0 items-center gap-2">
+          {variant.icon}
+          <span className="text-xs font-medium sm:text-sm">{variant.text}</span>
+        </div>
+        {(variant.action || variant.dismiss) && (
+          <div className="flex shrink-0 items-center gap-1">
+            {variant.action && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className={cn('h-7 shrink-0', variant.action.text, variant.action.hover)}
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="icon-sm sm:mr-1" aria-hidden="true" />
+                <span className="hidden sm:inline">{variant.action.label}</span>
+              </Button>
+            )}
+            {variant.dismiss && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-white hover:bg-orange-800"
+                onClick={() => setDismissed(true)}
+                aria-label="Dismiss"
+              >
+                ×
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // Small offline indicator for status bar
@@ -151,18 +184,18 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
     <div
       className={cn(
         'flex items-center gap-1.5 text-xs',
-        isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
+        isOnline ? 'text-status-success ' : 'text-status-warning ',
         className
       )}
     >
       {isOnline ? (
         <>
-          <Cloud className="icon-2xs" aria-hidden="true" />
+          <Cloud className="icon-sm" />
           <span>Connected</span>
         </>
       ) : (
         <>
-          <CloudOff className="icon-2xs" aria-hidden="true" />
+          <CloudOff className="icon-sm" />
           <span>Offline</span>
         </>
       )}
@@ -185,7 +218,7 @@ export function OnlineOnly({ children, fallback, requireOnline = true }: WithOnl
       fallback || (
         <div className="flex items-center justify-center p-8 text-center">
           <div>
-            <WifiOff className="mx-auto icon-xl text-muted-foreground mb-3" aria-hidden="true" />
+            <WifiOff className="mx-auto icon-xl text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">
               This feature requires an internet connection
             </p>

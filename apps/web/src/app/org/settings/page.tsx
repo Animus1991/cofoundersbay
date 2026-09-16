@@ -34,15 +34,11 @@ export default function OrgSettingsPage() {
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Organization Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your organization's profile and preferences
-          </p>
-        </div>
+    <AppShell
+      title="Organization Settings"
+      description="Profile, branding, team, permissions, and billing for your organization."
+    >
+      <div className="space-y-6">
 
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
@@ -161,8 +157,8 @@ export default function OrgSettingsPage() {
                 <div className="space-y-2">
                   <Label>Logo</Label>
                   <div className="flex items-center gap-4">
-                    <div className="h-20 w-20 rounded-2xl bg-secondary flex items-center justify-center">
-                      <Building2 className="icon-xl text-muted-foreground" aria-hidden="true" />
+                    <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
+                      <Building2 className="icon-xl text-muted-foreground" />
                     </div>
                     <Button variant="outline">Upload Logo</Button>
                   </div>

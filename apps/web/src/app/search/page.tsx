@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Search, X, Filter, Users, Briefcase, Calendar, MessageCircle,
-  GraduationCap, Building2, FileText, Sparkles, ChevronDown,
-  MapPin, Clock, ArrowRight, Loader2, History, Command,
+  Search, X, Users, Briefcase, Calendar,
+  GraduationCap, Building2, FileText, Sparkles,
+  MapPin, Clock, ArrowRight, History,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -16,13 +16,29 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { RoleBadge } from '@/components/common/RoleBadge';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { bilingualAria } from '@/lib/i18n/format';
+import {
+  searchEn,
+  searchEl,
+  categoryLabelEn,
+  categoryLabelEl,
+  resultTypeEn,
+  resultTypeEl,
+  noMatchMessageEn,
+  noMatchMessageEl,
+  resultsSummaryEn,
+  resultsSummaryEl,
+  type SearchCategoryKey,
+  type SearchResultTypeKey,
+} from '@/lib/i18n/strings-search';
 import { cn } from '@/lib/utils';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
-type SearchCategory = 'all' | 'people' | 'jobs' | 'events' | 'groups' | 'mentors' | 'opportunities';
+type SearchCategory = SearchCategoryKey;
 
 type SearchResult = {
   id: string;
@@ -53,6 +69,52 @@ type SearchResponse = {
 const RECENT_SEARCHES_KEY = 'cfb:recent-searches';
 const MAX_RECENT_SEARCHES = 6;
 
+const EMPTY_CATEGORIES = {
+  people: 0,
+  jobs: 0,
+  events: 0,
+  groups: 0,
+  mentors: 0,
+  opportunities: 0,
+};
+
+function normalizeHit(raw: unknown): SearchResult | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const row = raw as Record<string, unknown>;
+  if (typeof row.href === 'string' && typeof row.title === 'string') {
+    return {
+      id: String(row.id ?? row.href),
+      type: (row.type as SearchResult['type']) || 'user',
+      title: row.title,
+      subtitle: typeof row.subtitle === 'string' ? row.subtitle : undefined,
+      description: typeof row.description === 'string' ? row.description : undefined,
+      imageUrl: typeof row.imageUrl === 'string' ? row.imageUrl : undefined,
+      href: row.href,
+      meta: (row.meta as SearchResult['meta']) ?? undefined,
+      tags: Array.isArray(row.tags) ? row.tags.filter((t): t is string => typeof t === 'string') : undefined,
+      highlight: typeof row.highlight === 'string' ? row.highlight : undefined,
+    };
+  }
+  if (typeof row.displayName === 'string') {
+    const userId = String(row.userId ?? row.id ?? '');
+    if (!userId) return null;
+    return {
+      id: userId,
+      type: 'user',
+      title: row.displayName,
+      subtitle: typeof row.headline === 'string' ? row.headline : undefined,
+      description: typeof row.bio === 'string' ? row.bio : undefined,
+      imageUrl: typeof row.avatarUrl === 'string' ? row.avatarUrl : undefined,
+      href: `/profiles/${userId}`,
+      meta: typeof row.location === 'string' ? { location: row.location } : undefined,
+      tags: Array.isArray(row.skillNames)
+        ? row.skillNames.filter((t): t is string => typeof t === 'string')
+        : undefined,
+    };
+  }
+  return null;
+}
+
 async function performSearch(
   query: string,
   category: SearchCategory,
@@ -64,17 +126,31 @@ async function performSearch(
     page: String(page),
     limit: '20',
   });
-  return apiRequest<SearchResponse>(`/api/v1/search?${params}`);
+  const payload = await apiRequest<SearchResponse & { hits?: unknown[] }>(`/api/v1/search?${params}`);
+  const raw = (payload.results?.length ? payload.results : payload.hits) ?? [];
+  const results = raw.map(normalizeHit).filter((row): row is SearchResult => Boolean(row?.href));
+  return {
+    results,
+    total: payload.total ?? results.length,
+    categories: payload.categories ?? EMPTY_CATEGORIES,
+  };
 }
 
-const CATEGORY_CONFIG: Record<SearchCategory, { label: string; icon: React.ElementType }> = {
-  all: { label: 'All', icon: Sparkles },
-  people: { label: 'People', icon: Users },
-  jobs: { label: 'Jobs', icon: Briefcase },
-  events: { label: 'Events', icon: Calendar },
-  groups: { label: 'Groups', icon: Building2 },
-  mentors: { label: 'Mentors', icon: GraduationCap },
-  opportunities: { label: 'Opportunities', icon: FileText },
+const CATEGORY_CONFIG: Record<
+  SearchCategory,
+  { labelEn: string; labelEl: string; icon: React.ElementType }
+> = {
+  all: { labelEn: categoryLabelEn('all'), labelEl: categoryLabelEl('all'), icon: Sparkles },
+  people: { labelEn: categoryLabelEn('people'), labelEl: categoryLabelEl('people'), icon: Users },
+  jobs: { labelEn: categoryLabelEn('jobs'), labelEl: categoryLabelEl('jobs'), icon: Briefcase },
+  events: { labelEn: categoryLabelEn('events'), labelEl: categoryLabelEl('events'), icon: Calendar },
+  groups: { labelEn: categoryLabelEn('groups'), labelEl: categoryLabelEl('groups'), icon: Building2 },
+  mentors: { labelEn: categoryLabelEn('mentors'), labelEl: categoryLabelEl('mentors'), icon: GraduationCap },
+  opportunities: {
+    labelEn: categoryLabelEn('opportunities'),
+    labelEl: categoryLabelEl('opportunities'),
+    icon: FileText,
+  },
 };
 
 function SearchResultSkeleton() {
@@ -92,25 +168,28 @@ function SearchResultSkeleton() {
 
 function ResultCard({ result }: { result: SearchResult }) {
   const typeConfig: Record<string, { icon: React.ElementType; color: string }> = {
-    user: { icon: Users, color: 'text-blue-500' },
-    job: { icon: Briefcase, color: 'text-emerald-500' },
-    event: { icon: Calendar, color: 'text-purple-500' },
-    group: { icon: Building2, color: 'text-orange-500' },
-    opportunity: { icon: FileText, color: 'text-cyan-500' },
+    user: { icon: Users, color: 'text-status-info' },
+    job: { icon: Briefcase, color: 'text-status-success' },
+    event: { icon: Calendar, color: 'text-status-accent' },
+    group: { icon: Building2, color: 'text-status-warning' },
+    opportunity: { icon: FileText, color: 'text-status-info' },
   };
 
   const config = typeConfig[result.type] || typeConfig.user;
   const Icon = config.icon;
 
   return (
-    <Link href={result.href}>
+    <Link
+      href={result.href}
+      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
       <Card className="group hover:border-primary/50 transition-all duration-150">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             {result.imageUrl ? (
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={result.imageUrl} />
-                <AvatarFallback className="bg-primary/10 text-primary-emphasis">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible">
                   {result.title[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -119,17 +198,22 @@ function ResultCard({ result }: { result: SearchResult }) {
                 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
                 'bg-muted'
               )}>
-                <Icon className={cn('h-5 w-5', config.color)} />
+                <Icon className={cn('icon-md', config.color)} />
               </div>
             )}
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors truncate">
+                <h3 className="font-medium text-foreground group-hover:text-primary-accessible transition-colors truncate">
                   {result.title}
                 </h3>
                 <Badge variant="secondary" className="text-2xs shrink-0">
-                  {result.type}
+                  <BilingualText
+                    en={resultTypeEn(result.type as SearchResultTypeKey)}
+                    el={resultTypeEl(result.type as SearchResultTypeKey)}
+                    compact
+                    secondaryFrom="lg"
+                  />
                 </Badge>
               </div>
 
@@ -151,13 +235,13 @@ function ResultCard({ result }: { result: SearchResult }) {
                 <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
                   {result.meta.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin className="icon-2xs" aria-hidden="true" />
+                      <MapPin className="icon-sm" />
                       {result.meta.location}
                     </span>
                   )}
                   {result.meta.date && (
                     <span className="flex items-center gap-1">
-                      <Clock className="icon-2xs" aria-hidden="true" />
+                      <Clock className="icon-sm" />
                       {result.meta.date}
                     </span>
                   )}
@@ -180,7 +264,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               )}
             </div>
 
-            <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
+            <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
           </div>
         </CardContent>
       </Card>
@@ -189,34 +273,63 @@ function ResultCard({ result }: { result: SearchResult }) {
 }
 
 function EmptyState({ query, category }: { query: string; category: SearchCategory }) {
+  const idle = !query;
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-        <Search className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+    <div className="flex flex-col items-center justify-center py-10 text-center sm:py-12">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <Search className="icon-lg text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
-        {query
-          ? `We couldn't find any ${category === 'all' ? 'results' : category} matching "${query}"`
-          : 'Enter a search term to find people, jobs, events, and more'}
+      <h3 className="mb-2 text-lg font-semibold text-foreground">
+        <BilingualText
+          en={idle ? searchEn('idle_title') : searchEn('empty_title')}
+          el={idle ? searchEl('idle_title') : searchEl('empty_title')}
+          stacked
+          wrap
+          secondaryFrom="lg"
+        />
+      </h3>
+      <p className="mb-6 max-w-sm text-sm text-muted-foreground">
+        {query ? (
+          <BilingualText
+            en={noMatchMessageEn(query, category)}
+            el={noMatchMessageEl(query, category)}
+            stacked
+            wrap
+            secondaryFrom="lg"
+          />
+        ) : (
+          <BilingualText
+            en={searchEn('empty_hint')}
+            el={searchEl('empty_hint')}
+            stacked
+            wrap
+            secondaryFrom="lg"
+          />
+        )}
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/discover">
-            <Users className="icon-sm" aria-hidden="true" />
-            Browse People
+            <Users className="icon-sm" />
+            <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} compact secondaryFrom="lg" />
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/jobs">
-            <Briefcase className="icon-sm" aria-hidden="true" />
-            Browse Jobs
+            <Briefcase className="icon-sm" />
+            <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} compact secondaryFrom="lg" />
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/events">
-            <Calendar className="icon-sm" aria-hidden="true" />
-            Browse Events
+            <Calendar className="icon-sm" />
+            <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} compact secondaryFrom="lg" />
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href={`/ai?q=${encodeURIComponent(query ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.` : 'Help me search the network for a complementary cofounder.')}`}>
+            <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+            <BilingualText en={searchEn('ask_ai')} el={searchEl('ask_ai')} compact secondaryFrom="lg" />
           </Link>
         </Button>
       </div>
@@ -231,6 +344,10 @@ export default function SearchPage() {
   const initialCategory = (searchParams?.get('category') as SearchCategory) || 'all';
 
   const [query, setQuery] = useState(initialQuery);
+
+  // Visible text, so one language — not both joined by a dot.
+
+  const sayOne = useBilingualString();
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [category, setCategory] = useState<SearchCategory>(initialCategory);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -245,13 +362,16 @@ export default function SearchPage() {
     } catch {}
   }, []);
 
-  // Cmd/Ctrl+K shortcut to focus search
+  // `/` focuses the field. Ctrl+K is the command palette — this page must not steal it.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        inputRef.current?.focus();
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
       }
+      e.preventDefault();
+      inputRef.current?.focus();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -305,47 +425,50 @@ export default function SearchPage() {
   };
 
   return (
-    <AppShell title="Search" description="Find people, jobs, events, and more">
+    <AppShell>
       <div className="">
         {/* Search Input */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-4 -mx-4 px-4 pt-2">
+        <div
+          className="sticky z-10 -mx-4 bg-background/95 px-4 pb-4 pt-2 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 top-[calc(var(--banner-network,0px)+var(--banner-demo,0px)+3rem)] sm:top-[calc(var(--banner-network,0px)+var(--banner-demo,0px))]"
+        >
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Search for people, jobs, events, groups..."
+              placeholder={sayOne(searchEn('input_placeholder'), searchEl('input_placeholder'))}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setInputFocused(true)}
               onBlur={() => setTimeout(() => setInputFocused(false), 150)}
-              className="pl-10 pr-20 h-11"
+              className="h-11 pl-10 pr-16"
               autoFocus
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
               {!query && (
-                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground font-mono">
-                  <Command className="h-2.5 w-2.5" aria-hidden="true" />K
+                <kbd className="hidden items-center rounded border border-border/60 bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground sm:flex">
+                  /
                 </kbd>
               )}
               {query && (
                 <button
+                  type="button"
                   onClick={() => setQuery('')}
                   className="text-muted-foreground hover:text-foreground"
+                  aria-label={bilingualAria(searchEn('clear_search'), searchEl('clear_search'))}
                 >
-                  <X className="icon-sm" aria-hidden="true" />
+                  <X className="icon-sm" />
                 </button>
               )}
             </div>
-          </div>
 
           {/* Recent searches dropdown */}
           {inputFocused && !query && recentSearches.length > 0 && (
-            <div className="absolute left-4 right-4 top-full mt-1 z-50 rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
+            <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-border/60 bg-popover shadow-lg">
               <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <History className="h-3.5 w-3.5" aria-hidden="true" />
-                  Recent searches
+                  <History className="icon-sm" />
+                  <BilingualText en={searchEn('recent_searches')} el={searchEl('recent_searches')} />
                 </span>
                 <button
                   onClick={() => {
@@ -354,7 +477,7 @@ export default function SearchPage() {
                   }}
                   className="text-2xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Clear
+                  <BilingualText en={searchEn('clear')} el={searchEl('clear')} />
                 </button>
               </div>
               {recentSearches.map((term) => (
@@ -363,10 +486,11 @@ export default function SearchPage() {
                   onClick={() => { setQuery(term); inputRef.current?.blur(); }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-secondary/60 transition-colors text-left"
                 >
-                  <History className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+                  <History className="icon-sm text-muted-foreground shrink-0" />
                   <span className="flex-1 truncate">{term}</span>
                   <X
-                    className="icon-2xs text-muted-foreground hover:text-foreground shrink-0"
+                    className="h-3 w-3 text-muted-foreground hover:text-foreground shrink-0"
+                    aria-label={bilingualAria(searchEn('remove_recent'), searchEl('remove_recent'))}
                     onClick={(e) => {
                       e.stopPropagation();
                       setRecentSearches(prev => {
@@ -379,6 +503,7 @@ export default function SearchPage() {
               ))}
             </div>
           )}
+          </div>
 
           {/* Category Tabs */}
           <div className="mt-3 overflow-x-auto scrollbar-hide">
@@ -400,8 +525,13 @@ export default function SearchPage() {
                         !isActive && 'border-border/60'
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5" />
-                      {config.label}
+                      <Icon className="icon-sm" />
+                      <BilingualText
+                        en={config.labelEn}
+                        el={config.labelEl}
+                        compact
+                        secondaryFrom="lg"
+                      />
                       {debouncedQuery.length >= 2 && count > 0 && (
                         <Badge
                           variant={isActive ? 'secondary' : 'outline'}
@@ -431,14 +561,16 @@ export default function SearchPage() {
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-4">
-                <X className="h-7 w-7 text-destructive-emphasis" aria-hidden="true" />
+                <X className="h-7 w-7 text-destructive-accessible" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Search failed</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                <BilingualText en={searchEn('search_failed_title')} el={searchEl('search_failed_title')} />
+              </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Something went wrong. Please try again.
+                <BilingualText en={searchEn('search_failed_body')} el={searchEl('search_failed_body')} />
               </p>
               <Button variant="outline" onClick={() => window.location.reload()}>
-                Retry
+                <BilingualText en={searchEn('retry')} el={searchEl('retry')} />
               </Button>
             </div>
           ) : results.length === 0 ? (
@@ -447,7 +579,10 @@ export default function SearchPage() {
             <>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-muted-foreground">
-                  {total} result{total !== 1 ? 's' : ''} for "{debouncedQuery}"
+                  <BilingualText
+                    en={resultsSummaryEn(total, debouncedQuery)}
+                    el={resultsSummaryEl(total, debouncedQuery)}
+                  />
                 </p>
               </div>
               <div className="space-y-3">
@@ -462,19 +597,35 @@ export default function SearchPage() {
         {/* Quick Links */}
         {debouncedQuery.length < 2 && (
           <div className="mt-8">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Quick Links</h3>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <h3 className="mb-4 text-sm font-semibold text-foreground">
+              <BilingualText
+                en={searchEn('quick_links')}
+                el={searchEl('quick_links')}
+                stacked
+                wrap
+                secondaryFrom="lg"
+              />
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2">
               <Link href="/discover" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                      <Users className="icon-md text-blue-500" aria-hidden="true" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-info-bg">
+                      <Users className="icon-md text-status-info" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
-                        Discover People
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
+                        <BilingualText
+                          en={searchEn('discover_people_title')}
+                          el={searchEl('discover_people_title')}
+                        />
                       </p>
-                      <p className="text-xs text-muted-foreground">Find co-founders and collaborators</p>
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText
+                          en={searchEn('discover_people_desc')}
+                          el={searchEl('discover_people_desc')}
+                        />
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -482,14 +633,22 @@ export default function SearchPage() {
               <Link href="/mentoring" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-                      <GraduationCap className="icon-md text-purple-500" aria-hidden="true" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-accent-bg">
+                      <GraduationCap className="icon-md text-status-accent" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
-                        Find Mentors
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
+                        <BilingualText
+                          en={searchEn('find_mentors_title')}
+                          el={searchEl('find_mentors_title')}
+                        />
                       </p>
-                      <p className="text-xs text-muted-foreground">Connect with experienced advisors</p>
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText
+                          en={searchEn('find_mentors_desc')}
+                          el={searchEl('find_mentors_desc')}
+                        />
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -497,14 +656,22 @@ export default function SearchPage() {
               <Link href="/jobs" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                      <Briefcase className="icon-md text-emerald-500" aria-hidden="true" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-success-bg">
+                      <Briefcase className="icon-md text-status-success" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
-                        Browse Jobs
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
+                        <BilingualText
+                          en={searchEn('browse_jobs_title')}
+                          el={searchEl('browse_jobs_title')}
+                        />
                       </p>
-                      <p className="text-xs text-muted-foreground">Startup roles and opportunities</p>
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText
+                          en={searchEn('browse_jobs_desc')}
+                          el={searchEl('browse_jobs_desc')}
+                        />
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -512,14 +679,22 @@ export default function SearchPage() {
               <Link href="/events" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
-                      <Calendar className="icon-md text-orange-500" aria-hidden="true" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-warning-bg">
+                      <Calendar className="icon-md text-status-warning" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
-                        Upcoming Events
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
+                        <BilingualText
+                          en={searchEn('upcoming_events_title')}
+                          el={searchEl('upcoming_events_title')}
+                        />
                       </p>
-                      <p className="text-xs text-muted-foreground">Meetups, webinars, and more</p>
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText
+                          en={searchEn('upcoming_events_desc')}
+                          el={searchEl('upcoming_events_desc')}
+                        />
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

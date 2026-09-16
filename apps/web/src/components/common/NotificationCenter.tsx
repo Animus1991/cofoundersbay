@@ -58,11 +58,11 @@ const notificationIcons: Record<NotificationType, React.ComponentType<{ classNam
 };
 
 const notificationColors: Record<NotificationType, string> = {
-  message: 'text-blue-400 bg-blue-400/10',
-  connection: 'text-emerald-400 bg-emerald-400/10',
-  match: 'text-pink-400 bg-pink-400/10',
-  event: 'text-purple-400 bg-purple-400/10',
-  system: 'text-amber-400 bg-amber-400/10',
+  message: 'text-blue-400 bg-status-info-bg',
+  connection: 'text-emerald-400 bg-status-success-bg',
+  match: 'text-pink-400 bg-status-accent-bg',
+  event: 'text-purple-400 bg-status-accent-bg',
+  system: 'text-amber-400 bg-status-warning-bg',
 };
 
 function formatTimestamp(date: Date): string {
@@ -76,7 +76,7 @@ function formatTimestamp(date: Date): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 function NotificationItem({
@@ -101,8 +101,8 @@ function NotificationItem({
     >
       {notification.actor ? (
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={notification.actor.avatarUrl || undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary-emphasis text-sm">
+          <AvatarImage src={notification.actor?.avatarUrl || undefined} />
+          <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
             {notification.actor.name[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -113,7 +113,7 @@ function NotificationItem({
             colorClass
           )}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="icon-md" />
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -165,8 +165,8 @@ export function NotificationCenter({
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Notifications" variant="ghost" size="icon" className="relative">
-          <Bell className="icon-md" aria-hidden="true" />
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="icon-md" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -186,7 +186,7 @@ export function NotificationCenter({
                 className="h-7 text-xs"
                 onClick={() => onMarkAllAsRead?.()}
               >
-                <CheckCheck className="icon-2xs mr-1" aria-hidden="true" />
+                <CheckCheck className="icon-sm mr-1" />
                 Mark all read
               </Button>
             )}
@@ -206,7 +206,7 @@ export function NotificationCenter({
             ))
           ) : (
             <div className="py-12 text-center">
-              <Bell className="mx-auto icon-xl text-muted-foreground/40 mb-3" aria-hidden="true" />
+              <Bell className="mx-auto icon-xl text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No notifications yet</p>
             </div>
           )}

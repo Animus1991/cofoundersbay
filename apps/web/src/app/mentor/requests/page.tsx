@@ -45,28 +45,26 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    accepted: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    declined: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+    pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    accepted: 'bg-status-success-bg text-status-success border-status-success-border',
+    declined: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
-  const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', {
-    month: 'short',
+  const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
     day: 'numeric',
-    year: 'numeric',
-  });
+    year: 'numeric' });
 
   return (
     <Card className={cn(
       'transition-all',
-      request.status === 'pending' && 'border-amber-500/30'
+      request.status === 'pending' && 'border-status-warning-border'
     )}>
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Link href={`/p/${request.requesterId}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={request.requester?.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -74,7 +72,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/p/${request.requesterId}`} className="font-medium hover:text-primary-emphasis transition-colors">
+                <Link href={`/p/${request.requesterId}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {displayName}
                 </Link>
                 {request.requester?.headline && (
@@ -84,9 +82,9 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                 )}
               </div>
               <Badge variant="outline" className={cn('text-xs', statusColors[request.status])}>
-                {request.status === 'pending' && <Clock className="icon-2xs mr-1" aria-hidden="true" />}
-                {request.status === 'accepted' && <CheckCircle2 className="icon-2xs mr-1" aria-hidden="true" />}
-                {request.status === 'declined' && <XCircle className="icon-2xs mr-1" aria-hidden="true" />}
+                {request.status === 'pending' && <Clock className="icon-sm mr-1" />}
+                {request.status === 'accepted' && <CheckCircle2 className="icon-sm mr-1" />}
+                {request.status === 'declined' && <XCircle className="icon-sm mr-1" />}
                 {request.status}
               </Badge>
             </div>
@@ -122,9 +120,9 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                     disabled={isResponding}
                   >
                     {isResponding ? (
-                      <Loader2 className="icon-2xs mr-1 animate-spin" aria-hidden="true" />
+                      <Loader2 className="icon-sm mr-1 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="icon-2xs mr-1" aria-hidden="true" />
+                      <CheckCircle2 className="icon-sm mr-1" />
                     )}
                     Accept
                   </Button>
@@ -139,7 +137,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 text-xs" asChild>
                     <Link href={`/messages?to=${request.requesterId}`}>
-                      <MessageCircle className="icon-2xs mr-1" aria-hidden="true" />
+                      <MessageCircle className="icon-sm mr-1" />
                       Message
                     </Link>
                   </Button>
@@ -148,7 +146,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
               {request.status === 'accepted' && (
                 <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                   <Link href={`/mentor/sessions/new?mentee=${request.requesterId}`}>
-                    <Calendar className="icon-2xs mr-1" aria-hidden="true" />
+                    <Calendar className="icon-sm mr-1" />
                     Schedule Session
                   </Link>
                 </Button>
@@ -197,7 +195,7 @@ export default function MentorRequestsPage() {
     return (
       <AppShell>
         <div className="py-6 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
       </AppShell>
     );
@@ -209,13 +207,13 @@ export default function MentorRequestsPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive-emphasis mb-4" aria-hidden="true" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
               <h3 className="font-medium">Failed to load requests</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
+                <RefreshCw className="icon-sm mr-2" />
                 Try Again
               </Button>
             </CardContent>
@@ -237,7 +235,7 @@ export default function MentorRequestsPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} aria-hidden="true" />
+            <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
             Refresh
           </Button>
         </div>
@@ -246,8 +244,8 @@ export default function MentorRequestsPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-amber-500/10 p-2">
-                <Clock className="icon-md text-amber-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-warning-bg p-2">
+                <Clock className="icon-md text-status-warning" />
               </div>
               <div>
                 <p className="text-xl font-bold">{pendingRequests.length}</p>
@@ -257,8 +255,8 @@ export default function MentorRequestsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <CheckCircle2 className="icon-md text-green-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <CheckCircle2 className="icon-md text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">{acceptedRequests.length}</p>
@@ -268,8 +266,8 @@ export default function MentorRequestsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-red-500/10 p-2">
-                <XCircle className="icon-md text-red-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-danger-bg p-2">
+                <XCircle className="icon-md text-status-danger" />
               </div>
               <div>
                 <p className="text-xl font-bold">{declinedRequests.length}</p>
@@ -297,7 +295,7 @@ export default function MentorRequestsPage() {
           <TabsContent value="pending" className="space-y-3 mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+                <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : pendingRequests.length > 0 ? (
               pendingRequests.map((request) => (
@@ -325,7 +323,7 @@ export default function MentorRequestsPage() {
           <TabsContent value="accepted" className="space-y-3 mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+                <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : acceptedRequests.length > 0 ? (
               acceptedRequests.map((request) => (
@@ -347,7 +345,7 @@ export default function MentorRequestsPage() {
           <TabsContent value="declined" className="space-y-3 mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+                <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
             ) : declinedRequests.length > 0 ? (
               declinedRequests.map((request) => (

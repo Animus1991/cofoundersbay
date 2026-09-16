@@ -33,21 +33,17 @@ export default function TenantSettingsPage() {
   const [weeklyDigest, setWeeklyDigest] = useState(true);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Tenant Settings</h1>
-            <p className="text-muted-foreground">
-              Configure your organization settings
-            </p>
-          </div>
-          <Button>
-            <Save className="mr-2 icon-sm" aria-hidden="true" />
-            Save Changes
-          </Button>
-        </div>
+    <AppShell
+      title="Tenant Settings"
+      description="General workspace settings: membership policy, notifications, and email preferences."
+      actions={(
+        <Button>
+          <Save className="mr-2 icon-sm" />
+          Save Changes
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList>
@@ -251,7 +247,7 @@ export default function TenantSettingsPage() {
                     <Input value="sk_live_xxxxxxxxxxxxxxxxxxxxx" readOnly className="font-mono text-sm" />
                   </div>
                   <Button variant="outline" size="sm">
-                    <Key className="mr-2 icon-sm" aria-hidden="true" />
+                    <Key className="mr-2 icon-sm" />
                     Regenerate
                   </Button>
                 </div>
@@ -294,7 +290,7 @@ export default function TenantSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-3 rounded-lg border">
-                  <CreditCard className="icon-xl text-muted-foreground" aria-hidden="true" />
+                  <CreditCard className="icon-xl text-muted-foreground" />
                   <div className="flex-1">
                     <p className="font-medium">•••• •••• •••• 4242</p>
                     <p className="text-sm text-muted-foreground">Expires 12/2026</p>

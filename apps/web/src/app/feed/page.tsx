@@ -10,6 +10,11 @@ import {
   Plus, RefreshCw, ChevronDown, X, Flag, Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import Link from 'next/link';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
+import { RelativeTime } from '@/components/common/LocalTime';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +31,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -53,11 +60,11 @@ type FeedComment = {
 };
 
 const POST_TYPE_CONFIG: Record<PostType, { icon: typeof Rocket; color: string; label: string }> = {
-  update: { icon: Sparkles, color: 'text-blue-500', label: 'Update' },
-  milestone: { icon: Target, color: 'text-emerald-500', label: 'Milestone' },
-  question: { icon: MessageCircle, color: 'text-amber-500', label: 'Question' },
-  announcement: { icon: TrendingUp, color: 'text-purple-500', label: 'Announcement' },
-  achievement: { icon: Award, color: 'text-pink-500', label: 'Achievement' },
+  update: { icon: Sparkles, color: 'text-status-info', label: 'Update' },
+  milestone: { icon: Target, color: 'text-status-success', label: 'Milestone' },
+  question: { icon: MessageCircle, color: 'text-status-warning', label: 'Question' },
+  announcement: { icon: TrendingUp, color: 'text-status-accent', label: 'Announcement' },
+  achievement: { icon: Award, color: 'text-status-accent', label: 'Achievement' },
 };
 
 const DEMO_POSTS: FeedPost[] = [
@@ -202,26 +209,41 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
                           onClick={() => setPostType(type)}
                           className="gap-1"
                         >
-                          <Icon className={cn('h-4 w-4', config.color)} />
-                          <span className="sr-only sm:not-sr-only sm:inline">{config.label}</span>
+                          <Icon className={cn('icon-sm', config.color)} />
+                          <span className="hidden sm:inline">{config.label}</span>
                         </Button>
                       );
                     }
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
-                    <ImageIcon className="icon-sm" aria-hidden="true" />
+                  {/* An image and a link need somewhere to upload to, and the
+                      feed has no server yet. Disabled and labelled, rather
+                      than looking available and doing nothing. */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    aria-label={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
+                    title={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
+                  >
+                    <ImageIcon className="icon-sm" />
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    <Link2 className="icon-sm" aria-hidden="true" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    aria-label={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
+                    title={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
+                  >
+                    <Link2 className="icon-sm" />
                   </Button>
                   <Button
                     size="sm"
                     onClick={handleSubmit}
                     disabled={!content.trim()}
                   >
-                    <Send className="icon-sm mr-1" aria-hidden="true" />
+                    <Send className="icon-sm mr-1" />
                     Post
                   </Button>
                 </div>
@@ -256,8 +278,10 @@ function PostCard({
 
   // Track view when component mounts
   useEffect(() => {
-    if (onView) onView();
-  }, [onView]);
+    onView?.();
+    // Record a view once per post, not whenever the parent callback identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id]);
 
   const initials = post.author.displayName
     .split(' ')
@@ -266,7 +290,6 @@ function PostCard({
     .join('')
     .toUpperCase();
 
-  const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
 
   return (
     <Card className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow">
@@ -275,7 +298,7 @@ function PostCard({
           <div className="flex gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.author.avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -288,20 +311,22 @@ function PostCard({
                   {post.author.displayName}
                 </a>
                 <Badge variant="outline" className={cn('text-xs', config.color)}>
-                  <TypeIcon className="h-3 w-3 mr-1" />
+                  <TypeIcon className="icon-sm mr-1" />
                   {config.label}
                 </Badge>
                 {post.personalizationScore && (
-                  <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                    <Sparkles className="icon-2xs mr-1" aria-hidden="true" />
+                  <Badge variant="secondary" className="text-xs bg-status-info-bg text-status-info border-status-info-border">
+                    <Sparkles className="icon-sm mr-1" />
                     {Math.round(post.personalizationScore * 100)}% match
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{post.author.headline}</p>
-              {/* Relative to Date.now(), so server and client can differ. */}
-              <p suppressHydrationWarning className="text-xs text-muted-foreground mt-0.5">
-                {timeAgo}
+              {/* Computed in an effect, not during render: the server's
+                  "now" is not the browser's, and the two disagreeing is
+                  what made this page fail hydration on every load. */}
+              <p className="text-xs text-muted-foreground mt-0.5">
+                <RelativeTime value={post.createdAt} />
               </p>
               {post.relevanceReasons && post.relevanceReasons.length > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
@@ -313,22 +338,22 @@ function PostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onBookmark}>
-                <Bookmark className="icon-sm mr-2" aria-hidden="true" />
+                <Bookmark className="icon-sm mr-2" />
                 {post.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link2 className="icon-sm mr-2" aria-hidden="true" />
+                <Link2 className="icon-sm mr-2" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive-emphasis">
-                <Flag className="icon-sm mr-2" aria-hidden="true" />
+              <DropdownMenuItem className="text-destructive-accessible">
+                <Flag className="icon-sm mr-2" />
                 Report
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -362,9 +387,9 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onLike}
-            className={cn(post.isLiked && 'text-primary-emphasis')}
+            className={cn(post.isLiked && 'text-primary-accessible')}
           >
-            <Heart className={cn('h-4 w-4 mr-1', post.isLiked && 'fill-current')} aria-hidden="true" />
+            <Heart className={cn('icon-sm mr-1', post.isLiked && 'fill-current')} />
             Like
           </Button>
           <Button
@@ -372,20 +397,20 @@ function PostCard({
             size="sm"
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
+            <MessageCircle className="icon-sm mr-1" />
             Comment
           </Button>
           <Button variant="ghost" size="sm" onClick={onShare}>
-            <Share2 className="icon-sm mr-1" aria-hidden="true" />
+            <Share2 className="icon-sm mr-1" />
             Share
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onBookmark}
-            className={cn(post.isBookmarked && 'text-primary-emphasis')}
+            className={cn(post.isBookmarked && 'text-primary-accessible')}
           >
-            <Bookmark className={cn('h-4 w-4', post.isBookmarked && 'fill-current')} aria-hidden="true" />
+            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} />
           </Button>
         </div>
 
@@ -411,7 +436,7 @@ function PostCard({
                     setCommentText('');
                   }}
                 >
-                  <Send className="icon-sm" aria-hidden="true" />
+                  <Send className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -437,7 +462,7 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
-          <Flame className="icon-sm text-orange-500" aria-hidden="true" />
+          <Flame className="icon-sm text-orange-500" />
           Trending Topics
         </h3>
       </CardHeader>
@@ -451,11 +476,11 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground w-4">{i + 1}</span>
-                <span className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
+                <span className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                   #{topic.tag}
                 </span>
                 {topic.growth > 0 && (
-                  <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="secondary" className="text-xs bg-status-success-bg text-status-success border-green-200">
                     +{topic.growth}%
                   </Badge>
                 )}
@@ -483,7 +508,7 @@ function SuggestedConnections() {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="icon-sm text-primary-emphasis" aria-hidden="true" />
+          <Users className="icon-sm text-primary-accessible" />
           Suggested Connections
         </h3>
       </CardHeader>
@@ -492,7 +517,7 @@ function SuggestedConnections() {
           {suggestions.map((person) => (
             <div key={person.id} className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarFallback className="text-xs bg-primary/10 text-primary-emphasis">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                   {person.name.split(' ').map((n) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
@@ -506,8 +531,10 @@ function SuggestedConnections() {
             </div>
           ))}
         </div>
-        <Button variant="ghost" size="sm" className="w-full mt-3">
-          View All
+        <Button asChild variant="ghost" size="sm" className="w-full mt-3">
+          <Link href="/discover">
+            <BilingualText en="View All" el="Προβολή όλων" compact />
+          </Link>
         </Button>
       </CardContent>
     </Card>
@@ -521,20 +548,43 @@ export default function FeedPage() {
   const [showPreferences, setShowPreferences] = useState(false);
 
   // Fetch personalized feed
+  // `useInfiniteQuery` was imported and never used, and "Load More" sat below a
+  // fixed first page doing nothing — while the endpoint has taken an `offset`
+  // and returned `hasMore` all along. This asks for the next page it advertises.
+  const PAGE_SIZE = 20;
   const {
-    data: feedData,
+    data: feedPages,
     isLoading: feedLoading,
     error: feedError,
     refetch: refetchFeed,
-  } = useQuery({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['feed', 'personalized', activeTab],
-    queryFn: () => getPersonalizedFeed({
-      limit: 20,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => getPersonalizedFeed({
+      limit: PAGE_SIZE,
+      offset: pageParam as number,
       contentTypes: activeTab === 'trending' ? undefined : ['update', 'milestone', 'question', 'announcement', 'achievement'],
       refresh: activeTab === 'trending',
     }),
+    getNextPageParam: (last, all) =>
+      last?.hasMore ? all.reduce((n, page) => n + (page?.posts?.length ?? 0), 0) : undefined,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Whatever the reader composed this session leads; the feed follows.
+  const [composed, setComposed] = useState<FeedPost[]>([]);
+  useEffect(() => {
+    setComposed(readComposedPosts());
+  }, []);
+
+  const feedData = feedPages
+    ? { posts: [...composed, ...feedPages.pages.flatMap((page) => page?.posts ?? [])] }
+    : composed.length
+      ? { posts: composed }
+      : undefined;
 
   // Fetch feed preferences
   const {
@@ -570,12 +620,33 @@ export default function FeedPage() {
     mutationFn: recordFeedInteraction,
   });
 
-  const posts = feedData?.posts || [];
+  const posts = feedData?.posts?.length
+    ? feedData.posts
+    : isPreviewDemo()
+      ? DEMO_POSTS
+      : [];
 
   const handlePost = (content: string, type: PostType) => {
-    // In a real implementation, this would create a new post via API
-    success('Post published!');
-    refetchFeed();
+    // There is no feed module in the API — `/api/feed/*` is served by the
+    // browser's demo shim alone — so this used to toast "Post published!" over
+    // a post that went nowhere. It now goes somewhere the reader can see, for
+    // the session, the way the fundraising and readiness demos already work.
+    setComposed(addComposedPost({
+      content,
+      type: type as FeedPost['type'],
+      author: {
+        id: 'me',
+        displayName: 'You',
+        headline: undefined,
+      },
+    }));
+    success(
+      bilingualInline('Posted', 'Δημοσιεύτηκε'),
+      bilingualInline(
+        'Kept for this session — the feed has no server to store it yet.',
+        'Κρατείται για αυτή τη συνεδρία — το feed δεν έχει ακόμη διακομιστή να το αποθηκεύσει.',
+      ),
+    );
   };
 
   const handleLike = (postId: string, isCurrentlyLiked: boolean) => {
@@ -649,15 +720,14 @@ export default function FeedPage() {
 
   return (
     <AppShell
-      title="Feed"
-      description="Stay updated with your network"
+      showHelp
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="following">Following</TabsTrigger>
-              <TabsTrigger value="trending">Trending</TabsTrigger>
+              <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /></TabsTrigger>
+              <TabsTrigger value="following"><BilingualText en="Following" el="Ακολουθώ" compact /></TabsTrigger>
+              <TabsTrigger value="trending"><BilingualText en="Trending" el="Τάσεις" compact /></TabsTrigger>
             </TabsList>
           </Tabs>
           <Button
@@ -666,13 +736,21 @@ export default function FeedPage() {
             onClick={() => setShowPreferences(!showPreferences)}
             className="gap-1"
           >
-            <Settings className="icon-sm" aria-hidden="true" />
-            <span className="sr-only sm:not-sr-only sm:inline">Preferences</span>
+            <Settings className="icon-sm" />
+            <span className="hidden sm:inline"><BilingualText en="Preferences" el="Προτιμήσεις" compact /></span>
           </Button>
         </div>
       }
     >
       <div className="pb-10">
+        {isPreviewDemo() && (!feedData?.posts?.length) && (
+          <SampleDataNotice
+            className="mb-6"
+            surface="Feed"
+            detail="There is no live Feed module yet. These posts are sample network activity so you can review the layout."
+            askAiPrompt="The feed is showing sample posts. What should I do next on Discover, Matches, or Messages instead?"
+          />
+        )}
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Main Feed */}
           <div className="space-y-6">
@@ -720,17 +798,28 @@ export default function FeedPage() {
               ))}
             </div>
 
-            {/* Load More */}
-            <div className="flex justify-center">
-              <Button variant="outline">
-                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
-                Load More
-              </Button>
-            </div>
+            {/* Load More — shown only when the endpoint says there is more,
+                so it never promises a page that does not exist. */}
+            {hasNextPage && (
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => void fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  <RefreshCw className={cn('icon-sm mr-2', isFetchingNextPage && 'animate-spin')} />
+                  <BilingualText
+                    en={isFetchingNextPage ? 'Loading…' : 'Load More'}
+                    el={isFetchingNextPage ? 'Φόρτωση…' : 'Περισσότερα'}
+                    compact
+                  />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 hidden lg:block sticky top-6 self-start">
+          <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <TrendingTopics topics={trendingData?.topics} />
             <SuggestedConnections />
             
@@ -739,14 +828,16 @@ export default function FeedPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
                   <h3 className="font-semibold flex items-center gap-2">
-                    <Settings className="icon-sm" aria-hidden="true" />
-                    Feed Preferences
+                    <Settings className="icon-sm" />
+                    <BilingualText en={feedEn('preferences')} el={feedEl('preferences')} compact />
                   </h3>
                 </CardHeader>
                 <CardContent className="pt-4">
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Content Types</label>
+                      <label className="text-sm font-medium mb-2 block">
+                        <BilingualText en={feedEn('content_types')} el={feedEl('content_types')} compact />
+                      </label>
                       <div className="flex flex-wrap gap-1">
                         {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
                           <Badge
@@ -767,7 +858,9 @@ export default function FeedPage() {
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Topics of Interest</label>
+                      <label className="text-sm font-medium mb-2 block">
+                        <BilingualText en={feedEn('topics')} el={feedEl('topics')} compact />
+                      </label>
                       <div className="flex flex-wrap gap-1">
                         {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
                           <Badge

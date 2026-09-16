@@ -12,6 +12,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { BilingualText } from '@/components/common/BilingualText';
+import { RESEARCH_TEMPLATE_I18N, RESEARCH_TAG_EL, researchEn, researchEl } from '@/lib/i18n/strings-research';
 import { cn } from '@/lib/utils';
 
 export interface BoardTemplate {
@@ -382,6 +385,15 @@ interface BoardTemplatesDialogProps {
   onSelectTemplate: (template: BoardTemplate) => void;
 }
 
+const TEMPLATE_GLYPH: Record<string, CfbGlyphName> = {
+  'startup-validation': 'spark',
+  'cofounder-evaluation': 'people',
+  'market-research': 'chart',
+  'investor-pitch': 'target',
+  'mentorship-session': 'mentor',
+  'due-diligence': 'shield',
+};
+
 export function BoardTemplatesDialog({
   open,
   onClose,
@@ -389,55 +401,60 @@ export function BoardTemplatesDialog({
 }: BoardTemplatesDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] overflow-y-auto rounded-xl sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Choose a Template</DialogTitle>
+          <DialogTitle>
+            <BilingualText en={researchEn('tpl_dialog_title')} el={researchEl('tpl_dialog_title')} />
+          </DialogTitle>
           <DialogDescription>
-            Start with a pre-built template for common research workflows
+            <BilingualText en={researchEn('tpl_dialog_desc')} el={researchEl('tpl_dialog_desc')} />
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+        <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2">
           {BOARD_TEMPLATES.map((template) => {
-            const Icon = template.icon;
+            const copy = RESEARCH_TEMPLATE_I18N[template.id];
+            const glyph = TEMPLATE_GLYPH[template.id] ?? 'research';
             return (
               <button
                 key={template.id}
+                type="button"
                 onClick={() => {
                   onSelectTemplate(template);
                   onClose();
                 }}
                 className={cn(
-                  'flex items-start gap-4 p-4 rounded-lg border text-left',
-                  'hover:bg-accent hover:border-primary/40 transition-all',
-                  'group'
+                  'group flex items-start gap-3 rounded-xl border border-border/70 p-3.5 text-left',
+                  'transition-colors hover:bg-muted/40',
                 )}
               >
-                <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${template.color}20` }}
-                >
-                  <Icon
-                    className="h-6 w-6"
-                    style={{ color: template.color }}
-                  />
+                <div className="mt-0.5 shrink-0 text-muted-foreground">
+                  <CfbGlyph name={glyph} className="icon-md" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold group-hover:text-primary-emphasis transition-colors">
-                    {template.name}
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium leading-snug">
+                    {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact /> : template.name}
                   </div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {template.description}
+                  <div className="mt-1 text-sm leading-snug text-muted-foreground">
+                    {copy ? (
+                      <BilingualText en={copy.description.en} el={copy.description.el} wrap />
+                    ) : (
+                      template.description
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="mt-2 flex flex-wrap gap-1">
                     {template.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="text-xs px-2 py-0.5 rounded-full bg-secondary"
+                        className="rounded-full px-2 py-0.5 text-2xs text-muted-foreground ring-1 ring-border/70"
                       >
-                        {tag}
+                        <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
                       </span>
                     ))}
+                    <span className="rounded-full px-2 py-0.5 text-2xs text-muted-foreground">
+                      {template.initialNodes.length}{' '}
+                      <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
+                    </span>
                   </div>
                 </div>
               </button>
@@ -445,9 +462,9 @@ export function BoardTemplatesDialog({
           })}
         </div>
 
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            Start Blank
+        <div className="flex justify-end border-t pt-4">
+          <Button variant="outline" className="rounded-xl" onClick={onClose}>
+            <BilingualText en={researchEn('tpl_blank')} el={researchEl('tpl_blank')} compact />
           </Button>
         </div>
       </DialogContent>

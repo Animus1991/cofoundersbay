@@ -1,14 +1,17 @@
 import type { NextConfig } from 'next';
 
-const allowedDevOrigins = ['localhost'];
+const allowedDevOrigins = ['localhost', '127.0.0.1', '*.trycloudflare.com'];
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@cofounderbay/shared'],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   allowedDevOrigins,
-  
+  devIndicators: false,
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -68,60 +71,58 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Webpack: improve chunk splitting for production
-  webpack: (config, { dev, isServer, nextRuntime }) => {
-    if (dev) {
-      // Use persistent filesystem cache on all platforms (including Windows).
-      // Filesystem cache is incremental and safe; Next.js manages cache invalidation.
-      // Each compiler (client / nodejs-server / edge-server) needs a UNIQUE cache name.
-      const cacheName = !isServer
-        ? 'cfb-client'
-        : nextRuntime === 'edge'
-          ? 'cfb-edge'
-          : 'cfb-server';
+  // Turbopack is the dev compiler (enabled via `next dev --turbopack` in scripts/dev.js).
+  // Declaring the key keeps Turbopack/webpack config resolution explicit. The webpack()
+  // hook below still runs for `next build` (production), which uses webpack.
+  turbopack: {},
 
-      config.cache = {
-        type: 'filesystem',
-        name: cacheName,
-        // Bump version to bust stale cache entries (increment when deps change broadly)
-        version: '3',
-      };
-    }
-
-    if (!dev && !isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          ...(config.optimization?.splitChunks as object),
-          cacheGroups: {
-            ...((config.optimization?.splitChunks as any)?.cacheGroups ?? {}),
-            radix: {
-              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-              name: 'radix-ui',
-              chunks: 'all',
-              priority: 20,
-            },
-            charts: {
-              test: /[\\/]node_modules[\\/]recharts[\\/]/,
-              name: 'recharts',
-              chunks: 'all',
-              priority: 20,
-            },
-            motion: {
-              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-              name: 'framer-motion',
-              chunks: 'all',
-              priority: 20,
-            },
-          },
-        },
-      };
-    }
-
-    return config;
+  async rewrites() {
+    if (process.env.NODE_ENV !== 'development') return [];
+    const target = (process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:3001').replace(/\/$/, '');
+    return [
+      { source: '/api/:path*', destination: `${target}/api/:path*` },
+      { source: '/socket.io/:path*', destination: `${target}/socket.io/:path*` },
+    ];
   },
-  
-  // Production optimizations
+
+  // Production-only webpack tuning (dev uses Turbopack — omit webpack hook to avoid Next warning).
+  ...(isProduction
+    ? {
+        webpack: (config: import('webpack').Configuration, { isServer }: { isServer: boolean }) => {
+          if (!isServer) {
+            config.optimization = {
+              ...config.optimization,
+              splitChunks: {
+                ...(config.optimization?.splitChunks as object),
+                cacheGroups: {
+                  ...((config.optimization?.splitChunks as { cacheGroups?: Record<string, unknown> })?.cacheGroups ?? {}),
+                  radix: {
+                    test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+                    name: 'radix-ui',
+                    chunks: 'all',
+                    priority: 20,
+                  },
+                  charts: {
+                    test: /[\\/]node_modules[\\/]recharts[\\/]/,
+                    name: 'recharts',
+                    chunks: 'all',
+                    priority: 20,
+                  },
+                  motion: {
+                    test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+                    name: 'framer-motion',
+                    chunks: 'all',
+                    priority: 20,
+                  },
+                },
+              },
+            };
+          }
+          return config;
+        },
+      }
+    : {}),
+
   poweredByHeader: false,
   
   // Compression
@@ -134,6 +135,7 @@ const nextConfig: NextConfig = {
     // The API lives on a different origin, so it must be named in connect-src
     // or every request the app makes is blocked by the browser — silently, from
     // the server's point of view. Fail loudly at build time instead.
+    // Adopted from origin/claude/project-audit-upgrade-y2ebnr (6a9e740, 87d78b7).
     if (isProduction && !apiOrigin) {
       console.warn(
         '\n[next.config] NEXT_PUBLIC_API_URL is not set for this production build.\n' +
@@ -168,7 +170,11 @@ const nextConfig: NextConfig = {
       `connect-src ${connectSrc.join(' ')}`,
       "media-src 'self' blob: https:",
       "worker-src 'self' blob:",
-      "frame-src 'self' https://*.daily.co",
+      // Daily.co rooms are iframed, and the research canvas plus the PDF
+      // annotation viewer iframe arbitrary document URLs — including blob:
+      // object URLs — so this cannot be narrowed to named hosts without
+      // breaking those surfaces. http: is required for user-supplied links.
+      "frame-src 'self' https: http: blob:",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -207,7 +213,8 @@ const nextConfig: NextConfig = {
             value: '0'
           },
           {
-            // origin-when-cross-origin leaks the origin to http:// targets.
+            // strict-origin-when-cross-origin over origin-when-cross-origin:
+            // the latter still sends the origin to http:// targets.
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin'
           },
@@ -216,12 +223,13 @@ const nextConfig: NextConfig = {
             value: csp
           },
           {
-            // Deny by default: nothing in the product needs these, and the
-            // video-call surface requests camera/mic at the element level.
+            // Deny by default. camera/microphone stay available to same-origin
+            // because the video-call surface requests them at the element level.
             key: 'Permissions-Policy',
             value: 'accelerometer=(), autoplay=(self), camera=(self), display-capture=(self), encrypted-media=(), geolocation=(), gyroscope=(), interest-cohort=(), magnetometer=(), microphone=(self), payment=(), usb=()'
           },
           {
+            // allow-popups so OAuth sign-in windows still work.
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin-allow-popups'
           },

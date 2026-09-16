@@ -14,19 +14,20 @@ import {
 } from '@/lib/api';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
-  Workflow, Zap, Clock, Play, Pause, Trash2,
+  Zap, Clock, Play, Pause, Trash2,
   CheckCircle2, XCircle, AlertTriangle,
   Settings, Bell, Users, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import Link from 'next/link';
+import { EmptyTenantAutomations } from '@/components/common/EmptyStates';
 import { EmptyState } from '@/components/common/EmptyState';
+import Link from 'next/link';
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -53,24 +54,24 @@ const TRIGGER_LABELS: Record<string, string> = {
 };
 
 const TRIGGER_CATEGORY: Record<string, { label: string; color: string }> = {
-  user_signup: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-  onboarding_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-  profile_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-  connection_not_answered: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  connection_accepted: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  match_not_viewed: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  match_generated: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-  mentor_request_submitted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
-  mentor_request_accepted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
-  mentor_session_idle: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
-  community_join: { label: 'Community', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
-  community_inactive: { label: 'Community', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
-  subscription_trial_ending: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
-  subscription_failed_payment: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
-  subscription_canceled: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
-  user_inactive: { label: 'Engagement', color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
-  content_reported_threshold: { label: 'Moderation', color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
-  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' },
+  user_signup: { label: 'Onboarding', color: 'bg-status-info-bg text-status-info' },
+  onboarding_incomplete: { label: 'Onboarding', color: 'bg-status-info-bg text-status-info' },
+  profile_incomplete: { label: 'Onboarding', color: 'bg-status-info-bg text-status-info' },
+  connection_not_answered: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  connection_accepted: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  match_not_viewed: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  match_generated: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  mentor_request_submitted: { label: 'Mentorship', color: 'bg-status-success-bg text-status-success' },
+  mentor_request_accepted: { label: 'Mentorship', color: 'bg-status-success-bg text-status-success' },
+  mentor_session_idle: { label: 'Mentorship', color: 'bg-status-success-bg text-status-success' },
+  community_join: { label: 'Community', color: 'bg-status-success-bg text-status-success' },
+  community_inactive: { label: 'Community', color: 'bg-status-success-bg text-status-success' },
+  subscription_trial_ending: { label: 'Billing', color: 'bg-status-warning-bg text-status-warning' },
+  subscription_failed_payment: { label: 'Billing', color: 'bg-status-warning-bg text-status-warning' },
+  subscription_canceled: { label: 'Billing', color: 'bg-status-warning-bg text-status-warning' },
+  user_inactive: { label: 'Engagement', color: 'bg-status-danger-bg text-status-danger' },
+  content_reported_threshold: { label: 'Moderation', color: 'bg-status-danger-bg text-status-danger' },
+  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-status-accent-bg text-status-accent' },
 };
 
 // ── Config toggle panel ──────────────────────────────────────────────────────
@@ -122,7 +123,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="icon-sm text-primary-emphasis" aria-hidden="true" />
+          <Settings className="icon-sm text-primary-accessible" />
           Automation Settings
         </CardTitle>
         <CardDescription className="text-xs">
@@ -133,7 +134,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
         {CONFIG_TOGGLES.map(({ key, label, description, icon: Icon }) => (
           <div key={key} className="flex items-center justify-between py-3 gap-4">
             <div className="flex items-start gap-3 min-w-0">
-              <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <Icon className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-medium">{label}</p>
                 <p className="text-xs text-muted-foreground">{description}</p>
@@ -193,53 +194,45 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
               {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
             </Badge>
             {rule.status === 'active'
-              ? <Badge className="bg-emerald-100 text-emerald-700 text-xs">Active</Badge>
+              ? <Badge className="bg-status-success-bg text-status-success text-xs">Active</Badge>
               : rule.status === 'paused'
-              ? <Badge className="bg-amber-100 text-amber-700 text-xs">Paused</Badge>
+              ? <Badge className="bg-status-warning-bg text-status-warning text-xs">Paused</Badge>
               : <Badge variant="outline" className="text-xs">{rule.status}</Badge>}
           </div>
           {rule.description && <p className="text-xs text-muted-foreground">{rule.description}</p>}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Zap className="icon-2xs" aria-hidden="true" />{rule.executionCount} runs</span>
+            <span className="flex items-center gap-1"><Zap className="icon-sm" />{rule.executionCount} runs</span>
             {rule.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><AlertTriangle className="icon-2xs" aria-hidden="true" />{rule.failureCount} failures</span>
+              <span className="flex items-center gap-1 text-status-warning"><AlertTriangle className="icon-sm" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
-              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{new Date(rule.lastRunAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />{new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
             )}
             {rule.delaySeconds > 0 && <span>Delay: {rule.delaySeconds}s</span>}
           </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Button aria-label="Run now" variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
-            <Play className="h-3.5 w-3.5" aria-hidden="true" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
+            <Play className="icon-sm" />
           </Button>
           {rule.status === 'active' ? (
-            <Button aria-label="Pause" variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
-              <Pause className="h-3.5 w-3.5" aria-hidden="true" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
+              <Pause className="icon-sm" />
             </Button>
           ) : rule.status !== 'archived' ? (
-            <Button aria-label="Activate" variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
-              <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
+              <Zap className="icon-sm text-status-success" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
             <Button aria-label="Delete"
               variant="ghost" size="icon"
-              className="h-8 w-8 text-destructive-emphasis hover:text-destructive-emphasis"
-              onClick={async () => {
-                const ok = await confirm({
-                  title: `Delete rule "${rule.name}"?`,
-                  description: 'This automation will stop running immediately. This cannot be undone.',
-                  confirmLabel: 'Delete rule',
-                  intent: 'destructive',
-                });
-                if (ok) remove.mutate();
-              }}
+              className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
+              onClick={async () => { if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) remove.mutate(); }}
               disabled={remove.isPending}
             >
-              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              <Trash2 className="icon-sm" />
             </Button>
           )}
         </div>
@@ -275,20 +268,21 @@ export default function TenantAutomationPage() {
     // no explanation of why. It now uses the same EmptyState the rest of the app
     // does, says what automations are for, and offers a way out.
     return (
-      <AppShell title="Automations">
+      <AppShell title="Automation">
         <EmptyState
           title="No organization selected"
           description="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up."
           illustration="rocket"
+          askAiPrompt="I opened organization automations without an organization selected. Help me pick or create one and explain what automation rules I should turn on first."
           action={
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <>
               <Button asChild>
                 <Link href="/tenant/dashboard">Choose an organization</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/org">Browse organizations</Link>
+                <Link href="/org/dashboard">Browse organizations</Link>
               </Button>
-            </div>
+            </>
           }
         />
       </AppShell>
@@ -296,24 +290,18 @@ export default function TenantAutomationPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Automation</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Event-driven workflows — triggers, conditions, actions for your organization.
-            </p>
-          </div>
-        </div>
+    <AppShell
+      title="Automation"
+      description="Event-driven workflows: triggers fire when events happen, conditions filter, actions notify or update data."
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Active Rules', value: activeCount, color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Total Runs', value: totalRuns, color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground' },
+            { label: 'Active Rules', value: activeCount, color: 'text-status-success' },
+            { label: 'Total Runs', value: totalRuns, color: 'text-status-info' },
+            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-status-warning' : 'text-muted-foreground' },
           ].map(s => (
             <Card key={s.label} className="border-border/60">
               <CardContent className="py-3 px-4">
@@ -331,7 +319,7 @@ export default function TenantAutomationPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                activeTab === tab ? 'border-primary text-primary-emphasis' : 'border-transparent text-muted-foreground hover:text-foreground'
+                activeTab === tab ? 'border-primary text-primary-accessible' : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab === 'rules' ? 'Rules' : 'Settings'}
@@ -363,13 +351,7 @@ export default function TenantAutomationPage() {
               </div>
             )}
 
-            {!isLoading && rules.length === 0 && (
-              <div className="py-16 text-center rounded-xl border border-dashed border-border/60">
-                <Workflow className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <p className="font-medium">No automation rules yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Platform-wide rules will appear here once the automation engine seeds default rules.</p>
-              </div>
-            )}
+            {!isLoading && rules.length === 0 && <EmptyTenantAutomations />}
 
             {rules.map(rule => (
               <RuleRow key={rule.id} rule={rule} tenantId={tenantId} onRefresh={refetch} />

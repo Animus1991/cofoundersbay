@@ -1,40 +1,46 @@
 """
 Static WCAG 1.4.3 check over the design tokens, for every theme.
 
-The app ships nine theme contexts — light, dark, system, alliance, cofounder
-and four role palettes — and each redefines the same semantic pairs. axe can
-only see the theme the page is currently rendering, so a token that fails only
-under `[data-theme="alliance"]` never shows up in the browser suite. This reads
-globals.css directly and checks every pair in every theme.
+Adopted from origin/claude/project-audit-upgrade-y2ebnr (2e5b104) and pointed
+at this line's token names: --primary-accessible / --destructive-accessible
+instead of --primary-emphasis / --destructive-emphasis.
+
+The app ships light, dark, system, alliance, cofounder, minimal and four role palettes.
+Role classes apply *alongside* light or dark. axe sees only one combination at
+a time; this reads globals.css and checks every pair in every composed context.
 
 Run: python3 scripts/check-theme-contrast.py   (exits non-zero on a failure)
 """
 
-import os, re, sys, math
+import os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 css = open(os.path.join(ROOT, 'src/app/globals.css')).read()
 
 def hsl_to_rgb(h, s, l):
-    h, s, l = h/360.0, s/100.0, l/100.0
-    if s == 0: r = g = b = l
+    h, s, l = h / 360.0, s / 100.0, l / 100.0
+    if s == 0:
+        r = g = b = l
     else:
         def hue(p, q, t):
             t %= 1
-            if t < 1/6: return p + (q-p)*6*t
-            if t < 1/2: return q
-            if t < 2/3: return p + (q-p)*(2/3 - t)*6
+            if t < 1 / 6:
+                return p + (q - p) * 6 * t
+            if t < 1 / 2:
+                return q
+            if t < 2 / 3:
+                return p + (q - p) * (2 / 3 - t) * 6
             return p
-        q = l*(1+s) if l < 0.5 else l+s-l*s
-        p = 2*l - q
-        r, g, b = hue(p,q,h+1/3), hue(p,q,h), hue(p,q,h-1/3)
+        q = l * (1 + s) if l < 0.5 else l + s - l * s
+        p = 2 * l - q
+        r, g, b = hue(p, q, h + 1 / 3), hue(p, q, h), hue(p, q, h - 1 / 3)
     return (r, g, b)
 
 def lum(rgb):
     def c(v):
-        return v/12.92 if v <= 0.04045 else ((v+0.055)/1.055) ** 2.4
+        return v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
     r, g, b = (c(x) for x in rgb)
-    return 0.2126*r + 0.7152*g + 0.0722*b
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 def ratio(a, b):
     la, lb = lum(a), lum(b)
@@ -42,26 +48,29 @@ def ratio(a, b):
     return (hi + 0.05) / (lo + 0.05)
 
 def hexs(rgb):
-    return '#' + ''.join(f'{round(v*255):02x}' for v in rgb)
+    return '#' + ''.join(f'{round(v * 255):02x}' for v in rgb)
 
-# Extract each theme block and its custom properties
 blocks = {}
-for m in re.finditer(r'(?m)^\s*(:root|\.dark|\.dark\.role-[a-z]+|\.role-[a-z]+|\[data-theme="[a-z]+"\])\s*\{', css):
+for m in re.finditer(
+    r'(?m)^\s*(:root|\.dark|\.dark\.role-[a-z]+|\.role-[a-z]+|\[data-theme="[a-z]+"\])\s*\{',
+    css,
+):
     name = m.group(1)
-    i = m.end(); depth = 1
+    i = m.end()
+    depth = 1
     while i < len(css) and depth:
-        if css[i] == '{': depth += 1
-        elif css[i] == '}': depth -= 1
+        if css[i] == '{':
+            depth += 1
+        elif css[i] == '}':
+            depth -= 1
         i += 1
-    body = css[m.end():i-1]
-    vars = dict(re.findall(r'--([\w-]+)\s*:\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%', body.replace('\n', ' ')) and [] or [])
-    vars = {}
+    body = css[m.end():i - 1]
+    vars_ = {}
     for vm in re.finditer(r'--([\w-]+)\s*:\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%', body):
-        vars[vm.group(1)] = hsl_to_rgb(float(vm.group(2)), float(vm.group(3)), float(vm.group(4)))
-    if vars:
-        blocks.setdefault(name, {}).update(vars)
+        vars_[vm.group(1)] = hsl_to_rgb(float(vm.group(2)), float(vm.group(3)), float(vm.group(4)))
+    if vars_:
+        blocks.setdefault(name, {}).update(vars_)
 
-# Semantic foreground/background pairs the design system defines
 PAIRS = [
     ('foreground', 'background', 'body text on page'),
     ('card-foreground', 'card', 'text on card'),
@@ -73,25 +82,24 @@ PAIRS = [
     ('muted-foreground', 'card', 'muted text on card'),
     ('accent-foreground', 'accent', 'label on accent fill'),
     ('destructive-foreground', 'destructive', 'label on destructive button'),
-    ('primary-emphasis', 'background', 'primary link on page'),
-    ('primary-emphasis', 'card', 'primary link on card'),
-    ('destructive-emphasis', 'card', 'error text on card'),
+    ('primary-accessible', 'background', 'primary link on page'),
+    ('primary-accessible', 'card', 'primary link on card'),
+    ('destructive-accessible', 'card', 'error text on card'),
 ]
 
 AA_TEXT = 4.5
 AA_LARGE = 3.0
 
-print(f'{"theme":<24}{"pair":<34}{"ratio":>7}  verdict')
+print(f'{"theme":<26}{"pair":<34}{"ratio":>7}  verdict')
 print('-' * 78)
 fails = []
-# The role palettes are applied *alongside* `light` or `dark`, never alone, so
-# each one is checked against both grounds. `light` adds no class of its own, so
-# it is simply :root.
 contexts = {}
 for key in blocks:
-    if key.startswith('.dark.role-'): continue          # folded into the pair below
+    if key.startswith('.dark.role-'):
+        continue
     if key.startswith('.role-'):
-        light_merged = dict(blocks[':root']); light_merged.update(blocks[key])
+        light_merged = dict(blocks[':root'])
+        light_merged.update(blocks[key])
         contexts[f'{key} + light'] = light_merged
         dark_role = blocks.get('.dark' + key, {})
         merged = dict(blocks[':root'])
@@ -101,12 +109,15 @@ for key in blocks:
     elif key == ':root':
         contexts[key] = blocks[key]
     else:
-        m2 = dict(blocks[':root']); m2.update(blocks[key]); contexts[key] = m2
+        m2 = dict(blocks[':root'])
+        m2.update(blocks[key])
+        contexts[key] = m2
 
 for key in contexts:
     v = contexts[key]
     for fg, bg, label in PAIRS:
-        if fg not in v or bg not in v: continue
+        if fg not in v or bg not in v:
+            continue
         r = ratio(v[fg], v[bg])
         ok = r >= AA_TEXT
         mark = 'PASS' if ok else ('large-only' if r >= AA_LARGE else '** FAIL **')
@@ -118,6 +129,5 @@ for key in contexts:
 print(f'\nTOTAL FAILURES BELOW 4.5:1 -> {len(fails)}')
 for k, l, r, f, b in fails:
     print(f'  {k:<22} {l:<34} {r:>5}  fg {f} on bg {b}')
-
 
 sys.exit(1 if fails else 0)

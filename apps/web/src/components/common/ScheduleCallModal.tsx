@@ -95,7 +95,7 @@ export function ScheduleCallModal({
   const [viewYear, setViewYear] = useState(today.getFullYear());
 
   const calendarDays = generateCalendarDays(viewYear, viewMonth);
-  const monthName = new Date(viewYear, viewMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = new Date(viewYear, viewMonth).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' });
 
   const prevMonth = () => {
     if (viewMonth === 0) {
@@ -161,7 +161,7 @@ export function ScheduleCallModal({
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={recipientAvatar} />
-              <AvatarFallback className="bg-primary/10 text-primary-emphasis">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible">
                 {recipientName[0]}
               </AvatarFallback>
             </Avatar>
@@ -181,12 +181,12 @@ export function ScheduleCallModal({
           <div className="space-y-4">
             {/* Calendar Header */}
             <div className="flex items-center justify-between">
-              <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}>
-                <ChevronLeft className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" onClick={prevMonth}>
+                <ChevronLeft className="icon-sm" />
               </Button>
               <span className="font-medium">{monthName}</span>
-              <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}>
-                <ChevronRight className="icon-sm" aria-hidden="true" />
+              <Button variant="ghost" size="icon" onClick={nextMonth}>
+                <ChevronRight className="icon-sm" />
               </Button>
             </div>
 
@@ -225,7 +225,7 @@ export function ScheduleCallModal({
             {/* Calendar Integration Notice */}
             <Card className="bg-muted/50">
               <CardContent className="p-3 flex items-center gap-3">
-                <Calendar className="icon-md text-muted-foreground shrink-0" aria-hidden="true" />
+                <Calendar className="icon-md text-muted-foreground shrink-0" />
                 <div className="text-sm">
                   <p className="font-medium text-foreground">Connect your calendar</p>
                   <p className="text-muted-foreground text-xs">
@@ -233,7 +233,7 @@ export function ScheduleCallModal({
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                  <ExternalLink className="icon-sm mr-1" />
                   Connect
                 </Button>
               </CardContent>
@@ -244,8 +244,8 @@ export function ScheduleCallModal({
         {step === 'time' && selectedDate && (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('date')} className="gap-1 -ml-2">
-              <ChevronLeft className="icon-sm" aria-hidden="true" />
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              <ChevronLeft className="icon-sm" />
+              {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
             </Button>
 
             <div className="grid grid-cols-3 gap-2">
@@ -276,8 +276,8 @@ export function ScheduleCallModal({
         {step === 'details' && selectedDate && selectedTime && (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('time')} className="gap-1 -ml-2">
-              <ChevronLeft className="icon-sm" aria-hidden="true" />
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
+              <ChevronLeft className="icon-sm" />
+              {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
             </Button>
 
             {/* Call Type */}
@@ -292,7 +292,7 @@ export function ScheduleCallModal({
                     callType === 'video' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Video className={cn('h-5 w-5', callType === 'video' ? 'text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
+                  <Video className={cn('icon-md', callType === 'video' ? 'text-primary-accessible' : 'text-muted-foreground')} />
                   <div className="text-left">
                     <p className="font-medium text-sm">Video Call</p>
                     <p className="text-xs text-muted-foreground">Face-to-face meeting</p>
@@ -306,7 +306,7 @@ export function ScheduleCallModal({
                     callType === 'phone' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Phone className={cn('h-5 w-5', callType === 'phone' ? 'text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
+                  <Phone className={cn('icon-md', callType === 'phone' ? 'text-primary-accessible' : 'text-muted-foreground')} />
                   <div className="text-left">
                     <p className="font-medium text-sm">Phone Call</p>
                     <p className="text-xs text-muted-foreground">Audio only</p>
@@ -344,12 +344,12 @@ export function ScheduleCallModal({
             <Button className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="icon-sm mr-2 animate-spin" aria-hidden="true" />
+                  <Loader2 className="icon-sm mr-2 animate-spin" />
                   Scheduling...
                 </>
               ) : (
                 <>
-                  <Calendar className="icon-sm mr-2" aria-hidden="true" />
+                  <Calendar className="icon-sm mr-2" />
                   Schedule Call
                 </>
               )}
@@ -359,23 +359,23 @@ export function ScheduleCallModal({
 
         {step === 'confirm' && selectedDate && selectedTime && (
           <div className="text-center py-6 space-y-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 mx-auto">
-              <Check className="icon-xl text-emerald-500" aria-hidden="true" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-status-success-bg mx-auto">
+              <Check className="icon-xl text-status-success" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">Call Scheduled!</h3>
               <p className="text-muted-foreground mt-1">
-                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
+                {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
               </p>
             </div>
             <Card className="bg-muted/50">
               <CardContent className="p-4 text-left space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  {callType === 'video' ? <Video className="icon-sm" aria-hidden="true" /> : <Phone className="icon-sm" aria-hidden="true" />}
+                  {callType === 'video' ? <Video className="icon-sm" /> : <Phone className="icon-sm" />}
                   <span>{callType === 'video' ? 'Video Call' : 'Phone Call'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="icon-sm" aria-hidden="true" />
+                  <Clock className="icon-sm" />
                   <span>{DURATIONS.find((d) => d.value === duration)?.label}</span>
                 </div>
               </CardContent>

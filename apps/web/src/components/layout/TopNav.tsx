@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Compass, MessageCircle, Keyboard } from 'lucide-react';
+import { Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
 import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Logo } from '@/components/brand/Logo';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 export function TopNav() {
   const [ready, setReady] = useState(false);
@@ -43,15 +45,22 @@ export function TopNav() {
           >
             <Keyboard className="icon-sm" aria-hidden="true" />
           </Button>
-          <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift" asChild>
+          {/* `asChild`, not an anchor wrapping a button: `OptimizedLink` is a
+              forwardRef over <a>, so the old shape was interactive content
+              inside a link — invalid HTML and two tab stops for one target. */}
+          <Button asChild variant="secondary" className="hidden lg:flex gap-2 hover-lift">
             <OptimizedLink href="/discover">
-              <Compass className="icon-sm" aria-hidden="true" />
+              <CfbGlyph name="discover" className="icon-sm" />
               Discover
             </OptimizedLink>
           </Button>
-          <Button aria-label="Message" variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true" asChild>
+          {/* Same change here, which also retires the `tabIndex={-1}
+              aria-hidden` pair: those hid the inner button from assistive
+              technology to work around the nesting. With one element there is
+              nothing to hide, and the link keeps its own label. */}
+          <Button asChild variant="ghost" size="icon" className="relative hidden lg:flex shrink-0">
             <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
-              <MessageCircle className="icon-sm" aria-hidden="true" />
+              <CfbGlyph name="messages" className="icon-sm" />
               {unreadMessages > 0 && (
                 <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {unreadMessages > 99 ? '99+' : unreadMessages}
@@ -63,6 +72,7 @@ export function TopNav() {
 
         {/* Actions */}
         <div className="flex items-center justify-between gap-2 lg:justify-end">
+          <LanguageSwitcher />
           <ThemeSwitcher />
           <NotificationsBell />
           <MobileNav />

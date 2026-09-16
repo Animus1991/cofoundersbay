@@ -163,7 +163,7 @@ export function BookingCalendar({
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12">
                 <AvatarImage src={mentor.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-sm">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
                   {mentor.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -183,7 +183,7 @@ export function BookingCalendar({
                   ))}
                 </div>
                 {mentor.hourlyRate && (
-                  <p className="mt-3 text-sm font-medium text-primary-emphasis">{mentor.hourlyRate}</p>
+                  <p className="mt-3 text-sm font-medium text-primary-accessible">{mentor.hourlyRate}</p>
                 )}
               </div>
             </div>
@@ -195,7 +195,7 @@ export function BookingCalendar({
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Calendar className="icon-md text-primary-accessible" />
                 Select a date
               </CardTitle>
               <CardDescription>Choose a date to see available time slots</CardDescription>
@@ -203,14 +203,14 @@ export function BookingCalendar({
             <CardContent>
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-4">
-                <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}>
-                  <ChevronLeft className="icon-md" aria-hidden="true" />
+                <Button variant="ghost" size="icon" onClick={prevMonth}>
+                  <ChevronLeft className="icon-md" />
                 </Button>
                 <span className="font-semibold text-foreground">
-                  {currentMonth.toLocaleDateString([], { month: 'long', year: 'numeric' })}
+                  {currentMonth.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'long', year: 'numeric' })}
                 </span>
-                <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}>
-                  <ChevronRight className="icon-md" aria-hidden="true" />
+                <Button variant="ghost" size="icon" onClick={nextMonth}>
+                  <ChevronRight className="icon-md" />
                 </Button>
               </div>
 
@@ -264,11 +264,11 @@ export function BookingCalendar({
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Clock className="icon-md text-primary-emphasis" aria-hidden="true" />
+                    <Clock className="icon-md text-primary-accessible" />
                     Select a time
                   </CardTitle>
                   <CardDescription>
-                    {selectedDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </CardDescription>
                 </div>
                 <Button variant="ghost" onClick={() => setStep('date')}>
@@ -286,7 +286,7 @@ export function BookingCalendar({
                       className={cn(
                         'rounded-lg border px-3 py-2 text-sm transition-colors',
                         selectedSlot?.id === slot.id
-                          ? 'border-primary bg-primary/10 text-primary-emphasis'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
                           : 'border-border/60 text-foreground hover:border-primary/50'
                       )}
                     >
@@ -309,7 +309,7 @@ export function BookingCalendar({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Check className="icon-md text-primary-emphasis" aria-hidden="true" />
+                  <Check className="icon-md text-primary-accessible" />
                   Confirm booking
                 </CardTitle>
                 <Button variant="ghost" onClick={() => setStep('slot')}>
@@ -321,13 +321,13 @@ export function BookingCalendar({
               {/* Selected datetime */}
               <div className="rounded-lg bg-secondary/40 p-4">
                 <div className="flex items-center gap-3 text-foreground">
-                  <Calendar className="icon-md text-primary-emphasis" aria-hidden="true" />
+                  <Calendar className="icon-md text-primary-accessible" />
                   <span className="font-medium">
-                    {selectedDate?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {selectedDate?.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-foreground mt-2">
-                  <Clock className="icon-md text-primary-emphasis" aria-hidden="true" />
+                  <Clock className="icon-md text-primary-accessible" />
                   <span className="font-medium">
                     {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.endTime)}
                   </span>
@@ -344,11 +344,11 @@ export function BookingCalendar({
                       className={cn(
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
                         meetingType === 'video'
-                          ? 'border-primary bg-primary/10 text-primary-emphasis'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
                           : 'border-border/60 text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      <Video className="icon-sm" aria-hidden="true" />
+                      <Video className="icon-sm" />
                       Video call
                     </button>
                   )}
@@ -358,11 +358,11 @@ export function BookingCalendar({
                       className={cn(
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
                         meetingType === 'in-person'
-                          ? 'border-primary bg-primary/10 text-primary-emphasis'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
                           : 'border-border/60 text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      <MapPin className="icon-sm" aria-hidden="true" />
+                      <MapPin className="icon-sm" />
                       In person
                     </button>
                   )}
@@ -400,7 +400,7 @@ export function BookingCalendar({
                 <span className="text-muted-foreground">Date</span>
                 <span className="font-medium text-foreground">
                   {selectedDate
-                    ? selectedDate.toLocaleDateString([], { month: 'short', day: 'numeric' })
+                    ? selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' })
                     : 'Not selected'}
                 </span>
               </div>
@@ -415,7 +415,7 @@ export function BookingCalendar({
                   <div className="border-t border-border/60 my-2" />
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Rate</span>
-                    <span className="font-semibold text-primary-emphasis">{mentor.hourlyRate}</span>
+                    <span className="font-semibold text-primary-accessible">{mentor.hourlyRate}</span>
                   </div>
                 </>
               )}

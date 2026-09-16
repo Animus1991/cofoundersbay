@@ -120,9 +120,9 @@ export function ProfileCompleteness({
   );
 
   const getStatusColor = (pct: number) => {
-    if (pct >= 80) return 'text-emerald-500';
-    if (pct >= 50) return 'text-amber-500';
-    return 'text-destructive-emphasis';
+    if (pct >= 80) return 'text-status-success';
+    if (pct >= 50) return 'text-status-warning';
+    return 'text-destructive-accessible';
   };
 
   const getProgressColor = (pct: number) => {
@@ -149,9 +149,9 @@ export function ProfileCompleteness({
           </div>
         </div>
         {percentage < 100 && (
-          <Button aria-label="Next" variant="ghost" size="icon" className="h-7 w-7" asChild>
+          <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
             <Link href="/profile/edit">
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              <ArrowRight className="icon-sm" />
             </Link>
           </Button>
         )}
@@ -173,10 +173,10 @@ export function ProfileCompleteness({
         <Progress value={percentage} className="h-2" />
 
         {percentage >= 100 ? (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-            <CheckCircle2 className="icon-md text-emerald-500 shrink-0" aria-hidden="true" />
+          <div className="flex items-center gap-2 rounded-lg border border-status-success-border bg-status-success-bg p-3">
+            <CheckCircle2 className="icon-md text-status-success shrink-0" />
             <div>
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="text-sm font-medium text-status-success ">
                 Profile Complete!
               </p>
               <p className="text-xs text-muted-foreground">
@@ -187,10 +187,10 @@ export function ProfileCompleteness({
         ) : (
           <>
             {percentage < 50 && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                <AlertCircle className="icon-md text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex items-start gap-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
+                <AlertCircle className="icon-md text-status-warning shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                  <p className="text-sm font-medium text-status-warning ">
                     Complete your profile
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -213,14 +213,14 @@ export function ProfileCompleteness({
                       href="/profile/edit"
                       className="flex items-center gap-2 rounded-lg border border-border/60 p-2.5 hover:bg-muted/50 transition-colors group"
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Icon className="icon-sm text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{field.label}</p>
                         <p className="text-xs text-muted-foreground truncate">{field.description}</p>
                       </div>
-                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </Link>
                   );
                 })}
@@ -240,7 +240,7 @@ export function ProfileCompleteness({
           <Button className="w-full gap-2" asChild>
             <Link href="/profile/edit" className="block">
               Complete Your Profile
-              <ArrowRight className="icon-sm" aria-hidden="true" />
+              <ArrowRight className="icon-sm" />
             </Link>
           </Button>
         )}
@@ -253,8 +253,8 @@ export function ProfileCompletenessIndicator({ profile }: { profile: ProfileData
   const { percentage } = useMemo(() => calculateProfileCompleteness(profile), [profile]);
 
   const getColor = (pct: number) => {
-    if (pct >= 80) return 'stroke-emerald-500';
-    if (pct >= 50) return 'stroke-amber-500';
+    if (pct >= 80) return 'stroke-status-success';
+    if (pct >= 50) return 'stroke-status-warning';
     return 'stroke-destructive';
   };
 

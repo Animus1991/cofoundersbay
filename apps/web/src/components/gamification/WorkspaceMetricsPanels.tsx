@@ -48,10 +48,10 @@ const DIMENSION_CONFIG: Array<{
 ];
 
 function scoreColor(score: number): string {
-  if (score >= 75) return 'text-emerald-600 dark:text-emerald-400';
-  if (score >= 50) return 'text-amber-600 dark:text-amber-400';
-  if (score >= 25) return 'text-orange-600 dark:text-orange-400';
-  return 'text-rose-600 dark:text-rose-400';
+  if (score >= 75) return 'text-status-success ';
+  if (score >= 50) return 'text-status-warning ';
+  if (score >= 25) return 'text-status-warning ';
+  return 'text-status-danger ';
 }
 
 function scoreBarColor(score: number): string {
@@ -98,42 +98,48 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
     );
   }
 
-  if (!data) return null;
+  // `!data` is not enough of a guard. A payload can arrive without the fields
+  // this panel reads -- it did, because /builder had no demo handler for this
+  // endpoint and the generic fallback has none of them -- and `data.dimensions[key]`
+  // then threw and took the whole page down through the error boundary.
+  if (!data || !data.dimensions) return null;
 
   const dims = compact ? DIMENSION_CONFIG.slice(0, 4) : DIMENSION_CONFIG;
-  const isGated = data.bottleneckFactor < 0.95;
+  const score = typeof data.score === 'number' ? data.score : 0;
+  const bottleneck = typeof data.bottleneckFactor === 'number' ? data.bottleneckFactor : 1;
+  const isGated = bottleneck < 0.95;
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Target className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <Target className="icon-sm text-primary-accessible" />
             Startup Readiness
           </CardTitle>
           <div className="flex items-center gap-1.5">
-            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(data.score))}>
-              {data.score}
+            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(score))}>
+              {score}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
           </div>
         </div>
-        <Progress value={data.score} className="h-2 mt-1" />
+        <Progress value={score} className="h-2 mt-1" />
         {isGated && (
-          <p className="text-2xs text-amber-600 dark:text-amber-400 mt-1">
-            Bottleneck suppression active (×{data.bottleneckFactor.toFixed(2)}) — strengthen critical dimensions
+          <p className="text-2xs text-status-warning mt-1">
+            Bottleneck suppression active (×{bottleneck.toFixed(2)}) — strengthen critical dimensions
           </p>
         )}
       </CardHeader>
       <CardContent className="space-y-2.5">
         {dims.map(({ key, label, icon: Icon }) => {
-          const score   = data.dimensions[key];
+          const score   = data.dimensions?.[key] ?? 0;
           const detail  = data.dimensionBreakdown?.[key];
           return (
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <Icon className="icon-sm text-muted-foreground shrink-0" />
                   <span className="text-xs font-medium truncate">{label}</span>
                   {detail?.weight && (
                     <span className="text-2xs text-muted-foreground hidden md:block">
@@ -203,9 +209,13 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
 
   if (!data) return null;
 
-  const bd = data.breakdown;
-  const momentumLevel = bd.momentumLevel ?? (data.score >= 75 ? 'High-Velocity' : data.score >= 55 ? 'Strong' : data.score >= 35 ? 'Steady' : data.score >= 15 ? 'Low' : 'Stalled');
-  const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-emerald-600 dark:text-emerald-400' : momentumLevel === 'Steady' ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+  // Same shape of guard as the readiness panel above: `breakdown` and the
+  // numeric fields can all be absent on a partial payload.
+  const bd = data.breakdown ?? ({} as NonNullable<typeof data.breakdown>);
+  const score = typeof data.score === 'number' ? data.score : 0;
+  const velocity = typeof data.velocity === 'number' ? data.velocity : 0;
+  const momentumLevel = bd.momentumLevel ?? (score >= 75 ? 'High-Velocity' : score >= 55 ? 'Strong' : score >= 35 ? 'Steady' : score >= 15 ? 'Low' : 'Stalled');
+  const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-status-success ' : momentumLevel === 'Steady' ? 'text-status-warning ' : 'text-status-danger ';
 
   const componentBars = [
     { label: 'Velocity',           value: bd.velocityScore             ?? 0 },
@@ -220,23 +230,23 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Zap className="icon-sm text-amber-500" aria-hidden="true" />
+            <Zap className="icon-sm text-status-warning" />
             Team Momentum
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className={cn('text-xs font-medium', momentumColor)}>{momentumLevel}</span>
-            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(data.score))}>
-              {data.score}
+            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(score))}>
+              {score}
               <span className="text-xs text-muted-foreground font-normal">/100</span>
             </span>
           </div>
         </div>
-        <Progress value={data.score} className="h-1.5 mt-1" />
+        <Progress value={score} className="h-1.5 mt-1" />
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{data.velocity.toFixed(2)}</p>
+            <p className="text-lg font-bold tabular-nums">{velocity.toFixed(2)}</p>
             <p className="text-2xs text-muted-foreground">actions/day (14d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
@@ -297,13 +307,16 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
     );
   }
 
-  if (!contributors || contributors.length === 0) return null;
+  // Array.isArray, not a length check: an object response has no `length`, so
+  // `contributors.length === 0` is false and the map below then throws
+  // "contributors.slice is not a function" and takes the page with it.
+  if (!Array.isArray(contributors) || contributors.length === 0) return null;
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Users className="icon-sm text-blue-500" aria-hidden="true" />
+          <Users className="icon-sm text-status-info" />
           Contributions
         </CardTitle>
       </CardHeader>
@@ -322,7 +335,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
                   <span title="Artifacts created/improved">{bd.artifactsCreated}C·{bd.artifactsImproved}I</span>
                   <span title="Feedback applied">·{bd.feedbackApplied}FA</span>
                   {recentActivity > 0 && (
-                    <span title="Recent activity (14d)" className="text-emerald-600 dark:text-emerald-400">·{recentActivity}↑</span>
+                    <span title="Recent activity (14d)" className="text-status-success ">·{recentActivity}↑</span>
                   )}
                   <Badge variant={scoreBadgeVariant(c.score)} className="text-2xs px-1.5 py-0 h-4 ml-1">
                     {c.score}
@@ -379,7 +392,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <MessageSquare className="icon-sm text-violet-500" aria-hidden="true" />
+            <MessageSquare className="icon-sm text-status-accent" />
             Mentor Feedback Loop
           </CardTitle>
           <Badge variant={scoreBadgeVariant(data.improvementScore)} className="tabular-nums">
@@ -423,7 +436,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         </div>
 
         {(data.unresolvedFeedback ?? 0) > 0 && (
-          <p className="text-2xs text-amber-600 dark:text-amber-400">
+          <p className="text-2xs text-status-warning ">
             {data.unresolvedFeedback} unresolved feedback item{data.unresolvedFeedback !== 1 ? 's' : ''} — consider applying
           </p>
         )}
@@ -435,7 +448,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         )}
         {data.lastFeedbackAt && (
           <p className="text-2xs text-muted-foreground">
-            Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+            Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
           </p>
         )}
       </CardContent>

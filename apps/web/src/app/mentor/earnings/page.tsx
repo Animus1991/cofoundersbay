@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -66,7 +67,7 @@ function StatCard({
   value,
   sub,
   trend,
-  iconColor = 'text-primary-emphasis',
+  iconColor = 'text-primary-accessible',
 }: {
   icon: React.ElementType;
   label: string;
@@ -84,14 +85,14 @@ function StatCard({
             <p className="text-2xl font-bold tabular-nums">{value}</p>
             {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
             {trend && (
-              <p className={cn('text-xs flex items-center gap-1', trend.positive ? 'text-green-500' : 'text-red-500')}>
-                {trend.positive ? <TrendingUp className="icon-2xs" aria-hidden="true" /> : <TrendingDown className="icon-2xs" aria-hidden="true" />}
+              <p className={cn('text-xs flex items-center gap-1', trend.positive ? 'text-status-success' : 'text-status-danger')}>
+                {trend.positive ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
                 {trend.positive ? '+' : ''}{trend.value}% vs last month
               </p>
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className={cn('h-5 w-5', iconColor)} />
+            <Icon className={cn('icon-md', iconColor)} />
           </div>
         </div>
       </CardContent>
@@ -105,7 +106,7 @@ export default function MentorEarningsPage() {
   const [period, setPeriod] = useState('this_month');
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -138,8 +139,8 @@ export default function MentorEarningsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Wallet className="icon-lg text-primary-emphasis" aria-hidden="true" />
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <Wallet className="icon-lg text-primary-accessible" />
               Earnings
             </h1>
             <p className="text-muted-foreground">Track your mentoring income and session history</p>
@@ -158,7 +159,7 @@ export default function MentorEarningsPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm">
-              <Download className="mr-2 icon-sm" aria-hidden="true" />
+              <Download className="mr-2 icon-sm" />
               Export
             </Button>
           </div>
@@ -178,7 +179,7 @@ export default function MentorEarningsPage() {
             label="Pending Payout"
             value={formatCurrency(pendingAmount)}
             sub="awaiting release"
-            iconColor="text-amber-500"
+            iconColor="text-status-warning"
           />
           <StatCard
             icon={BarChart3}
@@ -213,8 +214,8 @@ export default function MentorEarningsPage() {
                   {transactions.map(tx => (
                     <div key={tx.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors">
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={tx.mentee.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary-emphasis text-xs font-semibold">
+                        <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
                           {tx.mentee.name[0]}
                         </AvatarFallback>
                       </Avatar>
@@ -230,11 +231,11 @@ export default function MentorEarningsPage() {
                         variant={tx.status === 'paid' ? 'secondary' : 'outline'}
                         className={cn(
                           'text-xs shrink-0',
-                          tx.status === 'paid' ? 'text-green-600 dark:text-green-400 bg-green-500/10' : 'text-amber-600 dark:text-amber-400 bg-amber-500/10'
+                          tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
                         )}
                       >
                         {tx.status === 'paid' ? (
-                          <><CheckCircle2 className="icon-2xs mr-1" aria-hidden="true" />Paid</>
+                          <><CheckCircle2 className="icon-sm mr-1" />Paid</>
                         ) : 'Pending'}
                       </Badge>
                       <p className="text-xs text-muted-foreground w-20 text-right">{tx.date}</p>
@@ -255,7 +256,7 @@ export default function MentorEarningsPage() {
                 <div className="flex items-end gap-3 h-48">
                   {monthlyData.map(m => (
                     <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-xs font-semibold text-primary-emphasis">{formatCurrency(m.earned)}</span>
+                      <span className="text-xs font-semibold text-primary-accessible">{formatCurrency(m.earned)}</span>
                       <div
                         className="w-full rounded-t bg-primary/80 hover:bg-primary transition-colors min-h-[4px]"
                         style={{ height: `${monthlyData.length ? (m.earned / Math.max(...monthlyData.map(d => d.earned))) * 160 : 4}px` }}
@@ -292,13 +293,13 @@ export default function MentorEarningsPage() {
               <CardHeader><CardTitle className="text-base">Payout Settings</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
-                  <CreditCard className="icon-xl text-muted-foreground" aria-hidden="true" />
+                  <CreditCard className="icon-xl text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">No payout method connected</p>
                     <p className="text-xs text-muted-foreground">Connect Stripe or bank account to receive payouts</p>
                   </div>
                   <Button size="sm">
-                    <ArrowUpRight className="mr-2 icon-sm" aria-hidden="true" />
+                    <ArrowUpRight className="mr-2 icon-sm" />
                     Connect
                   </Button>
                 </div>

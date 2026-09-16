@@ -91,7 +91,7 @@ export default function CreateEventPage() {
       actions={
         <Button variant="secondary" size="sm" className="gap-2" asChild>
           <Link href="/events">
-            <ArrowLeft className="icon-sm" aria-hidden="true" />
+            <ArrowLeft className="icon-sm" />
             Back to events
           </Link>
         </Button>
@@ -102,14 +102,14 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Calendar className="icon-sm text-primary-accessible" />
               Basic information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                Event title <span className="text-destructive-emphasis">*</span>
+                Event title <span className="text-destructive-accessible">*</span>
               </label>
               <Input
                 placeholder="e.g. Founder Meetup Athens Q2"
@@ -142,7 +142,7 @@ export default function CreateEventPage() {
                     className={cn(
                       'rounded-full border px-3 py-1 text-sm font-medium transition-colors',
                       form.type === value
-                        ? 'border-primary bg-primary/20 text-primary-emphasis'
+                        ? 'border-primary bg-primary/20 text-primary-accessible'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
                     )}
                   >
@@ -158,7 +158,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Clock className="icon-sm text-primary-accessible" />
               Date & time
             </CardTitle>
           </CardHeader>
@@ -166,7 +166,7 @@ export default function CreateEventPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">
-                  Start <span className="text-destructive-emphasis">*</span>
+                  Start <span className="text-destructive-accessible">*</span>
                 </label>
                 <Input
                   type="datetime-local"
@@ -188,7 +188,7 @@ export default function CreateEventPage() {
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                <Globe className="icon-sm" />
                 Timezone
               </label>
               <Input
@@ -204,7 +204,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <MapPin className="icon-sm text-primary-accessible" />
               Location
             </CardTitle>
           </CardHeader>
@@ -216,7 +216,7 @@ export default function CreateEventPage() {
                 className={cn(
                   'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors',
                   form.isOnline
-                    ? 'border-primary bg-primary/20 text-primary-emphasis'
+                    ? 'border-primary bg-primary/20 text-primary-accessible'
                     : 'border-border/60 text-muted-foreground hover:border-primary/40',
                 )}
               >
@@ -260,7 +260,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Users className="icon-sm text-primary-accessible" />
               Capacity (optional)
             </CardTitle>
           </CardHeader>

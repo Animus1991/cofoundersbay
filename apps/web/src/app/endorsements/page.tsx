@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -10,8 +10,14 @@ import {
   getEndorsementStats,
   approveEndorsement,
   declineEndorsement,
+  listConnectionRequests,
   type EndorsementItem,
 } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { MessageButton } from '@/components/common/PersonActions';
+import { bilingualInline } from '@/lib/i18n/format';
+import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 import {
   Handshake, Plus, Star, CheckCircle2, Clock, MessageSquare,
   User, ChevronRight, Award, TrendingUp, BadgeCheck, Quote,
@@ -131,7 +137,7 @@ function EndorsementCard({
   return (
     <Card className={cn(
       'transition-all hover:border-primary/20',
-      !endorsement.isApproved && type === 'received' && 'border-amber-500/30 bg-amber-500/5',
+      !endorsement.isApproved && type === 'received' && 'border-status-warning-border bg-status-warning-bg',
     )}>
       <CardContent className="p-5">
         {/* Quote icon + pending badge */}
@@ -140,11 +146,11 @@ function EndorsementCard({
             <Link href={`/p/${user.id}`}>
               <Avatar className="h-11 w-11 rounded-lg">
                 <AvatarImage src={user.avatar} />
-                <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">{initials}</AvatarFallback>
+                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">{initials}</AvatarFallback>
               </Avatar>
             </Link>
             <div>
-              <Link href={`/p/${user.id}`} className="font-semibold text-sm hover:text-primary-emphasis transition-colors">
+              <Link href={`/p/${user.id}`} className="font-semibold text-sm hover:text-primary-accessible transition-colors">
                 {user.name}
               </Link>
               {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
@@ -156,11 +162,11 @@ function EndorsementCard({
               <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
             )}
             {!endorsement.isApproved && type === 'received' && (
-              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
-                <Clock className="icon-sm mr-1" aria-hidden="true" />Pending
+              <Badge variant="outline" className="text-xs bg-status-warning-bg text-status-warning border-status-warning-border">
+                <Clock className="icon-sm mr-1" />Pending
               </Badge>
             )}
-            {endorsement.isApproved && <BadgeCheck className="icon-sm text-blue-500" aria-hidden="true" />}
+            {endorsement.isApproved && <BadgeCheck className="icon-sm text-status-info" />}
           </div>
         </div>
 
@@ -183,10 +189,11 @@ function EndorsementCard({
               </Button>
             </div>
           )}
+          {/* "Reply" had no handler and endorsements have no reply endpoint —
+              but replying to someone who endorsed you is opening a thread with
+              them, and their id is right here. */}
           {(endorsement.isApproved || type === 'given') && (
-            <Button variant="ghost" size="sm" className="gap-1">
-              <MessageSquare className="icon-sm" aria-hidden="true" />Reply
-            </Button>
+            <MessageButton userId={user.id} displayName={user.name} variant="ghost" />
           )}
         </div>
       </CardContent>
@@ -202,7 +209,7 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Award className="icon-sm text-primary-emphasis" aria-hidden="true" />My Endorsed Skills
+          <Award className="icon-sm text-primary-accessible" />My Endorsed Skills
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -214,12 +221,12 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
                 <div className="flex -space-x-1">
                   {s.endorsers.slice(0, 3).map((e, i) => (
                     <Avatar key={i} className="h-5 w-5 rounded-full border border-background">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary-emphasis">{e.name[0]}</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">{e.name[0]}</AvatarFallback>
                     </Avatar>
                   ))}
                 </div>
               </div>
-              <span className="text-xs font-semibold text-primary-emphasis">{s.count}</span>
+              <span className="text-xs font-semibold text-primary-accessible">{s.count}</span>
             </div>
             <Progress value={(s.count / maxCount) * 100} className="h-1.5" />
           </div>
@@ -231,33 +238,58 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
 
 // ── Request Panel ──────────────────────────────────────────────────────────────
 
-function RequestPanel() {
+const DEMO_CONNECTIONS = [
+  { id: 'c1', name: 'Sarah Chen', role: 'Investor', endorsed: true },
+  { id: 'c2', name: 'Michael Torres', role: 'CTO', endorsed: false },
+  { id: 'c3', name: 'Emma Williams', role: 'Angel', endorsed: false },
+  { id: 'c4', name: 'Sofia Papadaki', role: 'Growth Marketer', endorsed: false },
+];
+
+function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<string> }) {
   const [search, setSearch] = useState('');
-  const CONNECTIONS = [
-    { id: 'c1', name: 'Sarah Chen', role: 'Investor', endorsed: true },
-    { id: 'c2', name: 'Michael Torres', role: 'CTO', endorsed: false },
-    { id: 'c3', name: 'Emma Williams', role: 'Angel', endorsed: false },
-    { id: 'c4', name: 'Sofia Papadaki', role: 'Growth Marketer', endorsed: false },
-  ];
+
+  // The panel listed four hardcoded names with ids that belong to nobody, so
+  // "Request" could not have reached a person even with a handler. These are
+  // the reader's own accepted connections; the demo names stay as the fallback
+  // for a session that has none.
+  const { data: accepted } = useQuery({
+    queryKey: ['connections', 'accepted', 'for-endorsements'],
+    queryFn: () => listConnectionRequests({ type: 'accepted', limit: 50 }),
+    enabled: !!meId,
+    staleTime: 5 * 60_000,
+  });
+
+  const real = (accepted?.connections ?? []).map((c) => {
+    const other = c.requesterId === meId ? c.receiver : c.requester;
+    return {
+      id: other?.id ?? c.id,
+      name: other?.displayName ?? '',
+      role: other?.role ?? '',
+      endorsed: endorsedIds.has(other?.id ?? ''),
+      real: true as const,
+    };
+  }).filter((c) => c.name);
+
+  const CONNECTIONS = real.length ? real : DEMO_CONNECTIONS.map((c) => ({ ...c, real: false as const }));
   const filtered = CONNECTIONS.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Send className="icon-sm text-primary-emphasis" aria-hidden="true" />Request Endorsements
+          <Send className="icon-sm text-primary-accessible" />Request Endorsements
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search connections..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
         </div>
         <div className="space-y-2">
           {filtered.map(c => (
             <div key={c.id} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7 rounded">
-                  <AvatarFallback className="rounded bg-primary/10 text-primary-emphasis text-xs font-bold">{c.name[0]}</AvatarFallback>
+                <Avatar className="h-7 w-7 rounded-lg">
+                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible text-xs font-bold">{c.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="text-xs font-medium">{c.name}</p>
@@ -265,9 +297,25 @@ function RequestPanel() {
                 </div>
               </div>
               {c.endorsed ? (
-                <Badge variant="secondary" size="sm"><CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />Endorsed</Badge>
+                <Badge variant="secondary" size="sm">
+                  <CheckCircle2 className="icon-sm mr-1" />
+                  <BilingualText en="Endorsed" el="Έδωσε σύσταση" compact />
+                </Badge>
+              ) : c.real ? (
+                /* Asking for an endorsement is a message, and there is no
+                   endpoint for anything else. The thread is the request. */
+                <MessageButton userId={c.id} displayName={c.name} variant="outline" />
               ) : (
-                <Button size="sm" variant="outline">Request</Button>
+                /* A demo name has no thread to open; the control says so
+                   rather than looking available. */
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled
+                  title={bilingualInline('Sample connection', 'Ενδεικτική επαφή')}
+                >
+                  <BilingualText en="Request" el="Αίτημα" compact />
+                </Button>
               )}
             </div>
           ))}
@@ -284,19 +332,22 @@ function mapApiItem(item: EndorsementItem): Endorsement {
     id: item.id,
     fromUserId: item.fromUserId,
     fromUserName: item.fromUser.displayName,
-    fromUserAvatar: item.fromUser.avatarUrl ?? undefined,
-    fromUserRole: item.fromUser.headline ?? undefined,
+    fromUserAvatar: item.fromUser?.avatarUrl ?? undefined,
+    fromUserRole: item.fromUser?.headline ?? undefined,
     toUserId: item.toUserId,
     toUserName: 'Me',
     skill: item.skill ?? undefined,
     content: item.content,
     relationship: item.relationship ?? undefined,
     isApproved: item.isApproved,
-    createdAt: new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    createdAt: new Date(item.createdAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }),
   };
 }
 
 export default function EndorsementsPage() {
+  // The two "give" buttons had no dialog to open, so the page could show,
+  // approve and decline endorsements but never produce one.
+  const [giving, setGiving] = useState(false);
   const { showDemoData } = useDemoData();
   const qc = useQueryClient();
 
@@ -305,7 +356,7 @@ export default function EndorsementsPage() {
 
   // Real API: current user
   const { data: meData } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 300_000,
     enabled: !showDemoData,
@@ -331,8 +382,13 @@ export default function EndorsementsPage() {
   // Computed data
   const received: Endorsement[] = showDemoData
     ? demoReceived
-    : (receivedData?.endorsements.map(mapApiItem) ?? []);
+    : (receivedData?.endorsements?.map(mapApiItem) ?? []);
   const given: Endorsement[] = showDemoData ? GIVEN : [];
+  // Whoever has already written one is shown as such rather than asked again.
+  const endorsedIds = useMemo(
+    () => new Set(received.map((e) => e.fromUserId).filter(Boolean)),
+    [received],
+  );
 
   const mySkills: SkillEndorsement[] = showDemoData
     ? MY_SKILLS
@@ -387,9 +443,9 @@ export default function EndorsementsPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary-emphasis' },
-              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600 dark:text-green-400' },
-              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600 dark:text-amber-400' },
+              { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary-accessible' },
+              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-status-success' },
+              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-status-warning' },
             ].map(s => (
               <Card key={s.label}>
                 <CardContent className="p-3 flex items-center gap-2">
@@ -414,14 +470,15 @@ export default function EndorsementsPage() {
                 </TabsTrigger>
                 <TabsTrigger value="given">Given ({given.length})</TabsTrigger>
               </TabsList>
-              <Button size="sm" className="h-8 gap-1.5 text-xs">
-                <Plus className="h-3.5 w-3.5" aria-hidden="true" />Give Endorsement
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setGiving(true)}>
+                <Plus className="icon-sm" />
+                <BilingualText en="Give Endorsement" el="Δώστε σύσταση" compact />
               </Button>
             </div>
 
             <TabsContent value="received" className="space-y-3 mt-4">
               {pendingCount > 0 && (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-400">
+                <div className="rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-status-warning ">
                   <strong>{pendingCount} pending endorsement{pendingCount > 1 ? 's' : ''}</strong> awaiting your approval
                 </div>
               )}
@@ -443,7 +500,10 @@ export default function EndorsementsPage() {
                 <Card><CardContent className="py-12 text-center">
                   <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                   <p className="font-medium">No endorsements given yet</p>
-                  <Button size="sm" className="mt-4"><Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Give First Endorsement</Button>
+                  <Button size="sm" className="mt-4" onClick={() => setGiving(true)}>
+                    <Plus className="icon-sm mr-1.5" />
+                    <BilingualText en="Give First Endorsement" el="Δώστε την πρώτη σύσταση" compact />
+                  </Button>
                 </CardContent></Card>
               )}
             </TabsContent>
@@ -453,9 +513,11 @@ export default function EndorsementsPage() {
         {/* Right: Sidebar */}
         <div className="space-y-4">
           <SkillsGrid skills={mySkills} />
-          <RequestPanel />
+          <RequestPanel meId={meId} endorsedIds={endorsedIds} />
         </div>
       </div>
+
+      <GiveEndorsementDialog open={giving} onOpenChange={setGiving} />
     </AppShell>
   );
 }

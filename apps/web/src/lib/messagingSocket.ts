@@ -1,9 +1,8 @@
 import { io, type Socket } from 'socket.io-client';
 import type { MessageItem } from './api';
-
-function getApiBase(): string {
-  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-}
+import { isApiCircuitOpen } from './api';
+import { getSocketOrigin } from './api-origin';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 export type ServerToClientEvents = {
   'message:new': (payload: { message: MessageItem }) => void;
@@ -26,17 +25,29 @@ export type ClientToServerEvents = {
 };
 
 export function createMessagingSocket(accessToken?: string | null): Socket<ServerToClientEvents, ClientToServerEvents> {
-  return io(getApiBase(), {
+  if (isPreviewDemo()) {
+    const noop = () => undefined;
+    return {
+      on: noop,
+      off: noop,
+      emit: noop,
+      disconnect: noop,
+      connect: noop,
+      connected: false,
+    } as unknown as Socket<ServerToClientEvents, ClientToServerEvents>;
+  }
+
+  const circuitOpen = isApiCircuitOpen();
+  return io(getSocketOrigin(), {
     auth: accessToken ? { token: accessToken } : undefined,
     withCredentials: true,
     transports: ['websocket'],
-    // Reconnection: exponential backoff, give up after 8 attempts (~6 min total)
+    autoConnect: !circuitOpen,
     reconnection: true,
-    reconnectionAttempts: 8,
-    reconnectionDelay: 3_000,      // 3 s initial delay
-    reconnectionDelayMax: 60_000,  // 60 s maximum delay
-    randomizationFactor: 0.4,      // ±40% jitter prevents thundering herd
+    reconnectionAttempts: circuitOpen ? 0 : 8,
+    reconnectionDelay: 3_000,
+    reconnectionDelayMax: 60_000,
+    randomizationFactor: 0.4,
     timeout: 10_000,
   });
 }
-

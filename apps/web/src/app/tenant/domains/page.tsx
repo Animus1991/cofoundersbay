@@ -16,6 +16,8 @@ import {
 } from '@/lib/api';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,16 +28,16 @@ import {
   Star, Power, Copy, ChevronDown, ChevronRight, Link2, AlertTriangle,
   Shield, Info,
 } from 'lucide-react';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { EmptyTenantDomains } from '@/components/common/EmptyStates';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1" size="sm"><CheckCircle2 className="icon-sm" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1" size="sm"><Clock className="icon-sm" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1" size="sm"><XCircle className="icon-sm" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1" size="sm"><XCircle className="icon-sm" />Expired</Badge>;
   }
 }
 
@@ -48,16 +50,16 @@ function CopyButton({ value }: { value: string }) {
   };
   return (
     <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-      {copied ? <CheckCircle2 className="icon-sm text-green-600 dark:text-green-400" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
+      {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
     </button>
   );
 }
 
 function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
   return (
-    <div className="mt-3 rounded-lg border border-amber-200/60 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 space-y-4 text-sm">
+    <div className="mt-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-4 space-y-4 text-sm">
       <div className="flex items-start gap-2">
-        <Info className="icon-sm text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" aria-hidden="true" />
+        <Info className="icon-sm text-status-warning mt-0.5 shrink-0" />
         <div>
           <p className="font-semibold text-foreground">DNS Configuration Required</p>
           <p className="text-xs text-muted-foreground mt-0.5">Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay.</p>
@@ -85,7 +87,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
                 <td className="px-3 py-2 font-mono break-all max-w-[200px]">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="truncate">{instructions.verification.value}</span>
-                    <CopyButton value={instructions.verification.value ?? ''} />
+                    <CopyButton value={instructions.verification?.value ?? ''} />
                   </div>
                 </td>
                 <td className="px-3 py-2 font-mono">{instructions.verification.ttl}</td>
@@ -141,11 +143,25 @@ function DomainRow({
   tenantId: string;
   onRefresh: () => void;
 }) {
-  const confirm = useConfirm();
   const { success: toastSuccess, error: toastError } = useToast();
+  const confirm = useConfirm();
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
   const [loadingDns, setLoadingDns] = useState(false);
+
+  const handleRemove = async () => {
+    const ok = await confirm({
+      title: <BilingualText en={`Remove domain “${domain.domainName}”?`} el={`Αφαίρεση domain “${domain.domainName}”;`} />,
+      description: (
+        <BilingualText
+          en="Sign-in and links on this domain will stop working for your members."
+          el="Η σύνδεση και οι σύνδεσμοι σε αυτό το domain θα σταματήσουν να λειτουργούν για τα μέλη σας."
+        />
+      ),
+      confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
+    });
+    if (ok) remove.mutate();
+  };
 
   const verify = useMutation({
     mutationFn: () => verifyTenantDomain(tenantId, domain.id),
@@ -194,7 +210,7 @@ function DomainRow({
     <div className="rounded-xl border border-border/60 bg-card p-4 space-y-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
+          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <a
@@ -206,27 +222,27 @@ function DomainRow({
                 {domain.domainName}
               </a>
               {domain.isPrimary && (
-                <Badge className="bg-primary/10 text-primary-emphasis border-primary/20 text-xs">Primary</Badge>
+                <Badge className="bg-primary/10 text-primary-accessible border-primary/20 text-xs">Primary</Badge>
               )}
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 text-xs">Active</Badge>
+                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs">Active</Badge>
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
               {domain.sslStatus === 'active' && (
-                <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 text-xs gap-1">
-                  <Shield className="h-2.5 w-2.5" aria-hidden="true" />SSL
+                <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs gap-1">
+                  <Shield className="h-2.5 w-2.5" />SSL
                 </Badge>
               )}
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             )}
             {domain.lastVerificationCheck && domain.verificationStatus === 'failed' && (
-              <p className="text-xs text-red-500">
-                Last check: {new Date(domain.lastVerificationCheck).toLocaleString()} — DNS record not found
+              <p className="text-xs text-status-danger">
+                Last check: {new Date(domain.lastVerificationCheck).toLocaleString('en-GB', { timeZone: 'UTC' })} — DNS record not found
               </p>
             )}
           </div>
@@ -241,9 +257,9 @@ function DomainRow({
                 disabled={loadingDns}
                 className="gap-1 h-7 text-xs"
               >
-                <Link2 className="icon-2xs" aria-hidden="true" />
+                <Link2 className="icon-sm" />
                 DNS Setup
-                {showDns ? <ChevronDown className="icon-2xs" aria-hidden="true" /> : <ChevronRight className="icon-2xs" aria-hidden="true" />}
+                {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
               </Button>
               <Button
                 size="sm" variant="outline"
@@ -251,7 +267,7 @@ function DomainRow({
                 disabled={verify.isPending}
                 className="gap-1 h-7 text-xs"
               >
-                <RefreshCw className={`h-3 w-3 ${verify.isPending ? 'animate-spin' : ''}`} aria-hidden="true" />
+                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
                 Verify
               </Button>
             </>
@@ -263,33 +279,25 @@ function DomainRow({
               disabled={setPrimary.isPending}
               className="gap-1 h-7 text-xs"
             >
-              <Star className="icon-2xs" aria-hidden="true" />Set Primary
+              <Star className="icon-sm" />Set Primary
             </Button>
           )}
           <Button
             size="sm" variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending || (domain.verificationStatus !== 'verified' && !domain.isActive)}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700 dark:text-amber-400' : 'text-green-600 dark:text-green-400 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'}`}
           >
-            <Power className="icon-2xs" aria-hidden="true" />
+            <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
           <Button
             size="sm" variant="ghost"
-            onClick={async () => {
-              const ok = await confirm({
-                title: `Remove ${domain.domainName}?`,
-                description: 'Traffic on this domain will stop resolving to your workspace.',
-                confirmLabel: 'Remove domain',
-                intent: 'destructive',
-              });
-              if (ok) remove.mutate();
-            }}
+            onClick={() => void handleRemove()}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive-emphasis hover:text-destructive-emphasis"
+            className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >
-            <Trash2 className="icon-2xs" aria-hidden="true" />
+            <Trash2 className="icon-sm" />
           </Button>
         </div>
       </div>
@@ -343,7 +351,7 @@ export default function TenantDomainsPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <AlertTriangle className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
+          <AlertTriangle className="h-10 w-10 text-muted-foreground" />
           <p className="text-muted-foreground">No organization context. Please select or join an organization first.</p>
         </div>
       </AppShell>
@@ -351,15 +359,11 @@ export default function TenantDomainsPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Domain Management</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Configure how members reach your organization — via platform subdomain or your own custom domain.
-          </p>
-        </div>
+    <AppShell
+      title="Domain Management"
+      description="Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies."
+    >
+      <div className="space-y-6">
 
         {/* Status overview */}
         <div className="grid grid-cols-3 gap-3">
@@ -372,7 +376,7 @@ export default function TenantDomainsPage() {
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
               <p className="text-xs text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold mt-0.5 text-green-600 dark:text-green-400">{activeDomains.length}</p>
+              <p className="text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">
@@ -399,11 +403,7 @@ export default function TenantDomainsPage() {
                 {[1, 2].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
               </div>
             ) : domains.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border/60 py-10 text-center">
-                <Globe className="icon-xl text-muted-foreground mx-auto mb-2" aria-hidden="true" />
-                <p className="text-sm text-muted-foreground">No domains configured yet.</p>
-                <p className="text-xs text-muted-foreground mt-1">Add a subdomain or custom domain below.</p>
-              </div>
+              <EmptyTenantDomains />
             ) : (
               <div className="space-y-2">
                 {domains.map(d => (
@@ -418,7 +418,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Globe className="icon-sm text-primary-accessible" />
               Platform Subdomain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -445,13 +445,13 @@ export default function TenantDomainsPage() {
                 className="gap-1 shrink-0"
                 size="sm"
               >
-                <Plus className="icon-sm" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 {addSub.isPending ? 'Adding…' : 'Add'}
               </Button>
             </div>
             {addSub.isError && (
-              <p className="text-xs text-destructive-emphasis flex items-center gap-1">
-                <XCircle className="icon-sm" aria-hidden="true" />{(addSub.error as Error).message}
+              <p className="text-xs text-destructive-accessible flex items-center gap-1">
+                <XCircle className="icon-sm" />{(addSub.error as Error).message}
               </p>
             )}
             <p className="text-xs text-muted-foreground">
@@ -464,7 +464,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="icon-sm text-primary-emphasis" aria-hidden="true" />
+              <Shield className="icon-sm text-primary-accessible" />
               Custom Domain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -485,13 +485,13 @@ export default function TenantDomainsPage() {
                 className="gap-1 shrink-0"
                 size="sm"
               >
-                <Plus className="icon-sm" aria-hidden="true" />
+                <Plus className="icon-sm" />
                 {addCustom.isPending ? 'Adding…' : 'Add'}
               </Button>
             </div>
             {addCustom.isError && (
-              <p className="text-xs text-destructive-emphasis flex items-center gap-1">
-                <XCircle className="icon-sm" aria-hidden="true" />{(addCustom.error as Error).message}
+              <p className="text-xs text-destructive-accessible flex items-center gap-1">
+                <XCircle className="icon-sm" />{(addCustom.error as Error).message}
               </p>
             )}
             <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1 text-xs text-muted-foreground">

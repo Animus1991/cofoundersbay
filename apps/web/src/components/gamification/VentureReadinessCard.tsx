@@ -1,34 +1,73 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowRight, TrendingUp, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 
-function scoreTier(score: number): { label: string; color: string; ring: string } {
-  if (score >= 80) return { label: 'High',    color: 'text-emerald-600 dark:text-emerald-400', ring: 'stroke-emerald-500' };
-  if (score >= 55) return { label: 'Growing', color: 'text-amber-600 dark:text-amber-400',   ring: 'stroke-amber-500'   };
-  if (score >= 30) return { label: 'Early',   color: 'text-blue-600 dark:text-blue-400',    ring: 'stroke-blue-500'    };
-  return               { label: 'Building', color: 'text-muted-foreground', ring: 'stroke-muted-foreground' };
+/**
+ * Tier thresholds are shared by the gauge, the tier label and every dimension
+ * bar, so a colour always means the same band throughout the card.
+ * Uses semantic status tokens rather than raw palette classes so the hues stay
+ * correct on the alliance / cofounder / system themes too, not just light+dark.
+ */
+function scoreTier(score: number): {
+  labelEn: string; labelEl: string; color: string; ring: string; bar: string;
+} {
+  if (score >= 80) return { labelEn: 'High',     labelEl: 'Υψηλή',    color: STATUS.success.text, ring: 'stroke-status-success', bar: '[&>div]:bg-status-success' };
+  if (score >= 55) return { labelEn: 'Growing',  labelEl: 'Αυξανόμενη', color: STATUS.warning.text, ring: 'stroke-status-warning', bar: '[&>div]:bg-status-warning' };
+  if (score >= 30) return { labelEn: 'Early',    labelEl: 'Πρώιμη',   color: STATUS.info.text,    ring: 'stroke-status-info',    bar: '[&>div]:bg-status-info'    };
+  return             { labelEn: 'Building', labelEl: 'Σε δόμηση', color: 'text-muted-foreground', ring: 'stroke-muted-foreground', bar: '[&>div]:bg-muted-foreground' };
 }
 
 /* ── Sub-component: Radial gauge ─────────────────────────────────────────── */
 
 function RadialGauge({ score }: { score: number }) {
-  const { label, color, ring } = scoreTier(score);
+  const { labelEn, labelEl, color, ring } = scoreTier(score);
+  const { primary } = useLanguagePreference();
+  const tierLabel = primary === 'el' ? labelEl : labelEn;
+
   const circumference = 2 * Math.PI * 15.5;
   const dash = (score / 100) * circumference;
 
   return (
-    <div className="relative h-20 w-20 shrink-0">
-      <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90">
+    <div
+      /* 88px, stated in px so one root cannot render it differently from
+         another: `h-20` is 80px at a 100% root and 65.6px at the desktop app's
+         82%, which is why this used to need an `lg:` override to stop the tier
+         label being clipped by the stroke.
+         
+         Why 88 and not 80. Measured inside the 80px ring: 62.2px of clear
+         space for a 45.1px block — 8.5px above the figure and 8.5px below the
+         label, which is what made the pair look pressed against the stroke.
+         The figure's line box is 24px whatever `leading-none` asks for, because
+         the type scale sets a line-height on `.text-base` and wins on source
+         order, so the block cannot be made shorter without shrinking the type
+         past the 11px floor. 88px puts the clear space at 68.4px, which pays
+         for a real gap between the two lines and still leaves 10.8px around
+         them. The gauge is `shrink-0` beside a text column that stacks below
+         `sm`, so the 8px costs no layout. */
+      className="relative h-[88px] w-[88px] shrink-0"
+      role="img"
+      aria-label={bilingualAria(
+        `Venture readiness ${score} out of 100 — ${labelEn}`,
+        `Ετοιμότητα εγχειρήματος ${score} στα 100 — ${labelEl}`,
+      )}
+    >
+      <svg viewBox="0 0 36 36" className="h-[88px] w-[88px] -rotate-90" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
         <circle
           cx="18" cy="18" r="15.5"
@@ -38,9 +77,20 @@ function RadialGauge({ score }: { score: number }) {
           strokeLinecap="round"
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-sm font-bold text-foreground tabular-nums">{score}</span>
-        <span className={cn('text-2xs font-medium', color)}>{label}</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" aria-hidden="true">
+        <span className="text-base font-bold leading-none text-foreground tabular-nums">
+          {score}
+          <span className="text-xs font-medium text-muted-foreground">/100</span>
+        </span>
+        {/* The tier label is a single Greek or English word inside the ring;
+            centred and clipped rather than allowed to spill, so a longer tier
+            name shortens instead of crossing the stroke. The 1.64px `mt-0.5`
+            it used to carry is now a 3.3px `gap` on the column, so the figure
+            and the label are separated by the container rather than by a margin
+            that the first line's own leading was already eating. */}
+        <span className={cn('max-w-full truncate px-1 text-center text-2xs font-medium', color)}>
+          {tierLabel}
+        </span>
       </div>
     </div>
   );
@@ -54,9 +104,15 @@ interface VentureReadinessCardProps {
   /** Show a compact inline version (sidebar) vs full card */
   compact?: boolean;
   className?: string;
+  /**
+   * Optional actions rendered below the dimension list — used by the founder
+   * dashboard so readiness has exactly one home instead of two cards showing
+   * the same score.
+   */
+  footer?: ReactNode;
 }
 
-export function VentureReadinessCard({ data: prefetched, compact = false, className }: VentureReadinessCardProps) {
+export function VentureReadinessCard({ data: prefetched, compact = false, className, footer }: VentureReadinessCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['venture-readiness'],
     queryFn: getVentureReadiness,
@@ -82,70 +138,95 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   // complete payload has to render nothing rather than take the page down.
   if (!vrs || typeof vrs.overall !== 'number' || !Array.isArray(vrs.dimensions)) return null;
 
-  const { label: tierLabel, color: tierColor } = scoreTier(vrs.overall);
+  const { labelEn: tierEn, labelEl: tierEl, color: tierColor } = scoreTier(vrs.overall);
+  const dimensionCount = vrs.dimensions.length;
+
+  // `weight` arrives as a *relative* weight, not a percentage — the three demo
+  // dimensions each carry weight 1, meaning they count equally. Printing it raw
+  // rendered "weight 1%" three times, which reads as though each dimension were
+  // worth one percent. Express it as its share of the total instead, which is
+  // correct whether the API sends 1/1/1 or 40/35/25.
+  const weightTotal = vrs.dimensions.reduce((sum, d) => sum + (Number(d.weight) || 0), 0);
+  const weightShare = (weight: number): number | null => {
+    const w = Number(weight);
+    if (!Number.isFinite(w) || weightTotal <= 0) return null;
+    return Math.round((w / weightTotal) * 100);
+  };
 
   return (
-    <Card className={cn('border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
+    <Card className={cn('min-w-0 overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className={cn('flex items-center gap-2', compact ? 'text-sm' : 'text-base')}>
-            <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
-            Venture Readiness Score
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className={cn('flex min-w-0 items-center gap-2', compact ? 'text-sm' : 'text-base')}>
+            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+            <BilingualText en="Venture Readiness Score" el="Βαθμός ετοιμότητας εγχειρήματος" />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" asChild>
-            <Link href="/achievements">
-              History <ArrowRight className="icon-2xs" aria-hidden="true" />
+          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>
+            <Link href="/achievements" className="shrink-0">
+              <BilingualText en="History" el="Ιστορικό" compact />
+              <ArrowRight className="icon-sm" aria-hidden="true" />
             </Link>
           </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-center gap-4 mb-3">
+        <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
           <RadialGauge score={vrs.overall} />
-          <div className="flex-1 min-w-0">
-            <p className={cn('font-semibold text-sm', tierColor)}>{tierLabel} Readiness</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Weighted across 6 dimensions of founder progress
+          <div className="min-w-0 flex-1 text-center sm:text-left">
+            <p className={cn('text-sm font-semibold', tierColor)}>
+              <BilingualText en={`${tierEn} readiness`} el={`${tierEl} ετοιμότητα`} />
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              <BilingualText
+                en={`Weighted across ${dimensionCount} dimensions of founder progress`}
+                el={`Ζυγισμένος σε ${dimensionCount} διαστάσεις προόδου ιδρυτή`}
+              />
             </p>
             {vrs.lowestDimension?.href && (
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600 dark:text-amber-400">
-                <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span>
-                  Lowest: <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">
+              <div className={cn('mt-2 flex items-start justify-center gap-1.5 text-xs sm:justify-start', STATUS.warning.text)}>
+                <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
+                <span className="min-w-0 text-pretty">
+                  <BilingualText en="Lowest" el="Χαμηλότερη" compact />{': '}
+                  <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">
                     {vrs.lowestDimension.label}
-                  </Link> ({vrs.lowestDimension.score}%)
+                  </Link>{' '}
+                  ({vrs.lowestDimension.score}%)
                 </span>
               </div>
             )}
           </div>
         </div>
 
-        <div className={cn('space-y-1.5', compact && 'hidden')}>
+        <ul className={cn('space-y-2.5', compact && 'hidden')}>
           {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
-            const { color } = scoreTier(dim.score);
+            const { color, bar } = scoreTier(dim.score);
             return (
-              <Link key={dim.key} href={dim.href} className="group block">
-                <div className="flex items-center justify-between text-xs mb-0.5">
-                  <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                    {dim.label}
-                    <span className="text-muted-foreground/50 ml-1">({dim.weight}%)</span>
-                  </span>
-                  <span className={cn('font-semibold tabular-nums', color)}>{dim.score}%</span>
-                </div>
-                <Progress
-                  value={dim.score}
-                  className={cn(
-                    'h-1.5 transition-all',
-                    dim.score >= 80 ? '[&>div]:bg-emerald-500' :
-                    dim.score >= 55 ? '[&>div]:bg-amber-500' :
-                    dim.score >= 30 ? '[&>div]:bg-blue-500' :
-                    '[&>div]:bg-muted-foreground',
-                  )}
-                />
-              </Link>
+              <li key={dim.key}>
+                <Link href={dim.href} className="group block rounded-sm">
+                  <div className="mb-1 flex items-center justify-between gap-2 text-xs">
+                    <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
+                      {dim.label}
+                      {weightShare(dim.weight) !== null && (
+                        <span className="ml-1 hidden text-muted-foreground/60 sm:inline">
+                          ·{' '}
+                          <BilingualText
+                            en={`weight ${weightShare(dim.weight)}%`}
+                            el={`βάρος ${weightShare(dim.weight)}%`}
+                            compact
+                          />
+                        </span>
+                      )}
+                    </span>
+                    <span className={cn('shrink-0 font-semibold tabular-nums', color)}>{dim.score}%</span>
+                  </div>
+                  <Progress value={dim.score} className={cn('h-1.5 transition-all', bar)} />
+                </Link>
+              </li>
             );
           })}
-        </div>
+        </ul>
+
+        {footer && <div className="mt-5 border-t border-border/60 pt-4">{footer}</div>}
       </CardContent>
     </Card>
   );

@@ -37,23 +37,19 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    paused: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    cancelled: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    paused: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    completed: 'bg-status-info-bg text-status-info border-status-info-border',
+    cancelled: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
   const nextSessionFormatted = relationship.nextSessionAt
-    ? new Date(relationship.nextSessionAt).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
+    ? new Date(relationship.nextSessionAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
+        day: 'numeric' })
     : null;
 
-  const startedAtFormatted = new Date(relationship.startedAt).toLocaleDateString('en-US', {
-    month: 'short',
-    year: 'numeric',
-  });
+  const startedAtFormatted = new Date(relationship.startedAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
+    year: 'numeric' });
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
@@ -62,7 +58,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
           <Link href={`/p/${relationship.menteeId}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={mentee?.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -70,7 +66,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/p/${relationship.menteeId}`} className="font-medium hover:text-primary-emphasis transition-colors">
+                <Link href={`/p/${relationship.menteeId}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {displayName}
                 </Link>
                 {mentee?.headline && (
@@ -99,12 +95,12 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+                <Calendar className="icon-sm" />
                 {relationship.totalSessions} sessions
               </span>
               {nextSessionFormatted && (
-                <span className="flex items-center gap-1 text-primary-emphasis">
-                  <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="flex items-center gap-1 text-primary-accessible">
+                  <Clock className="icon-sm" />
                   Next: {nextSessionFormatted}
                 </span>
               )}
@@ -116,13 +112,13 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                 <Link href={`/messages?to=${relationship.menteeId}`}>
-                  <MessageCircle className="icon-2xs mr-1" aria-hidden="true" />
+                  <MessageCircle className="icon-sm mr-1" />
                   Message
                 </Link>
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                 <Link href={`/mentor/sessions/new?mentee=${relationship.menteeId}`}>
-                  <Calendar className="icon-2xs mr-1" aria-hidden="true" />
+                  <Calendar className="icon-sm mr-1" />
                   Schedule
                 </Link>
               </Button>
@@ -152,7 +148,7 @@ export default function MenteesPage() {
     return (
       <AppShell>
         <div className="py-6 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
       </AppShell>
     );
@@ -164,13 +160,13 @@ export default function MenteesPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive-emphasis mb-4" aria-hidden="true" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
               <h3 className="font-medium">Failed to load mentees</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
+                <RefreshCw className="icon-sm mr-2" />
                 Try Again
               </Button>
             </CardContent>
@@ -194,7 +190,7 @@ export default function MenteesPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} aria-hidden="true" />
+            <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
             Refresh
           </Button>
         </div>
@@ -204,7 +200,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Users className="icon-md text-primary-emphasis" aria-hidden="true" />
+                <Users className="icon-md text-primary-accessible" />
               </div>
               <div>
                 <p className="text-xl font-bold">{activeRelationships.length}</p>
@@ -214,8 +210,8 @@ export default function MenteesPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <Target className="icon-md text-green-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <Target className="icon-md text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">{completedRelationships.length}</p>
@@ -225,8 +221,8 @@ export default function MenteesPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2">
-                <TrendingUp className="icon-md text-blue-500" aria-hidden="true" />
+              <div className="rounded-lg bg-status-info-bg p-2">
+                <TrendingUp className="icon-md text-status-info" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalSessions}</p>
@@ -241,7 +237,7 @@ export default function MenteesPage() {
           <h2 className="text-lg font-semibold">Active ({activeRelationships.length})</h2>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+              <Loader2 className="icon-xl animate-spin text-muted-foreground" />
             </div>
           ) : activeRelationships.length > 0 ? (
             activeRelationships.map((relationship) => (

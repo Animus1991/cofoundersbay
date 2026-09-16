@@ -46,42 +46,42 @@ export function AdvancedAnalyticsDashboard() {
       value: '2,847',
       change: 12.5,
       trend: 'up',
-      icon: <Eye className="icon-sm" aria-hidden="true" />,
+      icon: <Eye className="icon-sm" />,
     },
     {
       label: 'Connections',
       value: 156,
       change: 8.2,
       trend: 'up',
-      icon: <Users className="icon-sm" aria-hidden="true" />,
+      icon: <Users className="icon-sm" />,
     },
     {
       label: 'Messages Sent',
       value: 423,
       change: -3.1,
       trend: 'down',
-      icon: <MessageSquare className="icon-sm" aria-hidden="true" />,
+      icon: <MessageSquare className="icon-sm" />,
     },
     {
       label: 'Events Attended',
       value: 12,
       change: 20.0,
       trend: 'up',
-      icon: <Calendar className="icon-sm" aria-hidden="true" />,
+      icon: <Calendar className="icon-sm" />,
     },
     {
       label: 'Post Engagement',
       value: '1,234',
       change: 15.3,
       trend: 'up',
-      icon: <Heart className="icon-sm" aria-hidden="true" />,
+      icon: <Heart className="icon-sm" />,
     },
     {
       label: 'Profile Shares',
       value: 89,
       change: 5.7,
       trend: 'up',
-      icon: <Share2 className="icon-sm" aria-hidden="true" />,
+      icon: <Share2 className="icon-sm" />,
     },
   ];
 
@@ -131,21 +131,21 @@ export function AdvancedAnalyticsDashboard() {
       title: 'Networking Pro',
       description: 'Connected with 100+ founders',
       date: '2 days ago',
-      icon: <Users className="icon-md" aria-hidden="true" />,
-      color: 'text-primary-emphasis',
+      icon: <Users className="icon-md" />,
+      color: 'text-primary-accessible',
     },
     {
       title: 'Active Contributor',
       description: 'Posted 50+ valuable insights',
       date: '1 week ago',
-      icon: <Activity className="icon-md" aria-hidden="true" />,
+      icon: <Activity className="icon-md" />,
       color: 'text-accent',
     },
     {
       title: 'Event Enthusiast',
       description: 'Attended 10+ events',
       date: '2 weeks ago',
-      icon: <Calendar className="icon-md" aria-hidden="true" />,
+      icon: <Calendar className="icon-md" />,
       color: 'text-secondary',
     },
   ];
@@ -184,12 +184,12 @@ export function AdvancedAnalyticsDashboard() {
               <div className="text-xl font-bold">{metric.value}</div>
               <p className={cn(
                 "text-xs flex items-center gap-1 mt-1",
-                metric.trend === 'up' ? 'text-green-600 dark:text-green-400' : 
-                metric.trend === 'down' ? 'text-red-600 dark:text-red-400' : 
+                metric.trend === 'up' ? 'text-status-success' : 
+                metric.trend === 'down' ? 'text-status-danger' : 
                 'text-muted-foreground'
               )}>
                 <TrendingUp className={cn(
-                  "h-3 w-3",
+                  "icon-sm",
                   metric.trend === 'down' && 'rotate-180'
                 )} aria-hidden="true" />
                 {Math.abs(metric.change)}% from last period
@@ -205,7 +205,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LineChart className="icon-md" aria-hidden="true" />
+              <LineChart className="icon-md" />
               Weekly Engagement
             </CardTitle>
             <CardDescription>
@@ -250,7 +250,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="icon-md" aria-hidden="true" />
+              <BarChart3 className="icon-md" />
               Connection Growth
             </CardTitle>
             <CardDescription>
@@ -284,7 +284,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="icon-md" aria-hidden="true" />
+              <Target className="icon-md" />
               Top Skills
             </CardTitle>
             <CardDescription>
@@ -315,7 +315,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="icon-md" aria-hidden="true" />
+              <PieChart className="icon-md" />
               Activity Breakdown
             </CardTitle>
             <CardDescription>
@@ -349,7 +349,7 @@ export function AdvancedAnalyticsDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="icon-md" aria-hidden="true" />
+            <Award className="icon-md" />
             Recent Achievements
           </CardTitle>
           <CardDescription>

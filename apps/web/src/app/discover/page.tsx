@@ -23,7 +23,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import {
-  searchProfiles, getRecommendations, sendConnectionRequest, type SearchHit
+  searchProfiles, getRecommendations, sendConnectionRequest, saveToShortlist, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,11 @@ import { AnimatedList } from '@/components/common/AnimatedList';
 import { SearchFilters, type SearchFiltersValues } from '@/components/discover/SearchFilters';
 import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/components/discover/ProfileCard';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { queryKeys } from '@/lib/query-keys';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -42,20 +46,29 @@ const ConnectionRequestDialog = dynamic(() => import('@/components/common/Connec
 type ViewMode = 'grid' | 'list' | 'match';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
 
-const ROLE_FILTERS: { value: RoleFilter; label: string; icon: React.ElementType; color: string }[] = [
-  { value: 'all',              label: 'All',             icon: Users,       color: 'text-foreground' },
-  { value: 'founder',         label: 'Founders',        icon: Rocket,      color: 'text-violet-500' },
-  { value: 'cofounder',       label: 'Co-founders',     icon: Users,       color: 'text-blue-500'   },
-  { value: 'mentor',          label: 'Mentors',         icon: GraduationCap, color: 'text-emerald-500' },
-  { value: 'investor',        label: 'Investors',       icon: DollarSign,  color: 'text-amber-500'  },
-  { value: 'service_provider',label: 'Service Providers', icon: Briefcase, color: 'text-pink-500'   },
+const ROLE_FILTER_TONE: Record<RoleFilter, StatusTone | null> = {
+  all: null,
+  founder: 'accent',
+  cofounder: 'info',
+  mentor: 'success',
+  investor: 'warning',
+  service_provider: 'accent',
+};
+
+const ROLE_FILTERS: { value: RoleFilter; labelEn: string; labelEl: string; icon: React.ElementType }[] = [
+  { value: 'all',              labelEn: discoverEn('all'),              labelEl: discoverEl('all'),              icon: Users         },
+  { value: 'founder',         labelEn: discoverEn('founders'),         labelEl: discoverEl('founders'),         icon: Rocket        },
+  { value: 'cofounder',       labelEn: discoverEn('cofounders'),       labelEl: discoverEl('cofounders'),       icon: Users         },
+  { value: 'mentor',          labelEn: discoverEn('mentors'),          labelEl: discoverEl('mentors'),          icon: GraduationCap },
+  { value: 'investor',        labelEn: discoverEn('investors'),        labelEl: discoverEl('investors'),        icon: DollarSign    },
+  { value: 'service_provider',labelEn: discoverEn('service_providers'),labelEl: discoverEl('service_providers'),icon: Briefcase     },
 ];
 
 const PLATFORM_STATS = [
-  { label: 'Active Founders',  value: '1,200+', icon: Rocket      },
-  { label: 'Expert Mentors',   value: '180+',   icon: GraduationCap },
-  { label: 'Successful Matches', value: '450+', icon: Star        },
-  { label: 'Communities',      value: '25+',    icon: Users       },
+  { labelEn: discoverEn('active_founders'),    labelEl: discoverEl('active_founders'),    value: '1,200+', icon: Rocket      },
+  { labelEn: discoverEn('expert_mentors'),     labelEl: discoverEl('expert_mentors'),     value: '180+',   icon: GraduationCap },
+  { labelEn: discoverEn('successful_matches'), labelEl: discoverEl('successful_matches'), value: '450+',   icon: Star        },
+  { labelEn: discoverEn('communities'),        labelEl: discoverEl('communities'),        value: '25+',    icon: Users       },
 ];
 
 type MatchReasonType = 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
@@ -183,7 +196,7 @@ export default function DiscoverPage() {
     try {
       await sendConnectionRequest({ receiverId: connectionTarget.userId, message: message || undefined });
       success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.connections });
     } catch (err) {
       showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
     }
@@ -195,8 +208,15 @@ export default function DiscoverPage() {
   };
 
   // Handle bookmark
-  const handleBookmark = (profile: ProfileCardData) => {
-    success('Profile saved', `${profile.displayName} added to your bookmarks`);
+  const handleBookmark = async (profile: ProfileCardData) => {
+    try {
+      await saveToShortlist(profile.userId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.shortlist });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.shortlistIds });
+      success('Saved to shortlist', `${profile.displayName} is on your saved profiles`);
+    } catch (err) {
+      showError('Could not save', err instanceof Error ? err.message : 'Try again from the profile page');
+    }
   };
 
   // Apply role filter to hits
@@ -205,34 +225,43 @@ export default function DiscoverPage() {
     h.role?.toLowerCase() === roleFilter
   );
 
+  const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${filteredHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
+
   return (
     <AppShell
-      title="Explore"
-      description="Discover founders, mentors, investors, and team members"
+      title={discoverEn('page_title')}
+      description={discoverEn('page_description')}
+      showHelp
+      askAi={askAi}
+      contentClassName="overflow-x-clip"
       actions={
-        <Button variant="outline" size="sm" className="gap-2" asChild>
+        <Button variant="outline" size="sm" className="min-h-10 gap-2" asChild>
           <Link href="/matches">
-            <TrendingUp className="icon-sm" aria-hidden="true" />
-            View Matches
+            <TrendingUp className="icon-sm" />
+            <BilingualText en={discoverEn('view_matches')} el={discoverEl('view_matches')} compact />
           </Link>
         </Button>
       }
     >
-      <div className="space-y-5 pb-10">
+      <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
 
         {/* Platform stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {PLATFORM_STATS.map((s) => {
             const SIcon = s.icon;
             return (
-              <Card key={s.label} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
-                <CardContent className="flex items-center gap-3 p-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
-                    <SIcon className="icon-sm text-primary-emphasis" />
+              <Card key={s.labelEn} className="min-w-0 shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
+                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <SIcon className="icon-sm text-primary-accessible" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground truncate">{s.label}</p>
+                    {/* `wrap`: "Επιτυχείς αντιστοιχίσεις" is 112px in a tile
+                        that gives the label about 96px. */}
+                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground sm:text-xs">
+                      <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -242,63 +271,66 @@ export default function DiscoverPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }}>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <TabsList>
-              <TabsTrigger value="search" className="gap-2">
-                <Users className="icon-sm" aria-hidden="true" />
-                Search
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <TabsList className="h-auto min-h-10 w-full min-w-0 sm:w-auto">
+              <TabsTrigger value="search" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <Users className="icon-sm hidden sm:block" />
+                <BilingualText en={discoverEn('search')} el={discoverEl('search')} compact />
               </TabsTrigger>
-              <TabsTrigger value="suggestions" className="gap-2">
-                <Sparkles className="icon-sm" aria-hidden="true" />
-                For You
+              <TabsTrigger value="suggestions" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <Sparkles className="icon-sm hidden sm:block" />
+                <BilingualText en={discoverEn('for_you')} el={discoverEl('for_you')} compact />
               </TabsTrigger>
-              <TabsTrigger value="matches" className="gap-2">
-                <TrendingUp className="icon-sm" aria-hidden="true" />
-                Top Matches
+              <TabsTrigger value="matches" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <TrendingUp className="icon-sm hidden sm:block" />
+                <BilingualText en={discoverEn('top_matches')} el={discoverEl('top_matches')} compact />
               </TabsTrigger>
             </TabsList>
 
           {/* View mode toggle */}
           <div className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-card p-1 shadow-sm">
-            <Button aria-label="Grid view"
+            <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
             >
-              <LayoutGrid className="icon-sm" aria-hidden="true" />
+              <LayoutGrid className="icon-sm" />
             </Button>
-            <Button aria-label="List view"
+            <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={() => setViewMode('list')}
+              aria-label="List view"
             >
-              <List className="icon-sm" aria-hidden="true" />
+              <List className="icon-sm" />
             </Button>
           </div>
         </div>
 
         {/* Role filter chips - shown for search & suggestions tabs */}
         {activeTab !== 'matches' && (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+          <div className="flex min-w-0 items-center gap-2 overflow-x-auto pt-1 scrollbar-hide -mx-1 px-1">
+            <Filter className="icon-sm shrink-0 text-muted-foreground" />
             {ROLE_FILTERS.map((rf) => {
               const RIcon = rf.icon;
               const isActive = roleFilter === rf.value;
+              const tone = ROLE_FILTER_TONE[rf.value];
               return (
                 <button
                   key={rf.value}
                   onClick={() => setRoleFilter(rf.value)}
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-all',
                     isActive
                       ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                       : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50',
                   )}
                 >
-                  <RIcon className={cn('icon-sm', isActive ? 'text-primary-foreground' : rf.color)} />
-                  {rf.label}
+                  <RIcon className={cn('icon-sm', isActive ? 'text-primary-foreground' : tone ? STATUS[tone].icon : 'text-foreground')} />
+                  <BilingualText en={rf.labelEn} el={rf.labelEl} compact />
                 </button>
               );
             })}
@@ -307,7 +339,7 @@ export default function DiscoverPage() {
                 onClick={() => setRoleFilter('all')}
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
-                <XIcon className="icon-sm" aria-hidden="true" /> Clear
+                <XIcon className="icon-sm" /> <BilingualText en={discoverEn('clear')} el={discoverEl('clear')} compact />
               </button>
             )}
           </div>
@@ -328,7 +360,7 @@ export default function DiscoverPage() {
           {loading && (
             <div className={cn(
               'grid gap-4',
-              viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+              viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
             )}>
               {[...Array(6)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
@@ -338,27 +370,35 @@ export default function DiscoverPage() {
 
           {/* Featured strip when no query */}
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
-            <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-violet-500/5 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <BadgeCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
+            <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-status-accent-bg/30 p-4">
+              <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
+                <BadgeCheck className="icon-sm shrink-0 text-primary-accessible" />
                 <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
-                <span className="text-xs text-muted-foreground">— Top matches based on your profile</span>
+                <span className="hidden text-xs text-muted-foreground sm:inline">— Top matches based on your profile</span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profile/${h.userId}`}
-                    className="flex items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-emphasis">
+                    className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
                       {h.displayName?.charAt(0) ?? '?'}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate max-w-[100px]">{h.displayName}</p>
-                      <p className="text-xs text-muted-foreground truncate max-w-[100px]">{h.role}</p>
+                      {/* 100px cut "Elena Papadopoulos" by a fifth. These
+                          chips sit in a horizontal scroller, so a wider one
+                          costs nothing but a little scroll. */}
+                      {/* No cap and no ellipsis: these chips sit in a
+                          horizontal scroller and are already `shrink-0`, so a
+                          full name costs a little scroll and nothing else.
+                          Capped at 100px, "Elena Papadopoulos" lost two
+                          thirds of itself. */}
+                      <p className="whitespace-nowrap text-xs font-medium text-foreground">{h.displayName}</p>
+                      <p className="whitespace-nowrap text-xs text-muted-foreground">{h.role}</p>
                     </div>
                     {h.matchScore !== undefined && (
                       <span className={cn(
                         'ml-1 rounded-full px-1.5 py-0.5 text-xs font-bold',
-                        h.matchScore >= 80 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : h.matchScore >= 60 ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground',
+                        h.matchScore >= 80 ? STATUS.success.chip : h.matchScore >= 60 ? STATUS.info.chip : STATUS.neutral.chip,
                       )}>{h.matchScore}%</span>
                     )}
                   </Link>
@@ -370,7 +410,7 @@ export default function DiscoverPage() {
           {!loading && filteredHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <p className="text-sm text-muted-foreground">No {roleFilter.replace('_', ' ')}s found. Try clearing the role filter.</p>
-              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-emphasis hover:underline">Show all roles</button>
+              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline">Show all roles</button>
             </div>
           )}
 
@@ -380,6 +420,7 @@ export default function DiscoverPage() {
               description="Try adjusting your filters or search for something different."
               illustration="search"
               className="py-12"
+              askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."
               action={
                 <Button onClick={() => setFilters(defaultFilters)}>
                   Clear filters
@@ -394,7 +435,7 @@ export default function DiscoverPage() {
               staggerDelay={50}
               className={cn(
                 'grid gap-4',
-                viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+                viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
               )}
             >
               {filteredHits.map((hit) => {
@@ -416,16 +457,14 @@ export default function DiscoverPage() {
 
         {/* Suggestions Tab */}
         <TabsContent value="suggestions" className="space-y-6 mt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="icon-md text-primary-emphasis" aria-hidden="true" />
+          <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Sparkles className="icon-md shrink-0 text-primary-accessible" />
                 Suggested for you
               </h2>
               <p className="text-sm text-muted-foreground">
                 Based on your profile and preferences
               </p>
-            </div>
           </div>
 
           {!suggestionsLoaded && (
@@ -444,11 +483,12 @@ export default function DiscoverPage() {
               title="No suggestions yet"
               description="Complete your profile to get personalized recommendations."
               illustration="rocket"
+              askAiPrompt="I have no Discover suggestions. What should I add to my profile so recommendations appear?"
               action={
                 <Button className="gap-2" asChild>
                   <Link href="/profile/edit">
                     Complete profile
-                    <ArrowRight className="icon-sm" aria-hidden="true" />
+                    <ArrowRight className="icon-sm" />
                   </Link>
                 </Button>
               }
@@ -483,20 +523,18 @@ export default function DiscoverPage() {
 
         {/* Top Matches Tab */}
         <TabsContent value="matches" className="space-y-6 mt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp className="icon-md text-primary-emphasis" aria-hidden="true" />
+          <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <TrendingUp className="icon-md shrink-0 text-primary-accessible" />
                 Your Top Matches
               </h2>
               <p className="text-sm text-muted-foreground">
                 People with the highest compatibility
               </p>
-            </div>
           </div>
 
           {!suggestionsLoaded && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               {[...Array(4)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant="featured" />
               ))}
@@ -508,6 +546,7 @@ export default function DiscoverPage() {
               title="No matches yet"
               description="Start by exploring profiles and indicating your interests."
               illustration="connection"
+              askAiPrompt="Discover matches tab is empty. Help me find complementary people from the network."
               action={
                 <Button onClick={() => setActiveTab('search')}>
                   Explore profiles
@@ -520,7 +559,7 @@ export default function DiscoverPage() {
             <AnimatedList
               animation="scale-in"
               staggerDelay={100}
-              className="grid grid-cols-1 gap-6 md:grid-cols-2"
+              className="grid gap-6 md:grid-cols-2"
             >
               {suggestions.slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);

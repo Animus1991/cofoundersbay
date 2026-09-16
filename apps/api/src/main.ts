@@ -1,3 +1,16 @@
+// Node 17+ hands back DNS results in resolver order instead of IPv4-first, so on
+// Windows `localhost` resolves to ::1 first. The local Postgres and Redis listen
+// on IPv4, and DATABASE_URL/REDIS_URL name `localhost`, so each connection stalls
+// on ::1 before falling back — ~210ms per connect, paid again on every pool
+// refill and reconnect.
+//
+// Development only. In production these point at real hosts, some of which may be
+// IPv6-only, and forcing IPv4 there could make them unreachable.
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('node:dns').setDefaultResultOrder('ipv4first');
+}
+
 // Sentry must be initialised before NestFactory to instrument the full request lifecycle.
 // We use a guarded dynamic require so the app still boots if the package is not yet installed.
 if (process.env.SENTRY_DSN) {

@@ -9,6 +9,19 @@ import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { useTenant } from '@/components/providers/TenantContext';
+import { BilingualText } from '@/components/common/BilingualText';
+
+/**
+ * Password strength presentation. Colour comes from the semantic status tokens,
+ * which already carry theme-tuned light/dark values — the previous hardcoded
+ * `text-red-600 dark:text-red-400` pairs had to restate every theme by hand and
+ * ignored tenant branding entirely.
+ */
+const PASSWORD_STRENGTH = {
+  weak: { filled: 1, bar: 'bg-status-danger', text: 'text-status-danger', en: 'Weak', el: 'Αδύναμος' },
+  medium: { filled: 2, bar: 'bg-status-warning', text: 'text-status-warning', en: 'Medium', el: 'Μέτριος' },
+  strong: { filled: 3, bar: 'bg-status-success', text: 'text-status-success', en: 'Strong', el: 'Ισχυρός' },
+} as const;
 
 const ROLES = [
   {
@@ -140,7 +153,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-emphasis flex items-start gap-2">
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -182,30 +195,40 @@ export default function RegisterPage() {
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
-              {passwordStrength && (
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1 flex-1">
-                    {(['weak', 'medium', 'strong'] as const).map((level, i) => (
-                      <div key={level} className={`h-1 flex-1 rounded-full transition-colors ${
-                        passwordStrength === 'weak' && i === 0 ? 'bg-red-500'
-                        : passwordStrength === 'medium' && i <= 1 ? 'bg-amber-500'
-                        : passwordStrength === 'strong' ? 'bg-emerald-500'
-                        : 'bg-border'
-                      }`} />
-                    ))}
+              {/* The live region is always mounted so the strength change is announced;
+                  a region that appears at the same moment its text does is missed by
+                  most screen readers. The bars repeat the label, so they stay hidden. */}
+              <div className="min-h-5" role="status" aria-live="polite">
+                {passwordStrength && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-1 gap-1" aria-hidden="true">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-1 flex-1 rounded-full transition-colors ${
+                            i < PASSWORD_STRENGTH[passwordStrength].filled
+                              ? PASSWORD_STRENGTH[passwordStrength].bar
+                              : 'bg-border'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className={`text-xs font-medium ${PASSWORD_STRENGTH[passwordStrength].text}`}>
+                      <span className="sr-only">Password strength: / Ισχύς κωδικού: </span>
+                      <BilingualText
+                        en={PASSWORD_STRENGTH[passwordStrength].en}
+                        el={PASSWORD_STRENGTH[passwordStrength].el}
+                        compact
+                      />
+                    </span>
                   </div>
-                  <span className={`text-xs font-medium ${
-                    passwordStrength === 'weak' ? 'text-red-600 dark:text-red-400'
-                    : passwordStrength === 'medium' ? 'text-amber-700 dark:text-amber-400'
-                    : 'text-emerald-600 dark:text-emerald-400'
-                  }`}>{passwordStrength}</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">I am a&hellip;</label>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-sm font-medium" id="role-label">I am a&hellip;</p>
+              <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="role-label">
                 {ROLES.map((r) => {
                   const active = role === r.value;
                   return (
@@ -213,15 +236,16 @@ export default function RegisterPage() {
                       key={r.value}
                       type="button"
                       onClick={() => setRole(r.value)}
-                      className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all ${
+                      aria-pressed={active}
+                      className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all focus-ring ${
                         active
-                          ? 'border-primary/60 bg-primary/10 text-primary-emphasis'
+                          ? 'border-primary/60 bg-primary/10 text-primary-accessible'
                           : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                       }`}
                     >
                       <span
                         className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold ${
-                          active ? 'bg-primary/15 text-primary-emphasis' : 'bg-background text-muted-foreground'
+                          active ? 'bg-primary/15 text-primary-accessible' : 'bg-background text-muted-foreground'
                         }`}
                       >
                         {r.badge}
@@ -236,7 +260,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
+            <Button type="submit" loading={loading} className="w-full" size="lg">
               {loading ? 'Creating account…' : 'Create account'}
             </Button>
 
@@ -246,7 +270,7 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary-emphasis hover:underline">
+            <Link href="/login" className="font-medium text-primary-accessible hover:underline">
               Sign in
             </Link>
           </p>

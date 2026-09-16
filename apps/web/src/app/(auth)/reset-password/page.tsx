@@ -85,9 +85,9 @@ export default function ResetPasswordPage() {
         </div>
 
         {done ? (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20 px-6 py-8 text-center space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15">
-              <CheckCircle2 className="icon-lg text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+          <div className="rounded-xl border border-status-success-border bg-status-success-bg px-6 py-8 text-center space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg">
+              <CheckCircle2 className="icon-lg text-status-success " />
             </div>
             <h2 className="font-semibold text-foreground">Password updated!</h2>
             <p className="text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-emphasis">
+              <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -170,7 +170,7 @@ export default function ResetPasswordPage() {
                     className={confirm && confirm !== password ? 'border-destructive focus-visible:ring-destructive/30' : undefined}
                   />
                   {confirm && confirm !== password && (
-                    <p className="text-xs text-destructive-emphasis">Passwords don&apos;t match</p>
+                    <p className="text-xs text-destructive-accessible">Passwords don&apos;t match</p>
                   )}
                 </div>
 
@@ -181,7 +181,7 @@ export default function ResetPasswordPage() {
                   size="lg"
                 >
                   {loading ? (
-                    <><Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />Updating…</>
+                    <><Loader2 className="mr-2 icon-sm animate-spin" />Updating…</>
                   ) : 'Reset password'}
                 </Button>
               </>

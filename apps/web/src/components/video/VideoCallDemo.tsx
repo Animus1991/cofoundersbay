@@ -30,19 +30,19 @@ export function VideoCallDemo() {
             <div className="flex gap-2 justify-center">
               {!isCallActive ? (
                 <Button onClick={handleStartCall} className="gap-2">
-                  <Video className="icon-sm" aria-hidden="true" />
+                  <Video className="icon-sm" />
                   Start Demo Call
                 </Button>
               ) : (
                 <Button onClick={endCall} variant="destructive" className="gap-2">
-                  <Phone className="icon-sm" aria-hidden="true" />
+                  <Phone className="icon-sm" />
                   End Call
                 </Button>
               )}
             </div>
             
             {isCallActive && (
-              <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+              <p className="text-xs text-status-success mt-2">
                 Call is active - check for the video call window
               </p>
             )}

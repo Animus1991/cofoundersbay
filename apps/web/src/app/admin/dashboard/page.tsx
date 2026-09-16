@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import {
   Card,
   CardContent,
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { AppShell } from '@/components/layout/AppShell';
 
 import {
   Users,
@@ -137,6 +139,9 @@ const fetchSecurityAlerts = async (): Promise<SecurityAlert[]> => {
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState('7d');
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
+  // queryFns below are mock data sources (no network) — only pause polling while
+  // the tab is hidden; no apiAvailable gate needed since they never hit the API.
+  const { pollInterval } = usePollingGuards();
 
   const {
     data: metrics,
@@ -146,7 +151,9 @@ export default function AdminDashboardPage() {
   } = useQuery({
     queryKey: ['admin-metrics', timeRange],
     queryFn: fetchAdminMetrics,
-    refetchInterval: refreshInterval,
+    refetchInterval: pollInterval(refreshInterval),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const {
@@ -156,11 +163,13 @@ export default function AdminDashboardPage() {
   } = useQuery({
     queryKey: ['admin-alerts'],
     queryFn: fetchSecurityAlerts,
-    refetchInterval: refreshInterval,
+    refetchInterval: pollInterval(refreshInterval),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   // Prepare chart data
-  const userRoleData = metrics?.users.byRole
+  const userRoleData = metrics?.users?.byRole
     ? Object.entries(metrics.users.byRole).map(([role, count]) => ({
         name: role.charAt(0).toUpperCase() + role.slice(1),
         value: count,
@@ -188,22 +197,22 @@ export default function AdminDashboardPage() {
   const getAlertIcon = (type: SecurityAlert['type']) => {
     switch (type) {
       case 'error':
-        return <XCircle className="icon-sm text-red-500" aria-hidden="true" />;
+        return <XCircle className="icon-sm text-status-danger" />;
       case 'warning':
-        return <AlertTriangle className="icon-sm text-yellow-500" aria-hidden="true" />;
+        return <AlertTriangle className="icon-sm text-status-warning" />;
       case 'info':
-        return <CheckCircle className="icon-sm text-blue-500" aria-hidden="true" />;
+        return <CheckCircle className="icon-sm text-status-info" />;
     }
   };
 
   const getAlertColor = (type: SecurityAlert['type']) => {
     switch (type) {
       case 'error':
-        return 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950';
+        return 'border-status-danger-border bg-status-danger-bg ';
       case 'warning':
-        return 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950';
+        return 'border-status-warning-border bg-status-warning-bg ';
       case 'info':
-        return 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950';
+        return 'border-status-info-border bg-status-info-bg ';
     }
   };
 
@@ -224,42 +233,36 @@ export default function AdminDashboardPage() {
 
   if (metricsError) {
     return (
-      <div className="p-8">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Dashboard Error</h2>
+      <AppShell title="Admin Dashboard" description="Monitor and manage your CoFounderBay platform">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <AlertTriangle className="icon-xl text-destructive-accessible mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-destructive-accessible mb-2">Dashboard Error</h2>
           <p className="text-muted-foreground">Failed to load admin metrics</p>
           <Button onClick={() => refetchMetrics()} className="mt-4">
             Retry
           </Button>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor and manage your CoFounderBay platform
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4">
+    <AppShell
+      title="Admin Dashboard"
+      description="Monitor and manage your CoFounderBay platform"
+      actions={
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border rounded-md bg-background"
+            aria-label="Time range"
+            className="h-9 px-3 py-2 border border-border rounded-md bg-background text-sm"
           >
             <option value="1d">Last 24 hours</option>
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          
           <Button
             variant="outline"
             onClick={() => {
@@ -270,7 +273,9 @@ export default function AdminDashboardPage() {
             Refresh
           </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-6">
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -281,15 +286,15 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.users.total.toLocaleString()}
+              {metricsLoading ? '...' : (metrics?.users?.total?.toLocaleString('en-GB') ?? '—')}
             </div>
             <p className="text-xs text-muted-foreground">
-              +{metrics?.users.new} new today
+              +{metrics?.users?.new} new today
             </p>
             <div className="mt-2">
-              <Progress value={(metrics?.users.active || 0) / (metrics?.users.total || 1) * 100} className="h-2" />
+              <Progress value={(metrics?.users?.active || 0) / (metrics?.users?.total || 1) * 100} className="h-2" />
               <p className="text-xs text-muted-foreground mt-1">
-                {((metrics?.users.active || 0) / (metrics?.users.total || 1) * 100).toFixed(1)}% active
+                {((metrics?.users?.active || 0) / (metrics?.users?.total || 1) * 100).toFixed(1)}% active
               </p>
             </div>
           </CardContent>
@@ -303,7 +308,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="text-xl font-bold">
               {metricsLoading ? '...' : (
-                Object.values(metrics?.engagement || {}).reduce((a, b) => a + b, 0).toLocaleString()
+                Object.values(metrics?.engagement || {}).reduce((a, b) => a + b, 0).toLocaleString('en-GB')
               )}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -312,11 +317,11 @@ export default function AdminDashboardPage() {
             <div className="mt-2 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Messages</span>
-                <span>{metrics?.engagement.messages}</span>
+                <span>{metrics?.engagement?.messages}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>Connections</span>
-                <span>{metrics?.engagement.connections}</span>
+                <span>{metrics?.engagement?.connections}</span>
               </div>
             </div>
           </CardContent>
@@ -329,7 +334,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : `${metrics?.performance.avgResponseTime}ms`}
+              {metricsLoading ? '...' : `${metrics?.performance?.avgResponseTime}ms`}
             </div>
             <p className="text-xs text-muted-foreground">
               Avg response time
@@ -337,11 +342,11 @@ export default function AdminDashboardPage() {
             <div className="mt-2 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Uptime</span>
-                <span>{((metrics?.performance.uptime || 0) * 100).toFixed(2)}%</span>
+                <span>{((metrics?.performance?.uptime || 0) * 100).toFixed(2)}%</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>Error Rate</span>
-                <span>{((metrics?.performance.errorRate || 0) * 100).toFixed(2)}%</span>
+                <span>{((metrics?.performance?.errorRate || 0) * 100).toFixed(2)}%</span>
               </div>
             </div>
           </CardContent>
@@ -354,7 +359,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.business.mentorSessions}
+              {metricsLoading ? '...' : metrics?.business?.mentorSessions}
             </div>
             <p className="text-xs text-muted-foreground">
               Mentor sessions
@@ -362,11 +367,11 @@ export default function AdminDashboardPage() {
             <div className="mt-2 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Job Posts</span>
-                <span>{metrics?.business.jobPostings}</span>
+                <span>{metrics?.business?.jobPostings}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>Conversion</span>
-                <span>{((metrics?.business.conversionRate || 0) * 100).toFixed(1)}%</span>
+                <span>{((metrics?.business?.conversionRate || 0) * 100).toFixed(1)}%</span>
               </div>
             </div>
           </CardContent>
@@ -491,6 +496,7 @@ export default function AdminDashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppShell>
   );
 }

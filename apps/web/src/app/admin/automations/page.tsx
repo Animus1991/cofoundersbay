@@ -15,19 +15,20 @@ import {
   type AutomationExecutionItem,
   type AutomationLogItem,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
@@ -45,6 +46,7 @@ const ACTION_TYPES = [
 ] as const;
 
 function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
   const { success, error: toastError } = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -77,16 +79,26 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
     onError: (e: Error) => toastError(e.message),
   });
 
+  if (!open) return null;
+
   return (
-    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
-      <SheetContent
-        side="right"
-        className="flex w-full max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      {/* A slide-over is a dialog: `useModalA11y` gives it the semantics, the
+          focus move, the Tab trap, Escape and the scroll lock it had none of. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="automation-rule-title"
+        tabIndex={-1}
+        className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto"
       >
-        <SheetHeader className="shrink-0 border-b p-5 text-left">
-          <SheetTitle>Create Automation Rule</SheetTitle>
-        </SheetHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 id="automation-rule-title" className="text-lg font-semibold">Create Automation Rule</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+        </div>
+        <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Rule Name *</label>
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
@@ -124,7 +136,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
               placeholder='{"title": "Hello", "body": "Message"}'
             />
-            {paramsError && <p className="text-xs text-destructive-emphasis">{paramsError}</p>}
+            {paramsError && <p className="text-xs text-destructive-accessible">{paramsError}</p>}
             <p className="text-xs text-muted-foreground">
               Keys depend on action type: <code>title</code>/<code>body</code> for notifications, <code>subject</code>/<code>bodyHtml</code> for emails, <code>url</code>/<code>method</code> for webhooks.
             </p>
@@ -140,19 +152,14 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             </div>
           </div>
         </div>
-        <SheetFooter className="shrink-0 gap-2 border-t p-5 sm:justify-end">
+        <div className="p-5 border-t flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button
-            onClick={() => create.mutate()}
-            disabled={!name.trim()}
-            loading={create.isPending}
-            loadingText="Creating rule"
-          >
-            Create Rule
+          <Button onClick={() => create.mutate()} disabled={create.isPending || !name.trim()}>
+            {create.isPending ? 'Creating…' : 'Create Rule'}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -184,15 +191,14 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
   });
 
   return (
-    <Sheet open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <SheetContent
-        side="right"
-        className="flex w-full max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
-      >
-        <SheetHeader className="shrink-0 border-b p-5 text-left">
-          <SheetTitle>Edit Rule</SheetTitle>
-        </SheetHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="text-lg font-semibold">Edit Rule</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+        </div>
+        <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Rule Name *</label>
             <Input value={name} onChange={e => setName(e.target.value)} />
@@ -241,19 +247,14 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             </div>
           </div>
         </div>
-        <SheetFooter className="shrink-0 gap-2 border-t p-5 sm:justify-end">
+        <div className="p-5 border-t flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button
-            onClick={() => save.mutate()}
-            disabled={!name.trim()}
-            loading={save.isPending}
-            loadingText="Saving rule"
-          >
-            Save Changes
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim()}>
+            {save.isPending ? 'Saving…' : 'Save Changes'}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -283,8 +284,8 @@ const TRIGGER_LABELS: Record<string, string> = {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    paused: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    active: 'bg-status-success-bg text-status-success ',
+    paused: 'bg-status-warning-bg text-status-warning ',
     draft: 'bg-muted text-muted-foreground',
     archived: 'bg-muted text-muted-foreground/60 line-through',
   };
@@ -296,11 +297,11 @@ function statusBadge(status: string) {
 }
 
 function execStatusIcon(status: string) {
-  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />;
-  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive-emphasis" aria-hidden="true" />;
-  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" aria-hidden="true" />;
-  if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
-  return <Clock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
+  if (status === 'completed') return <CheckCircle2 className="icon-sm text-status-success" />;
+  if (status === 'failed') return <XCircle className="icon-sm text-destructive-accessible" />;
+  if (status === 'running') return <RefreshCw className="icon-sm text-status-info animate-spin" />;
+  if (status === 'skipped') return <SkipForward className="icon-sm text-muted-foreground" />;
+  return <Clock className="icon-sm text-muted-foreground" />;
 }
 
 function LogPanel({ executionId }: { executionId: string }) {
@@ -317,11 +318,11 @@ function LogPanel({ executionId }: { executionId: string }) {
       {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
-          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-emphasis mt-0.5 shrink-0" aria-hidden="true" />}
-          {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" aria-hidden="true" />}
-          {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />}
-          <span className={log.level === 'error' ? 'text-destructive-emphasis' : log.level === 'warn' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}>
-            [{new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}] {log.message}
+          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-accessible mt-0.5 shrink-0" />}
+          {log.level === 'warn' && <AlertTriangle className="icon-sm text-status-warning mt-0.5 shrink-0" />}
+          {log.level === 'info' && <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />}
+          <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-status-warning' : 'text-muted-foreground'}>
+            [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
           </span>
         </div>
       ))}
@@ -330,9 +331,10 @@ function LogPanel({ executionId }: { executionId: string }) {
 }
 
 export default function AutomationsPage() {
-  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
+  const { apiAvailable, pollInterval } = usePollingGuards();
   const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
   const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -346,8 +348,10 @@ export default function AutomationsPage() {
   const { data: executions = [], isLoading: execLoading } = useQuery<AutomationExecutionItem[]>({
     queryKey: ['automation-executions'],
     queryFn: () => listAutomationExecutions({ limit: 50 }),
-    enabled: activeTab === 'executions',
-    refetchInterval: 10000,
+    enabled: activeTab === 'executions' && apiAvailable,
+    refetchInterval: pollInterval(10_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const setStatusMutation = useMutation({
@@ -385,17 +389,17 @@ export default function AutomationsPage() {
 
   return (
     <AppShell>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="max-w-[84rem] mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Automation Rules</h1>
+            <h1 className="text-xl font-bold tracking-tight">Automation Rules</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               Event-driven workflows — triggers, conditions, actions
             </p>
           </div>
           <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
-            <Plus className="h-3.5 w-3.5" aria-hidden="true" />New Rule
+            <Plus className="icon-sm" />New Rule
           </Button>
         </div>
 
@@ -416,9 +420,9 @@ export default function AutomationsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: ListChecks, label: 'Total Rules', value: total, color: 'text-foreground' },
-            { icon: Zap, label: 'Active', value: activeCount, color: 'text-emerald-600 dark:text-emerald-400' },
-            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-blue-600 dark:text-blue-400' },
-            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600 dark:text-amber-400' },
+            { icon: Zap, label: 'Active', value: activeCount, color: 'text-status-success' },
+            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-status-info' },
+            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-status-warning' },
           ].map(stat => (
             <Card key={stat.label} className="p-4 flex items-center gap-3">
               <stat.icon className={`icon-md ${stat.color}`} />
@@ -438,7 +442,7 @@ export default function AutomationsPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === tab
-                  ? 'border-primary text-primary-emphasis'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -453,7 +457,7 @@ export default function AutomationsPage() {
             {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading rules…</p>}
             {!rulesLoading && rules.length === 0 && (
               <Card className="p-8 text-center">
-                <Layers className="icon-xl text-muted-foreground mx-auto mb-2" aria-hidden="true" />
+                <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm">No automation rules defined yet.</p>
               </Card>
             )}
@@ -478,10 +482,10 @@ export default function AutomationsPage() {
                       <span>Priority: {rule.priority}</span>
                       <span>Runs: {rule.executionCount}</span>
                       {rule.failureCount > 0 && (
-                        <span className="text-amber-600 dark:text-amber-400 font-medium">⚠ {rule.failureCount} failures</span>
+                        <span className="text-status-warning font-medium">⚠ {rule.failureCount} failures</span>
                       )}
                       {rule.lastRunAt && (
-                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                       )}
                       {rule.delaySeconds > 0 && (
                         <span>Delay: {rule.delaySeconds}s</span>
@@ -489,16 +493,16 @@ export default function AutomationsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button aria-label="Edit rule"
+                    <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                       title="Edit rule"
                       onClick={() => setEditRule(rule)}
                     >
-                      <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                      <Pencil className="icon-sm" />
                     </Button>
-                    <Button aria-label="Manual trigger"
+                    <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
@@ -506,45 +510,39 @@ export default function AutomationsPage() {
                       onClick={() => triggerMutation.mutate(rule.id)}
                       disabled={triggerMutation.isPending}
                     >
-                      <Play className="h-3.5 w-3.5" aria-hidden="true" />
+                      <Play className="icon-sm" />
                     </Button>
                     {rule.status === 'active' ? (
-                      <Button aria-label="Pause"
+                      <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
                         title="Pause"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
                       >
-                        <Pause className="h-3.5 w-3.5" aria-hidden="true" />
+                        <Pause className="icon-sm" />
                       </Button>
                     ) : rule.status === 'paused' || rule.status === 'draft' ? (
-                      <Button aria-label="Activate"
+                      <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
                         title="Activate"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
-                        <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                        <Zap className="icon-sm text-status-success" />
                       </Button>
                     ) : null}
-                    <Button aria-label="Delete"
+                    <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive-emphasis hover:text-destructive-emphasis"
+                      className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
                       title="Delete"
                       onClick={async () => {
-                        const ok = await confirm({
-                          title: `Delete rule "${rule.name}"?`,
-                          description: 'This automation will stop running immediately. This cannot be undone.',
-                          confirmLabel: 'Delete rule',
-                          intent: 'destructive',
-                        });
-                        if (ok) deleteMutation.mutate(rule.id);
+                        if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
                       }}
                     >
-                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      <Trash2 className="icon-sm" />
                     </Button>
                   </div>
                 </div>
@@ -559,7 +557,7 @@ export default function AutomationsPage() {
             {execLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading executions…</p>}
             {!execLoading && executions.length === 0 && (
               <Card className="p-8 text-center">
-                <Activity className="icon-xl text-muted-foreground mx-auto mb-2" aria-hidden="true" />
+                <Activity className="icon-xl text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm">No executions yet.</p>
               </Card>
             )}
@@ -579,16 +577,16 @@ export default function AutomationsPage() {
                       {exec.targetUserId && ` · user:${exec.targetUserId.slice(0, 6)}`}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(exec.createdAt).toLocaleString()}
+                      {new Date(exec.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
                     </span>
                     <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
-                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} aria-hidden="true" />
+                    <ChevronRight className={`icon-sm text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
                   </div>
                 </Card>
                 {selectedExecution === exec.id && (
                   <Card className="p-3 border-t-0 rounded-t-none bg-muted/20">
                     {exec.errorMessage && (
-                      <p className="text-xs text-destructive-emphasis mb-2 font-mono">{exec.errorMessage}</p>
+                      <p className="text-xs text-destructive-accessible mb-2 font-mono">{exec.errorMessage}</p>
                     )}
                     <LogPanel executionId={exec.id} />
                   </Card>

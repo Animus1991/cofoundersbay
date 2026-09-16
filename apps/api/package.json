@@ -13,6 +13,8 @@
     "start:debug": "node ./scripts/dev.js --debug",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "test": "vitest run --config ../../.devin/vitest.api.config.ts",
+    "test:watch": "vitest --config ../../.devin/vitest.api.config.ts",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\"",
     "db:seed": "tsx prisma/seed.ts",
     "prisma:generate": "prisma generate",
@@ -85,6 +87,7 @@
     "@types/passport-local": "^1.0.38",
     "prisma": "^6.1.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "4.0.18"
   }
 }

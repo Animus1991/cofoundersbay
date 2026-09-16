@@ -8,6 +8,22 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 export class SearchController {
   constructor(private readonly search: SearchService) {}
 
+  @Get('search')
+  @UseGuards(OptionalJwtAuthGuard)
+  async searchAll(
+    @Query('q') q?: string,
+    @Query('category') category?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.search.searchGlobal({
+      q: q?.trim() || '',
+      category: category?.trim() || 'all',
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+    });
+  }
+
   @Get('search/profiles')
   @UseGuards(OptionalJwtAuthGuard)
   async searchProfiles(

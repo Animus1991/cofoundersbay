@@ -20,6 +20,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AppShell } from '@/components/layout/AppShell';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import {
   Globe,
   Plus,
@@ -36,14 +39,13 @@ import {
   ChevronRight,
   Link2,
 } from 'lucide-react';
-import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-200 gap-1"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-200 gap-1"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1"><CheckCircle2 className="icon-sm" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1"><Clock className="icon-sm" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1"><XCircle className="icon-sm" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1"><XCircle className="icon-sm" />Expired</Badge>;
   }
 }
 
@@ -60,10 +62,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.verification.name}</span>
-          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
+          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.verification.value}</span>
-          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
+          <button onClick={() => copy(instructions.verification?.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">TTL</span>
           <span>{instructions.verification.ttl}</span>
           <span />
@@ -77,10 +79,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.cname.name}</span>
-          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
+          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.cname.value}</span>
-          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
+          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
         </div>
       </div>
       <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
@@ -99,11 +101,25 @@ function DomainRow({
   tenantId: string;
   onRefresh: () => void;
 }) {
-  const confirm = useConfirm();
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
   const [loadingDns, setLoadingDns] = useState(false);
+
+  const handleRemove = async () => {
+    const ok = await confirm({
+      title: <BilingualText en={`Remove domain “${domain.domainName}”?`} el={`Αφαίρεση domain “${domain.domainName}”;`} />,
+      description: (
+        <BilingualText
+          en="Sign-in and links on this domain will stop working for your members."
+          el="Η σύνδεση και οι σύνδεσμοι σε αυτό το domain θα σταματήσουν να λειτουργούν για τα μέλη σας."
+        />
+      ),
+      confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
+    });
+    if (ok) remove.mutate();
+  };
 
   const verify = useMutation({
     mutationFn: () => verifyTenantDomain(tenantId, domain.id),
@@ -139,7 +155,7 @@ function DomainRow({
     <div className="rounded-lg border border-border/60 bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
+          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
@@ -147,13 +163,13 @@ function DomainRow({
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 text-xs">Active</Badge>
+                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs">Active</Badge>
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
-              {domain.sslStatus === 'active' && <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 text-xs">SSL</Badge>}
+              {domain.sslStatus === 'active' && <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs">SSL</Badge>}
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             )}
           </div>
@@ -163,19 +179,19 @@ function DomainRow({
           {domain.domainType === 'custom' && domain.verificationStatus !== 'verified' && (
             <>
               <Button size="sm" variant="outline" onClick={handleShowDns} disabled={loadingDns} className="gap-1 h-7 text-xs">
-                <Link2 className="icon-sm" aria-hidden="true" />
+                <Link2 className="icon-sm" />
                 DNS Setup
-                {showDns ? <ChevronDown className="icon-sm" aria-hidden="true" /> : <ChevronRight className="icon-sm" aria-hidden="true" />}
+                {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
               </Button>
               <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
-                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} aria-hidden="true" />
+                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
                 Verify
               </Button>
             </>
           )}
           {!domain.isPrimary && domain.isActive && (
             <Button size="sm" variant="ghost" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
-              <Star className="icon-sm" aria-hidden="true" />
+              <Star className="icon-sm" />
               Set Primary
             </Button>
           )}
@@ -184,27 +200,19 @@ function DomainRow({
             variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700' : 'text-green-600 dark:text-green-400 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
           >
-            <Power className="icon-sm" aria-hidden="true" />
+            <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            onClick={async () => {
-              const ok = await confirm({
-                title: 'Delete this domain?',
-                description: `${domain.domainName} will stop resolving to this tenant.`,
-                confirmLabel: 'Delete domain',
-                intent: 'destructive',
-              });
-              if (ok) remove.mutate();
-            }}
+            onClick={() => void handleRemove()}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive-emphasis hover:text-destructive-emphasis"
+            className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >
-            <Trash2 className="icon-sm" aria-hidden="true" />
+            <Trash2 className="icon-sm" />
           </Button>
         </div>
       </div>
@@ -272,11 +280,11 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             disabled={addSub.isPending || !subdomainInput.trim()}
             className="gap-1"
           >
-            <Plus className="icon-sm" aria-hidden="true" />
+            <Plus className="icon-sm" />
             Add
           </Button>
         </div>
-        {addSub.isError && <p className="text-xs text-destructive-emphasis">{(addSub.error as Error).message}</p>}
+        {addSub.isError && <p className="text-xs text-destructive-accessible">{(addSub.error as Error).message}</p>}
       </div>
 
       {/* Add custom domain */}
@@ -296,11 +304,11 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             disabled={addCustom.isPending || !customDomainInput.trim()}
             className="gap-1"
           >
-            <Plus className="icon-sm" aria-hidden="true" />
+            <Plus className="icon-sm" />
             Add
           </Button>
         </div>
-        {addCustom.isError && <p className="text-xs text-destructive-emphasis">{(addCustom.error as Error).message}</p>}
+        {addCustom.isError && <p className="text-xs text-destructive-accessible">{(addCustom.error as Error).message}</p>}
       </div>
     </div>
   );
@@ -319,13 +327,11 @@ export default function DomainsAdminPage() {
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">Domain Management</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure subdomains and custom domains for each tenant organization.
-        </p>
-      </div>
+    <AppShell
+      title="Domain Management"
+      description="Configure subdomains and custom domains for each tenant organization."
+    >
+      <div className="space-y-6">
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         {/* Tenant selector */}
@@ -343,14 +349,16 @@ export default function DomainsAdminPage() {
                 {tenants.map((t) => (
                   <button
                     key={t.id}
+                    type="button"
                     onClick={() => setSelectedTenantId(t.id)}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors ${
+                    aria-pressed={selectedTenantId === t.id}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-ring ${
                       selectedTenantId === t.id ? 'bg-primary/5 border-l-2 border-primary' : ''
                     }`}
                   >
                     {t.logoUrl
-                      ? <img src={t.logoUrl} alt="" className="icon-lg rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
-                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary-emphasis" aria-hidden="true" /></div>}
+                      ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary-accessible" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>
@@ -367,7 +375,7 @@ export default function DomainsAdminPage() {
           {!selectedTenant ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
+                <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">Select an organization to manage its domains</p>
               </CardContent>
             </Card>
@@ -375,7 +383,7 @@ export default function DomainsAdminPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-8 w-8 rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={32} height={32} />}
+                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-8 w-8 rounded" />}
                   <div>
                     <CardTitle>{selectedTenant.displayName || selectedTenant.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">/{selectedTenant.slug}</p>
@@ -389,6 +397,7 @@ export default function DomainsAdminPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }

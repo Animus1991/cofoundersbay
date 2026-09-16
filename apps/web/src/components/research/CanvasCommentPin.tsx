@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -91,9 +92,9 @@ function timeAgo(iso: string): string {
 
 function typeColor(type: string) {
   switch (type) {
-    case 'suggestion': return 'bg-purple-500';
-    case 'question':   return 'bg-blue-500';
-    case 'resolved':   return 'bg-green-500';
+    case 'suggestion': return 'bg-status-accent';
+    case 'question':   return 'bg-status-info';
+    case 'resolved':   return 'bg-status-success';
     default:           return 'bg-primary';
   }
 }
@@ -114,7 +115,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
   const [submittingReply, setSubmittingReply] = useState(false);
 
   const replies = comment.replies ?? [];
-  const pinBg = comment.resolved ? 'bg-green-500' : typeColor(comment.commentType);
+  const pinBg = comment.resolved ? 'bg-status-success' : typeColor(comment.commentType);
 
   const handleReply = async () => {
     if (!replyBody.trim()) return;
@@ -141,8 +142,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
         title={comment.body}
       >
         {comment.resolved
-          ? <CheckCircle2 className="h-3.5 w-3.5 text-white" aria-hidden="true" />
-          : <MessageSquare className="h-3.5 w-3.5 text-white" aria-hidden="true" />
+          ? <CheckCircle2 className="icon-sm text-white" />
+          : <MessageSquare className="icon-sm text-white" />
         }
       </button>
 
@@ -180,16 +181,16 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                     className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
                     onClick={() => setOpen(false)}
                   >
-                    <X className="icon-2xs" aria-hidden="true" />
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               </div>
               <Badge
                 variant="outline"
                 className={cn('text-2xs px-1 py-0 mt-0.5 capitalize', {
-                  'border-purple-300 text-purple-600 dark:text-purple-400': comment.commentType === 'suggestion',
-                  'border-blue-300 text-blue-600 dark:text-blue-400': comment.commentType === 'question',
-                  'border-green-300 text-green-600 dark:text-green-400': comment.resolved,
+                  'border-status-accent-border text-status-accent': comment.commentType === 'suggestion',
+                  'border-status-info-border text-status-info': comment.commentType === 'question',
+                  'border-status-success-border text-status-success': comment.resolved,
                 })}
               >
                 {comment.resolved ? 'resolved' : comment.commentType}
@@ -210,8 +211,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 onClick={() => setShowReplies((v) => !v)}
               >
                 {showReplies
-                  ? <ChevronDown className="icon-2xs" aria-hidden="true" />
-                  : <ChevronRight className="icon-2xs" aria-hidden="true" />
+                  ? <ChevronDown className="icon-sm" />
+                  : <ChevronRight className="icon-sm" />
                 }
                 {replies.length} repl{replies.length === 1 ? 'y' : 'ies'}
               </button>
@@ -219,7 +220,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 <div className="mt-1.5 space-y-2">
                   {replies.map((r) => (
                     <div key={r.id} className="flex gap-1.5">
-                      <CornerDownRight className="icon-2xs text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
+                      <CornerDownRight className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
                       <div>
                         <span className="text-2xs font-medium">{r.author?.displayName ?? 'User'}</span>
                         <p className="text-2xs text-muted-foreground">{r.body}</p>
@@ -255,8 +256,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 disabled={submittingReply || !replyBody.trim()}
               >
                 {submittingReply
-                  ? <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
-                  : <Send className="icon-2xs" aria-hidden="true" />
+                  ? <Loader2 className="icon-sm animate-spin" />
+                  : <Send className="icon-sm" />
                 }
               </Button>
             </div>
@@ -266,10 +267,10 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-7 text-2xs text-green-600 border-green-200 hover:bg-green-50"
+                className="w-full h-7 text-2xs text-status-success border-status-success-border hover:bg-status-success-bg"
                 onClick={() => { onResolve(comment.id); setOpen(false); }}
               >
-                <CheckCircle2 className="icon-2xs mr-1.5" aria-hidden="true" />
+                <CheckCircle2 className="icon-sm mr-1.5" />
                 Resolve
               </Button>
             )}
@@ -309,12 +310,15 @@ export function CanvasCommentPins({
   const [newPinBody, setNewPinBody] = useState('');
   const [newPinType, setNewPinType] = useState<'general' | 'suggestion' | 'question'>('general');
   const [submitting, setSubmitting] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
     queryKey: ['node-comments', nodeId],
     queryFn: () => listNodeComments(nodeId),
-    enabled: enabled && !!nodeId,
-    refetchInterval: 30_000,
+    enabled: enabled && !!nodeId && apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const comments: CanvasComment[] = (data ?? []).filter(
@@ -429,7 +433,7 @@ export function CanvasCommentPins({
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Pin className="icon-2xs text-primary-emphasis" aria-hidden="true" />
+                <Pin className="icon-sm text-primary-accessible" />
                 Add Pin Comment
               </div>
               <Button
@@ -438,7 +442,7 @@ export function CanvasCommentPins({
                 className="h-5 w-5 p-0"
                 onClick={() => setPendingPin(null)}
               >
-                <X className="icon-2xs" aria-hidden="true" />
+                <X className="icon-sm" />
               </Button>
             </div>
 
@@ -480,7 +484,7 @@ export function CanvasCommentPins({
                 onClick={handleSubmitPin}
                 disabled={submitting || !newPinBody.trim()}
               >
-                {submitting ? <Loader2 className="icon-2xs animate-spin mr-1" aria-hidden="true" /> : null}
+                {submitting ? <Loader2 className="icon-sm animate-spin mr-1" /> : null}
                 Pin
               </Button>
               <Button

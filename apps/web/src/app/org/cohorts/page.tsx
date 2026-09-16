@@ -38,7 +38,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgCohorts } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Cohort = {
   id: string;
@@ -54,13 +56,14 @@ type Cohort = {
   mentorCoverage?: number; // % of startups with assigned mentor
 };
 
-function CohortCard({ cohort }: { cohort: Cohort }) {
-  const statusColors: Record<string, string> = {
-    recruiting: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
-    completed: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-  };
+const COHORT_STATUS_TONE: Record<Cohort['status'], StatusTone> = {
+  recruiting: 'info',
+  active: 'success',
+  completed: 'neutral',
+};
 
+function CohortCard({ cohort }: { cohort: Cohort }) {
+  const statusColors = STATUS[COHORT_STATUS_TONE[cohort.status]];
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
       <CardContent className="p-4">
@@ -68,7 +71,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold">{cohort.name}</span>
-              <Badge variant="outline" className={cn('text-xs', statusColors[cohort.status])}>
+              <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 {cohort.status}
               </Badge>
             </div>
@@ -107,8 +110,8 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 )}
                 <div className="flex items-center gap-3 text-2xs">
                   {cohort.mentorCoverage != null && (
-                    <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400')}>
-                      <CheckCircle2 className="icon-sm" aria-hidden="true" /> {cohort.mentorCoverage}% mentor coverage
+                    <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>
+                      <CheckCircle2 className="icon-sm" /> {cohort.mentorCoverage}% mentor coverage
                     </span>
                   )}
                 </div>
@@ -132,8 +135,8 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Cohort
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-emphasis">
-                <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+              <DropdownMenuItem className="text-destructive-accessible">
+                <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -204,14 +207,14 @@ export default function OrgCohortsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Cohorts', value: cohorts.length, icon: Award, color: 'text-primary-emphasis' },
-            { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, color: 'text-green-600 dark:text-green-400' },
-            { label: 'Total Startups', value: totalStartups, icon: Rocket, color: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, color: 'text-purple-600 dark:text-purple-400' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Total Cohorts', value: cohorts.length, icon: Award, tone: 'accent' as const },
+            { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
+            { label: 'Total Startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
+            { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, tone: 'accent' as const },
+          ].map(({ label, value, icon: Icon, tone }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground">{label}</p>
@@ -227,15 +230,10 @@ export default function OrgCohortsPage() {
             <CohortCard key={cohort.id} cohort={cohort} />
           ))}
           {filteredCohorts.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No cohorts found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters or create a new cohort
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyOrgCohorts
+              filtersActive={!!search || statusFilter !== 'all'}
+              onClearFilters={() => { setSearch(''); setStatusFilter('all'); }}
+            />
           )}
         </div>
       </div>

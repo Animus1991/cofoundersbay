@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace } from '@/components/builder/BuilderWorkspace';
 import { IdeaCore } from '@/components/builder/IdeaCore';
 import { BusinessModelCanvas } from '@/components/builder/BusinessModelCanvas';
@@ -12,6 +13,8 @@ import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
 import { ReadinessScoring } from '@/components/builder/ReadinessScoring';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
+import { STATUS } from '@/lib/semantic-colors';
+import { cn } from '@/lib/utils';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
 import { WorkspaceMetricsPanels } from '@/components/gamification/WorkspaceMetricsPanels';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -19,26 +22,32 @@ import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Lightbulb, 
-  Target, 
-  TrendingUp, 
-  Code, 
-  DollarSign,
-  Rocket,
-  CheckCircle2,
-  Presentation,
-  Award,
-  Users,
-  Loader2,
-  AlertCircle,
-  Plus,
-  Sparkles,
-  ArrowRight,
-  X,
-} from 'lucide-react';
+import { Loader2, AlertCircle, ArrowRight, X } from 'lucide-react';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { bilingualAria } from '@/lib/i18n/format';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import type { BuilderDocumentType } from '@/lib/builder-api';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
+
+/** Greek for the preview workspace description seeded by `lib/preview-api.ts`. */
+const PREVIEW_WS_DESC_EL: Record<string, string> = {
+  'Sample workspace — preview demo, not live founder data.':
+    'Δείγμα χώρου εργασίας — επίδειξη προεπισκόπησης, όχι πραγματικά δεδομένα ιδρυτή.',
+};
+
+const BUILDER_TABS: { id: string; glyph: CfbGlyphName; labelEn: string; labelEl: string }[] = [
+  { id: 'overview', glyph: 'builder', labelEn: builderEn('tab_overview'), labelEl: builderEl('tab_overview') },
+  { id: 'idea-core', glyph: 'spark', labelEn: builderEn('tab_idea'), labelEl: builderEl('tab_idea') },
+  { id: 'bmc', glyph: 'target', labelEn: builderEn('tab_bmc'), labelEl: builderEl('tab_bmc') },
+  { id: 'market', glyph: 'chart', labelEn: builderEn('tab_market'), labelEl: builderEl('tab_market') },
+  { id: 'pitch-deck', glyph: 'builder', labelEn: builderEn('tab_pitch'), labelEl: builderEl('tab_pitch') },
+  { id: 'mvp', glyph: 'flag', labelEn: builderEn('tab_mvp'), labelEl: builderEl('tab_mvp') },
+  { id: 'financials', glyph: 'wallet', labelEn: builderEn('tab_financials'), labelEl: builderEl('tab_financials') },
+  { id: 'readiness', glyph: 'award', labelEn: builderEn('tab_readiness'), labelEl: builderEl('tab_readiness') },
+  { id: 'applications', glyph: 'applications', labelEn: builderEn('tab_applications'), labelEl: builderEl('tab_applications') },
+];
 
 function BuilderPageContent() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -52,7 +61,6 @@ function BuilderPageContent() {
   }, []);
   const {
     workspace,
-    workspaces,
     isLoadingWorkspaces,
     documents,
     activeDocument,
@@ -60,45 +68,42 @@ function BuilderPageContent() {
     error,
     isGenerating,
     loadWorkspaces,
-    selectWorkspace,
-    createDocument,
-    selectDocument,
     updateDocumentSection,
     generateContent,
+    createDocument,
     clearError,
   } = useBuilder();
 
-  // Load workspaces on mount + auto-select first (single flow, no waterfall)
   useEffect(() => {
     loadWorkspaces(true);
   }, [loadWorkspaces]);
 
-  const handleSave = async (section: string, data: any) => {
+  const handleSave = async (section: string, data: unknown) => {
     if (!activeDocument) return;
-    await updateDocumentSection(activeDocument.id, section, data);
+    await updateDocumentSection(activeDocument.id, section, (data ?? {}) as Record<string, any>);
   };
 
-  const handleGenerate = async (documentType: any, sectionKey?: string) => {
+  const handleSaveApplications = async (data: unknown) => {
     try {
-      const result = await generateContent(documentType, sectionKey);
+      let doc = documents.find((d) => d.type === 'application');
+      if (!doc) {
+        doc = await createDocument('application', 'Program applications');
+      }
+      await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, any>);
+    } catch {
+      // BuilderContext already surfaces the error banner.
+    }
+  };
+
+  const handleGenerate = async (documentType: string, sectionKey?: string) => {
+    try {
+      const result = await generateContent(documentType as BuilderDocumentType, sectionKey);
       return result.content;
     } catch (err) {
       console.error('Generation failed:', err);
       return null;
     }
   };
-
-  const BUILDER_TABS = [
-    { id: 'overview', label: 'Overview', icon: Rocket },
-    { id: 'idea-core', label: 'Idea Core', icon: Lightbulb },
-    { id: 'bmc', label: 'Business Model', icon: Target },
-    { id: 'market', label: 'Market', icon: TrendingUp },
-    { id: 'pitch-deck', label: 'Pitch Deck', icon: Presentation },
-    { id: 'mvp', label: 'MVP', icon: Code },
-    { id: 'financials', label: 'Financials', icon: DollarSign },
-    { id: 'readiness', label: 'Readiness', icon: Award },
-    { id: 'applications', label: 'Applications', icon: CheckCircle2 },
-  ];
 
   // Get document content by type
   const getDocumentContent = (type: string) => {
@@ -108,103 +113,117 @@ function BuilderPageContent() {
 
   if (isLoadingWorkspaces) {
     return (
-      <AppShell>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
+      <AppShell showHelp>
+        <div className="flex h-64 flex-col items-center justify-center gap-3">
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={builderEn('loading')} el={builderEl('loading')} compact />
+          </p>
         </div>
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <AppShell
+      showHelp
+      askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
+    >
+      <div className="min-w-0 space-y-6 overflow-x-clip">
         {/* Error Alert */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive-emphasis" aria-hidden="true" />
-            <p className="text-sm text-destructive-emphasis">{error}</p>
-            <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
-              Dismiss
+          <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-start gap-3">
+              <AlertCircle className="icon-md shrink-0 text-destructive-accessible" />
+              <p className="text-sm text-destructive-accessible">{error}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={clearError} className="sm:ml-auto">
+              <BilingualText en={builderEn('dismiss')} el={builderEl('dismiss')} compact />
             </Button>
           </div>
         )}
 
-        {/* Behavioral Nudge */}
         <BehavioralNudge surface="builder" compact />
 
-        {/* Expert Review CTA — surfaces when artifacts exist */}
         {!reviewBannerDismissed && documents.length >= 2 && (
-          <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-            <Sparkles className="icon-sm shrink-0 text-amber-500" aria-hidden="true" />
-            <div className="flex-1 min-w-0">
+          <div className={cn('flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center', STATUS.warning.border, STATUS.warning.bg)}>
+            <CfbGlyph name="award" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">
-                Your artifacts are ready for expert review
+                <BilingualText en="Your artifacts are ready for expert review" el="Τα τεχνουργήματά σας είναι έτοιμα για αξιολόγηση ειδικού" />
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Get actionable feedback from a domain expert — investors, mentors, or industry specialists.
+              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                <BilingualText en="Get actionable feedback from a domain expert — investors, mentors, or industry specialists." el="Λάβετε πρακτική ανατροφοδότηση από ειδικό τομέα — επενδυτές, μέντορες ή ειδικούς κλάδου." />
               </p>
             </div>
             <a href="/expert-reviews" className="shrink-0">
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
-                Get review <ArrowRight className="icon-2xs" aria-hidden="true" />
+              <Button variant="ghost" size="sm" className={cn('h-9 w-full gap-1 text-xs font-semibold hover:bg-status-warning-bg sm:w-auto', STATUS.warning.text)}>
+                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="icon-sm" />
               </Button>
             </a>
             <button
+              type="button"
               onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
-              className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
-              title="Dismiss"
+              className="shrink-0 rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+              title={bilingualAria('Dismiss', 'Απόρριψη')}
+              aria-label={bilingualAria('Dismiss expert-review suggestion', 'Απόρριψη πρότασης αξιολόγησης')}
             >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
+              <X className="icon-sm" />
             </button>
           </div>
         )}
 
         {/* Context Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Rocket className="icon-lg text-primary-emphasis" aria-hidden="true" />
-              </div>
-              {workspace?.name || 'Startup Builder'}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {workspace?.description || 'Transform your idea into a validated startup plan with AI assistance'}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            {workspace?.name && (
+              <p className="text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
+            )}
+            <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
+              {/* The preview workspace ships an English description; map it so
+                  the Greek-primary page is not interrupted. User workspaces
+                  render whatever the founder wrote. */}
+              {workspace?.description
+                ? (PREVIEW_WS_DESC_EL[workspace.description]
+                  ? <BilingualText en={workspace.description} el={PREVIEW_WS_DESC_EL[workspace.description]} wrap />
+                  : workspace.description)
+                : <BilingualText en={builderEn('tagline')} el={builderEl('tagline')} />}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <AIInsightButton
+              className="h-9"
+              prompt={`Startup Builder workspace "${workspace?.name ?? 'my venture'}": ${documents.length} artifacts (${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}). Recommend the next document — Idea Core, Business Model, interviews, pitch, MVP, or financials — and draft the first section.`}
+            />
             {/* Online Collaborators */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
-                <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
+                <CfbGlyph name="people" className="icon-sm text-muted-foreground" />
                 <div className="flex -space-x-2">
                   {onlineCollaborators.slice(0, 3).map((c) => (
                     <Avatar key={c.odId} className="h-6 w-6 border-2 border-background">
-                      <AvatarFallback className="text-xs bg-primary/20">
+                      <AvatarFallback className="bg-primary/20 text-xs">
                         {c.odName.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                   {onlineCollaborators.length > 3 && (
-                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs border-2 border-background">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-xs">
                       +{onlineCollaborators.length - 3}
                     </div>
                   )}
                 </div>
               </div>
             )}
-            {/* AI Generating Indicator */}
             {isGenerating && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
-                <span>AI generating...</span>
+                <Loader2 className="icon-sm animate-spin" />
+                <BilingualText en={builderEn('ai_generating')} el={builderEl('ai_generating')} compact />
               </div>
             )}
           </div>
         </div>
 
-        {/* Collab Toolbar — shown when a document is active */}
         {activeDocument && workspace && (
           <CollabToolbar
             documentId={activeDocument.id}
@@ -214,23 +233,19 @@ function BuilderPageContent() {
           />
         )}
 
-        {/* Main Builder Interface */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9">
-            {BUILDER_TABS.map(tab => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger 
-                  key={tab.id} 
-                  value={tab.id}
-                  className="flex items-center gap-1 text-xs"
-                  title={tab.label}
-                >
-                  <Icon className="icon-sm" />
-                  <span className="sr-only lg:not-sr-only lg:inline">{tab.label}</span>
-                </TabsTrigger>
-              );
-            })}
+          <TabsList className="flex h-auto w-full snap-x snap-mandatory justify-start overflow-x-auto rounded-xl">
+            {BUILDER_TABS.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex min-h-10 shrink-0 snap-start items-center gap-1.5 text-xs"
+                title={bilingualAria(tab.labelEn, tab.labelEl)}
+              >
+                <CfbGlyph name={tab.glyph} className="icon-sm" />
+                <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -238,44 +253,46 @@ function BuilderPageContent() {
           </TabsContent>
 
           <TabsContent value="idea-core" className="space-y-6">
-            <IdeaCore 
+            <IdeaCore
               onSave={(data) => handleSave('ideaCore', data)}
               initialData={getDocumentContent('idea_core')}
             />
           </TabsContent>
 
           <TabsContent value="bmc" className="space-y-6">
-            <BusinessModelCanvas 
+            <BusinessModelCanvas
               onSave={(data) => handleSave('bmc', data)}
               initialData={getDocumentContent('business_model_canvas')}
             />
           </TabsContent>
 
           <TabsContent value="market" className="space-y-6">
-            <MarketAnalysis 
+            <MarketAnalysis
               onSave={(data) => handleSave('marketAnalysis', data)}
               initialData={getDocumentContent('market_analysis')}
             />
           </TabsContent>
 
           <TabsContent value="pitch-deck" className="space-y-6">
-            <PitchDeckBuilder 
+            <PitchDeckBuilder
               onSave={(data) => handleSave('pitchDeck', data)}
               initialData={getDocumentContent('pitch_deck')}
+              workspaceName={workspace?.startupName || workspace?.name}
+              ideaCore={getDocumentContent('idea_core')}
             />
           </TabsContent>
 
           <TabsContent value="mvp" className="space-y-6">
-            <MVPPlanner 
+            <MVPPlanner
               onSave={(data) => handleSave('mvpPlan', data)}
               initialData={getDocumentContent('mvp_plan')}
             />
           </TabsContent>
 
           <TabsContent value="financials" className="space-y-6">
-            <FinancialPlanning 
+            <FinancialPlanning
               onSave={(data) => handleSave('financials', data)}
-              initialData={getDocumentContent('financial_projections')}
+              initialData={getDocumentContent('financials')}
             />
           </TabsContent>
 
@@ -287,15 +304,15 @@ function BuilderPageContent() {
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-6">
-            <ApplicationGenerator 
-              onSave={(data) => handleSave('applications', data)}
+            <ApplicationGenerator
+              onSave={handleSaveApplications}
+              initialData={getDocumentContent('application')}
               workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})}
             />
           </TabsContent>
         </Tabs>
       </div>
 
-      {/* Version History Drawer */}
       {activeDocument && (
         <VersionHistoryDrawer
           open={showVersionHistory}
