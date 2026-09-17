@@ -1,14 +1,8 @@
 import type { NextConfig } from 'next';
-import path from 'node:path';
 
 const allowedDevOrigins = ['localhost', '127.0.0.1', '*.trycloudflare.com'];
 
 const isProduction = process.env.NODE_ENV === 'production';
-// The package.json of @cofounderbay/shared points at dist/. The axe CI job
-// (and any `pnpm run build` from apps/web alone) never compiles that package,
-// so webpack reports "Can't resolve '@cofounderbay/shared'". Point both
-// compilers at the TypeScript entry; transpilePackages compiles it in-tree.
-const sharedSrc = path.resolve(__dirname, '../../packages/shared/src/index.ts');
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -80,11 +74,7 @@ const nextConfig: NextConfig = {
   // Turbopack is the dev compiler (enabled via `next dev --turbopack` in scripts/dev.js).
   // Declaring the key keeps Turbopack/webpack config resolution explicit. The webpack()
   // hook below still runs for `next build` (production), which uses webpack.
-  turbopack: {
-    resolveAlias: {
-      '@cofounderbay/shared': sharedSrc,
-    },
-  },
+  turbopack: {},
 
   async rewrites() {
     if (process.env.NODE_ENV !== 'development') return [];
@@ -99,10 +89,6 @@ const nextConfig: NextConfig = {
   ...(isProduction
     ? {
         webpack: (config: import('webpack').Configuration, { isServer }: { isServer: boolean }) => {
-          config.resolve = config.resolve ?? {};
-          const alias = (config.resolve.alias ?? {}) as Record<string, string | string[]>;
-          alias['@cofounderbay/shared'] = sharedSrc;
-          config.resolve.alias = alias;
           if (!isServer) {
             config.optimization = {
               ...config.optimization,
