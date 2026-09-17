@@ -207,9 +207,11 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
                           variant={postType === type ? 'secondary' : 'ghost'}
                           size="sm"
                           onClick={() => setPostType(type)}
+                          aria-label={config.label}
+                          aria-pressed={postType === type}
                           className="gap-1"
                         >
-                          <Icon className={cn('icon-sm', config.color)} />
+                          <Icon className={cn('icon-sm', config.color)} aria-hidden="true" />
                           <span className="hidden sm:inline">{config.label}</span>
                         </Button>
                       );
@@ -736,13 +738,20 @@ export default function FeedPage() {
               <TabsTrigger value="trending"><BilingualText en="Trending" el="Τάσεις" compact /></TabsTrigger>
             </TabsList>
           </Tabs>
+          {/* The label is `hidden sm:inline`, so below 640px this button had
+              no accessible name — named on desktop, anonymous on a phone,
+              which is why mobile /feed failed button-name (critical). A
+              responsive class can hide text from the screen; it must not be
+              the only thing naming the control. */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowPreferences(!showPreferences)}
+            aria-label={bilingualAria('Preferences', 'Προτιμήσεις')}
+            aria-expanded={showPreferences}
             className="gap-1"
           >
-            <Settings className="icon-sm" />
+            <Settings className="icon-sm" aria-hidden="true" />
             <span className="hidden sm:inline"><BilingualText en="Preferences" el="Προτιμήσεις" compact /></span>
           </Button>
         </div>
