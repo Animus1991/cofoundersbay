@@ -619,3 +619,26 @@ Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έ�
 Το `{ provide: JwtAuthGuard, useValue: … }` **δεν** παρεμβάλλεται: ο πραγματικός guard επεκτείνει το `AuthGuard('jwt')` του passport και χωρίς registered strategy απαντά **500 αντί 401**. Και τα 14 tests μου απέτυχαν έτσι. Η υπάρχουσα σουίτα jobs κάνει `vi.spyOn(JwtAuthGuard.prototype, 'canActivate')` για τον ίδιο λόγο. Καταγράφηκε στο `AGENTS.md`.
 
 **Κατάσταση:** api 158 → **172/172** (7 files), web **279/279** (32 files), `tsc --noEmit` καθαρό σε web + api.
+
+## 20. Έλεγχος 2026-09-17 — η γραμμή προϊόντος έχει φύγει 60 commits μπροστά
+
+`git fetch origin --prune`. Remote heads:
+
+| branch | SHA | ahead of `main` `91d6ea3` |
+|---|---|---|
+| `integration/ai-platform-upgrade` | `1fb4bc4` | **193** |
+| `claude/project-audit-upgrade-y2ebnr` | `4b897c9` | 191 |
+| `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe3` | 133 |
+| `main` | `91d6ea3` | 0 |
+
+**Πιο ανεπτυγμένο προϊόν:** `integration/ai-platform-upgrade` `1fb4bc4`. Περιέχει ολόκληρο το `cursor/ai-os-fullpage-chat-53e0` (`7ce1fe3` είναι πρόγονος) συν 60 commits: type/layout, i18n, AI reads/loop, a11y/hydration, Tailwind padding, reversible shortlist, capability index.
+
+Ο Claude **δεν είναι πια το April fork.** `f54098c` έκανε merge την AI platform line μέσα στη design line· κοινός πρόγονος με integration είναι `06024ae`, όχι το `main`. Unique του Claude μετά από εκεί: 2 commits (`bd5e720`, `4b897c9`). Unique του integration: 4 (`69a6fc9`, `5178e45`, `d016495`, `1fb4bc4`).
+
+Τραβήχτηκαν **χωρίς παράλειψη**:
+
+- Fast-forward στο `1fb4bc4` (και τα 60, συμπεριλαμβανομένων των 4 unique του integration: RelativeTime, 12 reads, copilot-loop, padding `pl-9`, shortlist remove, `/ai/capabilities`).
+- Cherry-pick `bd5e720` πάνω σε αυτό: ConversationList χωρίς nested-interactive, `a11y.spec.ts` «every control keeps its name at phone width», MatchCard/SearchFilters/matches raw `<button>` names, Button `asChild` exemption. Στα overlapping call sites κρατήθηκαν τα **integration** labels (διγλωσσικά, με το όνομα της γραμμής, `aria-pressed`) — τα Claude labels ήταν γενικότερα και σε μία περίπτωση έσβηναν `onClick` στο attach image.
+- `4b897c9` (hydration gate green) ήταν ήδη στο `69a6fc9` ως θετικός έλεγχος `relative timestamps hydrate without a mismatch`. Cherry-pick κενό· skip.
+
+**Σκόπιμα όχι:** full merge του Claude HEAD — θα πετούσε τα 4 unique του integration (3.630 γραμμές: `copilot-reads`, loop, catalogue, capability index). OpenNext, squircle, April axe mock: ακόμα έξω, όπως στα §13.
