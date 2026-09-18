@@ -642,3 +642,11 @@ Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έ�
 - `4b897c9` (hydration gate green) ήταν ήδη στο `69a6fc9` ως θετικός έλεγχος `relative timestamps hydrate without a mismatch`. Cherry-pick κενό· skip.
 
 **Σκόπιμα όχι:** full merge του Claude HEAD — θα πετούσε τα 4 unique του integration (3.630 γραμμές: `copilot-reads`, loop, catalogue, capability index). OpenNext, squircle, April axe mock: ακόμα έξω, όπως στα §13.
+
+### 20.1 Έλεγχος 2026-09-18 — κανένα νέο remote commit
+
+`git fetch origin --prune`. Heads **αμετάβλητα** από §20: `main` `91d6ea3`, `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3`, `integration/ai-platform-upgrade` `1fb4bc4`, `claude/project-audit-upgrade-y2ebnr` `4b897c9`.
+
+**Πιο ανεπτυγμένο προϊόν:** αυτή η γραμμή `cursor/ui-upgrade-cloudflare-preview-53e0` `6582dcb` — **199** μπροστά από `main`, 6 μπροστά από integration (docs + CI/a11y fixes: shared `prebuild`, AIInsightButton, feed Preferences). Integration 0 unique. Claude unique SHAs ακόμα `bd5e720`/`4b897c9` (ήδη cherry-picked / skip).
+
+Διαφορά αρχείων προς Claude: σχόλια στο Button, αγγλικά labels στο `/feed`, import `LocalTime` αντί `RelativeTime`. Υιοθέτηση θα **αφαιρούσε** bilingual names και hydration-stable timestamps. Καμία παράλειψη αναβάθμισης.
