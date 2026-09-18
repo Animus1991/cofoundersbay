@@ -106,6 +106,7 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
   ai_analysis: { en: 'AI analysis', el: 'Ανάλυση AI' },
   board_summary: { en: 'Board summary & health', el: 'Σύνοψη και υγεία πίνακα' },
   canvas_history: { en: 'Canvas history, versions & branches', el: 'Ιστορικό, εκδόσεις και κλάδοι' },
+  canvas_more: { en: 'More canvas actions', el: 'Περισσότερες ενέργειες καμβά' },
   add_link: { en: 'Add link', el: 'Προσθήκη συνδέσμου' },
   ref_entity: { en: 'Reference entity', el: 'Αναφορά οντότητας' },
   show_grid: { en: 'Show grid', el: 'Εμφάνιση πλέγματος' },
@@ -127,6 +128,10 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
   hint_nav: {
     en: 'Scroll to zoom · Drag to pan · ? for shortcuts',
     el: 'Κύλιση για ζουμ · Σύρσιμο για μετακίνηση · ? για συντομεύσεις',
+  },
+  hint_nav_touch: {
+    en: 'Pinch to zoom · Drag to pan',
+    el: 'Τσίμπημα για ζουμ · Σύρσιμο για μετακίνηση',
   },
   enter_url: { en: 'Enter URL:', el: 'Εισάγετε URL:' },
   connections: { en: 'connections', el: 'συνδέσεις' },

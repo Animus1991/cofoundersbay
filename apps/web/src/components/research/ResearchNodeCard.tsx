@@ -73,6 +73,19 @@ interface ResearchNodeCardProps {
   onPinPlaced?: () => void;
 }
 
+function touchAsMouse(e: React.TouchEvent): React.MouseEvent {
+  const t = e.touches[0] ?? e.changedTouches[0];
+  return {
+    clientX: t.clientX,
+    clientY: t.clientY,
+    shiftKey: false,
+    stopPropagation: () => e.stopPropagation(),
+    preventDefault: () => e.preventDefault(),
+    target: e.target,
+    currentTarget: e.currentTarget,
+  } as unknown as React.MouseEvent;
+}
+
 /* ─── Color helpers ──────────────────────────────────────────── */
 const TYPE_DEFAULTS: Record<string, { color: string; label: string }> = {
   // ── Core ──────────────────────────────────────────
@@ -342,6 +355,11 @@ export function ResearchNodeCard({
 
   const router = useRouter();
 
+  const handleTouchDragStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    onDragStart(touchAsMouse(e));
+  };
+
   // Close menus on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -405,7 +423,7 @@ export function ResearchNodeCard({
           height: `${node.height || 120}px`,
           zIndex: isSelected ? 10 : (node.zIndex || 1),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -443,7 +461,7 @@ export function ResearchNodeCard({
           height: `${node.height || 400}px`,
           zIndex: isSelected ? 10 : (node.zIndex || 2),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -475,7 +493,7 @@ export function ResearchNodeCard({
       <div
         className={cn('absolute group select-none', isDragging && 'opacity-75 scale-[1.02]')}
         style={{ left: `${node.posX}px`, top: `${node.posY}px`, width: `${node.width}px`, height: `${node.height || 360}px`, zIndex: isSelected ? 10 : (node.zIndex || 2) }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -505,7 +523,7 @@ export function ResearchNodeCard({
       <div
         className={cn('absolute group select-none', isDragging && 'opacity-75 scale-[1.02]')}
         style={{ left: `${node.posX}px`, top: `${node.posY}px`, width: `${node.width}px`, height: `${node.height || 400}px`, zIndex: isSelected ? 10 : (node.zIndex || 2) }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -548,7 +566,7 @@ export function ResearchNodeCard({
           borderColor: '#EC4899B3',
           zIndex: isSelected ? 10 : (node.zIndex || 2),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -610,7 +628,7 @@ export function ResearchNodeCard({
           borderLeft: `4px solid ${stickyColor.border}`,
           zIndex: isSelected ? 10 : (node.zIndex || 2),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onDoubleClick={(e) => {
           if (!node.locked) {
@@ -722,7 +740,7 @@ export function ResearchNodeCard({
         borderColor: `${nodeColor}B3`,
         zIndex: isSelected ? 10 : (node.zIndex || 2),
       }}
-      onMouseDown={onDragStart}
+      onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
       onClick={(e) => onSelect(e)}
       onDoubleClick={onDoubleClick}
       onContextMenu={onContextMenu}

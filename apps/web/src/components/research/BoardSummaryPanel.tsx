@@ -153,7 +153,7 @@ export function BoardSummaryPanel({
   }, [analysis, boardTitle, success, showError]);
 
   return (
-    <div className="w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
+    <div className="w-full sm:w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
         <div className="w-6 h-6 rounded-lg bg-status-success/15 flex items-center justify-center">
