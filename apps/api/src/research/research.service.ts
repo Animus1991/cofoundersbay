@@ -68,14 +68,14 @@ export class ResearchService {
 
   // ─── Boards ────────────────────────────────────────────────────────────────
 
-  async listBoards(userId: string): Promise<ResearchBoardDto[]> {
+  async listBoards(userId: string, archived = false): Promise<ResearchBoardDto[]> {
     const boards = await this.prisma.researchBoard.findMany({
       where: {
         OR: [
           { ownerId: userId },
           { collaborators: { some: { userId } } },
         ],
-        isArchived: false,
+        isArchived: archived,
       },
       include: {
         _count: { select: { nodes: true } },

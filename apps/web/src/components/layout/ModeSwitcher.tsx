@@ -39,7 +39,9 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
           // a ~60px cell can break "Εξερεύνηση" / "Λογαριασμός" instead of
           // clipping to "Εξερε…". Overflow is allowed so the second line is
           // visible; the tooltip still carries both languages.
-          expanded ? 'grid grid-cols-3 gap-0.5 px-1 py-1.5' : 'flex flex-col gap-1 px-1 py-1.5',
+          expanded
+            ? 'grid grid-cols-3 gap-0.5 px-1 py-1.5'
+            : 'flex flex-col items-center gap-0.5 px-0 py-1.5',
         )}
       >
         {sidebarModes.map((mode) => {
@@ -52,10 +54,10 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
             <button
               onClick={() => onModeChange(mode.id)}
               className={cn(
-                'flex w-full min-w-0 items-center rounded-md transition-colors duration-150',
+                'flex min-w-0 items-center rounded-lg transition-colors duration-150',
                 expanded
-                  ? 'min-h-[2.75rem] flex-col justify-center gap-0.5 px-0.5 py-1 text-center'
-                  : 'h-8 w-8 justify-center',
+                  ? 'w-full min-h-[2.75rem] flex-col justify-center gap-0.5 px-0.5 py-1 text-center'
+                  : 'h-9 w-9 justify-center lg:h-[36px] lg:w-[36px]',
                 isActive
                   ? 'bg-primary/8 text-primary-accessible'
                   : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
@@ -63,7 +65,11 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               aria-pressed={isActive}
               aria-label={bilingualAria(mode.shortLabel, labelEl)}
             >
-              <NavIcon name={glyphForMode(mode.id)} fallback={Icon} className="icon-sm shrink-0" />
+              <NavIcon
+                name={glyphForMode(mode.id)}
+                fallback={Icon}
+                className={cn(expanded ? 'icon-sm' : 'icon-md', 'shrink-0')}
+              />
               {expanded && (
                 <span
                   lang={primary === 'el' ? 'el' : 'en'}

@@ -327,7 +327,7 @@ export default function CalendarPage() {
       askAi="The calendar still shows sample items. What live surfaces should I use for sessions, events, and milestones, and what should I do next?"
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center border rounded-md">
+          <div className="flex items-center overflow-hidden rounded-xl border">
             <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-r-none" onClick={() => setView('calendar')} aria-label={bilingualAria('Calendar view', 'Προβολή ημερολογίου')}>
               <LayoutGrid className="icon-sm" />
             </Button>

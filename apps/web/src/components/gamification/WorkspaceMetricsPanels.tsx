@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 import {
   Target,
   Zap,
@@ -34,17 +35,18 @@ import {
 const DIMENSION_CONFIG: Array<{
   key: keyof GamificationReadinessSummary['dimensions'];
   label: string;
+  labelEl: string;
   icon: typeof Target;
   description: string;
 }> = [
-  { key: 'problemClarity',       label: 'Problem Clarity',       icon: Target,        description: 'Problem statement definition' },
-  { key: 'solutionClarity',      label: 'Solution Clarity',      icon: CheckCircle2,  description: 'Solution artifact completeness' },
-  { key: 'marketUnderstanding',  label: 'Market Understanding',  icon: BarChart3,     description: 'Market analysis depth' },
-  { key: 'productDefinition',    label: 'Product Definition',    icon: BookOpen,      description: 'PRD / MVP spec completeness' },
-  { key: 'teamCompleteness',     label: 'Team Completeness',     icon: Users,         description: 'Co-founders, mentors, collaborators' },
-  { key: 'executionReadiness',   label: 'Execution Readiness',   icon: TrendingUp,    description: 'Milestones × completion rate' },
-  { key: 'validationScore',      label: 'Validation Score',      icon: Star,          description: 'Expert reviews + feedback applied' },
-  { key: 'artifactCompleteness', label: 'Artifact Completeness', icon: Activity,      description: 'Avg document completion %' },
+  { key: 'problemClarity',       label: 'Problem Clarity',       labelEl: 'Σαφήνεια προβλήματος',       icon: Target,        description: 'Problem statement definition' },
+  { key: 'solutionClarity',      label: 'Solution Clarity',      labelEl: 'Σαφήνεια λύσης',            icon: CheckCircle2,  description: 'Solution artifact completeness' },
+  { key: 'marketUnderstanding',  label: 'Market Understanding',  labelEl: 'Κατανόηση αγοράς',          icon: BarChart3,     description: 'Market analysis depth' },
+  { key: 'productDefinition',    label: 'Product Definition',    labelEl: 'Ορισμός προϊόντος',         icon: BookOpen,      description: 'PRD / MVP spec completeness' },
+  { key: 'teamCompleteness',     label: 'Team Completeness',     labelEl: 'Πληρότητα ομάδας',          icon: Users,         description: 'Co-founders, mentors, collaborators' },
+  { key: 'executionReadiness',   label: 'Execution Readiness',   labelEl: 'Ετοιμότητα εκτέλεσης',      icon: TrendingUp,    description: 'Milestones × completion rate' },
+  { key: 'validationScore',      label: 'Validation Score',      labelEl: 'Βαθμός επικύρωσης',         icon: Star,          description: 'Expert reviews + feedback applied' },
+  { key: 'artifactCompleteness', label: 'Artifact Completeness', labelEl: 'Πληρότητα παραδοτέων',      icon: Activity,      description: 'Avg document completion %' },
 ];
 
 function scoreColor(score: number): string {
@@ -115,10 +117,10 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Target className="icon-sm text-primary-accessible" />
-            Startup Readiness
+            <BilingualText en="Startup Readiness" el="Ετοιμότητα startup" compact />
           </CardTitle>
           <div className="flex items-center gap-1.5">
-            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(score))}>
+            <span className={cn('text-lg font-semibold tracking-tight tabular-nums', scoreColor(score))}>
               {score}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
@@ -127,20 +129,26 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         <Progress value={score} className="h-2 mt-1" />
         {isGated && (
           <p className="text-2xs text-status-warning mt-1">
-            Bottleneck suppression active (×{bottleneck.toFixed(2)}) — strengthen critical dimensions
+            <BilingualText
+              en={`Bottleneck suppression active (×${bottleneck.toFixed(2)}) — strengthen critical dimensions`}
+              el={`Ενεργή καταστολή στενωπού (×${bottleneck.toFixed(2)}) — ενισχύστε τις κρίσιμες διαστάσεις`}
+              wrap
+            />
           </p>
         )}
       </CardHeader>
       <CardContent className="space-y-2.5">
-        {dims.map(({ key, label, icon: Icon }) => {
+        {dims.map(({ key, label, labelEl, icon: Icon }) => {
           const score   = data.dimensions?.[key] ?? 0;
           const detail  = data.dimensionBreakdown?.[key];
           return (
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Icon className="icon-sm text-muted-foreground shrink-0" />
-                  <span className="text-xs font-medium truncate">{label}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <Icon className="icon-sm shrink-0 text-muted-foreground" />
+                  <span className="text-xs font-medium truncate">
+                    <BilingualText en={label} el={labelEl} compact />
+                  </span>
                   {detail?.weight && (
                     <span className="text-2xs text-muted-foreground hidden md:block">
                       ×{(detail.weight * 100).toFixed(0)}%
@@ -231,11 +239,11 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Zap className="icon-sm text-status-warning" />
-            Team Momentum
+            <BilingualText en="Team Momentum" el="Ορμή ομάδας" compact />
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className={cn('text-xs font-medium', momentumColor)}>{momentumLevel}</span>
-            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(score))}>
+            <span className={cn('text-lg font-semibold tracking-tight tabular-nums', scoreColor(score))}>
               {score}
               <span className="text-xs text-muted-foreground font-normal">/100</span>
             </span>
@@ -317,7 +325,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           <Users className="icon-sm text-status-info" />
-          Contributions
+          <BilingualText en="Contributions" el="Συνεισφορές" compact />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -329,7 +337,9 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs text-muted-foreground w-4 shrink-0">#{idx + 1}</span>
-                  <span className="text-xs font-medium truncate">{c.userId.slice(0, 8)}…</span>
+                  <span className="text-xs font-medium truncate" title={c.userId}>
+                    {c.userId}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0 text-2xs text-muted-foreground">
                   <span title="Artifacts created/improved">{bd.artifactsCreated}C·{bd.artifactsImproved}I</span>
@@ -393,7 +403,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <MessageSquare className="icon-sm text-status-accent" />
-            Mentor Feedback Loop
+            <BilingualText en="Mentor Feedback Loop" el="Βρόχος ανατροφοδότησης μέντορα" compact />
           </CardTitle>
           <Badge variant={scoreBadgeVariant(data.improvementScore)} className="tabular-nums">
             {data.improvementScore}/100

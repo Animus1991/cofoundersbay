@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
 import { ChatWindow, NoChatSelected, type Message } from '@/components/messaging/ChatWindow';
@@ -15,8 +16,14 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
-import { messagesEn, messagesEl, useMessagesPrimaryText } from '@/lib/i18n/strings-messages';
+import {
+  messagesEn,
+  messagesEl,
+  useMessagesPrimaryText,
+  PREVIEW_MESSAGE_EL,
+} from '@/lib/i18n/strings-messages';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { ComposeMessageDialog, candidatesFromInbox } from './ComposeMessageDialog';
@@ -75,14 +82,169 @@ function mapMessage(m: MessageItem, currentUserId: string): Message {
   };
 }
 
+function IntroDetailPane({
+  request,
+  responding,
+  onAccept,
+  onDecline,
+  locale,
+  onBack,
+}: {
+  request: ConnectionRequestItem | null;
+  responding: boolean;
+  onAccept: () => void;
+  onDecline: () => void;
+  locale: 'en' | 'el';
+  onBack?: () => void;
+}) {
+  if (!request) {
+    return (
+      <div className="relative flex h-full flex-col items-center justify-center overflow-hidden p-8 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.1),transparent_58%)]"
+        />
+        <div className="relative flex max-w-sm flex-col items-center gap-4">
+          <CfbGlyph name="people" className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm font-medium text-foreground">
+            <BilingualText en={messagesEn('no_pending')} el={messagesEl('no_pending')} />
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <BilingualText en={messagesEn('intro_empty_hint')} el={messagesEl('intro_empty_hint')} />
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button asChild size="sm" variant="outline" className="rounded-full">
+              <Link href="/matches">
+                <CfbGlyph name="matches" className="icon-sm mr-1.5" />
+                <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="rounded-full">
+              <Link href="/discover">
+                <CfbGlyph name="discover" className="icon-sm mr-1.5" />
+                <BilingualText en={messagesEn('find_people')} el={messagesEl('find_people')} compact />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const quoteEl = request.message ? PREVIEW_MESSAGE_EL[request.message] : undefined;
+  const dateLabel = new Date(request.createdAt).toLocaleDateString(locale === 'el' ? 'el-GR' : 'en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  return (
+    <div className="relative flex h-full flex-col overflow-y-auto bg-background">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_52%)]"
+      />
+      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-col gap-5 px-6 py-10">
+        {onBack && (
+          <Button variant="ghost" size="sm" className="mb-1 w-fit rounded-full md:hidden" onClick={onBack}>
+            <BilingualText en={messagesEn('back_to_conversations')} el={messagesEl('back_to_conversations')} compact />
+          </Button>
+        )}
+        <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <BilingualText en={messagesEn('connection_request')} el={messagesEl('connection_request')} compact />
+        </p>
+        <div className="flex items-start gap-4">
+          <Link href={`/profiles/${request.requester.id}`} className="shrink-0">
+            <ThreadAvatar
+              name={request.requester.displayName}
+              src={request.requester.avatarUrl}
+              seed={request.requester.id}
+              size="lg"
+            />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <Link href={`/profiles/${request.requester.id}`} className="text-lg font-semibold tracking-tight text-foreground hover:underline">
+              {request.requester.displayName}
+            </Link>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <RoleBadge role={request.requester?.role || 'founder'} size="sm" />
+              <span className="text-xs text-muted-foreground">{dateLabel}</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {request.requester?.headline || (
+                <BilingualText en={messagesEn('headline_fallback')} el={messagesEl('headline_fallback')} compact />
+              )}
+            </p>
+          </div>
+        </div>
+        {request.message && (
+          <blockquote className="rounded-2xl border border-border/50 bg-muted/40 px-4 py-3 text-sm italic leading-relaxed text-foreground/80">
+            {quoteEl ? (
+              <BilingualText en={request.message} el={quoteEl} wrap />
+            ) : (
+              request.message
+            )}
+          </blockquote>
+        )}
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en={messagesEn('intro_accept_to_chat')} el={messagesEl('intro_accept_to_chat')} />
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            className="h-9 gap-1.5 rounded-full px-4"
+            disabled={responding}
+            onClick={onAccept}
+          >
+            <Check className="icon-sm" />
+            <BilingualText en={messagesEn('accept')} el={messagesEl('accept')} compact />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 gap-1.5 rounded-full px-4"
+            disabled={responding}
+            onClick={onDecline}
+          >
+            <X className="icon-sm" />
+            <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2 border-t border-border/40 pt-4">
+          <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
+            <Link href={`/profiles/${request.requester.id}`}>
+              <CfbGlyph name="people" className="icon-sm mr-1.5" />
+              <BilingualText en={messagesEn('view_profile')} el={messagesEl('view_profile')} compact />
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
+            <Link href={`/matches/${request.requester.id}`}>
+              <CfbGlyph name="matches" className="icon-sm mr-1.5" />
+              <BilingualText en={messagesEn('view_match')} el={messagesEl('view_match')} compact />
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
+            <Link href="/discover">
+              <CfbGlyph name="discover" className="icon-sm mr-1.5" />
+              <BilingualText en={messagesEn('discover_people')} el={messagesEl('discover_people')} compact />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MessagesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
   const t = useMessagesPrimaryText();
+  const { primary } = useLanguagePreference();
   const { open: openAskAi } = usePopupChat();
   const { hasSession, mounted: sessionReady } = useSession();
-  const canUseMessaging = sessionReady && hasSession;
+  const canUseMessaging = sessionReady && (hasSession || isPreviewDemo());
+  const openInboxAi = useCallback(() => openAskAi(undefined, 'ai'), [openAskAi]);
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -96,6 +258,8 @@ export default function MessagesPage() {
   const [composeOpen, setComposeOpen] = useState(false);
   const [introLoading, setIntroLoading] = useState(false);
   const [introResponding, setIntroResponding] = useState<Record<string, boolean>>({});
+  const [selectedIntroId, setSelectedIntroId] = useState<string | null>(null);
+  const [composerDraft, setComposerDraft] = useState<string | undefined>();
   const [reportBlockModal, setReportBlockModal] = useState<{ open: boolean; mode: 'report' | 'block' | 'both' }>({ open: false, mode: 'both' });
   const [validationStates, setValidationStates] = useState<Record<string, ConversationValidationState>>({});
   const { setActiveConversationId, markConversationRead } = useMessaging();
@@ -254,7 +418,10 @@ export default function MessagesPage() {
           (document.cookie.includes('cfb_preview_demo=1') ||
             window.localStorage.getItem('cfb_demo_data') === '1');
         if (!previewDemo) {
-          showError('Failed to initialize messages', error instanceof Error ? error.message : 'Please try again');
+          showError(
+            t(messagesEn('init_fail'), messagesEl('init_fail')),
+            error instanceof Error ? error.message : t(messagesEn('try_again'), messagesEl('try_again')),
+          );
         }
       }
     };
@@ -332,7 +499,10 @@ export default function MessagesPage() {
         }
       }
     } catch (e) {
-      showError('Action failed', e instanceof Error ? e.message : 'Please try again');
+      showError(
+        t(messagesEn('action_fail'), messagesEl('action_fail')),
+        e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
+      );
     } finally {
       setIntroResponding((prev) => ({ ...prev, [id]: false }));
     }
@@ -384,7 +554,10 @@ export default function MessagesPage() {
         }
       } catch (e) {
         if (cancelled) return;
-        showError('Could not start conversation', e instanceof Error ? e.message : 'Please try again');
+        showError(
+          t(messagesEn('start_fail'), messagesEl('start_fail')),
+          e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
+        );
       }
     };
 
@@ -427,7 +600,10 @@ export default function MessagesPage() {
         socketRef.current?.emit('conversation:join', { conversationId: selectedConversation.id });
       } catch (e) {
         if (cancelled) return;
-        showError('Failed to load messages', e instanceof Error ? e.message : 'Please try again');
+        showError(
+          t(messagesEn('load_fail'), messagesEl('load_fail')),
+          e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
+        );
       }
     };
     run();
@@ -435,6 +611,41 @@ export default function MessagesPage() {
       cancelled = true;
     };
   }, [canUseMessaging, selectedConversation, currentUserId, showError]);
+
+  // Desktop: open the most relevant thread so the right pane is not an empty void.
+  useEffect(() => {
+    if (!canUseMessaging || selectedConversation || toUserId || openConversationId) return;
+    if (typeof window === 'undefined' || window.matchMedia('(max-width: 767px)').matches) return;
+    const live = conversations.filter((c) => !c.isArchived);
+    if (!live.length) return;
+    const first =
+      live.find((c) => c.unreadCount > 0) ??
+      live.find((c) => c.isPinned) ??
+      live[0];
+    setSelectedConversation(first);
+    setActiveConversationId(first.id);
+    markConversationRead(first.id);
+  }, [
+    canUseMessaging,
+    conversations,
+    selectedConversation,
+    toUserId,
+    openConversationId,
+    setActiveConversationId,
+    markConversationRead,
+  ]);
+
+  useEffect(() => {
+    if (selectedIntroId && introRequests.some((r) => r.id === selectedIntroId)) return;
+    setSelectedIntroId(introRequests[0]?.id ?? null);
+  }, [introRequests, selectedIntroId]);
+
+  useEffect(() => {
+    if (searchParams?.get('action') !== 'schedule' || !selectedConversation) {
+      return;
+    }
+    setComposerDraft(t(messagesEn('schedule_draft'), messagesEl('schedule_draft')));
+  }, [searchParams, selectedConversation?.id, t]);
 
   // Typing indicator emit
   const handleTypingStart = useCallback(() => {
@@ -453,8 +664,12 @@ export default function MessagesPage() {
   const handleSendMessage = async (content: string, attachments?: File[]) => {
     if (!selectedConversation) return;
     const s = socketRef.current;
-    if (!s || !s.connected) {
-      showError('Not connected', 'Reconnect and try again');
+    const preview = isPreviewDemo();
+    if (!preview && (!s || !s.connected)) {
+      showError(
+        t(messagesEn('not_connected'), messagesEl('not_connected')),
+        t(messagesEn('reconnect'), messagesEl('reconnect')),
+      );
       return;
     }
 
@@ -464,13 +679,27 @@ export default function MessagesPage() {
       senderId: currentUserId,
       content,
       timestamp: new Date(),
-      status: 'sending',
+      status: preview && (!s || !s.connected) ? 'sent' : 'sending',
       attachments: attachments?.length
         ? attachments.slice(0, 5).map((f) => ({ type: f.type || 'file', url: '', name: f.name }))
         : undefined,
     };
 
     setMessages((prev) => [...prev, newMessage]);
+    setComposerDraft(undefined);
+
+    if (preview && (!s || !s.connected)) {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === selectedConversation.id
+            ? { ...c, lastMessage: content, lastMessageTime: new Date() }
+            : c,
+        ),
+      );
+      return;
+    }
+
+    if (!s) return;
 
     let attachmentUploadIds: string[] | undefined = undefined;
     if (attachments?.length) {
@@ -481,7 +710,10 @@ export default function MessagesPage() {
 
       const failed = results.some((r) => r.status === 'rejected');
       if (failed) {
-        showError('Some attachments failed', 'Message will be sent with uploaded files only');
+        showError(
+          t(messagesEn('attach_fail'), messagesEl('attach_fail')),
+          t(messagesEn('attach_fail_hint'), messagesEl('attach_fail_hint')),
+        );
       }
 
       const mapped = ok.map((u) => ({
@@ -504,7 +736,6 @@ export default function MessagesPage() {
       attachmentUploadIds,
     });
 
-    // Update conversation last message
     setConversations((prev) =>
       prev.map((c) =>
         c.id === selectedConversation.id
@@ -522,9 +753,17 @@ export default function MessagesPage() {
       setConversations((prev) =>
         prev.map((c) => (c.id === id ? { ...c, isPinned: nextPinned } : c)),
       );
-      success('Conversation updated', nextPinned ? 'Pinned' : 'Unpinned');
+      success(
+        t(messagesEn('updated'), messagesEl('updated')),
+        nextPinned
+          ? t(messagesEn('pinned_toast'), messagesEl('pinned_toast'))
+          : t(messagesEn('unpinned_toast'), messagesEl('unpinned_toast')),
+      );
     } catch (e) {
-      showError('Update failed', e instanceof Error ? e.message : 'Please try again');
+      showError(
+        t(messagesEn('update_fail'), messagesEl('update_fail')),
+        e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
+      );
     }
   };
 
@@ -534,9 +773,15 @@ export default function MessagesPage() {
       await updateConversationFlags(id, { isArchived: true });
       setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, isArchived: true } : c)));
       if (selectedConversation?.id === id) setSelectedConversation(null);
-      success('Conversation archived', 'It will be hidden from your inbox');
+      success(
+        t(messagesEn('archived_toast'), messagesEl('archived_toast')),
+        t(messagesEn('archived_hint'), messagesEl('archived_hint')),
+      );
     } catch (e) {
-      showError('Update failed', e instanceof Error ? e.message : 'Please try again');
+      showError(
+        t(messagesEn('update_fail'), messagesEl('update_fail')),
+        e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
+      );
     }
   };
 
@@ -549,6 +794,16 @@ export default function MessagesPage() {
   const pendingIntrosCount = introRequests.length;
   const unreadTotal = conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
   const composeCandidates = candidatesFromInbox(conversations, acceptedConnections, currentUserId);
+  const selectedIntro = introRequests.find((r) => r.id === selectedIntroId) ?? introRequests[0] ?? null;
+  const recentForEmpty = conversations
+    .filter((c) => !c.isArchived)
+    .slice(0, 4)
+    .map((c) => ({
+      id: c.id,
+      name: c.recipientName,
+      avatarUrl: c.recipientAvatar,
+      userId: c.recipientId,
+    }));
 
   if (!canUseMessaging) {
     return (
@@ -568,11 +823,11 @@ export default function MessagesPage() {
         <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
           <div
             className={cn(
-              'flex w-full shrink-0 flex-col border-r border-border/40 bg-muted/40 md:w-[340px] lg:w-[392px]',
-              isMobileViewingChat && 'hidden md:flex',
+              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden border-r border-border/40 bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
+              isMobileViewingChat && 'hidden md:grid',
             )}
           >
-            <div className="shrink-0 space-y-3 px-4 pb-3 pt-4">
+            <div className="min-w-0 shrink-0 space-y-3 px-4 pb-3 pt-4">
               {/* The compose button gets its own row. This pane is a fixed 392px
                   at every desktop width, and with the button beside the title the
                   heading block was left 138px of a 365px row -- the lead wrapped
@@ -585,7 +840,7 @@ export default function MessagesPage() {
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
                   </h1>
                   <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} />
+                    <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} compact />
                   </p>
                 </div>
                 <PageContextualHelp defaultOpen={false} compact />
@@ -594,56 +849,48 @@ export default function MessagesPage() {
                 <Button
                   type="button"
                   size="sm"
-                  className="h-8 w-full gap-1.5 rounded-full px-3 text-xs shadow-sm"
+                  className="h-8 w-full gap-1.5 rounded-full px-3 text-xs text-primary-foreground shadow-sm"
                   onClick={() => setComposeOpen(true)}
                   aria-label={bilingualAria(messagesEn('new_message'), messagesEl('new_message'))}
                 >
                   <CfbGlyph name="messages" className="icon-sm" />
-                  {/* Inside a filled primary button the secondary line's default
-                      muted colour measures 2.07:1, so it takes the button's own
-                      foreground instead. */}
-                  <BilingualText
-                    en={messagesEn('new_message')}
-                    el={messagesEl('new_message')}
-                    compact
-                    secondaryClassName="text-primary-foreground"
-                  />
+                  {t(messagesEn('new_message'), messagesEl('new_message'))}
                 </Button>
               </div>
               <button
                 type="button"
-                onClick={() => openAskAi()}
-                className="flex w-full items-center gap-2.5 rounded-xl border border-border/70 px-3 py-2 text-left transition-colors hover:bg-muted/40"
+                onClick={openInboxAi}
+                className="flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border/70 px-3 py-2 text-left transition-colors hover:bg-muted/40"
               >
                 <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
                 <span className="min-w-0">
                   <span className="block text-xs font-semibold text-foreground">
-                    <BilingualText en={messagesEn('ask_ai')} el={messagesEl('ask_ai')} compact />
+                    {t(messagesEn('ask_ai'), messagesEl('ask_ai'))}
                   </span>
                   {/* line-clamp, not truncate: this hint is a sentence, and one
                       line cut it by a third ("Draft a reply, summarise this thread,
                       or s…"). Two lines still bound the button's height. */}
                   <span className="block line-clamp-2 text-2xs text-muted-foreground">
-                    <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} />
+                    <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} compact />
                   </span>
                 </span>
               </button>
             </div>
-            <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex min-h-0 flex-1 flex-col">
+            <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
               <div className="shrink-0 px-3 pb-1">
-                <TabsList className="h-11 w-full rounded-full bg-background/70 p-1 shadow-sm ring-1 ring-border/40">
-                  <TabsTrigger value="chats" className="flex-1 gap-1.5 rounded-full data-[state=active]:shadow-sm">
+                <TabsList className="flex h-11 w-full overflow-hidden rounded-full bg-background/70 p-1 shadow-sm ring-1 ring-border/40">
+                  <TabsTrigger value="chats" className="min-w-0 flex-1 shrink gap-1.5 rounded-full data-[state=active]:shadow-sm">
                     <CfbGlyph name="messages" className="icon-sm" />
-                    <BilingualText en={messagesEn('chats')} el={messagesEl('chats')} compact />
+                    {t(messagesEn('chats'), messagesEl('chats'))}
                     {unreadTotal > 0 && (
                       <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                         {unreadTotal > 99 ? '99+' : unreadTotal}
                       </span>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="intros" className="flex-1 gap-1.5 rounded-full data-[state=active]:shadow-sm">
+                  <TabsTrigger value="intros" className="min-w-0 flex-1 shrink gap-1.5 rounded-full data-[state=active]:shadow-sm">
                     <CfbGlyph name="people" className="icon-sm" />
-                    <BilingualText en={messagesEn('intros')} el={messagesEl('intros')} compact />
+                    {t(messagesEn('intros'), messagesEl('intros'))}
                     {pendingIntrosCount > 0 && (
                       <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-2xs font-bold text-accent-foreground">
                         {pendingIntrosCount > 99 ? '99+' : pendingIntrosCount}
@@ -653,7 +900,7 @@ export default function MessagesPage() {
                 </TabsList>
               </div>
 
-              <TabsContent value="chats" className="mt-0 min-h-0 flex-1 overflow-hidden">
+              <TabsContent value="chats" className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
                 <ConversationList
                   conversations={conversations}
                   selectedId={selectedConversation?.id}
@@ -695,13 +942,44 @@ export default function MessagesPage() {
                     <p className="max-w-[16rem] text-xs text-muted-foreground">
                       <BilingualText en={messagesEn('intro_empty_hint')} el={messagesEl('intro_empty_hint')} />
                     </p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Link
+                        href="/matches"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible hover:bg-primary/20"
+                      >
+                        <CfbGlyph name="matches" className="icon-sm" />
+                        <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
+                      </Link>
+                      <Link
+                        href="/discover"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible hover:bg-primary/20"
+                      >
+                        <CfbGlyph name="discover" className="icon-sm" />
+                        <BilingualText en={messagesEn('find_people')} el={messagesEl('find_people')} compact />
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2 p-3">
                     {introRequests.map((req) => (
                       <div
                         key={req.id}
-                        className="animate-fade-in rounded-2xl bg-background/80 p-4 shadow-sm ring-1 ring-border/50"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          setSelectedIntroId(req.id);
+                          setIsMobileViewingChat(true);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedIntroId(req.id);
+                          }
+                        }}
+                        className={cn(
+                          'animate-fade-in cursor-pointer rounded-2xl bg-background/80 p-4 shadow-sm ring-1 transition-colors',
+                          selectedIntro?.id === req.id ? 'ring-primary/50 bg-muted/40' : 'ring-border/50 hover:bg-muted/20',
+                        )}
                       >
                         <div className="flex items-start gap-3">
                           <ThreadAvatar
@@ -712,17 +990,31 @@ export default function MessagesPage() {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="truncate text-sm font-medium text-foreground">
+                              <Link
+                                href={`/profiles/${req.requester.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="truncate text-sm font-medium text-foreground hover:underline"
+                              >
                                 {req.requester.displayName}
-                              </span>
+                              </Link>
                               <span className="shrink-0 text-xs text-muted-foreground">
-                                {new Date(req.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+                                {new Date(req.createdAt).toLocaleDateString(primary === 'el' ? 'el-GR' : 'en-GB', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                })}
                               </span>
                             </div>
                             <RoleBadge role={req.requester?.role || 'founder'} size="sm" className="mt-0.5" />
+                            {req.requester.headline && (
+                              <p className="mt-1 truncate text-2xs text-muted-foreground">{req.requester.headline}</p>
+                            )}
                             {req.message && (
                               <p className="mt-2 line-clamp-3 text-xs italic leading-relaxed text-foreground/70">
-                                &ldquo;{req.message}&rdquo;
+                                {PREVIEW_MESSAGE_EL[req.message] ? (
+                                  <BilingualText en={req.message} el={PREVIEW_MESSAGE_EL[req.message]} />
+                                ) : (
+                                  <>&ldquo;{req.message}&rdquo;</>
+                                )}
                               </p>
                             )}
                             <div className="mt-3 flex gap-2">
@@ -730,7 +1022,10 @@ export default function MessagesPage() {
                                 size="sm"
                                 className="h-7 gap-1 rounded-full px-3 text-xs"
                                 disabled={introResponding[req.id]}
-                                onClick={() => handleIntroRespond(req.id, 'accepted')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleIntroRespond(req.id, 'accepted');
+                                }}
                               >
                                 <Check className="icon-sm" />
                                 <BilingualText en={messagesEn('accept')} el={messagesEl('accept')} compact />
@@ -740,7 +1035,10 @@ export default function MessagesPage() {
                                 variant="outline"
                                 className="h-7 gap-1 rounded-full px-3 text-xs"
                                 disabled={introResponding[req.id]}
-                                onClick={() => handleIntroRespond(req.id, 'declined')}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleIntroRespond(req.id, 'declined');
+                                }}
                               >
                                 <X className="icon-sm" />
                                 <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
@@ -754,6 +1052,36 @@ export default function MessagesPage() {
                 )}
               </TabsContent>
             </Tabs>
+            <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-x-1 overflow-hidden border-t border-border/40 px-3 py-1.5">
+              <Link
+                href="/matches"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <CfbGlyph name="matches" className="h-3 w-3" />
+                {t(messagesEn('find_matches'), messagesEl('find_matches'))}
+              </Link>
+              <Link
+                href="/discover"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <CfbGlyph name="discover" className="h-3 w-3" />
+                {t(messagesEn('discover_people'), messagesEl('discover_people'))}
+              </Link>
+              <Link
+                href="/connections"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <CfbGlyph name="people" className="h-3 w-3" />
+                {t(messagesEn('connections'), messagesEl('connections'))}
+              </Link>
+              <Link
+                href="/calendar"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <CfbGlyph name="calendar" className="h-3 w-3" />
+                {t(messagesEn('open_calendar'), messagesEl('open_calendar'))}
+              </Link>
+            </div>
           </div>
 
           <div
@@ -762,7 +1090,20 @@ export default function MessagesPage() {
               !isMobileViewingChat && 'hidden md:flex',
             )}
           >
-            {selectedConversation ? (
+            {sidebarTab === 'intros' ? (
+              <IntroDetailPane
+                request={selectedIntro}
+                responding={Boolean(selectedIntro && introResponding[selectedIntro.id])}
+                onAccept={() => {
+                  if (selectedIntro) void handleIntroRespond(selectedIntro.id, 'accepted');
+                }}
+                onDecline={() => {
+                  if (selectedIntro) void handleIntroRespond(selectedIntro.id, 'declined');
+                }}
+                locale={primary}
+                onBack={() => setIsMobileViewingChat(false)}
+              />
+            ) : selectedConversation ? (
               <>
                 <ChatWindow
                   conversation={{
@@ -776,6 +1117,8 @@ export default function MessagesPage() {
                   onTypingStart={handleTypingStart}
                   onTypingStop={handleTypingStop}
                   isRecipientTyping={isRecipientTyping}
+                  onAskAi={openInboxAi}
+                  initialDraft={composerDraft}
                   onBack={() => {
                     setIsMobileViewingChat(false);
                   }}
@@ -832,7 +1175,19 @@ export default function MessagesPage() {
                 />
               </>
             ) : (
-              <NoChatSelected onNewMessage={() => setComposeOpen(true)} />
+              <NoChatSelected
+                onNewMessage={() => setComposeOpen(true)}
+                onAskAi={openInboxAi}
+                recent={recentForEmpty}
+                onSelectRecent={(id) => {
+                  const conv = conversations.find((c) => c.id === id);
+                  if (!conv) return;
+                  setSelectedConversation(conv);
+                  setActiveConversationId(conv.id);
+                  markConversationRead(conv.id);
+                  setIsMobileViewingChat(true);
+                }}
+              />
             )}
           </div>
         </div>

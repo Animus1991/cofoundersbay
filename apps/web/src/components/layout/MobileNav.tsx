@@ -125,7 +125,7 @@ export function MobileNav() {
         <div className="flex min-h-14 shrink-0 items-center justify-between border-b border-border/60 px-4 pr-14 safe-top">
           <SheetHeader className="space-y-0 text-left">
             <SheetTitle asChild>
-              <OptimizedLink href="/" className="flex min-h-11 items-center rounded-md focus-ring">
+              <OptimizedLink href="/" className="flex min-h-11 items-center rounded-xl focus-ring">
                 <Logo size="sm" />
               </OptimizedLink>
             </SheetTitle>

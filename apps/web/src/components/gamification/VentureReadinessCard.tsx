@@ -60,14 +60,14 @@ function RadialGauge({ score }: { score: number }) {
          for a real gap between the two lines and still leaves 10.8px around
          them. The gauge is `shrink-0` beside a text column that stacks below
          `sm`, so the 8px costs no layout. */
-      className="relative h-[88px] w-[88px] shrink-0"
+        className="relative h-[88px] w-[88px] shrink-0 after:pointer-events-none after:absolute after:inset-2 after:rounded-full after:bg-primary/20 after:blur-md after:content-['']"
       role="img"
       aria-label={bilingualAria(
         `Venture readiness ${score} out of 100 — ${labelEn}`,
         `Ετοιμότητα εγχειρήματος ${score} στα 100 — ${labelEl}`,
       )}
     >
-      <svg viewBox="0 0 36 36" className="h-[88px] w-[88px] -rotate-90" aria-hidden="true">
+      <svg viewBox="0 0 36 36" className="relative z-10 h-[88px] w-[88px] -rotate-90" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
         <circle
           cx="18" cy="18" r="15.5"
@@ -219,7 +219,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                     </span>
                     <span className={cn('shrink-0 font-semibold tabular-nums', color)}>{dim.score}%</span>
                   </div>
-                  <Progress value={dim.score} className={cn('h-1.5 transition-all', bar)} />
+                  <Progress value={dim.score} label={dim.label} className={cn('h-2 transition-all', bar)} />
                 </Link>
               </li>
             );

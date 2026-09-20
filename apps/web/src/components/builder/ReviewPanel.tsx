@@ -259,7 +259,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
           <div className="flex gap-1 mt-4 p-1 bg-muted rounded-lg">
             <button
               className={cn(
-                'flex-1 py-1.5 text-xs font-medium rounded-md transition-colors',
+                'flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors',
                 activeFilter === 'open'
                   ? 'bg-background shadow-sm text-foreground'
                   : 'text-muted-foreground hover:text-foreground',
@@ -270,7 +270,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
             </button>
             <button
               className={cn(
-                'flex-1 py-1.5 text-xs font-medium rounded-md transition-colors',
+                'flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors',
                 activeFilter === 'all'
                   ? 'bg-background shadow-sm text-foreground'
                   : 'text-muted-foreground hover:text-foreground',

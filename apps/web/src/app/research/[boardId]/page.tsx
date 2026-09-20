@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -78,7 +78,7 @@ import { MERMAID_STARTERS } from '@/components/research/MermaidDiagramNode';
 import { getTemplateDefaultContent } from '@/components/research/VisualTemplateNode';
 import { computeLayout, type LayoutAlgorithm } from '@/lib/autoLayout';
 import { ShapeLibraryPanel, type ShapeTemplate } from '@/components/research/ShapeLibraryPanel';
-import { toPng } from 'html-to-image';
+import { toPng, toSvg } from 'html-to-image';
 import { BoardSettingsPanel } from '@/components/research/BoardSettingsPanel';
 import { BoardSummaryPanel } from '@/components/research/BoardSummaryPanel';
 import { CommentsPanel } from '@/components/research/CommentsPanel';
@@ -92,6 +92,51 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { EmptyCanvasStarter, canvasStarterPayload } from '@/components/research/EmptyCanvasStarter';
+import { CanvasInspectorPanel } from '@/components/research/CanvasInspectorPanel';
+import { CanvasAlignmentGuides } from '@/components/research/CanvasAlignmentGuides';
+import { CanvasRulers } from '@/components/research/CanvasRulers';
+import {
+  consumePendingCanvasCommand,
+  registerCanvasCommandHandler,
+  runCanvasCommand,
+  type CanvasCommandRequest,
+} from '@/lib/canvas/canvas-command-bus';
+import {
+  CANVAS_CLIP_TYPE,
+  DEFAULT_CANVAS_LAYER,
+  computeAlignmentGuides,
+  hugBounds,
+  isNodeHidden,
+  mergeNodeStyle,
+  nodeLayerId,
+  nodePaintColor,
+  nodeVoteCount,
+  applyPaintToMetadata,
+  mergeNodeMetadata,
+  readCfbHref,
+  readNodeStyle,
+  tidyRects,
+  type AlignmentGuide,
+  type CanvasClipboardPayload,
+  type CanvasLayer,
+} from '@/lib/canvas/canvas-geometry';
+import { handleCanvasOp } from '@/lib/canvas/handle-canvas-op';
+import {
+  applyDocFormat,
+  appendDocCitation,
+  appendDocDate,
+  appendDocLink,
+  appendPlainText,
+  countDocWords,
+  findReplaceDoc,
+  isCanvasDocFormat,
+  mergeDocHtml,
+  splitDocBlocks,
+  stripDocTags,
+} from '@/lib/canvas/canvas-document';
+import type { ActionOutcome, CanvasCommandOp } from '@cofounderbay/shared';
 import {
   researchEn,
   researchEl,
@@ -104,7 +149,7 @@ type Tool = DrawTool;
 
 const MAX_HISTORY = 50;
 
-/* ─── Default content templates for new nodes ───────────────────────── */
+/* β”€β”€β”€ Default content templates for new nodes β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ */
 function getDefaultContent(type: string): string {
   switch (type) {
     case 'pitch_deck':      return '<h2>Pitch Deck</h2><h3>1. Problem</h3><p>What problem are you solving?</p><h3>2. Solution</h3><p>How does your product solve it?</p><h3>3. Market Size</h3><p>Total addressable market...</p><h3>4. Business Model</h3><p>How do you make money?</p><h3>5. Traction</h3><p>Key metrics and milestones...</p><h3>6. Team</h3><p>Founders and key team members...</p><h3>7. The Ask</h3><p>How much are you raising and why?</p>';
@@ -181,7 +226,7 @@ function getDefaultContent(type: string): string {
   }
 }
 
-/* ─── Categorised node types for the "Add Node" mega-menu ───────────── */
+/* β”€β”€β”€ Categorised node types for the "Add Node" mega-menu β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ */
 import type { ResearchNodeType } from '@/lib/api';
 import type { LucideIcon } from 'lucide-react';
 
@@ -335,6 +380,7 @@ export default function ResearchBoardPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const t = useResearchPrimaryText();
+  const { primary } = useLanguagePreference();
   const { open: openAskAi } = usePopupChat();
   const boardId = params?.boardId as string;
 
@@ -347,6 +393,19 @@ export default function ResearchBoardPage() {
   const [activeTool, setActiveTool] = useState<Tool>('select');
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(false);
+  const [layers, setLayers] = useState<CanvasLayer[]>([DEFAULT_CANVAS_LAYER]);
+  const [activeLayerId, setActiveLayerId] = useState(DEFAULT_CANVAS_LAYER.id);
+  const activeLayerIdRef = useRef(DEFAULT_CANVAS_LAYER.id);
+  activeLayerIdRef.current = activeLayerId;
+  const [guides, setGuides] = useState<AlignmentGuide[]>([]);
+  const [showRulers, setShowRulers] = useState(false);
+  const [isolatedIds, setIsolatedIds] = useState<Set<string>>(new Set());
+  const clipRef = useRef<CanvasClipboardPayload | null>(null);
+  const styleClipRef = useRef<{ color?: string | null; style?: ReturnType<typeof readNodeStyle> } | null>(null);
+  // React 19's `useRef` has no zero-argument overload: the initial value is
+  // required, and the type has to admit it until the command runner mounts.
+  const runOpRef = useRef<((req: CanvasCommandRequest) => Promise<ActionOutcome>) | undefined>(undefined);
+  const hydratedCommand = useRef(false);
   const GRID_SIZE = 32;
 
   // Snap coordinate to grid
@@ -402,7 +461,7 @@ export default function ResearchBoardPage() {
   // Board summary
   const [showBoardSummary, setShowBoardSummary] = useState(false);
 
-  // Canvas → Builder synthesis prompt (dismissed per board, persisted in localStorage)
+  // Canvas β†’ Builder synthesis prompt (dismissed per board, persisted in localStorage)
   const synthDismissKey = `cfb_synth_dismissed_${boardId}`;
   const [synthDismissed, setSynthDismissed] = useState(false);
   useEffect(() => {
@@ -450,8 +509,10 @@ export default function ResearchBoardPage() {
   // Filtered nodes derived from board data
   const filteredNodes = useMemo(() => {
     const nodes = board?.nodes ?? [];
-    if (!filterSearch && filterTags.length === 0) return nodes;
+    const hidden = new Set(layers.filter((l) => !l.visible).map((l) => l.id));
     return nodes.filter((n) => {
+      if (isNodeHidden(n.metadata)) return false;
+      if (hidden.has(nodeLayerId(n.metadata))) return false;
       const matchesSearch = !filterSearch ||
         (n.title ?? '').toLowerCase().includes(filterSearch.toLowerCase()) ||
         (n.content ?? '').toLowerCase().includes(filterSearch.toLowerCase());
@@ -459,7 +520,7 @@ export default function ResearchBoardPage() {
         filterTags.every((t) => n.tags.includes(t));
       return matchesSearch && matchesTags;
     });
-  }, [board?.nodes, filterSearch, filterTags]);
+  }, [board?.nodes, filterSearch, filterTags, layers]);
 
   const updateBoardMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateResearchBoard>[1]) => updateResearchBoard(boardId, data),
@@ -469,7 +530,15 @@ export default function ResearchBoardPage() {
   });
 
   const createNodeMutation = useMutation({
-    mutationFn: (data: Parameters<typeof createResearchNode>[1]) => createResearchNode(boardId, data),
+    mutationFn: (data: Parameters<typeof createResearchNode>[1]) => {
+      const meta = data.metadata && typeof data.metadata === 'object'
+        ? { ...(data.metadata as Record<string, unknown>) }
+        : {};
+      if (typeof meta.layerId !== 'string' || !meta.layerId) {
+        meta.layerId = activeLayerIdRef.current;
+      }
+      return createResearchNode(boardId, { ...data, metadata: meta });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
     },
@@ -478,6 +547,33 @@ export default function ResearchBoardPage() {
   const updateNodeMutation = useMutation({
     mutationFn: ({ nodeId, data }: { nodeId: string; data: NodeUpdateData }) =>
       updateResearchNode(nodeId, data),
+    onMutate: async ({ nodeId, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['research-board', boardId] });
+      const previous = queryClient.getQueryData<{ board: ResearchBoardFull }>(['research-board', boardId]);
+      queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          board: {
+            ...old.board,
+            nodes: old.board.nodes.map((n) => {
+              if (n.id !== nodeId) return n;
+              return {
+                ...n,
+                ...data,
+                metadata: data.metadata !== undefined
+                  ? mergeNodeMetadata(n.metadata, data.metadata)
+                  : n.metadata,
+              };
+            }),
+          },
+        };
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['research-board', boardId], ctx.previous);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
     },
@@ -515,18 +611,22 @@ export default function ResearchBoardPage() {
   useEffect(() => {
     if (!board) return;
     const timeout = setTimeout(() => {
-      updateBoardMutation.mutate({ canvasState: { zoom, pan, groups } });
+      updateBoardMutation.mutate({ canvasState: { zoom, pan, groups, layers } });
     }, 2000);
     return () => clearTimeout(timeout);
-  }, [zoom, pan, groups]);
+  }, [zoom, pan, groups, layers]);
 
   // Restore canvas state on load
   useEffect(() => {
     if (board?.canvasState && typeof board.canvasState === 'object') {
-      const state = board.canvasState as { zoom?: number; pan?: { x: number; y: number }; groups?: ResearchGroup[] };
+      const state = board.canvasState as { zoom?: number; pan?: { x: number; y: number }; groups?: ResearchGroup[]; layers?: CanvasLayer[] };
       if (state.zoom) setZoom(state.zoom);
       if (state.pan) setPan(state.pan);
       if (state.groups && Array.isArray(state.groups)) setGroups(state.groups);
+      if (state.layers && Array.isArray(state.layers) && state.layers.length > 0) {
+        setLayers(state.layers);
+        setActiveLayerId(state.layers[0]?.id ?? DEFAULT_CANVAS_LAYER.id);
+      }
     }
   }, [board?.id]);
 
@@ -575,12 +675,16 @@ export default function ResearchBoardPage() {
   }, [handleWheel]);
 
   // Fit-to-content: auto-zoom and center to show all nodes
-  const fitToContent = useCallback(() => {
+  const fitToContent = useCallback((onlySelected = false) => {
     if (!board || board.nodes.length === 0 || !canvasRef.current) return;
+    const source = onlySelected && selectedNodeIds.size > 0
+      ? board.nodes.filter((n) => selectedNodeIds.has(n.id))
+      : board.nodes;
+    if (source.length === 0) return;
     const PADDING = 80;
     const rect = canvasRef.current.getBoundingClientRect();
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const n of board.nodes) {
+    for (const n of source) {
       minX = Math.min(minX, n.posX);
       minY = Math.min(minY, n.posY);
       maxX = Math.max(maxX, n.posX + n.width);
@@ -596,7 +700,7 @@ export default function ResearchBoardPage() {
       x: rect.width / 2 - centerX * newZoom,
       y: rect.height / 2 - centerY * newZoom,
     });
-  }, [board]);
+  }, [board, selectedNodeIds]);
 
   // --- Undo/Redo helpers ---
   const pushHistory = useCallback((action: string) => {
@@ -664,6 +768,485 @@ export default function ResearchBoardPage() {
     success(`Duplicated ${toDup.length} node(s)`);
   }, [board, selectedNodeIds, createNodeMutation, success]);
 
+  const placeCaptureNode = useCallback((type: ResearchNodeType, titleEn: string, titleEl: string) => {
+    const title = t(titleEn, titleEl);
+    const cx = (window.innerWidth / 2 - pan.x) / zoom;
+    const cy = (window.innerHeight / 2 - pan.y) / zoom;
+    createNodeMutation.mutate({
+      type,
+      title,
+      content: '',
+      posX: cx - 140,
+      posY: cy - 100,
+      width: 280,
+      height: 200,
+      metadata: { displayType: type },
+    });
+  }, [createNodeMutation, pan.x, pan.y, zoom, t]);
+
+  const alignSelected = useCallback((mode: 'left' | 'top' | 'h' | 'v' | 'right' | 'bottom' | 'center_h' | 'center_v') => {
+    if (!board || selectedNodeIds.size < 2) return;
+    const nodes = board.nodes.filter((n) => selectedNodeIds.has(n.id));
+    if (nodes.length < 2) return;
+    let updates: Array<{ id: string; posX?: number; posY?: number }> = [];
+    if (mode === 'left') {
+      const x = Math.min(...nodes.map((n) => n.posX));
+      updates = nodes.map((n) => ({ id: n.id, posX: x }));
+    } else if (mode === 'right') {
+      const edge = Math.max(...nodes.map((n) => n.posX + n.width));
+      updates = nodes.map((n) => ({ id: n.id, posX: edge - n.width }));
+    } else if (mode === 'top') {
+      const y = Math.min(...nodes.map((n) => n.posY));
+      updates = nodes.map((n) => ({ id: n.id, posY: y }));
+    } else if (mode === 'bottom') {
+      const edge = Math.max(...nodes.map((n) => n.posY + (n.height || 200)));
+      updates = nodes.map((n) => ({ id: n.id, posY: edge - (n.height || 200) }));
+    } else if (mode === 'center_h') {
+      const mid = (Math.min(...nodes.map((n) => n.posX)) + Math.max(...nodes.map((n) => n.posX + n.width))) / 2;
+      updates = nodes.map((n) => ({ id: n.id, posX: mid - n.width / 2 }));
+    } else if (mode === 'center_v') {
+      const mid = (Math.min(...nodes.map((n) => n.posY)) + Math.max(...nodes.map((n) => n.posY + (n.height || 200)))) / 2;
+      updates = nodes.map((n) => ({ id: n.id, posY: mid - (n.height || 200) / 2 }));
+    } else if (mode === 'h') {
+      const sorted = [...nodes].sort((a, b) => a.posX - b.posX);
+      const start = sorted[0].posX;
+      const end = sorted[sorted.length - 1].posX;
+      const step = sorted.length > 1 ? (end - start) / (sorted.length - 1) : 0;
+      updates = sorted.map((n, i) => ({ id: n.id, posX: start + step * i }));
+    } else {
+      const sorted = [...nodes].sort((a, b) => a.posY - b.posY);
+      const start = sorted[0].posY;
+      const end = sorted[sorted.length - 1].posY;
+      const step = sorted.length > 1 ? (end - start) / (sorted.length - 1) : 0;
+      updates = sorted.map((n, i) => ({ id: n.id, posY: start + step * i }));
+    }
+    batchUpdateMutation.mutate(updates);
+  }, [board, selectedNodeIds, batchUpdateMutation]);
+
+  const copyOutline = useCallback(async () => {
+    if (!board) return;
+    const lines = board.nodes
+      .slice()
+      .sort((a, b) => a.posY - b.posY || a.posX - b.posX)
+      .map((n) => `- ${n.title || t(researchEn('node_untitled'), researchEl('node_untitled'))}`);
+    try {
+      await navigator.clipboard.writeText(lines.join('\n'));
+      success(t(researchEn('copied_outline'), researchEl('copied_outline')), `${lines.length}`);
+    } catch {
+      showError(t(researchEn('fail_delete'), researchEl('fail_delete')));
+    }
+  }, [board, success, showError, t]);
+
+  const copySelection = useCallback(() => {
+    if (!board || selectedNodeIds.size === 0) return;
+    const payload: CanvasClipboardPayload = {
+      v: 1,
+      nodes: board.nodes.filter((n) => selectedNodeIds.has(n.id)).map((n) => ({
+        type: n.type,
+        title: n.title,
+        content: n.content,
+        width: n.width,
+        height: n.height || 200,
+        color: n.color,
+        metadata: n.metadata,
+        posX: n.posX,
+        posY: n.posY,
+      })),
+    };
+    clipRef.current = payload;
+    try {
+      void navigator.clipboard.writeText(JSON.stringify({ [CANVAS_CLIP_TYPE]: payload }));
+    } catch { /* clipboard may be blocked; in-memory clip still works */ }
+  }, [board, selectedNodeIds]);
+
+  const pasteClipboard = useCallback((inPlace = false) => {
+    const clip = clipRef.current;
+    if (!clip?.nodes.length) return;
+    const cx = (window.innerWidth / 2 - pan.x) / zoom;
+    const cy = (window.innerHeight / 2 - pan.y) / zoom;
+    clip.nodes.forEach((n, i) => {
+      createNodeMutation.mutate({
+        type: n.type as ResearchNodeType,
+        title: n.title ?? undefined,
+        content: n.content ?? '',
+        posX: inPlace && typeof n.posX === 'number' ? n.posX : cx - 80 + i * 16,
+        posY: inPlace && typeof n.posY === 'number' ? n.posY : cy - 80 + i * 16,
+        width: n.width,
+        height: n.height,
+        color: n.color ?? undefined,
+        metadata: n.metadata as Record<string, unknown> | undefined,
+      });
+    });
+  }, [createNodeMutation, pan.x, pan.y, zoom]);
+
+  const exportBoardJson = useCallback(() => {
+    if (!board) return;
+    const blob = new Blob([JSON.stringify({
+      title: board.title,
+      nodes: board.nodes,
+      connectors: board.connectors,
+      canvasState: { zoom, pan, groups, layers },
+    }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${board.title || 'canvas'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [board, zoom, pan, groups, layers]);
+
+  const selectedNodes = useMemo(
+    () => (board?.nodes ?? []).filter((n) => selectedNodeIds.has(n.id)),
+    [board?.nodes, selectedNodeIds],
+  );
+
+  const selectedIdKey = useMemo(() => Array.from(selectedNodeIds).sort().join(','), [selectedNodeIds]);
+  useEffect(() => {
+    if (selectedNodeIds.size !== 1) return;
+    const node = board?.nodes.find((n) => n.id === selectedIdKey);
+    if (!node) return;
+    const id = nodeLayerId(node.metadata);
+    if (layers.some((layer) => layer.id === id)) setActiveLayerId(id);
+    // Follow the node's layer only when the selection changes — not after an in-place assign.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedIdKey]);
+
+  useEffect(() => {
+    if (!viewingNode || !board) return;
+    const fresh = board.nodes.find((n) => n.id === viewingNode.id);
+    if (!fresh) {
+      setViewingNode(null);
+      return;
+    }
+    if (
+      fresh.content !== viewingNode.content
+      || fresh.title !== viewingNode.title
+      || fresh.color !== viewingNode.color
+      || readCfbHref(fresh.metadata) !== readCfbHref(viewingNode.metadata)
+    ) {
+      setViewingNode(fresh);
+    }
+  }, [board, viewingNode]);
+
+  const applyStyleToSelection = useCallback((patch: { fill?: string; opacity?: number; stroke?: string; shadow?: boolean; rotate?: number; strokeWidth?: number; radius?: number }) => {
+    for (const node of selectedNodes) {
+      updateNodeMutation.mutate({
+        nodeId: node.id,
+        data: {
+          ...(patch.fill ? { color: patch.fill } : {}),
+          metadata: applyPaintToMetadata(node.metadata, patch),
+        },
+      });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const rotateSelection = useCallback((deg: number) => {
+    for (const node of selectedNodes) {
+      const prev = readNodeStyle(node.metadata).rotate ?? 0;
+      updateNodeMutation.mutate({
+        nodeId: node.id,
+        data: { metadata: mergeNodeStyle(node.metadata, { rotate: prev + deg }) },
+      });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const matchSelectedSize = useCallback((axis: 'w' | 'h' | 'both') => {
+    if (selectedNodes.length < 2) return;
+    const src = selectedNodes[0];
+    const updates = selectedNodes.map((n) => ({
+      id: n.id,
+      width: axis === 'h' ? n.width : src.width,
+      height: axis === 'w' ? n.height : src.height,
+    }));
+    batchUpdateMutation.mutate(updates);
+  }, [selectedNodes, batchUpdateMutation]);
+
+  const copyNodeStyle = useCallback(() => {
+    const src = selectedNodes[0];
+    if (!src) return;
+    const srcMeta = src.metadata && typeof src.metadata === 'object' ? (src.metadata as Record<string, unknown>) : {};
+    styleClipRef.current = {
+      color: src.color ?? (typeof srcMeta.fillColor === 'string' ? srcMeta.fillColor : null),
+      style: readNodeStyle(src.metadata),
+    };
+  }, [selectedNodes]);
+
+  const pasteNodeStyle = useCallback(() => {
+    const clip = styleClipRef.current;
+    if (!clip) return;
+    applyStyleToSelection({
+      fill: clip.color ?? undefined,
+      opacity: clip.style?.opacity,
+      stroke: clip.style?.stroke,
+      shadow: clip.style?.shadow,
+      rotate: clip.style?.rotate,
+      strokeWidth: clip.style?.strokeWidth,
+    });
+  }, [applyStyleToSelection]);
+
+  const selectSameType = useCallback(() => {
+    const src = selectedNodes[0];
+    if (!src || !board) return;
+    setSelectedNodeIds(new Set(board.nodes.filter((n) => n.type === src.type).map((n) => n.id)));
+  }, [selectedNodes, board]);
+
+  const tidySelection = useCallback((axis: 'h' | 'v' | 'auto') => {
+    const updates = tidyRects(selectedNodes, axis);
+    if (updates.length) batchUpdateMutation.mutate(updates);
+  }, [selectedNodes, batchUpdateMutation]);
+
+  const nudgeSelection = useCallback((dx: number, dy: number) => {
+    if (!board || selectedNodeIds.size === 0) return;
+    const updates = board.nodes
+      .filter((n) => selectedNodeIds.has(n.id))
+      .map((n) => ({ id: n.id, posX: n.posX + dx, posY: n.posY + dy }));
+    queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+      if (!old) return old;
+      return {
+        ...old,
+        board: {
+          ...old.board,
+          nodes: old.board.nodes.map((n) => selectedNodeIds.has(n.id) ? { ...n, posX: n.posX + dx, posY: n.posY + dy } : n),
+        },
+      };
+    });
+    batchUpdateMutation.mutate(updates);
+  }, [board, selectedNodeIds, batchUpdateMutation, queryClient, boardId]);
+
+  const renameSelection = useCallback((title: string) => {
+    const id = Array.from(selectedNodeIds)[0];
+    if (id && title) updateNodeMutation.mutate({ nodeId: id, data: { title } });
+  }, [selectedNodeIds, updateNodeMutation]);
+
+  const setSelectionHidden = useCallback((hidden: boolean) => {
+    for (const node of selectedNodes) {
+      const base = node.metadata && typeof node.metadata === 'object' ? { ...(node.metadata as Record<string, unknown>) } : {};
+      updateNodeMutation.mutate({ nodeId: node.id, data: { metadata: { ...base, hidden } } });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const flipSelection = useCallback((axis: 'h' | 'v') => {
+    for (const node of selectedNodes) {
+      const prev = readNodeStyle(node.metadata);
+      const patch = axis === 'h'
+        ? { scaleX: (prev.scaleX ?? 1) * -1 }
+        : { scaleY: (prev.scaleY ?? 1) * -1 };
+      updateNodeMutation.mutate({ nodeId: node.id, data: { metadata: mergeNodeStyle(node.metadata, patch) } });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const voteSelection = useCallback(() => {
+    for (const node of selectedNodes) {
+      const base = node.metadata && typeof node.metadata === 'object' ? { ...(node.metadata as Record<string, unknown>) } : {};
+      updateNodeMutation.mutate({
+        nodeId: node.id,
+        data: { metadata: { ...base, votes: nodeVoteCount(node.metadata) + 1 } },
+      });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const isolateSelection = useCallback(() => {
+    setIsolatedIds(new Set(selectedNodeIds));
+  }, [selectedNodeIds]);
+
+  const revealIsolated = useCallback(() => {
+    setIsolatedIds(new Set());
+  }, []);
+
+  const selectInverse = useCallback(() => {
+    if (!board) return;
+    setSelectedNodeIds(new Set(board.nodes.filter((n) => !selectedNodeIds.has(n.id)).map((n) => n.id)));
+  }, [board, selectedNodeIds]);
+
+  const lockOthers = useCallback(() => {
+    if (!board) return;
+    for (const node of board.nodes) {
+      if (!selectedNodeIds.has(node.id) && !node.locked) {
+        updateNodeMutation.mutate({ nodeId: node.id, data: { locked: true } });
+      }
+    }
+  }, [board, selectedNodeIds, updateNodeMutation]);
+
+  const scaleSelection = useCallback((factor: number) => {
+    const updates = selectedNodes.map((n) => ({
+      id: n.id,
+      width: Math.max(80, Math.round(n.width * factor)),
+      height: Math.max(60, Math.round((n.height || 200) * factor)),
+    }));
+    if (updates.length) batchUpdateMutation.mutate(updates);
+  }, [selectedNodes, batchUpdateMutation]);
+
+  const setSelectionRadius = useCallback((radius: number) => {
+    applyStyleToSelection({ radius });
+  }, [applyStyleToSelection]);
+
+  const rewriteSelectedContent = useCallback((next: (html: string) => string) => {
+    for (const node of selectedNodes) {
+      updateNodeMutation.mutate({ nodeId: node.id, data: { content: next(node.content ?? '') } });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const formatSelectedText = useCallback((format: string) => {
+    if (!isCanvasDocFormat(format)) return;
+    rewriteSelectedContent((html) => applyDocFormat(html, format));
+  }, [rewriteSelectedContent]);
+
+  const findReplaceSelected = useCallback((find: string, replace: string) => {
+    rewriteSelectedContent((html) => findReplaceDoc(html, find, replace));
+  }, [rewriteSelectedContent]);
+
+  const insertLinkOnSelected = useCallback((href: string, label?: string) => {
+    rewriteSelectedContent((html) => appendDocLink(html, href, label));
+  }, [rewriteSelectedContent]);
+
+  const insertCitationOnSelected = useCallback((citation: string) => {
+    rewriteSelectedContent((html) => appendDocCitation(html, citation));
+  }, [rewriteSelectedContent]);
+
+  const wordCountSelected = useCallback(() => {
+    const totals = selectedNodes.reduce(
+      (acc, node) => {
+        const c = countDocWords(node.content ?? '');
+        return { words: acc.words + c.words, chars: acc.chars + c.chars };
+      },
+      { words: 0, chars: 0 },
+    );
+    success(
+      t(researchEn('word_count'), researchEl('word_count')),
+      `${totals.words} · ${totals.chars}`,
+    );
+  }, [selectedNodes, success, t]);
+
+  const mergeSelectedNotes = useCallback(() => {
+    if (selectedNodes.length < 2) return;
+    const sorted = [...selectedNodes].sort((a, b) => a.posY - b.posY || a.posX - b.posX);
+    const keep = sorted[0];
+    updateNodeMutation.mutate({
+      nodeId: keep.id,
+      data: { content: mergeDocHtml(sorted.map((n) => n.content ?? '')) },
+    });
+    sorted.slice(1).forEach((n) => deleteNodeMutation.mutate(n.id));
+    setSelectedNodeIds(new Set([keep.id]));
+  }, [selectedNodes, updateNodeMutation, deleteNodeMutation]);
+
+  const splitSelectedNotes = useCallback(() => {
+    const node = selectedNodes[0];
+    if (!node) return;
+    const blocks = splitDocBlocks(node.content ?? '');
+    if (blocks.length < 2) return;
+    updateNodeMutation.mutate({ nodeId: node.id, data: { content: blocks[0] } });
+    blocks.slice(1).forEach((html, i) => {
+      createNodeMutation.mutate({
+        type: node.type,
+        title: node.title || 'Note',
+        content: html,
+        posX: node.posX + 24 * (i + 1),
+        posY: node.posY + (node.height || 200) + 16 + i * 12,
+        width: node.width,
+        height: node.height || 200,
+      });
+    });
+  }, [selectedNodes, updateNodeMutation, createNodeMutation]);
+
+  const copyTextSelected = useCallback(() => {
+    const text = selectedNodes.map((n) => stripDocTags(n.content ?? '')).filter(Boolean).join('\n\n');
+    void navigator.clipboard.writeText(text).then(() => {
+      success(t(researchEn('doc_copy_text'), researchEl('doc_copy_text')));
+    }).catch(() => {
+      showError(t(researchEn('fail_delete'), researchEl('fail_delete')));
+    });
+  }, [selectedNodes, success, showError, t]);
+
+  const pastePlainSelected = useCallback(() => {
+    void navigator.clipboard.readText().then((text) => {
+      rewriteSelectedContent((html) => appendPlainText(html, text));
+    }).catch(() => {
+      showError(t(researchEn('fail_delete'), researchEl('fail_delete')));
+    });
+  }, [rewriteSelectedContent, showError, t]);
+
+  const insertDateOnSelected = useCallback(() => {
+    rewriteSelectedContent((html) => appendDocDate(html));
+  }, [rewriteSelectedContent]);
+
+  const exportBoardSvg = useCallback(async () => {
+    if (!canvasRef.current) return;
+    try {
+      const dataUrl = await toSvg(canvasRef.current, { cacheBust: true });
+      const link = document.createElement('a');
+      link.download = `${board?.title ?? 'canvas'}-export.svg`;
+      link.href = dataUrl;
+      link.click();
+    } catch {
+      showError('Export failed. Try zooming to fit first.');
+    }
+  }, [board?.title, showError]);
+
+  const exportBoardMarkdown = useCallback(() => {
+    if (!board) return;
+    const lines = [`# ${board.title}`, '', ...(board.nodes.map((n) => `## ${n.title || 'Untitled'}\n\n${(n.content ?? '').replace(/<[^>]*>/g, '')}\n`))];
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${board.title || 'canvas'}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [board]);
+
+  const shareBoardLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/research/${boardId}`);
+      success(t(researchEn('share_link'), researchEl('share_link')));
+    } catch {
+      showError(t(researchEn('fail_delete'), researchEl('fail_delete')));
+    }
+  }, [boardId, success, showError, t]);
+
+  const issue = useCallback((op: CanvasCommandOp, payload: Record<string, unknown> = {}) => {
+    void runCanvasCommand(op, { boardId, ...payload });
+  }, [boardId]);
+
+  const promptFindReplace = useCallback(() => {
+    const find = window.prompt(bilingualAria(researchEn('doc_find'), researchEl('doc_find')));
+    if (!find) return;
+    const replace = window.prompt(bilingualAria('Replace with', 'Αντικατάσταση με')) ?? '';
+    issue('find_replace', { title: find, query: replace });
+  }, [issue]);
+
+  const promptInsertLink = useCallback(() => {
+    const href = window.prompt(bilingualAria(researchEn('doc_link'), researchEl('doc_link')));
+    if (!href) return;
+    issue('insert_link', { href });
+  }, [issue]);
+
+  const promptCite = useCallback(() => {
+    const citation = window.prompt(
+      bilingualAria(researchEn('doc_cite'), researchEl('doc_cite')),
+      selectedNodes[0]?.title || '',
+    );
+    if (!citation) return;
+    issue('insert_citation', { title: citation });
+  }, [issue, selectedNodes]);
+
+  const linkSelection = useCallback((href: string) => {
+    for (const node of selectedNodes) {
+      const base = node.metadata && typeof node.metadata === 'object'
+        ? { ...(node.metadata as Record<string, unknown>) }
+        : {};
+      updateNodeMutation.mutate({
+        nodeId: node.id,
+        data: { metadata: { ...base, cfbLink: { href } } },
+      });
+    }
+  }, [selectedNodes, updateNodeMutation]);
+
+  const findNodeByTitle = useCallback((title: string) => {
+    const q = title.trim().toLowerCase();
+    if (!q || !board) return undefined;
+    return board.nodes.find((n) => (n.title ?? '').toLowerCase().includes(q));
+  }, [board]);
+
   // Pan / box-select / note-create handlers
   const handleCanvasMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.target !== canvasRef.current) return;
@@ -728,7 +1311,7 @@ export default function ResearchBoardPage() {
       setIsPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     } else if (e.shiftKey) {
-      // Shift+Drag → box selection
+      // Shift+Drag β†’ box selection
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
         const cx = (e.clientX - rect.left - pan.x) / zoom;
@@ -738,7 +1321,7 @@ export default function ResearchBoardPage() {
         setSelectionBox({ startX: cx, startY: cy, currentX: cx, currentY: cy });
       }
     } else {
-      // Normal canvas drag → pan
+      // Normal canvas drag β†’ pan
       setIsPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
       setSelectedNodeIds(new Set());
@@ -825,10 +1408,18 @@ export default function ResearchBoardPage() {
           };
         });
       }
+      const dragged = board?.nodes?.find((n) => n.id === draggingNodeId);
+      if (dragged) {
+        setGuides(computeAlignmentGuides(
+          { id: dragged.id, x, y, w: dragged.width, h: dragged.height || 200 },
+          (board?.nodes ?? []).map((n) => ({ id: n.id, posX: n.posX, posY: n.posY, width: n.width, height: n.height || 200 })),
+        ));
+      }
     }
   }, [isPanning, panStart, isBoxSelecting, draggingNodeId, dragOffset, pan, zoom, boardId, queryClient, selectedNodeIds, board, snap, resizingNodeId, resizeDir, resizeStart, resizingGroupId, groupResizeDir, groupResizeStart, draggingGroupId]);
 
   const handleCanvasMouseUp = useCallback(() => {
+    setGuides([]);
     // Finalize box selection
     if (isBoxSelecting && selectionBox && board) {
       const minX = Math.min(selectionBox.startX, selectionBox.currentX);
@@ -889,6 +1480,8 @@ export default function ResearchBoardPage() {
     
     const node = board?.nodes?.find((n) => n.id === nodeId);
     if (!node || node.locked) return;
+    const layer = layers.find((l) => l.id === nodeLayerId(node.metadata));
+    if (layer?.locked) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -902,7 +1495,7 @@ export default function ResearchBoardPage() {
     if (!selectedNodeIds.has(nodeId)) {
       setSelectedNodeIds(new Set([nodeId]));
     }
-  }, [activeTool, board, pan, zoom, selectedNodeIds]);
+  }, [activeTool, board, pan, zoom, selectedNodeIds, layers]);
 
   // Node resize handler
   const handleNodeResizeStart = useCallback((nodeId: string, e: React.MouseEvent, direction: 'right' | 'bottom' | 'corner') => {
@@ -919,13 +1512,20 @@ export default function ResearchBoardPage() {
     });
   }, [board]);
 
-  // ─── Group frame handlers ───────────────────────────────────────────────
-  const createGroup = useCallback((posX: number, posY: number) => {
+  // β”€β”€β”€ Group frame handlers β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€
+  const createGroup = useCallback((posX: number, posY: number, size?: { width?: number; height?: number; label?: string }) => {
     const id = crypto.randomUUID();
     setGroups((prev) => [...prev, {
-      id, label: 'New Group', color: '#3B82F6',
-      posX, posY, width: 400, height: 300,
-      collapsed: false, locked: false, zIndex: 0,
+      id,
+      label: size?.label || 'Frame',
+      color: '#3B82F6',
+      posX,
+      posY,
+      width: size?.width ?? 400,
+      height: size?.height ?? 300,
+      collapsed: false,
+      locked: false,
+      zIndex: 0,
     }]);
     setSelectedGroupId(id);
   }, []);
@@ -933,6 +1533,25 @@ export default function ResearchBoardPage() {
   const updateGroup = useCallback((id: string, data: Partial<ResearchGroup>) => {
     setGroups((prev) => prev.map((g) => g.id === id ? { ...g, ...data } : g));
   }, []);
+
+  const frameSelection = useCallback(() => {
+    const box = hugBounds(selectedNodes);
+    if (!box) {
+      createGroup((window.innerWidth / 2 - pan.x) / zoom - 200, (window.innerHeight / 2 - pan.y) / zoom - 150);
+      return;
+    }
+    createGroup(box.posX, box.posY, { width: box.width, height: box.height, label: 'Frame' });
+  }, [selectedNodes, createGroup, pan.x, pan.y, zoom]);
+
+  const hugSelection = useCallback(() => {
+    const box = hugBounds(selectedNodes);
+    if (!box) return;
+    if (selectedGroupId) {
+      updateGroup(selectedGroupId, box);
+      return;
+    }
+    createGroup(box.posX, box.posY, { width: box.width, height: box.height, label: 'Frame' });
+  }, [selectedNodes, selectedGroupId, updateGroup, createGroup]);
 
   const deleteGroup = useCallback((id: string) => {
     setGroups((prev) => prev.filter((g) => g.id !== id));
@@ -1003,7 +1622,7 @@ export default function ResearchBoardPage() {
     success('Files uploaded', `${files.length} file(s) added to board`);
   };
 
-  // Keyboard shortcuts — full set from Codebase B
+  // Keyboard shortcuts β€” full set from Codebase B
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLDivElement && (e.target as HTMLDivElement).contentEditable === 'true') return;
@@ -1015,7 +1634,7 @@ export default function ResearchBoardPage() {
           toDelete.forEach((n) => deleteNodeMutation.mutate(n.id));
         }
       }
-      // Escape — clear selection + cancel connection
+      // Escape β€” clear selection + cancel connection
       else if (e.key === 'Escape') {
         setSelectedNodeIds(new Set());
         setViewingNode(null);
@@ -1023,6 +1642,7 @@ export default function ResearchBoardPage() {
         setConnectionStart(null);
         setTempConnectionEnd(null);
         setShowShortcuts(false);
+        setIsolatedIds(new Set());
       }
       // Undo (Ctrl+Z)
       else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -1039,62 +1659,97 @@ export default function ResearchBoardPage() {
         e.preventDefault();
         duplicateSelected();
       }
+      else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'v' || e.key === 'V')) {
+        e.preventDefault();
+        issue('paste_in_place');
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+        e.preventDefault();
+        issue('paste');
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        issue('copy');
+      }
       // Select all (Ctrl+A)
       else if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
         if (board) setSelectedNodeIds(new Set(board.nodes.map((n) => n.id)));
       }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        issue('format_text', { query: 'bold' });
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) {
+        e.preventDefault();
+        issue('format_text', { query: 'italic' });
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault();
+        issue('format_text', { query: 'underline' });
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        promptInsertLink();
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        promptFindReplace();
+      }
       // Arrow key movement
       else if (selectedNodeIds.size > 0 && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
-        const step = e.shiftKey ? 10 : 1;
-        const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
-        const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-        if (board) {
-          const updates = board.nodes
-            .filter((n) => selectedNodeIds.has(n.id))
-            .map((n) => ({ id: n.id, posX: n.posX + dx, posY: n.posY + dy }));
-          // Optimistic local update
-          queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
-            if (!old) return old;
-            return { ...old, board: { ...old.board, nodes: old.board.nodes.map((n) => selectedNodeIds.has(n.id) ? { ...n, posX: n.posX + dx, posY: n.posY + dy } : n) } };
-          });
-          batchUpdateMutation.mutate(updates);
-        }
+        const dir = e.key === 'ArrowLeft' ? 'left' : e.key === 'ArrowRight' ? 'right' : e.key === 'ArrowUp' ? 'up' : 'down';
+        issue('nudge', { query: e.shiftKey ? `shift ${dir}` : dir });
+      }
+      else if (e.shiftKey && (e.key === 'A' || e.key === 'a') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        issue('tidy');
+      }
+      else if (e.shiftKey && (e.key === 'H' || e.key === 'h') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        issue('hide');
+      }
+      else if (e.shiftKey && (e.key === 'I' || e.key === 'i') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        issue(isolatedIds.size ? 'reveal' : 'isolate');
+      }
+      else if ((e.ctrlKey || e.metaKey) && e.altKey && (e.key === 'g' || e.key === 'G')) {
+        e.preventDefault();
+        issue('frame');
       }
       // Tool shortcuts
       else if (e.key === 'v' || e.key === 'V') {
-        setActiveTool('select');
+        issue('set_tool', { query: 'select' });
       } else if (e.key === 'n' || e.key === 'N') {
-        setActiveTool('note');
+        issue('set_tool', { query: 'note' });
       } else if (e.key === 'c' || e.key === 'C') {
-        if (!e.ctrlKey && !e.metaKey) setActiveTool('connect');
+        if (!e.ctrlKey && !e.metaKey) issue('set_tool', { query: 'connect' });
       }
       // Reset view (Ctrl+0)
       else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
-        setZoom(1);
-        setPan({ x: 0, y: 0 });
+        issue('zoom', { query: 'reset' });
       }
       // Create group frame (Shift+G) — must check before plain G
       else if (e.key === 'G' && e.shiftKey && !e.ctrlKey && !e.metaKey) {
-        const cx = (window.innerWidth / 2 - pan.x) / zoom;
-        const cy = (window.innerHeight / 2 - pan.y) / zoom;
-        createGroup(cx - 200, cy - 150);
+        issue('group');
       }
       // Toggle snap-to-grid (G, no modifiers)
       else if (e.key === 'g' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-        setSnapToGrid((v) => !v);
+        issue('toggle_snap');
+      }
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        setShowFilterBar(true);
       }
       // Fit-to-content (F)
       else if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey) {
-        fitToContent();
+        issue('fit_view');
       }
       // Add sticky note (S, no modifiers)
       else if (e.key === 's' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
-        const cx = (window.innerWidth / 2 - pan.x) / zoom;
-        const cy = (window.innerHeight / 2 - pan.y) / zoom;
-        createNodeMutation.mutate({ type: 'note' as any, title: '', content: '', posX: cx - 100, posY: cy - 100, width: 200, height: 200, color: '#F59E0B', metadata: { isSticky: true } });
+        issue('add_sticky');
       }
       // Show shortcuts (?)
       else if (e.key === '?' && e.shiftKey) {
@@ -1104,7 +1759,7 @@ export default function ResearchBoardPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeIds, board, deleteNodeMutation, undo, redo, duplicateSelected, boardId, queryClient, batchUpdateMutation, fitToContent]);
+  }, [selectedNodeIds, board, deleteNodeMutation, undo, redo, duplicateSelected, copySelection, pasteClipboard, boardId, queryClient, batchUpdateMutation, issue, isolatedIds, promptFindReplace, promptInsertLink]);
 
   // Right-click context menu handler
   const handleContextMenu = useCallback((e: React.MouseEvent, nodeId?: string) => {
@@ -1196,9 +1851,128 @@ export default function ResearchBoardPage() {
       queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
       success(`Auto-layout applied (${algorithm.replace('dagre-', '').toUpperCase()})`);
     } catch {
-      showError('Layout failed — please try again');
+      showError('Layout failed β€” please try again');
     }
   }, [board?.nodes, board?.connectors, boardId, queryClient, success, showError]);
+
+  runOpRef.current = (req) => handleCanvasOp({
+    boardId,
+    board,
+    selectedIds: Array.from(selectedNodeIds),
+    selectedGroupId,
+    layers,
+    pan,
+    zoom,
+    captureTitle: (kind) => t(
+      researchEn(`capture_${kind}` as 'capture_question'),
+      researchEl(`capture_${kind}` as 'capture_question'),
+    ),
+    placeNode: (type, title, extra, content) => {
+      const cx = (window.innerWidth / 2 - pan.x) / zoom;
+      const cy = (window.innerHeight / 2 - pan.y) / zoom;
+      createNodeMutation.mutate({
+        type,
+        title,
+        content: content ?? '',
+        posX: cx - 140,
+        posY: cy - 100,
+        width: 280,
+        height: 200,
+        metadata: extra,
+      });
+    },
+    deleteNode: (id) => deleteNodeMutation.mutate(id),
+    updateNode: (id, data) => updateNodeMutation.mutate({ nodeId: id, data: data as NodeUpdateData }),
+    connect: (fromId, toId) => createConnectorMutation.mutate({ fromNodeId: fromId, toNodeId: toId }),
+    duplicate: duplicateSelected,
+    copy: copySelection,
+    paste: pasteClipboard,
+    selectIds: (ids) => setSelectedNodeIds(new Set(ids)),
+    undo,
+    redo,
+    align: alignSelected,
+    createGroup,
+    deleteGroup,
+    applyStyle: applyStyleToSelection,
+    setLayers,
+    fit: fitToContent,
+    zoomBy: (delta) => handleZoom(delta),
+    resetView: () => { setZoom(1); setPan({ x: 0, y: 0 }); },
+    toggleGrid: () => setShowGrid((v) => !v),
+    toggleSnap: () => setSnapToGrid((v) => !v),
+    find: (query) => {
+      setShowFilterBar(true);
+      if (query) setFilterSearch(query);
+    },
+    autoLayout: (alg) => { void handleAutoLayout(alg); },
+    exportPng: () => { void handleExportPng(); },
+    exportJson: exportBoardJson,
+    exportSvg: () => { void exportBoardSvg(); },
+    exportMarkdown: exportBoardMarkdown,
+    copyOutline: () => { void copyOutline(); },
+    link: linkSelection,
+    findByTitle: findNodeByTitle,
+    matchSize: matchSelectedSize,
+    rotateBy: rotateSelection,
+    copyStyle: copyNodeStyle,
+    pasteStyle: pasteNodeStyle,
+    selectSame: selectSameType,
+    setTool: (tool) => setActiveTool(tool as Tool),
+    setCollapsed: (collapsed) => {
+      selectedNodeIds.forEach((id) => updateNodeMutation.mutate({ nodeId: id, data: { collapsed } }));
+    },
+    openComments: () => {
+      const id = Array.from(selectedNodeIds)[0];
+      if (id) setCommentsNodeId(id);
+    },
+    toggleMinimap: () => setShowMiniMap((v) => !v),
+    toggleRulers: () => setShowRulers((v) => !v),
+    shareLink: () => { void shareBoardLink(); },
+    tidy: tidySelection,
+    nudge: nudgeSelection,
+    rename: renameSelection,
+    setHidden: setSelectionHidden,
+    flip: flipSelection,
+    pasteInPlace: () => pasteClipboard(true),
+    frameSelection,
+    hugSelection,
+    vote: voteSelection,
+    isolate: isolateSelection,
+    reveal: revealIsolated,
+    selectInverse,
+    lockOthers,
+    scaleBy: scaleSelection,
+    setRadius: setSelectionRadius,
+    formatText: formatSelectedText,
+    findReplace: findReplaceSelected,
+    insertLink: insertLinkOnSelected,
+    insertCitation: insertCitationOnSelected,
+    wordCount: wordCountSelected,
+    mergeNotes: mergeSelectedNotes,
+    splitNotes: splitSelectedNotes,
+    copyText: copyTextSelected,
+    pastePlain: pastePlainSelected,
+    insertDate: insertDateOnSelected,
+  }, req);
+
+  useEffect(() => {
+    return registerCanvasCommandHandler((req) =>
+      runOpRef.current
+        ? runOpRef.current(req)
+        : Promise.resolve({ ok: false, error: 'Canvas not ready' }),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!board || hydratedCommand.current) return;
+    const pending = consumePendingCanvasCommand();
+    if (!pending || pending.applied) {
+      hydratedCommand.current = true;
+      return;
+    }
+    hydratedCommand.current = true;
+    void runOpRef.current?.({ requestId: 'hydrate', op: pending.op, payload: pending.payload });
+  }, [board]);
 
   // Show a stable loading spinner until mounted + query resolves
   const showLoading = !mounted || isLoading;
@@ -1218,7 +1992,7 @@ export default function ResearchBoardPage() {
       >
         <TopBar />
         <MobileBottomNav />
-        {/* Loading state — also rendered during SSR for consistent HTML */}
+        {/* Loading state β€” also rendered during SSR for consistent HTML */}
         {showLoading && (
           <div className="flex flex-1 flex-col items-center justify-center">
             <Loader2 className="icon-xl animate-spin text-primary-accessible" />
@@ -1228,7 +2002,7 @@ export default function ResearchBoardPage() {
           </div>
         )}
 
-        {/* Error state — only after mount to avoid hydration mismatch */}
+        {/* Error state β€” only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
           <div className="flex-1 flex flex-col items-center justify-center">
             <p className="mb-4 text-destructive-accessible">
@@ -1243,7 +2017,7 @@ export default function ResearchBoardPage() {
         {/* Board content */}
         {!showLoading && board && (
         <div className="flex min-h-0 flex-1 flex-col pb-16 lg:pb-0">
-        {/* Toolbar — clean minimal design */}
+        {/* Toolbar β€” clean minimal design */}
         <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-3 sm:px-4 shrink-0 z-50 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
@@ -1270,7 +2044,7 @@ export default function ResearchBoardPage() {
           <Button
             variant={activeTool === 'note' ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => setActiveTool(activeTool === 'note' ? 'select' : 'note')}
+            onClick={() => issue('set_tool', { query: activeTool === 'note' ? 'select' : 'note' })}
             className="h-8 gap-1.5 rounded-xl text-xs"
             title={t(researchEn('note_title'), researchEl('note_title'))}
           >
@@ -1350,7 +2124,7 @@ export default function ResearchBoardPage() {
 
           {/* Upload */}
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             className="h-8 gap-1.5 rounded-xl text-xs"
@@ -1365,7 +2139,7 @@ export default function ResearchBoardPage() {
           <Button
             variant={activeTool === 'connect' ? 'secondary' : 'ghost'}
             size="sm"
-            onClick={() => setActiveTool(activeTool === 'connect' ? 'select' : 'connect')}
+            onClick={() => issue('set_tool', { query: activeTool === 'connect' ? 'select' : 'connect' })}
             className="h-8 gap-1.5 rounded-xl text-xs"
             title={t(researchEn('connect_title'), researchEl('connect_title'))}
           >
@@ -1374,6 +2148,96 @@ export default function ResearchBoardPage() {
               <BilingualText en={researchEn('connect')} el={researchEl('connect')} compact />
             </span>
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs">
+                <FlaskConical className="icon-sm" />
+                <span className="hidden lg:inline">
+                  <BilingualText en={researchEn('capture')} el={researchEl('capture')} compact />
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'question' })}>
+                <HelpCircle className="icon-sm mr-2" />
+                <BilingualText en={researchEn('capture_question')} el={researchEl('capture_question')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'hypothesis' })}>
+                <FlaskConical className="icon-sm mr-2" />
+                <BilingualText en={researchEn('capture_hypothesis')} el={researchEl('capture_hypothesis')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'evidence' })}>
+                <GitBranch className="icon-sm mr-2" />
+                <BilingualText en={researchEn('capture_evidence')} el={researchEl('capture_evidence')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'insight' })}>
+                <Lightbulb className="icon-sm mr-2" />
+                <BilingualText en={researchEn('capture_insight')} el={researchEl('capture_insight')} compact />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            variant={showFilterBar ? 'secondary' : 'ghost'}
+            size="sm"
+            className="h-8 w-8 p-0 rounded-xl"
+            onClick={() => setShowFilterBar((v) => !v)}
+            title={t(researchEn('find_nodes'), researchEl('find_nodes'))}
+          >
+            <Search className="icon-sm" />
+          </Button>
+
+          {selectedNodeIds.size >= 2 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs">
+                  <Layers className="icon-sm" />
+                  <span className="hidden lg:inline">
+                    <BilingualText en={researchEn('align')} el={researchEl('align')} compact />
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem onClick={() => issue('align', { align: 'left' })}>
+                  <BilingualText en={researchEn('align_left')} el={researchEl('align_left')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'right' })}>
+                  <BilingualText en={researchEn('align_right')} el={researchEl('align_right')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'top' })}>
+                  <BilingualText en={researchEn('align_top')} el={researchEl('align_top')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'bottom' })}>
+                  <BilingualText en={researchEn('align_bottom')} el={researchEl('align_bottom')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'center_h' })}>
+                  <BilingualText en={researchEn('align_center_h')} el={researchEl('align_center_h')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'center_v' })}>
+                  <BilingualText en={researchEn('align_center_v')} el={researchEl('align_center_v')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'h' })}>
+                  <BilingualText en={researchEn('align_h')} el={researchEl('align_h')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('align', { align: 'v' })}>
+                  <BilingualText en={researchEn('align_v')} el={researchEl('align_v')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('match_size')}>
+                  <BilingualText en={researchEn('match_size')} el={researchEl('match_size')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('tidy')}>
+                  <BilingualText en={researchEn('tidy')} el={researchEl('tidy')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('frame')}>
+                  <BilingualText en={researchEn('frame')} el={researchEl('frame')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => issue('hug')}>
+                  <BilingualText en={researchEn('hug')} el={researchEl('hug')} compact />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <Button
             type="button"
@@ -1428,7 +2292,7 @@ export default function ResearchBoardPage() {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
-              onClick={fitToContent}
+              onClick={() => issue('fit_view')}
               title={t(researchEn('fit_nodes'), researchEl('fit_nodes'))}
             >
               <Layers className="icon-sm" />
@@ -1491,7 +2355,7 @@ export default function ResearchBoardPage() {
             <History className="icon-sm" />
           </Button>
 
-          {/* More menu — houses all secondary actions */}
+          {/* More menu β€” houses all secondary actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
@@ -1535,24 +2399,16 @@ export default function ResearchBoardPage() {
                   compact
                 />
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={fitToContent}>
+              <DropdownMenuItem onClick={() => issue('fit_view')}>
                 <Layers className="icon-sm mr-2" />
                 <BilingualText en={researchEn('fit_nodes')} el={researchEl('fit_nodes')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => {
-                const cx = (window.innerWidth / 2 - pan.x) / zoom;
-                const cy = (window.innerHeight / 2 - pan.y) / zoom;
-                createGroup(cx - 200, cy - 150);
-              }}>
+              <DropdownMenuItem onClick={() => issue('group')}>
                 <Grid3X3 className="icon-sm mr-2 text-blue-500" />
                 <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                const cx = (window.innerWidth / 2 - pan.x) / zoom;
-                const cy = (window.innerHeight / 2 - pan.y) / zoom;
-                createNodeMutation.mutate({ type: 'note' as any, title: '', content: '', posX: cx - 100, posY: cy - 100, width: 200, height: 200, color: '#F59E0B', metadata: { isSticky: true } });
-              }}>
+              <DropdownMenuItem onClick={() => issue('add_sticky')}>
                 <StickyNote className="icon-sm mr-2 text-amber-500" />
                 <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
               </DropdownMenuItem>
@@ -1565,7 +2421,7 @@ export default function ResearchBoardPage() {
                   compact
                 />
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowMiniMap((v) => !v)}>
+              <DropdownMenuItem onClick={() => issue('toggle_minimap')}>
                 <Map className="icon-sm mr-2" />
                 <BilingualText
                   en={showMiniMap ? researchEn('hide_map') : researchEn('show_map')}
@@ -1585,9 +2441,36 @@ export default function ResearchBoardPage() {
                   </div>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={handleExportPng}>
+              <DropdownMenuItem onClick={() => issue('export', { query: 'png' })}>
                 <Download className="icon-sm mr-2 text-blue-500" />
                 <BilingualText en={researchEn('export_png')} el={researchEl('export_png')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('export', { query: 'svg' })}>
+                <Download className="icon-sm mr-2" />
+                <BilingualText en={researchEn('export_svg')} el={researchEl('export_svg')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('copy_outline')}>
+                <Copy className="icon-sm mr-2" />
+                <BilingualText en={researchEn('copy_outline')} el={researchEl('copy_outline')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('export', { query: 'json' })}>
+                <Download className="icon-sm mr-2" />
+                <BilingualText en={researchEn('export_json')} el={researchEl('export_json')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('export', { query: 'markdown' })}>
+                <FileText className="icon-sm mr-2" />
+                <BilingualText en={researchEn('export_md')} el={researchEl('export_md')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('share_link')}>
+                <Copy className="icon-sm mr-2" />
+                <BilingualText en={researchEn('share_link')} el={researchEl('share_link')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => issue('toggle_rulers')}>
+                <BilingualText
+                  en={showRulers ? researchEn('hide_rulers') : researchEn('rulers')}
+                  el={showRulers ? researchEl('hide_rulers') : researchEl('rulers')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {/* Auto Layout */}
@@ -1595,16 +2478,16 @@ export default function ResearchBoardPage() {
                 <BilingualText en={researchEn('auto_layout')} el={researchEl('auto_layout')} compact />
               </div>
               {([
-                { alg: 'dagre-tb' as LayoutAlgorithm, label: '↓ Top → Bottom', icon: '↓' },
-                { alg: 'dagre-lr' as LayoutAlgorithm, label: '→ Left → Right', icon: '→' },
-                { alg: 'dagre-bt' as LayoutAlgorithm, label: '↑ Bottom → Top', icon: '↑' },
-                { alg: 'dagre-rl' as LayoutAlgorithm, label: '← Right → Left', icon: '←' },
-                { alg: 'grid'     as LayoutAlgorithm, label: '⊞ Grid',          icon: '⊞' },
-                { alg: 'radial'   as LayoutAlgorithm, label: '◎ Radial',        icon: '◎' },
-              ]).map(({ alg, label }) => (
-                <DropdownMenuItem key={alg} onClick={() => handleAutoLayout(alg)} className="gap-2 text-xs">
+                { alg: 'dagre-tb' as LayoutAlgorithm, en: 'Top to bottom', el: 'Πάνω προς κάτω' },
+                { alg: 'dagre-lr' as LayoutAlgorithm, en: 'Left to right', el: 'Αριστερά προς δεξιά' },
+                { alg: 'dagre-bt' as LayoutAlgorithm, en: 'Bottom to top', el: 'Κάτω προς πάνω' },
+                { alg: 'dagre-rl' as LayoutAlgorithm, en: 'Right to left', el: 'Δεξιά προς αριστερά' },
+                { alg: 'grid' as LayoutAlgorithm, en: 'Grid', el: 'Πλέγμα' },
+                { alg: 'radial' as LayoutAlgorithm, en: 'Radial', el: 'Ακτινωτή' },
+              ]).map(({ alg, en, el }) => (
+                <DropdownMenuItem key={alg} onClick={() => issue('auto_layout', { query: alg })} className="gap-2 text-xs">
                   <Network className="icon-sm text-violet-500" />
-                  {label}
+                  <BilingualText en={en} el={el} compact />
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
@@ -1629,21 +2512,21 @@ export default function ResearchBoardPage() {
         </div>
       )}
 
-      {/* Canvas → Builder synthesis prompt banner */}
+      {/* Canvas β†’ Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (
         <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
           <Sparkles className="icon-sm shrink-0 text-violet-600" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-foreground">
-              {board.nodes.length} research nodes — ready to synthesise?
+              {board.nodes.length} <BilingualText en={researchEn('synth_ready')} el={researchEl('synth_ready')} compact />
             </span>
             <span className="text-xs text-muted-foreground ml-1.5">
-              Turn your canvas insights into a fundable startup artifact.
+              <BilingualText en={researchEn('synth_hint')} el={researchEl('synth_hint')} compact />
             </span>
           </div>
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 hover:bg-violet-500/10 shrink-0" asChild>
-            <Link href="/builder">
-              Open Builder <ArrowRight className="icon-sm" />
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold shrink-0" asChild>
+            <Link href="/builder?tab=idea_core">
+              <BilingualText en={researchEn('synth_open')} el={researchEl('synth_open')} compact /> <ArrowRight className="icon-sm" />
             </Link>
           </Button>
           <button
@@ -1696,17 +2579,17 @@ export default function ResearchBoardPage() {
         onDragLeave={handleDragLeave}
         onContextMenu={(e) => handleContextMenu(e)}
       >
-        {/* ─── Canvas Draw Toolbar (floating, left side — fixed to viewport) ── */}
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-40 pointer-events-auto">
+        {/* β”€β”€β”€ Canvas Draw Toolbar (floating, left side β€” fixed to viewport) β”€β”€ */}
+        <div data-canvas-chrome className="absolute left-3 top-1/2 -translate-y-1/2 z-40 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
           <CanvasDrawToolbar
             activeTool={activeTool}
-            onToolChange={(t) => setActiveTool(t as Tool)}
+            onToolChange={(t) => issue('set_tool', { query: t })}
             onToggleLibrary={() => setShowShapeLibrary((p) => !p)}
             libraryOpen={showShapeLibrary}
           />
         </div>
 
-        {/* ─── Shape Library Panel ──────────────────────────────────────── */}
+        {/* β”€β”€β”€ Shape Library Panel β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ */}
         {showShapeLibrary && (
           <ShapeLibraryPanel
             onClose={() => setShowShapeLibrary(false)}
@@ -1787,6 +2670,7 @@ export default function ResearchBoardPage() {
               node={node}
               isSelected={selectedNodeIds.has(node.id)}
               isDragging={draggingNodeId === node.id}
+              dimmed={isolatedIds.size > 0 && !isolatedIds.has(node.id)}
               onSelect={(e?: React.MouseEvent) => {
                 if (connectionStart) {
                   handleCompleteConnection(node.id);
@@ -1829,7 +2713,7 @@ export default function ResearchBoardPage() {
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium shadow-lg backdrop-blur-sm">
               <GitBranch className="icon-sm" />
-              Click a node to connect · Press Esc to cancel
+              Click a node to connect Β· Press Esc to cancel
             </div>
           </div>
         )}
@@ -1837,10 +2721,25 @@ export default function ResearchBoardPage() {
         {/* Live cursors */}
         <LiveCursors collaborators={collaborators} pan={pan} zoom={zoom} />
 
-        {/* MiniMap */}
-        {showMiniMap && board && (
-          <div className="absolute bottom-4 right-4 pointer-events-auto z-40">
+        <CanvasAlignmentGuides guides={guides} pan={pan} zoom={zoom} />
+        {showRulers && canvasRef.current && (
+          <CanvasRulers
+            pan={pan}
+            zoom={zoom}
+            width={canvasRef.current.clientWidth}
+            height={canvasRef.current.clientHeight}
+          />
+        )}
+
+        {showMiniMap && board ? (
+          <div
+            data-canvas-chrome
+            className="pointer-events-auto absolute bottom-6 z-20 h-[144px] w-[216px] cursor-default overflow-hidden rounded-2xl border border-border/60 bg-card/95 p-1.5 shadow-sm"
+            style={{ right: 244 }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <BoardMiniMap
+              embedded
               nodes={board.nodes}
               pan={pan}
               zoom={zoom}
@@ -1849,11 +2748,61 @@ export default function ResearchBoardPage() {
               onNavigate={setPan}
             />
           </div>
-        )}
+        ) : null}
+        <div
+          data-canvas-chrome
+          className="pointer-events-auto absolute top-4 right-4 z-40 flex w-[220px] cursor-default flex-col overflow-hidden"
+          style={{ bottom: 99 }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <CanvasInspectorPanel
+            className="h-full min-h-0"
+            layers={layers}
+            activeLayerId={activeLayerId}
+            onActivateLayer={(id) => {
+              setActiveLayerId(id);
+              if (selectedNodeIds.size > 0) issue('set_layer', { query: id });
+            }}
+            onToggleLayer={(id) => issue('toggle_layer', { query: id })}
+            onLockLayer={(id) => issue('lock_layer', { query: id })}
+            onAddLayer={() => issue('add_layer')}
+            selectedCount={selectedNodeIds.size}
+            fill={selectedNodes[0] ? nodePaintColor(selectedNodes[0].color, selectedNodes[0].metadata) : null}
+            opacity={readNodeStyle(selectedNodes[0]?.metadata).opacity ?? 1}
+            stroke={readNodeStyle(selectedNodes[0]?.metadata).stroke}
+            shadow={readNodeStyle(selectedNodes[0]?.metadata).shadow ?? false}
+            onStyle={applyStyleToSelection}
+            onLink={(href) => issue('link_entity', { href })}
+            productHref={selectedNodes[0] ? readCfbHref(selectedNodes[0].metadata) : null}
+            onRotate={() => issue('rotate', { query: '90' })}
+            onMatchSize={() => issue('match_size')}
+            onCopyStyle={() => issue('copy_style')}
+            onPasteStyle={() => issue('paste_style')}
+            onTidy={() => issue('tidy')}
+            onFlipH={() => issue('flip_h')}
+            onFlipV={() => issue('flip_v')}
+            onHide={() => issue('hide')}
+            onVote={() => issue('vote')}
+            onIsolate={() => issue(isolatedIds.size ? 'reveal' : 'isolate')}
+            onFrame={() => issue('frame')}
+            onHug={() => issue('hug')}
+            isolated={isolatedIds.size > 0}
+            onDocFormat={(format) => issue('format_text', { query: format })}
+            onWordCount={() => issue('word_count')}
+            onCite={promptCite}
+            onFindReplace={promptFindReplace}
+            onInsertLink={promptInsertLink}
+            onMerge={() => issue('merge_notes')}
+            onSplit={() => issue('split_notes')}
+            onCopyText={() => issue('copy_text')}
+            onPastePlain={() => issue('paste_plain')}
+            onInsertDate={() => issue('insert_date')}
+          />
+        </div>
 
         {/* Comments Panel */}
         {commentsNodeId && currentUser && (
-          <div className="absolute top-4 left-4 z-40 pointer-events-auto" style={{ width: 340 }}>
+          <div className="absolute top-4 left-16 z-40 pointer-events-auto" style={{ width: 340 }}>
             <CommentsPanel
               nodeId={commentsNodeId}
               nodeTitle={board?.nodes?.find((n) => n.id === commentsNodeId)?.title}
@@ -1861,6 +2810,15 @@ export default function ResearchBoardPage() {
               onClose={() => setCommentsNodeId(null)}
             />
           </div>
+        )}
+
+        {board.nodes.length === 0 && !isDragOver && (
+          <EmptyCanvasStarter
+            onAddStarter={(kind) => {
+              createNodeMutation.mutate(canvasStarterPayload(kind, primary === 'el' ? 'el' : 'en'));
+            }}
+            onAskAi={() => { setShowAIPanel(true); }}
+          />
         )}
 
         {/* Drop zone overlay */}
@@ -1879,24 +2837,24 @@ export default function ResearchBoardPage() {
         )}
 
         {/* Bottom status bar */}
-        <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-between px-3 z-30 pointer-events-none select-none">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-7 select-none items-center justify-between border-t border-border/50 bg-card/80 px-3 backdrop-blur-sm">
           <span className="text-2xs tabular-nums text-muted-foreground/70">
-            {Math.round(zoom * 100)}% · {board.nodes.length}{' '}
+            {Math.round(zoom * 100)}% Β· {board.nodes.length}{' '}
             {t(board.nodes.length === 1 ? researchEn('node') : researchEn('nodes'), board.nodes.length === 1 ? researchEl('node') : researchEl('nodes'))}
-            {board.connectors.length > 0 && ` · ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
-            {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} ${t(researchEn('selected'), researchEl('selected'))}`}
-            {connectionStart && ` · ${t(researchEn('drawing'), researchEl('drawing'))}`}
-            {groups.length > 0 && ` · ${groups.length} ${t(groups.length === 1 ? researchEn('group') : researchEn('groups'), groups.length === 1 ? researchEl('group') : researchEl('groups'))}`}
-            {snapToGrid && ` · ⊞ ${t(researchEn('snap'), researchEl('snap'))}`}
+            {board.connectors.length > 0 && ` Β· ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
+            {selectedNodeIds.size > 0 && ` Β· ${selectedNodeIds.size} ${t(researchEn('selected'), researchEl('selected'))}`}
+            {connectionStart && ` Β· ${t(researchEn('drawing'), researchEl('drawing'))}`}
+            {groups.length > 0 && ` Β· ${groups.length} ${t(groups.length === 1 ? researchEn('group') : researchEn('groups'), groups.length === 1 ? researchEl('group') : researchEl('groups'))}`}
+            {snapToGrid && ` Β· β ${t(researchEn('snap'), researchEl('snap'))}`}
           </span>
           <span className="text-2xs tabular-nums text-muted-foreground/50">
-            {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} · `}
+            {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} Β· `}
             {t(researchEn('hint_nav'), researchEl('hint_nav'))}
           </span>
         </div>
       </div>
 
-      {/* Canvas Copilot Panel — sidebar */}
+      {/* Canvas Copilot Panel β€” sidebar */}
       {showAIPanel && (
         <CanvasCopilotPanel
           boardId={boardId}
@@ -1922,7 +2880,7 @@ export default function ResearchBoardPage() {
         />
       )}
 
-      {/* Board Summary Panel — sidebar */}
+      {/* Board Summary Panel β€” sidebar */}
       {showBoardSummary && (
         <BoardSummaryPanel
           boardId={boardId}
@@ -2001,32 +2959,32 @@ export default function ResearchBoardPage() {
                 onClick={() => { const n = board?.nodes?.find((nd) => nd.id === contextMenu.nodeId); if (n) setViewingNode(n); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Eye className="icon-sm" /> Open
+                <Eye className="icon-sm" /> <BilingualText en={researchEn('node_open')} el={researchEl('node_open')} compact />
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) { setSelectedNodeIds(new Set([contextMenu.nodeId])); duplicateSelected(); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Copy className="icon-sm" /> Duplicate
+                <Copy className="icon-sm" /> <BilingualText en={researchEn('duplicate')} el={researchEl('duplicate')} compact />
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) { setConnectionStart(contextMenu.nodeId); setActiveTool('connect'); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <GitBranch className="icon-sm" /> Connect from here
+                <GitBranch className="icon-sm" /> <BilingualText en={researchEn('connect_from')} el={researchEl('connect_from')} compact />
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) setCommentsNodeId(contextMenu.nodeId); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <MessageSquare className="icon-sm" /> Comments
+                <MessageSquare className="icon-sm" /> <BilingualText en={researchEn('node_comments')} el={researchEl('node_comments')} compact />
               </button>
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes?.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
               >
-                <Trash2 className="icon-sm" /> Delete
+                <Trash2 className="icon-sm" /> <BilingualText en={researchEn('node_delete')} el={researchEl('node_delete')} compact />
               </button>
             </>
           ) : (
@@ -2034,6 +2992,10 @@ export default function ResearchBoardPage() {
               {/* Quick-access node types for right-click */}
               {[
                 { type: 'note' as ResearchNodeType, label: 'Note', icon: StickyNote, color: '#F59E0B' },
+                { type: 'question' as ResearchNodeType, label: 'Question', icon: HelpCircle, color: '#6366F1' },
+                { type: 'hypothesis' as ResearchNodeType, label: 'Hypothesis', icon: FlaskConical, color: '#8B5CF6' },
+                { type: 'evidence' as ResearchNodeType, label: 'Evidence', icon: GitBranch, color: '#14B8A6' },
+                { type: 'insight' as ResearchNodeType, label: 'Insight', icon: Lightbulb, color: '#10B981' },
                 { type: 'document' as ResearchNodeType, label: 'Document', icon: FileText, color: '#3B82F6' },
                 { type: 'pitch_deck' as ResearchNodeType, label: 'Pitch Deck', icon: Presentation, color: '#EC4899' },
                 { type: 'business_plan' as ResearchNodeType, label: 'Business Plan', icon: ClipboardList, color: '#7C3AED' },
@@ -2079,13 +3041,13 @@ export default function ResearchBoardPage() {
                   if (rect) {
                     const x = (contextMenu.x - rect.left - pan.x) / zoom;
                     const y = (contextMenu.y - rect.top - pan.y) / zoom;
-                    createGroup(x, y);
+                    void issue('group', { posX: x, posY: y });
                   }
                   setContextMenu(null);
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Grid3X3 className="icon-sm text-blue-500" /> Create Group Frame
+                <Grid3X3 className="icon-sm text-blue-500" /> <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
               </button>
               <button
                 onClick={() => {
@@ -2099,20 +3061,20 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <StickyNote className="icon-sm text-amber-500" /> Add Sticky Note
+                <StickyNote className="icon-sm text-amber-500" /> <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
               </button>
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (board) setSelectedNodeIds(new Set(board.nodes.map((n) => n.id))); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Layers className="icon-sm" /> Select All
+                <Layers className="icon-sm" /> <BilingualText en={researchEn('select_all')} el={researchEl('select_all')} compact />
               </button>
               <button
                 onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Maximize2 className="icon-sm" /> Reset View
+                <Maximize2 className="icon-sm" /> <BilingualText en={researchEn('reset_view')} el={researchEl('reset_view')} compact />
               </button>
             </>
           )}
@@ -2163,6 +3125,12 @@ export default function ResearchBoardPage() {
                 { keys: ['F'], desc: 'Fit all nodes in view' },
                 { keys: ['Shift', 'G'], desc: 'Create group frame' },
                 { keys: ['S'], desc: 'Add sticky note' },
+                { keys: ['Ctrl/⌘', 'B'], desc: 'Bold note text' },
+                { keys: ['Ctrl/⌘', 'I'], desc: 'Italic note text' },
+                { keys: ['Ctrl/⌘', 'U'], desc: 'Underline note text' },
+                { keys: ['Ctrl/⌘', 'K'], desc: 'Insert link' },
+                { keys: ['Ctrl/⌘', 'H'], desc: 'Find and replace' },
+                { keys: ['Shift', 'A'], desc: 'Tidy selection' },
                 { keys: ['?'], desc: 'Show shortcuts' },
               ].map((s, i) => (
                 <div key={i} className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors">

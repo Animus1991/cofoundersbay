@@ -14,20 +14,20 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+          'bg-primary text-primary-foreground hover:bg-primary/90',
         secondary:
-          'bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/70 shadow-sm',
+          'bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/70',
         ghost:
           'text-foreground/70 hover:text-foreground hover:bg-secondary/50',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80 shadow-sm',
+          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80',
         destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         link:
           'text-primary-accessible underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
@@ -54,14 +54,14 @@ const buttonVariants = cva(
        * ladder applies and gets out of the way where the author asked it to.
        */
       size: {
-        xs:   'h-7 min-h-7 px-2.5 text-xs rounded lg:h-auto lg:min-h-[28px] lg:px-[10px]',
-        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[32px] lg:px-[12px]',
-        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[36px] lg:px-[16px]',
-        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[40px] lg:px-[24px]',
-        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[48px] lg:px-[32px]',
+        xs:   'h-7 min-h-7 px-2.5 text-xs rounded-xl lg:h-auto lg:min-h-[calc(28px*var(--chrome-y))] lg:px-[10px]',
+        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[calc(32px*var(--chrome-y))] lg:px-[12px]',
+        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[calc(36px*var(--chrome-y))] lg:px-[16px]',
+        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[calc(40px*var(--chrome-y))] lg:px-[24px]',
+        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[calc(48px*var(--chrome-y))] lg:px-[32px]',
         // An icon button has no text to outgrow its box, so it stays a fixed
         // square — that is the shape, not a floor.
-        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[36px] lg:w-[36px]',
+        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',
       },
     },
     defaultVariants: {

@@ -11,6 +11,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { Download } from 'lucide-react';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { analyticsEn, analyticsEl } from '@/lib/i18n/strings-analytics';
 import type { AnalyticsEngagement, AnalyticsProfileView } from '@/lib/api';
 
 const DEMO_AREA_DATA = [
@@ -55,7 +56,18 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
   const isSample = data.length === 0 && showDemoData;
   const chartData = data.length ? data.map((d) => ({ date: d.date, views: d.views, unique: d.uniqueVisitors }))
     : isSample ? DEMO_AREA_DATA : [];
-  const exportData = () => {
+  const exportData = (format: 'json' | 'csv') => {
+    if (format === 'csv') {
+      const csv = ['date,views,unique', ...chartData.map((point) => `${point.date},${point.views},${point.unique ?? ''}`)].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = isSample ? 'profile-views-sample.csv' : 'profile-views.csv';
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return;
+    }
     const blob = new Blob([JSON.stringify({ sample: isSample, data: chartData }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
@@ -66,15 +78,20 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
   };
 
   return (
-    <Card className="rounded-xl">
+    <Card>
       <CardHeader className="pb-2">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex min-w-0 items-center gap-2 text-sm font-semibold">
             <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={exportData} disabled={!chartData.length}>
-            <Download className="icon-sm" aria-hidden="true" /><BilingualText en="Export" el="Εξαγωγή" compact />
-          </Button>
+          <div className="flex shrink-0 flex-wrap gap-1">
+            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('json')} disabled={!chartData.length}>
+              <Download className="icon-sm" aria-hidden="true" /><BilingualText en="Export" el="Εξαγωγή" compact />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('csv')} disabled={!chartData.length}>
+              <Download className="icon-sm" aria-hidden="true" /><BilingualText en={analyticsEn('export_csv')} el={analyticsEl('export_csv')} compact />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -96,12 +113,12 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
               <XAxis dataKey="date" tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name="Views" />
-              <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-fg))" strokeWidth={2} fill={`url(#${id}-unique)`} name="Unique" connectNulls={false} />
+              <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name={analyticsEn('series_views')} />
+              <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-fg))" strokeWidth={2} fill={`url(#${id}-unique)`} name={analyticsEn('series_unique')} connectNulls={false} />
             </AreaChart>
           </ResponsiveContainer>
           <details className="mt-3 text-xs text-muted-foreground">
-            <summary className="cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><BilingualText en="View recorded values" el="Προβολή καταγεγραμμένων τιμών" compact /></summary>
+            <summary className="cursor-pointer rounded-xl focus-visible:outline-none"><BilingualText en="View recorded values" el="Προβολή καταγεγραμμένων τιμών" compact /></summary>
             <ul className="mt-3 space-y-1.5">{chartData.map((point) => <li key={point.date}>{point.date}: {point.views} / {point.unique ?? '—'}</li>)}</ul>
           </details>
         </> : <Unavailable />}
@@ -125,7 +142,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
   return (
     <div className="space-y-5">
       {isSample && <SampleNotice />}
-      <Card className="rounded-xl">
+      <Card>
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
           <CfbGlyph name="chart" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement by Type" el="Αλληλεπίδραση ανά τύπο" compact />
         </CardTitle></CardHeader>
@@ -144,7 +161,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
           </li>)}</ul>
         </CardContent>
       </Card>
-      <Card className="rounded-xl">
+      <Card>
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
           <CfbGlyph name="compare" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
         </CardTitle></CardHeader>

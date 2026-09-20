@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -215,14 +214,6 @@ export function ActivityTimeline({
                     <>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          {activity.user && (
-                            <Avatar className="h-5 w-5 shrink-0">
-                              <AvatarImage src={activity.user.avatarUrl} />
-                              <AvatarFallback className="text-2xs">
-                                {(activity.user?.displayName ?? 'U').charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
                           <p className="text-sm text-foreground leading-snug">
                             {activity.user && (
                               <span className="font-medium">{activity.user.displayName}&nbsp;</span>

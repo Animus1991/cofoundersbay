@@ -452,11 +452,11 @@ function TenantEditor({
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Full Description</label>
-                  <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder="Detailed description of the organization..." className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder="Detailed description of the organization..." className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">About Text (long-form landing page)</label>
-                  <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder="Full about section displayed on the tenant landing page..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder="Full about section displayed on the tenant landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -529,14 +529,14 @@ function TenantEditor({
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Heading Font</label>
                       <select value={branding.headingFont} onChange={e => setBranding(p => ({ ...p, headingFont: e.target.value }))}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Body Font</label>
                       <select value={branding.bodyFont} onChange={e => setBranding(p => ({ ...p, bodyFont: e.target.value }))}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
@@ -588,7 +588,7 @@ function TenantEditor({
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Hero Subtitle</label>
-                  <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">CTA URL</label>
@@ -596,16 +596,16 @@ function TenantEditor({
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">About / Long-form Content</label>
-                  <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Onboarding Intro Text</label>
-                    <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Dashboard Welcome Message</label>
-                    <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder="Here's what's happening..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder="Here's what's happening..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -686,7 +686,7 @@ function TenantEditor({
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Email Footer Text</label>
-                    <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">

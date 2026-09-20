@@ -137,22 +137,22 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success border border-status-success-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success">
           <Plus className="h-2.5 w-2.5" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger border border-status-danger-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger">
           <Minus className="h-2.5 w-2.5" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning border border-status-warning-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning">
           <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info border border-status-info-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info">
           <Move className="h-2.5 w-2.5" />{diff.moved.length}
         </span>
       )}

@@ -11,6 +11,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 
 function PitchDeckPageContent() {
@@ -94,7 +95,7 @@ function PitchDeckPageContent() {
 
   return (
     <AppShell showHelp contentClassName="overflow-x-clip" askAi={askPrompt}>
-      <div className="min-w-0 space-y-6 overflow-x-clip">
+      <div className="builder-type min-w-0 space-y-6 overflow-x-clip">
         {error && (
           <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
             <div className="flex min-w-0 items-start gap-3">
@@ -109,7 +110,7 @@ function PitchDeckPageContent() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 flex-wrap items-start gap-3">
-            <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-muted-foreground" aria-label={bilingualAria(builderEn('pitch_back'), builderEl('pitch_back'))} asChild>
+            <Button variant="ghost" size="sm" className={`h-8 gap-1.5 ${BUILDER_BTN} text-muted-foreground`} aria-label={bilingualAria(builderEn('pitch_back'), builderEl('pitch_back'))} asChild>
               <Link href="/builder">
                 <ArrowLeft className="icon-sm" />
                 <CfbGlyph name="builder" className="icon-sm" />
@@ -121,7 +122,7 @@ function PitchDeckPageContent() {
               {workspaceName ? ` · ${workspaceName}` : ''}
             </p>
           </div>
-          <AIInsightButton className="h-9 w-full sm:w-auto" prompt={askPrompt} />
+          <AIInsightButton className={`h-8 w-full sm:w-auto ${BUILDER_BTN}`} prompt={askPrompt} />
         </div>
 
         <PitchDeckBuilder
@@ -130,6 +131,7 @@ function PitchDeckPageContent() {
           initialData={rawContent}
           workspaceName={workspaceName}
           ideaCore={ideaCore}
+          bmc={bmc}
           askPrompt={askPrompt}
         />
       </div>

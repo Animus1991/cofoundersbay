@@ -51,6 +51,8 @@ const STARTERS: { en: string; el: string; writes?: boolean }[] = [
   { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
   { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
   { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
+  { en: 'Open my calendar', el: 'Άνοιξε το ημερολόγιό μου' },
+  { en: 'How is my fundraising going?', el: 'Πώς πάει η χρηματοδότηση;' },
   { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist', writes: true },
   { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα', writes: true },
   { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', writes: true },
@@ -255,24 +257,26 @@ export function CopilotWorkspace({
               <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">
+              <p className={cn('truncate text-sm font-medium', !isPage && 'max-w-[9.5rem]')}>
                 {currentAgentConfig?.name || 'CoFounderBay Assistant'}
               </p>
+              {isPage && (
               <p className="truncate text-[11px] text-muted-foreground">
                 {chat.isAIAvailable
                   ? sayOne('Live model + platform tools', 'Ζωντανό μοντέλο + εργαλεία πλατφόρμας')
                   : sayOne('Platform copilot · tools online', 'Βοηθός πλατφόρμας · εργαλεία ενεργά')}
               </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1">
             {agentList.length > 1 && (
-              /* The Select primitive, not a raw <select>: this was the last
-                 native control in the chrome — unthemed, unportalled, and
-                 visually foreign next to every other menu in the product. */
               <Select value={chat.currentAgent} onValueChange={(v) => chat.setAgent(v)}>
                 <SelectTrigger
-                  className="h-8 min-h-8 w-auto max-w-[11rem] gap-1 px-2 text-xs"
+                  className={cn(
+                    'h-8 min-h-8 w-auto gap-1 px-2 text-xs',
+                    isPage ? 'max-w-[11rem]' : 'max-w-[7.5rem]',
+                  )}
                   aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
                 >
                   <SelectValue />
@@ -288,16 +292,16 @@ export function CopilotWorkspace({
             )}
             {chat.messages.length > 0 && (
               <>
-                <button type="button" onClick={chat.retryLastMessage} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Retry', 'Επανάληψη')} aria-label={bilingualAria('Retry', 'Επανάληψη')}>
+                <button type="button" onClick={chat.retryLastMessage} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Retry', 'Επανάληψη')} aria-label={bilingualAria('Retry', 'Επανάληψη')}>
                   <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
-                <button type="button" onClick={chat.clearMessages} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Clear', 'Καθαρισμός')} aria-label={bilingualAria('Clear', 'Καθαρισμός')}>
+                <button type="button" onClick={chat.clearMessages} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Clear', 'Καθαρισμός')} aria-label={bilingualAria('Clear', 'Καθαρισμός')}>
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </>
             )}
             {onExpand && (
-                <button type="button" onClick={onExpand} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
+                <button type="button" onClick={onExpand} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
                 <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             )}
@@ -423,10 +427,14 @@ export function CopilotWorkspace({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={sayOne(
-                'Ask AI to search, intro, message, or navigate…',
-                'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…',
+                isPage
+                  ? 'Ask AI to search, intro, message, or navigate…'
+                  : 'Ask to search, intro, or go…',
+                isPage
+                  ? 'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…'
+                  : 'Αναζήτηση, σύσταση, πλοήγηση…',
               )}
-              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1"
+              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:outline-none focus-visible:ring-0"
               disabled={chat.isStreaming}
             />
             <Button
@@ -439,6 +447,22 @@ export function CopilotWorkspace({
               {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
+          {!isPage ? (
+            <p className="mt-1.5 text-center text-2xs text-muted-foreground">
+              <button
+                type="button"
+                className="underline-offset-2 hover:underline"
+                onClick={() => router.push('/ai/capabilities')}
+              >
+                <BilingualText
+                  en="See everything I can read and change"
+                  el="Δες όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                  compact
+                  wrap
+                />
+              </button>
+            </p>
+          ) : (
           <p className="mt-2 flex items-center justify-center gap-1 text-center text-2xs text-muted-foreground">
             <Sparkles className="h-3 w-3" />
             <BilingualText
@@ -446,6 +470,7 @@ export function CopilotWorkspace({
               el="Τα εργαλεία χρησιμοποιούν τις πραγματικές συνδέσεις, αντιστοιχίσεις και μηνύματα. Οι καταστροφικές ενέργειες θέλουν επιβεβαίωση."
             />
           </p>
+          )}
         </form>
       </section>
     </div>

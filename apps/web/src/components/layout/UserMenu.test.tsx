@@ -86,8 +86,8 @@ describe('UserMenu', () => {
       name: 'Account menu for Alex Example. Μενού λογαριασμού για Alex Example',
     });
     expect(trigger.getAttribute('aria-label')).not.toContain(user.email);
-    expect(trigger.className).toContain('focus-visible:ring-2');
-    expect(trigger.className).toContain('focus-visible:ring-ring');
+    expect(trigger.className).toContain('rounded-xl');
+    expect(trigger.className).toContain('focus-visible:outline-none');
     expect(trigger.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 

@@ -2,12 +2,16 @@
 
 import React, { createContext, useCallback, useContext, useState } from 'react';
 
+export type PopupChatTab = 'messages' | 'ai';
+
 interface PopupChatContextValue {
   isOpen: boolean;
   isMinimized: boolean;
   /** userId to open a DM with when popup opens */
   initialUserId: string | null;
-  open: (targetUserId?: string) => void;
+  /** Tab to show on the next open; null keeps the last used tab. */
+  preferredTab: PopupChatTab | null;
+  open: (targetUserId?: string, tab?: PopupChatTab) => void;
   close: () => void;
   toggle: () => void;
   minimize: () => void;
@@ -20,9 +24,11 @@ export function PopupChatProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [initialUserId, setInitialUserId] = useState<string | null>(null);
+  const [preferredTab, setPreferredTab] = useState<PopupChatTab | null>(null);
 
-  const open = useCallback((targetUserId?: string) => {
+  const open = useCallback((targetUserId?: string, tab?: PopupChatTab) => {
     setInitialUserId(targetUserId ?? null);
+    setPreferredTab(tab ?? (targetUserId ? 'messages' : null));
     setIsOpen(true);
     setIsMinimized(false);
   }, []);
@@ -31,6 +37,7 @@ export function PopupChatProvider({ children }: { children: React.ReactNode }) {
     setIsOpen(false);
     setIsMinimized(false);
     setInitialUserId(null);
+    setPreferredTab(null);
   }, []);
 
   const toggle = useCallback(() => {
@@ -44,7 +51,7 @@ export function PopupChatProvider({ children }: { children: React.ReactNode }) {
   const restore  = useCallback(() => setIsMinimized(false), []);
 
   return (
-    <PopupChatContext.Provider value={{ isOpen, isMinimized, initialUserId, open, close, toggle, minimize, restore }}>
+    <PopupChatContext.Provider value={{ isOpen, isMinimized, initialUserId, preferredTab, open, close, toggle, minimize, restore }}>
       {children}
     </PopupChatContext.Provider>
   );

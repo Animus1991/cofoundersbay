@@ -96,7 +96,7 @@ export function ExportDialog({
                   type="button"
                   onClick={() => setFormat(opt.value)}
                   className={cn(
-                    'w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors',
+                    'w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors',
                     format === opt.value
                       ? 'border-primary bg-primary/5'
                       : 'border-border/60 hover:border-primary/40 hover:bg-muted/50',

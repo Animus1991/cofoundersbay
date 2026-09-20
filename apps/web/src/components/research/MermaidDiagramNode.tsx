@@ -131,7 +131,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onChange={(e) => setDraft(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
             placeholder={`graph TD\n  A[Start] --> B{Decision}\n  B -->|Yes| C[End]\n  B -->|No| A`}
-            className="flex-1 min-h-[120px] resize-none rounded-lg bg-secondary/60 border border-border/60 p-2 text-xs font-mono text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+            className="flex-1 min-h-[120px] resize-none rounded-xl bg-secondary/60 border border-border/60 p-2 text-xs font-mono text-foreground outline-none"
           />
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleApply(); }}

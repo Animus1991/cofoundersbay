@@ -247,7 +247,7 @@ export default function MentorDashboard() {
               <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
             </div>
             <Link href="/mentor/sessions">
-              <button className="rounded-md border border-status-info-border px-3 py-1 text-xs font-medium text-status-info hover:bg-status-info-bg transition-colors">
+              <button className="rounded-xl border border-status-info-border px-3 py-1 text-xs font-medium text-status-info hover:bg-status-info-bg transition-colors">
                 Join Now
               </button>
             </Link>

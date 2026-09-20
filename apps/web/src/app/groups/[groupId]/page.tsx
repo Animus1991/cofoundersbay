@@ -189,7 +189,7 @@ function PostCard({
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
                 placeholder="Write a comment..."
-                className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+                className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none"
               />
               <Button aria-label="Send"
                 size="icon"
@@ -443,7 +443,7 @@ export default function GroupDetailPage() {
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
                     placeholder="Share something with the group..."
-                    className="w-full rounded-lg border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                    className="w-full rounded-xl border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none resize-none"
                     rows={3}
                   />
                   <div className="flex justify-end">

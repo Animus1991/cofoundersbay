@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
-import { Inter, Commissioner, JetBrains_Mono } from 'next/font/google';
+import { Inter, Commissioner, JetBrains_Mono, Manrope } from 'next/font/google';
 import './globals.css';
 
 /*
@@ -45,6 +45,19 @@ const commissioner = Commissioner({
   display: 'swap',
   variable: '--font-display-brand',
 });
+
+/*
+ * Compact “Co” lettermark only (Latin C + o). Manrope is a semi-geometric
+ * grotesque with even stroke and a compact “C”/“o” pair — more designed
+ * than Commissioner, never script or handwritten, and it sits symmetrically
+ * in a circular chat bubble.
+ */
+const coMarkFont = Manrope({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['600', '700'],
+  display: 'swap',
+  variable: '--font-co-mark',
+});
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { ToastProvider } from '@/components/ui/toast';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
@@ -79,12 +92,13 @@ export const metadata: Metadata = {
   authors: [{ name: 'CoFounderBay' }],
   icons: {
     icon: [
+      { url: '/icons/logo-surf.png', type: 'image/png' },
       { url: '/icons/icon.svg', type: 'image/svg+xml' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/logo-surf.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   openGraph: {
@@ -118,7 +132,7 @@ export default function RootLayout({
       lang="en"
       data-bilingual="en-el"
       data-scroll-behavior="smooth"
-      className={`scroll-smooth ${inter.variable} ${commissioner.variable} ${jetbrainsMono.variable}`}
+      className={`scroll-smooth ${inter.variable} ${commissioner.variable} ${jetbrainsMono.variable} ${coMarkFont.variable}`}
       suppressHydrationWarning
     >
       <body

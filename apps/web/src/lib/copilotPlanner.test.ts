@@ -61,6 +61,58 @@ describe('planning a workspace', () => {
   });
 });
 
+describe('planning a canvas command', () => {
+  it('adds a note from English or Greek without guessing a people intro', () => {
+    expect(argsFor('add a note on the canvas titled “Pricing”', 'canvas_command')).toEqual({
+      op: 'add_note',
+      title: 'Pricing',
+    });
+    expect(argsFor('πρόσθεσε υπόθεση στον καμβά «Τιμή»', 'canvas_command')).toEqual({
+      op: 'capture',
+      title: 'Τιμή',
+      nodeType: 'hypothesis',
+    });
+    expect(plan('add a note on the canvas')).not.toContain('send_connection');
+    expect(plan('connect these notes on the canvas')).toContain('canvas_command');
+    expect(plan('connect these notes on the canvas')).not.toContain('send_connection');
+  });
+
+  it('stays out of the way of opening the page or talking about boards', () => {
+    expect(plan('open canvas')).toContain('navigate');
+    expect(plan('open canvas')).not.toContain('canvas_command');
+    expect(plan('show my research boards')).toContain('get_research_boards');
+    expect(plan('show my research boards')).not.toContain('canvas_command');
+    expect(plan('connect with Marcus')).toContain('send_connection');
+    expect(plan('connect with Marcus')).not.toContain('canvas_command');
+  });
+
+  it('plans arrange and format steps in English and Greek', () => {
+    expect(argsFor('align center on the canvas', 'canvas_command')).toEqual({ op: 'align', align: 'center_h' });
+    expect(argsFor('match size on the canvas', 'canvas_command')).toEqual({ op: 'match_size' });
+    expect(argsFor('περιστρέψε στον καμβά', 'canvas_command')).toEqual({ op: 'rotate', query: '90' });
+    expect(argsFor('tidy up on the canvas', 'canvas_command')).toEqual({ op: 'tidy' });
+    expect(argsFor('nudge left on the canvas', 'canvas_command')).toEqual({ op: 'nudge', query: 'left' });
+    expect(argsFor('frame selection on the canvas', 'canvas_command')).toEqual({ op: 'frame' });
+    expect(argsFor('τακτοποίησε στον καμβά', 'canvas_command')).toEqual({ op: 'tidy' });
+    expect(argsFor('ψήφισε στον καμβά', 'canvas_command')).toEqual({ op: 'vote' });
+    expect(argsFor('make bold on the canvas', 'canvas_command')).toEqual({ op: 'format_text', query: 'bold' });
+    expect(argsFor('word count on the canvas', 'canvas_command')).toEqual({ op: 'word_count' });
+    expect(argsFor('έντονα στον καμβά', 'canvas_command')).toEqual({ op: 'format_text', query: 'bold' });
+    expect(argsFor('align text center on the canvas', 'canvas_command')).toEqual({ op: 'format_text', query: 'align_center' });
+    expect(argsFor('find and replace “price” with “pricing” on the canvas', 'canvas_command')).toEqual({
+      op: 'find_replace',
+      title: 'price',
+      query: 'pricing',
+    });
+    expect(argsFor('insert a link https://example.com on the canvas', 'canvas_command')).toEqual({
+      op: 'insert_link',
+      href: 'https://example.com',
+    });
+    expect(argsFor('merge notes on the canvas', 'canvas_command')).toEqual({ op: 'merge_notes' });
+    expect(argsFor('insert today\'s date on the canvas', 'canvas_command')).toEqual({ op: 'insert_date' });
+  });
+});
+
 describe('planning a readiness criterion', () => {
   it('needs an object and a verb together', () => {
     expect(plan('tick the team readiness criterion')).toContain('readiness_tick_criterion');
@@ -90,6 +142,7 @@ describe('what the planner may name', () => {
       'show my analytics for the last 30 days',
       'create a workspace called “Helios”',
       'tick the market readiness criterion',
+      'add a note on the canvas titled “Pricing”',
       'what should I do next',
       '',
     ];

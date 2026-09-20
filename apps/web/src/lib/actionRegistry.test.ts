@@ -177,6 +177,7 @@ describe('action registry coverage', () => {
     // Creating a workspace is honestly irreversible: `undoAction` is handed the
     // payload, never the outcome, so it has no id to archive.
     expect(isUndoable('workspace_create')).toBe(false);
+    expect(isUndoable('canvas_command')).toBe(false);
     expect(isUndoable('readiness_tick_criterion')).toBe(true);
     expect(isUndoable('analytics_set_period')).toBe(true);
   });
@@ -185,7 +186,7 @@ describe('action registry coverage', () => {
     // This used to be a pair of tool ids inside CopilotWorkspace.
     const navigates = listActions().filter((spec) => spec.navigatesOnSuccess).map((s) => s.id).sort();
     expect(navigates).toEqual(
-      ['analytics_set_period', 'navigate', 'readiness_tick_criterion', 'start_or_send_message', 'workspace_create'],
+      ['analytics_set_period', 'canvas_command', 'navigate', 'readiness_tick_criterion', 'start_or_send_message', 'workspace_create'],
     );
 
     // Saving to a shortlist reports where the result can be seen without
@@ -285,6 +286,36 @@ describe('executing registry actions', () => {
       href: '/matches',
     });
     await expect(executeAction('navigate', {})).resolves.toEqual({ ok: true, href: '/dashboard' });
+  });
+
+  it('parks a canvas command and opens Research when no board is listening', async () => {
+    await expect(executeAction('canvas_command', { op: 'not-a-step' })).resolves.toEqual({
+      ok: false,
+      error: 'Unknown canvas command',
+    });
+    await expect(executeAction('canvas_command', { op: 'add_note', title: 'Pricing' })).resolves.toEqual({
+      ok: true,
+      href: '/research',
+    });
+    await expect(
+      executeAction('canvas_command', { op: 'fit_view', boardId: 'board-gtm' }),
+    ).resolves.toEqual({ ok: true, href: '/research/board-gtm' });
+  });
+
+  it('hands a canvas command to the open board instead of only navigating', async () => {
+    const { registerCanvasCommandHandler } = await import('@/lib/canvas/canvas-command-bus');
+    const unsub = registerCanvasCommandHandler(async (req) => ({
+      ok: true,
+      href: `/research/live?op=${req.op}`,
+    }));
+    try {
+      await expect(executeAction('canvas_command', { op: 'align', align: 'left' })).resolves.toEqual({
+        ok: true,
+        href: '/research/live?op=align',
+      });
+    } finally {
+      unsub();
+    }
   });
 
   it('saves to the shortlist and reports where it landed', async () => {

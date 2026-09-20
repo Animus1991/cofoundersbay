@@ -2,6 +2,7 @@ import {
   getActionDeclaration,
   listDeclarations,
   toToolCatalog,
+  isCanvasCommandOp,
   type ActionDeclaration,
   type ActionOutcome,
   type MutationActionId,
@@ -19,6 +20,7 @@ import { createWorkspace } from '@/lib/builder-api';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
+import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
 
 /**
  * The web app's half of the capability contract.
@@ -222,6 +224,12 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     }
     notifyReadinessChanged();
     return { ok: true, href: '/readiness' };
+  },
+
+  canvas_command: async (payload) => {
+    const op = requireString(payload, 'op');
+    if (!isCanvasCommandOp(op)) return { ok: false, error: 'Unknown canvas command' };
+    return runCanvasCommand(op, payload);
   },
 };
 

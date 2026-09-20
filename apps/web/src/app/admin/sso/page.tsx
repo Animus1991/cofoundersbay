@@ -406,7 +406,7 @@ function SSOConfigPanel({
           <div className="flex gap-1 border-b pb-2">
             {(['providers','policy','domains'] as const).map(tab => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors capitalize ${
+                className={`px-3 py-1.5 text-sm rounded-xl transition-colors capitalize ${
                   activeTab === tab ? 'bg-primary/10 text-primary-accessible font-medium' : 'text-muted-foreground hover:bg-muted/50'
                 }`}>
                 {tab === 'providers' ? 'Providers' : tab === 'policy' ? 'Policy' : 'Email Domains'}
@@ -510,7 +510,7 @@ function SSOConfigPanel({
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-medium">Public Certificate (PEM)</label>
-                      <textarea value={newProvider.samlCert} onChange={e => setNewProvider(p => ({ ...p, samlCert: e.target.value }))} placeholder="-----BEGIN CERTIFICATE-----\n..." className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
+                      <textarea value={newProvider.samlCert} onChange={e => setNewProvider(p => ({ ...p, samlCert: e.target.value }))} placeholder="-----BEGIN CERTIFICATE-----\n..." className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
                     </div>
                   </>
                 )}
@@ -554,7 +554,7 @@ function SSOConfigPanel({
                 <div className="space-y-2">
                   <label className="text-xs font-medium">Identity Provider</label>
                   <select value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                     <option value="">— None selected —</option>
                     {providers?.map(p => <option key={p.id} value={p.id}>{p.providerName} ({p.providerType.toUpperCase()})</option>)}
                   </select>
@@ -570,7 +570,7 @@ function SSOConfigPanel({
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Default Role for new users</label>
                     <select value={defaultRole} onChange={e => setDefaultRole(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                      className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                       {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
                     </select>
                   </div>
@@ -612,7 +612,7 @@ function SSOConfigPanel({
                   value={newDomain}
                   onChange={e => setNewDomain(e.target.value.replace('@',''))}
                   placeholder="uoa.gr"
-                  className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  className="flex-1 h-9 rounded-xl border border-input bg-background px-3 text-sm"
                 />
                 <label className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 cursor-pointer">
                   <input type="checkbox" checked={newDomainAutoRedirect} onChange={e => setNewDomainAutoRedirect(e.target.checked)} className="rounded" />
@@ -656,11 +656,11 @@ function SSOConfigPanel({
                 {roleMappingRules.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
                     <input value={r.claim} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,claim:e.target.value} : x))}
-                      placeholder="Claim" className="h-8 rounded-md border border-input bg-background px-2 text-xs" />
+                      placeholder="Claim" className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
                     <input value={r.value} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,value:e.target.value} : x))}
-                      placeholder="Value" className="h-8 rounded-md border border-input bg-background px-2 text-xs" />
+                      placeholder="Value" className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
                     <select value={r.role} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,role:e.target.value} : x))}
-                      className="h-8 rounded-md border border-input bg-background px-2 text-xs">
+                      className="h-8 rounded-xl border border-input bg-background px-2 text-xs">
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}
                     </select>
                     <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-accessible">

@@ -32,13 +32,13 @@ export default function GlobalError({
               <button
                 type="button"
                 onClick={() => reset()}
-                className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+                className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground"
               >
                 Try again
               </button>
               <a
                 href="/"
-                className="inline-flex h-9 items-center rounded-md border border-border bg-secondary px-4 text-sm font-medium"
+                className="inline-flex h-9 items-center rounded-xl border border-border bg-secondary px-4 text-sm font-medium"
               >
                 Go home
               </a>

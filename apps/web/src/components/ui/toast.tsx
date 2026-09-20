@@ -133,7 +133,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
           <button
             type="button"
             onClick={toast.action.onClick}
-            className="mt-2 rounded-md text-sm font-medium underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-2 rounded-xl text-sm font-medium underline underline-offset-2 focus-visible:outline-none"
           >
             {toast.action.label}
           </button>
@@ -143,7 +143,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         type="button"
         aria-label={dismissLabel}
         onClick={onRemove}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl hover:bg-secondary transition-colors focus-visible:outline-none"
       >
         <X className="icon-sm" aria-hidden="true" />
       </button>

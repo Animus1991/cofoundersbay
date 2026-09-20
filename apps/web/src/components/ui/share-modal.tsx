@@ -158,7 +158,7 @@ export function ShareModal({
                   type="button"
                   onClick={() => openChannel(ch.id)}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg border border-border/60 text-sm text-muted-foreground transition-colors',
+                    'flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 text-sm text-muted-foreground transition-colors',
                     ch.color,
                   )}
                 >

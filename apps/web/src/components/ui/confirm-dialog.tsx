@@ -64,6 +64,7 @@ export function ConfirmDialog({
             ref={cancelRef}
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
@@ -73,6 +74,7 @@ export function ConfirmDialog({
             ref={confirmRef}
             type="button"
             variant={variant}
+            size="sm"
             loading={loading}
             onClick={() => void onConfirm()}
           >

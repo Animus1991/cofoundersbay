@@ -4023,8 +4023,9 @@ export interface ResearchBoardFull extends ResearchBoard {
 }
 
 // Board operations
-export async function listResearchBoards(): Promise<{ boards: ResearchBoard[] }> {
-  return apiRequest('/api/research/boards');
+export async function listResearchBoards(opts?: { archived?: boolean }): Promise<{ boards: ResearchBoard[] }> {
+  const q = opts?.archived ? '?archived=1' : '';
+  return apiRequest(`/api/research/boards${q}`);
 }
 
 export async function getResearchBoard(boardId: string): Promise<{ board: ResearchBoardFull }> {
@@ -4212,7 +4213,8 @@ export interface ResearchComment {
 }
 
 export async function listNodeComments(nodeId: string): Promise<{ comments: ResearchComment[] }> {
-  return apiRequest(`/api/research/nodes/${nodeId}/comments`);
+  const result = await apiRequest<{ comments?: ResearchComment[] }>(`/api/research/nodes/${nodeId}/comments`);
+  return { comments: result?.comments ?? [] };
 }
 
 export async function createNodeComment(

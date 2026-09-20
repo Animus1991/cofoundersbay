@@ -41,10 +41,10 @@ export interface CanvasComment {
 // ── API helpers ────────────────────────────────────────────────────────────────
 
 async function listNodeComments(nodeId: string): Promise<CanvasComment[]> {
-  const result = await apiRequest<{ comments: CanvasComment[] }>(
+  const result = await apiRequest<{ comments?: CanvasComment[] }>(
     `/api/research/nodes/${nodeId}/comments`,
   );
-  return result.comments;
+  return result?.comments ?? [];
 }
 
 async function createComment(
@@ -52,7 +52,7 @@ async function createComment(
   body: string,
   opts?: { posX?: number; posY?: number; commentType?: string; parentId?: string },
 ): Promise<CanvasComment> {
-  const result = await apiRequest<{ comment: CanvasComment }>(
+  const result = await apiRequest<{ comment?: CanvasComment }>(
     `/api/research/nodes/${nodeId}/comments`,
     {
       method: 'POST',
@@ -65,17 +65,19 @@ async function createComment(
       }),
     },
   );
+  if (!result?.comment) throw new Error('Failed to add comment');
   return result.comment;
 }
 
 async function resolveComment(commentId: string): Promise<CanvasComment> {
-  const result = await apiRequest<{ comment: CanvasComment }>(
+  const result = await apiRequest<{ comment?: CanvasComment }>(
     `/api/research/comments/${commentId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({ resolved: true }),
     },
   );
+  if (!result?.comment) throw new Error('Failed to resolve comment');
   return result.comment;
 }
 

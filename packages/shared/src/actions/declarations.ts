@@ -1,3 +1,4 @@
+import { CANVAS_COMMAND_OPS } from '../canvas/commands';
 import type { ActionDeclaration, ToolCatalogEntry } from './types';
 
 /**
@@ -536,6 +537,131 @@ export const ACTION_DECLARATIONS = [
     auditSubject: { param: 'name', entityType: 'workspace' },
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Create workspace', el: 'Δημιουργία χώρου' },
+  },
+  {
+    id: 'canvas_command',
+    kind: 'mutation',
+    label: { en: 'Run a research canvas command', el: 'Εντολή στον καμβά έρευνας' },
+    description: {
+      en: 'Perform one canvas step the founder could also click: add a note, capture a question or hypothesis, connect, align, group, style, format note text (bold, lists, find/replace, citation, word count), merge or split notes, export, or link a node to Builder, Readiness or milestones. The open canvas runs it live; otherwise the user is taken to Research so the same step can land.',
+      el: 'Εκτελεί ένα βήμα του καμβά που ο ιδρυτής θα μπορούσε και να πατήσει: σημείωση, ερώτηση ή υπόθεση, σύνδεση, στοίχιση, ομάδα, στυλ, μορφοποίηση κειμένου σημείωσης (έντονα, λίστες, εύρεση/αντικατάσταση, παραπομπή, πλήθος λέξεων), ένωση ή διαίρεση σημειώσεων, εξαγωγή, ή σύνδεση κόμβου με Builder, Ετοιμότητα ή ορόσημα. Ο ανοιχτός καμβάς το τρέχει ζωντανά· αλλιώς ο χρήστης πηγαίνει στην Έρευνα ώστε το ίδιο βήμα να εφαρμοστεί.',
+    },
+    params: [
+      {
+        name: 'op',
+        type: 'string',
+        required: true,
+        enumValues: CANVAS_COMMAND_OPS,
+        description: {
+          en: 'Which canvas step to run. Same ids the toolbar uses.',
+          el: 'Ποιο βήμα καμβά θα τρέξει. Τα ίδια id με την εργαλειοθήκη.',
+        },
+      },
+      {
+        name: 'boardId',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Research board to act on, when the user is not already on one.',
+          el: 'Πίνακας έρευνας, όταν ο χρήστης δεν είναι ήδη σε έναν.',
+        },
+      },
+      {
+        name: 'title',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Title for a new note, or the note to select / connect from.',
+          el: 'Τίτλος νέας σημείωσης, ή της σημείωσης προς επιλογή / σύνδεση.',
+        },
+      },
+      {
+        name: 'content',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Body text for a new note.',
+          el: 'Κείμενο σώματος για νέα σημείωση.',
+        },
+      },
+      {
+        name: 'nodeType',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'For capture: question, hypothesis, evidence or insight. For convert_type, the target type.',
+          el: 'Για καταγραφή: question, hypothesis, evidence ή insight. Για convert_type, ο τύπος-στόχος.',
+        },
+      },
+      {
+        name: 'fromTitle',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Title of the node to connect from.',
+          el: 'Τίτλος του κόμβου από τον οποίο ξεκινά η σύνδεση.',
+        },
+      },
+      {
+        name: 'toTitle',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Title of the node to connect to.',
+          el: 'Τίτλος του κόμβου προς τον οποίο καταλήγει η σύνδεση.',
+        },
+      },
+      {
+        name: 'align',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Alignment: left, right, top, bottom, h (distribute horizontally) or v (vertically).',
+          el: 'Στοίχιση: left, right, top, bottom, h (οριζόντια κατανομή) ή v (κάθετα).',
+        },
+      },
+      {
+        name: 'fill',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Fill colour for set_style, e.g. #FDE68A.',
+          el: 'Χρώμα γεμίσματος για set_style, π.χ. #FDE68A.',
+        },
+      },
+      {
+        name: 'query',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Find query, replace text, note format (bold/italic/heading/…), layer name, zoom mode (in/out/reset), export format (json/outline/png), or layout algorithm.',
+          el: 'Αναζήτηση, κείμενο αντικατάστασης, μορφή σημείωσης (bold/italic/heading/…), όνομα επιπέδου, zoom (in/out/reset), μορφή εξαγωγής (json/outline/png) ή αλγόριθμος διάταξης.',
+        },
+      },
+      {
+        name: 'href',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'URL for insert_link, or a product path to link a node to (e.g. /builder or /readiness).',
+          el: 'URL για insert_link, ή διαδρομή προϊόντος για σύνδεση κόμβου (π.χ. /builder ή /readiness).',
+        },
+      },
+    ],
+    writes: true,
+    reversal: {
+      // The live canvas has its own undo stack. Chat undo is handed the
+      // original payload and never a snapshot, so it cannot restore nodes it
+      // did not identify. Canvas undo (Ctrl+Z) is the honest reverse.
+      kind: 'none',
+      explanation: {
+        en: 'The canvas keeps its own undo history. Chat cannot reverse a step it did not snapshot; use Undo on the board (Ctrl+Z) for the last move, alignment or style change.',
+        el: 'Ο καμβάς κρατά τη δική του ιστορία αναίρεσης. Το chat δεν μπορεί να αντιστρέψει βήμα χωρίς στιγμιότυπο· χρησιμοποίησε Αναίρεση στον πίνακα (Ctrl+Z) για την τελευταία μετακίνηση, στοίχιση ή αλλαγή στυλ.',
+      },
+    },
+    auditSubject: { param: 'op', entityType: 'research_canvas' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Run on canvas', el: 'Εκτέλεση στον καμβά' },
   },
 ] as const satisfies readonly ActionDeclaration[];
 

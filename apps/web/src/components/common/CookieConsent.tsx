@@ -92,12 +92,12 @@ export function CookieConsent() {
   return (
     <div
       className={cn(
-        'fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 p-3 sm:p-4 transition-transform duration-300 lg:bottom-0 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]',
+        'pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 p-3 sm:p-4 transition-transform duration-300 lg:bottom-0 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]',
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
     >
-      <div className="mx-auto max-w-4xl">
-        <div className="rounded-xl border border-border/60 bg-card shadow-lg backdrop-blur-sm">
+      <div className="pointer-events-none mx-auto max-w-4xl">
+        <div className="pointer-events-auto rounded-xl border border-border/60 bg-card shadow-lg backdrop-blur-sm">
           {!showSettings ? (
             /* Main Banner */
             <div className="p-4 sm:p-6">

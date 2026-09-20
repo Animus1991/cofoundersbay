@@ -9,7 +9,6 @@ import {
   ChevronDown,
   Send,
   Loader2,
-  GripVertical,
   ArrowLeft,
   Search,
   MessageCircle,
@@ -17,6 +16,10 @@ import {
   Check,
   CheckCheck,
   Bot,
+  Compass,
+  Heart,
+  UserCheck,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -33,9 +36,17 @@ import {
   type ConversationSummary, type MessageItem,
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import type { Conversation } from '@/components/messaging/ConversationList';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import {
+  messagesEn,
+  messagesEl,
+  PREVIEW_MESSAGE_EL,
+} from '@/lib/i18n/strings-messages';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { LogoIcon } from '@/components/brand/Logo';
 
 type TabType = 'messages' | 'ai';
 
@@ -93,11 +104,13 @@ function formatRelativeTime(d: Date) {
 // ── Messaging sub-components ───────────────────────────────────────────────────
 
 function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: boolean; onClick: () => void }) {
+  const previewEl = PREVIEW_MESSAGE_EL[conv.lastMessage];
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-lg transition-colors',
+        'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
         selected ? 'bg-primary/10' : 'hover:bg-muted/60',
       )}
     >
@@ -109,7 +122,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
           </AvatarFallback>
         </Avatar>
         {conv.isOnline && (
-          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
+          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-status-success ring-2 ring-background" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -129,7 +142,11 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
             'text-xs truncate',
             conv.unreadCount > 0 ? 'text-foreground/75 font-medium' : 'text-muted-foreground',
           )}>
-            {conv.lastMessage || <span className="italic">No messages yet</span>}
+            {conv.lastMessage
+              ? (previewEl
+                ? <BilingualText en={conv.lastMessage} el={previewEl} compact />
+                : conv.lastMessage)
+              : <BilingualText en={messagesEn('no_messages_yet_short')} el={messagesEl('no_messages_yet_short')} compact />}
           </p>
           {conv.unreadCount > 0 && (
             <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground shrink-0">
@@ -138,7 +155,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -164,8 +181,11 @@ export function UnifiedChatPopup() {
   const pathname = usePathname();
   const router = useRouter();
   const { hasSession, mounted: sessionReady } = useSession();
-  const { isOpen, isMinimized, initialUserId, close, minimize, restore } = usePopupChat();
+  const { isOpen, isMinimized, initialUserId, preferredTab, close, minimize, restore } = usePopupChat();
   const { setActiveConversationId, markConversationRead } = useMessaging();
+  const sayOne = useBilingualString();
+
+  const TAB_KEY = 'cfb-chat-popup-tab';
 
   // ── Tab ────────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TabType>('ai');
@@ -181,6 +201,8 @@ export function UnifiedChatPopup() {
   const [isInitializing, setIsInitializing] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sendError, setSendError] = useState(false);
+  const [liveConnected, setLiveConnected] = useState(true);
 
   const socketRef = useRef<ReturnType<typeof createMessagingSocket> | null>(null);
   const selectedIdRef = useRef<string | null>(null);
@@ -191,10 +213,6 @@ export function UnifiedChatPopup() {
   const popupRef = useRef<HTMLDivElement>(null);
 
   // ── Draggable ──────────────────────────────────────────────────────────────
-  const dragLabel = bilingualAria(
-    'Drag to move, or use the arrow keys',
-    'Σύρετε για μετακίνηση ή χρησιμοποιήστε τα βελάκια',
-  );
   const { position, isDragging, dragHandleProps } = useDraggable({
     storageKey: 'cfb-unified-chat-position',
     initialPosition: { x: 0, y: 0 },
@@ -205,21 +223,38 @@ export function UnifiedChatPopup() {
   useEffect(() => { selectedIdRef.current = selected?.id ?? null; }, [selected]);
   useEffect(() => { currentUserIdRef.current = currentUserId; }, [currentUserId]);
 
-  // ESC key: thread open → back to list; list → minimize
+  // ESC: thread → back to list; list/AI → close
   useEffect(() => {
     if (!isOpen || isMinimized) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (selected) {
+      if (selected && activeTab === 'messages') {
         setSelected(null);
         setActiveConversationId(null);
       } else {
-        minimize();
+        close();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isMinimized, selected, minimize, setActiveConversationId]);
+  }, [isOpen, isMinimized, selected, activeTab, close, setActiveConversationId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (preferredTab) {
+      setActiveTab(preferredTab);
+      return;
+    }
+    try {
+      const saved = sessionStorage.getItem(TAB_KEY);
+      if (saved === 'messages' || saved === 'ai') setActiveTab(saved);
+    } catch { /* ignore */ }
+  }, [isOpen, preferredTab]);
+
+  const selectTab = useCallback((tab: TabType) => {
+    setActiveTab(tab);
+    try { sessionStorage.setItem(TAB_KEY, tab); } catch { /* ignore */ }
+  }, []);
 
   // Focus popup container when it opens or is restored (accessibility)
   useEffect(() => {
@@ -228,9 +263,10 @@ export function UnifiedChatPopup() {
     }
   }, [isOpen, isMinimized]);
 
-  // Hide on messaging page and auth pages
+  // Hide on auth pages and the full AI workspace. Allowed on /messages so the
+  // inbox "Ask AI" card can draft a reply without leaving the thread. The
+  // floating bubble stays hidden on /messages to avoid a duplicate composer.
   const shouldHide =
-    pathname?.startsWith('/messages') ||
     pathname?.startsWith('/login') ||
     pathname?.startsWith('/register') ||
     pathname?.startsWith('/onboarding') ||
@@ -311,6 +347,9 @@ export function UnifiedChatPopup() {
 
         const socket = createMessagingSocket();
         socketRef.current = socket;
+        setLiveConnected(isPreviewDemo() || socket.connected);
+        socket.on('connect', () => setLiveConnected(true));
+        socket.on('disconnect', () => setLiveConnected(false));
         socket.on('message:new', onNew);
         socket.on('message:ack', onAck);
         socket.on('typing:start', onTypingStart);
@@ -444,7 +483,12 @@ export function UnifiedChatPopup() {
 
   const handleMsgSend = useCallback(() => {
     const text = msgInput.trim();
-    if (!text || !selected || !socketRef.current?.connected) return;
+    if (!text || !selected || !socketRef.current) return;
+    if (!isPreviewDemo() && !socketRef.current.connected) {
+      setSendError(true);
+      return;
+    }
+    setSendError(false);
     const tempId = `temp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     setMsgMessages(prev => [...prev, {
       id: tempId, senderId: currentUserId, content: text, timestamp: new Date(), status: 'sending',
@@ -497,40 +541,38 @@ export function UnifiedChatPopup() {
   if (isMinimized) {
     return (
       <div
-        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex items-center gap-1 animate-in slide-in-from-bottom-2 lg:bottom-6 lg:right-6"
+        className="pointer-events-none fixed bottom-6 right-6 z-50 hidden animate-in slide-in-from-bottom-2 lg:block"
         style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
       >
         <div
           {...dragHandleProps}
-          role="button"
-          tabIndex={0}
-          aria-label={dragLabel}
-          title={dragLabel}
           className={cn(
-            'flex items-center justify-center rounded-full bg-primary text-primary-foreground/80 shadow-md cursor-grab',
-            'hover:bg-primary/90 transition-all',
-            isDragging && 'scale-95 opacity-80 cursor-grabbing'
+            'pointer-events-auto flex items-center gap-1 rounded-full bg-primary py-1.5 pl-2 pr-1.5 shadow-lg',
+            isDragging && 'cursor-grabbing opacity-90',
           )}
-          style={{ width: 24, height: 24, ...dragHandleProps.style }}
+          style={dragHandleProps.style}
         >
-          <GripVertical className="icon-sm" aria-hidden="true" />
-        </div>
-        <div
-          className="flex items-center gap-2 cursor-pointer rounded-full bg-primary shadow-lg px-4 py-2.5 hover:bg-primary/90 hover:shadow-xl transition-all"
-          onClick={restore}
-        >
-          <Bot className="icon-sm text-primary-foreground" />
-          <span className="text-sm font-medium text-primary-foreground">
-            <BilingualText en="Chat" el="Συνομιλία" compact />
-          </span>
-          {totalMsgUnread > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
-              {totalMsgUnread}
-            </span>
-          )}
           <button
-            onClick={(e) => { e.stopPropagation(); close(); }}
-            className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
+            type="button"
+            onClick={restore}
+            className="flex items-center gap-2 rounded-full px-1.5 py-0.5 text-primary-foreground hover:bg-white/10"
+            aria-label={bilingualAria('Restore chat', 'Επαναφορά συνομιλίας')}
+          >
+            <LogoIcon size={22} mono className="pointer-events-none text-primary-foreground" />
+            <span className="text-sm font-medium">
+              <BilingualText en={messagesEn('popup_title')} el={messagesEl('popup_title')} compact />
+            </span>
+            {totalMsgUnread > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
+                {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={close}
+            className="rounded-full p-1 hover:bg-white/20 transition-colors"
+            aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
           >
             <X className="icon-sm text-white/80" />
           </button>
@@ -544,62 +586,86 @@ export function UnifiedChatPopup() {
     <div
       ref={popupRef}
       tabIndex={-1}
-      className="fixed z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 focus:outline-none bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6"
+      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200 focus:outline-none bottom-6 right-6"
+      role="dialog"
+      aria-label={bilingualAria('Chat', 'Συνομιλία')}
       style={{
-        width: 'min(400px, calc(100vw - 2rem))',
-        height: 'min(560px, calc(100dvh - 8.5rem))',
+        width: 'min(420px, calc(100vw - 2rem))',
+        height: 'min(580px, calc(100dvh - 6rem))',
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}
     >
-      {/* ── Header ── */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/60 bg-primary shrink-0">
+      {/* ── Header: drag the bar itself ── */}
+      <div
+        {...dragHandleProps}
+        className={cn(
+          'flex shrink-0 items-center gap-1.5 border-b border-white/10 bg-primary px-2 py-2',
+          isDragging ? 'cursor-grabbing' : 'cursor-grab',
+        )}
+        tabIndex={0}
+        style={dragHandleProps.style}
+        title={bilingualAria(messagesEn('drag_panel'), messagesEl('drag_panel'))}
+      >
         <div
-          {...dragHandleProps}
-          role="button"
-          tabIndex={0}
-          aria-label={dragLabel}
-          title={dragLabel}
-          className={cn(
-            'flex items-center justify-center rounded-md text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors cursor-grab',
-            isDragging && 'text-white/90 bg-white/10 cursor-grabbing'
-          )}
-          style={{ width: 24, height: 24, ...dragHandleProps.style }}
+          role="tablist"
+          aria-label={bilingualAria('Chat sections', 'Ενότητες συνομιλίας')}
+          className="flex min-w-0 flex-1 items-center gap-0.5 rounded-full bg-white/10 p-0.5"
+          onMouseDown={(e) => e.stopPropagation()}
         >
-          <GripVertical className="icon-sm" aria-hidden="true" />
-        </div>
-
-        <div className="flex-1 flex items-center gap-1 bg-white/10 rounded-full p-0.5">
           <button
-            onClick={() => setActiveTab('messages')}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'messages'}
+            onClick={() => selectTab('messages')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'messages' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
+              'flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all',
+              activeTab === 'messages' ? 'bg-white text-primary shadow-sm' : 'text-white/85 hover:bg-white/10 hover:text-white',
             )}
           >
-            <MessageSquare className="icon-sm" />
-            <BilingualText en="Messages" el="Μηνύματα" compact />
+            <MessageSquare className="icon-sm shrink-0" />
+            <span className="truncate">{sayOne(messagesEn('page_title'), messagesEl('page_title'))}</span>
             {totalMsgUnread > 0 && (
-              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-2xs font-bold px-1">
+              <span className={cn(
+                'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs font-bold',
+                activeTab === 'messages' ? 'bg-primary text-primary-foreground' : 'bg-status-danger text-white',
+              )}>
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
               </span>
             )}
           </button>
           <button
-            onClick={() => setActiveTab('ai')}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'ai'}
+            onClick={() => selectTab('ai')}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'ai' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
+              'flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all',
+              activeTab === 'ai' ? 'bg-white text-primary shadow-sm' : 'text-white/85 hover:bg-white/10 hover:text-white',
             )}
           >
-            <Bot className="icon-sm" />
-            <BilingualText en="AI Assistant" el="Βοηθός AI" compact />
+            <Bot className="icon-sm shrink-0" />
+            <span className="truncate">{sayOne(messagesEn('popup_ai'), messagesEl('popup_ai'))}</span>
           </button>
         </div>
 
-        <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors" aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')} title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}>
+        <button
+          type="button"
+          onClick={minimize}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="shrink-0 rounded-full p-1.5 hover:bg-white/20 transition-colors"
+          aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
+          title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
+        >
           <ChevronDown className="icon-sm text-white" />
         </button>
-        <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors" aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')} title={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}>
+        <button
+          type="button"
+          onClick={close}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="shrink-0 rounded-full p-1.5 hover:bg-white/20 transition-colors"
+          aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
+          title={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
+        >
           <X className="icon-sm text-white" />
         </button>
       </div>
@@ -612,32 +678,60 @@ export function UnifiedChatPopup() {
         <>
           {/* Thread sub-header */}
           {selected && (
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border/60 bg-card/80 shrink-0">
+            <div className="flex shrink-0 items-center gap-2 border-b border-border/60 bg-card/80 px-3 py-2">
               <button
+                type="button"
                 onClick={() => { setSelected(null); setActiveConversationId(null); }}
-                className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label={bilingualAria('Back to conversations', 'Πίσω στις συνομιλίες')}
               >
                 <ArrowLeft className="icon-sm" />
               </button>
-              <div className="relative shrink-0">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                  <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary-accessible">
-                    {selected.recipientName[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {selected.isOnline && (
-                  <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-background" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate leading-tight">{selected.recipientName}</p>
-                <p className="text-2xs text-muted-foreground leading-tight">{selected.isOnline ? 'Online' : 'Offline'}</p>
-              </div>
               <button
+                type="button"
+                className="relative min-w-0 flex-1 text-left"
+                onClick={() => { close(); router.push(`/matches/${selected.recipientId}`); }}
+                aria-label={bilingualAria(messagesEn('view_profile'), messagesEl('view_profile'))}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="relative shrink-0">
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={selected.recipientAvatar ?? undefined} />
+                      <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary-accessible">
+                        {selected.recipientName[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {selected.isOnline && (
+                      <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-status-success ring-1 ring-background" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold leading-tight text-foreground">{selected.recipientName}</p>
+                    <p className="text-2xs leading-tight text-muted-foreground">
+                      <BilingualText
+                        en={selected.isOnline ? messagesEn('online') : messagesEn('offline')}
+                        el={selected.isOnline ? messagesEl('online') : messagesEl('offline')}
+                        compact
+                      />
+                    </p>
+                  </div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => { close(); router.push(`/matches/${selected.recipientId}`); }}
+                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title={bilingualAria(messagesEn('view_profile'), messagesEl('view_profile'))}
+                aria-label={bilingualAria(messagesEn('view_profile'), messagesEl('view_profile'))}
+              >
+                <User className="icon-sm" />
+              </button>
+              <button
+                type="button"
                 onClick={handleExpandToFullPage}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                title="Open full chat"
+                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title={bilingualAria(messagesEn('open_full_inbox'), messagesEl('open_full_inbox'))}
+                aria-label={bilingualAria(messagesEn('open_full_inbox'), messagesEl('open_full_inbox'))}
               >
                 <Maximize2 className="icon-sm" />
               </button>
@@ -661,8 +755,15 @@ export function UnifiedChatPopup() {
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <MessageCircle className="icon-md text-primary-accessible" />
                     </div>
-                    <p className="text-sm font-medium">Say hello!</p>
-                    <p className="text-xs text-muted-foreground">Start a conversation with {selected.recipientName}</p>
+                    <p className="text-sm font-medium">
+                      <BilingualText en={messagesEn('say_hello')} el={messagesEl('say_hello')} compact />
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText
+                        en={`${messagesEn('start_conversation_with')} ${selected.recipientName}`}
+                        el={`${messagesEl('start_conversation_with')} ${selected.recipientName}`}
+                      />
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -692,7 +793,9 @@ export function UnifiedChatPopup() {
                               'max-w-[75%] rounded-2xl px-3 py-2 text-sm leading-relaxed',
                               isMe ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-muted text-foreground',
                             )}>
-                              {msg.content}
+                              {PREVIEW_MESSAGE_EL[msg.content]
+                                ? <BilingualText en={msg.content} el={PREVIEW_MESSAGE_EL[msg.content]} />
+                                : msg.content}
                             </div>
                             {isMe && (
                               <span className="text-muted-foreground mb-0.5">
@@ -715,25 +818,41 @@ export function UnifiedChatPopup() {
                 )}
               </div>
 
-              <div className="shrink-0 border-t border-border/60 px-3 py-2.5 bg-card/80">
+              <div className="shrink-0 border-t border-border/60 bg-card/80 px-3 py-2.5">
+                {!liveConnected && !isPreviewDemo() && (
+                  <p className="mb-2 text-2xs text-status-warning">
+                    <BilingualText en={messagesEn('reconnecting')} el={messagesEl('reconnecting')} />
+                  </p>
+                )}
+                {sendError && (
+                  <p className="mb-2 text-2xs text-destructive-accessible">
+                    <BilingualText en={messagesEn('not_connected')} el={messagesEl('not_connected')} />
+                  </p>
+                )}
                 <div className="flex items-center gap-2">
                   <Input
                     ref={msgInputRef}
                     value={msgInput}
                     onChange={e => handleMsgInputChange(e.target.value)}
                     onKeyDown={handleMsgKeyDown}
-                    placeholder="Type a message..."
-                    className="flex-1 h-9 text-sm rounded-xl border-border/60 bg-background focus-visible:ring-1"
+                    placeholder={sayOne(messagesEn('type_message'), messagesEl('type_message'))}
+                    aria-label={bilingualAria(messagesEn('type_message'), messagesEl('type_message'))}
+                    className="h-9 flex-1 rounded-xl border-border/60 bg-background text-sm"
                   />
                   <Button
+                    type="button"
                     onClick={handleMsgSend}
-                    disabled={!msgInput.trim() || !socketRef.current?.connected}
+                    disabled={!msgInput.trim()}
                     size="sm"
-                    className="h-9 w-9 p-0 rounded-md shrink-0"
+                    className="h-9 w-9 shrink-0 rounded-xl p-0"
+                    aria-label={bilingualAria(messagesEn('send'), messagesEl('send'))}
                   >
                     <Send className="icon-sm" />
                   </Button>
                 </div>
+                <p className="mt-1.5 text-2xs text-muted-foreground">
+                  <BilingualText en={messagesEn('type_message_hint')} el={messagesEl('type_message_hint')} compact wrap />
+                </p>
               </div>
             </div>
           ) : (
@@ -745,8 +864,9 @@ export function UnifiedChatPopup() {
                   <Input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search conversations..."
-                    className="pl-8 h-8 text-xs rounded-lg border-border/60 bg-muted/40"
+                    placeholder={sayOne(messagesEn('search_conversations'), messagesEl('search_conversations'))}
+                    aria-label={bilingualAria(messagesEn('search_conversations'), messagesEl('search_conversations'))}
+                    className="h-8 rounded-lg border-border/60 bg-muted/40 pl-8 text-xs"
                   />
                 </div>
               </div>
@@ -758,10 +878,14 @@ export function UnifiedChatPopup() {
                       <MessageCircle className="icon-md text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">
-                      {searchQuery ? 'No results' : 'No messages yet'}
+                      {searchQuery
+                        ? <BilingualText en={messagesEn('no_conversations_found')} el={messagesEl('no_conversations_found')} compact />
+                        : <BilingualText en={messagesEn('no_conversations')} el={messagesEl('no_conversations')} compact />}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {searchQuery ? `Nothing matching "${searchQuery}"` : 'Connect with founders and mentors to start chatting'}
+                      {searchQuery
+                        ? <BilingualText en={`${messagesEn('no_results_for')} “${searchQuery}”`} el={`${messagesEl('no_results_for')} «${searchQuery}»`} />
+                        : <BilingualText en={messagesEn('empty_inbox_cta')} el={messagesEl('empty_inbox_cta')} />}
                     </p>
                   </div>
                 ) : (
@@ -776,13 +900,40 @@ export function UnifiedChatPopup() {
                 )}
               </div>
 
-              <div className="shrink-0 border-t border-border/60 px-3 py-2">
+              <div className="shrink-0 space-y-1.5 border-t border-border/60 px-3 py-2">
+                <div className="grid grid-cols-3 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => { close(); router.push('/matches'); }}
+                    className="flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-2xs text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                  >
+                    <Heart className="icon-sm" />
+                    <span className="truncate">{sayOne(messagesEn('find_matches'), messagesEl('find_matches'))}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { close(); router.push('/discover'); }}
+                    className="flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-2xs text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                  >
+                    <Compass className="icon-sm" />
+                    <span className="truncate">{sayOne(messagesEn('discover_people'), messagesEl('discover_people'))}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { close(); router.push('/connections'); }}
+                    className="flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-2xs text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                  >
+                    <UserCheck className="icon-sm" />
+                    <span className="truncate">{sayOne(messagesEn('connections'), messagesEl('connections'))}</span>
+                  </button>
+                </div>
                 <button
+                  type="button"
                   onClick={handleExpandToFullPage}
-                  className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1 rounded-lg hover:bg-muted/40"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
                 >
                   <Maximize2 className="icon-sm" />
-                  Open full messaging view
+                  {sayOne(messagesEn('open_full_inbox'), messagesEl('open_full_inbox'))}
                 </button>
               </div>
             </div>

@@ -735,6 +735,22 @@ export async function runCopilotTurn(
         });
       }
     }
+
+    if (tool.name === 'canvas_command') {
+      actions.push(
+        ...actionsFromToolCalls(
+          [
+            {
+              name: 'canvas_command',
+              args: tool.args ?? {},
+              writes: true,
+              droppedArgs: [],
+            },
+          ],
+          replyLocale,
+        ),
+      );
+    }
   }
 
   if (people.length || matches.length) {

@@ -8,7 +8,7 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   page_title: { en: 'Readiness Score', el: 'Βαθμολογία ετοιμότητας' },
   page_description: {
     en: 'Assess your startup\u2019s readiness across 6 key dimensions and see what to fix next.',
-    el: 'Αξιολογήστε την ετοιμότητα της νεοφυούς επιχείρησής σας σε 6 βασικές διαστάσεις.',
+    el: 'Αξιολογήστε την ετοιμότητα του startup σας σε 6 βασικές διαστάσεις και δείτε τι να διορθώσετε στη συνέχεια.',
   },
   reassess: { en: 'Reassess', el: 'Επαναξιολόγηση' },
 
@@ -198,6 +198,11 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
     en: 'Ask AI for a readiness plan',
     el: 'Ρωτήστε το AI για πλάνο ετοιμότητας',
   },
+  next_open: { en: 'Next to tick', el: 'Επόμενο προς ολοκλήρωση' },
+  pts_to: { en: 'pts to', el: 'μον. έως' },
+  jump_to: { en: 'Jump to dimension', el: 'Μετάβαση στη διάσταση' },
+  expert_review: { en: 'Expert review', el: 'Αξιολόγηση ειδικού' },
+  expert_review_hint: { en: 'Get a specialist to score this', el: 'Αξιολόγηση από ειδικό' },
   show_n_more: { en: 'Show more', el: 'Περισσότερα' },
   last_assessed_prefix: { en: 'Last saved assessment', el: 'Τελευταία αποθηκευμένη αξιολόγηση' },
   reassess_reloads: {

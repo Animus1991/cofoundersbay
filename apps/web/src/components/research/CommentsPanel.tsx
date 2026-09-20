@@ -205,7 +205,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
               }
             }}
             placeholder="Write a comment… (Enter to send)"
-            className="flex-1 resize-none text-sm bg-secondary/50 border-0 rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-primary/50 min-h-[36px] max-h-[120px] placeholder:text-muted-foreground/60"
+            className="flex-1 resize-none text-sm bg-secondary/50 border-0 rounded-xl px-3 py-2 outline-none min-h-[36px] max-h-[120px] placeholder:text-muted-foreground/60"
             rows={1}
             style={{ height: 'auto' }}
           />

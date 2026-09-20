@@ -1,7 +1,103 @@
 /** Static payloads so Cloudflare preview never waits on localhost:3001. */
 
+import { mergeNodeMetadata } from './canvas/canvas-geometry';
+
 const NOW = '2026-09-04T10:00:00.000Z';
+
+function seedPreviewGtmNodes() {
+  const base = {
+    boardId: 'board-gtm',
+    url: null as string | null,
+    uploadId: null as string | null,
+    upload: null as unknown,
+    zIndex: 1,
+    collapsed: false,
+    locked: false,
+    refEntityType: null as string | null,
+    refEntityId: null as string | null,
+    builderDocumentId: null as string | null,
+    metadata: null as unknown,
+    tags: [] as string[],
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+  return [
+    { ...base, id: 'n-gtm-problem', type: 'note', title: 'Problem', content: '<p>Who experiences this, how painful is it, and how do they cope today?</p><p>Ποιος το βιώνει, πόσο πονάει, και πώς το λύνει σήμερα;</p>', posX: 80, posY: 80, width: 280, height: 200, color: '#FEF3C7' },
+    { ...base, id: 'n-gtm-customer', type: 'note', title: 'Customer', content: '<p>Segment, jobs to be done, budget, and buying path.</p><p>Τμήμα, εργασίες, προϋπολογισμός και διαδρομή αγοράς.</p>', posX: 400, posY: 80, width: 280, height: 200, color: '#DBEAFE' },
+    { ...base, id: 'n-gtm-channel', type: 'note', title: 'Channels', content: '<p>Where will the first 100 customers find you?</p><p>Πού θα σας βρουν οι πρώτοι 100 πελάτες;</p>', posX: 720, posY: 80, width: 280, height: 200, color: '#D1FAE5' },
+    { ...base, id: 'n-gtm-offer', type: 'note', title: 'Offer', content: '<p>Pricing, packaging, and the first conversion moment.</p><p>Τιμή, συσκευασία και η πρώτη στιγμή μετατροπής.</p>', posX: 80, posY: 320, width: 280, height: 200, color: '#FCE7F3' },
+    { ...base, id: 'n-gtm-comp', type: 'note', title: 'Competition', content: '<p>Direct, indirect, and the wedge you own.</p><p>Άμεσος, έμμεσος ανταγωνισμός και η δική σας διαφορά.</p>', posX: 400, posY: 320, width: 280, height: 200, color: '#FEE2E2' },
+    { ...base, id: 'n-gtm-metrics', type: 'note', title: 'Metrics', content: '<p>Activation, retention, and the weekly number that proves GTM.</p><p>Ενεργοποίηση, διατήρηση και ο εβδομαδιαίος αριθμός που αποδεικνύει το GTM.</p>', posX: 720, posY: 320, width: 280, height: 200, color: '#EDE9FE' },
+  ];
+}
+
+type PreviewGtmNode = ReturnType<typeof seedPreviewGtmNodes>[number];
+type PreviewGtmConnector = {
+  id: string;
+  boardId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  label: string | null;
+  color: string | null;
+  style: string;
+};
+
+let previewGtmBoardNodes: PreviewGtmNode[] = seedPreviewGtmNodes();
+let previewGtmConnectors: PreviewGtmConnector[] = [];
+let previewGtmCanvasState: Record<string, unknown> = {};
+
+function previewGtmBoardResponse() {
+  const board = kitchenSink().boards[0];
+  return {
+    board: {
+      ...board,
+      canvasState: Object.keys(previewGtmCanvasState).length ? previewGtmCanvasState : board.canvasState,
+      nodeCount: previewGtmBoardNodes.length,
+      nodes: previewGtmBoardNodes,
+      connectors: previewGtmConnectors,
+    },
+  };
+}
 const ME_ID = 'preview-demo-user';
+
+type PreviewResearchComment = {
+  id: string;
+  nodeId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string | null;
+  body: string;
+  commentType: string;
+  resolved: boolean;
+  posX: number | null;
+  posY: number | null;
+  parentId: string | null;
+  author: { id: string; displayName: string; avatarUrl?: string };
+  createdAt: string;
+  updatedAt: string;
+};
+
+let previewResearchComments: PreviewResearchComment[] = [];
+
+function makePreviewResearchComment(nodeId: string, body: Record<string, unknown>): PreviewResearchComment {
+  const now = new Date().toISOString();
+  return {
+    id: `preview-cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    nodeId,
+    authorId: ME_ID,
+    authorName: 'Alex Demo',
+    authorAvatar: null,
+    body: typeof body.body === 'string' ? body.body : '',
+    commentType: typeof body.commentType === 'string' ? body.commentType : 'general',
+    resolved: false,
+    posX: typeof body.posX === 'number' ? body.posX : null,
+    posY: typeof body.posY === 'number' ? body.posY : null,
+    parentId: typeof body.parentId === 'string' ? body.parentId : null,
+    author: { id: ME_ID, displayName: 'Alex Demo' },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
 
 const PREVIEW_AI_CONVERSATIONS: Array<{
   id: string;
@@ -975,11 +1071,175 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname === '/api/research/boards') {
+    if (path.includes('archived=1') || path.includes('archived=true')) {
+      return { boards: [] };
+    }
     return kitchenSink().boards ? { boards: kitchenSink().boards } : { boards: [] };
   }
   if (pathname.startsWith('/api/research/boards/')) {
-    const board = kitchenSink().boards[0];
-    return { board: { ...board, nodes: [], connectors: [] } };
+    const rest = pathname.replace(/^\/api\/research\/boards\//, '');
+    const segments = rest.split('/').filter(Boolean);
+    if (segments[1] === 'nodes' && segments[2] === 'batch' && method === 'PATCH') {
+      const updates = Array.isArray(body.updates) ? body.updates : [];
+      previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
+        const patch = updates.find((row) => row && typeof row === 'object' && (row as { id?: string }).id === node.id) as Record<string, unknown> | undefined;
+        if (!patch) return node;
+        return {
+          ...node,
+          posX: typeof patch.posX === 'number' ? patch.posX : node.posX,
+          posY: typeof patch.posY === 'number' ? patch.posY : node.posY,
+          width: typeof patch.width === 'number' ? patch.width : node.width,
+          height: typeof patch.height === 'number' ? patch.height : node.height,
+          zIndex: typeof patch.zIndex === 'number' ? patch.zIndex : node.zIndex,
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      return { ok: true };
+    }
+    if (segments[1] === 'nodes' && method === 'POST') {
+      const node: PreviewGtmNode = {
+        ...seedPreviewGtmNodes()[0],
+        id: `n-preview-${Date.now()}`,
+        type: typeof body.type === 'string' ? body.type : 'note',
+        title: typeof body.title === 'string' ? body.title : 'Note',
+        content: typeof body.content === 'string' ? body.content : '',
+        posX: typeof body.posX === 'number' ? body.posX : 80,
+        posY: typeof body.posY === 'number' ? body.posY : 80,
+        width: typeof body.width === 'number' ? body.width : 280,
+        height: typeof body.height === 'number' ? body.height : 200,
+        color: typeof body.color === 'string' ? body.color : null as unknown as string,
+        metadata: body.metadata ?? null,
+        locked: body.locked === true,
+        collapsed: body.collapsed === true,
+        zIndex: typeof body.zIndex === 'number' ? body.zIndex : 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      previewGtmBoardNodes = [...previewGtmBoardNodes, node];
+      return { node };
+    }
+    if (segments[1] === 'connectors' && method === 'POST') {
+      const connector: PreviewGtmConnector = {
+        id: `c-preview-${Date.now()}`,
+        boardId: 'board-gtm',
+        fromNodeId: typeof body.fromNodeId === 'string' ? body.fromNodeId : '',
+        toNodeId: typeof body.toNodeId === 'string' ? body.toNodeId : '',
+        label: typeof body.label === 'string' ? body.label : null,
+        color: typeof body.color === 'string' ? body.color : null,
+        style: typeof body.style === 'string' ? body.style : 'solid',
+      };
+      previewGtmConnectors = [...previewGtmConnectors, connector];
+      return { connector };
+    }
+    if (method === 'PATCH' || method === 'PUT') {
+      if (body.canvasState && typeof body.canvasState === 'object') {
+        previewGtmCanvasState = { ...previewGtmCanvasState, ...(body.canvasState as Record<string, unknown>) };
+      }
+      return previewGtmBoardResponse();
+    }
+    return previewGtmBoardResponse();
+  }
+
+  const nodeItemMatch = pathname.match(/^\/api\/research\/nodes\/([^/]+)$/);
+  if (nodeItemMatch) {
+    const nodeId = nodeItemMatch[1];
+    if (method === 'DELETE') {
+      previewGtmBoardNodes = previewGtmBoardNodes.filter((n) => n.id !== nodeId);
+      previewGtmConnectors = previewGtmConnectors.filter((c) => c.fromNodeId !== nodeId && c.toNodeId !== nodeId);
+      return { ok: true };
+    }
+    if (method === 'PATCH' || method === 'PUT') {
+      let updated = previewGtmBoardNodes.find((n) => n.id === nodeId);
+      previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
+        if (node.id !== nodeId) return node;
+        updated = {
+          ...node,
+          ...(typeof body.title === 'string' ? { title: body.title } : {}),
+          ...(typeof body.content === 'string' ? { content: body.content } : {}),
+          ...(typeof body.url === 'string' || body.url === null ? { url: body.url as string | null } : {}),
+          ...(typeof body.posX === 'number' ? { posX: body.posX } : {}),
+          ...(typeof body.posY === 'number' ? { posY: body.posY } : {}),
+          ...(typeof body.width === 'number' ? { width: body.width } : {}),
+          ...(typeof body.height === 'number' ? { height: body.height } : {}),
+          ...(typeof body.zIndex === 'number' ? { zIndex: body.zIndex } : {}),
+          ...(typeof body.color === 'string' || body.color === null ? { color: body.color as string } : {}),
+          ...(typeof body.collapsed === 'boolean' ? { collapsed: body.collapsed } : {}),
+          ...(typeof body.locked === 'boolean' ? { locked: body.locked } : {}),
+          ...(body.metadata !== undefined ? { metadata: mergeNodeMetadata(node.metadata, body.metadata) } : {}),
+          ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
+          ...(typeof body.builderDocumentId === 'string' || body.builderDocumentId === null
+            ? { builderDocumentId: body.builderDocumentId as string | null }
+            : {}),
+          updatedAt: new Date().toISOString(),
+        };
+        return updated;
+      });
+      return { node: updated ?? previewGtmBoardNodes[0] };
+    }
+  }
+
+  const connectorItemMatch = pathname.match(/^\/api\/research\/connectors\/([^/]+)$/);
+  if (connectorItemMatch) {
+    const connectorId = connectorItemMatch[1];
+    if (method === 'DELETE') {
+      previewGtmConnectors = previewGtmConnectors.filter((c) => c.id !== connectorId);
+      return { ok: true };
+    }
+    if (method === 'PATCH') {
+      previewGtmConnectors = previewGtmConnectors.map((c) =>
+        c.id === connectorId
+          ? {
+              ...c,
+              label: typeof body.label === 'string' ? body.label : c.label,
+              color: typeof body.color === 'string' ? body.color : c.color,
+              style: typeof body.style === 'string' ? body.style : c.style,
+            }
+          : c,
+      );
+      return { connector: previewGtmConnectors.find((c) => c.id === connectorId) };
+    }
+  }
+
+  const nodeCommentsMatch = pathname.match(/^\/api\/research\/nodes\/([^/]+)\/comments$/);
+  if (nodeCommentsMatch) {
+    const nodeId = nodeCommentsMatch[1];
+    if (method === 'GET') {
+      const comments = previewResearchComments.filter((c) => c.nodeId === nodeId && !c.parentId);
+      return {
+        comments: comments.map((c) => ({
+          ...c,
+          replies: previewResearchComments.filter((r) => r.parentId === c.id),
+        })),
+      };
+    }
+    if (method === 'POST') {
+      const comment = makePreviewResearchComment(nodeId, body);
+      previewResearchComments = [...previewResearchComments, comment];
+      return { comment };
+    }
+  }
+
+  const commentItemMatch = pathname.match(/^\/api\/research\/comments\/([^/]+)$/);
+  if (commentItemMatch) {
+    const commentId = commentItemMatch[1];
+    if (method === 'PATCH') {
+      previewResearchComments = previewResearchComments.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              body: typeof body.body === 'string' ? body.body : c.body,
+              resolved: typeof body.resolved === 'boolean' ? body.resolved : c.resolved,
+              updatedAt: new Date().toISOString(),
+            }
+          : c,
+      );
+      const comment = previewResearchComments.find((c) => c.id === commentId);
+      return { comment: comment ?? makePreviewResearchComment('preview-node', body) };
+    }
+    if (method === 'DELETE') {
+      previewResearchComments = previewResearchComments.filter((c) => c.id !== commentId && c.parentId !== commentId);
+      return { ok: true };
+    }
   }
 
   if (pathname === '/api/skills' || pathname.startsWith('/api/skills?')) {

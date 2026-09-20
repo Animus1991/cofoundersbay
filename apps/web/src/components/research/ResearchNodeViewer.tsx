@@ -23,6 +23,9 @@ import { RichTextEditor } from './RichTextEditor';
 import { PdfAnnotationViewer } from './PdfAnnotationViewer';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { BilingualText } from '@/components/common/BilingualText';
+import { researchEn, researchEl } from '@/lib/i18n/strings-research';
+import { matchProductLink, readCfbHref } from '@/lib/canvas/canvas-geometry';
 
 type NodeUpdateData = {
   title?: string;
@@ -450,6 +453,28 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             )}
           </div>
         </div>
+
+        {(() => {
+          const href = readCfbHref(node.metadata);
+          const match = matchProductLink(href);
+          if (!href || !match) return null;
+          return (
+            <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-xs">
+              <LinkIcon className="icon-sm text-primary-accessible shrink-0" />
+              <span className="text-primary-accessible font-medium">
+                <BilingualText en={researchEn(match.label)} el={researchEl(match.label)} compact />
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push(href)}
+                className="flex items-center gap-1 text-primary-accessible hover:underline ml-1"
+              >
+                <ExternalLink className="icon-sm" />
+                <BilingualText en={researchEn('node_open')} el={researchEl('node_open')} compact />
+              </button>
+            </div>
+          );
+        })()}
 
         {/* ── Phase 10: Builder Document link bar ── */}
         {(node.builderDocumentId || showLinkInput) && (

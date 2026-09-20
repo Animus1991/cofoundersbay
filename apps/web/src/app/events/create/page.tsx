@@ -123,7 +123,7 @@ export default function CreateEventPage() {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Description</label>
               <textarea
-                className="flex min-h-[100px] w-full rounded-xl border border-border/60 bg-secondary/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 resize-none"
+                className="flex min-h-[100px] w-full rounded-xl border border-border/60 bg-secondary/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none resize-none"
                 placeholder="What will happen at this event? Who should attend?"
                 value={form.description}
                 onChange={(e) => set('description', e.target.value)}

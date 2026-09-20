@@ -253,7 +253,7 @@ function MatchListRow({
             {/* Skills + reasons */}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {(hit.skillNames ?? []).slice(0, 5).map(s => (
-                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
+                <span key={s} className="rounded-md bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {s}
                 </span>
               ))}
@@ -292,7 +292,7 @@ function MatchListRow({
           </div>
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <button onClick={onBreakdown}
-              className="flex min-h-10 items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
+              className="flex min-h-10 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
               <BarChart3 className="icon-sm" /> Breakdown
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-10 gap-1.5 px-3 text-xs">
@@ -337,7 +337,7 @@ function MatchPreviewPanel({
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
-          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
             <X className="icon-sm" />
           </button>
         </div>
@@ -1003,7 +1003,7 @@ export default function MatchesPage() {
                       { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
                     ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
                       <button key={mode} onClick={() => setViewMode(mode)} title={title}
-                        className={cn('h-9 items-center justify-center rounded-md px-2 transition-all',
+                        className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
                           mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
                         <Icon className={cn('icon-sm', small && 'scale-90')} />

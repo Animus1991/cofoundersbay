@@ -465,7 +465,7 @@ export function EnhancedMessageThread({
               onChange={(e) => setMessageText(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[48px] max-h-[200px]"
+              className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none min-h-[48px] max-h-[200px]"
               rows={1}
             />
             <Button aria-label="Add emoji"

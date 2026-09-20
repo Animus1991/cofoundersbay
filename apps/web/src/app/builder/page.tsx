@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace } from '@/components/builder/BuilderWorkspace';
@@ -49,8 +50,18 @@ const BUILDER_TABS: { id: string; glyph: CfbGlyphName; labelEn: string; labelEl:
   { id: 'applications', glyph: 'applications', labelEn: builderEn('tab_applications'), labelEl: builderEl('tab_applications') },
 ];
 
+function isBuilderTab(value: string | null): value is string {
+  return Boolean(value && BUILDER_TABS.some((tab) => tab.id === value));
+}
+
+function builderHref(tab: string): string {
+  return tab === 'overview' ? '/builder' : `/builder?tab=${encodeURIComponent(tab)}`;
+}
+
 function BuilderPageContent() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTabState] = useState('overview');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [reviewBannerDismissed, setReviewBannerDismissed] = useState(false);
 
@@ -59,6 +70,20 @@ function BuilderPageContent() {
       setReviewBannerDismissed(true);
     }
   }, []);
+
+  useEffect(() => {
+    const fromUrl = searchParams?.get('tab') ?? null;
+    if (isBuilderTab(fromUrl)) setActiveTabState(fromUrl);
+  }, [searchParams]);
+
+  const setActiveTab = useCallback(
+    (next: string) => {
+      if (!isBuilderTab(next)) return;
+      setActiveTabState(next);
+      router.replace(builderHref(next), { scroll: false });
+    },
+    [router],
+  );
   const {
     workspace,
     isLoadingWorkspaces,
@@ -129,7 +154,7 @@ function BuilderPageContent() {
       showHelp
       askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
     >
-      <div className="min-w-0 space-y-6 overflow-x-clip">
+      <div className="builder-type min-w-0 space-y-6 overflow-x-clip">
         {/* Error Alert */}
         {error && (
           <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
@@ -164,7 +189,7 @@ function BuilderPageContent() {
             <button
               type="button"
               onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
-              className="shrink-0 rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+              className="shrink-0 rounded-xl p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
               title={bilingualAria('Dismiss', 'Απόρριψη')}
               aria-label={bilingualAria('Dismiss expert-review suggestion', 'Απόρριψη πρότασης αξιολόγησης')}
             >
@@ -177,7 +202,7 @@ function BuilderPageContent() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             {workspace?.name && (
-              <p className="text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
+              <p className="builder-title text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
             )}
             <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
               {/* The preview workspace ships an English description; map it so
@@ -249,7 +274,7 @@ function BuilderPageContent() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <BuilderWorkspace />
+            <BuilderWorkspace onOpenStage={setActiveTab} />
           </TabsContent>
 
           <TabsContent value="idea-core" className="space-y-6">
@@ -279,6 +304,7 @@ function BuilderPageContent() {
               initialData={getDocumentContent('pitch_deck')}
               workspaceName={workspace?.startupName || workspace?.name}
               ideaCore={getDocumentContent('idea_core')}
+              bmc={getDocumentContent('business_model_canvas')}
             />
           </TabsContent>
 

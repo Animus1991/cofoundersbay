@@ -50,9 +50,9 @@ const ROLE_TABS: { value: RoleFilter; key: string; icon: React.ElementType }[] =
 
 /** `key` rather than `label`, so the pill reads in the reader's language. */
 const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { key: string; color: string }> = {
-  hot:          { key: 'status_hot',          color: 'bg-status-danger-bg text-status-danger border-status-danger-border' },
-  follow_up:    { key: 'status_follow_up',    color: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
-  contacted:    { key: 'status_contacted',    color: 'bg-status-success-bg text-status-success border-status-success-border' },
+  hot:          { key: 'status_hot',          color: 'bg-status-danger-bg text-status-danger' },
+  follow_up:    { key: 'status_follow_up',    color: 'bg-status-warning-bg text-status-warning' },
+  contacted:    { key: 'status_contacted',    color: 'bg-status-success-bg text-status-success' },
   not_relevant: { key: 'status_not_relevant', color: 'bg-muted text-muted-foreground' },
 };
 
@@ -87,7 +87,7 @@ function NoteEditor({
         placeholder={say(shortlistEn('note_placeholder'), shortlistEl('note_placeholder'))}
         rows={2}
         maxLength={500}
-        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 resize-none"
+        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none resize-none"
       />
       <div className="flex items-center gap-2">
         <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => onSave(value)} disabled={isSaving}>
@@ -162,17 +162,17 @@ function ShortlistCard({
                 </Link>
                 {/* Match score badge */}
                 <span className={cn(
-                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold border',
-                  matchScore >= 85 ? 'bg-status-success-bg text-status-success border-status-success-border'
-                    : matchScore >= 70 ? 'bg-status-info-bg text-status-info border-status-info-border'
-                    : 'bg-muted text-muted-foreground border-border',
+                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold',
+                  matchScore >= 85 ? 'bg-status-success-bg text-status-success'
+                    : matchScore >= 70 ? 'bg-status-info-bg text-status-info'
+                    : 'bg-muted text-muted-foreground',
                 )}>
                   <Sparkles className="h-2.5 w-2.5" />
                   {matchScore}%{' '}
                   <BilingualText en={shortlistEn('match_suffix')} el={shortlistEl('match_suffix')} compact />
                 </span>
                 {statusLabel && (
-                  <span className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
+                  <span className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
                     <BilingualText
                       en={shortlistEn(STATUS_CONFIG[statusLabel].key)}
                       el={shortlistEl(STATUS_CONFIG[statusLabel].key)}
@@ -422,10 +422,10 @@ export default function ShortlistPage() {
               </SelectContent>
             </Select>
             <div className="flex items-center rounded-lg border border-border/60 p-0.5">
-              <button onClick={() => setViewMode('list')} className={cn('rounded-md p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+              <button onClick={() => setViewMode('list')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
                 <List className="icon-sm" />
               </button>
-              <button onClick={() => setViewMode('grid')} className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+              <button onClick={() => setViewMode('grid')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'grid' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
                 <Grid3X3 className="icon-sm" />
               </button>
             </div>

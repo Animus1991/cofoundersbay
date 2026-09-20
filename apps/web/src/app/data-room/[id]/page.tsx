@@ -870,7 +870,7 @@ export default function DataRoomPage() {
             </div>
             <div>
               <p className="text-sm font-medium mb-2">Select Folder</p>
-              <select className="w-full p-2 border rounded-md">
+              <select className="w-full p-2 border rounded-xl">
                 <option>Root</option>
                 {folders.map((folder) => (
                   <option key={folder.id} value={folder.id}>
@@ -911,7 +911,7 @@ export default function DataRoomPage() {
             </div>
             <div>
               <p className="text-sm font-medium mb-2">Access Level</p>
-              <select className="w-full p-2 border rounded-md">
+              <select className="w-full p-2 border rounded-xl">
                 <option value="view">View Only</option>
                 <option value="download">View & Download</option>
                 <option value="admin">Admin Access</option>

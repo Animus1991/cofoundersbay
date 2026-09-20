@@ -122,7 +122,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            className="flex min-w-0 items-center gap-2 rounded-md text-left"
+            className="flex min-w-0 items-center gap-2 rounded-lg text-left"
             onClick={() => setExpandedChoice(!expanded)}
             aria-expanded={expanded}
             aria-controls={listId}
@@ -148,7 +148,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
           <button
             type="button"
             onClick={handleDismiss}
-            className="shrink-0 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-muted-foreground"
+            className="shrink-0 rounded-xl p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-muted-foreground"
             title={dismissLabel}
             aria-label={dismissLabel}
           >

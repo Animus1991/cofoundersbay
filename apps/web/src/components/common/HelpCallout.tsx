@@ -62,7 +62,7 @@ export function HelpCallout({
       aria-label={bilingualAria(title, titleEl)}
       className={cn(
         'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
-        compact && 'h-11 w-11 justify-center p-0 md:h-9 md:w-9 lg:h-[36px] lg:w-[36px]',
+        compact && 'h-11 w-11 justify-center p-0 md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',
       )}
     >
       <CfbGlyph name="book" className="icon-sm" />
@@ -104,7 +104,7 @@ export function HelpCallout({
                 type="button"
                 onClick={() => persist(false)}
                 aria-label={bilingualAria('Dismiss help', 'Απόρριψη βοήθειας')}
-                className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                className="rounded-xl p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
               >
                 <X className="icon-sm" aria-hidden="true" />
               </button>
@@ -145,7 +145,7 @@ export function HelpCallout({
           type="button"
           onClick={() => persist(false)}
           aria-label={bilingualAria('Dismiss help', 'Απόρριψη βοήθειας')}
-          className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="rounded-xl p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           {/* Decorative: the button already carries its name via aria-label. */}
           <X className="icon-sm" aria-hidden="true" />

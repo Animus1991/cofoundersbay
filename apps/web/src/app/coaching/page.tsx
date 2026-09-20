@@ -193,12 +193,12 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
 // ── Configs ───────────────────────────────────────────────────────────────────
 
 const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; color: string; icon: React.ElementType }> = {
-  accountability: { label: 'Accountability', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: ListChecks },
-  clarity:        { label: 'Clarity',        color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Lightbulb },
-  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Users },
-  execution:      { label: 'Execution',      color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Zap },
-  strategy:       { label: 'Strategy',       color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Target },
-  wellbeing:      { label: 'Wellbeing',      color: 'bg-status-success-bg text-status-success border-status-success-border', icon: BrainCircuit },
+  accountability: { label: 'Accountability', color: 'bg-status-info-bg text-status-info', icon: ListChecks },
+  clarity:        { label: 'Clarity',        color: 'bg-status-accent-bg text-status-accent', icon: Lightbulb },
+  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-status-success-bg text-status-success', icon: Users },
+  execution:      { label: 'Execution',      color: 'bg-status-warning-bg text-status-warning', icon: Zap },
+  strategy:       { label: 'Strategy',       color: 'bg-status-accent-bg text-status-accent', icon: Target },
+  wellbeing:      { label: 'Wellbeing',      color: 'bg-status-success-bg text-status-success', icon: BrainCircuit },
 };
 
 const STATUS_CONFIG: Record<SessionStatus, { label: string; color: string; icon: React.ElementType }> = {
@@ -242,7 +242,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium', type.color)}>
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', type.color)}>
                 <TypeIcon className="icon-sm" />{type.label}
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -385,7 +385,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
             {coach.specialties.slice(0, 3).map((s) => {
               const cfg = SESSION_TYPE_CONFIG[s];
               return (
-                <span key={s} className={cn('rounded-full border px-2 py-0.5 text-xs font-medium', cfg.color)}>
+                <span key={s} className={cn('rounded-full px-2 py-0.5 text-xs font-medium', cfg.color)}>
                   {cfg.label}
                 </span>
               );
@@ -629,7 +629,7 @@ export default function CoachingPage() {
                     const cfg = SESSION_TYPE_CONFIG[type];
                     return (
                       <div key={type} className="flex items-center gap-2">
-                        <span className={cn('rounded-full border px-2 py-0.5 text-2xs w-32', cfg.color)}>{cfg.label}</span>
+                        <span className={cn('rounded-full px-2 py-0.5 text-2xs w-32', cfg.color)}>{cfg.label}</span>
                         <Progress value={(count / sessions.length) * 100} className="flex-1 h-1.5" />
                         <span className="text-xs text-muted-foreground w-4">{count}</span>
                       </div>

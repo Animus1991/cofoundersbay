@@ -112,7 +112,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
             </select>
@@ -122,7 +122,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
             </select>
@@ -133,7 +133,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
               value={actionParamsRaw}
               onChange={e => { setActionParamsRaw(e.target.value); setParamsError(''); }}
               rows={5}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none resize-none"
               placeholder='{"title": "Hello", "body": "Message"}'
             />
             {paramsError && <p className="text-xs text-destructive-accessible">{paramsError}</p>}
@@ -212,7 +212,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
             </select>
@@ -222,7 +222,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
             </select>
@@ -233,7 +233,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
               value={actionParamsRaw}
               onChange={e => setActionParamsRaw(e.target.value)}
               rows={5}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none resize-none"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">

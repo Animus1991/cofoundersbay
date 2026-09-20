@@ -1,4 +1,5 @@
 import { resolveRouteTarget } from '@/lib/action-registry';
+import { namesCanvasSurface, planCanvasCommandArgs } from '@/lib/canvas/plan-canvas-command';
 import type { AreaReadId } from './copilot-reads';
 import type { CopilotToolName, PlannedTool } from './copilot-types';
 
@@ -355,7 +356,9 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ]);
   const wantsShortlistRemove = explicitRemove && namesTheList;
 
-  const wantsConnect = includesAny(message, [
+  const wantsConnect =
+    !namesCanvasSurface(message) &&
+    includesAny(message, [
     'connect',
     'intro',
     'introduction',
@@ -485,7 +488,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     add('readiness_tick_criterion', dimension ? { dimension } : {});
   }
 
-  if (nav) add('navigate', { href: nav.href, label: nav.label });
+  const canvasArgs = planCanvasCommandArgs(rawMessage);
+  if (canvasArgs?.op) add('canvas_command', canvasArgs);
+
+  if (nav && !tools.some((t) => t.name === 'canvas_command')) add('navigate', { href: nav.href, label: nav.label });
 
   if (tools.length === 0) {
     if (person || location) add('search_people', { ...(person ? { q: person } : {}), ...(location ? { location } : {}) });
@@ -495,7 +501,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // The workspace summary leads short turns because it is usually the context a
   // vague question needs. A question about one area is not vague, and leading
   // "what events are coming up" with unread-message counts buries the answer.
-  if (!tools.some((t) => t.name === 'get_graph') && tools.length <= 2 && areaReads.length === 0) {
+  if (!tools.some((t) => t.name === 'get_graph') && tools.length <= 2 && areaReads.length === 0 && !tools.some((t) => t.name === 'canvas_command')) {
     tools.unshift({ name: 'get_graph', args: {} });
   }
 

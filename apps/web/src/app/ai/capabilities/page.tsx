@@ -36,6 +36,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   readiness_tick_criterion: { en: 'Tick the team readiness criterion', el: 'Σημείωσε το κριτήριο ομάδας' },
   analytics_set_period: { en: 'Show my analytics for the last 30 days', el: 'Δείξε τα αναλυτικά του τελευταίου μήνα' },
   workspace_create: { en: 'Create a workspace called Helios', el: 'Δημιούργησε χώρο εργασίας «Ήλιος»' },
+  canvas_command: { en: 'Add a note on the canvas titled Pricing', el: 'Πρόσθεσε σημείωση στον καμβά «Τιμή»' },
 };
 
 function reversalLabel(spec: ActionDeclaration): { en: string; el: string } | null {

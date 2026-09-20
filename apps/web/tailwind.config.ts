@@ -87,16 +87,16 @@ const config: Config = {
         ring: 'hsl(var(--ring))',
       },
       // One token, one scale. Every step derives from --radius (globals.css) so a
-      // theme can soften or sharpen the whole product by changing a single value,
-      // and nested surfaces stay concentric: card 16 > row 12 > control 10 > item 6,
-      // i.e. each inner radius ≈ outer radius minus the padding between them.
+      // theme can soften or sharpen the whole product by changing a single value.
+      // Concentric nesting: card 20 > control 16 > row/item 12 > chip 10,
+      // so chrome reads as one family and inner corners never bulge past the card.
       borderRadius: {
-        sm: 'calc(var(--radius) - 6px)',       //  6px  menu items, tiny chips
-        DEFAULT: 'calc(var(--radius) - 4px)',  //  8px  small inline elements
-        md: 'calc(var(--radius) - 2px)',       // 10px  buttons, inputs, selects
-        lg: 'var(--radius)',                   // 12px  tab lists, list rows, tiles
-        xl: 'calc(var(--radius) + 4px)',       // 16px  cards, dialogs, toasts
-        '2xl': 'calc(var(--radius) + 8px)',    // 20px  sheets, hero surfaces
+        sm: 'calc(var(--radius) - 6px)',       //  6px  heat-map cells, hairline wells
+        DEFAULT: 'calc(var(--radius) - 4px)',  //  8px  tiny inline marks
+        md: 'calc(var(--radius) - 2px)',       // 10px  chips, checkbox
+        lg: 'var(--radius)',                   // 12px  menu items, tab triggers, tiles
+        xl: 'calc(var(--radius) + 4px)',       // 16px  buttons, fields, selects, menus
+        '2xl': 'calc(var(--radius) + 8px)',    // 20px  cards, dialogs, sheets
         '3xl': 'calc(var(--radius) + 14px)',   // 26px  marketing blocks
       },
       keyframes: {
@@ -234,6 +234,7 @@ const config: Config = {
         // tenant fonts silently had no effect.
         sans: ['var(--font-sans, var(--font-inter))', 'system-ui', 'sans-serif'],
         display: ['var(--font-heading, var(--font-display-brand))', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        co: ['var(--font-co-mark)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
         // Self-hosted by next/font in app/layout.tsx. The fallbacks matter: a
         // missing --font-mono used to land on the device's generic monospace,
         // which differs on every platform.

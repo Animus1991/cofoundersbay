@@ -359,7 +359,7 @@ export function BoardSummaryPanel({
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {analysis.suggestedTags.map((tag) => (
-                        <span key={tag} className="text-2xs px-2 py-0.5 rounded-full bg-status-accent/10 text-status-accent border border-status-accent/20">
+                        <span key={tag} className="text-2xs px-2 py-0.5 rounded-full bg-status-accent/10 text-status-accent">
                           {tag}
                         </span>
                       ))}

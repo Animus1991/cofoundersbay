@@ -970,7 +970,7 @@ export default function ProfileEditPage() {
                         <select
                           value={form.meetingPreference}
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
                         >
                           <option value="">Select...</option>
                           <option value="video">Video calls</option>

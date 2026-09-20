@@ -90,6 +90,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
 
   return (
     <div
+      data-canvas-chrome
       className="flex flex-col items-center gap-1 py-2 px-1.5 bg-card/95 backdrop-blur-md border border-border/60 rounded-xl shadow-xl z-40 select-none"
       style={{ width: 44 }}
     >

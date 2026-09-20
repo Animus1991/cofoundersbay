@@ -184,8 +184,8 @@ export function AppShell({
     <div className={cn('space-y-5', insideFrame && contentClassName)}>
       {(pageTitle || pageDescription || actions || showAskAi || showHelp) && (
         <header className="space-y-3">
-          <section className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-            <div className="flex min-w-0 items-start gap-2.5">
+          <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+            <div className="flex min-w-0 flex-1 items-start gap-2.5">
               <CfbGlyph
                 name={glyphForHref(pathname)}
                 className="mt-1 icon-md shrink-0 text-primary-accessible"
@@ -210,9 +210,14 @@ export function AppShell({
               </div>
             </div>
             {(showHelp || showAskAi) && (
-              <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:max-w-[18rem] sm:shrink-0 sm:justify-end">
+              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:shrink-0 lg:justify-end">
                 {showHelp && <PageContextualHelp compact defaultOpen={false} />}
-                {showAskAi && <AIComposer prompt={askAiPrompt} className="w-full sm:w-[16.5rem]" />}
+                {showAskAi && (
+                  <AIComposer
+                    prompt={askAiPrompt}
+                    className="w-full min-w-0"
+                  />
+                )}
               </div>
             )}
           </section>

@@ -94,7 +94,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
             <textarea
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+              className="w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none"
               rows={3}
               placeholder="What is this group about?"
             />
@@ -106,7 +106,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               <select
                 value={form.category}
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none"
               >
                 <option value="">None</option>
                 {CATEGORIES.map((c) => (

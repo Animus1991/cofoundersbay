@@ -74,7 +74,7 @@ function GroupCard({
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize border', typeColor.chip)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
             </span>
           </div>
@@ -90,7 +90,7 @@ function GroupCard({
             <Users className="h-10 w-10 text-foreground/15" />
           </div>
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize border', typeColor.chip)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
             </span>
           </div>

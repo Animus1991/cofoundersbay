@@ -214,11 +214,16 @@ export function ConversationList({
   const [searchQuery, setSearchQuery] = useState('');
   const yesterday = t(messagesEn('yesterday'), messagesEl('yesterday'));
 
-  const filteredConversations = conversations.filter(
-    (c) =>
-      !c.isArchived &&
-      c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredConversations = conversations.filter((c) => {
+    if (c.isArchived) return false;
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      c.recipientName.toLowerCase().includes(q) ||
+      c.lastMessage.toLowerCase().includes(q) ||
+      (c.recipientHeadline ?? '').toLowerCase().includes(q)
+    );
+  });
 
   const pinnedConversations = filteredConversations.filter((c) => c.isPinned);
   const regularConversations = filteredConversations.filter((c) => !c.isPinned);
@@ -233,7 +238,7 @@ export function ConversationList({
               placeholder={t(messagesEn('search_conversations'), messagesEl('search_conversations'))}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 rounded-full border-transparent bg-background/80 pl-9 shadow-sm ring-1 ring-border/50 focus-visible:ring-primary/40"
+              className="h-10 rounded-full border-transparent bg-background/80 pl-9 shadow-sm ring-1 ring-border/50"
               aria-label={bilingualAria(messagesEn('search_conversations'), messagesEl('search_conversations'))}
             />
           </div>
@@ -317,13 +322,22 @@ export function ConversationList({
               )}
             </p>
             {!searchQuery && (
-              <Link
-                href="/discover"
-                className="mt-1 inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
-              >
-                <CfbGlyph name="people" className="icon-sm" />
-                <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Link
+                  href="/matches"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
+                >
+                  <CfbGlyph name="matches" className="icon-sm" />
+                  <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
+                </Link>
+                <Link
+                  href="/discover"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
+                >
+                  <CfbGlyph name="people" className="icon-sm" />
+                  <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
+                </Link>
+              </div>
             )}
           </div>
         )}

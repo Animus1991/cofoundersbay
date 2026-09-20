@@ -242,14 +242,14 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
                 <StatusIcon className="icon-sm" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
                 <TypeIcon className="icon-sm" />{type.label}
               </span>
               {review.isPaid && review.agreedFee && (
@@ -418,7 +418,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
+                <span key={d} className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
                   {cfg.label}
                 </span>
               );

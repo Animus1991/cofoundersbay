@@ -18,7 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
 interface Feature {
@@ -306,7 +306,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         completion={completionPercentage}
         extraActions={
           <>
-            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
               {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
@@ -314,7 +314,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                 compact
               />
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
             </Button>
@@ -323,36 +323,36 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
       />
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">
             <BilingualText en={builderEn('mvp_complete')} el={builderEl('mvp_complete')} compact />
           </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
-        <Progress value={completionPercentage} className="h-2" />
+        <Progress value={completionPercentage} className="h-1.5" />
       </div>
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 rounded-xl">
-          <TabsTrigger value="scope" className="gap-1">
-            <CfbGlyph name="target" className="icon-sm" />
+        <TabsList className={BUILDER_SUBTAB_LIST}>
+          <TabsTrigger value="scope" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="target" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mvp_tab_scope')} el={builderEl('mvp_tab_scope')} compact />
           </TabsTrigger>
-          <TabsTrigger value="features" className="gap-1">
-            <CfbGlyph name="sliders" className="icon-sm" />
+          <TabsTrigger value="features" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="sliders" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mvp_tab_feat')} el={builderEl('mvp_tab_feat')} compact />
           </TabsTrigger>
-          <TabsTrigger value="sprints" className="gap-1">
-            <CfbGlyph name="calendar" className="icon-sm" />
+          <TabsTrigger value="sprints" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="calendar" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mvp_tab_sprints')} el={builderEl('mvp_tab_sprints')} compact />
           </TabsTrigger>
-          <TabsTrigger value="team" className="gap-1">
-            <CfbGlyph name="people" className="icon-sm" />
+          <TabsTrigger value="team" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="people" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mvp_tab_team')} el={builderEl('mvp_tab_team')} compact />
           </TabsTrigger>
-          <TabsTrigger value="risks" className="gap-1">
-            <AlertTriangle className="icon-sm" />
+          <TabsTrigger value="risks" className={BUILDER_SUBTAB_TRIGGER}>
+            <AlertTriangle className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mvp_tab_risks')} el={builderEl('mvp_tab_risks')} compact />
           </TabsTrigger>
         </TabsList>
@@ -432,7 +432,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                 ))}
                 <Button
                   variant="outline"
-                  className="w-full"
+                  size="sm"
+                  className={`w-full ${BUILDER_BTN}`}
                   onClick={() => setData(prev => ({
                     ...prev,
                     successCriteria: [...prev.successCriteria, '']
@@ -452,7 +453,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('mvp_backlog')} el={builderEl('mvp_backlog')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={addFeature}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addFeature}>
                 <BilingualText en={builderEn('mvp_add_feat')} el={builderEl('mvp_add_feat')} compact />
               </Button>
             </CardHeader>
@@ -497,7 +498,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   <select
                                     value={feature.priority}
                                     onChange={(e) => updateFeature(feature.id, 'priority', e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                    className="w-full px-3 py-2 border rounded-xl text-sm"
                                   >
                                     <option value="must-have">{t(builderEn('mvp_must'), builderEl('mvp_must'))}</option>
                                     <option value="should-have">{t(builderEn('mvp_should'), builderEl('mvp_should'))}</option>
@@ -507,7 +508,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   <select
                                     value={feature.complexity}
                                     onChange={(e) => updateFeature(feature.id, 'complexity', e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                    className="w-full px-3 py-2 border rounded-xl text-sm"
                                   >
                                     <option value="low">{t(builderEn('mvp_low_c'), builderEl('mvp_low_c'))}</option>
                                     <option value="medium">{t(builderEn('mvp_med_c'), builderEl('mvp_med_c'))}</option>
@@ -541,40 +542,40 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  <div className={cn(BUILDER_STAT, 'text-red-600 dark:text-red-400')}>
                     {data.features.filter(f => f.priority === 'must-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className={BUILDER_STAT_LABEL}>
                     <BilingualText en={builderEn('mvp_must')} el={builderEl('mvp_must')} compact />
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  <div className={cn(BUILDER_STAT, 'text-orange-600 dark:text-orange-400')}>
                     {data.features.filter(f => f.priority === 'should-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className={BUILDER_STAT_LABEL}>
                     <BilingualText en={builderEn('mvp_should')} el={builderEl('mvp_should')} compact />
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                  <div className={cn(BUILDER_STAT, 'text-yellow-600 dark:text-yellow-400')}>
                     {data.features.filter(f => f.priority === 'could-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className={BUILDER_STAT_LABEL}>
                     <BilingualText en={builderEn('mvp_could')} el={builderEl('mvp_could')} compact />
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-600">
+                  <div className={cn(BUILDER_STAT, 'text-muted-foreground')}>
                     {data.features.filter(f => f.priority === 'wont-have').length}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className={BUILDER_STAT_LABEL}>
                     <BilingualText en={builderEn('mvp_wont')} el={builderEl('mvp_wont')} compact />
                   </div>
                 </CardContent>
@@ -590,7 +591,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('mvp_sprints')} el={builderEl('mvp_sprints')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={addSprint}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addSprint}>
                 <BilingualText en={builderEn('mvp_add_sprint')} el={builderEl('mvp_add_sprint')} compact />
               </Button>
             </CardHeader>
@@ -711,7 +712,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                           {gap.currentCoverage}% covered
                         </span>
                       </div>
-                      <Progress value={gap.currentCoverage} className="h-2 mb-3" />
+                      <Progress value={gap.currentCoverage} className="h-1.5 mb-3" />
                       <p className="text-sm text-muted-foreground">{gap.recommendation}</p>
                     </div>
                   ))}
@@ -760,7 +761,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               ))}
               <Button
                 variant="outline"
-                className="w-full"
+                size="sm"
+                className={`w-full ${BUILDER_BTN}`}
                 onClick={() => setData(prev => ({
                   ...prev,
                   risks: [...prev.risks, '']

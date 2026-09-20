@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback } from 'react';
 import type { ResearchNode } from '@/lib/api';
+import { nodePaintColor } from '@/lib/canvas/canvas-geometry';
 
 const MINIMAP_W = 180;
 const MINIMAP_H = 120;
@@ -27,9 +28,10 @@ interface BoardMiniMapProps {
   viewportWidth: number;
   viewportHeight: number;
   onNavigate: (pan: { x: number; y: number }) => void;
+  embedded?: boolean;
 }
 
-export function BoardMiniMap({ nodes, pan, zoom, viewportWidth, viewportHeight, onNavigate }: BoardMiniMapProps) {
+export function BoardMiniMap({ nodes, pan, zoom, viewportWidth, viewportHeight, onNavigate, embedded = false }: BoardMiniMapProps) {
   // Compute bounding box of all nodes
   const bounds = useMemo(() => {
     if (nodes.length === 0) return { minX: 0, minY: 0, maxX: 2000, maxY: 1500 };
@@ -72,8 +74,8 @@ export function BoardMiniMap({ nodes, pan, zoom, viewportWidth, viewportHeight, 
 
   const handleClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const mx = ((e.clientX - rect.left) / Math.max(rect.width, 1)) * MINIMAP_W;
+    const my = ((e.clientY - rect.top) / Math.max(rect.height, 1)) * MINIMAP_H;
     // Convert minimap click to world coords
     const worldX = mx / scale + bounds.minX;
     const worldY = my / scale + bounds.minY;
@@ -84,13 +86,22 @@ export function BoardMiniMap({ nodes, pan, zoom, viewportWidth, viewportHeight, 
   }, [scale, bounds, zoom, viewportWidth, viewportHeight, onNavigate]);
 
   return (
-    <div className="pointer-events-auto rounded-xl border bg-card/90 backdrop-blur-sm shadow-lg overflow-hidden"
-      style={{ width: MINIMAP_W + 2, height: MINIMAP_H + 2 }}>
+    <div
+      className={embedded
+        ? 'h-full w-full overflow-hidden rounded-xl bg-muted/30'
+        : 'pointer-events-auto overflow-hidden rounded-2xl border border-border/60 bg-card/90 shadow-sm backdrop-blur-sm'}
+      style={embedded ? undefined : { width: MINIMAP_W + 2, height: MINIMAP_H + 2 }}
+    >
       <svg
-        width={MINIMAP_W}
-        height={MINIMAP_H}
-        className="cursor-crosshair"
-        onClick={handleClick}
+        viewBox={`0 0 ${MINIMAP_W} ${MINIMAP_H}`}
+        preserveAspectRatio="xMidYMid meet"
+        className="h-full w-full cursor-crosshair"
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClick(e);
+        }}
       >
         {/* Background */}
         <rect x={0} y={0} width={MINIMAP_W} height={MINIMAP_H} fill="var(--secondary)" opacity={0.5} />
@@ -108,7 +119,7 @@ export function BoardMiniMap({ nodes, pan, zoom, viewportWidth, viewportHeight, 
               width={w}
               height={h}
               rx={1}
-              fill={getNodeColor(node.type, node.color)}
+              fill={nodePaintColor(node.color, node.metadata) ?? getNodeColor(node.type, null)}
               opacity={0.75}
             />
           );
