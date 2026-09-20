@@ -187,8 +187,8 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
 
   return (
     <div
-      className="absolute top-14 left-14 z-40 w-64 bg-card border rounded-xl shadow-xl flex flex-col overflow-hidden"
-      style={{ maxHeight: 'calc(100% - 5.5rem)' }}
+      className="absolute z-40 inset-x-2 top-2 sm:inset-x-auto sm:top-14 sm:left-14 sm:w-64 w-auto bg-card border rounded-xl shadow-xl flex flex-col overflow-hidden"
+      style={{ maxHeight: 'min(70dvh, calc(100% - 6rem))' }}
       data-canvas-chrome
       onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}

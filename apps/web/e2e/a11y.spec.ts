@@ -98,6 +98,57 @@ test('every icon-only control has an accessible name', async ({ page }) => {
   expect(unnamed, 'controls with no accessible name').toEqual([]);
 });
 
+/**
+ * A control's name must not depend on the viewport.
+ *
+ * Two buttons in this product were named on a desktop and anonymous on a
+ * phone: the label was the only thing naming them and it carried
+ * `hidden sm:inline`, so below 640px axe reported `button-name (critical)`
+ * while the very same page passed at 1440. That is a whole class of defect a
+ * desktop-only scan cannot see, and it is invisible in review because the
+ * markup plainly contains the word.
+ *
+ * This runs on the mobile project only — the narrow viewport is the one where
+ * a responsive-hidden label actually disappears.
+ */
+test('every control keeps its name at phone width', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'the defect only exists below the breakpoint');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1200);
+
+  const nameless = await page.evaluate(() => {
+    const out: string[] = [];
+    const selector = 'button, [role="button"], a[href], select, [role="switch"], [role="tab"]';
+    for (const el of Array.from(document.querySelectorAll(selector))) {
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+      const labelled = el.getAttribute('aria-label')?.trim()
+        || el.getAttribute('title')?.trim()
+        || (el.getAttribute('aria-labelledby')
+            && document.getElementById(el.getAttribute('aria-labelledby')!.split(/\s+/)[0])?.textContent?.trim());
+      if (labelled) continue;
+      // Text that is itself hidden at this width does not name anything.
+      const visibleText = Array.from(el.querySelectorAll('*'))
+        .concat([el])
+        .filter((n) => {
+          const s = getComputedStyle(n as Element);
+          return s.display !== 'none' && s.visibility !== 'hidden';
+        })
+        .map((n) => Array.from(n.childNodes).filter((c) => c.nodeType === 3).map((c) => c.textContent).join(''))
+        .join(' ')
+        .trim();
+      // A bare number (a count badge) is not a name.
+      if (/[\p{L}]{2,}/u.test(visibleText)) continue;
+      out.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 50)}`);
+    }
+    return [...new Set(out)];
+  });
+
+  expect(nameless, 'controls with no accessible name at phone width').toEqual([]);
+});
+
 test('toast region exists as a live region before any toast fires', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);

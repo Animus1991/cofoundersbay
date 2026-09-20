@@ -149,7 +149,7 @@ type Tool = DrawTool;
 
 const MAX_HISTORY = 50;
 
-/* β”€β”€β”€ Default content templates for new nodes β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ */
+/* ─── Default content templates for new nodes ───────────────────────── */
 function getDefaultContent(type: string): string {
   switch (type) {
     case 'pitch_deck':      return '<h2>Pitch Deck</h2><h3>1. Problem</h3><p>What problem are you solving?</p><h3>2. Solution</h3><p>How does your product solve it?</p><h3>3. Market Size</h3><p>Total addressable market...</p><h3>4. Business Model</h3><p>How do you make money?</p><h3>5. Traction</h3><p>Key metrics and milestones...</p><h3>6. Team</h3><p>Founders and key team members...</p><h3>7. The Ask</h3><p>How much are you raising and why?</p>';
@@ -226,7 +226,7 @@ function getDefaultContent(type: string): string {
   }
 }
 
-/* β”€β”€β”€ Categorised node types for the "Add Node" mega-menu β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ */
+/* ─── Categorised node types for the "Add Node" mega-menu ───────────── */
 import type { ResearchNodeType } from '@/lib/api';
 import type { LucideIcon } from 'lucide-react';
 
@@ -386,6 +386,9 @@ export default function ResearchBoardPage() {
 
   // Canvas state
   const canvasRef = useRef<HTMLDivElement>(null);
+  const panDragRef = useRef<{ x: number; y: number } | null>(null);
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
+  const pendingTapRef = useRef<{ x: number; y: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -461,7 +464,7 @@ export default function ResearchBoardPage() {
   // Board summary
   const [showBoardSummary, setShowBoardSummary] = useState(false);
 
-  // Canvas β†’ Builder synthesis prompt (dismissed per board, persisted in localStorage)
+  // Canvas → Builder synthesis prompt (dismissed per board, persisted in localStorage)
   const synthDismissKey = `cfb_synth_dismissed_${boardId}`;
   const [synthDismissed, setSynthDismissed] = useState(false);
   useEffect(() => {
@@ -1246,6 +1249,61 @@ export default function ResearchBoardPage() {
     if (!q || !board) return undefined;
     return board.nodes.find((n) => (n.title ?? '').toLowerCase().includes(q));
   }, [board]);
+  const canvasWorldPoint = useCallback((clientX: number, clientY: number) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    return {
+      x: (clientX - rect.left - pan.x) / zoom,
+      y: (clientY - rect.top - pan.y) / zoom,
+      rect,
+    };
+  }, [pan, zoom]);
+
+  const placeActiveToolAt = useCallback((clientX: number, clientY: number) => {
+    const pt = canvasWorldPoint(clientX, clientY);
+    if (!pt) return false;
+    if (activeTool === 'note') {
+      createNodeMutation.mutate({
+        type: 'note',
+        title: 'New Note',
+        content: '',
+        posX: pt.x,
+        posY: pt.y,
+        width: 280,
+        height: 200,
+      });
+      setActiveTool('select');
+      return true;
+    }
+    if (activeTool === 'mermaid') {
+      createNodeMutation.mutate({
+        type: 'mermaid_diagram' as ResearchNodeType,
+        title: 'Diagram',
+        content: MERMAID_STARTERS.flowchart,
+        posX: pt.x,
+        posY: pt.y,
+        width: 420,
+        height: 320,
+      });
+      setActiveTool('select');
+      return true;
+    }
+    if (['shape_rect','shape_circle','shape_diamond','shape_triangle','shape_line','shape_arrow','shape_text'].includes(activeTool)) {
+      const isLine = activeTool === 'shape_line' || activeTool === 'shape_arrow';
+      createNodeMutation.mutate({
+        type: activeTool as ResearchNodeType,
+        title: '',
+        content: '',
+        posX: pt.x,
+        posY: pt.y,
+        width: isLine ? 200 : 160,
+        height: isLine ? 50 : 120,
+      });
+      setActiveTool('select');
+      return true;
+    }
+    return false;
+  }, [activeTool, canvasWorldPoint, createNodeMutation]);
 
   // Pan / box-select / note-create handlers
   const handleCanvasMouseDown = useCallback((e: React.MouseEvent) => {
@@ -1258,91 +1316,41 @@ export default function ResearchBoardPage() {
       return;
     }
 
-    if (activeTool === 'note') {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
-        const x = (e.clientX - rect.left - pan.x) / zoom;
-        const y = (e.clientY - rect.top - pan.y) / zoom;
-        createNodeMutation.mutate({
-          type: 'note',
-          title: 'New Note',
-          content: '',
-          posX: x,
-          posY: y,
-          width: 280,
-          height: 200,
-        });
-        setActiveTool('select');
-      }
-    } else if (activeTool === 'mermaid') {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
-        const x = (e.clientX - rect.left - pan.x) / zoom;
-        const y = (e.clientY - rect.top - pan.y) / zoom;
-        createNodeMutation.mutate({
-          type: 'mermaid_diagram' as ResearchNodeType,
-          title: 'Diagram',
-          content: MERMAID_STARTERS.flowchart,
-          posX: x,
-          posY: y,
-          width: 420,
-          height: 320,
-        });
-        setActiveTool('select');
-      }
-    } else if (['shape_rect','shape_circle','shape_diamond','shape_triangle','shape_line','shape_arrow','shape_text'].includes(activeTool)) {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
-        const x = (e.clientX - rect.left - pan.x) / zoom;
-        const y = (e.clientY - rect.top - pan.y) / zoom;
-        const isLine = activeTool === 'shape_line' || activeTool === 'shape_arrow';
-        createNodeMutation.mutate({
-          type: activeTool as ResearchNodeType,
-          title: '',
-          content: '',
-          posX: x,
-          posY: y,
-          width: isLine ? 200 : 160,
-          height: isLine ? 50 : 120,
-        });
-        setActiveTool('select');
-      }
+    if (placeActiveToolAt(e.clientX, e.clientY)) {
+      return;
     } else if (activeTool === 'hand') {
       setIsPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     } else if (e.shiftKey) {
-      // Shift+Drag β†’ box selection
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
-        const cx = (e.clientX - rect.left - pan.x) / zoom;
-        const cy = (e.clientY - rect.top - pan.y) / zoom;
+      // Shift+Drag → box selection
+      const pt = canvasWorldPoint(e.clientX, e.clientY);
+      if (pt) {
         setIsBoxSelecting(true);
         setBoxSelectStart({ x: e.clientX, y: e.clientY });
-        setSelectionBox({ startX: cx, startY: cy, currentX: cx, currentY: cy });
+        setSelectionBox({ startX: pt.x, startY: pt.y, currentX: pt.x, currentY: pt.y });
       }
     } else {
-      // Normal canvas drag β†’ pan
+      // Normal canvas drag → pan
       setIsPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
       setSelectedNodeIds(new Set());
     }
-  }, [activeTool, pan, zoom, createNodeMutation, connectionStart]);
+  }, [activeTool, pan, placeActiveToolAt, canvasWorldPoint, connectionStart]);
 
-  const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
+  const handlePointerMove = useCallback((clientX: number, clientY: number) => {
     if (isPanning) {
       setPan({
-        x: e.clientX - panStart.x,
-        y: e.clientY - panStart.y,
+        x: clientX - panStart.x,
+        y: clientY - panStart.y,
       });
     } else if (isBoxSelecting && canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
-      const cx = (e.clientX - rect.left - pan.x) / zoom;
-      const cy = (e.clientY - rect.top - pan.y) / zoom;
+      const cx = (clientX - rect.left - pan.x) / zoom;
+      const cy = (clientY - rect.top - pan.y) / zoom;
       setSelectionBox((prev) => prev ? { ...prev, currentX: cx, currentY: cy } : null);
     } else if (resizingNodeId && canvasRef.current) {
-      // Resize logic
-      const dx = (e.clientX - resizeStart.mouseX) / zoom;
-      const dy = (e.clientY - resizeStart.mouseY) / zoom;
+      const dx = (clientX - resizeStart.mouseX) / zoom;
+      const dy = (clientY - resizeStart.mouseY) / zoom;
       const MIN_W = 160, MIN_H = 100;
       let newW = resizeStart.origW;
       let newH = resizeStart.origH;
@@ -1355,27 +1363,24 @@ export default function ResearchBoardPage() {
         )}};
       });
     } else if (resizingGroupId) {
-      // Group resize logic
-      const dx = (e.clientX - groupResizeStart.mouseX) / zoom;
-      const dy = (e.clientY - groupResizeStart.mouseY) / zoom;
+      const dx = (clientX - groupResizeStart.mouseX) / zoom;
+      const dy = (clientY - groupResizeStart.mouseY) / zoom;
       let newW = groupResizeStart.origW, newH = groupResizeStart.origH;
       if (groupResizeDir === 'right' || groupResizeDir === 'corner') newW = Math.max(200, groupResizeStart.origW + dx);
       if (groupResizeDir === 'bottom' || groupResizeDir === 'corner') newH = Math.max(120, groupResizeStart.origH + dy);
       setGroups((prev) => prev.map((g) => g.id === resizingGroupId ? { ...g, width: newW, height: newH } : g));
     } else if (draggingGroupId && canvasRef.current) {
-      // Group drag logic
       const rect = canvasRef.current.getBoundingClientRect();
-      const x = snap((e.clientX - rect.left - pan.x) / zoom - dragOffset.x);
-      const y = snap((e.clientY - rect.top - pan.y) / zoom - dragOffset.y);
+      const x = snap((clientX - rect.left - pan.x) / zoom - dragOffset.x);
+      const y = snap((clientY - rect.top - pan.y) / zoom - dragOffset.y);
       setGroups((prev) => prev.map((g) => g.id === draggingGroupId ? { ...g, posX: x, posY: y } : g));
     } else if (draggingNodeId && canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
-      const rawX = (e.clientX - rect.left - pan.x) / zoom - dragOffset.x;
-      const rawY = (e.clientY - rect.top - pan.y) / zoom - dragOffset.y;
+      const rawX = (clientX - rect.left - pan.x) / zoom - dragOffset.x;
+      const rawY = (clientY - rect.top - pan.y) / zoom - dragOffset.y;
       const x = snap(rawX);
       const y = snap(rawY);
-      
-      // Move all selected nodes together if dragging one of the selection
+
       if (selectedNodeIds.size > 1 && selectedNodeIds.has(draggingNodeId)) {
         const draggedNode = board?.nodes?.find((n) => n.id === draggingNodeId);
         if (draggedNode) {
@@ -1417,6 +1422,10 @@ export default function ResearchBoardPage() {
       }
     }
   }, [isPanning, panStart, isBoxSelecting, draggingNodeId, dragOffset, pan, zoom, boardId, queryClient, selectedNodeIds, board, snap, resizingNodeId, resizeDir, resizeStart, resizingGroupId, groupResizeDir, groupResizeStart, draggingGroupId]);
+
+  const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
+    handlePointerMove(e.clientX, e.clientY);
+  }, [handlePointerMove]);
 
   const handleCanvasMouseUp = useCallback(() => {
     setGuides([]);
@@ -1474,6 +1483,123 @@ export default function ResearchBoardPage() {
     setGroupResizeDir(null);
   }, [draggingNodeId, board, updateNodeMutation, isBoxSelecting, selectionBox, selectedNodeIds, batchUpdateMutation, pushHistory, resizingNodeId]);
 
+  // Touch: one-finger pan / place tool, two-finger pinch zoom. Native listeners
+  // so preventDefault can stop the browser from scrolling the page instead.
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+
+    const pinchDistance = (touches: TouchList) => {
+      const a = touches[0];
+      const b = touches[1];
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+        pinchRef.current = { distance: pinchDistance(e.touches), zoom };
+        panDragRef.current = null;
+        pendingTapRef.current = null;
+        setIsPanning(false);
+        return;
+      }
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      if (e.target !== el) {
+        pendingTapRef.current = null;
+        return;
+      }
+      if (connectionStart) {
+        setConnectionStart(null);
+        setActiveTool('select');
+        pendingTapRef.current = null;
+        return;
+      }
+      const placing = ['note', 'mermaid', 'shape_rect', 'shape_circle', 'shape_diamond', 'shape_triangle', 'shape_line', 'shape_arrow', 'shape_text'].includes(activeTool);
+      if (placing) {
+        pendingTapRef.current = { x: t.clientX, y: t.clientY };
+        return;
+      }
+      e.preventDefault();
+      panDragRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+      setIsPanning(true);
+      setPanStart({ x: t.clientX - pan.x, y: t.clientY - pan.y });
+      if (activeTool !== 'hand') setSelectedNodeIds(new Set());
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length >= 2 && pinchRef.current) {
+        e.preventDefault();
+        const dist = pinchDistance(e.touches);
+        if (dist < 8) return;
+        const next = Math.min(Math.max(pinchRef.current.zoom * (dist / pinchRef.current.distance), 0.25), 3);
+        const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const rect = el.getBoundingClientRect();
+        const mouseX = cx - rect.left;
+        const mouseY = cy - rect.top;
+        setZoom((prev) => {
+          if (prev === next) return prev;
+          const factor = next / prev;
+          setPan((p) => ({
+            x: mouseX - (mouseX - p.x) * factor,
+            y: mouseY - (mouseY - p.y) * factor,
+          }));
+          return next;
+        });
+        return;
+      }
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      if (pendingTapRef.current) {
+        const dx = t.clientX - pendingTapRef.current.x;
+        const dy = t.clientY - pendingTapRef.current.y;
+        if (Math.hypot(dx, dy) > 10) {
+          panDragRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+          setIsPanning(true);
+          setPanStart({ x: t.clientX - pan.x, y: t.clientY - pan.y });
+          pendingTapRef.current = null;
+        }
+        return;
+      }
+      if (panDragRef.current) {
+        e.preventDefault();
+        setPan({ x: t.clientX - panDragRef.current.x, y: t.clientY - panDragRef.current.y });
+        return;
+      }
+      handlePointerMove(t.clientX, t.clientY);
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length === 0 && pendingTapRef.current) {
+        const tap = pendingTapRef.current;
+        pendingTapRef.current = null;
+        placeActiveToolAt(tap.x, tap.y);
+      }
+      if (e.touches.length < 2) pinchRef.current = null;
+      if (e.touches.length === 0) {
+        panDragRef.current = null;
+        handleCanvasMouseUp();
+      } else if (e.touches.length === 1) {
+        const t = e.touches[0];
+        panDragRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+        setPanStart({ x: t.clientX - pan.x, y: t.clientY - pan.y });
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [zoom, pan, activeTool, connectionStart, handlePointerMove, handleCanvasMouseUp, placeActiveToolAt]);
+
   // Node drag handlers
   const handleNodeDragStart = useCallback((nodeId: string, e: React.MouseEvent) => {
     if (activeTool !== 'select') return;
@@ -1512,7 +1638,7 @@ export default function ResearchBoardPage() {
     });
   }, [board]);
 
-  // β”€β”€β”€ Group frame handlers β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€
+  // ─── Group frame handlers ───────────────────────────────────────────────
   const createGroup = useCallback((posX: number, posY: number, size?: { width?: number; height?: number; label?: string }) => {
     const id = crypto.randomUUID();
     setGroups((prev) => [...prev, {
@@ -1622,7 +1748,7 @@ export default function ResearchBoardPage() {
     success('Files uploaded', `${files.length} file(s) added to board`);
   };
 
-  // Keyboard shortcuts β€” full set from Codebase B
+  // Keyboard shortcuts — full set from Codebase B
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLDivElement && (e.target as HTMLDivElement).contentEditable === 'true') return;
@@ -1634,7 +1760,7 @@ export default function ResearchBoardPage() {
           toDelete.forEach((n) => deleteNodeMutation.mutate(n.id));
         }
       }
-      // Escape β€” clear selection + cancel connection
+      // Escape — clear selection + cancel connection
       else if (e.key === 'Escape') {
         setSelectedNodeIds(new Set());
         setViewingNode(null);
@@ -1811,7 +1937,16 @@ export default function ResearchBoardPage() {
   // client render both show the same loading placeholder. The real query
   // state is only evaluated after the component mounts on the client.
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const [isPhone, setIsPhone] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const sync = () => setIsPhone(mq.matches);
+    sync();
+    if (mq.matches) setShowMiniMap(false);
+    setMounted(true);
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
 
   // Auto-collapse sidebar for immersive canvas mode; restore on leave
   useEffect(() => {
@@ -1851,7 +1986,7 @@ export default function ResearchBoardPage() {
       queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
       success(`Auto-layout applied (${algorithm.replace('dagre-', '').toUpperCase()})`);
     } catch {
-      showError('Layout failed β€” please try again');
+      showError('Layout failed — please try again');
     }
   }, [board?.nodes, board?.connectors, boardId, queryClient, success, showError]);
 
@@ -1992,7 +2127,7 @@ export default function ResearchBoardPage() {
       >
         <TopBar />
         <MobileBottomNav />
-        {/* Loading state β€” also rendered during SSR for consistent HTML */}
+        {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
           <div className="flex flex-1 flex-col items-center justify-center">
             <Loader2 className="icon-xl animate-spin text-primary-accessible" />
@@ -2002,7 +2137,7 @@ export default function ResearchBoardPage() {
           </div>
         )}
 
-        {/* Error state β€” only after mount to avoid hydration mismatch */}
+        {/* Error state — only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
           <div className="flex-1 flex flex-col items-center justify-center">
             <p className="mb-4 text-destructive-accessible">
@@ -2016,11 +2151,11 @@ export default function ResearchBoardPage() {
 
         {/* Board content */}
         {!showLoading && board && (
-        <div className="flex min-h-0 flex-1 flex-col pb-16 lg:pb-0">
-        {/* Toolbar β€” clean minimal design */}
-        <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-3 sm:px-4 shrink-0 z-50 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
+        <div className="flex min-h-0 flex-1 flex-col pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
+        {/* Toolbar — compact on phones; secondary actions live in More */}
+        <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-2 sm:px-4 shrink-0 z-50 gap-1.5 sm:gap-3 overflow-x-auto scrollbar-hide">
           {/* Left: Brand + node count */}
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <Link href="/research" className="flex items-center gap-2 transition-opacity hover:opacity-80" aria-label={bilingualAria(researchEn('canvas_back'), researchEl('canvas_back'))}>
               <CfbGlyph name="research" className="icon-md text-primary-accessible shrink-0" />
               <span className="hidden text-sm font-semibold text-foreground sm:inline">
@@ -2035,17 +2170,17 @@ export default function ResearchBoardPage() {
                 compact
               />
             </span>
-            <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1" />
+            <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1 hidden sm:flex" />
           </div>
 
-          <div className="h-5 w-px bg-border/60" />
+          <div className="hidden sm:block h-5 w-px bg-border/60" />
 
-          {/* Quick Note tool */}
+          {/* Quick Note tool — draw toolbar covers this on phones */}
           <Button
             variant={activeTool === 'note' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => issue('set_tool', { query: activeTool === 'note' ? 'select' : 'note' })}
-            className="h-8 gap-1.5 rounded-xl text-xs"
+            className="hidden sm:inline-flex h-8 gap-1.5 rounded-xl text-xs"
             title={t(researchEn('note_title'), researchEl('note_title'))}
           >
             <StickyNote className="icon-sm text-amber-500" />
@@ -2057,8 +2192,8 @@ export default function ResearchBoardPage() {
           {/* Categorised Add Node mega-dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs">
-                <Plus className="icon-sm" />
+              <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs" aria-label={researchEn('add_node')}>
+                <Plus className="icon-sm" aria-hidden="true" />
                 <span className="hidden md:inline">
                   <BilingualText en={researchEn('add_node')} el={researchEl('add_node')} compact />
                 </span>
@@ -2127,7 +2262,8 @@ export default function ResearchBoardPage() {
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="h-8 gap-1.5 rounded-xl text-xs"
+            className="h-8 gap-1.5 rounded-xl text-xs shrink-0"
+            aria-label={bilingualAria(researchEn('upload'), researchEl('upload'))}
           >
             <Upload className="icon-sm" />
             <span className="hidden md:inline">
@@ -2140,7 +2276,7 @@ export default function ResearchBoardPage() {
             variant={activeTool === 'connect' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => issue('set_tool', { query: activeTool === 'connect' ? 'select' : 'connect' })}
-            className="h-8 gap-1.5 rounded-xl text-xs"
+            className="hidden sm:inline-flex h-8 gap-1.5 rounded-xl text-xs"
             title={t(researchEn('connect_title'), researchEl('connect_title'))}
           >
             <GitBranch className="icon-sm text-emerald-500" />
@@ -2243,7 +2379,7 @@ export default function ResearchBoardPage() {
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 gap-1.5 rounded-xl text-xs"
+            className="hidden sm:inline-flex h-8 gap-1.5 rounded-xl text-xs"
             onClick={() => openAskAi()}
             title={t(researchEn('ask_ai_canvas'), researchEl('ask_ai_canvas'))}
           >
@@ -2253,7 +2389,7 @@ export default function ResearchBoardPage() {
             </span>
           </Button>
 
-          <div className="h-5 w-px bg-border/60" />
+          <div className="hidden sm:block h-5 w-px bg-border/60" />
 
           {/* Undo / Redo */}
           <div className="flex items-center gap-0.5">
@@ -2266,14 +2402,14 @@ export default function ResearchBoardPage() {
           </div>
 
           {/* Spacer */}
-          <div className="flex-1" />
+          <div className="flex-1 min-w-1" />
 
           {/* Zoom controls */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 shrink-0">
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title={t(researchEn('zoom_out'), researchEl('zoom_out'))}>
               <ZoomOut className="icon-sm" />
             </Button>
-            <span className="text-2xs text-muted-foreground w-10 text-center tabular-nums select-none">
+            <span className="hidden sm:inline text-2xs text-muted-foreground w-10 text-center tabular-nums select-none">
               {Math.round(zoom * 100)}%
             </span>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title={t(researchEn('zoom_in'), researchEl('zoom_in'))}>
@@ -2282,7 +2418,7 @@ export default function ResearchBoardPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0"
+              className="hidden sm:inline-flex h-7 w-7 p-0"
               onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
               title={t(researchEn('reset_view'), researchEl('reset_view'))}
             >
@@ -2291,7 +2427,7 @@ export default function ResearchBoardPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0"
+              className="hidden sm:inline-flex h-7 w-7 p-0"
               onClick={() => issue('fit_view')}
               title={t(researchEn('fit_nodes'), researchEl('fit_nodes'))}
             >
@@ -2299,8 +2435,9 @@ export default function ResearchBoardPage() {
             </Button>
           </div>
 
-          <div className="h-5 w-px bg-border/60" />
+          <div className="hidden sm:block h-5 w-px bg-border/60" />
 
+          <div className="hidden sm:contents">
           {/* Snap-to-grid toggle */}
           <Button
             variant={snapToGrid ? 'secondary' : 'ghost'}
@@ -2354,15 +2491,38 @@ export default function ResearchBoardPage() {
           >
             <History className="icon-sm" />
           </Button>
+          </div>
 
-          {/* More menu β€” houses all secondary actions */}
+          {/* More menu — houses all secondary actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0"
+                aria-label={bilingualAria(researchEn('canvas_more'), researchEl('canvas_more'))}
+              >
                 <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => openAskAi()}>
+                <CfbGlyph name="spark" className="icon-sm mr-2" />
+                <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }}>
+                <Sparkles className="icon-sm mr-2" />
+                <BilingualText en={researchEn('ai_analysis')} el={researchEl('ai_analysis')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }}>
+                <BarChart3 className="icon-sm mr-2" />
+                <BilingualText en={researchEn('board_summary')} el={researchEl('board_summary')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowHistoryDrawer((v) => !v)}>
+                <History className="icon-sm mr-2" />
+                <BilingualText en={researchEn('canvas_history')} el={researchEl('canvas_history')} compact />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => {
                 const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
                 if (url) {
@@ -2512,9 +2672,9 @@ export default function ResearchBoardPage() {
         </div>
       )}
 
-      {/* Canvas β†’ Builder synthesis prompt banner */}
+      {/* Canvas → Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (
-        <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
           <Sparkles className="icon-sm shrink-0 text-violet-600" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-foreground">
@@ -2540,12 +2700,12 @@ export default function ResearchBoardPage() {
       )}
 
       {/* Canvas + AI sidebar row */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
+      <div className="relative flex-1 flex min-h-0 overflow-hidden">
       {/* Canvas */}
       <div
         ref={canvasRef}
         className={cn(
-          'flex-1 relative overflow-hidden cursor-grab',
+          'flex-1 relative overflow-hidden cursor-grab touch-none overscroll-none',
           isPanning && 'cursor-grabbing',
           activeTool === 'hand' && 'cursor-grab',
           (activeTool === 'note' || activeTool === 'connect') && 'cursor-crosshair',
@@ -2579,8 +2739,16 @@ export default function ResearchBoardPage() {
         onDragLeave={handleDragLeave}
         onContextMenu={(e) => handleContextMenu(e)}
       >
-        {/* β”€β”€β”€ Canvas Draw Toolbar (floating, left side β€” fixed to viewport) β”€β”€ */}
-        <div data-canvas-chrome className="absolute left-3 top-1/2 -translate-y-1/2 z-40 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()}>
+        {/* ─── Canvas Draw Toolbar: horizontal strip on phones, left rail from sm ── */}
+        <div
+          data-canvas-chrome
+          className={cn(
+            'absolute z-40 pointer-events-auto',
+            'inset-x-2 bottom-8',
+            'sm:inset-x-auto sm:bottom-auto sm:left-3 sm:top-1/2 sm:-translate-y-1/2',
+          )}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <CanvasDrawToolbar
             activeTool={activeTool}
             onToolChange={(t) => issue('set_tool', { query: t })}
@@ -2589,7 +2757,7 @@ export default function ResearchBoardPage() {
           />
         </div>
 
-        {/* β”€β”€β”€ Shape Library Panel β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€β”€ */}
+        {/* ─── Shape Library Panel ──────────────────────────────────────── */}
         {showShapeLibrary && (
           <ShapeLibraryPanel
             onClose={() => setShowShapeLibrary(false)}
@@ -2710,10 +2878,10 @@ export default function ResearchBoardPage() {
 
         {/* Connection mode indicator */}
         {connectionStart && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium shadow-lg backdrop-blur-sm">
+          <div className="absolute top-3 left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 pointer-events-none">
+            <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium shadow-lg backdrop-blur-sm">
               <GitBranch className="icon-sm" />
-              Click a node to connect Β· Press Esc to cancel
+              Click a node to connect · Press Esc to cancel
             </div>
           </div>
         )}
@@ -2731,21 +2899,21 @@ export default function ResearchBoardPage() {
           />
         )}
 
+        {/* MiniMap — compact on phones, above the draw strip; full size from sm */}
         {showMiniMap && board ? (
           <div
             data-canvas-chrome
-            className="pointer-events-auto absolute bottom-6 z-20 h-[144px] w-[216px] cursor-default overflow-hidden rounded-2xl border border-border/60 bg-card/95 p-1.5 shadow-sm"
-            style={{ right: 244 }}
+            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-40 cursor-default sm:bottom-10 sm:right-4"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <BoardMiniMap
-              embedded
               nodes={board.nodes}
               pan={pan}
               zoom={zoom}
               viewportWidth={canvasRef.current?.clientWidth ?? window.innerWidth}
               viewportHeight={canvasRef.current?.clientHeight ?? window.innerHeight}
               onNavigate={setPan}
+              compact={isPhone}
             />
           </div>
         ) : null}
@@ -2802,7 +2970,7 @@ export default function ResearchBoardPage() {
 
         {/* Comments Panel */}
         {commentsNodeId && currentUser && (
-          <div className="absolute top-4 left-16 z-40 pointer-events-auto" style={{ width: 340 }}>
+          <div className="absolute z-40 pointer-events-auto inset-x-2 top-2 sm:inset-x-auto sm:left-4 sm:top-4 sm:w-[340px]">
             <CommentsPanel
               nodeId={commentsNodeId}
               nodeTitle={board?.nodes?.find((n) => n.id === commentsNodeId)?.title}
@@ -2837,25 +3005,31 @@ export default function ResearchBoardPage() {
         )}
 
         {/* Bottom status bar */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-7 select-none items-center justify-between border-t border-border/50 bg-card/80 px-3 backdrop-blur-sm">
-          <span className="text-2xs tabular-nums text-muted-foreground/70">
-            {Math.round(zoom * 100)}% Β· {board.nodes.length}{' '}
+        <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-between px-3 z-30 pointer-events-none select-none">
+          <span className="text-2xs tabular-nums text-muted-foreground/70 truncate">
+            {Math.round(zoom * 100)}% · {board.nodes.length}{' '}
             {t(board.nodes.length === 1 ? researchEn('node') : researchEn('nodes'), board.nodes.length === 1 ? researchEl('node') : researchEl('nodes'))}
-            {board.connectors.length > 0 && ` Β· ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
-            {selectedNodeIds.size > 0 && ` Β· ${selectedNodeIds.size} ${t(researchEn('selected'), researchEl('selected'))}`}
-            {connectionStart && ` Β· ${t(researchEn('drawing'), researchEl('drawing'))}`}
-            {groups.length > 0 && ` Β· ${groups.length} ${t(groups.length === 1 ? researchEn('group') : researchEn('groups'), groups.length === 1 ? researchEl('group') : researchEl('groups'))}`}
-            {snapToGrid && ` Β· β ${t(researchEn('snap'), researchEl('snap'))}`}
+            {board.connectors.length > 0 && ` · ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
+            {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} ${t(researchEn('selected'), researchEl('selected'))}`}
+            {connectionStart && ` · ${t(researchEn('drawing'), researchEl('drawing'))}`}
+            <span className="hidden sm:inline">
+              {groups.length > 0 && ` · ${groups.length} ${t(groups.length === 1 ? researchEn('group') : researchEn('groups'), groups.length === 1 ? researchEl('group') : researchEl('groups'))}`}
+              {snapToGrid && ` · ⊞ ${t(researchEn('snap'), researchEl('snap'))}`}
+            </span>
           </span>
-          <span className="text-2xs tabular-nums text-muted-foreground/50">
-            {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} Β· `}
-            {t(researchEn('hint_nav'), researchEl('hint_nav'))}
+          <span className="text-2xs tabular-nums text-muted-foreground/50 shrink-0 ml-2">
+            <span className="sm:hidden">{t(researchEn('hint_nav_touch'), researchEl('hint_nav_touch'))}</span>
+            <span className="hidden sm:inline">
+              {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} · `}
+              {t(researchEn('hint_nav'), researchEl('hint_nav'))}
+            </span>
           </span>
         </div>
       </div>
 
-      {/* Canvas Copilot Panel β€” sidebar */}
+      {/* Canvas Copilot Panel — overlay on phones, sidebar from sm */}
       {showAIPanel && (
+        <div className="absolute inset-0 z-50 sm:static sm:inset-auto sm:z-auto">
         <CanvasCopilotPanel
           boardId={boardId}
           nodes={board.nodes}
@@ -2878,16 +3052,19 @@ export default function ResearchBoardPage() {
             }
           }}
         />
+        </div>
       )}
 
-      {/* Board Summary Panel β€” sidebar */}
+      {/* Board Summary Panel — overlay on phones, sidebar from sm */}
       {showBoardSummary && (
+        <div className="absolute inset-0 z-50 sm:static sm:inset-auto sm:z-auto">
         <BoardSummaryPanel
           boardId={boardId}
           boardTitle={board.title}
           nodes={board.nodes}
           onClose={() => setShowBoardSummary(false)}
         />
+        </div>
       )}
       </div>{/* end flex row */}
 
@@ -3104,7 +3281,7 @@ export default function ResearchBoardPage() {
                 <X className="icon-sm" />
               </Button>
             </div>
-            <div className="p-6 grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
               {[
                 { keys: ['Ctrl/⌘', 'Z'], desc: 'Undo' },
                 { keys: ['Ctrl/⌘', 'Y'], desc: 'Redo' },

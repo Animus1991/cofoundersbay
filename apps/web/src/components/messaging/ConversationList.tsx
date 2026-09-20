@@ -85,23 +85,31 @@ function ConversationItem({
   const unread = conversation.unreadCount > 0;
 
   return (
+    /* The row used to be `role="button" tabIndex={0}` wrapping the actions
+       menu, which is a button inside a button: `nested-interactive (serious)`.
+       A screen reader flattens the inner control out of existence and a
+       keyboard user cannot reach the menu at all — Tab lands on the row and
+       the menu is simply not in the order.
+       The row is now a plain container. Its primary action is a real
+       `<button>` stretched over the row by the `::after` inset overlay, which
+       keeps the whole row clickable while leaving the menu a sibling rather
+       than a descendant. Enter and Space work because it is a button, not
+       because of a hand-written key handler. */
     <div
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
       className={cn(
-        'group relative flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-150',
+        'group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-150',
         isSelected
           ? 'bg-muted/50'
           : 'hover:bg-muted/30',
       )}
-      onClick={onSelect}
     >
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-current={isSelected ? 'true' : undefined}
+        aria-label={conversation.recipientName}
+        className="absolute inset-0 z-0 cursor-pointer rounded-2xl focus-ring"
+      />
       <span
         className={cn(
           'absolute left-1 top-3 bottom-3 w-1 rounded-full transition-colors',
@@ -170,7 +178,7 @@ function ConversationItem({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1.5 top-1.5 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+            className="absolute right-1.5 top-1.5 z-10 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
             onClick={(e) => e.stopPropagation()}
             aria-label={bilingualAria(messagesEn('delete_chat'), messagesEl('delete_chat'))}
           >

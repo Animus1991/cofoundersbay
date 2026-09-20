@@ -86,6 +86,14 @@ type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
  * merge; the axe run noticed immediately (`button-name` ×11 on /settings).
  * The instances were fixed by hand, but only the type keeps the class of bug
  * from coming back.
+ *
+ * `asChild` is exempt: a button rendering as someone else's element —
+ * almost always a Link — delegates its name to that element, and requiring
+ * one here too would put two competing accessible names on one control.
+ *
+ * `size` may be `null` because cva's VariantProps admits null for an unset
+ * variant, and a wrapper forwarding `size` from its own props carries that
+ * null through.
  */
 type IconOnlySize = 'icon';
 
@@ -95,6 +103,9 @@ export type ButtonProps = ButtonBaseProps &
   (
     // Text buttons: any non-icon size, no extra requirement.
     | { size?: Exclude<ButtonSize, IconOnlySize> | null }
+    // `asChild` renders someone else's element — almost always a Link — and
+    // that element carries its own name.
+    | { asChild: true }
     // Icon sizes (including a size prop whose union merely *may* be an icon
     // size, as in wrapper components that forward `size`) must name themselves.
     | { size: ButtonSize | null | undefined; 'aria-label': string }
