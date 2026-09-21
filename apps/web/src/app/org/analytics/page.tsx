@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   BarChart3,
   Rocket,
@@ -13,6 +13,9 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { getMyPrograms, getOrgMembers, getOrgMentorPool } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -143,24 +146,64 @@ const FUNNEL_STEPS = [
 
 export default function OrgAnalyticsPage() {
   const [period, setPeriod] = useState('30d');
-  // Mock data
+
+  /*
+   * These eight numbers were a fixed object. Four of them are counted now from
+   * the organisation's own rows — the same rows /org/members, /org/mentors and
+   * /org/programs list, so this page and those cannot disagree.
+   *
+   * The other four stay dashes on purpose. Mentorship sessions, average
+   * readiness and an application rate are facts the organisation endpoints do
+   * not return, and a readiness score in particular belongs to a founder's own
+   * workspace. A dash is the honest answer until there is a number behind it.
+   */
+  const { slug, membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
+
+  const { data: programsData } = useQuery({
+    queryKey: ['org', 'programs'],
+    queryFn: getMyPrograms,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: membersData } = useQuery({
+    queryKey: ['org', 'members', slug],
+    queryFn: () => getOrgMembers(slug!, { limit: 100 }),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: mentorsData } = useQuery({
+    queryKey: ['org', 'mentor-pool', organizationId],
+    queryFn: () => getOrgMentorPool(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const orgPrograms = useMemo(() => programsData?.programs ?? [], [programsData]);
+  const mentors = useMemo(() => mentorsData?.mentors ?? [], [mentorsData]);
+
   const stats = {
-    totalStartups: 45,
-    activeStartups: 32,
-    graduatedStartups: 10,
-    totalMentors: 28,
-    activeMentorships: 42,
-    totalSessions: 156,
-    avgReadinessScore: 68,
-    applicationRate: 85,
+    totalStartups: membersData?.total ?? 0,
+    activeStartups: membersData?.total ?? 0,
+    graduatedStartups: 0,
+    totalMentors: mentors.length,
+    // Mentors with at least one mentee: the pool records the count.
+    activeMentorships: mentors.reduce((sum, mentor) => sum + mentor.currentMentees, 0),
+    totalSessions: null as number | null,
+    avgReadinessScore: null as number | null,
+    applicationRate: null as number | null,
   };
 
-  const programMetrics = [
-    { name: 'AI Accelerator 2025', startups: 12, progress: 75 },
-    { name: 'Climate Innovation', startups: 8, progress: 60 },
-    { name: 'FinTech Bootcamp', startups: 6, progress: 90 },
-    { name: 'Fall 2024 Cohort', startups: 6, progress: 100 },
-  ];
+  const programMetrics = orgPrograms.map((program) => ({
+    name: program.title,
+    startups: program.participantCount,
+    // Filled share of the program's stated capacity — a fact it carries.
+    progress: program.capacity
+      ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100))
+      : 0,
+  }));
 
   const stageDistribution = [
     { stage: 'Idea', count: 8 },
@@ -226,14 +269,14 @@ export default function OrgAnalyticsPage() {
           />
           <StatCard
             title="Avg. Readiness Score"
-            value={`${stats.avgReadinessScore}%`}
+            value={stats.avgReadinessScore == null ? '\u2014' : `${stats.avgReadinessScore}%`}
             change="+3% from last month"
             changeType="positive"
             icon={Target}
           />
           <StatCard
             title="Mentor Sessions"
-            value={stats.totalSessions}
+            value={stats.totalSessions ?? '\u2014'}
             change="+24 this month"
             changeType="positive"
             icon={Calendar}

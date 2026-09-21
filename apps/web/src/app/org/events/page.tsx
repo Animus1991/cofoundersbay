@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -19,6 +19,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { listEvents, type EventItem } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +66,55 @@ const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; tone: StatusTon
   cancelled: { label: 'Cancelled', tone: 'danger' },
 };
 
+/**
+ * The page's own row from the events API row.
+ *
+ * `/api/events` has existed all along and this page never called it. The
+ * event model has no organisation scope yet, so this lists the events the
+ * viewer hosts — which for an organisation account is its programme calendar.
+ * Speakers have no field on the model and are left out rather than invented.
+ */
+const EVENT_TYPE_MAP: Record<string, OrgEvent['type']> = {
+  workshop: 'workshop',
+  demo_day: 'demo_day',
+  networking: 'networking',
+  meetup: 'networking',
+  webinar: 'keynote',
+  other: 'workshop',
+};
+
+function toOrgEvent(item: EventItem): OrgEvent {
+  const start = new Date(item.startAt);
+  const end = new Date(item.endAt);
+  const now = Date.now();
+  return {
+    id: item.id,
+    title: item.title,
+    type: EVENT_TYPE_MAP[item.eventType] ?? 'workshop',
+    status:
+      end.getTime() < now ? 'completed' : start.getTime() <= now ? 'ongoing' : 'upcoming',
+    // Pinned to UTC on both sides of hydration, the way every other date in
+    // this codebase is.
+    date: start.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }),
+    time: start.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'UTC',
+    }),
+    format: item.mode,
+    location: item.location ?? (item.isOnline ? 'Online' : '\u2014'),
+    attendees: item.attendeesCount,
+    capacity: item.capacity ?? 0,
+    description: item.description,
+  };
+}
+
+/** Shown to an organisation that has scheduled nothing yet. */
 const MOCK_EVENTS: OrgEvent[] = [
   {
     id: '1',
@@ -196,15 +247,25 @@ export default function OrgEventsPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const filtered = MOCK_EVENTS.filter(e => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', 'events'],
+    queryFn: () => listEvents({ scope: 'mine', limit: 50 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.events ?? []).map(toOrgEvent), [data]);
+  const events = live.length > 0 ? live : isLoading ? [] : MOCK_EVENTS;
+
+  const filtered = events.filter(e => {
     const q = search.toLowerCase();
     const matchesSearch = !search || e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q);
     const matchesTab = activeTab === 'all' || e.status === activeTab || (activeTab === 'active' && ['upcoming', 'ongoing'].includes(e.status));
     return matchesSearch && matchesTab;
   });
 
-  const upcoming = MOCK_EVENTS.filter(e => e.status === 'upcoming').length;
-  const totalAttendees = MOCK_EVENTS.reduce((s, e) => s + e.attendees, 0);
+  const upcoming = events.filter(e => e.status === 'upcoming').length;
+  const totalAttendees = events.reduce((s, e) => s + e.attendees, 0);
 
   const filtersActive = !!search || activeTab !== 'all';
   const clearFilters = () => { setSearch(''); setActiveTab('all'); };
@@ -229,7 +290,7 @@ export default function OrgEventsPage() {
           {[
             { label: 'Upcoming Events', value: upcoming, icon: Calendar },
             { label: 'Total Attendees (all)', value: totalAttendees, icon: Users },
-            { label: 'Events This Month', value: MOCK_EVENTS.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
+            { label: 'Events This Month', value: events.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4 flex items-center justify-between">
@@ -255,9 +316,9 @@ export default function OrgEventsPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({MOCK_EVENTS.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({upcoming + MOCK_EVENTS.filter(e => e.status === 'ongoing').length})</TabsTrigger>
-            <TabsTrigger value="completed">Completed ({MOCK_EVENTS.filter(e => e.status === 'completed').length})</TabsTrigger>
+            <TabsTrigger value="all">All ({events.length})</TabsTrigger>
+            <TabsTrigger value="active">Active ({upcoming + events.filter(e => e.status === 'ongoing').length})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({events.filter(e => e.status === 'completed').length})</TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(event => (
