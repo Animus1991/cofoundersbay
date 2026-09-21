@@ -3383,7 +3383,22 @@ export async function createTenant(data: {
   return apiRequest('/api/tenants', { method: 'POST', body: JSON.stringify(data) });
 }
 
+/**
+ * Workspace preferences as the settings screen holds them. Kept as one object
+ * because they are read and written together.
+ */
+export type TenantSettings = {
+  timezone?: string;
+  language?: string;
+  currency?: string;
+  autoApprove?: boolean;
+  requireApproval?: boolean;
+  emailNotifications?: boolean;
+  weeklyDigest?: boolean;
+};
+
 export async function updateTenant(id: string, data: Partial<{
+  settings: TenantSettings;
   name: string;
   slug: string;
   displayName: string;

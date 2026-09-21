@@ -12,6 +12,11 @@ import {
   Save,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { useTenant } from '@/components/providers/TenantContext';
+import { updateTenant, type TenantSettings } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -27,19 +32,72 @@ import {
 } from '@/components/ui/select';
 
 export default function TenantSettingsPage() {
+  /*
+   * Seven controls that set local state and a Save button with no handler:
+   * the whole screen was decoration. None of them had anywhere to live either
+   * — `Tenant` had no field for a timezone, a currency or a membership policy
+   * — so a `settings` column was added alongside this, one nullable object
+   * rather than seven columns, because they are read and written together and
+   * none is ever queried on.
+   */
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+  const stored = (activeTenant as { settings?: TenantSettings } | null)?.settings ?? {};
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+
+  const [timezone, setTimezone] = useState('utc');
+  const [language, setLanguage] = useState('en');
+  const [currency, setCurrency] = useState('eur');
   const [autoApprove, setAutoApprove] = useState(false);
   const [requireApproval, setRequireApproval] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
+
+  // Seeded once the tenant resolves, and not again, so a value changed while
+  // the request was in flight is not stamped over.
+  const [seeded, setSeeded] = useState(false);
+  useEffect(() => {
+    if (seeded || !activeTenant) return;
+    if (stored.timezone) setTimezone(stored.timezone);
+    if (stored.language) setLanguage(stored.language);
+    if (stored.currency) setCurrency(stored.currency);
+    if (stored.autoApprove !== undefined) setAutoApprove(stored.autoApprove);
+    if (stored.requireApproval !== undefined) setRequireApproval(stored.requireApproval);
+    if (stored.emailNotifications !== undefined) setEmailNotifications(stored.emailNotifications);
+    if (stored.weeklyDigest !== undefined) setWeeklyDigest(stored.weeklyDigest);
+    setSeeded(true);
+  }, [activeTenant, stored, seeded]);
+
+  const save = useMutation({
+    mutationFn: () =>
+      updateTenant(tenantId!, {
+        settings: {
+          timezone,
+          language,
+          currency,
+          autoApprove,
+          requireApproval,
+          emailNotifications,
+          weeklyDigest,
+        },
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['tenant'] });
+      success('Settings saved');
+    },
+    onError: (err) =>
+      showError('Could not save the settings', err instanceof Error ? err.message : undefined),
+  });
 
   return (
     <AppShell
       title="Tenant Settings"
       description="General workspace settings: membership policy, notifications, and email preferences."
       actions={(
-        <Button>
+        <Button disabled={!tenantId || save.isPending} onClick={() => save.mutate()}>
           <Save className="mr-2 icon-sm" />
-          Save Changes
+          {save.isPending ? 'Saving…' : 'Save Changes'}
         </Button>
       )}
     >
@@ -66,7 +124,7 @@ export default function TenantSettingsPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="timezone">Timezone</Label>
-                  <Select defaultValue="utc">
+                  <Select value={timezone} onValueChange={setTimezone}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select timezone" />
                     </SelectTrigger>
@@ -80,7 +138,7 @@ export default function TenantSettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="language">Default Language</Label>
-                  <Select defaultValue="en">
+                  <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
@@ -94,7 +152,7 @@ export default function TenantSettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency">Currency</Label>
-                  <Select defaultValue="usd">
+                  <Select value={currency} onValueChange={setCurrency}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>

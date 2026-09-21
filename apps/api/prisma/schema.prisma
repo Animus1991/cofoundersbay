@@ -1349,6 +1349,12 @@ model Tenant {
 
   @@index([slug])
   @@index([status])
+  /// Workspace preferences the settings screen writes: timezone, default
+  /// language, currency and the membership and notification toggles. A single
+  /// nullable column rather than eight, because they are read and written
+  /// together and none of them is ever queried on.
+  settings         Json?
+
 }
 
 model TenantBranding {
