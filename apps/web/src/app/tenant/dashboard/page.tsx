@@ -18,6 +18,12 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTenant } from '@/components/providers/TenantContext';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { getTenantMembers, listEvents } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,32 +76,77 @@ function StatCard({
   );
 }
 
+/** Shown to a workspace whose programme calendar is still empty. */
+const SEED_PROGRAMS = [
+  { id: 'seed-1', name: 'Spring Accelerator 2025', startups: 12, progress: 65, status: 'active' },
+  { id: 'seed-2', name: 'AI Innovation Lab', startups: 8, progress: 30, status: 'active' },
+  { id: 'seed-3', name: 'Pre-seed Bootcamp', startups: 8, progress: 90, status: 'ending_soon' },
+];
+
 export default function TenantDashboardPage() {
-  // Mock data
+  /*
+   * Four header figures, three recent members and three upcoming events, all
+   * written into the source. Members and events are read now — both endpoints
+   * and their clients have existed all along.
+   *
+   * Programme counts stay as the illustrative list: `Program` carries a
+   * `tenantId` but nothing queries by it yet, so there is no honest way to
+   * count a workspace's programmes from here. Startups and mentors read a
+   * dash for the same reason — a tenant membership records a role, not
+   * whether the person is a founder with a company or a mentor in a pool.
+   */
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+
+  const { data: membersData } = useQuery({
+    queryKey: ['tenant', 'members', tenantId],
+    queryFn: () => getTenantMembers(tenantId!, { limit: 100 }),
+    enabled: Boolean(tenantId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: eventsData } = useQuery({
+    queryKey: ['tenant', 'events'],
+    queryFn: () => listEvents({ scope: 'upcoming', limit: 5 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const members = useMemo(() => (Array.isArray(membersData) ? membersData : []), [membersData]);
+
   const stats = {
-    totalMembers: 156,
-    activePrograms: 4,
-    startups: 28,
-    mentors: 12,
+    totalMembers: members.length,
+    activePrograms: null as number | null,
+    startups: null as number | null,
+    mentors: members.filter((m) => m.role === 'mentor').length,
   };
 
-  const recentMembers = [
-    { id: '1', name: 'John Doe', role: 'Founder', joinedAt: '2 days ago', avatarUrl: '' },
-    { id: '2', name: 'Jane Smith', role: 'Mentor', joinedAt: '3 days ago', avatarUrl: '' },
-    { id: '3', name: 'Mike Johnson', role: 'Founder', joinedAt: '1 week ago', avatarUrl: '' },
-  ];
+  const recentMembers = members
+    .slice()
+    .sort((a, b) => b.joinedAt.localeCompare(a.joinedAt))
+    .slice(0, 3)
+    .map((m) => ({
+      id: m.id,
+      name: m.user.profile?.displayName ?? m.user.email,
+      role: m.role,
+      joinedAt: m.joinedAt,
+      avatarUrl: m.user.profile?.avatarUrl ?? '',
+    }));
 
-  const activePrograms = [
-    { id: '1', name: 'Spring Accelerator 2025', startups: 12, progress: 65, status: 'active' },
-    { id: '2', name: 'AI Innovation Lab', startups: 8, progress: 30, status: 'active' },
-    { id: '3', name: 'Pre-seed Bootcamp', startups: 8, progress: 90, status: 'ending_soon' },
-  ];
+  const activePrograms = SEED_PROGRAMS;
 
-  const upcomingEvents = [
-    { id: '1', name: 'Demo Day', date: 'Mar 28, 2025', type: 'Event' },
-    { id: '2', name: 'Mentor Office Hours', date: 'Mar 25, 2025', type: 'Session' },
-    { id: '3', name: 'Investor Pitch Night', date: 'Apr 5, 2025', type: 'Event' },
-  ];
+  const upcomingEvents = (eventsData?.events ?? []).slice(0, 3).map((event) => ({
+    id: event.id,
+    name: event.title,
+    // UTC on both sides of hydration, as every other date here is.
+    date: new Date(event.startAt).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }),
+    type: event.eventType === 'workshop' ? 'Session' : 'Event',
+  }));
 
   return (
     <AppShell
@@ -119,19 +170,17 @@ export default function TenantDashboardPage() {
           <StatCard
             title="Total Members"
             value={stats.totalMembers}
-            change="+12 this month"
             icon={Users}
           />
           <StatCard
             title="Active Programs"
-            value={stats.activePrograms}
+            value={stats.activePrograms ?? '—'}
             icon={Award}
             iconColor="bg-purple-500"
           />
           <StatCard
             title="Startups"
-            value={stats.startups}
-            change="+5 this month"
+            value={stats.startups ?? '—'}
             icon={Rocket}
             iconColor="bg-blue-500"
           />
@@ -192,7 +241,9 @@ export default function TenantDashboardPage() {
                     <p className="text-sm font-medium">{member.name}</p>
                     <p className="text-xs text-muted-foreground">{member.role}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">{member.joinedAt}</span>
+                  <span className="text-xs text-muted-foreground">
+                    <RelativeTime date={member.joinedAt} format={formatRelativeTime} />
+                  </span>
                 </div>
               ))}
               <Button variant="outline" className="w-full mt-2" size="sm" asChild>
