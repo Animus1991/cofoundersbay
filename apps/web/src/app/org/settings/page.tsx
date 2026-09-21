@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
   Palette,
@@ -12,6 +13,9 @@ import {
   Save,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useToast } from '@/components/ui/toast';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { getOrgProfile, updateOrganization } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,9 +32,55 @@ import {
 } from '@/components/ui/select';
 
 export default function OrgSettingsPage() {
-  const [orgName, setOrgName] = useState('TechStars Athens');
-  const [orgDescription, setOrgDescription] = useState('Leading accelerator program in Southeast Europe');
-  const [website, setWebsite] = useState('https://techstars.com/athens');
+  /*
+   * The three fields opened with another organisation's details written into
+   * the source, and both Save buttons had no handler — typing into them
+   * changed nothing anywhere. They load the organisation's own profile now
+   * and write it back through `PATCH /organizations/:id`, which has existed
+   * all along without a client.
+   */
+  const { slug, membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+
+  const { data: profileData } = useQuery({
+    queryKey: ['org', 'profile', slug],
+    queryFn: () => getOrgProfile(slug!),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const [orgName, setOrgName] = useState('');
+  const [orgDescription, setOrgDescription] = useState('');
+  const [website, setWebsite] = useState('');
+
+  // Seed the form once the profile arrives, without stamping over edits made
+  // while it was in flight.
+  const [seeded, setSeeded] = useState(false);
+  useEffect(() => {
+    if (seeded || !profileData?.org) return;
+    setOrgName(profileData.org.name ?? '');
+    setOrgDescription(profileData.org.description ?? '');
+    setWebsite(profileData.org.website ?? '');
+    setSeeded(true);
+  }, [profileData, seeded]);
+
+  const saveProfile = useMutation({
+    mutationFn: () =>
+      updateOrganization(organizationId!, {
+        name: orgName.trim(),
+        description: orgDescription.trim(),
+        website: website.trim(),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['org'] });
+      success('Organisation details saved');
+    },
+    onError: (err) =>
+      showError('Could not save the details', err instanceof Error ? err.message : undefined),
+  });
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
 
   return (
@@ -133,9 +183,12 @@ export default function OrgSettingsPage() {
                     </Select>
                   </div>
                 </div>
-                <Button>
+                <Button
+                  disabled={!organizationId || saveProfile.isPending}
+                  onClick={() => saveProfile.mutate()}
+                >
                   <Save className="mr-2 icon-sm" aria-hidden="true" />
-                  Save Changes
+                  {saveProfile.isPending ? 'Saving…' : 'Save Changes'}
                 </Button>
               </CardContent>
             </Card>
@@ -190,7 +243,13 @@ export default function OrgSettingsPage() {
                     Set up a custom domain for your organization's portal
                   </p>
                 </div>
-                <Button>
+                {/*
+                  * Branding has no field on the organisation model — colours
+                  * and logos live on `Tenant`, not here — so this stays
+                  * disabled with the reason on it rather than looking live and
+                  * doing nothing.
+                  */}
+                <Button disabled title="Branding is configured under Tenant settings">
                   <Save className="mr-2 icon-sm" aria-hidden="true" />
                   Save Branding
                 </Button>

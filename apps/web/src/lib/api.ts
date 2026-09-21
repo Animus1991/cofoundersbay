@@ -4729,6 +4729,29 @@ export async function getMyPrograms(): Promise<{ programs: ProgramItem[] }> {
  * Updates a program. The controller has exposed PATCH all along; the web had
  * no client for it, which is why "Archive" in the program menu did nothing.
  */
+/**
+ * Updates the organisation. `PATCH /organizations/:id` has existed all along;
+ * the web had no client for it, which is why both Save buttons on
+ * /org/settings were decoration.
+ */
+export async function updateOrganization(
+  organizationId: string,
+  body: Partial<{
+    name: string;
+    description: string;
+    tagline: string;
+    website: string;
+    email: string;
+    location: string;
+    industry: string;
+  }>,
+): Promise<{ organization: OrgProfile }> {
+  return apiRequest(`/api/organizations/${organizationId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
 export type OrgMentorPoolItem = {
   id: string;
   userId: string;
