@@ -60,10 +60,19 @@ export class MarketplaceService {
     });
   }
 
-  async findAll(filters: MarketplaceServiceFilters = {}) {
-    const { category, search, featured, limit = 20, offset = 0 } = filters;
+  /**
+   * Public listings, or one provider's own.
+   *
+   * `createdById` has been on the model all along, and nothing filtered by it,
+   * so a provider had no way to see the services they had published —
+   * /provider/services listed a fixed array instead. With `createdById` set,
+   * inactive listings are included too: their owner is the one person who
+   * needs to see a service they have turned off.
+   */
+  async findAll(filters: MarketplaceServiceFilters & { createdById?: string } = {}) {
+    const { category, search, featured, limit = 20, offset = 0, createdById } = filters;
 
-    const where: any = { isActive: true };
+    const where: any = createdById ? { createdById } : { isActive: true };
     if (category) where.category = category;
     if (featured !== undefined) where.isFeatured = featured;
     if (search) {
@@ -87,6 +96,7 @@ export class MarketplaceService {
     return {
       services: services.map((s) => ({
         id: s.id,
+        isActive: s.isActive,
         title: s.title,
         description: s.description,
         category: s.category,

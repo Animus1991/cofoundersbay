@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -16,6 +16,8 @@ import {
   Star,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { listMyMarketplaceServices, type MarketplaceServiceItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,16 +74,26 @@ function ServiceCard({ service }: { service: Service }) {
                 <Clock className="icon-sm" />
                 {service.deliveryTime}
               </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Star className="icon-sm fill-status-warning text-status-warning" />
-                {service.rating} ({service.reviews})
-              </span>
+              {/*
+                * Shown only where there is a rating. The marketplace is a
+                * directory of listings, not a booking system, so a real
+                * listing has none — and "0 (0)" would read as nobody liking it
+                * rather than as nobody having rated it.
+                */}
+              {service.reviews > 0 ? (
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Star className="icon-sm fill-status-warning text-status-warning" />
+                  {service.rating} ({service.reviews})
+                </span>
+              ) : null}
             </div>
             <div className="flex items-center gap-4 mt-3">
               <Badge variant="outline">{service.category}</Badge>
-              <span className="text-xs text-muted-foreground">
-                {service.bookings} bookings
-              </span>
+              {service.bookings > 0 ? (
+                <span className="text-xs text-muted-foreground">
+                  {service.bookings} bookings
+                </span>
+              ) : null}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -119,6 +131,34 @@ function ServiceCard({ service }: { service: Service }) {
   );
 }
 
+/**
+ * The page's own row from the marketplace listing.
+ *
+ * `createdById` has been on `MarketplaceService` all along and nothing
+ * filtered by it, so a provider had no way to see what they had published.
+ * `/api/marketplace/mine` is that filter.
+ *
+ * Bookings, rating and review count have no source: the marketplace is a
+ * directory of listings, not a booking system. They read as absent rather
+ * than as zero, which would claim nobody had booked.
+ */
+function toPageService(item: MarketplaceServiceItem): Service {
+  return {
+    id: item.id,
+    name: item.title,
+    description: item.description ?? '',
+    category: item.category,
+    price: item.pricing ?? '—',
+    priceType: 'custom',
+    deliveryTime: '—',
+    isActive: item.isActive ?? true,
+    bookings: 0,
+    rating: 0,
+    reviews: 0,
+  };
+}
+
+/** Shown to a provider who has published nothing yet. */
 const MOCK_SERVICES: Service[] = [
     {
       id: '1',
@@ -178,7 +218,15 @@ export default function ProviderServicesPage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
-  const services = showDemoData ? MOCK_SERVICES : [];
+  const { data, isLoading } = useQuery({
+    queryKey: ['provider', 'services'],
+    queryFn: () => listMyMarketplaceServices({ limit: 50 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.services ?? []).map(toPageService), [data]);
+  const services = live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_SERVICES : [];
   const filteredServices = services.filter((s) =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );

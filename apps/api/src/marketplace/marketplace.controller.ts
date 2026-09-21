@@ -34,6 +34,21 @@ export class MarketplaceController {
     });
   }
 
+  /** The caller's own listings, including the ones they have deactivated. */
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  async findMine(
+    @Request() req: any,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.marketplaceService.findAll({
+      createdById: req.user.id,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      offset: offset ? parseInt(offset, 10) : undefined,
+    });
+  }
+
   @Get('categories')
   async getCategories() {
     const categories = await this.marketplaceService.getCategories();

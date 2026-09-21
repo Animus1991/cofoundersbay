@@ -2726,6 +2726,8 @@ export interface MarketplaceServiceItem {
   websiteUrl: string | null;
   tags: string[];
   isFeatured: boolean;
+  /** Present on a provider's own listings; a deactivated one is theirs to see. */
+  isActive?: boolean;
   createdAt: string;
 }
 
@@ -2744,6 +2746,19 @@ export async function listMarketplaceServices(params?: {
   if (params?.offset != null) sp.set('offset', String(params.offset));
   const url = `/api/marketplace${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url, undefined, { retryOn401: false });
+}
+
+/** The signed-in provider's own listings, deactivated ones included. */
+export async function listMyMarketplaceServices(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<{ services: MarketplaceServiceItem[]; total: number; hasMore: boolean }> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  return apiRequest(`/api/marketplace/mine${sp.toString() ? `?${sp}` : ''}`, undefined, {
+    retryOn401: false,
+  });
 }
 
 export async function getMarketplaceService(id: string): Promise<MarketplaceServiceItem> {
