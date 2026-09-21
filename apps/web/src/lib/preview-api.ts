@@ -1235,6 +1235,12 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         { label: 'Thu', value: 9 },
         { label: 'Fri', value: 12 },
       ],
+      // Counted from the demo world rather than stated, so the /discover
+      // header agrees with the directory and the groups list below it.
+      founders: PEOPLE.filter((p) => p.role === 'founder').length,
+      mentors: PEOPLE.filter((p) => p.role === 'mentor').length,
+      successfulMatches: CONNECTIONS.length,
+      communities: PREVIEW_GROUPS.length,
     };
   }
   if (pathname === '/api/dashboard/me') {

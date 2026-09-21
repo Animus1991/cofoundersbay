@@ -1207,6 +1207,12 @@ export type DashboardStats = {
   matchesThisWeek: number;
   trendPercent: number;
   chartData: { label: string; value: number }[];
+  /** Platform-wide counts for directory headers. Optional: an older API
+   *  omits them, and a header that cannot count shows a dash. */
+  founders?: number;
+  mentors?: number;
+  successfulMatches?: number;
+  communities?: number;
 };
 
 export type DashboardActivityItem = {

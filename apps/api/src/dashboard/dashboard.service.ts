@@ -7,6 +7,16 @@ export type DashboardStats = {
   matchesThisWeek: number;
   trendPercent: number;
   chartData: { label: string; value: number }[];
+  /*
+   * The directory header on /discover used to state "1,200+ active founders",
+   * "180+ expert mentors", "450+ successful matches" and "25+ communities" as
+   * constants in the page source. They are counted here instead, behind the
+   * same 60-second cache as the rest of this payload.
+   */
+  founders: number;
+  mentors: number;
+  successfulMatches: number;
+  communities: number;
 };
 
 export type ActivityItem = {
@@ -37,6 +47,10 @@ export class DashboardService {
         matchesThisWeek,
         matchesLastWeek,
         chartData,
+        founders,
+        mentors,
+        successfulMatches,
+        communities,
       ] = await Promise.all([
         this.prisma.profile.count(),
         this.prisma.connectionRequest.count({
@@ -55,6 +69,10 @@ export class DashboardService {
           },
         }),
         this.getChartData(),
+        this.prisma.profile.count({ where: { user: { role: 'founder' } } }),
+        this.prisma.profile.count({ where: { user: { role: 'mentor' } } }),
+        this.prisma.connectionRequest.count({ where: { status: 'accepted' } }),
+        this.prisma.group.count(),
       ]);
 
       const trendPercent =
@@ -67,6 +85,10 @@ export class DashboardService {
         matchesThisWeek,
         trendPercent,
         chartData,
+        founders,
+        mentors,
+        successfulMatches,
+        communities,
       };
     }, { ttl: 60, tags: ['dashboard'] });
   }
