@@ -61,9 +61,9 @@ export default function OrgSettingsPage() {
   const [seeded, setSeeded] = useState(false);
   useEffect(() => {
     if (seeded || !profileData?.org) return;
-    setOrgName(profileData.org.name ?? '');
-    setOrgDescription(profileData.org.description ?? '');
-    setWebsite(profileData.org.website ?? '');
+    setOrgName(profileData.org?.name ?? '');
+    setOrgDescription(profileData.org?.description ?? '');
+    setWebsite(profileData.org?.website ?? '');
     setSeeded(true);
   }, [profileData, seeded]);
 
