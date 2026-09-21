@@ -37,6 +37,8 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   readiness_tick_criterion: { en: 'Tick the team readiness criterion', el: 'Σημείωσε το κριτήριο ομάδας' },
   analytics_set_period: { en: 'Show my analytics for the last 30 days', el: 'Δείξε τα αναλυτικά του τελευταίου μήνα' },
   workspace_create: { en: 'Create a workspace called Helios', el: 'Δημιούργησε χώρο εργασίας «Ήλιος»' },
+  investor_track_startup: { en: 'Track NeuralFlow on my board', el: 'Παρακολούθησε τη NeuralFlow στον πίνακά μου' },
+  investor_move_stage: { en: 'Move PayStream to due diligence', el: 'Μετέφερε το PayStream σε δέουσα επιμέλεια' },
   canvas_command: { en: 'Add a note on the canvas titled Pricing', el: 'Πρόσθεσε σημείωση στον καμβά «Τιμή»' },
 };
 

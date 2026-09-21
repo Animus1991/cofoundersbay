@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   archiveWorkspace,
   assessReadiness,
+  createInvestorDeal,
+  deleteInvestorDeal,
+  getInvestorDeal,
+  updateInvestorDeal,
   withdrawConnectionRequest,
   getOrCreateDirectConversation,
   removeFromShortlist,
@@ -36,6 +40,10 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   updateReadinessCriterion: vi.fn(),
   archiveWorkspace: vi.fn(),
   withdrawConnectionRequest: vi.fn(),
+  createInvestorDeal: vi.fn(),
+  deleteInvestorDeal: vi.fn(),
+  getInvestorDeal: vi.fn(),
+  updateInvestorDeal: vi.fn(),
 }));
 // Not a showcase unless a test says so: the executors take a different path
 // in demo mode, and every case below states which one it is exercising.
@@ -58,6 +66,10 @@ const writeCriterion = vi.mocked(updateReadinessCriterion);
 const makeWorkspace = vi.mocked(createWorkspace);
 const archiveWorkspaceMock = vi.mocked(archiveWorkspace);
 const withdrawConnection = vi.mocked(withdrawConnectionRequest);
+const trackDeal = vi.mocked(createInvestorDeal);
+const untrackDeal = vi.mocked(deleteInvestorDeal);
+const readDeal = vi.mocked(getInvestorDeal);
+const patchDeal = vi.mocked(updateInvestorDeal);
 
 /** One dimension carrying a single criterion, in the state asked for. */
 function assessment(completed: boolean) {
@@ -107,6 +119,10 @@ beforeEach(() => {
   makeWorkspace.mockReset();
   archiveWorkspaceMock.mockReset();
   withdrawConnection.mockReset();
+  trackDeal.mockReset();
+  untrackDeal.mockReset();
+  readDeal.mockReset();
+  patchDeal.mockReset();
   localStorage.clear();
   sessionStorage.clear();
   demo.on = false;
@@ -485,6 +501,56 @@ describe('executing registry actions', () => {
     expect(localStorage.getItem('cfb_default_workspace')).toBe('ws-new');
   });
 
+  it('tracks a startup and keeps the id it created for the undo', async () => {
+    trackDeal.mockResolvedValue({ deal: { id: 'deal-9' } } as Awaited<ReturnType<typeof createInvestorDeal>>);
+
+    await expect(
+      executeAction('investor_track_startup', { name: '  NeuralFlow  ', industry: 'AI/ML' }),
+    ).resolves.toEqual({ ok: true, href: '/investor/watchlist', undo: { dealId: 'deal-9' } });
+
+    expect(trackDeal).toHaveBeenCalledExactlyOnceWith({
+      name: 'NeuralFlow',
+      industry: 'AI/ML',
+      notes: undefined,
+    });
+  });
+
+  it('reads where a deal was before moving it, so the undo has somewhere to go', async () => {
+    readDeal.mockResolvedValue({
+      deal: { id: 'deal-9', pipelineStage: 'reviewing' },
+    } as Awaited<ReturnType<typeof getInvestorDeal>>);
+
+    await expect(
+      executeAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'due_diligence' }),
+    ).resolves.toEqual({
+      ok: true,
+      href: '/investor/pipeline',
+      undo: { dealId: 'deal-9', fromStage: 'reviewing' },
+    });
+
+    expect(patchDeal).toHaveBeenCalledExactlyOnceWith('deal-9', { pipelineStage: 'due_diligence' });
+  });
+
+  it('refuses a move to the stage the deal is already in, before writing', async () => {
+    // Without this the undo would offer to "return" the deal to where it still
+    // is, and the board would record a stage change that never happened.
+    readDeal.mockResolvedValue({
+      deal: { id: 'deal-9', pipelineStage: 'meeting' },
+    } as Awaited<ReturnType<typeof getInvestorDeal>>);
+
+    await expect(
+      executeAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'meeting' }),
+    ).resolves.toEqual({ ok: false, error: 'That deal is already at that stage' });
+    expect(patchDeal).not.toHaveBeenCalled();
+  });
+
+  it('refuses an unknown pipeline stage before reaching the API', async () => {
+    await expect(
+      executeAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'nope' }),
+    ).resolves.toEqual({ ok: false, error: 'Unknown pipeline stage' });
+    expect(readDeal).not.toHaveBeenCalled();
+  });
+
   it('refuses a nameless or over-long workspace before reaching the API', async () => {
     await expect(executeAction('workspace_create', { name: '   ' })).resolves.toEqual({
       ok: false,
@@ -639,6 +705,31 @@ describe('undoing registry actions', () => {
       ok: true,
       href: '/analytics',
     });
+  });
+
+  it('removes the deal it created, by id', async () => {
+    await expect(
+      undoAction('investor_track_startup', { name: 'NeuralFlow' }, { dealId: 'deal-9' }),
+    ).resolves.toEqual({ ok: true, href: '/investor/watchlist' });
+    expect(untrackDeal).toHaveBeenCalledExactlyOnceWith('deal-9');
+  });
+
+  it('returns a moved deal to the stage it actually came from', async () => {
+    await expect(
+      undoAction(
+        'investor_move_stage',
+        { dealId: 'deal-9', pipelineStage: 'due_diligence' },
+        { dealId: 'deal-9', fromStage: 'reviewing' },
+      ),
+    ).resolves.toEqual({ ok: true, href: '/investor/pipeline' });
+    expect(patchDeal).toHaveBeenCalledExactlyOnceWith('deal-9', { pipelineStage: 'reviewing' });
+  });
+
+  it('refuses to undo a move whose previous stage it never saw', async () => {
+    await expect(
+      undoAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'invested' }),
+    ).resolves.toEqual({ ok: false, error: 'No previous stage to return to' });
+    expect(patchDeal).not.toHaveBeenCalled();
   });
 
   it('archives the workspace it created, by id, and clears the selection', async () => {

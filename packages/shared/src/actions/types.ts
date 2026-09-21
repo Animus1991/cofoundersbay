@@ -85,6 +85,7 @@ export type InvalidationTopic =
   | 'shortlist'
   | 'readiness'
   | 'workspaces'
+  | 'investor'
   | 'graph'
   | 'research';
 

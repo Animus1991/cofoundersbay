@@ -557,6 +557,102 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Create workspace', el: 'Δημιουργία χώρου' },
   },
   {
+    id: 'investor_track_startup',
+    kind: 'mutation',
+    label: { en: 'Track a startup', el: 'Παρακολούθηση startup' },
+    description: {
+      en: 'Put a startup on your investor board at the watching stage. The same row the pipeline groups and the portfolio totals once you invest.',
+      el: 'Βάζει ένα startup στον πίνακα επενδύσεων, στο στάδιο παρακολούθησης. Είναι η ίδια εγγραφή που ομαδοποιεί το pipeline και αθροίζει το χαρτοφυλάκιο μόλις επενδύσεις.',
+    },
+    params: [
+      {
+        name: 'name',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The startup to track, as it should appear on the board.',
+          el: 'Το startup προς παρακολούθηση, όπως θα εμφανίζεται στον πίνακα.',
+        },
+      },
+      {
+        name: 'industry',
+        type: 'string',
+        required: false,
+        description: { en: 'Its industry, when known.', el: 'Ο κλάδος του, αν είναι γνωστός.' },
+      },
+      {
+        name: 'notes',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'A private note on why it is worth watching.',
+          el: 'Ιδιωτική σημείωση για το γιατί αξίζει να παρακολουθείται.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['investor'],
+    reversal: {
+      // The executor hands back the id it created, so the undo removes that
+      // exact row rather than one that happens to share a name.
+      kind: 'full',
+      explanation: {
+        en: 'Removes the startup from your board again. Nothing is shared with the startup either way — a board is private to you.',
+        el: 'Αφαιρεί ξανά το startup από τον πίνακά σου. Τίποτα δεν κοινοποιείται στο startup — ο πίνακας είναι ιδιωτικός.',
+      },
+    },
+    auditSubject: { param: 'name', entityType: 'investor_deal' },
+    confirmLabel: { en: 'Track it', el: 'Παρακολούθηση' },
+  },
+  {
+    id: 'investor_move_stage',
+    kind: 'mutation',
+    label: { en: 'Move a deal to another stage', el: 'Μετακίνηση deal σε άλλο στάδιο' },
+    description: {
+      en: 'Move a startup along your pipeline — to reviewing, a meeting, due diligence, negotiating, invested or passed.',
+      el: 'Μετακινεί ένα startup στο pipeline — σε εξέταση, συνάντηση, δέουσα επιμέλεια, διαπραγμάτευση, επένδυση ή απόρριψη.',
+    },
+    params: [
+      {
+        name: 'dealId',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Id of the deal to move. Must come from a prior read of the board.',
+          el: 'Το id του deal. Πρέπει να προέρχεται από προηγούμενη ανάγνωση του πίνακα.',
+        },
+      },
+      {
+        name: 'pipelineStage',
+        type: 'string',
+        required: true,
+        enumValues: [
+          'discovered',
+          'reviewing',
+          'meeting',
+          'due_diligence',
+          'negotiating',
+          'invested',
+          'passed',
+        ],
+        description: { en: 'The stage to move it to.', el: 'Το στάδιο προορισμού.' },
+      },
+    ],
+    writes: true,
+    invalidates: ['investor'],
+    reversal: {
+      // The executor reads the stage it moved away from and hands it back, so
+      // the undo returns the deal to where it actually was.
+      kind: 'full',
+      explanation: {
+        en: 'Puts the deal back in the stage it came from. Reaching "invested" also stamps the date; that stamp is kept, so moving back and forth cannot rewrite when you invested.',
+        el: 'Επαναφέρει το deal στο στάδιο από το οποίο ήρθε. Η άφιξη στο «επένδυση» σφραγίζει και την ημερομηνία· η σφραγίδα διατηρείται, ώστε οι μετακινήσεις να μην ξαναγράφουν πότε επένδυσες.',
+      },
+    },
+    auditSubject: { param: 'dealId', entityType: 'investor_deal' },
+    confirmLabel: { en: 'Move it', el: 'Μετακίνηση' },
+  },
+  {
     id: 'canvas_command',
     kind: 'mutation',
     label: { en: 'Run a research canvas command', el: 'Εντολή στον καμβά έρευνας' },

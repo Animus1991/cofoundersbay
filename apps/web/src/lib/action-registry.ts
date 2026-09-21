@@ -17,7 +17,16 @@ import {
   updateReadinessCriterion,
 } from '@/lib/api';
 import { createWorkspace } from '@/lib/builder-api';
-import { archiveWorkspace, withdrawConnectionRequest } from '@/lib/api';
+import {
+  archiveWorkspace,
+  createInvestorDeal,
+  deleteInvestorDeal,
+  getInvestorDeal,
+  PIPELINE_STAGES,
+  type PipelineStage,
+  updateInvestorDeal,
+  withdrawConnectionRequest,
+} from '@/lib/api';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
@@ -244,6 +253,43 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     return { ok: true, href: '/readiness', undo: { workspaceId: workspace.id } };
   },
 
+  investor_track_startup: async (payload) => {
+    const name = requireString(payload, 'name').trim();
+    if (!name) return { ok: false, error: 'Missing startup name' };
+    const industry = requireString(payload, 'industry').trim() || undefined;
+    const notes = requireString(payload, 'notes').trim() || undefined;
+
+    const created = await createInvestorDeal({ name, industry, notes });
+    const dealId = created?.deal?.id;
+    return dealId
+      ? { ok: true, href: '/investor/watchlist', undo: { dealId } }
+      : { ok: true, href: '/investor/watchlist' };
+  },
+
+  investor_move_stage: async (payload) => {
+    const dealId = requireString(payload, 'dealId');
+    if (!dealId) return { ok: false, error: 'Missing deal' };
+    const pipelineStage = requireString(payload, 'pipelineStage');
+    if (!PIPELINE_STAGES.includes(pipelineStage as PipelineStage)) {
+      return { ok: false, error: 'Unknown pipeline stage' };
+    }
+
+    // Read first so the undo knows where it came from. The payload says where
+    // it was asked to go and never where it was.
+    const before = await getInvestorDeal(dealId);
+    const fromStage = before?.deal?.pipelineStage;
+    if (fromStage === pipelineStage) {
+      return { ok: false, error: 'That deal is already at that stage' };
+    }
+
+    await updateInvestorDeal(dealId, { pipelineStage: pipelineStage as PipelineStage });
+    return {
+      ok: true,
+      href: '/investor/pipeline',
+      ...(fromStage ? { undo: { dealId, fromStage } } : {}),
+    };
+  },
+
   canvas_command: async (payload) => {
     const op = requireString(payload, 'op');
     if (!isCanvasCommandOp(op)) return { ok: false, error: 'Unknown canvas command' };
@@ -307,6 +353,23 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!connectionId) return { ok: false, error: 'No request to withdraw' };
     await withdrawConnectionRequest(connectionId);
     return { ok: true, href: '/connections' };
+  },
+
+  /** Removes the row it created, by the id the executor handed back. */
+  investor_track_startup: async (_payload, context) => {
+    const dealId = requireString(context, 'dealId');
+    if (!dealId) return { ok: false, error: 'No deal to remove' };
+    await deleteInvestorDeal(dealId);
+    return { ok: true, href: '/investor/watchlist' };
+  },
+
+  /** Returns the deal to the stage it was actually in, not to a default. */
+  investor_move_stage: async (_payload, context) => {
+    const dealId = requireString(context, 'dealId');
+    const fromStage = requireString(context, 'fromStage');
+    if (!dealId || !fromStage) return { ok: false, error: 'No previous stage to return to' };
+    await updateInvestorDeal(dealId, { pipelineStage: fromStage as PipelineStage });
+    return { ok: true, href: '/investor/pipeline' };
   },
 
   workspace_create: async (_payload, context) => {

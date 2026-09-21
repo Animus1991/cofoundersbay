@@ -95,6 +95,8 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   // Both the canonical score and anything keyed under a workspace beneath it.
   readiness: [['readiness']],
   workspaces: [['builder'], ['workspaces']],
+  // One key covers the board, its summary and its activity: they are one row.
+  investor: [['investor']],
   research: [['research-boards'], ['research-board']],
 };
 
