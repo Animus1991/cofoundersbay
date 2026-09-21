@@ -591,6 +591,24 @@ export type SearchHit = {
   matchReasons?: string[];
   lookingFor?: string | null;
   availability?: string | null;
+  /** Profile creation, epoch seconds. Present on directory search hits. */
+  createdAt?: number;
+  /**
+   * Last activity, epoch seconds, or null when the person has never been seen.
+   * This is the only presence the schema records, so anything the UI says
+   * about "online" has to come from here — never from a guess.
+   */
+  lastSeenAt?: number | null;
+};
+
+/**
+ * Directory-level counts for the same filter the hits were drawn with, so a
+ * header can show them beside `total` without mixing two different scopes.
+ */
+export type ProfileSearchStats = {
+  onlineNow: number;
+  newThisWeek: number;
+  mentors: number;
 };
 
 export async function searchProfiles(params: {
@@ -606,7 +624,7 @@ export async function searchProfiles(params: {
   sortBy?: 'relevance' | 'recent' | 'active';
   limit?: number;
   offset?: number;
-}): Promise<{ hits: SearchHit[]; total: number }> {
+}): Promise<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats }> {
   const sp = new URLSearchParams();
   if (params.q) sp.set('q', params.q);
   if (params.roles?.length) sp.set('roles', params.roles.join(','));
@@ -620,7 +638,7 @@ export async function searchProfiles(params: {
   if (params.sortBy) sp.set('sortBy', params.sortBy);
   if (params.limit != null) sp.set('limit', String(params.limit));
   if (params.offset != null) sp.set('offset', String(params.offset));
-  return apiRequest<{ hits: SearchHit[]; total: number }>(`/api/search/profiles?${sp}`);
+  return apiRequest<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats }>(`/api/search/profiles?${sp}`);
 }
 
 export async function getRecommendations(params?: { role?: string; limit?: number }): Promise<{ suggestions: SearchHit[] }> {
@@ -3005,6 +3023,33 @@ export async function getMatchScore(targetUserId: string): Promise<{
   reasons: string[];
 }> {
   return apiRequest(`/api/recommendations/score/${targetUserId}`);
+}
+
+/**
+ * One axis of a real compatibility breakdown, as the matching engine scores it.
+ * `key` is stable; `label` is the engine's own English wording.
+ */
+export type MatchBreakdownAxis = { key: string; label: string; score: number; color: string };
+
+/**
+ * The engine's full read on two people — the same computation that ranks
+ * recommendations, not a re-derivation of one number.
+ *
+ * `confidence` matters as much as `score`: a thin profile produces a
+ * confident-looking percentage from very little evidence, and the UI should
+ * be able to say so.
+ */
+export type MatchBreakdown = {
+  overall: { score: number; confidence: number };
+  breakdown: MatchBreakdownAxis[];
+  badges?: string[];
+  sharedStrengths?: string[];
+  frictionPoints?: string[];
+  reasons?: string[];
+};
+
+export async function getMatchBreakdown(targetUserId: string): Promise<MatchBreakdown> {
+  return apiRequest(`/api/recommendations/vs/${targetUserId}`);
 }
 
 export async function submitMatchFeedback(

@@ -29,7 +29,14 @@ import { formatDistanceToNow } from 'date-fns';
 
 const emptySubscribe = () => () => {};
 
-function useHydrated(): boolean {
+/**
+ * `false` on the server and through hydration, `true` one frame later.
+ *
+ * Exported so anything else that has to read the clock during render uses the
+ * same primitive rather than inventing a second one: a presence dot derived
+ * from `lastSeenAt`, for instance, is the same hazard as a relative timestamp.
+ */
+export function useHydrated(): boolean {
   return useSyncExternalStore(
     emptySubscribe,
     () => true,

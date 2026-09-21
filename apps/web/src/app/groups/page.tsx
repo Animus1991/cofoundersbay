@@ -292,7 +292,7 @@ export default function GroupsPage() {
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
-          { labelEn: 'Total Communities', labelEl: 'Συνολικές κοινότητες', value: totalGroups || '5+', Icon: Users, tone: STATUS.accent },
+          { labelEn: 'Total Communities', labelEl: 'Συνολικές κοινότητες', value: totalGroups, Icon: Users, tone: STATUS.accent },
           { labelEn: 'Joined', labelEl: 'Συμμετοχές', value: myGroupsCount, Icon: CheckCircle2, tone: STATUS.success },
           { labelEn: 'Active Now', labelEl: 'Ενεργές τώρα', value: discoverGroups.filter((g) => g.postCount > 0).length, Icon: Zap, tone: STATUS.warning },
         ].map((s) => {

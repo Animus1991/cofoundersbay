@@ -126,11 +126,25 @@ export class SearchService {
           ? ({ updatedAt: 'desc' } as const)
           : ({ updatedAt: 'desc' } as const);
 
-    const [profiles, total] = await Promise.all([
+    /*
+     * The directory header shows "online now" and "new this week" next to the
+     * total. Those have to be counted over the same `where` as the results,
+     * not over the page of hits that happens to be loaded: a figure scoped to
+     * 20 rows sitting beside a figure scoped to the whole directory reads as
+     * one claim and is two.
+     *
+     * "Online" is a five-minute window on `lastSeenAt`, which is the same
+     * signal the admin dashboard counts and the only presence the schema
+     * records.
+     */
+    const onlineSince = new Date(Date.now() - 5 * 60 * 1000);
+    const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [profiles, total, onlineNow, newThisWeek, roleGroups] = await Promise.all([
       this.prisma.profile.findMany({
         where,
         include: {
-          user: { select: { id: true, role: true } },
+          user: { select: { id: true, role: true, lastSeenAt: true } },
           skills: { include: { skill: true } },
         },
         orderBy,
@@ -138,6 +152,17 @@ export class SearchService {
         skip: offset,
       }),
       this.prisma.profile.count({ where }),
+      this.prisma.profile.count({
+        where: { AND: [where, { user: { lastSeenAt: { gte: onlineSince } } }] },
+      }),
+      this.prisma.profile.count({
+        where: { AND: [where, { createdAt: { gte: weekStart } }] },
+      }),
+      this.prisma.profile.groupBy({
+        by: ['userId'],
+        where: { AND: [where, { user: { role: 'mentor' } }] },
+        _count: { userId: true },
+      }),
     ]);
 
     const hits = profiles.map((p) => ({
@@ -155,9 +180,14 @@ export class SearchService {
       skillSlugs: p.skills.map((s: { skill: { slug: string } }) => s.skill.slug),
       createdAt: Math.floor(p.createdAt.getTime() / 1000),
       updatedAt: Math.floor(p.updatedAt.getTime() / 1000),
+      lastSeenAt: p.user.lastSeenAt ? Math.floor(p.user.lastSeenAt.getTime() / 1000) : null,
     }));
 
-    return { hits, total };
+    return {
+      hits,
+      total,
+      stats: { onlineNow, newThisWeek, mentors: roleGroups.length },
+    };
   }
 
   /**

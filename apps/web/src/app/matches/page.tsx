@@ -11,7 +11,7 @@ import {
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2, CheckSquare,
 } from 'lucide-react';
-import { getRecommendations, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -42,24 +42,38 @@ const MatchCompatibilityChart = dynamic(
 
 type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
 
-function buildDimensions(score: number) {
-  const clamp = (v: number) => Math.max(0, Math.min(100, v));
-  return [
-    { subject: 'Skills',   value: clamp(score + Math.round(score * 0.08)),  fullMark: 100 },
-    { subject: 'Stage',    value: clamp(score - Math.round(score * 0.05)),  fullMark: 100 },
-    { subject: 'Industry', value: clamp(score + Math.round(score * 0.12)),  fullMark: 100 },
-    { subject: 'Location', value: clamp(score - Math.round(score * 0.15)),  fullMark: 100 },
-    { subject: 'Values',   value: clamp(score + Math.round(score * 0.04)),  fullMark: 100 },
-  ];
-}
+/*
+ * The five axes on this radar used to be one score nudged by fixed percentages
+ * — +8% became "Skills", -15% became "Location" — which drew a shape that
+ * looked measured and was arithmetic on a single number. The matching engine
+ * already scores six real dimensions (`GET /api/recommendations/vs/:id`, the
+ * same computation that ranks these very cards), so the chart reads those. If
+ * the breakdown cannot be fetched the chart is absent, not invented.
+ */
 
 function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; open: boolean; onClose: () => void }) {
+  const { data: detail, isLoading: detailLoading } = useQuery({
+    queryKey: ['match-breakdown', hit?.userId],
+    queryFn: () => getMatchBreakdown(hit!.userId),
+    enabled: open && Boolean(hit?.userId),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
   if (!hit) return null;
-  const score = hit.matchScore ?? 50;
-  const dims = buildDimensions(score);
-  const reasons: MatchReason[] = hit.matchReasons?.length
-    ? hit.matchReasons.map((t) => ({ type: 'skills' as const, text: t, score: 0 }))
-    : buildMatchReasonsFromScore(score);
+
+  // The engine's own overall score when it answered; the list score otherwise.
+  const score = detail?.overall.score ?? hit.matchScore ?? 50;
+  const confidence = detail?.overall.confidence ?? null;
+  const dims = detail?.breakdown.map((axis) => ({
+    subject: axis.label,
+    value: axis.score,
+    fullMark: 100,
+  })) ?? null;
+  const reasonTexts = detail?.reasons?.length ? detail.reasons : (hit.matchReasons ?? []);
+  const reasons: MatchReason[] = reasonTexts.map((t) => ({ type: 'skills' as const, text: t, score: 0 }));
+  const strengths = detail?.sharedStrengths ?? [];
+  const frictions = detail?.frictionPoints ?? [];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -77,10 +91,47 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <p className="text-xs text-muted-foreground mt-0.5">
               <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
             </p>
+            {confidence != null && (
+              <p className="mt-1 text-2xs tabular-nums text-muted-foreground/80">
+                {confidence}%{' '}
+                <BilingualText en={matchesEn('match_confidence')} el={matchesEl('match_confidence')} compact />
+              </p>
+            )}
           </div>
         </div>
 
-        <MatchCompatibilityChart dims={dims} />
+        {dims ? (
+          <MatchCompatibilityChart dims={dims} />
+        ) : (
+          <p className="rounded-lg border border-dashed border-border/50 p-3 text-center text-xs text-muted-foreground">
+            <BilingualText
+              en={detailLoading ? matchesEn('breakdown_loading') : matchesEn('breakdown_unavailable')}
+              el={detailLoading ? matchesEl('breakdown_loading') : matchesEl('breakdown_unavailable')}
+            />
+          </p>
+        )}
+
+        {strengths.length > 0 && (
+          <div className="rounded-lg border border-border/40 bg-status-success-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
+            </p>
+            {strengths.map((t) => (
+              <p key={t} className="text-sm text-foreground">{t}</p>
+            ))}
+          </div>
+        )}
+
+        {frictions.length > 0 && (
+          <div className="rounded-lg border border-border/40 bg-status-warning-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
+            </p>
+            {frictions.map((t) => (
+              <p key={t} className="text-sm text-foreground">{t}</p>
+            ))}
+          </div>
+        )}
 
         {reasons.length > 0 && (
           <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
@@ -98,16 +149,6 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       </DialogContent>
     </Dialog>
   );
-}
-
-function buildMatchReasonsFromScore(score: number): MatchReason[] {
-  const reasons: MatchReason[] = [];
-  if (score >= 30) reasons.push({ type: 'skills', text: 'Complementary role & skills', score: 30 });
-  if (score >= 45) reasons.push({ type: 'stage', text: 'Matching startup stage', score: Math.min(20, score - 30) });
-  if (score >= 65) reasons.push({ type: 'industry', text: 'Similar industry focus', score: 15 });
-  if (score >= 80) reasons.push({ type: 'location', text: 'Same location', score: 10 });
-  if (reasons.length === 0) reasons.push({ type: 'skills', text: 'Potential match', score });
-  return reasons;
 }
 
 function hitToProfile(hit: SearchHit): ProfileCardData {
@@ -1068,7 +1109,7 @@ export default function MatchesPage() {
                     const score = hit.matchScore ?? 50;
                     const matchReasons: MatchReason[] = hit.matchReasons?.length
                       ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : buildMatchReasonsFromScore(score);
+                      : [];
                     return (
                       <MatchCard
                         key={hit.id}
@@ -1109,7 +1150,7 @@ export default function MatchesPage() {
                     const score = hit.matchScore ?? 50;
                     const matchReasons: MatchReason[] = hit.matchReasons?.length
                       ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : buildMatchReasonsFromScore(score);
+                      : [];
                     return (
                       <MatchListRow
                         key={hit.id}
@@ -1146,7 +1187,7 @@ export default function MatchesPage() {
         const score = previewTarget.matchScore ?? 50;
         const previewReasons: MatchReason[] = previewTarget.matchReasons?.length
           ? previewTarget.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-          : buildMatchReasonsFromScore(score);
+          : [];
         const previewProfile = hitToProfile(previewTarget);
         return (
           <MatchPreviewPanel

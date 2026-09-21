@@ -293,6 +293,8 @@ const PEOPLE = [
     matchReasons: ['Complementary skills', 'Same stage'],
     lookingFor: 'technical cofounder',
     availability: 'full-time',
+    lastSeenSecondsAgo: 120,
+    joinedAt: '2026-02-11T09:00:00.000Z',
   },
   {
     id: 'hit-marcus',
@@ -310,6 +312,8 @@ const PEOPLE = [
     matchReasons: ['Skills overlap', 'Active this week'],
     lookingFor: 'business cofounder',
     availability: 'full-time',
+    lastSeenSecondsAgo: 240,
+    joinedAt: '2026-06-03T09:00:00.000Z',
   },
   {
     id: 'hit-sarah',
@@ -327,6 +331,8 @@ const PEOPLE = [
     matchReasons: ['Mentor match'],
     lookingFor: 'mentees',
     availability: 'part-time',
+    lastSeenSecondsAgo: 9000,
+    joinedAt: '2025-11-22T09:00:00.000Z',
   },
   {
     id: 'hit-nikos',
@@ -344,6 +350,8 @@ const PEOPLE = [
     matchReasons: ['Stage fit'],
     lookingFor: 'deal flow',
     availability: 'flexible',
+    lastSeenSecondsAgo: null,
+    joinedAt: '2026-09-01T09:00:00.000Z',
   },
 ];
 
@@ -595,6 +603,175 @@ const PREVIEW_MILESTONES: PreviewMilestone[] = [
 
 previewMilestones = PREVIEW_MILESTONES;
 
+/*
+ * Showcase areas. /events, /jobs, /groups and /opportunities used to fall
+ * through to `kitchenSink()`, which answers with a truthy grab-bag: the pages
+ * rendered empty, and their stat tiles fell back to invented copy ("40+").
+ * These fixtures give each area a real, internally consistent world — the same
+ * cast as the rest of the demo — so every count on screen is counted from the
+ * rows below it.
+ */
+const PREVIEW_EVENT_HOSTS = {
+  elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, role: 'founder' },
+  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, role: 'investor' },
+  sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, role: 'mentor' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, role: 'founder' },
+} as const;
+
+type PreviewEvent = {
+  id: string;
+  title: string;
+  description: string;
+  eventType: 'meetup' | 'webinar' | 'workshop' | 'demo_day' | 'networking' | 'other';
+  mode: 'online' | 'in-person' | 'hybrid';
+  startAt: string;
+  endAt: string;
+  timezone: string | null;
+  location: string | null;
+  isOnline: boolean;
+  meetingUrl: string | null;
+  capacity: number | null;
+  coverImageUrl: string | null;
+  attendeesCount: number;
+  host: { id: string; displayName: string; avatarUrl: string | null; role: string };
+  viewerRsvp: 'going' | 'interested' | 'not_going' | null;
+  isFeatured?: boolean;
+};
+
+const PREVIEW_EVENTS: PreviewEvent[] = [
+  {
+    id: 'ev-demo-day',
+    title: 'Athens Demo Day — Seed Cohort 12',
+    description: 'Twelve teams pitch to a room of pre-seed and seed investors, eight minutes each, followed by open networking.',
+    eventType: 'demo_day', mode: 'in-person',
+    startAt: '2026-09-11T16:00:00.000Z', endAt: '2026-09-11T18:30:00.000Z',
+    timezone: 'Europe/Athens', location: 'Stegi, Athens', isOnline: false, meetingUrl: null,
+    capacity: 120, coverImageUrl: null, attendeesCount: 84,
+    host: PREVIEW_EVENT_HOSTS.elena, viewerRsvp: 'going', isFeatured: true,
+  },
+  {
+    id: 'ev-office-hours',
+    title: 'Fundraising Office Hours',
+    description: 'Bring one slide and one question. Marcus reviews narrative, traction framing and the ask, live.',
+    eventType: 'webinar', mode: 'online',
+    startAt: '2026-09-09T15:00:00.000Z', endAt: '2026-09-09T16:00:00.000Z',
+    timezone: 'Europe/Athens', location: null, isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/office-hours',
+    capacity: 100, coverImageUrl: null, attendeesCount: 47,
+    host: PREVIEW_EVENT_HOSTS.marcus, viewerRsvp: 'interested',
+  },
+  {
+    id: 'ev-discovery',
+    title: 'Product Discovery Workshop',
+    description: 'A working session on interview design, signal vs. noise in early feedback, and deciding what not to build.',
+    eventType: 'workshop', mode: 'hybrid',
+    startAt: '2026-09-17T09:00:00.000Z', endAt: '2026-09-17T12:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Impact Hub, Athens', isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/discovery',
+    capacity: 40, coverImageUrl: null, attendeesCount: 32,
+    host: PREVIEW_EVENT_HOSTS.sarah, viewerRsvp: null,
+  },
+  {
+    id: 'ev-coffee',
+    title: 'Founder Coffee — Thessaloniki',
+    description: 'An informal morning meetup. No pitches, no agenda: whoever shows up sets the table.',
+    eventType: 'networking', mode: 'in-person',
+    startAt: '2026-09-24T07:30:00.000Z', endAt: '2026-09-24T09:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Aristotelous Square, Thessaloniki', isOnline: false, meetingUrl: null,
+    capacity: 25, coverImageUrl: null, attendeesCount: 18,
+    host: PREVIEW_EVENT_HOSTS.nikos, viewerRsvp: null,
+  },
+  {
+    id: 'ev-ai-features',
+    title: 'Shipping AI Features Without a Data Team',
+    description: 'What a two-person team can actually put in production: evaluation, cost control and the failure modes users forgive.',
+    eventType: 'webinar', mode: 'online',
+    startAt: '2026-10-01T17:00:00.000Z', endAt: '2026-10-01T18:00:00.000Z',
+    timezone: 'Europe/Athens', location: null, isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/ai-features',
+    capacity: null, coverImageUrl: null, attendeesCount: 156,
+    host: PREVIEW_EVENT_HOSTS.marcus, viewerRsvp: 'going',
+  },
+  {
+    id: 'ev-saas-metrics',
+    title: 'SaaS Metrics Meetup #14',
+    description: 'Three founders open their dashboards and explain the number that changed their roadmap this quarter.',
+    eventType: 'meetup', mode: 'in-person',
+    startAt: '2026-10-08T17:30:00.000Z', endAt: '2026-10-08T20:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Found.ation, Athens', isOnline: false, meetingUrl: null,
+    capacity: 80, coverImageUrl: null, attendeesCount: 63,
+    host: PREVIEW_EVENT_HOSTS.elena, viewerRsvp: null,
+  },
+  {
+    id: 'ev-pitch-clinic',
+    title: 'Pitch Clinic — Seed Narrative',
+    description: 'Recorded session: rebuilding a deck around one claim, with two teams workshopped end to end.',
+    eventType: 'workshop', mode: 'online',
+    startAt: '2026-08-21T16:00:00.000Z', endAt: '2026-08-21T17:30:00.000Z',
+    timezone: 'Europe/Athens', location: null, isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/pitch-clinic',
+    capacity: 60, coverImageUrl: null, attendeesCount: 54,
+    host: PREVIEW_EVENT_HOSTS.sarah, viewerRsvp: 'going',
+  },
+  {
+    id: 'ev-summer-mixer',
+    title: 'Summer Founders Mixer',
+    description: 'The July rooftop mixer — 91 founders, operators and angels from the Athens ecosystem.',
+    eventType: 'networking', mode: 'in-person',
+    startAt: '2026-07-10T18:00:00.000Z', endAt: '2026-07-10T21:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Six d.o.g.s, Athens', isOnline: false, meetingUrl: null,
+    capacity: 120, coverImageUrl: null, attendeesCount: 91,
+    host: PREVIEW_EVENT_HOSTS.nikos, viewerRsvp: null,
+  },
+];
+
+const PREVIEW_JOBS = [
+  { id: 'job-founding-eng', title: 'Founding Engineer', role: 'engineering', location: 'Athens, Greece', isRemote: false, type: 'full-time', isFeatured: true, creator: { displayName: 'Elena Papadopoulos', avatarUrl: null } },
+  { id: 'job-growth-lead', title: 'Growth Lead', role: 'marketing', location: 'Remote — EU time zones', isRemote: true, type: 'full-time', creator: { displayName: 'Marcus Chen', avatarUrl: null } },
+  { id: 'job-product-designer', title: 'Product Designer (Founding)', role: 'design', location: 'Athens, Greece', isRemote: false, type: 'full-time', creator: { displayName: 'Elena Papadopoulos', avatarUrl: null } },
+  { id: 'job-data-contract', title: 'Data Scientist — 3-month contract', role: 'data', location: 'Remote', isRemote: true, type: 'contract', creator: { displayName: 'Dr. Sarah Kim', avatarUrl: null } },
+  { id: 'job-bizdev-see', title: 'Business Development, Southeast Europe', role: 'sales', location: 'Thessaloniki, Greece', isRemote: false, type: 'full-time', creator: { displayName: 'Nikos Andreou', avatarUrl: null } },
+  { id: 'job-backend-intern', title: 'Backend Engineering Intern', role: 'engineering', location: 'Remote', isRemote: true, type: 'internship', creator: { displayName: 'Marcus Chen', avatarUrl: null } },
+];
+
+type PreviewGroup = {
+  id: string; name: string; slug: string; description: string | null;
+  privacy: 'public' | 'private' | 'secret'; category: string | null; tags: string[];
+  coverImageUrl: string | null; avatarUrl: string | null;
+  rules: { title: string; description: string }[];
+  memberCount: number; postCount: number; eventCount: number;
+  createdAt: string; updatedAt: string;
+  createdBy: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; role: string } | null;
+  isMember: boolean; memberRole: 'owner' | 'admin' | 'moderator' | 'member' | null;
+};
+
+const PREVIEW_GROUP_RULES = [
+  { title: 'Keep it specific', description: 'Ask about a real decision you are facing, not a hypothetical.' },
+  { title: 'No cold pitching', description: 'Introductions are welcome in the monthly thread, not in every post.' },
+];
+
+const PREVIEW_GROUP_FOUNDERS = {
+  elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor', role: 'founder' },
+  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, headline: 'Partner at Northbound', role: 'investor' },
+  sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'ML lead and advisor', role: 'mentor' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Founder at Meltemi', role: 'founder' },
+};
+
+const PREVIEW_GROUPS: PreviewGroup[] = [
+  { id: 'grp-athens-founders', name: 'Athens Founders', slug: 'athens-founders', description: 'The local room: hiring, landlords, accountants, and who is actually raising.', privacy: 'public', category: 'Local', tags: ['athens', 'community'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 428, postCount: 76, eventCount: 6, createdAt: '2025-03-14T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.elena, isMember: true, memberRole: 'member' },
+  { id: 'grp-saas-metrics', name: 'SaaS Metrics Circle', slug: 'saas-metrics-circle', description: 'Monthly benchmark swaps. Bring your numbers, leave with context.', privacy: 'public', category: 'Industry', tags: ['saas', 'metrics'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 312, postCount: 54, eventCount: 3, createdAt: '2025-06-02T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.marcus, isMember: true, memberRole: 'moderator' },
+  { id: 'grp-ai-builders', name: 'AI Builders EU', slug: 'ai-builders-eu', description: 'Practitioners shipping AI features in European products — evaluation, cost, and regulation.', privacy: 'public', category: 'Technology', tags: ['ai', 'engineering'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 1204, postCount: 180, eventCount: 9, createdAt: '2024-11-20T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.sarah, isMember: false, memberRole: null },
+  { id: 'grp-preseed-fundraising', name: 'Pre-Seed Fundraising', slug: 'pre-seed-fundraising', description: 'Term sheets, SAFEs and cap tables, read by people who have signed them.', privacy: 'private', category: 'Fundraising', tags: ['fundraising', 'legal'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 186, postCount: 41, eventCount: 2, createdAt: '2025-01-09T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.marcus, isMember: false, memberRole: null },
+  { id: 'grp-product-craft', name: 'Product & Design Craft', slug: 'product-design-craft', description: 'Critique threads for real screens, with the constraint that made them that way.', privacy: 'public', category: 'Product', tags: ['product', 'design'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 254, postCount: 33, eventCount: 1, createdAt: '2025-04-18T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.elena, isMember: false, memberRole: null },
+  { id: 'grp-women-founders-gr', name: 'Women Founders Greece', slug: 'women-founders-greece', description: 'Peer support and introductions for women building companies in Greece.', privacy: 'public', category: 'Community', tags: ['community', 'greece'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 97, postCount: 12, eventCount: 4, createdAt: '2025-08-01T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.elena, isMember: false, memberRole: null },
+  { id: 'grp-b2b-sales', name: 'B2B Sales for Technical Founders', slug: 'b2b-sales-technical-founders', description: 'Just opened. The first discussion thread goes up after the kickoff call.', privacy: 'public', category: 'Sales', tags: ['sales', 'b2b'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 143, postCount: 0, eventCount: 0, createdAt: '2026-08-30T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.nikos, isMember: false, memberRole: null },
+];
+
+const PREVIEW_OPPORTUNITIES = [
+  { id: 'opp-technical-cofounder', title: 'Technical co-founder — vertical SaaS for logistics', description: 'Design partner signed, 14 interviews done, no engineer. Equity, not salary, until the pre-seed closes.', type: 'cofounder', company: 'Meltemi', location: 'Athens, Greece', isRemote: false, url: null, tags: ['cofounder', 'logistics', 'saas'], deadline: '2026-10-15T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-08-26T09:00:00.000Z' },
+  { id: 'opp-fractional-cto', title: 'Fractional CTO — two days a week', description: 'Six-month engagement to take an existing prototype to production and hire the first two engineers.', type: 'job', company: 'Harbor', location: 'Remote — EU time zones', isRemote: true, url: null, tags: ['engineering', 'leadership'], deadline: '2026-09-30T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-29T09:00:00.000Z' },
+  { id: 'opp-angel-syndicate', title: 'Angel syndicate — pre-seed allocation', description: 'Open allocation alongside a lead. Greek and Cypriot SaaS teams with a paying design partner.', type: 'investment', company: 'Northbound', location: 'Remote', isRemote: true, url: null, tags: ['fundraising', 'pre-seed'], deadline: '2026-11-01T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Marcus Chen', avatarUrl: null }, createdAt: '2026-09-01T09:00:00.000Z' },
+  { id: 'opp-design-partner', title: 'Design partner wanted — ops teams of 20 to 200', description: 'Free for six months in exchange for weekly feedback sessions and a public case study.', type: 'partnership', company: 'Harbor', location: 'Remote', isRemote: true, url: null, tags: ['partnership', 'b2b'], deadline: null, isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-18T09:00:00.000Z' },
+  { id: 'opp-mentor-ml', title: 'Mentorship — ML evaluation and cost control', description: 'Four sessions with a practitioner, for teams putting their first model in front of customers.', type: 'mentorship', company: null, location: 'Remote', isRemote: true, url: null, tags: ['ai', 'mentorship'], deadline: '2026-10-05T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Dr. Sarah Kim', avatarUrl: null }, createdAt: '2026-09-02T09:00:00.000Z' },
+  { id: 'opp-gtm-advisor', title: 'GTM advisor — Southeast Europe expansion', description: 'Advisory shares for someone who has sold B2B software into Greece, Romania and Bulgaria.', type: 'other', company: 'Meltemi', location: 'Thessaloniki, Greece', isRemote: false, url: null, tags: ['gtm', 'advisory'], deadline: null, isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-07-22T09:00:00.000Z' },
+];
+
 function pathnameOf(path: string) {
   return path.split('?')[0] ?? path;
 }
@@ -830,10 +1007,30 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
                   ? opportunities
                   : peopleHits;
 
+    /*
+     * Presence is a five-minute window on `lastSeenAt`, the same rule the API
+     * and the directory header use. The fixtures carry an age rather than a
+     * timestamp so the demo has someone online whenever it is opened, and the
+     * header counts are derived from the very rows below them — the directory
+     * cannot show "2 online" over a list where nobody has a dot.
+     */
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const directoryHits = people.map((p) => ({
+      ...p,
+      createdAt: Math.floor(new Date(p.joinedAt).getTime() / 1000),
+      lastSeenAt: p.lastSeenSecondsAgo == null ? null : nowSeconds - p.lastSeenSecondsAgo,
+    }));
+
     return {
-      hits: people,
+      hits: directoryHits,
       results,
       total: results.length,
+      stats: {
+        onlineNow: directoryHits.filter((p) => p.lastSeenAt != null && nowSeconds - p.lastSeenAt <= 300).length,
+        newThisWeek: people.filter((p) => p.joinedAt >= weekAgo).length,
+        mentors: people.filter((p) => p.role === 'mentor').length,
+      },
       categories: {
         people: peopleHits.length,
         jobs: jobs.length,
@@ -896,6 +1093,48 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         avatarUrl: target.avatarUrl ?? undefined,
         location: target.location,
       },
+    };
+  }
+  /*
+   * The compatibility modal reads the engine's per-dimension breakdown. In the
+   * demo there is no engine, so the axes are computed here from the very
+   * fields the two profiles show — skills held in common, industry, city — and
+   * never from the overall score. A breakdown derived from its own summary is
+   * the thing this endpoint exists to replace.
+   */
+  const vsMatch = pathname.match(/^\/api\/recommendations\/vs\/([^/]+)$/);
+  if (vsMatch) {
+    const target = PEOPLE.find((p) => p.userId === vsMatch[1] || p.id === vsMatch[1]);
+    if (!target) return { error: 'Not found' };
+    const mySkills = ME_PROFILE.profile.skills.map((sk) => sk.skillName.toLowerCase());
+    const theirSkills = target.skillNames.map((n) => n.toLowerCase());
+    const shared = theirSkills.filter((n) => mySkills.includes(n));
+    const pct = (part: number, whole: number) => (whole === 0 ? 0 : Math.round((part / whole) * 100));
+    const sameCity = target.location.split(',')[0]?.trim() === ME_PROFILE.profile.location.split(',')[0]?.trim();
+    const sameCountry = target.location.split(',').pop()?.trim() === ME_PROFILE.profile.location.split(',').pop()?.trim();
+    // A co-founder search rewards complement, not similarity: the skills axis
+    // reads what they bring that the viewer does not.
+    const complement = pct(theirSkills.length - shared.length, Math.max(theirSkills.length, 1));
+    const axes = [
+      { key: 'role', label: 'Role Complementarity', score: target.role === ME_PROFILE.profile.role ? 45 : 88, color: '#4ADE80' },
+      { key: 'skills', label: 'Skills & Expertise', score: complement, color: '#22D3EE' },
+      { key: 'semantic', label: 'Vision & Goals', score: target.matchScore ?? 50, color: '#F472B6' },
+      { key: 'industry', label: 'Industry Alignment', score: target.industries.includes('SaaS') ? 82 : 40, color: '#FB923C' },
+      { key: 'location', label: 'Location Fit', score: sameCity ? 100 : sameCountry ? 70 : 35, color: '#A78BFA' },
+      { key: 'behavioral', label: 'Platform Activity', score: target.lastSeenSecondsAgo == null ? 30 : 85, color: '#34D399' },
+    ];
+    return {
+      overall: {
+        score: Math.round(axes.reduce((sum, ax) => sum + ax.score, 0) / axes.length),
+        confidence: Math.min(95, 40 + theirSkills.length * 10),
+      },
+      breakdown: axes,
+      badges: axes.filter((ax) => ax.score >= 80).map((ax) => ax.label).slice(0, 3),
+      sharedStrengths: shared.length
+        ? [`Both of you work on ${shared.join(' and ')}.`]
+        : [],
+      frictionPoints: sameCity ? [] : [`Different cities — ${target.location} and ${ME_PROFILE.profile.location}.`],
+      reasons: target.matchReasons,
     };
   }
   if (pathname.startsWith('/api/recommendations') || pathname.startsWith('/api/matching/recommendations')) {
@@ -1802,6 +2041,114 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
   if (pathname === '/api/analytics/weekly-summary') {
     return PREVIEW_ANALYTICS_OVERVIEW.weeklySummary;
+  }
+
+  /*
+   * Showcase areas. Each of these filters the fixtures the way the real
+   * endpoint filters rows, so the tabs, search boxes and chips on those pages
+   * do something — a control that always returns the same list reads as broken
+   * long before anyone checks whether a backend is attached.
+   */
+  if (pathname === '/api/events' || pathname.startsWith('/api/events?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const scope = params.get('scope') ?? 'upcoming';
+    const q = params.get('q')?.toLowerCase() ?? '';
+    const mode = params.get('mode');
+    const limit = Number(params.get('limit') ?? 48);
+    const startsAfterNow = (e: PreviewEvent) => e.startAt >= NOW;
+    const events = PREVIEW_EVENTS
+      .filter((e) => (
+        scope === 'past' ? !startsAfterNow(e)
+          : scope === 'mine' ? e.viewerRsvp != null
+            : startsAfterNow(e)
+      ))
+      .filter((e) => !mode || e.mode === mode)
+      .filter((e) => !q || `${e.title} ${e.description} ${e.location ?? ''} ${e.host.displayName}`.toLowerCase().includes(q))
+      // Upcoming reads forwards; past reads backwards, most recent first.
+      .sort((a, b) => (scope === 'past' ? b.startAt.localeCompare(a.startAt) : a.startAt.localeCompare(b.startAt)))
+      .slice(0, limit);
+    return { events };
+  }
+  if (pathname.startsWith('/api/events/') && pathname.endsWith('/rsvp')) {
+    const id = pathname.split('/')[3];
+    const status = typeof body.status === 'string' ? body.status : 'going';
+    return { ok: true, eventId: id, viewerRsvp: status === 'not_going' ? null : status };
+  }
+  if (pathname.startsWith('/api/events/')) {
+    const id = pathname.split('/')[3];
+    const event = PREVIEW_EVENTS.find((e) => e.id === id);
+    return event ? { event } : { event: PREVIEW_EVENTS[0] };
+  }
+
+  if (pathname === '/api/jobs' || pathname.startsWith('/api/jobs?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const limit = Number(params.get('limit') ?? 50);
+    return { jobs: PREVIEW_JOBS.slice(0, limit) };
+  }
+
+  if (pathname === '/api/groups/my') {
+    return {
+      groups: PREVIEW_GROUPS
+        .filter((g) => g.isMember)
+        .map((g) => ({ ...g, memberRole: g.memberRole ?? 'member', joinedAt: '2026-05-12T09:00:00.000Z' })),
+    };
+  }
+  if (pathname === '/api/groups' || pathname.startsWith('/api/groups?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const category = params.get('category');
+    const privacy = params.get('privacy');
+    const search = params.get('search')?.toLowerCase() ?? '';
+    const sort = params.get('sort') ?? 'popular';
+    const onlyMine = params.get('myGroups') === 'true';
+    const limit = Number(params.get('limit') ?? 30);
+    const offset = Number(params.get('offset') ?? 0);
+    const matched = PREVIEW_GROUPS
+      .filter((g) => !onlyMine || g.isMember)
+      .filter((g) => !category || g.category === category)
+      .filter((g) => !privacy || g.privacy === privacy)
+      .filter((g) => !search || `${g.name} ${g.description ?? ''} ${g.tags.join(' ')} ${g.category ?? ''}`.toLowerCase().includes(search))
+      .sort((a, b) => (
+        sort === 'recent' ? b.createdAt.localeCompare(a.createdAt)
+          // "Trending" is conversation per member, so a small, busy room can
+          // outrank a large quiet one — which is the whole point of the sort.
+          : sort === 'trending' ? (b.postCount / b.memberCount) - (a.postCount / a.memberCount)
+            : b.memberCount - a.memberCount
+      ));
+    const groups = matched.slice(offset, offset + limit);
+    return { groups, total: matched.length, hasMore: offset + groups.length < matched.length };
+  }
+  if (pathname.startsWith('/api/groups/') && (pathname.endsWith('/join') || pathname.endsWith('/leave'))) {
+    return { ok: true, groupId: pathname.split('/')[3], isMember: pathname.endsWith('/join') };
+  }
+  if (pathname.startsWith('/api/groups/')) {
+    const id = pathname.split('/')[3];
+    const group = PREVIEW_GROUPS.find((g) => g.id === id || g.slug === id) ?? PREVIEW_GROUPS[0];
+    return { group: { ...group, members: [] } };
+  }
+
+  if (pathname === '/api/opportunities' || pathname.startsWith('/api/opportunities?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const type = params.get('type');
+    const isRemote = params.get('isRemote');
+    const search = params.get('search')?.toLowerCase() ?? '';
+    const limit = Number(params.get('limit') ?? 20);
+    const offset = Number(params.get('offset') ?? 0);
+    const matched = PREVIEW_OPPORTUNITIES
+      .filter((o) => !type || o.type === type)
+      .filter((o) => isRemote == null || o.isRemote === (isRemote === 'true'))
+      .filter((o) => !search || `${o.title} ${o.description ?? ''} ${o.company ?? ''} ${o.tags.join(' ')}`.toLowerCase().includes(search));
+    const opportunities = matched.slice(offset, offset + limit);
+    return { opportunities, total: matched.length, hasMore: offset + opportunities.length < matched.length };
+  }
+
+  /*
+   * The demo founder belongs to no organisation, so the tenant switcher should
+   * be absent rather than populated with an invented company. An empty list is
+   * the honest answer and the one the page already renders correctly; the
+   * generic fallback answered with a truthy object instead.
+   */
+  if (pathname === '/api/sso/memberships') {
+    return { memberships: [] };
   }
 
   if (method !== 'GET') {

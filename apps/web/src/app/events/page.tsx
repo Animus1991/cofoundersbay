@@ -124,9 +124,9 @@ export default function EventsPage() {
           is 145px and a bilingual label has about 80px to live in. */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
-          { labelEn: 'Total Events', labelEl: 'Συνολικές εκδηλώσεις', value: events.length || '40+', icon: Calendar, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          { labelEn: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-status-success', bg: 'bg-status-success-bg' },
-          { labelEn: 'In-Person', labelEl: 'Δια ζώσης', value: events.filter((e) => e.type === 'in-person').length || '20+', icon: MapPin, color: 'text-status-info', bg: 'bg-status-info-bg' },
+          { labelEn: 'Total Events', labelEl: 'Συνολικές εκδηλώσεις', value: events.length, icon: Calendar, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+          { labelEn: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length, icon: Video, color: 'text-status-success', bg: 'bg-status-success-bg' },
+          { labelEn: 'In-Person', labelEl: 'Δια ζώσης', value: events.filter((e) => e.type === 'in-person').length, icon: MapPin, color: 'text-status-info', bg: 'bg-status-info-bg' },
           { labelEn: "RSVP'd", labelEl: 'Δηλώσεις', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
         ].map((s) => {
           const SIcon = s.icon;

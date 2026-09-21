@@ -30,6 +30,7 @@ import {
   listShortlist,
   removeFromShortlist,
   updateShortlistNote,
+  getRecommendations,
   type ShortlistItem,
 } from '@/lib/api';
 
@@ -102,7 +103,7 @@ function NoteEditor({
 }
 
 function ShortlistCard({
-  item, onRemove, onUpdateNote, isSelected, onToggleSelect, compareMode,
+  item, onRemove, onUpdateNote, isSelected, onToggleSelect, compareMode, matchScore,
 }: {
   item: ShortlistItem;
   onRemove: (userId: string) => void;
@@ -110,6 +111,9 @@ function ShortlistCard({
   isSelected: boolean;
   onToggleSelect: (userId: string) => void;
   compareMode: boolean;
+  /** The engine's score for this pairing, when it has one. Undefined is shown
+   *  as no badge — never as a number. */
+  matchScore?: number;
 }) {
   // Visible string slots take the reader's language, not both joined.
   const say = useBilingualString();
@@ -124,7 +128,6 @@ function ShortlistCard({
     finally { setSavingNote(false); }
   }
 
-  const matchScore = Math.floor(60 + Math.random() * 35); // Demo: replace with real score
 
   return (
     <div className={cn(
@@ -160,17 +163,19 @@ function ShortlistCard({
                 <Link href={`/profiles/${item.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors">
                   {profile?.displayName ?? 'Unknown'}
                 </Link>
-                {/* Match score badge */}
-                <span className={cn(
-                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold',
-                  matchScore >= 85 ? 'bg-status-success-bg text-status-success'
-                    : matchScore >= 70 ? 'bg-status-info-bg text-status-info'
-                    : 'bg-muted text-muted-foreground',
-                )}>
-                  <Sparkles className="h-2.5 w-2.5" />
-                  {matchScore}%{' '}
-                  <BilingualText en={shortlistEn('match_suffix')} el={shortlistEl('match_suffix')} compact />
-                </span>
+                {/* Match score badge — only for pairings the engine has scored. */}
+                {matchScore != null && (
+                  <span className={cn(
+                    'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold',
+                    matchScore >= 85 ? 'bg-status-success-bg text-status-success'
+                      : matchScore >= 70 ? 'bg-status-info-bg text-status-info'
+                      : 'bg-muted text-muted-foreground',
+                  )}>
+                    <Sparkles className="h-2.5 w-2.5" />
+                    {matchScore}%{' '}
+                    <BilingualText en={shortlistEn('match_suffix')} el={shortlistEl('match_suffix')} compact />
+                  </span>
+                )}
                 {statusLabel && (
                   <span className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
                     <BilingualText
@@ -300,6 +305,28 @@ export default function ShortlistPage() {
 
   const rawItems = data?.items ?? [];
 
+  /*
+   * Match scores come from the engine's own recommendation pass — the same
+   * numbers the /matches cards show — rather than being generated here. The
+   * row that used to carry `Math.floor(60 + Math.random() * 35)` showed a
+   * different percentage on every render and disagreed with /matches about
+   * the same person. People the engine has not scored simply get no badge.
+   */
+  const { data: recommended } = useQuery({
+    queryKey: ['recommendations', 'for-shortlist'],
+    queryFn: () => getRecommendations({ limit: 100 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
+  const matchScores = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const hit of recommended?.suggestions ?? []) {
+      if (hit.matchScore != null) map.set(hit.userId, hit.matchScore);
+    }
+    return map;
+  }, [recommended]);
+
   const filtered = useMemo(() => {
     let items = [...rawItems];
     if (roleFilter !== 'all') {
@@ -324,9 +351,14 @@ export default function ShortlistPage() {
     }
     if (sortBy === 'name_az') items.sort((a, b) => (a.profile?.displayName ?? '').localeCompare(b.profile?.displayName ?? ''));
     else if (sortBy === 'saved_oldest') items.sort((a, b) => new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime());
+    // "Sort by match score" used to fall through to this default, so the option
+    // did nothing. Unscored pairings sort last rather than as zero.
+    else if (sortBy === 'match_score') {
+      items.sort((a, b) => (matchScores.get(b.userId) ?? -1) - (matchScores.get(a.userId) ?? -1));
+    }
     else items.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
     return items;
-  }, [rawItems, roleFilter, searchQuery, sortBy]);
+  }, [rawItems, roleFilter, searchQuery, sortBy, matchScores]);
 
   const roleCounts = useMemo(() => {
     const counts: Record<string, number> = { all: rawItems.length };
@@ -538,6 +570,7 @@ export default function ShortlistPage() {
                   isSelected={selectedIds.has(item.userId)}
                   onToggleSelect={toggleSelect}
                   compareMode={compareMode}
+                  matchScore={matchScores.get(item.userId)}
                 />
               ))}
             </div>

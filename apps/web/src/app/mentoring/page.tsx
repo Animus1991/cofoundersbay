@@ -128,7 +128,9 @@ const EXPERTISE_FILTERS = [
 function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
   const avail = mentor.availabilityStatus ?? 'available';
   const availCfg = AVAIL_CONFIG[avail];
-  const matchPct = mentor.matchScore ?? Math.floor(70 + Math.random() * 25);
+  // No invented fallback: a mentor the engine has not scored shows no pill,
+  // rather than a number between 70 and 95 that changes on every render.
+  const matchPct = mentor.matchScore ?? null;
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
@@ -174,17 +176,19 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           </div>
 
           {/* Match score pill */}
-          <div className="shrink-0 flex flex-col items-center gap-0.5">
-            <div className={cn(
-              'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
-              matchPct >= 85 ? 'bg-primary/15 text-primary-accessible ring-primary/30'
-              : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-emerald-500/30'
-              : 'bg-muted text-muted-foreground ring-border',
-            )}>
-              {matchPct}%
+          {matchPct != null && (
+            <div className="shrink-0 flex flex-col items-center gap-0.5">
+              <div className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
+                matchPct >= 85 ? 'bg-primary/15 text-primary-accessible ring-primary/30'
+                : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-emerald-500/30'
+                : 'bg-muted text-muted-foreground ring-border',
+              )}>
+                {matchPct}%
+              </div>
+              <span className="text-2xs text-muted-foreground">match</span>
             </div>
-            <span className="text-2xs text-muted-foreground">match</span>
-          </div>
+          )}
         </div>
 
         <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{mentor.bio}</p>
@@ -675,6 +679,14 @@ export default function MentoringPage() {
     return true;
   });
 
+  // Counted from the mentors on screen, not asserted. A directory that has not
+  // been rated yet says so rather than borrowing a plausible-looking 4.8.
+  const ratedMentors = filteredMentors.filter((m) => m.rating > 0);
+  const avgRating = ratedMentors.length
+    ? (ratedMentors.reduce((sum, m) => sum + m.rating, 0) / ratedMentors.length).toFixed(1)
+    : null;
+  const sessionsDone = filteredMentors.reduce((sum, m) => sum + m.totalSessions, 0);
+
   const featuredMentors = filteredMentors.filter((m) => m.isFeatured);
   const regularMentors = filteredMentors.filter((m) => !m.isFeatured);
 
@@ -730,9 +742,9 @@ export default function MentoringPage() {
           {/* Stats bar */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Expert Mentors', value: filteredMentors.length || '50+', icon: GraduationCap, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-              { label: 'Avg Rating', value: '4.8★', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-              { label: 'Sessions Done', value: '1.2k+', icon: Users, color: 'text-status-success', bg: 'bg-status-success-bg' },
+              { label: 'Expert Mentors', value: filteredMentors.length, icon: GraduationCap, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+              { label: 'Avg Rating', value: avgRating ? `${avgRating}★` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+              { label: 'Sessions Done', value: sessionsDone, icon: Users, color: 'text-status-success', bg: 'bg-status-success-bg' },
             ].map((s) => {
               const SIcon = s.icon;
               return (

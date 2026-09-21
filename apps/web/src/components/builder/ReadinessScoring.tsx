@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT } from './BuilderStageChrome';
 import { builderEn, builderEl, BUILDER_PREVIEW_HINT_EL } from '@/lib/i18n/strings-builder';
+import { assessReadiness, updateReadinessCriterion, type ReadinessScore } from '@/lib/api';
 
 interface ReadinessDimension {
   id: string;
@@ -50,7 +51,47 @@ interface ReadinessData {
 
 interface ReadinessScoringProps {
   workspaceData?: any;
+  /**
+   * The workspace whose readiness this is. Without it the component can only
+   * show the empty checklist: the scores live on the server, keyed by
+   * workspace, and the assistant's `readiness_tick_criterion` writes to the
+   * same rows.
+   */
+  workspaceId?: string;
   onRefresh?: () => void;
+}
+
+function statusFromPercent(pct: number): ReadinessDimension['status'] {
+  if (pct >= 80) return 'excellent';
+  if (pct >= 60) return 'good';
+  if (pct >= 40) return 'needs-work';
+  return 'critical';
+}
+
+/** Server dimension -> the local shape the cards render. */
+function mergeServerDimension(
+  base: Omit<ReadinessDimension, 'score' | 'status' | 'recommendations'>,
+  scored: ReadinessScore | undefined,
+): ReadinessDimension {
+  const byId = new Map((scored?.criteria ?? []).map((c) => [c.id, c]));
+  const criteria = base.criteria.map((c) => {
+    const server = byId.get(c.id);
+    return {
+      ...c,
+      completed: server?.completed ?? false,
+      weight: server?.weight ?? c.weight,
+      evidence: server?.notes || undefined,
+    };
+  });
+  const max = scored && scored.maxScore > 0 ? scored.maxScore : base.maxScore;
+  const pct = scored ? (scored.score / max) * 100 : 0;
+  return {
+    ...base,
+    criteria,
+    score: scored?.score ?? 0,
+    status: statusFromPercent(pct),
+    recommendations: scored?.recommendations ?? [],
+  };
 }
 
 const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recommendations'>[] = [
@@ -196,7 +237,7 @@ const CRITERION_EL: Record<string, { name: string; description: string }> = {
   e6: { name: 'Διαχείριση κινδύνου', description: 'Έχετε εντοπίσει και σχεδιάσει για κινδύνους;' },
 };
 
-export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringProps) {
+export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: ReadinessScoringProps) {
   const [data, setData] = useState<ReadinessData>({
     overallScore: 0,
     overallStatus: 'critical',
@@ -208,108 +249,87 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expandedDimension, setExpandedDimension] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Initialize dimensions
-    const initialDimensions: ReadinessDimension[] = READINESS_DIMENSIONS.map(dim => ({
-      ...dim,
-      score: 0,
-      status: 'critical' as const,
-      recommendations: []
-    }));
-    
-    setData(prev => ({ ...prev, dimensions: initialDimensions }));
+  const applyDimensions = useCallback((scored: ReadinessScore[]) => {
+    const byDimension = new Map(scored.map((d) => [d.dimension, d]));
+    const dimensions = READINESS_DIMENSIONS.map((dim) =>
+      mergeServerDimension(dim, byDimension.get(dim.id)),
+    );
+    const overallScore = dimensions.length
+      ? Math.round(dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length)
+      : 0;
+    setData({
+      overallScore,
+      overallStatus: statusFromPercent(overallScore),
+      dimensions,
+      readinessLevel:
+        overallScore >= 80 ? 'scale'
+          : overallScore >= 60 ? 'growth'
+            : overallScore >= 40 ? 'mvp'
+              : overallScore >= 20 ? 'validation' : 'idea',
+      blockers: dimensions
+        .filter((d) => d.status === 'critical')
+        .map((d) => `${d.name} needs immediate attention`),
+      nextMilestones: dimensions.flatMap((d) => d.recommendations).slice(0, 5),
+    });
   }, []);
 
-  const analyzeReadiness = async () => {
+  /*
+   * This used to hand out `Math.random() > 0.4` per criterion behind a
+   * two-second "analysing" delay, so every press produced a different venture
+   * readiness for the same workspace and nothing was saved. The scores are
+   * server state (`builderReadinessScore`) — the same rows the assistant's
+   * `readiness_tick_criterion` writes — so they are read and written here.
+   */
+  const analyzeReadiness = useCallback(async () => {
+    if (!workspaceId) return;
     setIsAnalyzing(true);
-    
-    // Simulate AI analysis based on workspace data
-    setTimeout(() => {
-      const analyzedDimensions: ReadinessDimension[] = READINESS_DIMENSIONS.map(dim => {
-        // Simulate random completion for demo
-        const completedCriteria = dim.criteria.map(c => ({
-          ...c,
-          completed: Math.random() > 0.4,
-          evidence: Math.random() > 0.5 ? 'Based on workspace data' : undefined
-        }));
-        
-        const score = completedCriteria.reduce((sum, c) => 
-          sum + (c.completed ? c.weight : 0), 0
-        );
-        
-        const status = score >= 80 ? 'excellent' : 
-                       score >= 60 ? 'good' : 
-                       score >= 40 ? 'needs-work' : 'critical';
-        
-        const recommendations = completedCriteria
-          .filter(c => !c.completed)
-          .slice(0, 3)
-          .map(c => `Complete: ${c.name}`);
-        
-        return {
-          ...dim,
-          criteria: completedCriteria,
-          score,
-          status,
-          recommendations
-        };
-      });
-      
-      const overallScore = Math.round(
-        analyzedDimensions.reduce((sum, d) => sum + d.score, 0) / analyzedDimensions.length
-      );
-      
-      const overallStatus = overallScore >= 80 ? 'excellent' : 
-                            overallScore >= 60 ? 'good' : 
-                            overallScore >= 40 ? 'needs-work' : 'critical';
-      
-      const readinessLevel = overallScore >= 80 ? 'scale' :
-                             overallScore >= 60 ? 'growth' :
-                             overallScore >= 40 ? 'mvp' :
-                             overallScore >= 20 ? 'validation' : 'idea';
-      
-      const blockers = analyzedDimensions
-        .filter(d => d.status === 'critical')
-        .map(d => `${d.name} needs immediate attention`);
-      
-      const nextMilestones = analyzedDimensions
-        .flatMap(d => d.recommendations)
-        .slice(0, 5);
-      
-      setData({
-        overallScore,
-        overallStatus,
-        dimensions: analyzedDimensions,
-        readinessLevel,
-        nextMilestones,
-        blockers
-      });
-      
+    try {
+      const { assessment } = await assessReadiness({ workspaceId });
+      applyDimensions(assessment.dimensions);
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
-  };
+    }
+  }, [workspaceId, applyDimensions]);
+
+  useEffect(() => {
+    // The empty checklist first, so the page has its shape before the request
+    // resolves — and permanently when there is no workspace to score.
+    applyDimensions([]);
+    if (workspaceId) void analyzeReadiness();
+  }, [workspaceId, analyzeReadiness, applyDimensions]);
 
   const toggleCriterion = (dimensionId: string, criterionId: string) => {
+    const dimension = data.dimensions.find((d) => d.id === dimensionId);
+    const criterion = dimension?.criteria.find((c) => c.id === criterionId);
+    if (!dimension || !criterion) return;
+    const completed = !criterion.completed;
+
+    // Optimistic, then reconciled with the score the server computed.
     setData(prev => ({
       ...prev,
       dimensions: prev.dimensions.map(dim => {
         if (dim.id !== dimensionId) return dim;
-        
-        const updatedCriteria = dim.criteria.map(c => 
-          c.id === criterionId ? { ...c, completed: !c.completed } : c
+        const updatedCriteria = dim.criteria.map(c =>
+          c.id === criterionId ? { ...c, completed } : c
         );
-        
-        const score = updatedCriteria.reduce((sum, c) => 
-          sum + (c.completed ? c.weight : 0), 0
-        );
-        
-        const status = score >= 80 ? 'excellent' : 
-                       score >= 60 ? 'good' : 
-                       score >= 40 ? 'needs-work' : 'critical';
-        
-        return { ...dim, criteria: updatedCriteria, score, status };
+        const score = updatedCriteria.reduce((sum, c) => sum + (c.completed ? c.weight : 0), 0);
+        return {
+          ...dim,
+          criteria: updatedCriteria,
+          score,
+          status: statusFromPercent((score / (dim.maxScore || 100)) * 100),
+        };
       })
     }));
+
+    if (!workspaceId) return;
+    void updateReadinessCriterion(workspaceId, {
+      dimension: dimensionId,
+      criterionId,
+      completed,
+    })
+      .then(() => analyzeReadiness())
+      .catch(() => analyzeReadiness());
   };
 
   const getStatusColor = (status: string) => {

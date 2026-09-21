@@ -323,7 +323,7 @@ function BuilderPageContent() {
           </TabsContent>
 
           <TabsContent value="readiness" className="space-y-6">
-            <ReadinessScoring workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})} />
+            <ReadinessScoring workspaceId={workspace?.id} workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})} />
             {workspace?.id && (
               <WorkspaceMetricsPanels workspaceId={workspace.id} />
             )}

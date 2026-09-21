@@ -82,36 +82,13 @@ function getLevel(count: number, max: number): ContributionLevel {
   return 4;
 }
 
-function generateDemoData(weeks: number): { date: string; count: number }[] {
-  const data: { date: string; count: number }[] = [];
-  const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - weeks * 7);
-
-  for (let i = 0; i < weeks * 7; i++) {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + i);
-    
-    // Generate realistic-looking activity pattern
-    const dayOfWeek = date.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const baseChance = isWeekend ? 0.3 : 0.7;
-    
-    let count = 0;
-    if (Math.random() < baseChance) {
-      count = Math.floor(Math.random() * 8) + 1;
-      // Occasionally have high activity days
-      if (Math.random() < 0.1) count += Math.floor(Math.random() * 10);
-    }
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      count,
-    });
-  }
-  
-  return data;
-}
+/*
+ * `generateDemoData` used to fill this grid when no `data` arrived: a year of
+ * `Math.random()` activity, weighted to look plausible on weekdays, rendered
+ * on the viewer's own profile as their history. It regenerated on every render
+ * and never matched anything. A caller with nothing to plot now gets an empty
+ * grid, which is what "no recorded activity" looks like.
+ */
 
 export function ContributionGraph({
   data,
@@ -122,7 +99,7 @@ export function ContributionGraph({
   size = 'md',
   className,
 }: ContributionGraphProps) {
-  const activityData = data ?? generateDemoData(weeks);
+  const activityData = data ?? [];
   
   const { grid, monthLabels, maxCount, totalCount } = useMemo(() => {
     const dataMap = new Map(activityData.map((d) => [d.date, d.count]));
