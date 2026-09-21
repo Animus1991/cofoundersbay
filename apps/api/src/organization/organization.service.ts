@@ -325,10 +325,42 @@ export class OrganizationService {
     });
   }
 
+  /**
+   * The organisation's mentor pool, with the people in it.
+   *
+   * This returned bare `OrganizationMentor` rows — an id, a user id and a
+   * count — so the only screen that wanted it could not name a single mentor
+   * and showed a fixed list instead. The profile is what makes the pool
+   * usable, so it is joined here rather than left to N follow-up requests.
+   */
   async getMentorPool(orgId: string) {
-    return this.prisma.organizationMentor.findMany({
+    const mentors = await this.prisma.organizationMentor.findMany({
       where: { organizationId: orgId, isActive: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            profile: { select: { displayName: true, avatarUrl: true, headline: true } },
+          },
+        },
+      },
+      orderBy: { assignedAt: 'desc' },
     });
+
+    return {
+      mentors: mentors.map((mentor) => ({
+        id: mentor.id,
+        userId: mentor.userId,
+        displayName: mentor.user.profile?.displayName ?? null,
+        avatarUrl: mentor.user.profile?.avatarUrl ?? null,
+        headline: mentor.user.profile?.headline ?? null,
+        expertiseAreas: mentor.expertiseAreas,
+        maxMentees: mentor.maxMentees,
+        currentMentees: mentor.currentMentees,
+        isActive: mentor.isActive,
+        assignedAt: mentor.assignedAt.toISOString(),
+      })),
+    };
   }
 
   // Helper methods

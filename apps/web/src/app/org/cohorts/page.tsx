@@ -19,6 +19,9 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { getOrgCohorts, type CohortItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,6 +44,36 @@ import {
 import { EmptyOrgCohorts } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+
+/**
+ * The page's own row from the API row.
+ *
+ * `/api/org/:slug/cohorts` has existed all along; this page never called it.
+ * Three fields the card shows have no source yet and say so rather than being
+ * filled with a plausible number: progress, average readiness and mentor
+ * coverage are all facts about the startups in a cohort, and the cohort
+ * endpoint returns membership counts, not their state.
+ */
+function toPageCohort(item: CohortItem): Cohort {
+  const now = Date.now();
+  const start = item.startDate ? new Date(item.startDate).getTime() : null;
+  const end = item.endDate ? new Date(item.endDate).getTime() : null;
+  return {
+    id: item.id,
+    name: item.name,
+    program: item.description ?? '\u2014',
+    status: !item.isActive ? 'completed' : start != null && start > now ? 'recruiting' : 'active',
+    startups: item._count?.members ?? 0,
+    mentors: 0,
+    startDate: item.startDate ?? '',
+    endDate: item.endDate ?? '',
+    // Elapsed share of the cohort's own window — a fact its dates support.
+    progress:
+      start != null && end != null && end > start
+        ? Math.max(0, Math.min(100, Math.round(((now - start) / (end - start)) * 100)))
+        : 0,
+  };
+}
 
 type Cohort = {
   id: string;
@@ -147,18 +180,36 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
   );
 }
 
+/** Shown to an organisation that has not created a cohort yet. */
+const SEED_COHORTS: Cohort[] = [
+  { id: '1', name: 'Cohort 2025-A', program: 'Spring Accelerator 2025', status: 'active', startups: 12, mentors: 8, startDate: 'Jan 2025', endDate: 'Apr 2025', progress: 65, avgReadiness: 72, mentorCoverage: 92 },
+  { id: '2', name: 'AI Lab Cohort 1', program: 'AI Innovation Lab', status: 'active', startups: 8, mentors: 5, startDate: 'Feb 2025', endDate: 'Aug 2025', progress: 30, avgReadiness: 58, mentorCoverage: 75 },
+  { id: '3', name: 'Bootcamp March', program: 'Pre-seed Bootcamp', status: 'active', startups: 8, mentors: 4, startDate: 'Mar 2025', endDate: 'Mar 2025', progress: 90, avgReadiness: 81, mentorCoverage: 100 },
+  { id: '4', name: 'Cohort 2024-C', program: 'Fall Accelerator 2024', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100, avgReadiness: 88, mentorCoverage: 100 },
+  { id: '5', name: 'Summer 2025', program: 'Summer Accelerator 2025', status: 'recruiting', startups: 0, mentors: 0, startDate: 'Jun 2025', endDate: 'Sep 2025', progress: 0 },
+];
+
 export default function OrgCohortsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Mock data
-  const cohorts: Cohort[] = [
-    { id: '1', name: 'Cohort 2025-A', program: 'Spring Accelerator 2025', status: 'active', startups: 12, mentors: 8, startDate: 'Jan 2025', endDate: 'Apr 2025', progress: 65, avgReadiness: 72, mentorCoverage: 92 },
-    { id: '2', name: 'AI Lab Cohort 1', program: 'AI Innovation Lab', status: 'active', startups: 8, mentors: 5, startDate: 'Feb 2025', endDate: 'Aug 2025', progress: 30, avgReadiness: 58, mentorCoverage: 75 },
-    { id: '3', name: 'Bootcamp March', program: 'Pre-seed Bootcamp', status: 'active', startups: 8, mentors: 4, startDate: 'Mar 2025', endDate: 'Mar 2025', progress: 90, avgReadiness: 81, mentorCoverage: 100 },
-    { id: '4', name: 'Cohort 2024-C', program: 'Fall Accelerator 2024', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100, avgReadiness: 88, mentorCoverage: 100 },
-    { id: '5', name: 'Summer 2025', program: 'Summer Accelerator 2025', status: 'recruiting', startups: 0, mentors: 0, startDate: 'Jun 2025', endDate: 'Sep 2025', progress: 0 },
-  ];
+  /*
+   * The organisation's own cohorts. The seed below is what an organisation
+   * with none yet sees, so the screen still teaches its shape instead of
+   * opening empty — a real cohort always wins.
+   */
+  const { slug } = useCurrentOrg();
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', 'cohorts', slug],
+    queryFn: () => getOrgCohorts(slug!, { limit: 50 }),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.cohorts ?? []).map(toPageCohort), [data]);
+  const cohorts: Cohort[] = live.length > 0 ? live : isLoading ? [] : SEED_COHORTS;
+
 
   const totalStartups = useMemo(() => cohorts.reduce((s, c) => s + c.startups, 0), []);
   const totalMentors = useMemo(() => cohorts.reduce((s, c) => s + c.mentors, 0), []);

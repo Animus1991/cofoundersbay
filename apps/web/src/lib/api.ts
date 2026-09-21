@@ -4703,6 +4703,50 @@ export async function getMyPrograms(): Promise<{ programs: ProgramItem[] }> {
   return apiRequest(`/api/programs/my-programs`);
 }
 
+/**
+ * Updates a program. The controller has exposed PATCH all along; the web had
+ * no client for it, which is why "Archive" in the program menu did nothing.
+ */
+export type OrgMentorPoolItem = {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  headline: string | null;
+  expertiseAreas: string[];
+  maxMentees: number | null;
+  currentMentees: number;
+  isActive: boolean;
+  assignedAt: string;
+};
+
+/** The organisation's mentor pool, with the people in it. */
+export async function getOrgMentorPool(
+  organizationId: string,
+): Promise<{ mentors: OrgMentorPoolItem[] }> {
+  return apiRequest(`/api/organizations/${organizationId}/mentors`, undefined, {
+    retryOn401: false,
+  });
+}
+
+export async function updateProgram(
+  id: string,
+  body: Partial<{
+    title: string;
+    description: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    capacity: number;
+  }>,
+): Promise<{ program: ProgramItem }> {
+  return apiRequest(`/api/programs/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export async function deleteProgram(id: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/programs/${id}`, { method: 'DELETE' });
+}
+
 export async function applyToProgram(
   id: string,
   application?: Record<string, unknown>,

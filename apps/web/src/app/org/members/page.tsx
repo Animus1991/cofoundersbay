@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Users,
   UserPlus,
@@ -16,6 +16,9 @@ import {
   Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { getOrgMembers, type OrgMember as OrgMemberRow } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +59,35 @@ const ROLE_CONFIG: Record<MemberRole, { label: string; icon: React.ElementType; 
   viewer: { label: 'Viewer', icon: Users, tone: 'neutral' },
 };
 
+const ROLE_VALUES = ['owner', 'admin', 'manager', 'member', 'mentor', 'viewer'] as const;
+
+/**
+ * The page's own row from the API row.
+ *
+ * `/api/org/:slug/members` has existed all along; this page never called it.
+ * Two columns have no source and say so rather than being filled: the
+ * directory endpoint returns a public profile, so it carries no email address
+ * and no last-seen — showing either would mean inventing it, and an email
+ * address in particular is not a field to guess at.
+ */
+function toPageMember(row: OrgMemberRow): OrgMember {
+  const role = (ROLE_VALUES as readonly string[]).includes(row.role)
+    ? (row.role as MemberRole)
+    : 'member';
+  return {
+    id: row.id,
+    name: row.displayName,
+    email: '',
+    avatarUrl: row.avatarUrl ?? undefined,
+    role,
+    department: row.cohortName || undefined,
+    joinedAt: row.joinedAt,
+    lastActive: '',
+    status: 'active',
+  };
+}
+
+/** Shown to an organisation with no members loaded yet. */
 const MOCK_MEMBERS: OrgMember[] = [
   { id: '1', name: 'Sarah Chen', email: 'sarah@accelerate.io', role: 'owner', department: 'Leadership', joinedAt: 'Jan 2024', lastActive: 'Today', status: 'active' },
   { id: '2', name: 'Michael Torres', email: 'michael@accelerate.io', role: 'admin', department: 'Programs', joinedAt: 'Feb 2024', lastActive: 'Yesterday', status: 'active' },
@@ -82,9 +114,12 @@ function MemberRow({ member }: { member: OrgMember }) {
             <Badge variant="outline" className={cn('text-xs border', STATUS.warning.chip)}>Invited</Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+        {member.email ? (
+          <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+        ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
-          {roleCfg.label}{member.department ? ` · ${member.department}` : ''} · {member.lastActive}
+          {roleCfg.label}{member.department ? ` · ${member.department}` : ''}
+          {member.lastActive ? ` · ${member.lastActive}` : ''}
         </p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
@@ -96,7 +131,9 @@ function MemberRow({ member }: { member: OrgMember }) {
       </div>
       <div className="hidden sm:flex items-center gap-1 w-24 shrink-0">
         <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />
-        <span className="text-xs text-muted-foreground">{member.lastActive}</span>
+        {member.lastActive ? (
+          <span className="text-xs text-muted-foreground">{member.lastActive}</span>
+        ) : null}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -121,14 +158,26 @@ export default function OrgMembersPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const filtered = MOCK_MEMBERS.filter(m => {
+  const { slug } = useCurrentOrg();
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', 'members', slug],
+    queryFn: () => getOrgMembers(slug!, { limit: 100 }),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.members ?? []).map(toPageMember), [data]);
+  const members = live.length > 0 ? live : isLoading ? [] : MOCK_MEMBERS;
+
+  const filtered = members.filter(m => {
     const q = search.toLowerCase();
     const matchesSearch = !search || m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q) || (m.department?.toLowerCase().includes(q) ?? false);
     const matchesTab = activeTab === 'all' || (activeTab === 'active' && m.status === 'active') || (activeTab === 'invited' && m.status === 'invited');
     return matchesSearch && matchesTab;
   });
 
-  const roleCounts = MOCK_MEMBERS.reduce((acc, m) => {
+  const roleCounts = members.reduce((acc, m) => {
     acc[m.role] = (acc[m.role] ?? 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -152,7 +201,7 @@ export default function OrgMembersPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[
-            { label: 'Total Members', value: MOCK_MEMBERS.length },
+            { label: 'Total Members', value: data?.total ?? members.length },
             { label: 'Admins', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },
             { label: 'Mentors', value: roleCounts['mentor'] ?? 0 },
             { label: 'Pending Invites', value: MOCK_MEMBERS.filter(m => m.status === 'invited').length },
