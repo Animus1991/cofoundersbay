@@ -1,11 +1,13 @@
 import type { ReadActionId } from '@cofounderbay/shared';
 import {
   getEndorsementStats,
+  getInvestorSummary,
   getMilestoneSummary,
   getMyGroups,
   getPendingEndorsements,
   getUpcomingMentorshipSessions,
   listEvents,
+  listInvestorDeals,
   listJobs,
   listMilestones,
   listOpportunities,
@@ -14,6 +16,7 @@ import {
   type EndorsementItem,
   type EventItem,
   type GroupView,
+  type InvestorDeal,
   type JobPostingView,
   type MentorshipSessionItem,
   type Milestone,
@@ -137,6 +140,17 @@ const SESSION_MODE: Record<string, string> = {
   chat: 'chat',
 };
 
+/** Board stages in words, so a reply says "in due diligence", not "due_diligence". */
+const PIPELINE_STAGE_LABEL: Record<string, string> = {
+  discovered: 'watching',
+  reviewing: 'under review',
+  meeting: 'meeting booked',
+  due_diligence: 'in due diligence',
+  negotiating: 'negotiating',
+  invested: 'invested',
+  passed: 'passed',
+};
+
 const OPPORTUNITY_TYPE: Record<string, string> = {
   job: 'Job',
   cofounder: 'Co-founder',
@@ -147,6 +161,45 @@ const OPPORTUNITY_TYPE: Record<string, string> = {
 };
 
 export const AREA_READERS: Record<AreaReadId, Reader> = {
+  async get_investor_board(_args, { t, locale }) {
+    // Both together: the summary says how the board is shaped, the list says
+    // which companies it is shaped around, and neither answers alone.
+    const [summary, page] = await Promise.all([
+      getInvestorSummary(),
+      listInvestorDeals({ limit: LIMIT }),
+    ]);
+    const deals = asList<InvestorDeal>(page?.deals).slice(0, LIMIT);
+    const actions = [openArea(t, '/investor/pipeline', t('Open the deal board'), t('Every startup you track, at every stage.'))];
+
+    const total = typeof summary?.totalDeals === 'number' ? summary.totalDeals : deals.length;
+    if (total === 0) {
+      return {
+        section: t('Your board is empty. Add a startup from Scouting and it appears on the board, the watchlist and, once you invest, the portfolio.'),
+        citations: [],
+        actions,
+      };
+    }
+
+    const headline = [
+      t('{count} on your board', { count: total }),
+      summary?.investments ? t('{count} invested', { count: summary.investments }) : '',
+      summary?.returnPct != null ? t('{pct}% return so far', { pct: summary.returnPct }) : '',
+    ].filter(Boolean).join(' · ');
+
+    const citations: CopilotCitation[] = [];
+    const lines = deals.map((deal) => {
+      citations.push({ type: 'route', id: deal.id, label: deal.name, href: '/investor/pipeline' });
+      const details = [
+        t(PIPELINE_STAGE_LABEL[deal.pipelineStage] ?? 'tracking'),
+        deal.industry ?? '',
+        t('last moved {when}', { when: formatWhen(deal.lastActivityAt, locale, false) }),
+      ].filter(Boolean);
+      return `• **${deal.name}** — ${details.join(' · ')}`;
+    });
+
+    return { section: `${headline}\n${lines.join('\n')}`, citations, actions };
+  },
+
   async get_events(args, { t, locale }) {
     const result = await listEvents({ scope: 'upcoming', limit: LIMIT, ...(args.q ? { q: args.q } : {}) });
     const events = asList<EventItem>(result?.events).slice(0, LIMIT);

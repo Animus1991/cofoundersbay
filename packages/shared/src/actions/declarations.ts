@@ -209,6 +209,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_investor_board',
+    kind: 'read',
+    label: { en: 'Read your investor board', el: '\u0391\u03bd\u03ac\u03b3\u03bd\u03c9\u03c3\u03b7 \u03c4\u03bf\u03c5 \u03c0\u03af\u03bd\u03b1\u03ba\u03b1 \u03b5\u03c0\u03b5\u03bd\u03b4\u03cd\u03c3\u03b5\u03c9\u03bd' },
+    description: {
+      en: 'Answer questions about the startups you are tracking: what is at which stage, what you have invested, and what moved recently. The watchlist, the pipeline and the portfolio are the same board.',
+      el: '\u0391\u03c0\u03b1\u03bd\u03c4\u03ac \u03b3\u03b9\u03b1 \u03c4\u03b1 startups \u03c0\u03bf\u03c5 \u03c0\u03b1\u03c1\u03b1\u03ba\u03bf\u03bb\u03bf\u03c5\u03b8\u03b5\u03af\u03c2: \u03c4\u03b9 \u03b2\u03c1\u03af\u03c3\u03ba\u03b5\u03c4\u03b1\u03b9 \u03c3\u03b5 \u03c0\u03bf\u03b9\u03bf \u03c3\u03c4\u03ac\u03b4\u03b9\u03bf, \u03c4\u03b9 \u03ad\u03c7\u03b5\u03b9\u03c2 \u03b5\u03c0\u03b5\u03bd\u03b4\u03cd\u03c3\u03b5\u03b9 \u03ba\u03b1\u03b9 \u03c4\u03b9 \u03ba\u03b9\u03bd\u03ae\u03b8\u03b7\u03ba\u03b5 \u03c0\u03c1\u03cc\u03c3\u03c6\u03b1\u03c4\u03b1. \u0397 \u03bb\u03af\u03c3\u03c4\u03b1 \u03c0\u03b1\u03c1\u03b1\u03ba\u03bf\u03bb\u03bf\u03cd\u03b8\u03b7\u03c3\u03b7\u03c2, \u03c4\u03bf pipeline \u03ba\u03b1\u03b9 \u03c4\u03bf \u03c7\u03b1\u03c1\u03c4\u03bf\u03c6\u03c5\u03bb\u03ac\u03ba\u03b9\u03bf \u03b5\u03af\u03bd\u03b1\u03b9 \u03bf \u03af\u03b4\u03b9\u03bf\u03c2 \u03c0\u03af\u03bd\u03b1\u03ba\u03b1\u03c2.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_builder_state',
     kind: 'read',
     label: { en: 'Read your Startup Builder workspaces', el: 'Ανάγνωση των χώρων Startup Builder' },

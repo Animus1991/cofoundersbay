@@ -42,6 +42,7 @@ import { TenantModule } from './tenant/tenant.module';
 import { SSOModule } from './sso/sso.module';
 import { AutomationModule } from './automation/automation.module';
 import { MilestonesModule } from './milestones/milestones.module';
+import { InvestorModule } from './investor/investor.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { ResearchModule } from './research/research.module';
@@ -116,6 +117,7 @@ function findEnvFiles(): string[] {
     SSOModule,
     AutomationModule,
     MilestonesModule,
+    InvestorModule,
     ShortlistModule,
     EndorsementsModule,
     ResearchModule,

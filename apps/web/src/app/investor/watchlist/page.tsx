@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
@@ -23,6 +24,13 @@ import {
   Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import {
+  listInvestorDeals,
+  getInvestorActivity,
+  type InvestorDeal,
+} from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,8 +57,10 @@ type WatchedStartup = {
   stage: string;
   location: string;
   teamSize: number;
-  readinessScore: number;
-  matchScore: number;
+  /** Both null until the platform is allowed to show a founder's own
+   *  readiness and match to the people looking at them. */
+  readinessScore: number | null;
+  matchScore: number | null;
   raisingAmount: string;
   tags: string[];
   watchedSince: string;
@@ -71,6 +81,44 @@ type ActivityItem = {
   time: string;
 };
 
+/**
+ * A watched startup is a deal the investor has not moved off `discovered`.
+ * It is the same row the pipeline board and the portfolio read, which is why
+ * starring one here shows it starred there.
+ */
+function toWatched(deal: InvestorDeal): WatchedStartup {
+  return {
+    id: deal.id,
+    name: deal.name,
+    logoUrl: deal.logoUrl,
+    tagline: deal.tagline ?? '',
+    industry: deal.industry ?? '\u2014',
+    stage: deal.companyStage ?? '\u2014',
+    location: deal.location ?? '\u2014',
+    teamSize: deal.teamSize ?? 0,
+    // Neither is the investor's to see yet — see the note on `Deal` in
+    // /investor/pipeline. The cards omit the line rather than invent one.
+    readinessScore: null,
+    matchScore: null,
+    raisingAmount:
+      deal.askAmountCents != null
+        ? new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: deal.currency,
+            notation: 'compact',
+            maximumFractionDigits: 0,
+          }).format(deal.askAmountCents / 100)
+        : '\u2014',
+    tags: deal.tags,
+    watchedSince: deal.createdAt,
+    alertsEnabled: deal.alertsEnabled,
+    lastActivity: deal.lastActivityAt,
+    activityType: (deal.recentEvents[0]?.type as WatchedStartup['activityType']) ?? 'update',
+    progressChange: 0,
+    notes: deal.notes ?? '',
+  };
+}
+
 const MOCK_WATCHED: WatchedStartup[] = [
   {
     id: '1',
@@ -85,9 +133,9 @@ const MOCK_WATCHED: WatchedStartup[] = [
     matchScore: 92,
     raisingAmount: '$1.5M',
     tags: ['AI/ML', 'B2B', 'SaaS'],
-    watchedSince: '3 weeks ago',
+    watchedSince: '2026-08-14T10:00:00.000Z',
     alertsEnabled: true,
-    lastActivity: '2 hours ago',
+    lastActivity: '2026-09-04T08:00:00.000Z',
     activityType: 'milestone',
     progressChange: +8,
     notes: 'Strong team, unique positioning. Follow up after MVP demo.',
@@ -105,9 +153,9 @@ const MOCK_WATCHED: WatchedStartup[] = [
     matchScore: 88,
     raisingAmount: '$2M',
     tags: ['FinTech', 'Payments', 'B2B'],
-    watchedSince: '2 weeks ago',
+    watchedSince: '2026-08-21T10:00:00.000Z',
     alertsEnabled: true,
-    lastActivity: '1 day ago',
+    lastActivity: '2026-09-03T10:00:00.000Z',
     activityType: 'fundraise',
     progressChange: +5,
     notes: 'Already have LOIs from 2 angels. Valuation looks fair.',
@@ -125,9 +173,9 @@ const MOCK_WATCHED: WatchedStartup[] = [
     matchScore: 78,
     raisingAmount: '$500K',
     tags: ['CleanTech', 'Energy', 'IoT'],
-    watchedSince: '1 month ago',
+    watchedSince: '2026-08-04T10:00:00.000Z',
     alertsEnabled: false,
-    lastActivity: '3 days ago',
+    lastActivity: '2026-09-01T10:00:00.000Z',
     activityType: 'update',
     progressChange: -2,
     notes: 'Tech is solid but market timing uncertain. Monitor for 3 more months.',
@@ -145,9 +193,9 @@ const MOCK_WATCHED: WatchedStartup[] = [
     matchScore: 85,
     raisingAmount: '$3M',
     tags: ['Security', 'Enterprise', 'SaaS'],
-    watchedSince: '5 days ago',
+    watchedSince: '2026-08-30T10:00:00.000Z',
     alertsEnabled: true,
-    lastActivity: '5 hours ago',
+    lastActivity: '2026-09-04T05:00:00.000Z',
     activityType: 'team',
     progressChange: +12,
     notes: 'New CTO hire is very strong. Re-evaluating conviction.',
@@ -155,11 +203,11 @@ const MOCK_WATCHED: WatchedStartup[] = [
 ];
 
 const MOCK_ACTIVITY: ActivityItem[] = [
-  { id: 'a1', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'milestone', title: 'Reached 100 beta users milestone', time: '2 hours ago' },
-  { id: 'a2', startupId: '4', startupName: 'DataVault', logoUrl: null, type: 'team', title: 'Added ex-Palantir CTO to team', time: '5 hours ago' },
-  { id: 'a3', startupId: '2', startupName: 'PayStream', logoUrl: null, type: 'fundraise', title: 'Updated raise target to $2M SAFE', time: '1 day ago' },
-  { id: 'a4', startupId: '3', startupName: 'GreenGrid Energy', logoUrl: null, type: 'update', title: 'Published Q1 2025 progress update', time: '3 days ago' },
-  { id: 'a5', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'deck', title: 'Updated pitch deck (v4)', time: '4 days ago' },
+  { id: 'a1', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'milestone', title: 'Reached 100 beta users milestone', time: '2026-09-04T08:00:00.000Z' },
+  { id: 'a2', startupId: '4', startupName: 'DataVault', logoUrl: null, type: 'team', title: 'Added ex-Palantir CTO to team', time: '2026-09-04T05:00:00.000Z' },
+  { id: 'a3', startupId: '2', startupName: 'PayStream', logoUrl: null, type: 'fundraise', title: 'Updated raise target to $2M SAFE', time: '2026-09-03T10:00:00.000Z' },
+  { id: 'a4', startupId: '3', startupName: 'GreenGrid Energy', logoUrl: null, type: 'update', title: 'Published Q1 2025 progress update', time: '2026-09-01T10:00:00.000Z' },
+  { id: 'a5', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'deck', title: 'Updated pitch deck (v4)', time: '2026-08-31T10:00:00.000Z' },
 ];
 
 const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; color: string }> = {
@@ -248,6 +296,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
 
             {/* Scores */}
             <div className="flex items-center gap-4 mt-3">
+              {startup.readinessScore != null && (
               <div className="flex-1">
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-muted-foreground">Readiness</span>
@@ -266,10 +315,13 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                 </div>
                 <Progress value={startup.readinessScore} className="h-1.5" />
               </div>
+              )}
+              {startup.matchScore != null && (
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground">Match</p>
                 <p className="text-sm font-bold text-primary-accessible">{startup.matchScore}%</p>
               </div>
+              )}
             </div>
 
             {/* Notes */}
@@ -282,9 +334,12 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
             {/* Footer */}
             <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="icon-sm" /> {startup.lastActivity}
+                <Clock className="icon-sm" />{' '}
+                <RelativeTime date={startup.lastActivity} format={formatRelativeTime} />
               </span>
-              <span className="text-xs text-muted-foreground">Watching since {startup.watchedSince}</span>
+              <span className="text-xs text-muted-foreground">
+                Watching since <RelativeTime date={startup.watchedSince} format={formatRelativeTime} />
+              </span>
             </div>
           </div>
         </div>
@@ -298,8 +353,36 @@ export default function InvestorWatchlistPage() {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const watched = showDemoData ? MOCK_WATCHED : [];
-  const activity = showDemoData ? MOCK_ACTIVITY : [];
+  /*
+   * Watching is a stage on the investor's board, not a separate list. The demo
+   * fixtures remain what an empty watchlist shows while the "demo data" switch
+   * is on; a real one always wins.
+   */
+  const { data: watchedPage } = useQuery({
+    queryKey: ['investor', 'deals', 'discovered'],
+    queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: activityPage } = useQuery({
+    queryKey: ['investor', 'activity'],
+    queryFn: () => getInvestorActivity(20),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const liveWatched = (watchedPage?.deals ?? []).map(toWatched);
+  const watched = liveWatched.length > 0 ? liveWatched : showDemoData ? MOCK_WATCHED : [];
+  const liveActivity: ActivityItem[] = (activityPage?.activity ?? []).map((event) => ({
+    id: event.id,
+    startupId: event.dealId,
+    startupName: event.dealName,
+    logoUrl: event.logoUrl,
+    type: (event.type as ActivityItem['type']) ?? 'update',
+    title: event.title,
+    time: event.createdAt,
+  }));
+  const activity = liveActivity.length > 0 ? liveActivity : showDemoData ? MOCK_ACTIVITY : [];
 
   const filtered = watched.filter(
     s => !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.tagline.toLowerCase().includes(search.toLowerCase())
@@ -341,7 +424,14 @@ export default function InvestorWatchlistPage() {
             { label: 'Watching', value: watched.length, icon: Eye },
             { label: 'Alerts On', value: alertCount, icon: Bell },
             { label: 'New Activity', value: activity.length, icon: Zap },
-            { label: 'Avg Match', value: watched.length ? `${Math.round(watched.reduce((s, w) => s + w.matchScore, 0) / watched.length)}%` : '—', icon: Star },
+            { label: 'Avg Match', value: (() => {
+              // Averaged over the rows that carry a score, so adding an
+              // unscored startup cannot drag the average down.
+              const scored = watched.filter((w) => w.matchScore != null);
+              return scored.length
+                ? `${Math.round(scored.reduce((sum, w) => sum + (w.matchScore ?? 0), 0) / scored.length)}%`
+                : '—';
+            })(), icon: Star },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4 flex items-center justify-between">
@@ -431,7 +521,9 @@ export default function InvestorWatchlistPage() {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mt-0.5">{item.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{item.time}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          <RelativeTime date={item.time} format={formatRelativeTime} />
+                        </p>
                       </div>
                       <Button variant="ghost" size="sm" className="shrink-0" asChild>
                         <Link href={`/startups/${item.startupId}`}>

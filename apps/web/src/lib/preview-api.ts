@@ -772,6 +772,138 @@ const PREVIEW_OPPORTUNITIES = [
   { id: 'opp-gtm-advisor', title: 'GTM advisor — Southeast Europe expansion', description: 'Advisory shares for someone who has sold B2B software into Greece, Romania and Bulgaria.', type: 'other', company: 'Meltemi', location: 'Thessaloniki, Greece', isRemote: false, url: null, tags: ['gtm', 'advisory'], deadline: null, isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-07-22T09:00:00.000Z' },
 ];
 
+/*
+ * The investor's board. One row per startup, at whatever stage — the watchlist,
+ * the pipeline and the portfolio read the same rows through different filters,
+ * so the demo cannot show a company as invested on one screen and missing on
+ * another.
+ */
+type PreviewDeal = {
+  id: string;
+  name: string;
+  tagline: string | null;
+  industry: string | null;
+  location: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  companyStage: string | null;
+  teamSize: number | null;
+  pipelineStage: string;
+  starred: boolean;
+  alertsEnabled: boolean;
+  notes: string | null;
+  tags: string[];
+  currency: string;
+  askAmountCents: number | null;
+  investedCents: number | null;
+  currentValueCents: number | null;
+  investedAt: string | null;
+  status: string;
+  lastActivityAt: string;
+  createdAt: string;
+  founder: { id: string; displayName: string; avatarUrl: string | null; headline: string | null } | null;
+  recentEvents: Array<{ id: string; type: string; title: string; body: string | null; createdAt: string }>;
+};
+
+const PREVIEW_DEALS: PreviewDeal[] = [
+  {
+    id: 'deal-harbor', name: 'Harbor', tagline: 'The operating system for early-stage founders.',
+    industry: 'SaaS', location: 'Athens, Greece', website: null, logoUrl: null,
+    companyStage: 'seed', teamSize: 4, pipelineStage: 'negotiating', starred: true, alertsEnabled: true,
+    notes: 'Term sheet out. Waiting on the traction slide.', tags: ['saas', 'b2b'],
+    currency: 'EUR', askAmountCents: 75_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-09-03T14:00:00.000Z', createdAt: '2026-05-02T09:00:00.000Z',
+    founder: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor' },
+    recentEvents: [
+      { id: 'ev-h1', type: 'stage_change', title: 'Moved to negotiating', body: null, createdAt: '2026-09-03T14:00:00.000Z' },
+      { id: 'ev-h2', type: 'deck', title: 'Sent an updated deck', body: null, createdAt: '2026-08-27T10:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-meltemi', name: 'Meltemi', tagline: 'Vertical SaaS for logistics operators.',
+    industry: 'Logistics', location: 'Thessaloniki, Greece', website: null, logoUrl: null,
+    companyStage: 'pre_seed', teamSize: 2, pipelineStage: 'due_diligence', starred: true, alertsEnabled: true,
+    notes: 'Design partner signed. No engineer yet.', tags: ['logistics', 'saas'],
+    currency: 'EUR', askAmountCents: 25_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-09-01T09:00:00.000Z', createdAt: '2026-06-14T09:00:00.000Z',
+    founder: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Founder at Meltemi' },
+    recentEvents: [
+      { id: 'ev-m1', type: 'milestone', title: 'First paying design partner', body: null, createdAt: '2026-09-01T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-aegis', name: 'Aegis Health', tagline: 'Triage support for community clinics.',
+    industry: 'HealthTech', location: 'Patras, Greece', website: null, logoUrl: null,
+    companyStage: 'seed', teamSize: 6, pipelineStage: 'invested', starred: false, alertsEnabled: true,
+    notes: null, tags: ['health', 'ai'],
+    currency: 'EUR', askAmountCents: 60_000_000, investedCents: 10_000_000, currentValueCents: 14_500_000,
+    investedAt: '2026-02-11T09:00:00.000Z', status: 'active',
+    lastActivityAt: '2026-08-20T09:00:00.000Z', createdAt: '2025-11-03T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-a1', type: 'update', title: 'Q2 update: 3 clinics live', body: null, createdAt: '2026-08-20T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-orion', name: 'Orion Grid', tagline: 'Demand response for small utilities.',
+    industry: 'CleanTech', location: 'Remote', website: null, logoUrl: null,
+    companyStage: 'series_a', teamSize: 14, pipelineStage: 'invested', starred: true, alertsEnabled: false,
+    notes: null, tags: ['energy'],
+    currency: 'EUR', askAmountCents: null, investedCents: 25_000_000, currentValueCents: 41_000_000,
+    investedAt: '2025-09-30T09:00:00.000Z', status: 'active',
+    lastActivityAt: '2026-07-18T09:00:00.000Z', createdAt: '2025-04-08T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-o1', type: 'fundraise', title: 'Closed a Series A extension', body: null, createdAt: '2026-07-18T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-kolo', name: 'Kolo Labs', tagline: 'Developer tooling for embedded teams.',
+    industry: 'DevTools', location: 'Remote', website: null, logoUrl: null,
+    companyStage: 'pre_seed', teamSize: 3, pipelineStage: 'discovered', starred: false, alertsEnabled: true,
+    notes: 'Saw the demo day pitch. Worth a first call.', tags: ['devtools'],
+    currency: 'EUR', askAmountCents: 20_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-09-04T07:00:00.000Z', createdAt: '2026-09-02T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-k1', type: 'update', title: 'Added to the board', body: null, createdAt: '2026-09-02T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-thalia', name: 'Thalia', tagline: 'Booking and payments for independent studios.',
+    industry: 'FinTech', location: 'Athens, Greece', website: null, logoUrl: null,
+    companyStage: 'seed', teamSize: 5, pipelineStage: 'reviewing', starred: false, alertsEnabled: true,
+    notes: null, tags: ['fintech', 'smb'],
+    currency: 'EUR', askAmountCents: 45_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-08-29T09:00:00.000Z', createdAt: '2026-07-21T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-t1', type: 'team', title: 'Hired a second engineer', body: null, createdAt: '2026-08-29T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-vela', name: 'Vela', tagline: 'Marketplace for refurbished lab equipment.',
+    industry: 'Marketplace', location: 'Heraklion, Greece', website: null, logoUrl: null,
+    companyStage: 'pre_seed', teamSize: 2, pipelineStage: 'passed', starred: false, alertsEnabled: false,
+    notes: 'Passed — market too thin for the model as pitched.', tags: ['marketplace'],
+    currency: 'EUR', askAmountCents: 15_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-06-12T09:00:00.000Z', createdAt: '2026-04-30T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-v1', type: 'stage_change', title: 'Moved to passed', body: null, createdAt: '2026-06-12T09:00:00.000Z' },
+    ],
+  },
+];
+
+const PREVIEW_PIPELINE_STAGES = [
+  'discovered', 'reviewing', 'meeting', 'due_diligence', 'negotiating', 'invested', 'passed',
+] as const;
+
 function pathnameOf(path: string) {
   return path.split('?')[0] ?? path;
 }
@@ -2160,6 +2292,88 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
    */
   if (pathname === '/api/sso/memberships') {
     return { memberships: [] };
+  }
+
+  if (pathname === '/api/investor/summary') {
+    const invested = PREVIEW_DEALS.filter((d) => d.pipelineStage === 'invested');
+    const deployedCents = invested.reduce((sum, d) => sum + (d.investedCents ?? 0), 0);
+    const currentValueCents = invested.reduce((sum, d) => sum + (d.currentValueCents ?? d.investedCents ?? 0), 0);
+    return {
+      stageCounts: Object.fromEntries(
+        PREVIEW_PIPELINE_STAGES.map((stage) => [
+          stage,
+          PREVIEW_DEALS.filter((d) => d.pipelineStage === stage).length,
+        ]),
+      ),
+      totalDeals: PREVIEW_DEALS.length,
+      investments: invested.length,
+      deployedCents,
+      currentValueCents,
+      returnPct:
+        deployedCents > 0
+          ? Math.round(((currentValueCents - deployedCents) / deployedCents) * 100)
+          : null,
+    };
+  }
+  if (pathname === '/api/investor/activity' || pathname.startsWith('/api/investor/activity?')) {
+    const limit = Number(new URLSearchParams(path.split('?')[1] ?? '').get('limit') ?? 20);
+    const activity = PREVIEW_DEALS
+      .flatMap((deal) =>
+        deal.recentEvents.map((event) => ({
+          id: event.id,
+          dealId: deal.id,
+          dealName: deal.name,
+          logoUrl: deal.logoUrl,
+          type: event.type,
+          title: event.title,
+          body: event.body,
+          createdAt: event.createdAt,
+        })),
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
+    return { activity };
+  }
+  if (pathname === '/api/investor/deals' && method === 'POST') {
+    // Watching a startup from Scouting. The showcase keeps no server state, so
+    // it answers the shape the caller reads rather than pretending to persist.
+    const name = typeof body.name === 'string' ? body.name : 'New deal';
+    return {
+      deal: {
+        ...PREVIEW_DEALS[0],
+        id: `deal-preview-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        name,
+        pipelineStage: 'discovered',
+        starred: false,
+        investedCents: null,
+        currentValueCents: null,
+        investedAt: null,
+        recentEvents: [],
+      },
+    };
+  }
+  if (pathname === '/api/investor/deals' || pathname.startsWith('/api/investor/deals?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const stage = params.get('pipelineStage');
+    const starred = params.get('starred');
+    const status = params.get('status');
+    const search = params.get('search')?.toLowerCase() ?? '';
+    const limit = Number(params.get('limit') ?? 50);
+    const offset = Number(params.get('offset') ?? 0);
+    const matched = PREVIEW_DEALS
+      .filter((d) => !stage || d.pipelineStage === stage)
+      .filter((d) => starred == null || d.starred === (starred === 'true'))
+      .filter((d) => !status || d.status === status)
+      .filter((d) => !search || `${d.name} ${d.tagline ?? ''} ${d.industry ?? ''}`.toLowerCase().includes(search))
+      .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt));
+    const deals = matched.slice(offset, offset + limit);
+    return { deals, total: matched.length, hasMore: offset + deals.length < matched.length };
+  }
+  if (pathname.startsWith('/api/investor/deals/')) {
+    const id = pathname.split('/')[4];
+    const deal = PREVIEW_DEALS.find((d) => d.id === id);
+    if (method !== 'GET') return { ok: true, deal: deal ?? PREVIEW_DEALS[0] };
+    return deal ? { deal } : { deal: PREVIEW_DEALS[0] };
   }
 
   if (method !== 'GET') {

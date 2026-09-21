@@ -703,7 +703,10 @@ describe('undoing registry actions', () => {
     // `if (tool === …)` that covered four of the nine mutations: ticking a
     // readiness criterion or creating a workspace refreshed nothing, so a page
     // open beside the chat kept showing the state from before.
-    const missing = ACTION_DECLARATIONS
+    // `listActions()` rather than `ACTION_DECLARATIONS`: the const assertion
+    // gives each entry its own literal type, which omits optional fields the
+    // read declarations do not carry.
+    const missing = listActions()
       .filter((spec) => spec.kind === 'mutation')
       .filter((spec) => !Array.isArray(spec.invalidates))
       .map((spec) => spec.id);
@@ -716,7 +719,7 @@ describe('undoing registry actions', () => {
     // fails to compile. This catches the other direction: a topic declared on
     // a capability that nobody bound, which would refresh nothing in silence.
     const declared = new Set(
-      ACTION_DECLARATIONS.flatMap((spec) => [...(spec.invalidates ?? [])]),
+      listActions().flatMap((spec) => [...(spec.invalidates ?? [])]),
     );
     for (const topic of declared) {
       expect(TOPIC_KEYS_SOURCE, `${topic} has no query keys bound to it`).toContain(`  ${topic}:`);

@@ -1257,6 +1257,175 @@ export async function getDashboardActivity(params?: { limit?: number; offset?: n
   return apiRequest(url);
 }
 
+// --- Investor pipeline ---------------------------------------------------
+//
+// The watchlist, the pipeline board and the portfolio are three views of one
+// `InvestorDeal` row. They used to be three screens over three unrelated
+// shapes of invented data, which is how a startup could sit at "invested" on
+// the board and be missing from the portfolio.
+
+export const PIPELINE_STAGES = [
+  'discovered',
+  'reviewing',
+  'meeting',
+  'due_diligence',
+  'negotiating',
+  'invested',
+  'passed',
+] as const;
+
+export type PipelineStage = (typeof PIPELINE_STAGES)[number];
+export type DealStatus = 'active' | 'exited' | 'written_off';
+
+export type InvestorDealEvent = {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  fromStage?: string | null;
+  toStage?: string | null;
+  createdAt: string;
+};
+
+export type InvestorDeal = {
+  id: string;
+  name: string;
+  tagline: string | null;
+  industry: string | null;
+  location: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  companyStage: string | null;
+  teamSize: number | null;
+  pipelineStage: PipelineStage;
+  starred: boolean;
+  alertsEnabled: boolean;
+  notes: string | null;
+  tags: string[];
+  /** ISO 4217, e.g. "EUR". Money below is in minor units of this. */
+  currency: string;
+  askAmountCents: number | null;
+  investedCents: number | null;
+  currentValueCents: number | null;
+  investedAt: string | null;
+  status: DealStatus;
+  lastActivityAt: string;
+  createdAt: string;
+  founder: {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    headline: string | null;
+  } | null;
+  recentEvents: InvestorDealEvent[];
+};
+
+export type InvestorSummary = {
+  stageCounts: Record<PipelineStage, number>;
+  totalDeals: number;
+  investments: number;
+  deployedCents: number;
+  currentValueCents: number;
+  /** Null when nothing is deployed — a 0% return and no investments at all
+   *  are different statements, and the page says so. */
+  returnPct: number | null;
+};
+
+export async function listInvestorDeals(params?: {
+  pipelineStage?: PipelineStage;
+  starred?: boolean;
+  status?: DealStatus;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ deals: InvestorDeal[]; total: number; hasMore: boolean }> {
+  const sp = new URLSearchParams();
+  if (params?.pipelineStage) sp.set('pipelineStage', params.pipelineStage);
+  if (params?.starred !== undefined) sp.set('starred', String(params.starred));
+  if (params?.status) sp.set('status', params.status);
+  if (params?.search) sp.set('search', params.search);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  const qs = sp.toString();
+  return apiRequest(`/api/investor/deals${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function getInvestorSummary(): Promise<InvestorSummary> {
+  return apiRequest('/api/investor/summary', undefined, { retryOn401: false });
+}
+
+export async function getInvestorActivity(limit?: number): Promise<{
+  activity: Array<{
+    id: string;
+    dealId: string;
+    dealName: string;
+    logoUrl: string | null;
+    type: string;
+    title: string;
+    body: string | null;
+    createdAt: string;
+  }>;
+}> {
+  const qs = limit != null ? `?limit=${limit}` : '';
+  return apiRequest(`/api/investor/activity${qs}`, undefined, { retryOn401: false });
+}
+
+export async function getInvestorDeal(dealId: string): Promise<{ deal: InvestorDeal }> {
+  return apiRequest(`/api/investor/deals/${dealId}`);
+}
+
+export async function createInvestorDeal(body: {
+  name: string;
+  founderId?: string;
+  tagline?: string;
+  industry?: string;
+  location?: string;
+  website?: string;
+  companyStage?: string;
+  teamSize?: number;
+  pipelineStage?: PipelineStage;
+  askAmountCents?: number;
+  tags?: string[];
+  notes?: string;
+}): Promise<{ deal: InvestorDeal }> {
+  return apiRequest('/api/investor/deals', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function updateInvestorDeal(
+  dealId: string,
+  body: {
+    pipelineStage?: PipelineStage;
+    starred?: boolean;
+    alertsEnabled?: boolean;
+    notes?: string;
+    tags?: string[];
+    askAmountCents?: number | null;
+    investedCents?: number | null;
+    currentValueCents?: number | null;
+    status?: DealStatus;
+    teamSize?: number | null;
+  },
+): Promise<{ deal: InvestorDeal }> {
+  return apiRequest(`/api/investor/deals/${dealId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteInvestorDeal(dealId: string): Promise<{ ok: boolean; dealId: string }> {
+  return apiRequest(`/api/investor/deals/${dealId}`, { method: 'DELETE' });
+}
+
+export async function addInvestorDealEvent(
+  dealId: string,
+  body: { type: string; title: string; body?: string },
+): Promise<{ event: InvestorDealEvent }> {
+  return apiRequest(`/api/investor/deals/${dealId}/events`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
 // --- Venture Readiness Score ---
 
 export interface VRSDimension {

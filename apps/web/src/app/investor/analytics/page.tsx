@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   BarChart3,
   TrendingUp,
-  TrendingDown,
   Calendar,
   DollarSign,
   Target,
@@ -17,12 +16,26 @@ import {
   PieChart,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { getInvestorSummary } from '@/lib/api';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+
+/** Compact money, in the board's currency rather than a hard-coded dollar. */
+function money(cents: number | null | undefined, currency = 'EUR'): string {
+  if (cents == null) return '\u2014';
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -70,13 +83,20 @@ const PORTFOLIO_RETURNS = [
 
 // ── SVG Bar Chart ────────────────────────────────────────────────────────────
 
-function BarChartSVG() {
-  const maxVal = Math.max(...MONTHLY_DATA.map(d => d.reviewed));
+/**
+ * The period buttons above this chart set `period` and nothing read it, so the
+ * control looked live and was inert. It narrows the window now — the most the
+ * data on hand can honestly support until the board has months of history to
+ * chart.
+ */
+function BarChartSVG({ months }: { months: number }) {
+  const data = MONTHLY_DATA.slice(-months);
+  const maxVal = Math.max(...data.map(d => d.reviewed), 1);
   const W = 420, H = 120, BAR_W = 22, GAP = 46;
 
   return (
     <svg viewBox={`0 0 ${W} ${H + 24}`} className="w-full" style={{ fontFamily: 'inherit' }}>
-      {MONTHLY_DATA.map((d, i) => {
+      {data.map((d, i) => {
         const x = 18 + i * GAP;
         const reviewedH = (d.reviewed / maxVal) * H;
         const investedH = (d.invested / maxVal) * H;
@@ -145,13 +165,39 @@ function DonutChart() {
 export default function InvestorAnalyticsPage() {
   const [period, setPeriod] = useState<'3m' | '6m' | '1y'>('6m');
 
+  const { data: summary } = useQuery({
+    queryKey: ['investor', 'summary'],
+    queryFn: getInvestorSummary,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  /*
+   * These six were string constants with trend arrows attached — "45 deals
+   * reviewed, +18%" beside a period selector that changed nothing. Five are
+   * counted from the investor's own board now. The sixth, time to close, needs
+   * the interval between a deal entering the board and reaching `invested`;
+   * the events that would measure it only start accruing from today, so it
+   * reads a dash rather than a number nobody has.
+   *
+   * The trend arrows are gone with them: a trend is a comparison against an
+   * earlier period, and there is no earlier period recorded yet.
+   */
+  const reviewed = summary
+    ? summary.totalDeals - (summary.stageCounts?.discovered ?? 0)
+    : null;
+  const conversion =
+    summary && reviewed && reviewed > 0
+      ? Math.round((summary.investments / reviewed) * 1000) / 10
+      : null;
+
   const kpis = [
-    { label: 'Deals Reviewed', value: '45', icon: Target, trend: +18, color: 'text-primary-accessible' },
-    { label: 'Invested', value: '9', icon: DollarSign, trend: +12, color: 'text-status-success' },
-    { label: 'Conversion Rate', value: '8.9%', icon: TrendingUp, trend: +2.1, color: 'text-status-info' },
-    { label: 'Avg Time to Close', value: '6 wks', icon: Calendar, trend: -5, color: 'text-status-warning' },
-    { label: 'Total Deployed', value: '$580K', icon: BarChart3, trend: +24, color: 'text-status-accent' },
-    { label: 'Portfolio Value', value: '$790K', icon: LineChart, trend: +36, color: 'text-status-success' },
+    { label: 'Deals Reviewed', value: reviewed == null ? '\u2014' : String(reviewed), icon: Target, color: 'text-primary-accessible' },
+    { label: 'Invested', value: summary ? String(summary.investments) : '\u2014', icon: DollarSign, color: 'text-status-success' },
+    { label: 'Conversion Rate', value: conversion == null ? '\u2014' : `${conversion}%`, icon: TrendingUp, color: 'text-status-info' },
+    { label: 'Avg Time to Close', value: '\u2014', icon: Calendar, color: 'text-status-warning' },
+    { label: 'Total Deployed', value: money(summary?.deployedCents), icon: BarChart3, color: 'text-status-accent' },
+    { label: 'Portfolio Value', value: money(summary?.currentValueCents), icon: LineChart, color: 'text-status-success' },
   ];
 
   return (
@@ -189,10 +235,13 @@ export default function InvestorAnalyticsPage() {
                     <div className="p-2 rounded-lg bg-primary/10">
                       <kpi.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
-                    <span className={cn('text-xs flex items-center gap-0.5', kpi.trend > 0 ? 'text-status-success' : 'text-status-danger')}>
-                      {kpi.trend > 0 ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
-                      {Math.abs(kpi.trend)}{kpi.label.includes('Rate') || kpi.label.includes('Time') ? 'pp' : '%'}
-                    </span>
+                    {/*
+                      * The trend arrow is gone with the constants that fed it.
+                      * A trend is a comparison against an earlier period, and
+                      * the board only starts recording one from today — an
+                      * arrow here would have been decoration pointing at
+                      * nothing.
+                      */}
                   </div>
                 </div>
               </CardContent>
@@ -216,7 +265,7 @@ export default function InvestorAnalyticsPage() {
                   <CardTitle className="text-base">Monthly Deal Activity</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <BarChartSVG />
+                  <BarChartSVG months={period === '3m' ? 3 : period === '6m' ? 6 : 12} />
                 </CardContent>
               </Card>
 
