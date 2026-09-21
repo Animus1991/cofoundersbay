@@ -4676,7 +4676,29 @@ export interface ProgramParticipantItem {
   appliedAt: string;
   acceptedAt: string | null;
   completedAt: string | null;
-  user: { id: string; profile: { displayName: string | null; avatarUrl: string | null } | null };
+  /** The reviewer's score, when one has been recorded. */
+  score?: number | null;
+  user: {
+    id: string;
+    profile: {
+      displayName: string | null;
+      avatarUrl: string | null;
+      headline?: string | null;
+      location?: string | null;
+    } | null;
+  };
+}
+
+/** Moves an applicant along: accepted, rejected, active, completed, dropped. */
+export async function updateProgramParticipant(
+  programId: string,
+  participantId: string,
+  body: Partial<{ status: string; role: string; progress: number; score: number; notes: string }>,
+): Promise<{ participant: ProgramParticipantItem }> {
+  return apiRequest(`/api/programs/${programId}/participants/${participantId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
 }
 
 export async function listPrograms(params?: {
