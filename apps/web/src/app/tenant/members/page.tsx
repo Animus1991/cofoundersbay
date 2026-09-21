@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Users,
   Search,
@@ -17,6 +17,9 @@ import {
   Copy,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { useTenant } from '@/components/providers/TenantContext';
+import { getTenantMembers, type TenantMemberItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,6 +50,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+/**
+ * The page's own row from the tenant membership row.
+ *
+ * `/api/tenants/:id/members` and its client have existed all along, and
+ * `TenantContext` already resolves which tenant this is — the page just never
+ * asked either of them.
+ *
+ * Four fields have no source and stay absent rather than being filled:
+ * presence, an engagement score, milestones completed and sessions attended
+ * are all activity the membership row does not record. The header tiles read
+ * dashes for them, which is what this page used to do with `Math.round(total
+ * * 0.08)` before that was removed.
+ */
+function toPageMember(row: TenantMemberItem): Member {
+  return {
+    id: row.id,
+    name: row.user.profile?.displayName ?? row.user.email,
+    email: row.user.email,
+    avatarUrl: row.user.profile?.avatarUrl ?? undefined,
+    role: row.role,
+    status: row.isActive ? 'active' : 'suspended',
+    joinedAt: row.joinedAt,
+    lastActive: '',
+  };
+}
 
 type Member = {
   id: string;
@@ -204,22 +233,44 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   );
 }
 
+/** Shown to a tenant with no members loaded. */
+const SEED_MEMBERS: Member[] = [
+  { id: '1', name: 'John Doe',      email: 'john@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Jan 2025', lastActive: '2 hours ago',  engagementScore: 82, isOnline: true,  milestonesCompleted: 5, sessionsAttended: 8 },
+  { id: '2', name: 'Jane Smith',    email: 'jane@example.com',  role: 'Mentor',   status: 'active',    joinedAt: 'Feb 2025', lastActive: '1 day ago',    engagementScore: 91, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 14 },
+  { id: '3', name: 'Mike Johnson',  email: 'mike@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Feb 2025', lastActive: '3 days ago',   engagementScore: 56, isOnline: false, milestonesCompleted: 3, sessionsAttended: 4 },
+  { id: '4', name: 'Sarah Williams',email: 'sarah@example.com', role: 'Admin',    status: 'active',    joinedAt: 'Dec 2024', lastActive: '1 hour ago',   engagementScore: 95, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 22 },
+  { id: '5', name: 'Tom Brown',     email: 'tom@example.com',   role: 'Founder',  status: 'pending',   joinedAt: 'Mar 2025', lastActive: 'Never',        engagementScore: 12, isOnline: false, milestonesCompleted: 0, sessionsAttended: 0 },
+  { id: '6', name: 'Lisa Martinez', email: 'lisa@example.com',  role: 'Investor', status: 'active',    joinedAt: 'Jan 2025', lastActive: '1 week ago',   engagementScore: 44, isOnline: false, milestonesCompleted: 0, sessionsAttended: 3 },
+  { id: '7', name: 'Alex Chen',     email: 'alex@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Mar 2025', lastActive: '4 hours ago',  engagementScore: 73, isOnline: true,  milestonesCompleted: 2, sessionsAttended: 6 },
+  { id: '8', name: 'Nina Patel',    email: 'nina@example.com',  role: 'Mentor',   status: 'suspended', joinedAt: 'Nov 2024', lastActive: '2 weeks ago',  engagementScore: 20, isOnline: false, milestonesCompleted: 0, sessionsAttended: 1 },
+];
+
 export default function TenantMembersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showInvite, setShowInvite] = useState(false);
 
-  const members: Member[] = [
-    { id: '1', name: 'John Doe',      email: 'john@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Jan 2025', lastActive: '2 hours ago',  engagementScore: 82, isOnline: true,  milestonesCompleted: 5, sessionsAttended: 8 },
-    { id: '2', name: 'Jane Smith',    email: 'jane@example.com',  role: 'Mentor',   status: 'active',    joinedAt: 'Feb 2025', lastActive: '1 day ago',    engagementScore: 91, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 14 },
-    { id: '3', name: 'Mike Johnson',  email: 'mike@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Feb 2025', lastActive: '3 days ago',   engagementScore: 56, isOnline: false, milestonesCompleted: 3, sessionsAttended: 4 },
-    { id: '4', name: 'Sarah Williams',email: 'sarah@example.com', role: 'Admin',    status: 'active',    joinedAt: 'Dec 2024', lastActive: '1 hour ago',   engagementScore: 95, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 22 },
-    { id: '5', name: 'Tom Brown',     email: 'tom@example.com',   role: 'Founder',  status: 'pending',   joinedAt: 'Mar 2025', lastActive: 'Never',        engagementScore: 12, isOnline: false, milestonesCompleted: 0, sessionsAttended: 0 },
-    { id: '6', name: 'Lisa Martinez', email: 'lisa@example.com',  role: 'Investor', status: 'active',    joinedAt: 'Jan 2025', lastActive: '1 week ago',   engagementScore: 44, isOnline: false, milestonesCompleted: 0, sessionsAttended: 3 },
-    { id: '7', name: 'Alex Chen',     email: 'alex@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Mar 2025', lastActive: '4 hours ago',  engagementScore: 73, isOnline: true,  milestonesCompleted: 2, sessionsAttended: 6 },
-    { id: '8', name: 'Nina Patel',    email: 'nina@example.com',  role: 'Mentor',   status: 'suspended', joinedAt: 'Nov 2024', lastActive: '2 weeks ago',  engagementScore: 20, isOnline: false, milestonesCompleted: 0, sessionsAttended: 1 },
-  ];
+  /*
+   * The tenant's real members. The seed below is what a tenant with none
+   * loaded sees, so the screen still teaches its shape.
+   */
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+  const { data, isLoading } = useQuery({
+    queryKey: ['tenant', 'members', tenantId],
+    queryFn: () => getTenantMembers(tenantId!, { limit: 100 }),
+    enabled: Boolean(tenantId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(
+    () => (Array.isArray(data) ? data : []).map(toPageMember),
+    [data],
+  );
+  const members: Member[] = live.length > 0 ? live : isLoading ? [] : SEED_MEMBERS;
+
 
   const filteredMembers = members.filter((m) => {
     const matchesSearch =
@@ -232,8 +283,21 @@ export default function TenantMembersPage() {
   });
 
   const roles = [...new Set(members.map((m) => m.role))];
-  const onlineCount = members.filter((m) => m.isOnline).length;
-  const avgEngagement = Math.round(members.filter((m) => m.engagementScore != null).reduce((s, m) => s + (m.engagementScore ?? 0), 0) / members.length);
+  /*
+   * Both stay null when nothing records them, which is the case for a real
+   * tenant today: the membership row carries no presence and no engagement.
+   * Zero and "not recorded" are different statements, and the tiles say which.
+   * Averaged over the rows that carry a score, never over all of them.
+   */
+  const withPresence = members.filter((m) => m.isOnline !== undefined);
+  const onlineCount = withPresence.length > 0
+    ? withPresence.filter((m) => m.isOnline).length
+    : null;
+
+  const scored = members.filter((m) => m.engagementScore != null);
+  const avgEngagement = scored.length > 0
+    ? Math.round(scored.reduce((sum, m) => sum + (m.engagementScore ?? 0), 0) / scored.length)
+    : null;
 
   const activeTab = roleFilter === 'all' ? 'all' : roleFilter;
 
@@ -253,8 +317,8 @@ export default function TenantMembersPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-accessible' },
-            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-status-success' },
-            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Online Now', value: onlineCount ?? '—', icon: Activity, color: 'text-status-success' },
+            { label: 'Avg Engagement', value: avgEngagement == null ? '—' : `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
             { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
