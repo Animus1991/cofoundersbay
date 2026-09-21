@@ -1176,6 +1176,11 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname.startsWith('/api/connections')) {
+    // Withdrawing a request the demo user sent. The showcase keeps no server
+    // state, so it answers the shape the caller reads and nothing more.
+    if (method === 'DELETE') {
+      return { ok: true, connectionId: pathname.split('/')[3] ?? '' };
+    }
     if (pathname.includes('/status/')) {
       return { status: 'pending', connectionId: 'conn-elena', direction: 'received' };
     }

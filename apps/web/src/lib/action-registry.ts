@@ -17,6 +17,7 @@ import {
   updateReadinessCriterion,
 } from '@/lib/api';
 import { createWorkspace } from '@/lib/builder-api';
+import { archiveWorkspace, withdrawConnectionRequest } from '@/lib/api';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
@@ -44,6 +45,18 @@ export type { ActionOutcome };
 export { toToolCatalog };
 
 type Executor = (payload: Record<string, unknown>) => Promise<ActionOutcome>;
+
+/**
+ * An undo gets both halves: what was asked for, and what the action produced.
+ *
+ * The second is the one that matters for anything that creates a row. Before
+ * it existed every create declared `reversal: none`, because the undo knew the
+ * name it had been given and not the id that came back.
+ */
+type Undo = (
+  payload: Record<string, unknown>,
+  context: Record<string, unknown>,
+) => Promise<ActionOutcome>;
 
 function requireString(payload: Record<string, unknown>, key: string): string {
   const value = payload?.[key];
@@ -171,8 +184,13 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     const receiverId = requireString(payload, 'receiverId');
     if (!receiverId) return { ok: false, error: 'Missing receiver' };
     const message = typeof payload?.message === 'string' ? payload.message : undefined;
-    await sendConnectionRequest({ receiverId, message });
-    return { ok: true };
+    const sent = await sendConnectionRequest({ receiverId, message });
+    // The id is what makes this reversible: the undo withdraws this exact
+    // request rather than looking one up by the pair of people. Read rather
+    // than destructured, because `apiRequest` casts without checking and a
+    // response without a connection must not turn a sent intro into an error.
+    const connectionId = sent?.connection?.id;
+    return connectionId ? { ok: true, undo: { connectionId } } : { ok: true };
   },
 
   start_or_send_message: async (payload) => {
@@ -220,10 +238,10 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
       // A blocked storage write is not a failed creation — the workspace
       // exists, and Builder can select it. Saying `ok` here and sending the
       // user to Builder is truer than reporting the write as failed.
-      return { ok: true, href: '/builder' };
+      return { ok: true, href: '/builder', undo: { workspaceId: workspace.id } };
     }
     notifyReadinessChanged();
-    return { ok: true, href: '/readiness' };
+    return { ok: true, href: '/readiness', undo: { workspaceId: workspace.id } };
   },
 
   canvas_command: async (payload) => {
@@ -237,11 +255,11 @@ const ANALYTICS_PERIODS = ['7d', '14d', '30d', '90d'];
 
 /**
  * Exhaustive over every declaration that claims `full` or `partial`
- * reversibility — shortlist add/remove are the fully reversible pair, because
- * a connection request has no sender-side withdraw route and a direct
- * conversation cannot be deleted.
+ * reversibility. `start_or_send_message` is still absent on purpose: a sent
+ * message is read the moment it lands and a direct conversation cannot be
+ * deleted, so there is nothing honest to reverse.
  */
-const UNDOS: Record<UndoableActionId, Executor> = {
+const UNDOS: Record<UndoableActionId, Undo> = {
   shortlist_add: async (payload) => {
     const userId = requireString(payload, 'userId');
     if (!userId) return { ok: false, error: 'Missing user' };
@@ -266,6 +284,47 @@ const UNDOS: Record<UndoableActionId, Executor> = {
   // this reason: the payload says which window was asked for, never which one
   // was open before.
   analytics_set_period: async () => ({ ok: true, href: '/analytics' }),
+
+  /**
+   * Archives the workspace this action created, by the id the executor handed
+   * back — never by name, which could match one the user already had.
+   *
+   * Also clears the selection, because `workspace_create` set it: leaving an
+   * archived workspace selected would send /readiness to a workspace that is
+   * no longer in the list.
+   */
+  /**
+   * Withdraws the request that was just sent, by its id.
+   *
+   * Honest about its limit, and the declaration says so: the recipient was
+   * notified the moment it was sent, so withdrawing removes the pending
+   * request from their list but cannot unsee the notification. It refuses
+   * once they have answered — `withdrawRequest` returns a conflict, which
+   * surfaces here as the error rather than as a silent no-op.
+   */
+  send_connection: async (_payload, context) => {
+    const connectionId = requireString(context, 'connectionId');
+    if (!connectionId) return { ok: false, error: 'No request to withdraw' };
+    await withdrawConnectionRequest(connectionId);
+    return { ok: true, href: '/connections' };
+  },
+
+  workspace_create: async (_payload, context) => {
+    const workspaceId = requireString(context, 'workspaceId');
+    if (!workspaceId) return { ok: false, error: 'No workspace to archive' };
+
+    await archiveWorkspace(workspaceId);
+    try {
+      if (window.localStorage.getItem(WORKSPACE_KEY) === workspaceId) {
+        window.localStorage.removeItem(WORKSPACE_KEY);
+      }
+    } catch {
+      // A blocked storage read is not a failed archive. The workspace is
+      // away; Builder will pick another the next time it loads.
+    }
+    notifyReadinessChanged();
+    return { ok: true, href: '/builder' };
+  },
 };
 
 export function listActions(): readonly ActionDeclaration[] {
@@ -311,19 +370,23 @@ export async function executeAction(
  *
  * Refuses anything else rather than attempting a best-effort guess, because
  * the cases that declare `none` are exactly the ones where a guess would do
- * damage: withdrawing an intro is not the sender's to perform, and archiving a
- * conversation the assistant may not have created would remove something the
- * user already had.
+ * damage: archiving a conversation the assistant may not have created would
+ * remove something the user already had.
+ *
+ * `context` is what the action itself produced — the id of a row it created,
+ * typically. It is empty for actions that produced nothing, and an undo that
+ * needs it says so rather than guessing from the payload.
  */
 export async function undoAction(
   id: string,
   payload: Record<string, unknown>,
+  context: Record<string, unknown> = {},
 ): Promise<ActionOutcome> {
-  const undo = (UNDOS as Record<string, Executor | undefined>)[id];
+  const undo = (UNDOS as Record<string, Undo | undefined>)[id];
   if (!undo) return { ok: false, error: 'Not reversible' };
 
   try {
-    return await undo(payload);
+    return await undo(payload, context);
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Undo failed' };
   }

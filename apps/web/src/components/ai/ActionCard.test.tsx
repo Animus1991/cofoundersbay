@@ -78,11 +78,22 @@ describe('ActionCard reversibility', () => {
   });
 
   it('offers no Undo for a write that cannot be reversed', () => {
-    renderCard(action('send_connection', 'done', { receiverId: 'u1' }), vi.fn());
+    // A sent message is read the moment it lands and a direct conversation
+    // cannot be deleted, so this one is honestly irreversible. An intro is not
+    // on this list any more: the sender can withdraw it.
+    renderCard(action('start_or_send_message', 'done', { userId: 'u1' }), vi.fn());
 
     expect(screen.queryByRole('button', { name: /Undo|Αναίρεση/ })).toBeNull();
     // The completed state is still reported.
     expect(screen.getByText('Done')).toBeTruthy();
+  });
+
+  it('offers Undo for an intro, which the sender can now withdraw', () => {
+    const onUndo = vi.fn();
+    renderCard(action('send_connection', 'done', { receiverId: 'u1' }), onUndo);
+
+    fireEvent.click(screen.getByRole('button', { name: /Undo|Αναίρεση/ }));
+    expect(onUndo).toHaveBeenCalledTimes(1);
   });
 
   it('offers no Undo when the caller supplies no handler', () => {

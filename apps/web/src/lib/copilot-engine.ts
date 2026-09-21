@@ -847,7 +847,7 @@ export async function runCopilotTurn(
  */
 export async function executeCopilotAction(
   action: CopilotAction,
-): Promise<{ ok: boolean; href?: string; error?: string }> {
+): Promise<{ ok: boolean; href?: string; error?: string; undo?: Record<string, unknown> }> {
   const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
   if (payload.href === undefined && action.href !== undefined) payload.href = action.href;
   return executeAction(action.tool, payload);

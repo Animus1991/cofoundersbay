@@ -2008,6 +2008,16 @@ export async function sendConnectionRequest(body: {
   });
 }
 
+/**
+ * Takes back a connection request the recipient has not answered. Only the
+ * sender may call it, and only while the request is still pending.
+ */
+export async function withdrawConnectionRequest(
+  connectionId: string,
+): Promise<{ ok: boolean; connectionId: string }> {
+  return apiRequest(`/api/connections/${connectionId}`, { method: 'DELETE' });
+}
+
 export async function listConnectionRequests(params?: {
   type?: 'sent' | 'received' | 'accepted';
   limit?: number;
@@ -4573,6 +4583,18 @@ export async function assessReadiness(dto: {
   return apiRequest(`/api/builder/readiness/assess`, {
     method: 'POST',
     body: JSON.stringify(dto),
+  });
+}
+
+/**
+ * Archives a workspace. Used by the assistant to take back a workspace it just
+ * created — archiving rather than deleting, because that is the product's own
+ * word for putting one away and it leaves the row recoverable.
+ */
+export async function archiveWorkspace(workspaceId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/builder/workspaces/${workspaceId}/archive`, {
+    method: 'POST',
+    body: '{}',
   });
 }
 

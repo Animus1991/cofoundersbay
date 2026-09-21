@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  archiveWorkspace,
   assessReadiness,
+  withdrawConnectionRequest,
   getOrCreateDirectConversation,
   removeFromShortlist,
   saveToShortlist,
@@ -32,6 +34,8 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   removeFromShortlist: vi.fn(),
   assessReadiness: vi.fn(),
   updateReadinessCriterion: vi.fn(),
+  archiveWorkspace: vi.fn(),
+  withdrawConnectionRequest: vi.fn(),
 }));
 // Not a showcase unless a test says so: the executors take a different path
 // in demo mode, and every case below states which one it is exercising.
@@ -52,6 +56,8 @@ const unshortlist = vi.mocked(removeFromShortlist);
 const readReadiness = vi.mocked(assessReadiness);
 const writeCriterion = vi.mocked(updateReadinessCriterion);
 const makeWorkspace = vi.mocked(createWorkspace);
+const archiveWorkspaceMock = vi.mocked(archiveWorkspace);
+const withdrawConnection = vi.mocked(withdrawConnectionRequest);
 
 /** One dimension carrying a single criterion, in the state asked for. */
 function assessment(completed: boolean) {
@@ -79,6 +85,8 @@ function assessment(completed: boolean) {
 }
 
 const TYPES_SOURCE = readFileSync('src/lib/copilot-types.ts', 'utf8');
+const TOPIC_KEYS_SOURCE = readFileSync('src/hooks/useAIChat.ts', 'utf8');
+const CAPABILITIES_PAGE_SOURCE = readFileSync('src/app/ai/capabilities/page.tsx', 'utf8');
 const PLANNER_SOURCE = readFileSync('src/lib/copilot-planner.ts', 'utf8');
 
 /** The alias table as it is actually written, so the test cannot drift from it. */
@@ -97,6 +105,8 @@ beforeEach(() => {
   readReadiness.mockReset();
   writeCriterion.mockReset();
   makeWorkspace.mockReset();
+  archiveWorkspaceMock.mockReset();
+  withdrawConnection.mockReset();
   localStorage.clear();
   sessionStorage.clear();
   demo.on = false;
@@ -174,9 +184,9 @@ describe('action registry coverage', () => {
       expect(canExecute(id), `${id} has no executor`).toBe(true);
     }
 
-    // Creating a workspace is honestly irreversible: `undoAction` is handed the
-    // payload, never the outcome, so it has no id to archive.
-    expect(isUndoable('workspace_create')).toBe(false);
+    // Creating a workspace is reversible now that the outcome carries the id
+    // it created: the undo archives that exact row rather than one by name.
+    expect(isUndoable('workspace_create')).toBe(true);
     expect(isUndoable('canvas_command')).toBe(false);
     expect(isUndoable('readiness_tick_criterion')).toBe(true);
     expect(isUndoable('analytics_set_period')).toBe(true);
@@ -334,11 +344,23 @@ describe('executing registry actions', () => {
     expect(unshortlist).toHaveBeenCalledExactlyOnceWith('u1');
   });
 
-  it('sends a connection with the optional note preserved', async () => {
+  it('sends a connection with the optional note preserved, and keeps the id for the undo', async () => {
+    sendConnection.mockResolvedValue({
+      connection: { id: 'conn-7' },
+    } as Awaited<ReturnType<typeof sendConnectionRequest>>);
+
     await expect(
       executeAction('send_connection', { receiverId: 'u2', message: 'hello' }),
-    ).resolves.toEqual({ ok: true });
+    ).resolves.toEqual({ ok: true, undo: { connectionId: 'conn-7' } });
     expect(sendConnection).toHaveBeenCalledExactlyOnceWith({ receiverId: 'u2', message: 'hello' });
+  });
+
+  it('still reports a sent intro when the response carries no connection', async () => {
+    // `apiRequest` casts without checking, so a thinner response must not turn
+    // a request that was actually sent into an error the user sees.
+    await expect(
+      executeAction('send_connection', { receiverId: 'u2' }),
+    ).resolves.toEqual({ ok: true });
   });
 
   it('drops a non-string note rather than sending it', async () => {
@@ -449,7 +471,9 @@ describe('executing registry actions', () => {
 
     await expect(
       executeAction('workspace_create', { name: '  Helios  ', description: 'Solar ops' }),
-    ).resolves.toEqual({ ok: true, href: '/readiness' });
+      // The id comes back on the outcome so the undo can archive this exact
+      // workspace instead of guessing by name.
+    ).resolves.toEqual({ ok: true, href: '/readiness', undo: { workspaceId: 'ws-new' } });
 
     expect(makeWorkspace).toHaveBeenCalledExactlyOnceWith({
       name: 'Helios',
@@ -558,15 +582,24 @@ describe('undoing registry actions', () => {
     expect(shortlist).toHaveBeenCalledExactlyOnceWith('u1');
   });
 
-  it('refuses to undo an intro, and touches no API doing so', async () => {
-    // There is no sender-side withdraw route. A "best effort" undo here would
-    // either fail loudly or, worse, reach for the receiver's PATCH and be
-    // rejected as Forbidden after the recipient was already notified.
+  it('withdraws the intro it sent, by the id the send returned', async () => {
+    await expect(
+      undoAction('send_connection', { receiverId: 'u2' }, { connectionId: 'conn-7' }),
+    ).resolves.toEqual({ ok: true, href: '/connections' });
+
+    expect(withdrawConnection).toHaveBeenCalledExactlyOnceWith('conn-7');
+    // Never the receiver's PATCH, which would be rejected as Forbidden.
+    expect(sendConnection).not.toHaveBeenCalled();
+  });
+
+  it('refuses to withdraw an intro whose id it never saw', async () => {
+    // Looking the request up by the pair of people would be a guess: the two
+    // may have had an earlier request between them.
     await expect(undoAction('send_connection', { receiverId: 'u2' })).resolves.toEqual({
       ok: false,
-      error: 'Not reversible',
+      error: 'No request to withdraw',
     });
-    expect(sendConnection).not.toHaveBeenCalled();
+    expect(withdrawConnection).not.toHaveBeenCalled();
   });
 
   it('refuses to undo opening a thread rather than archiving the user’s own', async () => {
@@ -608,14 +641,36 @@ describe('undoing registry actions', () => {
     });
   });
 
-  it('refuses to undo a created workspace rather than archiving one by name', async () => {
-    // The undo receives what was asked for, not what was made, so archiving by
-    // name could archive a workspace the user already had.
+  it('archives the workspace it created, by id, and clears the selection', async () => {
+    window.localStorage.setItem('cfb_default_workspace', 'ws-new');
+
+    await expect(
+      undoAction('workspace_create', { name: 'Helios' }, { workspaceId: 'ws-new' }),
+    ).resolves.toEqual({ ok: true, href: '/builder' });
+
+    expect(archiveWorkspaceMock).toHaveBeenCalledWith('ws-new');
+    // Leaving an archived workspace selected would send /readiness to one that
+    // is no longer in the list.
+    expect(window.localStorage.getItem('cfb_default_workspace')).toBeNull();
+  });
+
+  it('leaves a different selected workspace alone when it archives', async () => {
+    window.localStorage.setItem('cfb_default_workspace', 'ws-mine');
+
+    await expect(
+      undoAction('workspace_create', { name: 'Helios' }, { workspaceId: 'ws-new' }),
+    ).resolves.toEqual({ ok: true, href: '/builder' });
+
+    expect(archiveWorkspaceMock).toHaveBeenCalledWith('ws-new');
+    expect(window.localStorage.getItem('cfb_default_workspace')).toBe('ws-mine');
+  });
+
+  it('refuses to archive when the outcome carried no id, rather than guessing by name', async () => {
     await expect(undoAction('workspace_create', { name: 'Helios' })).resolves.toEqual({
       ok: false,
-      error: 'Not reversible',
+      error: 'No workspace to archive',
     });
-    expect(makeWorkspace).not.toHaveBeenCalled();
+    expect(archiveWorkspaceMock).not.toHaveBeenCalled();
   });
 
   it('refuses an unknown id and a read tool', async () => {
@@ -643,10 +698,47 @@ describe('undoing registry actions', () => {
     });
   });
 
+  it('makes every mutation say what it makes stale', () => {
+    // The app used to decide this at the call site, in a chain of
+    // `if (tool === …)` that covered four of the nine mutations: ticking a
+    // readiness criterion or creating a workspace refreshed nothing, so a page
+    // open beside the chat kept showing the state from before.
+    const missing = ACTION_DECLARATIONS
+      .filter((spec) => spec.kind === 'mutation')
+      .filter((spec) => !Array.isArray(spec.invalidates))
+      .map((spec) => spec.id);
+
+    expect(missing, 'mutations with no `invalidates`').toEqual([]);
+  });
+
+  it('binds every declared invalidation topic to real query keys', () => {
+    // `TOPIC_KEYS` is a Record over the topic union, so a topic with no entry
+    // fails to compile. This catches the other direction: a topic declared on
+    // a capability that nobody bound, which would refresh nothing in silence.
+    const declared = new Set(
+      ACTION_DECLARATIONS.flatMap((spec) => [...(spec.invalidates ?? [])]),
+    );
+    for (const topic of declared) {
+      expect(TOPIC_KEYS_SOURCE, `${topic} has no query keys bound to it`).toContain(`  ${topic}:`);
+    }
+    expect(declared.size).toBeGreaterThan(0);
+  });
+
+  it('gives every capability a sample ask on the capabilities page', () => {
+    // The page is generated from the contract, but the example beside each
+    // capability is hand-written: a new capability with no example renders as
+    // a card that cannot tell you how to use it.
+    const missing = [...listActionIds()].filter(
+      (id) => !CAPABILITIES_PAGE_SOURCE.includes(`  ${id}: {`),
+    );
+    expect(missing, 'capabilities with no sample ask').toEqual([]);
+  });
+
   it('reports exactly which tools can be taken back', () => {
     expect(isUndoable('shortlist_add')).toBe(true);
     expect(isUndoable('shortlist_remove')).toBe(true);
-    expect(isUndoable('send_connection')).toBe(false);
+    expect(isUndoable('send_connection')).toBe(true);
+    expect(isUndoable('workspace_create')).toBe(true);
     expect(isUndoable('start_or_send_message')).toBe(false);
     expect(isUndoable('navigate')).toBe(false);
     expect(isUndoable('get_graph')).toBe(false);

@@ -30,7 +30,8 @@ import {
 import { followUpRequest, readsToRun } from '@/lib/copilot-loop';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { actionsFromToolCalls, executeCopilotAction, replyLocaleFor, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
-import { isUndoable, undoAction as runUndo } from '@/lib/action-registry';
+import type { InvalidationTopic } from '@cofounderbay/shared';
+import { getActionSpec, isUndoable, undoAction as runUndo } from '@/lib/action-registry';
 import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
 import { CONNECTION_KEYS, MESSAGE_KEYS, queryKeys } from '@/lib/query-keys';
@@ -78,6 +79,24 @@ export interface UseAIChatReturn {
   loadConversation: (id: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
 }
+
+/**
+ * Each topic a capability can declare, bound to the query keys that hold it.
+ *
+ * Exhaustive by construction: `Record<InvalidationTopic, …>` means a topic
+ * added to the shared contract without an entry here stops the build, which is
+ * the point — the alternative is a capability that quietly refreshes nothing.
+ */
+const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
+  connections: [...CONNECTION_KEYS, queryKeys.graphMe],
+  messages: [...MESSAGE_KEYS],
+  shortlist: [queryKeys.shortlist, queryKeys.shortlistIds],
+  graph: [queryKeys.graphMe],
+  // Both the canonical score and anything keyed under a workspace beneath it.
+  readiness: [['readiness']],
+  workspaces: [['builder'], ['workspaces']],
+  research: [['research-boards'], ['research-board']],
+};
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const { hasSession, mounted } = useSession();
@@ -454,23 +473,24 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
    * reverses, so both paths refresh the same keys -- an undo that left the old
    * value on screen would read as a failed undo.
    */
+  /**
+   * Refreshes what the action disturbed, reading the capability's own
+   * `invalidates` rather than a chain of `if (tool === …)`.
+   *
+   * That chain covered four of the nine mutations: ticking a readiness
+   * criterion, creating a workspace and running a canvas command refreshed
+   * nothing, so a page open beside the chat kept showing the state from before
+   * the assistant changed it. `TOPIC_KEYS` is exhaustive over the topic union,
+   * so a topic added to the contract without a binding here fails to compile.
+   */
   const invalidateFor = useCallback(
     (tool: CopilotAction['tool']) => {
       if (!queryClient || isPreviewDemo()) return;
-      if (tool === 'send_connection') {
-        CONNECTION_KEYS.forEach((key) => {
+      const topics = getActionSpec(tool)?.invalidates ?? [];
+      for (const topic of topics) {
+        for (const key of TOPIC_KEYS[topic]) {
           void queryClient.invalidateQueries({ queryKey: [...key] });
-        });
-        void queryClient.invalidateQueries({ queryKey: [...queryKeys.graphMe] });
-      }
-      if (tool === 'start_or_send_message') {
-        MESSAGE_KEYS.forEach((key) => {
-          void queryClient.invalidateQueries({ queryKey: [...key] });
-        });
-      }
-      if (tool === 'shortlist_add' || tool === 'shortlist_remove') {
-        void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlist] });
-        void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlistIds] });
+        }
       }
     },
     [queryClient],
@@ -509,7 +529,9 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           setError(result.error ?? 'Action failed');
           return;
         }
-        updateAction(action.id, { status: 'done' });
+        // Carried on the card so the undo can act on what was created, not on
+        // what was asked for. Without it a create can only ever be `none`.
+        updateAction(action.id, { status: 'done', undoContext: result.undo });
         return { href: result.href };
       } finally {
         setPendingActionId(null);
@@ -531,7 +553,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       setPendingActionId(action.id);
       try {
         const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
-        const result = await runUndo(action.tool, payload);
+        const result = await runUndo(action.tool, payload, action.undoContext ?? {});
         invalidateFor(action.tool);
         audit(action, result.ok ? 'undone' : 'failed');
 

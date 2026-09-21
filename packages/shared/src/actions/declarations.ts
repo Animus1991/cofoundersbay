@@ -248,6 +248,7 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: false,
+    invalidates: [],
     reversal: {
       kind: 'none',
       explanation: {
@@ -278,6 +279,7 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['shortlist'],
     reversal: {
       // `DELETE /api/shortlist/:userId` runs `savedProfile.deleteMany`, so the
       // row is really gone and nobody else was notified.
@@ -309,6 +311,7 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['shortlist'],
     reversal: {
       kind: 'full',
       explanation: {
@@ -347,15 +350,15 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['connections', 'graph'],
     reversal: {
-      // ConnectionsController exposes POST, GET, PATCH, block and status. The
-      // PATCH is respondToRequest and throws ForbiddenException unless the
-      // caller is the receiver, and sendRequest notifies the receiver before
-      // it returns. The sender has no route to take it back.
-      kind: 'none',
+      // `DELETE /connections/:id` withdraws a request the receiver has not
+      // answered. Partial, not full: the notification fired when the request
+      // was sent and nothing takes that back — only the pending request goes.
+      kind: 'partial',
       explanation: {
-        en: 'Cannot be undone. The recipient is notified as soon as it is sent, and only they can accept or decline it — there is no withdraw action for the sender.',
-        el: 'Δεν αναιρείται. Ο παραλήπτης ειδοποιείται μόλις σταλεί και μόνο αυτός μπορεί να το αποδεχτεί ή να το απορρίψει — δεν υπάρχει ανάκληση για τον αποστολέα.',
+        en: 'Withdraws the request, so it leaves their pending list. They were notified when it was sent, so they may already have seen it, and it can no longer be withdrawn once they have accepted or declined.',
+        el: 'Ανακαλεί το αίτημα, ώστε να φύγει από τα εκκρεμή τους. Ειδοποιήθηκαν όταν στάλθηκε, οπότε μπορεί να το έχουν ήδη δει, και δεν ανακαλείται πια αν το έχουν αποδεχτεί ή απορρίψει.',
       },
     },
     confirmLabel: { en: 'Send intro', el: 'Αποστολή σύστασης' },
@@ -380,6 +383,7 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['messages'],
     reversal: {
       // MessagingController has no delete for a conversation, and
       // getOrCreateDirectConversation returns the same `{ id }` shape whether
@@ -434,6 +438,7 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['readiness'],
     reversal: {
       // The identifier the undo needs is in the *input*, not the output, which
       // is what makes this genuinely reversible where `workspace_create` is
@@ -471,8 +476,10 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     // Like `navigate`, this moves the user's view rather than their data, and
-    // that distinction is what the UI reads to decide whether to warn.
+    // that distinction is what the UI reads to decide whether to warn. Nothing
+    // goes stale either: the page keys its query by the period in the address.
     writes: false,
+    invalidates: [],
     reversal: {
       kind: 'partial',
       explanation: {
@@ -522,16 +529,16 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['workspaces', 'readiness'],
     reversal: {
-      // `undoAction` receives the original payload, never the outcome, so an
-      // undo here has no handle on the workspace that was just made. Archiving
-      // by name would be a guess, and the user may already own a workspace
-      // with that name — the same reasoning that makes `start_or_send_message`
-      // irreversible. Archiving stays a deliberate act in Builder.
-      kind: 'none',
+      // The executor hands back the id it created (`ActionOutcome.undo`), so
+      // the undo archives that exact workspace rather than guessing by name.
+      // Archive, not delete: it is the product's own word for putting a
+      // workspace away, and it leaves the row recoverable from Builder.
+      kind: 'full',
       explanation: {
-        en: 'A new workspace is yours and empty, so nothing is lost by leaving it. It cannot be taken back automatically because the undo is given what was asked for, not what was created, and archiving by name could archive a workspace you already had. Archive it from Startup Builder when you want it gone.',
-        el: 'Ο νέος χώρος είναι δικός σου και κενός, οπότε δεν χάνεται τίποτα αν μείνει. Δεν αναιρείται αυτόματα επειδή η αναίρεση λαμβάνει ό,τι ζητήθηκε, όχι ό,τι δημιουργήθηκε, και η αρχειοθέτηση βάσει ονόματος θα μπορούσε να αρχειοθετήσει χώρο που είχες ήδη. Αρχειοθέτησέ τον από το Startup Builder όποτε θέλεις.',
+        en: 'Archives the workspace that was just created, and clears it as your selected workspace. Nothing inside it is deleted — you can restore it from Startup Builder.',
+        el: 'Αρχειοθετεί τον χώρο που μόλις δημιουργήθηκε και τον αφαιρεί από επιλεγμένο. Τίποτα μέσα του δεν διαγράφεται — μπορείς να τον επαναφέρεις από το Startup Builder.',
       },
     },
     auditSubject: { param: 'name', entityType: 'workspace' },
@@ -649,6 +656,7 @@ export const ACTION_DECLARATIONS = [
       },
     ],
     writes: true,
+    invalidates: ['research'],
     reversal: {
       // The live canvas has its own undo stack. Chat undo is handed the
       // original payload and never a snapshot, so it cannot restore nodes it
