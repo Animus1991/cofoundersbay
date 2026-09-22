@@ -2129,13 +2129,23 @@ export async function listAdminUsers(params?: {
   return apiRequest(url);
 }
 
+/**
+ * Sets a user's moderation status.
+ *
+ * Pointed at `/moderation-status` with a `moderationStatus` field; the route
+ * is `/moderation` and the field is `status`. Both halves were wrong, so
+ * suspending or banning someone from the admin console hit a route that does
+ * not exist and failed silently — `apiRequest` casts the response without
+ * checking, and the page reported success either way.
+ */
 export async function updateAdminUserModeration(
   userId: string,
-  moderationStatus: 'active' | 'suspended' | 'banned',
-): Promise<{ ok: true }> {
-  return apiRequest(`/api/admin/users/${userId}/moderation-status`, {
+  status: 'active' | 'suspended' | 'banned',
+  reason?: string,
+): Promise<{ success: boolean }> {
+  return apiRequest(`/api/admin/users/${userId}/moderation`, {
     method: 'PATCH',
-    body: JSON.stringify({ moderationStatus }),
+    body: JSON.stringify({ status, ...(reason ? { reason } : {}) }),
   });
 }
 

@@ -15,7 +15,6 @@ import {
   Download,
   RefreshCw,
   Eye,
-  Trash2,
   Clock,
   User,
   GraduationCap,
@@ -25,6 +24,16 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  listAdminUsers,
+  updateAdminUserModeration,
+  changeUserRole,
+  type AdminUserItem,
+} from '@/lib/api';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -72,6 +81,36 @@ type ManagedUser = {
   tenant?: string;
 };
 
+/**
+ * The page's own row from the admin row.
+ *
+ * Every action on this screen wrote to local state and reported success:
+ * "Status updated", "Role updated", "Bulk update" — and nothing left the
+ * browser. They write through the admin endpoints now, and the list refreshes
+ * from the server rather than from what the page assumed happened.
+ *
+ * `verified`, `location` and `tenant` have no counterpart on the admin payload
+ * and stay unset rather than asserted.
+ */
+function toManagedUser(row: AdminUserItem): ManagedUser {
+  const role = (['admin', 'moderator', 'mentor', 'founder', 'co-founder', 'user'] as const)
+    .includes(row.role as UserRole)
+    ? (row.role as UserRole)
+    : 'user';
+  return {
+    id: row.id,
+    name: row.profile?.displayName ?? row.email,
+    email: row.email,
+    avatar: row.profile?.avatarUrl ?? undefined,
+    role,
+    status: row.moderationStatus,
+    verified: false,
+    createdAt: row.createdAt,
+    lastActive: row.lastSeenAt ?? '',
+  };
+}
+
+/** Shown when the directory has not loaded. */
 const MOCK_USERS: ManagedUser[] = [
   {
     id: '1',
@@ -81,7 +120,7 @@ const MOCK_USERS: ManagedUser[] = [
     status: 'active',
     verified: true,
     createdAt: '2024-01-15',
-    lastActive: '2 hours ago',
+    lastActive: '2026-09-04T08:00:00.000Z',
     location: 'Athens, GR',
     tenant: 'Public',
   },
@@ -93,7 +132,7 @@ const MOCK_USERS: ManagedUser[] = [
     status: 'active',
     verified: true,
     createdAt: '2024-02-01',
-    lastActive: '1 day ago',
+    lastActive: '2026-09-03T10:00:00.000Z',
     location: 'London, UK',
     tenant: 'TechStars Athens',
   },
@@ -105,7 +144,7 @@ const MOCK_USERS: ManagedUser[] = [
     status: 'suspended',
     verified: false,
     createdAt: '2024-03-10',
-    lastActive: '1 week ago',
+    lastActive: '2026-08-28T10:00:00.000Z',
     location: 'Berlin, DE',
   },
   {
@@ -116,7 +155,7 @@ const MOCK_USERS: ManagedUser[] = [
     status: 'active',
     verified: true,
     createdAt: '2024-03-05',
-    lastActive: '3 hours ago',
+    lastActive: '2026-09-04T07:00:00.000Z',
     location: 'New York, US',
   },
   {
@@ -127,7 +166,7 @@ const MOCK_USERS: ManagedUser[] = [
     status: 'pending',
     verified: false,
     createdAt: '2024-04-02',
-    lastActive: 'Never',
+    lastActive: '',
     location: 'Boston, MA',
   },
 ];
@@ -150,7 +189,27 @@ const ROLE_ICONS: Record<UserRole, React.ReactNode> = {
 
 export default function AdminUserManagementPage() {
   const { success, error } = useToast();
+  const qc = useQueryClient();
+  const { data: adminUsers } = useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: () => listAdminUsers({ limit: 200 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
   const [users, setUsers] = useState<ManagedUser[]>(MOCK_USERS);
+  /** True once real rows are in hand: the write paths refuse to act on the
+   *  illustrative ones, which have no server row behind them. */
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    const rows = adminUsers?.users ?? [];
+    if (rows.length === 0) return;
+    setUsers(rows.map(toManagedUser));
+    setIsLive(true);
+  }, [adminUsers]);
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ['admin', 'users'] });
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -202,46 +261,70 @@ export default function AdminUserManagementPage() {
     );
   };
 
-  const updateStatus = (id: string, status: UserStatus) => {
+  /** `pending` is a state this page knows and the model does not. */
+  const moderationOf = (status: UserStatus): 'active' | 'suspended' | 'banned' | null =>
+    status === 'active' || status === 'suspended' || status === 'banned' ? status : null;
+
+  const updateStatus = async (id: string, status: UserStatus) => {
+    const moderation = moderationOf(status);
+    if (!moderation) {
+      error('Not a stored status', 'The platform records active, suspended or banned.');
+      return;
+    }
+    if (!isLive) {
+      error('Nothing to update', 'These rows are illustrative until the directory loads.');
+      return;
+    }
+    // Optimistic, then reconciled with the server on refresh.
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
-    success('Status updated', `User is now ${status}.`);
+    try {
+      await updateAdminUserModeration(id, moderation);
+      success('Status updated', `User is now ${status}.`);
+    } catch (err) {
+      error('Could not update the status', err instanceof Error ? err.message : undefined);
+    } finally {
+      void refresh();
+    }
   };
 
-  const updateRole = (id: string, role: UserRole) => {
+  const updateRole = async (id: string, role: UserRole) => {
+    if (!isLive) {
+      error('Nothing to update', 'These rows are illustrative until the directory loads.');
+      return;
+    }
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)));
-    success('Role updated', `User role changed to ${role}.`);
+    try {
+      await changeUserRole(id, role);
+      success('Role updated', `User role changed to ${role}.`);
+    } catch (err) {
+      error('Could not update the role', err instanceof Error ? err.message : undefined);
+    } finally {
+      void refresh();
+    }
   };
 
-  const toggleVerified = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, verified: !u.verified } : u)),
-    );
-    success('Verification updated');
-  };
-
-  const removeUser = (id: string) => {
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-    setSelectedIds((prev) => prev.filter((x) => x !== id));
-    error('User removed', 'The user was removed from this admin view.');
-  };
-
-  const bulkAction = (action: 'activate' | 'suspend' | 'delete') => {
+  const bulkAction = async (action: 'activate' | 'suspend' | 'ban') => {
     if (selectedIds.length === 0) {
       error('No selection', 'Select at least one user first.');
       return;
     }
-    if (action === 'delete') {
-      setUsers((prev) => prev.filter((u) => !selectedIds.includes(u.id)));
-      setSelectedIds([]);
-      error('Bulk delete', `${selectedIds.length} user(s) removed.`);
+    if (!isLive) {
+      error('Nothing to update', 'These rows are illustrative until the directory loads.');
       return;
     }
-    const status: UserStatus = action === 'activate' ? 'active' : 'suspended';
-    setUsers((prev) =>
-      prev.map((u) => (selectedIds.includes(u.id) ? { ...u, status } : u)),
+    const status: UserStatus =
+      action === 'activate' ? 'active' : action === 'ban' ? 'banned' : 'suspended';
+    const results = await Promise.allSettled(
+      selectedIds.map((id) => updateAdminUserModeration(id, status)),
     );
-    success('Bulk update', `${selectedIds.length} user(s) set to ${status}.`);
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    if (failed > 0) {
+      error('Bulk update partly failed', `${failed} of ${selectedIds.length} could not be changed.`);
+    } else {
+      success('Bulk update', `${selectedIds.length} user(s) set to ${status}.`);
+    }
     setSelectedIds([]);
+    void refresh();
   };
 
   return (
@@ -324,14 +407,20 @@ export default function AdminUserManagementPage() {
           </div>
           <div className="space-y-2 border-t border-border/60 pt-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Bulk actions</p>
-            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => bulkAction('activate')}>
+            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => void bulkAction('activate')}>
               <CheckCircle2 className="icon-sm mr-2" /> Activate selected
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => bulkAction('suspend')}>
+            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => void bulkAction('suspend')}>
               <Ban className="icon-sm mr-2" /> Suspend selected
             </Button>
-            <Button variant="destructive" size="sm" className="w-full justify-start" onClick={() => bulkAction('delete')}>
-              <Trash2 className="icon-sm mr-2" /> Delete selected
+            {/*
+              * "Delete selected" removed rows from a local array and said so
+              * in a toast. There is no delete-user endpoint, and there should
+              * not be one behind a bulk button — banning is the reversible
+              * action the platform actually records.
+              */}
+            <Button variant="destructive" size="sm" className="w-full justify-start" onClick={() => void bulkAction('ban')}>
+              <Ban className="icon-sm mr-2" /> Ban selected
             </Button>
           </div>
         </aside>
@@ -419,7 +508,11 @@ export default function AdminUserManagementPage() {
                   <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
                     {user.status}
                   </Badge>
-                  <span className="hidden text-sm text-muted-foreground md:inline">{user.lastActive}</span>
+                  <span className="hidden text-sm text-muted-foreground md:inline">
+                    {user.lastActive
+                      ? <RelativeTime date={user.lastActive} format={formatRelativeTime} />
+                      : '—'}
+                  </span>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailUser(user)} aria-label={`Quick view ${user.name}`}>
                       <Eye className="icon-sm" />
@@ -434,21 +527,29 @@ export default function AdminUserManagementPage() {
                         <DropdownMenuItem asChild>
                           <Link href={`/admin/user-detail/${user.id}`}>Open full profile</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleVerified(user.id)}>
+                        {/*
+                          * Verification has no field on the model and no
+                          * endpoint. The item stays, disabled with its reason,
+                          * rather than flipping a boolean nobody stores.
+                          */}
+                        <DropdownMenuItem disabled title="Verification is not recorded yet">
                           {user.verified ? 'Remove verification' : 'Mark verified'}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateStatus(user.id, 'active')}>
+                        <DropdownMenuItem onClick={() => void updateStatus(user.id, 'active')}>
                           <CheckCircle2 className="mr-2 icon-sm" /> Set active
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateStatus(user.id, 'suspended')}>
+                        <DropdownMenuItem onClick={() => void updateStatus(user.id, 'suspended')}>
                           <Ban className="mr-2 icon-sm" /> Suspend
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateRole(user.id, 'admin')}>
+                        <DropdownMenuItem onClick={() => void updateRole(user.id, 'admin')}>
                           <Shield className="mr-2 icon-sm" /> Make admin
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive-accessible" onClick={() => removeUser(user.id)}>
-                          <UserX className="mr-2 icon-sm" /> Remove user
+                        <DropdownMenuItem
+                          className="text-destructive-accessible"
+                          onClick={() => void updateStatus(user.id, 'banned')}
+                        >
+                          <UserX className="mr-2 icon-sm" /> Ban user
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
