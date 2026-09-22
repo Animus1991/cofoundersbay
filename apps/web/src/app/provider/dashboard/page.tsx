@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -16,7 +16,14 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
-import { getProviderSummary } from '@/lib/api';
+import {
+  getProviderSummary,
+  listServiceInquiries,
+  type ServiceInquiryItem,
+} from '@/lib/api';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +80,9 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
         <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{inquiry.message}</p>
       </div>
       <div className="text-right">
-        <p className="text-xs text-muted-foreground">{inquiry.receivedAt}</p>
+        <p className="text-xs text-muted-foreground">
+          <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
+        </p>
         <Button variant="ghost" size="sm" className="mt-1 h-7 text-xs">
           Reply
         </Button>
@@ -108,12 +117,132 @@ function ProjectCard({ project }: { project: Project }) {
         <p className="text-sm font-medium">{project.progress}%</p>
         <p className="text-xs text-muted-foreground flex items-center gap-1">
           <Clock className="icon-sm" />
-          {project.dueDate}
+          {project.dueDate || EM_DASH}
         </p>
       </div>
     </div>
   );
 }
+
+const EM_DASH = String.fromCharCode(0x2014);
+
+/**
+ * The dashboard's three lists come from the same rows its sibling pages list,
+ * so the summary tiles and the cards under them cannot disagree.
+ *
+ * `/provider/inquiries` shows every inquiry, `/provider/projects` the accepted
+ * ones and `/provider/reviews` the rated ones; this page shows the head of each.
+ */
+const INQUIRY_STATE: Record<string, Inquiry['status']> = {
+  open: 'new',
+  in_discussion: 'replied',
+  accepted: 'converted',
+  completed: 'converted',
+  declined: 'replied',
+  cancelled: 'replied',
+};
+
+function toInquiry(row: ServiceInquiryItem): Inquiry {
+  return {
+    id: row.id,
+    clientName: row.client?.displayName ?? 'Someone',
+    clientAvatar: row.client?.avatarUrl ?? undefined,
+    service: row.offer?.title ?? EM_DASH,
+    message: row.message,
+    receivedAt: row.createdAt,
+    status: INQUIRY_STATE[row.status] ?? 'new',
+  };
+}
+
+/*
+ * `progress` and `dueDate` have no field on the model - an inquiry records what
+ * was agreed and when it was resolved, not a schedule - so progress reads 0
+ * until the work is marked complete and the due date reads a dash rather than a
+ * plausible-looking date.
+ */
+function toProject(row: ServiceInquiryItem): Project {
+  return {
+    id: row.id,
+    clientName: row.client?.displayName ?? 'A client',
+    clientAvatar: row.client?.avatarUrl ?? undefined,
+    service: row.offer?.title ?? EM_DASH,
+    status: row.status === 'completed' ? 'completed' : 'active',
+    progress: row.status === 'completed' ? 100 : 0,
+    dueDate: '',
+  };
+}
+
+type DashReview = { id: string; client: string; rating: number; comment: string };
+
+function toReview(row: ServiceInquiryItem): DashReview {
+  return {
+    id: row.id,
+    client: row.client?.displayName ?? 'A client',
+    rating: row.rating ?? 0,
+    comment: row.reviewComment ?? '',
+  };
+}
+
+/** Shown to a provider whose book is still empty. */
+const DEMO_INQUIRIES: Inquiry[] = [
+  {
+    id: '1',
+    clientName: 'John Doe',
+    service: 'Legal Consultation',
+    message: 'Hi, I need help with my startup incorporation documents...',
+    receivedAt: '2026-09-22T14:00:00.000Z',
+    status: 'new',
+  },
+  {
+    id: '2',
+    clientName: 'Jane Smith',
+    service: 'Financial Planning',
+    message: 'Looking for help with our Series A financial model...',
+    receivedAt: '2026-09-21T10:00:00.000Z',
+    status: 'replied',
+  },
+  {
+    id: '3',
+    clientName: 'Mike Johnson',
+    service: 'Legal Consultation',
+    message: 'Need to review our terms of service...',
+    receivedAt: '2026-09-20T10:00:00.000Z',
+    status: 'converted',
+  },
+];
+
+const DEMO_PROJECTS: Project[] = [
+  {
+    id: '1',
+    clientName: 'TechStart Inc',
+    service: 'Legal Package',
+    status: 'active',
+    progress: 75,
+    dueDate: '',
+  },
+  {
+    id: '2',
+    clientName: 'GreenTech Co',
+    service: 'Financial Model',
+    status: 'active',
+    progress: 40,
+    dueDate: '',
+  },
+  {
+    id: '3',
+    clientName: 'DataFlow',
+    service: 'Contract Review',
+    status: 'on_hold',
+    progress: 60,
+    dueDate: '',
+  },
+];
+
+const DEMO_REVIEWS: DashReview[] = [
+  { id: '1', client: 'Sarah W.', rating: 5, comment: 'Excellent service, very professional!' },
+  { id: '2', client: 'Tom B.', rating: 5, comment: 'Quick turnaround and great quality.' },
+  { id: '3', client: 'Lisa M.', rating: 4, comment: 'Good work, would recommend.' },
+];
 
 export default function ProviderDashboardPage() {
   /*
@@ -134,73 +263,94 @@ export default function ProviderDashboardPage() {
     retry: 0,
   });
 
+  const { showDemoData } = useDemoData();
+
+  /*
+   * The head of each list, from the same endpoint the sibling pages read.
+   * `kind` splits one table three ways: every inquiry, the accepted ones, the
+   * rated ones - so a row cannot be a project here and an open inquiry there.
+   */
+  const { data: inquiryPage, isLoading: inquiriesLoading } = useQuery({
+    queryKey: ['provider', 'dashboard', 'inquiries'],
+    queryFn: () => listServiceInquiries({ side: 'provider', limit: 5 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const { data: projectPage, isLoading: projectsLoading } = useQuery({
+    queryKey: ['provider', 'dashboard', 'projects'],
+    queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 5 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const { data: reviewPage, isLoading: reviewsLoading } = useQuery({
+    queryKey: ['provider', 'dashboard', 'reviews'],
+    queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 3 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const liveInquiries = useMemo(
+    () => (inquiryPage?.inquiries ?? []).map(toInquiry),
+    [inquiryPage],
+  );
+  const liveProjects = useMemo(
+    () => (projectPage?.inquiries ?? []).map(toProject),
+    [projectPage],
+  );
+  const liveReviews = useMemo(
+    () => (reviewPage?.inquiries ?? []).map(toReview),
+    [reviewPage],
+  );
+
   const dash = '\u2014';
+  const inquiries =
+    liveInquiries.length > 0
+      ? liveInquiries
+      : inquiriesLoading
+        ? []
+        : showDemoData
+          ? DEMO_INQUIRIES
+          : [];
+  const projects =
+    liveProjects.length > 0
+      ? liveProjects
+      : projectsLoading
+        ? []
+        : showDemoData
+          ? DEMO_PROJECTS
+          : [];
+  const recentReviews =
+    liveReviews.length > 0
+      ? liveReviews
+      : reviewsLoading
+        ? []
+        : showDemoData
+          ? DEMO_REVIEWS
+          : [];
+
+  /*
+   * The tiles prefer the summary endpoint, which counts the provider's whole
+   * book rather than the five rows shown here. When it has not answered - no
+   * session, or the demo overlay - they count what is actually on screen, so
+   * the page can never show a dash above a list of three.
+   *
+   * Monthly revenue keeps its dash in every case: an inquiry records an agreed
+   * price, not when it was paid, so there is no month to total.
+   */
+  const avgOfShown =
+    recentReviews.length > 0
+      ? recentReviews.reduce((sum, r) => sum + r.rating, 0) / recentReviews.length
+      : null;
+
   const stats = {
-    activeProjects: summary?.projects ?? null,
-    pendingInquiries: summary?.openInquiries ?? null,
+    activeProjects: summary?.projects ?? (projects.length || null),
+    pendingInquiries:
+      summary?.openInquiries ??
+      (inquiries.filter((row) => row.status !== 'converted').length || null),
     monthlyRevenue: null as string | null,
-    avgRating: summary?.avgRating ?? null,
+    avgRating:
+      summary?.avgRating ?? (avgOfShown != null ? Number(avgOfShown.toFixed(1)) : null),
   };
-
-  const inquiries: Inquiry[] = [
-    {
-      id: '1',
-      clientName: 'John Doe',
-      service: 'Legal Consultation',
-      message: 'Hi, I need help with my startup incorporation documents...',
-      receivedAt: '2 hours ago',
-      status: 'new',
-    },
-    {
-      id: '2',
-      clientName: 'Jane Smith',
-      service: 'Financial Planning',
-      message: 'Looking for help with our Series A financial model...',
-      receivedAt: '1 day ago',
-      status: 'replied',
-    },
-    {
-      id: '3',
-      clientName: 'Mike Johnson',
-      service: 'Legal Consultation',
-      message: 'Need to review our terms of service...',
-      receivedAt: '2 days ago',
-      status: 'converted',
-    },
-  ];
-
-  const projects: Project[] = [
-    {
-      id: '1',
-      clientName: 'TechStart Inc',
-      service: 'Legal Package',
-      status: 'active',
-      progress: 75,
-      dueDate: 'Mar 25',
-    },
-    {
-      id: '2',
-      clientName: 'GreenTech Co',
-      service: 'Financial Model',
-      status: 'active',
-      progress: 40,
-      dueDate: 'Mar 30',
-    },
-    {
-      id: '3',
-      clientName: 'DataFlow',
-      service: 'Contract Review',
-      status: 'on_hold',
-      progress: 60,
-      dueDate: 'Apr 5',
-    },
-  ];
-
-  const recentReviews = [
-    { id: '1', client: 'Sarah W.', rating: 5, comment: 'Excellent service, very professional!' },
-    { id: '2', client: 'Tom B.', rating: 5, comment: 'Quick turnaround and great quality.' },
-    { id: '3', client: 'Lisa M.', rating: 4, comment: 'Good work, would recommend.' },
-  ];
 
   return (
     <AppShell>
