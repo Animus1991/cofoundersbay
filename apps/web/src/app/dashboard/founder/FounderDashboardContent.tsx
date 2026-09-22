@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -26,6 +27,9 @@ import {
   listConnectionRequests,
   getVentureReadiness,
   type SearchHit,
+  getAnalyticsMetrics,
+  listMilestones,
+  getDashboardActivity,
 } from '@/lib/api';
 import {
   fundraisingRoundView,
@@ -123,6 +127,7 @@ type DemoMilestone = {
   priority: 'high' | 'medium' | 'low';
 };
 
+/** Shown only under the demo overlay, for a founder with no milestones. */
 const DEMO_MILESTONES: DemoMilestone[] = [
   { id: '1', titleEn: 'Complete MVP v1', titleEl: 'Ολοκλήρωση MVP v1', status: 'in_progress', progress: 65, dueDate: isoInDays(24), priority: 'high' },
   { id: '2', titleEn: 'First 100 active users', titleEl: 'Πρώτοι 100 ενεργοί χρήστες', status: 'in_progress', progress: 23, dueDate: isoInDays(40), priority: 'high' },
@@ -130,8 +135,29 @@ const DEMO_MILESTONES: DemoMilestone[] = [
   { id: '4', titleEn: 'Build founding team', titleEl: 'Συγκρότηση ιδρυτικής ομάδας', status: 'pending', progress: 0, dueDate: isoInDays(39), priority: 'high' },
 ];
 
+/**
+ * Shown only under the demo overlay.
+ *
+ * Every name and figure here has to exist in the lists this card sits beside:
+ * the first row used to announce an 87% match with Nikos Papadakis while Top
+ * Matches showed 92, 88, 81 and 76 and no such person.
+ */
+/** The icon each activity type carries, mirroring EVENT_CONFIG's job. */
+const ACTIVITY_GLYPH: Record<string, 'spark' | 'people' | 'messages' | 'profile' | 'flag' | 'award' | 'briefcase'> = {
+  match: 'spark',
+  connection: 'people',
+  invite: 'people',
+  message: 'messages',
+  milestone: 'flag',
+  achievement: 'award',
+  endorsement: 'award',
+  job: 'briefcase',
+  event: 'flag',
+  system: 'profile',
+};
+
 const DEMO_ACTIVITY = [
-  { id: '1', href: '/matches', glyph: 'spark' as const, textEn: 'New 87% match — Nikos Papadakis, CTO', textEl: 'Νέα αντιστοίχιση 87% — Νίκος Παπαδάκης, CTO', timeEn: '2h ago', timeEl: 'πριν 2 ώρες' },
+  { id: '1', href: '/matches', glyph: 'spark' as const, textEn: 'New 92% match — Elena Papadopoulos, Founder', textEl: 'Νέα αντιστοίχιση 92% — Elena Papadopoulos, ιδρύτρια', timeEn: '2h ago', timeEl: 'πριν 2 ώρες' },
   { id: '2', href: '/connections', glyph: 'people' as const, textEn: 'Elena Papadopoulos accepted your request', textEl: 'Η Έλενα Παπαδοπούλου αποδέχτηκε το αίτημά σας', timeEn: '5h ago', timeEl: 'πριν 5 ώρες' },
   { id: '3', href: '/messages', glyph: 'messages' as const, textEn: 'New message from Marcus Chen', textEl: 'Νέο μήνυμα από τον Marcus Chen', timeEn: '8h ago', timeEl: 'πριν 8 ώρες' },
   { id: '4', href: '/analytics', glyph: 'profile' as const, textEn: 'Your profile was viewed 12 times today', textEl: 'Το προφίλ σας προβλήθηκε 12 φορές σήμερα', timeEn: '1d ago', timeEl: 'πριν 1 ημέρα' },
@@ -148,7 +174,9 @@ const EVENT_CONFIG: Record<EventType, StatusTone> = {
 // daysLeft is derived from the date so the two can never disagree.
 const DEMO_EVENTS = (
   [
-    { id: '1', titleEn: 'Mentor Session — Dr. Sarah Chen', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Chen', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
+    // Dr. Sarah Kim is the demo's mentor on every other surface; Sarah Chen is
+    // the angel on /fundraising. This row used to blend the two.
+    { id: '1', titleEn: 'Mentor Session — Dr. Sarah Kim', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Kim', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
     { id: '2', titleEn: 'Pitch Deck Deadline', titleEl: 'Προθεσμία pitch deck', type: 'deadline' as EventType, time: '23:59', daysLeft: 4 },
     { id: '3', titleEn: 'Startup Networking Mixer', titleEl: 'Networking mixer νεοφυών', type: 'event' as EventType, time: '18:00', daysLeft: 9 },
     { id: '4', titleEn: 'Investor Demo Day', titleEl: 'Demo Day επενδυτών', type: 'pitch' as EventType, time: '10:00', daysLeft: 17 },
@@ -347,6 +375,27 @@ export default function FounderDashboardContent() {
     enabled: hasSession && mounted,
   });
 
+  /*
+   * The same metrics /analytics charts, on the same 7-day period.
+   *
+   * The profile-views tile used to read `activeProfiles` off the platform
+   * stats - how many profiles are active across CoFounderBay, not how often
+   * this one was viewed - so it read 1,840 while the page behind its own link
+   * read 248. Sharing the query key with /analytics also means the two cannot
+   * drift apart in the cache.
+   */
+  const { data: userMetrics } = useQuery({
+    queryKey: ['analytics', 'metrics', '7d'],
+    queryFn: () => getAnalyticsMetrics('7d'),
+    enabled: hasSession && mounted,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  /** A change of exactly zero is a measurement; a missing one is not an arrow. */
+  const trendOf = (change: number | null | undefined) =>
+    typeof change === 'number' ? { value: Math.abs(change), positive: change >= 0 } : undefined;
+
   const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
@@ -374,19 +423,86 @@ export default function FounderDashboardContent() {
   const fundStats = fundraisingPipelineStats(FUNDRAISING_SEED_LEADS);
   const fundingPct = Math.round((fundRound.raised / fundRound.target) * 100);
   const greeting = getTimeBasedGreeting();
-  const completedMilestoneCount = DEMO_MILESTONES.filter((m) => m.status === 'completed' || m.progress >= 100).length;
-  const openMilestones = DEMO_MILESTONES.filter((m) => m.status !== 'completed' && m.progress < 100);
+  /*
+   * The founder's own milestones, from the endpoint /milestones reads, on its
+   * query keys - so the tile, the list under it and that page cannot disagree,
+   * and marking one done on either surface refreshes the other.
+   */
+  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
+    queryKey: ['milestones', 'all', 'all'],
+    queryFn: () => listMilestones({ limit: 100 }),
+    enabled: hasSession && mounted,
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  /*
+   * What actually happened, from the endpoint /activity pages through. The
+   * card rendered DEMO_ACTIVITY unconditionally, so a real founder's dashboard
+   * reported four events that were not theirs.
+   */
+  const { data: activityPage, isLoading: activityLoading } = useQuery({
+    queryKey: ['dashboard', 'activity', 4],
+    queryFn: () => getDashboardActivity({ limit: 4 }),
+    enabled: hasSession && mounted,
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const liveActivity = useMemo(
+    () =>
+      (activityPage?.items ?? []).map((item) => ({
+        id: item.id,
+        href: item.href,
+        glyph: ACTIVITY_GLYPH[item.type] ?? ('spark' as const),
+        // One title from the server, shown in both languages rather than
+        // invented in the second.
+        textEn: item.title,
+        textEl: item.title,
+        timeEn: item.timeAgo,
+        timeEl: item.timeAgo,
+      })),
+    [activityPage],
+  );
+
+  const activityItems =
+    liveActivity.length > 0 ? liveActivity : activityLoading ? [] : showDemoData ? DEMO_ACTIVITY : [];
+
+  const liveMilestones: DemoMilestone[] = useMemo(
+    () =>
+      (milestoneData?.milestones ?? []).map((m) => ({
+        id: m.id,
+        titleEn: m.title,
+        // The API stores one title. Showing it in both languages is honest -
+        // inventing a Greek rendering of a founder's own words would not be.
+        titleEl: m.title,
+        status:
+          m.status === 'completed' ? 'completed' : m.status === 'in_progress' ? 'in_progress' : 'pending',
+        progress: m.progress,
+        dueDate: m.dueDate ?? '',
+        priority: m.priority === 'high' || m.priority === 'low' ? m.priority : 'medium',
+      })),
+    [milestoneData],
+  );
+
+  const milestones =
+    liveMilestones.length > 0 ? liveMilestones : milestonesLoading ? [] : showDemoData ? DEMO_MILESTONES : [];
+
+  const completedMilestoneCount = milestones.filter((m) => m.status === 'completed' || m.progress >= 100).length;
+  const openMilestones = milestones.filter((m) => m.status !== 'completed' && m.progress < 100);
   const nextOpenMilestone = [...openMilestones].sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
   const messageCaption = unreadMessages === 0
     ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
     : unreadMessages === 1
       ? { en: '1 waiting', el: '1 σε αναμονή' }
       : { en: `${unreadMessages} waiting`, el: `${unreadMessages} σε αναμονή` };
-  const milestoneCaption = DEMO_MILESTONES.length === 0
+  const milestoneCaption = milestones.length === 0
     ? { en: dashboardEn('add_first_milestone'), el: dashboardEl('add_first_milestone') }
-    : completedMilestoneCount === DEMO_MILESTONES.length
+    : completedMilestoneCount === milestones.length
       ? { en: dashboardEn('milestones_all_complete'), el: dashboardEl('milestones_all_complete') }
-      : nextOpenMilestone
+      : // A real milestone may carry no due date, and the separator was printed
+        // before the date was: the caption read "6 ανοιχτά ·" and stopped.
+        nextOpenMilestone?.dueDate
         ? {
             en: `${openMilestones.length} open · ${formatShortDate(nextOpenMilestone.dueDate, 'en')}`,
             el: `${openMilestones.length} ανοιχτά · ${formatShortDate(nextOpenMilestone.dueDate, 'el')}`,
@@ -449,7 +565,7 @@ export default function FounderDashboardContent() {
       'Pending intros': pendingRequests,
       'Unread messages': unreadMessages,
       'Recommended matches': recommendations?.suggestions?.length ?? 0,
-      'Milestones complete': `${completedMilestoneCount}/${DEMO_MILESTONES.length}`,
+      'Milestones complete': `${completedMilestoneCount}/${milestones.length}`,
       'Next milestone': nextOpenMilestone?.titleEn ?? 'none',
       'Round progress': `${fundingPct}%`,
       'Committed investors': fundStats.committed,
@@ -551,8 +667,21 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
-          <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
+          <StatCard
+            glyph="profile"
+            label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />}
+            value={userMetrics?.profileViews ?? '—'}
+            trend={trendOf(userMetrics?.profileViewsChange)}
+            href="/analytics"
+          />
+          {/* No endpoint reports a week-over-week change for matches, so this
+              tile carried a literal 3 as its arrow. It shows the count alone. */}
+          <StatCard
+            glyph="matches"
+            label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />}
+            value={stats?.matchesThisWeek ?? '—'}
+            href="/matches"
+          />
           <StatCard
             glyph="messages"
             label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />}
@@ -564,7 +693,7 @@ export default function FounderDashboardContent() {
           <StatCard
             glyph="flag"
             label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked wrap />}
-            value={`${completedMilestoneCount}/${DEMO_MILESTONES.length}`}
+            value={`${completedMilestoneCount}/${milestones.length}`}
             href="/milestones"
             caption={milestoneCaption.en}
             captionEl={milestoneCaption.el}
@@ -796,7 +925,7 @@ export default function FounderDashboardContent() {
                     wrap
                   />
                 </p>
-                {DEMO_MILESTONES.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
+                {milestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
               </CardContent>
             </Card>
             {/* Profile strength — moved here from the sidebar.
@@ -931,7 +1060,7 @@ export default function FounderDashboardContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-1">
-                {DEMO_ACTIVITY.map((item) => (
+                {activityItems.map((item) => (
                   <Link
                     key={item.id}
                     href={item.href}
