@@ -25,7 +25,7 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   archived: { en: 'Archived', el: 'Αρχειοθετημένα' },
   requests: { en: 'Requests', el: 'Αιτήματα' },
   chats: { en: 'Chats', el: 'Συνομιλίες' },
-  intros: { en: 'Intros', el: 'Εισαγωγές' },
+  intros: { en: 'Intros', el: 'Γνωριμίες' },
   all_messages: { en: 'All messages', el: 'Όλα τα μηνύματα' },
 
   new_message: { en: 'New message', el: 'Νέο μήνυμα' },
@@ -230,7 +230,7 @@ export const PREVIEW_MESSAGE_EL: Record<string, string> = {
   'Want to compare notes on the research canvas this week?':
     'Θέλεις να συγκρίνουμε σημειώσεις στον πίνακα έρευνας αυτή την εβδομάδα;',
   'Loved your Harbor update — the founder OS angle is sharp.':
-    'Μου άρεσε το update του Harbor — η γωνία founder OS είναι κοφτερή.',
+    'Μου άρεσε η ενημέρωση του Harbor — η οπτική του founder OS είναι εύστοχη.',
   'I sketched a Next.js + Nest starter we can reuse.':
     'Έφτιαξα ένα starter Next.js + Nest που μπορούμε να ξαναχρησιμοποιήσουμε.',
   'Would love to swap intros in the Athens founder circle.':

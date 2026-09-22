@@ -175,7 +175,7 @@ function BuilderPageContent() {
             <CfbGlyph name="award" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">
-                <BilingualText en="Your artifacts are ready for expert review" el="Τα τεχνουργήματά σας είναι έτοιμα για αξιολόγηση ειδικού" />
+                <BilingualText en="Your artifacts are ready for expert review" el="Τα παραδοτέα σας είναι έτοιμα για αξιολόγηση ειδικού" />
               </p>
               <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                 <BilingualText en="Get actionable feedback from a domain expert — investors, mentors, or industry specialists." el="Λάβετε πρακτική ανατροφοδότηση από ειδικό τομέα — επενδυτές, μέντορες ή ειδικούς κλάδου." />

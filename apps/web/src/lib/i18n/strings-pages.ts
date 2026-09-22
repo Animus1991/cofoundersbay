@@ -52,13 +52,13 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Εργασία',
   },
   '/builder': {
-    title: 'Startup Builder',
+    title: 'Δόμηση νεοφυούς',
     description:
       'Δομή ιδέας, ομάδας, αγοράς, traction και pitch — σε έναν ενοποιημένο χώρο εργασίας.',
     section: 'Εργασία',
   },
   '/builder/pitch-deck': {
-    title: 'Pitch deck',
+    title: 'Παρουσίαση επενδυτών',
     description:
       'Διαφάνειες συνδεδεμένες με τα δεδομένα του Builder. Η ολοκλήρωση μετρά περιεχόμενο, όχι κενά πρότυπα.',
     section: 'Εργασία',

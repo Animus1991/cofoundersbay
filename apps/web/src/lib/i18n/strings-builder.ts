@@ -35,6 +35,9 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   startup_progress: { en: 'Startup Progress', el: 'Πρόοδος νεοφυούς' },
   overall_completion: { en: 'Overall Completion', el: 'Συνολική ολοκλήρωση' },
   quick_actions: { en: 'Quick Actions', el: 'Γρήγορες ενέργειες' },
+  // The badges beside these buttons are document completeness, not the
+  // readiness dimension of the same name in the card next to it.
+  quick_actions_hint: { en: 'How complete each document is', el: 'Πόσο συμπληρωμένο είναι κάθε έγγραφο' },
   start: { en: 'Start', el: 'Έναρξη' },
   edit: { en: 'Edit', el: 'Επεξεργασία' },
   critical_gaps: { en: 'Critical Gaps', el: 'Κρίσιμα κενά' },
@@ -510,9 +513,19 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   app_stat_avg: { en: 'Average completion', el: 'Μέση ολοκλήρωση' },
 };
 
-export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; description: BilingualPair }> = {
+/**
+ * `labelElGenitive` is required, not optional: a new document type has to
+ * declare how its Greek name declines, or it will not compile. The quick
+ * actions glue a verb to it ("Επεξεργασία …", "Έναρξη …") and both verbs
+ * govern the genitive, so a missing form is a grammar bug on a button.
+ */
+export const BUILDER_DOC_TYPES: Record<
+  string,
+  { label: BilingualPair; labelElGenitive: string; description: BilingualPair }
+> = {
   idea_core: {
     label: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
+    labelElGenitive: 'Πυρήνα ιδέας',
     description: {
       en: 'Core problem and solution definition',
       el: 'Ορισμός προβλήματος και λύσης',
@@ -520,6 +533,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   business_model_canvas: {
     label: { en: 'Business Model', el: 'Επιχειρηματικό μοντέλο' },
+    labelElGenitive: 'Επιχειρηματικού μοντέλου',
     description: {
       en: 'Value proposition and business model',
       el: 'Πρόταση αξίας και επιχειρηματικό μοντέλο',
@@ -527,6 +541,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   market_analysis: {
     label: { en: 'Market Analysis', el: 'Ανάλυση αγοράς' },
+    labelElGenitive: 'Ανάλυσης αγοράς',
     description: {
       en: 'TAM/SAM/SOM and competitive landscape',
       el: 'TAM/SAM/SOM και ανταγωνιστικό τοπίο',
@@ -534,6 +549,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   pitch_deck: {
     label: { en: 'Pitch Deck', el: 'Pitch deck' },
+    labelElGenitive: 'Pitch deck',
     description: {
       en: 'Investor and stakeholder presentations',
       el: 'Παρουσιάσεις για επενδυτές και stakeholders',
@@ -541,6 +557,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   mvp_plan: {
     label: { en: 'MVP Planner', el: 'Σχεδιασμός MVP' },
+    labelElGenitive: 'Σχεδιασμού MVP',
     description: {
       en: 'Product roadmap and technical requirements',
       el: 'Οδικός χάρτης προϊόντος και τεχνικές απαιτήσεις',
@@ -548,6 +565,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   technical_architecture: {
     label: { en: 'Tech Architecture', el: 'Τεχνική αρχιτεκτονική' },
+    labelElGenitive: 'Τεχνικής αρχιτεκτονικής',
     description: {
       en: 'Technology stack and system design',
       el: 'Τεχνολογική στοίβα και σχεδιασμός συστήματος',
@@ -555,6 +573,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   financial_plan: {
     label: { en: 'Financial Planning', el: 'Οικονομικός σχεδιασμός' },
+    labelElGenitive: 'Οικονομικού σχεδιασμού',
     description: {
       en: 'Revenue models and projections',
       el: 'Μοντέλα εσόδων και προβλέψεις',
@@ -562,6 +581,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   prd: {
     label: { en: 'PRD & User Stories', el: 'PRD και user stories' },
+    labelElGenitive: 'PRD και user stories',
     description: {
       en: 'Product requirements and features',
       el: 'Απαιτήσεις προϊόντος και λειτουργίες',
@@ -569,6 +589,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   branding_kit: {
     label: { en: 'Branding Kit', el: 'Κιτ επωνυμίας' },
+    labelElGenitive: 'Κιτ επωνυμίας',
     description: {
       en: 'Brand identity and messaging',
       el: 'Ταυτότητα επωνυμίας και μηνύματα',
@@ -576,6 +597,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   application: {
     label: { en: 'Applications', el: 'Αιτήσεις' },
+    labelElGenitive: 'Αιτήσεων',
     description: {
       en: 'Accelerator and funding applications',
       el: 'Αιτήσεις επιταχυντών και χρηματοδότησης',
@@ -583,6 +605,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   swot_analysis: {
     label: { en: 'SWOT Analysis', el: 'Ανάλυση SWOT' },
+    labelElGenitive: 'Ανάλυσης SWOT',
     description: {
       en: 'Strengths, weaknesses, opportunities, threats',
       el: 'Δυνάμεις, αδυναμίες, ευκαιρίες, απειλές',
@@ -590,6 +613,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   lean_canvas: {
     label: { en: 'Lean Canvas', el: 'Lean Canvas' },
+    labelElGenitive: 'Lean Canvas',
     description: {
       en: 'Lean startup model canvas',
       el: 'Καμβάς lean startup',
@@ -597,6 +621,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   competitive_analysis: {
     label: { en: 'Competitive Analysis', el: 'Ανταγωνιστική ανάλυση' },
+    labelElGenitive: 'Ανταγωνιστικής ανάλυσης',
     description: {
       en: 'Competitor landscape and positioning',
       el: 'Τοπίο ανταγωνιστών και τοποθέτηση',
@@ -604,6 +629,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   go_to_market: {
     label: { en: 'Go-to-Market', el: 'Go-to-Market' },
+    labelElGenitive: 'Go-to-Market',
     description: {
       en: 'Launch and growth strategy',
       el: 'Στρατηγική λανσαρίσματος και ανάπτυξης',
@@ -611,6 +637,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   fundraising_memo: {
     label: { en: 'Fundraising Memo', el: 'Υπόμνημα χρηματοδότησης' },
+    labelElGenitive: 'Υπομνήματος χρηματοδότησης',
     description: {
       en: 'Investment thesis and ask',
       el: 'Επενδυτική θέση και αίτημα',
@@ -618,6 +645,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   product_roadmap: {
     label: { en: 'Product Roadmap', el: 'Οδικός χάρτης προϊόντος' },
+    labelElGenitive: 'Οδικού χάρτη προϊόντος',
     description: {
       en: 'Feature timeline and prioritization',
       el: 'Χρονοδιάγραμμα λειτουργιών και προτεραιότητες',
@@ -636,6 +664,20 @@ export const BUILDER_PREVIEW_HINT_EL: Record<string, string> = {
 
 export function builderDocLabel(type: string, lang: 'en' | 'el'): string {
   return BUILDER_DOC_TYPES[type]?.label[lang] ?? type;
+}
+
+/**
+ * The Greek document name in the genitive.
+ *
+ * "Επεξεργασία" and "Έναρξη" are nouns, and a noun governing another noun in
+ * Greek takes the genitive: "Επεξεργασία Πυρήνα ιδέας", not "…Πυρήνας ιδέας".
+ * English needs no such form, which is why the label alone was enough until
+ * these phrases existed. Names kept in Latin script (Pitch deck, Lean Canvas,
+ * Go-to-Market) do not decline and repeat the nominative.
+ */
+export function builderDocLabelGenitiveEl(type: string): string {
+  const entry = BUILDER_DOC_TYPES[type];
+  return entry?.labelElGenitive ?? entry?.label.el ?? type;
 }
 
 export function builderDocDescription(type: string, lang: 'en' | 'el'): string {

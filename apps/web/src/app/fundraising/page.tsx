@@ -279,7 +279,10 @@ function RoundCard({
                   : s.label === 'stat_closing' && s.value === null
                     ? <BilingualText en={fundraisingEn('closing_tbd')} el={fundraisingEl('closing_tbd')} compact />
                     : s.label === 'stat_closing' && s.value
-                      ? <>{s.value}<BilingualText en={fundraisingEn('days_left')} el={fundraisingEl('days_left')} compact /></>
+                      // Greek needs the gap: "24ημ." ran the number into the
+                      // unit. English reads "24d left", so it keeps the space
+                      // too - the unit was never meant to touch the figure.
+                      ? <>{s.value}{' '}<BilingualText en={fundraisingEn('days_left')} el={fundraisingEl('days_left')} compact /></>
                       : s.label === 'lead_investor' && !s.value
                         ? <BilingualText en={fundraisingEn('none_yet')} el={fundraisingEl('none_yet')} compact />
                         : s.value}
@@ -697,10 +700,12 @@ export default function FundraisingPage() {
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { glyph: 'people' as const, label: 'stat_leads' as const, value: stats.total, tone: 'accent' as const },
-            { glyph: 'messages' as const, label: 'stat_active' as const, value: stats.active, tone: 'warning' as const },
-            { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, tone: 'success' as const },
-            { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', tone: 'info' as const },
+            // `count` is the number the label has to agree with in Greek;
+            // the conversion tile has none, so it keeps one form.
+            { glyph: 'people' as const, label: 'stat_leads' as const, value: stats.total, count: stats.total, tone: 'accent' as const },
+            { glyph: 'messages' as const, label: 'stat_active' as const, value: stats.active, count: stats.active, tone: 'warning' as const },
+            { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, count: stats.committed, tone: 'success' as const },
+            { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', count: null, tone: 'info' as const },
           ].map((s) => (
             <Card key={s.label} className="rounded-xl">
               <CardContent className="flex items-center gap-3 p-4">
@@ -715,7 +720,12 @@ export default function FundraisingPage() {
                       label truncate, and truncating is not what a 104px label in
                       a 100px box should do. `wrap` gives it the second line. */}
                   <p className="text-2xs leading-snug text-muted-foreground">
-                    <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact wrap />
+                    <BilingualText
+                      en={fundraisingEn(s.label)}
+                      el={fundraisingEl(s.count === 1 ? (`${s.label}_one` as typeof s.label) : s.label)}
+                      compact
+                      wrap
+                    />
                   </p>
                 </div>
               </CardContent>

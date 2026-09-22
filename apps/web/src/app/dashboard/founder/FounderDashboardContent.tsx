@@ -369,7 +369,7 @@ export default function FounderDashboardContent() {
   const displayName = profile?.profile?.displayName || 'Founder';
   const pendingRequests = connectionRequests?.connections?.filter((r: { status?: string }) => r.status === 'pending')?.length ?? 0;
   const profilePct = profile?.hasCompletedOnboarding ? 100 : 52;
-  const avgReadiness = vrs?.overall ?? 0;
+  const founderProgress = vrs?.overall ?? 0;
   const fundRound = fundraisingRoundView(FUNDRAISING_SEED_LEADS);
   const fundStats = fundraisingPipelineStats(FUNDRAISING_SEED_LEADS);
   const fundingPct = Math.round((fundRound.raised / fundRound.target) * 100);
@@ -445,7 +445,7 @@ export default function FounderDashboardContent() {
     summary: `${displayName}'s dashboard: profile, readiness, connections and the current round.`,
     figures: {
       'Profile completeness': `${profilePct}%`,
-      'Readiness': `${avgReadiness}%`,
+      'Founder progress': `${founderProgress}%`,
       'Pending intros': pendingRequests,
       'Unread messages': unreadMessages,
       'Recommended matches': recommendations?.suggestions?.length ?? 0,
@@ -510,7 +510,7 @@ export default function FounderDashboardContent() {
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
             <Link href="/readiness">
               <CfbGlyph name="chart" className="icon-sm" />
-              <BilingualText en={`Readiness: ${avgReadiness}%`} el={`Ετοιμότητα: ${avgReadiness}%`} compact />
+              <BilingualText en={`Progress: ${founderProgress}%`} el={`Πρόοδος: ${founderProgress}%`} compact />
             </Link>
           </Button>
         </>
@@ -1007,7 +1007,7 @@ export default function FounderDashboardContent() {
                                 ? <BilingualText en={dashboardEn('today')} el={dashboardEl('today')} compact />
                                 : event.daysLeft === 1
                                 ? <BilingualText en={dashboardEn('tomorrow')} el={dashboardEl('tomorrow')} compact />
-                                : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft}η`} compact />}
+                                : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft} ημ.`} compact />}
                             </span>
                           </div>
                         </div>

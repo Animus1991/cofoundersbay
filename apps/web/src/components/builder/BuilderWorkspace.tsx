@@ -60,6 +60,7 @@ import {
   builderEn,
   builderEl,
   builderDocLabel,
+  builderDocLabelGenitiveEl,
   builderDocDescription,
   BUILDER_DOC_TYPES,
   BUILDER_PREVIEW_HINT_EL,
@@ -114,6 +115,9 @@ function docLabelEn(type: string) {
   return builderDocLabel(type, 'en');
 }
 
+/**
+ * The nominative, for a name standing on its own (a tab, a card title).
+ */
 function docLabelEl(type: string) {
   return builderDocLabel(type, 'el');
 }
@@ -702,9 +706,21 @@ export function BuilderWorkspace({ onOpenStage }: { onOpenStage?: (tab: string) 
             {/* Quick Actions card */}
             <Card className="min-w-0">
               <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle className="text-base">
-                  <BilingualText en={builderEn('quick_actions')} el={builderEl('quick_actions')} compact />
-                </CardTitle>
+                <div className="min-w-0">
+                  <CardTitle className="text-base">
+                    <BilingualText en={builderEn('quick_actions')} el={builderEl('quick_actions')} compact />
+                  </CardTitle>
+                  {/* Without this the two cards in this row both show a
+                      percentage next to "Business Model" and disagree. */}
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    <BilingualText
+                      en={builderEn('quick_actions_hint')}
+                      el={builderEl('quick_actions_hint')}
+                      compact
+                      wrap
+                    />
+                  </p>
+                </div>
                 <AIInsightButton
                   className="h-8 w-full sm:w-auto"
                   prompt={`Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Documents: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}. Recommend the next artifact (Idea Core, BMC, interviews, pitch, MVP, financials) and draft the first section.`}
@@ -714,7 +730,9 @@ export function BuilderWorkspace({ onOpenStage }: { onOpenStage?: (tab: string) 
                 {DEFAULT_DOC_TYPES.map(type => {
                   const existing = documents.find(d => d.type === type);
                   const labelEn = docLabelEn(type);
-                  const labelEl = docLabelEl(type);
+                  // "Επεξεργασία" and "Έναρξη" govern the genitive, so the
+                  // phrase needs the declined form, not the tab's nominative.
+                  const labelEl = builderDocLabelGenitiveEl(type);
                   return (
                     <Button
                       key={type}

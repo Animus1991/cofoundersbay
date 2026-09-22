@@ -1,6 +1,7 @@
 /** Static payloads so Cloudflare preview never waits on localhost:3001. */
 
 import { mergeNodeMetadata } from './canvas/canvas-geometry';
+import { DEMO_CRITERIA } from './readiness-demo';
 
 const NOW = '2026-09-04T10:00:00.000Z';
 
@@ -180,22 +181,71 @@ const PREVIEW_BUILDER_COLLABORATORS = [
   },
 ];
 
+/**
+ * The recommendation each dimension carries when it is not yet done. These are
+ * the Builder's own advice, keyed by dimension so they survive the scores being
+ * derived rather than written out.
+ */
+const BUILDER_READINESS_ADVICE: Record<string, string> = {
+  team: 'Complete cofounder search on Discover',
+  market: 'Run 5 customer interviews',
+  product: 'Scope an MVP in Planner',
+  business: 'Fill the Business Model Canvas',
+  funding: 'Start a 10-slide pitch deck',
+  execution: 'Set the next 30-day milestone',
+};
+
+/** The same bands /readiness colours its dimension chips with. */
+function readinessStatus(score: number): string {
+  if (score >= 80) return 'excellent';
+  if (score >= 65) return 'good';
+  if (score >= 40) return 'needs-work';
+  return 'critical';
+}
+
+/**
+ * Scored from DEMO_CRITERIA rather than written out again.
+ *
+ * This payload used to carry its own six numbers, which disagreed with the six
+ * /readiness computes from the criteria - two answers to one question, a click
+ * apart, under a link labelled "full readiness report". A dimension's score is
+ * the weight of its completed criteria, which is exactly how the real endpoint
+ * scores it, so the Builder and the report now move together.
+ */
+const PREVIEW_BUILDER_DIMENSIONS = Object.entries(DEMO_CRITERIA).map(([dimension, criteria]) => {
+  const score = criteria.reduce((sum, c) => sum + (c.completed ? c.weight : 0), 0);
+  return {
+    dimension,
+    score,
+    maxScore: 100,
+    status: readinessStatus(score),
+    criteria: criteria.map((c) => ({ id: c.id, name: c.name, completed: c.completed, weight: c.weight })),
+    recommendations: score >= 100 ? [] : [BUILDER_READINESS_ADVICE[dimension]].filter(Boolean),
+  };
+});
+
+const PREVIEW_BUILDER_OVERALL = Math.round(
+  PREVIEW_BUILDER_DIMENSIONS.reduce((sum, d) => sum + d.score, 0) /
+    (PREVIEW_BUILDER_DIMENSIONS.length || 1),
+);
+
 const PREVIEW_BUILDER_READINESS = {
   workspaceId: PREVIEW_BUILDER_WS_ID,
-  overallScore: 42,
-  overallStatus: 'needs-work',
-  readinessLevel: 'early',
-  dimensions: [
-    { dimension: 'team', score: 48, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Complete cofounder search on Discover'] },
-    { dimension: 'market', score: 36, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Run 5 customer interviews'] },
-    { dimension: 'product', score: 40, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Scope an MVP in Planner'] },
-    { dimension: 'business', score: 28, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Fill the Business Model Canvas'] },
-    { dimension: 'funding', score: 22, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Start a 10-slide pitch deck'] },
-    { dimension: 'execution', score: 50, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Set the next 30-day milestone'] },
-  ],
+  overallScore: PREVIEW_BUILDER_OVERALL,
+  overallStatus: readinessStatus(PREVIEW_BUILDER_OVERALL),
+  readinessLevel:
+    PREVIEW_BUILDER_OVERALL >= 80 ? 'ready' : PREVIEW_BUILDER_OVERALL >= 55 ? 'developing' : 'early',
+  dimensions: PREVIEW_BUILDER_DIMENSIONS,
+  // Named from criteria that are actually still open, so the blockers cannot
+  // outlive the work they describe.
   blockers: [
-    'No customer interviews logged yet',
-    'Business model still a draft',
+    ...(DEMO_CRITERIA.market ?? [])
+      .filter((c) => !c.completed && /interview/i.test(c.name))
+      .map(() => 'No customer interviews logged yet'),
+    ...(DEMO_CRITERIA.business ?? [])
+      .filter((c) => !c.completed && /pricing|unit economics/i.test(c.name))
+      .slice(0, 1)
+      .map(() => 'Business model still a draft'),
   ],
   nextMilestones: [
     'Finish Idea Core problem and unique value',

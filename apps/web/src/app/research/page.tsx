@@ -393,7 +393,12 @@ export default function ResearchBoardsPage() {
                 <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
                   <span className="text-2xl font-bold tabular-nums">{boards.length}</span>
                   <span className="mb-1 text-xs text-muted-foreground">
-                    {pinnedCount} <BilingualText en={researchEn('stat_pinned_n')} el={researchEl('stat_pinned_n')} compact />
+                    {pinnedCount}{' '}
+                    <BilingualText
+                      en={researchEn('stat_pinned_n')}
+                      el={researchEl(pinnedCount === 1 ? 'stat_pinned_n_one' : 'stat_pinned_n')}
+                      compact
+                    />
                   </span>
                 </div>
               </CardContent>

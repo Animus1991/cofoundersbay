@@ -12,7 +12,7 @@
 const VENTURE_DIMENSION_EL: Record<string, string> = {
   profile: 'Βάθος προφίλ',
   research: 'Βάθος έρευνας',
-  artifacts: 'Ποιότητα τεχνουργημάτων',
+  artifacts: 'Ποιότητα παραδοτέων',
   collaboration: 'Συνεργασία',
   momentum: 'Ορμή (14 ημ.)',
   ecosystem: 'Συμμετοχή στο οικοσύστημα',

@@ -146,6 +146,8 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
   stat_boards: { en: 'Boards', el: 'Πίνακες' },
   stat_boards_hint: { en: 'Active research surfaces', el: 'Ενεργές επιφάνειες έρευνας' },
   stat_pinned_n: { en: 'pinned', el: 'καρφιτσωμένοι' },
+  // "1 καρφιτσωμένοι" is ungrammatical; a board is masculine singular.
+  stat_pinned_n_one: { en: 'pinned', el: 'καρφιτσωμένος' },
   stat_notes: { en: 'Notes & files', el: 'Σημειώσεις και αρχεία' },
   stat_notes_hint: { en: 'Across every open board', el: 'Σε όλους τους ανοιχτούς πίνακες' },
   stat_next: { en: 'Continue', el: 'Συνέχεια' },
