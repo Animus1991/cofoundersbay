@@ -15,6 +15,8 @@ import {
   Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { getProviderSummary } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -114,12 +116,30 @@ function ProjectCard({ project }: { project: Project }) {
 }
 
 export default function ProviderDashboardPage() {
-  // Mock data
+  /*
+   * Four figures written into the source. Three are counted by the summary
+   * endpoint over the provider's own offers and inquiries — the same rows
+   * /provider/inquiries, /provider/projects and /provider/reviews list, so
+   * the dashboard cannot disagree with the pages it links to.
+   *
+   * Monthly revenue reads a dash: an inquiry records an agreed price, not when
+   * it was paid, so there is no month to total. A rating of 4.8 with nothing
+   * rated would be the same invention this page is being cured of, so that
+   * tile is null until somebody rates the work.
+   */
+  const { data: summary } = useQuery({
+    queryKey: ['provider', 'summary'],
+    queryFn: getProviderSummary,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const dash = '\u2014';
   const stats = {
-    activeProjects: 5,
-    pendingInquiries: 8,
-    monthlyRevenue: '$4,500',
-    avgRating: 4.8,
+    activeProjects: summary?.projects ?? null,
+    pendingInquiries: summary?.openInquiries ?? null,
+    monthlyRevenue: null as string | null,
+    avgRating: summary?.avgRating ?? null,
   };
 
   const inquiries: Inquiry[] = [
@@ -213,7 +233,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Projects</p>
-                  <p className="text-xl font-bold">{stats.activeProjects}</p>
+                  <p className="text-xl font-bold">{stats.activeProjects ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -226,7 +246,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Inquiries</p>
-                  <p className="text-xl font-bold">{stats.pendingInquiries}</p>
+                  <p className="text-xl font-bold">{stats.pendingInquiries ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -239,7 +259,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-xl font-bold">{stats.monthlyRevenue}</p>
+                  <p className="text-xl font-bold">{stats.monthlyRevenue ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -252,7 +272,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Rating</p>
-                  <p className="text-xl font-bold">{stats.avgRating}</p>
+                  <p className="text-xl font-bold">{stats.avgRating ?? dash}</p>
                 </div>
               </div>
             </CardContent>

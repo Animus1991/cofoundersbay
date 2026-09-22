@@ -1257,6 +1257,208 @@ export async function getDashboardActivity(params?: { limit?: number; offset?: n
   return apiRequest(url);
 }
 
+// --- Provider services ----------------------------------------------------
+//
+// `ServiceOffer` and `ServiceInquiry` have been in the schema since it was
+// written and no controller read them, so the four provider screens each held
+// their own fixed array and the public marketplace sent people off-platform
+// through a `contactUrl`.
+//
+// All four are one entity filtered by status: an inquiry at `open` is an
+// enquiry, at `accepted` or `completed` it is a project, and one carrying a
+// rating is a review.
+
+export const OFFER_STATUSES = ['draft', 'active', 'paused', 'archived'] as const;
+export type OfferStatus = (typeof OFFER_STATUSES)[number];
+
+export const INQUIRY_STATUSES = [
+  'open',
+  'in_discussion',
+  'accepted',
+  'declined',
+  'completed',
+  'cancelled',
+] as const;
+export type InquiryStatus = (typeof INQUIRY_STATUSES)[number];
+
+export type ServiceOfferItem = {
+  id: string;
+  title: string;
+  description: string;
+  shortTagline: string | null;
+  category: string;
+  subcategory: string | null;
+  tags: string[];
+  pricingModel: string;
+  priceFrom: number | null;
+  priceTo: number | null;
+  currency: string;
+  pricingNotes: string | null;
+  deliveryDays: number | null;
+  revisionsIncluded: number | null;
+  status: OfferStatus;
+  isFeatured: boolean;
+  viewCount: number;
+  inquiryCount: number;
+  /** Null until somebody rates it — distinct from a rating of zero. */
+  avgRating: number | null;
+  reviewCount: number;
+  completedProjects: number;
+  createdAt: string;
+  provider: {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
+};
+
+export type ServiceInquiryItem = {
+  id: string;
+  status: InquiryStatus;
+  message: string;
+  responseMessage: string | null;
+  agreedScope: string | null;
+  budgetEstimate: number | null;
+  agreedPrice: number | null;
+  currency: string;
+  timelineExpected: string | null;
+  rating: number | null;
+  reviewComment: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+  offer: { id: string; title: string; category: string };
+  client: { id: string; displayName: string | null; avatarUrl: string | null };
+  provider: { id: string; displayName: string | null; avatarUrl: string | null };
+};
+
+export type ProviderSummary = {
+  offers: { total: number; active: number };
+  inquiryCounts: Record<InquiryStatus, number>;
+  openInquiries: number;
+  projects: number;
+  reviewCount: number;
+  /** Null when nothing is rated, so a tile can say so rather than show 0.0. */
+  avgRating: number | null;
+};
+
+export async function listServiceOffers(params?: {
+  category?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ offers: ServiceOfferItem[]; total: number; hasMore: boolean }> {
+  const sp = new URLSearchParams();
+  if (params?.category) sp.set('category', params.category);
+  if (params?.search) sp.set('search', params.search);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  const qs = sp.toString();
+  return apiRequest(`/api/services/offers${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+/** The signed-in provider's own offers, drafts and paused ones included. */
+export async function listMyServiceOffers(params?: {
+  limit?: number;
+}): Promise<{ offers: ServiceOfferItem[]; total: number; hasMore: boolean }> {
+  const qs = params?.limit != null ? `?limit=${params.limit}` : '';
+  return apiRequest(`/api/services/offers/mine${qs}`, undefined, { retryOn401: false });
+}
+
+export async function createServiceOffer(body: {
+  title: string;
+  description: string;
+  shortTagline?: string;
+  category: string;
+  tags?: string[];
+  pricingModel?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  currency?: string;
+  deliveryDays?: number;
+  status?: OfferStatus;
+}): Promise<{ offerId: string }> {
+  return apiRequest('/api/services/offers', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function updateServiceOffer(
+  offerId: string,
+  body: Partial<{
+    title: string;
+    description: string;
+    shortTagline: string;
+    category: string;
+    tags: string[];
+    priceFrom: number | null;
+    priceTo: number | null;
+    deliveryDays: number | null;
+    status: OfferStatus;
+  }>,
+): Promise<{ ok: boolean; offerId: string }> {
+  return apiRequest(`/api/services/offers/${offerId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function listServiceInquiries(params?: {
+  side?: 'provider' | 'client';
+  status?: InquiryStatus;
+  /** Two named views over the same rows, so pages do not invent their own. */
+  kind?: 'projects' | 'reviews';
+  limit?: number;
+}): Promise<{ inquiries: ServiceInquiryItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.side) sp.set('side', params.side);
+  if (params?.status) sp.set('status', params.status);
+  if (params?.kind) sp.set('kind', params.kind);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  const qs = sp.toString();
+  return apiRequest(`/api/services/inquiries${qs ? `?${qs}` : ''}`, undefined, {
+    retryOn401: false,
+  });
+}
+
+export async function getProviderSummary(): Promise<ProviderSummary> {
+  return apiRequest('/api/services/summary', undefined, { retryOn401: false });
+}
+
+/** A founder contacting a provider — the step the marketplace never had. */
+export async function createServiceInquiry(
+  offerId: string,
+  body: { message: string; budgetEstimate?: number; timelineExpected?: string },
+): Promise<{ inquiryId: string }> {
+  return apiRequest(`/api/services/offers/${offerId}/inquiries`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateServiceInquiry(
+  inquiryId: string,
+  body: Partial<{
+    status: InquiryStatus;
+    responseMessage: string;
+    agreedScope: string;
+    agreedPrice: number;
+  }>,
+): Promise<{ ok: boolean; inquiryId: string }> {
+  return apiRequest(`/api/services/inquiries/${inquiryId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function reviewServiceInquiry(
+  inquiryId: string,
+  body: { rating: number; reviewComment?: string },
+): Promise<{ ok: boolean; inquiryId: string }> {
+  return apiRequest(`/api/services/inquiries/${inquiryId}/review`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
 // --- Investor pipeline ---------------------------------------------------
 //
 // The watchlist, the pipeline board and the portfolio are three views of one

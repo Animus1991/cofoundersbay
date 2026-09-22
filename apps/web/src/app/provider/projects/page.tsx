@@ -14,6 +14,11 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +33,37 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+/**
+ * A project is an inquiry that was accepted — the same row /provider/inquiries
+ * lists before the provider agrees to the work, which is why the two screens
+ * cannot disagree about a piece of work.
+ *
+ * `progress` and `dueDate` have no field on the model: an inquiry records what
+ * was agreed and when it was resolved, not a schedule. Progress reads 0 and
+ * the due date reads a dash rather than a plausible-looking week from now.
+ */
+function toProject(row: ServiceInquiryItem): Project {
+  return {
+    id: row.id,
+    clientName: row.client?.displayName ?? 'A client',
+    clientAvatar: row.client?.avatarUrl ?? undefined,
+    service: row.offer.title,
+    status: row.status === 'completed' ? 'completed' : 'active',
+    progress: row.status === 'completed' ? 100 : 0,
+    startDate: row.createdAt,
+    dueDate: '',
+    lastUpdate: row.resolvedAt ?? row.createdAt,
+    amount:
+      row.agreedPrice != null
+        ? new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: row.currency,
+            maximumFractionDigits: 0,
+          }).format(row.agreedPrice)
+        : '\u2014',
+  };
+}
 
 type Project = {
   id: string;
@@ -105,11 +141,11 @@ function ProjectCard({ project }: { project: Project }) {
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" />
-                Due: {project.dueDate}
+                Due: {project.dueDate || '—'}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="icon-sm" />
-                Updated: {project.lastUpdate}
+                Updated: <RelativeTime date={project.lastUpdate} format={formatRelativeTime} />
               </span>
               <span className="font-medium text-foreground">{project.amount}</span>
             </div>
@@ -128,73 +164,85 @@ function ProjectCard({ project }: { project: Project }) {
   );
 }
 
+/** Shown to a provider with no agreed work yet. */
+const SEED_PROJECTS: Project[] = [
+  {
+    id: '1',
+    clientName: 'TechStart Inc',
+    clientCompany: 'TechStart Inc',
+    service: 'Startup Legal Package',
+    status: 'active',
+    progress: 75,
+    startDate: '2026-03-10T09:00:00.000Z',
+    dueDate: 'Mar 25',
+    lastUpdate: '2026-09-04T08:00:00.000Z',
+    amount: '$2,500',
+  },
+  {
+    id: '2',
+    clientName: 'GreenTech Co',
+    clientCompany: 'GreenTech Co',
+    service: 'Financial Model Creation',
+    status: 'active',
+    progress: 40,
+    startDate: '2026-03-15T09:00:00.000Z',
+    dueDate: 'Mar 30',
+    lastUpdate: '2026-09-03T10:00:00.000Z',
+    amount: '$1,200',
+  },
+  {
+    id: '3',
+    clientName: 'DataFlow',
+    clientCompany: 'DataFlow',
+    service: 'Contract Review',
+    status: 'on_hold',
+    progress: 60,
+    startDate: '2026-03-05T09:00:00.000Z',
+    dueDate: 'Apr 5',
+    lastUpdate: '2026-09-01T10:00:00.000Z',
+    amount: '$450',
+  },
+  {
+    id: '4',
+    clientName: 'HealthPulse',
+    clientCompany: 'HealthPulse',
+    service: 'Startup Legal Package',
+    status: 'completed',
+    progress: 100,
+    startDate: '2026-02-20T09:00:00.000Z',
+    dueDate: 'Mar 10',
+    lastUpdate: '2026-03-10T09:00:00.000Z',
+    amount: '$2,500',
+  },
+  {
+    id: '5',
+    clientName: 'EduLearn',
+    clientCompany: 'EduLearn',
+    service: 'Financial Model Creation',
+    status: 'completed',
+    progress: 100,
+    startDate: '2026-02-15T09:00:00.000Z',
+    dueDate: 'Feb 28',
+    lastUpdate: '2026-02-28T09:00:00.000Z',
+    amount: '$1,200',
+  },
+];
+
 export default function ProviderProjectsPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('active');
 
   // Mock data
-  const projects: Project[] = [
-    {
-      id: '1',
-      clientName: 'TechStart Inc',
-      clientCompany: 'TechStart Inc',
-      service: 'Startup Legal Package',
-      status: 'active',
-      progress: 75,
-      startDate: 'Mar 10',
-      dueDate: 'Mar 25',
-      lastUpdate: '2 hours ago',
-      amount: '$2,500',
-    },
-    {
-      id: '2',
-      clientName: 'GreenTech Co',
-      clientCompany: 'GreenTech Co',
-      service: 'Financial Model Creation',
-      status: 'active',
-      progress: 40,
-      startDate: 'Mar 15',
-      dueDate: 'Mar 30',
-      lastUpdate: '1 day ago',
-      amount: '$1,200',
-    },
-    {
-      id: '3',
-      clientName: 'DataFlow',
-      clientCompany: 'DataFlow',
-      service: 'Contract Review',
-      status: 'on_hold',
-      progress: 60,
-      startDate: 'Mar 5',
-      dueDate: 'Apr 5',
-      lastUpdate: '3 days ago',
-      amount: '$450',
-    },
-    {
-      id: '4',
-      clientName: 'HealthPulse',
-      clientCompany: 'HealthPulse',
-      service: 'Startup Legal Package',
-      status: 'completed',
-      progress: 100,
-      startDate: 'Feb 20',
-      dueDate: 'Mar 10',
-      lastUpdate: 'Mar 10',
-      amount: '$2,500',
-    },
-    {
-      id: '5',
-      clientName: 'EduLearn',
-      clientCompany: 'EduLearn',
-      service: 'Financial Model Creation',
-      status: 'completed',
-      progress: 100,
-      startDate: 'Feb 15',
-      dueDate: 'Feb 28',
-      lastUpdate: 'Feb 28',
-      amount: '$1,200',
-    },
-  ];
+  const { data, isLoading } = useQuery({
+    queryKey: ['provider', 'projects'],
+    queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.inquiries ?? []).map(toProject), [data]);
+  const projects: Project[] = live.length > 0 ? live : isLoading ? [] : SEED_PROJECTS;
+
 
   const filteredProjects = projects.filter((p) => {
     const matchesSearch =
