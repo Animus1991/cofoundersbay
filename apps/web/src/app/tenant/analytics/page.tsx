@@ -10,6 +10,10 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTenant } from '@/components/providers/TenantContext';
+import { getTenantMembers } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -21,12 +25,35 @@ import {
 } from '@/components/ui/select';
 
 export default function TenantAnalyticsPage() {
-  // Mock data
+  /*
+   * Four headline metrics, a role breakdown and four engagement figures, all
+   * written into the source with "+18%" changes attached to them.
+   *
+   * Members are counted now, and the role breakdown is computed from the same
+   * rows — so the pie and the headline cannot disagree. Everything else reads
+   * a dash: a tenant records memberships, not mentor sessions, messages sent
+   * or resources accessed, and a percentage change needs an earlier period
+   * that nothing stores.
+   */
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+  const { data } = useQuery({
+    queryKey: ['tenant', 'members', tenantId],
+    queryFn: () => getTenantMembers(tenantId!, { limit: 500 }),
+    enabled: Boolean(tenantId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const members = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const hasMembers = members.length > 0;
+  const dash = '\u2014';
+
   const metrics = {
-    totalMembers: 156,
-    activeStartups: 28,
-    programsRun: 12,
-    mentorSessions: 245,
+    totalMembers: hasMembers ? members.length : null,
+    activeStartups: null as number | null,
+    programsRun: null as number | null,
+    mentorSessions: null as number | null,
   };
 
   const memberGrowth = [
@@ -42,19 +69,44 @@ export default function TenantAnalyticsPage() {
     { name: 'Summer Accelerator 2024', startups: 12, graduated: 10, funded: 7, progress: 100 },
   ];
 
-  const memberDistribution = [
-    { role: 'Founders', count: 85, percentage: 55 },
-    { role: 'Mentors', count: 25, percentage: 16 },
-    { role: 'Investors', count: 20, percentage: 13 },
-    { role: 'Admins', count: 10, percentage: 6 },
-    { role: 'Other', count: 16, percentage: 10 },
-  ];
+  /** Counted from the same rows the headline counts, so the two agree. */
+  const memberDistribution = useMemo(() => {
+    if (!hasMembers) {
+      return [
+        { role: 'Founders', count: 85, percentage: 55 },
+        { role: 'Mentors', count: 25, percentage: 16 },
+        { role: 'Investors', count: 20, percentage: 13 },
+        { role: 'Admins', count: 10, percentage: 6 },
+        { role: 'Other', count: 16, percentage: 10 },
+      ];
+    }
+    const buckets: Array<[string, (role: string) => boolean]> = [
+      ['Founders', (r) => r === 'founder' || r === 'member'],
+      ['Mentors', (r) => r === 'mentor'],
+      ['Investors', (r) => r === 'investor'],
+      ['Admins', (r) => r === 'owner' || r === 'admin'],
+    ];
+    const counted = buckets.map(([role, match]) => ({
+      role,
+      count: members.filter((m) => match(m.role)).length,
+    }));
+    const other = members.length - counted.reduce((sum, b) => sum + b.count, 0);
+    return [...counted, { role: 'Other', count: Math.max(0, other) }].map((b) => ({
+      ...b,
+      percentage: Math.round((b.count / members.length) * 100),
+    }));
+  }, [members, hasMembers]);
 
+  /*
+   * A tenant records memberships, not sessions, messages or resource opens,
+   * and a "+18%" needs an earlier period nothing stores. The rows stay so the
+   * panel keeps its shape; the numbers say they are not recorded.
+   */
   const engagementMetrics = [
-    { name: 'Mentor Sessions', value: 245, change: '+18%' },
-    { name: 'Messages Sent', value: '1.2K', change: '+25%' },
-    { name: 'Events Attended', value: 89, change: '+12%' },
-    { name: 'Resources Accessed', value: 456, change: '+8%' },
+    { name: 'Mentor Sessions', value: dash, change: '' },
+    { name: 'Messages Sent', value: dash, change: '' },
+    { name: 'Events Attended', value: dash, change: '' },
+    { name: 'Resources Accessed', value: dash, change: '' },
   ];
 
   return (
@@ -87,7 +139,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Members</p>
-                  <p className="text-xl font-bold">{metrics.totalMembers}</p>
+                  <p className="text-xl font-bold">{metrics.totalMembers ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -100,7 +152,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Startups</p>
-                  <p className="text-xl font-bold">{metrics.activeStartups}</p>
+                  <p className="text-xl font-bold">{metrics.activeStartups ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -113,7 +165,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Programs Run</p>
-                  <p className="text-xl font-bold">{metrics.programsRun}</p>
+                  <p className="text-xl font-bold">{metrics.programsRun ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -126,7 +178,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mentor Sessions</p>
-                  <p className="text-xl font-bold">{metrics.mentorSessions}</p>
+                  <p className="text-xl font-bold">{metrics.mentorSessions ?? dash}</p>
                 </div>
               </div>
             </CardContent>
@@ -190,7 +242,9 @@ export default function TenantAnalyticsPage() {
                     <p className="text-sm text-muted-foreground">{metric.name}</p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-xl font-bold">{metric.value}</span>
-                      <span className="text-xs text-status-success">{metric.change}</span>
+                      {metric.change ? (
+                        <span className="text-xs text-status-success">{metric.change}</span>
+                      ) : null}
                     </div>
                   </div>
                 ))}
