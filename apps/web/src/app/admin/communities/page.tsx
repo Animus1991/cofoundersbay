@@ -14,6 +14,11 @@ import {
   Calendar,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { listGroups, type GroupView } from '@/lib/api';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,6 +38,33 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+/**
+ * The page's own row from a group.
+ *
+ * A community on this screen is a `Group`: the model already carries the
+ * member count, post count, category and privacy the cards show, and
+ * `listGroups` has existed all along. Cohorts were the other candidate and
+ * are the wrong one — they are an organisation's programme intake, not a
+ * public room.
+ *
+ * `status` has no field: a group is not archived or flagged in the schema, so
+ * every row reads active rather than being sorted into states the model does
+ * not have.
+ */
+function toCommunity(group: GroupView): Community {
+  return {
+    id: group.id,
+    name: group.name,
+    description: group.description ?? undefined,
+    category: group.category ?? '\u2014',
+    visibility: group.privacy === 'secret' ? 'private' : group.privacy,
+    memberCount: group.memberCount,
+    postCount: group.postCount,
+    createdAt: group.createdAt,
+    status: 'active',
+  };
+}
 
 type Community = {
   id: string;
@@ -124,7 +156,7 @@ function CommunityCard({ community }: { community: Community }) {
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" />
-                {community.createdAt}
+                <RelativeTime date={community.createdAt} format={formatRelativeTime} />
               </span>
               {community.tenant && (
                 <span className="flex items-center gap-1">
@@ -140,59 +172,71 @@ function CommunityCard({ community }: { community: Community }) {
   );
 }
 
+/** Shown when no community has loaded. */
+const SEED_COMMUNITIES: Community[] = [
+  {
+    id: '1',
+    name: 'AI Founders',
+    description: 'A community for founders building AI-powered products',
+    category: 'Technology',
+    visibility: 'public',
+    memberCount: 1250,
+    postCount: 456,
+    createdAt: '2024-01-15T09:00:00.000Z',
+    status: 'active',
+  },
+  {
+    id: '2',
+    name: 'TechStars Athens Network',
+    description: 'Private community for TechStars Athens alumni and mentors',
+    category: 'Accelerator',
+    visibility: 'tenant',
+    memberCount: 85,
+    postCount: 234,
+    createdAt: '2024-03-15T09:00:00.000Z',
+    status: 'active',
+    tenant: 'TechStars Athens',
+  },
+  {
+    id: '3',
+    name: 'FinTech Innovators',
+    description: 'Discuss the latest in financial technology',
+    category: 'Industry',
+    visibility: 'public',
+    memberCount: 890,
+    postCount: 312,
+    createdAt: '2024-02-15T09:00:00.000Z',
+    status: 'active',
+  },
+  {
+    id: '4',
+    name: 'Startup Legal',
+    description: 'Legal discussions for startups',
+    category: 'Resources',
+    visibility: 'private',
+    memberCount: 156,
+    postCount: 89,
+    createdAt: '2023-12-15T09:00:00.000Z',
+    status: 'flagged',
+  },
+];
+
 export default function AdminCommunitiesPage() {
   const [search, setSearch] = useState('');
   const [visibility, setVisibility] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
 
   // Mock data
-  const communities: Community[] = [
-    {
-      id: '1',
-      name: 'AI Founders',
-      description: 'A community for founders building AI-powered products',
-      category: 'Technology',
-      visibility: 'public',
-      memberCount: 1250,
-      postCount: 456,
-      createdAt: 'Jan 2024',
-      status: 'active',
-    },
-    {
-      id: '2',
-      name: 'TechStars Athens Network',
-      description: 'Private community for TechStars Athens alumni and mentors',
-      category: 'Accelerator',
-      visibility: 'tenant',
-      memberCount: 85,
-      postCount: 234,
-      createdAt: 'Mar 2024',
-      status: 'active',
-      tenant: 'TechStars Athens',
-    },
-    {
-      id: '3',
-      name: 'FinTech Innovators',
-      description: 'Discuss the latest in financial technology',
-      category: 'Industry',
-      visibility: 'public',
-      memberCount: 890,
-      postCount: 312,
-      createdAt: 'Feb 2024',
-      status: 'active',
-    },
-    {
-      id: '4',
-      name: 'Startup Legal',
-      description: 'Legal discussions for startups',
-      category: 'Resources',
-      visibility: 'private',
-      memberCount: 156,
-      postCount: 89,
-      createdAt: 'Dec 2023',
-      status: 'flagged',
-    },
-  ];
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'communities'],
+    queryFn: () => listGroups({ limit: 100, sort: 'popular' }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.groups ?? []).map(toCommunity), [data]);
+  const communities: Community[] = live.length > 0 ? live : isLoading ? [] : SEED_COMMUNITIES;
+
 
   const filteredCommunities = communities.filter((c) => {
     const matchesSearch =
