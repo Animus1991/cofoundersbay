@@ -15,6 +15,11 @@ import {
   UserX,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { listAdminUsers, type AdminUserItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +41,31 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+/**
+ * The page's own row from the admin row.
+ *
+ * `/api/admin/users` and `listAdminUsers` have existed all along; this screen
+ * listed a fixed array. `verified` and `tenant` have no counterpart on the
+ * admin payload and are left unset rather than asserted — an unverified badge
+ * on a verified account is worse than no badge.
+ *
+ * `moderationStatus` is the schema's word and maps straight across; "pending"
+ * is a state the page knows and the model does not, so nothing maps onto it.
+ */
+function toPageUser(row: AdminUserItem): User {
+  return {
+    id: row.id,
+    name: row.profile?.displayName ?? row.email,
+    email: row.email,
+    avatar: row.profile?.avatarUrl ?? undefined,
+    role: row.role,
+    status: row.moderationStatus,
+    verified: false,
+    createdAt: row.createdAt,
+    lastActive: row.lastSeenAt ?? '',
+  };
+}
 
 type User = {
   id: string;
@@ -86,7 +116,9 @@ function UserRow({ user }: { user: User }) {
         {user.tenant || 'Public'}
       </div>
       <div className="hidden md:block text-sm text-muted-foreground w-28">
-        {user.lastActive}
+        {user.lastActive
+          ? <RelativeTime date={user.lastActive} format={formatRelativeTime} />
+          : '—'}
       </div>
       <Badge variant="outline" className={cn('text-xs flex items-center gap-1 w-24 justify-center', config.color)}>
         {config.icon}
@@ -133,65 +165,81 @@ function UserRow({ user }: { user: User }) {
   );
 }
 
+/** Shown when the directory has not loaded. */
+const SEED_USERS: User[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'Founder',
+    status: 'active',
+    verified: true,
+    createdAt: 'Jan 15, 2025',
+    lastActive: '2 hours ago',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    role: 'Mentor',
+    status: 'active',
+    verified: true,
+    createdAt: 'Feb 1, 2025',
+    lastActive: '1 day ago',
+    tenant: 'TechStars Athens',
+  },
+  {
+    id: '3',
+    name: 'Mike Johnson',
+    email: 'mike@example.com',
+    role: 'Founder',
+    status: 'suspended',
+    verified: false,
+    createdAt: 'Mar 10, 2025',
+    lastActive: '1 week ago',
+  },
+  {
+    id: '4',
+    name: 'Sarah Williams',
+    email: 'sarah@example.com',
+    role: 'Investor',
+    status: 'active',
+    verified: true,
+    createdAt: 'Mar 5, 2025',
+    lastActive: '3 hours ago',
+  },
+  {
+    id: '5',
+    name: 'Tom Brown',
+    email: 'tom@example.com',
+    role: 'Founder',
+    status: 'pending',
+    verified: false,
+    createdAt: 'Mar 20, 2025',
+    lastActive: 'Never',
+  },
+];
+
 export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [role, setRole] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
 
   // Mock data
-  const users: User[] = [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'Founder',
-      status: 'active',
-      verified: true,
-      createdAt: 'Jan 15, 2025',
-      lastActive: '2 hours ago',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'Mentor',
-      status: 'active',
-      verified: true,
-      createdAt: 'Feb 1, 2025',
-      lastActive: '1 day ago',
-      tenant: 'TechStars Athens',
-    },
-    {
-      id: '3',
-      name: 'Mike Johnson',
-      email: 'mike@example.com',
-      role: 'Founder',
-      status: 'suspended',
-      verified: false,
-      createdAt: 'Mar 10, 2025',
-      lastActive: '1 week ago',
-    },
-    {
-      id: '4',
-      name: 'Sarah Williams',
-      email: 'sarah@example.com',
-      role: 'Investor',
-      status: 'active',
-      verified: true,
-      createdAt: 'Mar 5, 2025',
-      lastActive: '3 hours ago',
-    },
-    {
-      id: '5',
-      name: 'Tom Brown',
-      email: 'tom@example.com',
-      role: 'Founder',
-      status: 'pending',
-      verified: false,
-      createdAt: 'Mar 20, 2025',
-      lastActive: 'Never',
-    },
-  ];
+  /*
+   * The real directory. The seed below is what an empty instance shows, so
+   * the screen still teaches its shape rather than opening blank.
+   */
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'users'],
+    queryFn: () => listAdminUsers({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.users ?? []).map(toPageUser), [data]);
+  const users: User[] = live.length > 0 ? live : isLoading ? [] : SEED_USERS;
+
 
   const filteredUsers = users.filter((u) => {
     const matchesSearch =

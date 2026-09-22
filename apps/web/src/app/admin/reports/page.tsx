@@ -15,6 +15,12 @@ import {
   FileText,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { listAdminReports, resolveAdminReport, type AdminReportItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +42,47 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
+/**
+ * The page's own row from the moderation queue row.
+ *
+ * `/api/admin/reports` and `resolveAdminReport` have existed all along; this
+ * screen listed a fixed array and its two menu items had no handler.
+ *
+ * `priority` has no field on the model. Rather than invent one, it is derived
+ * from the report type: harassment is the category a moderator should see
+ * first, and that is a rule stated here rather than a number pretending to be
+ * measured.
+ */
+const REPORT_TYPE_MAP: Record<string, Report['type']> = {
+  spam: 'spam',
+  harassment: 'user',
+  fake: 'user',
+  inappropriate: 'content',
+  other: 'content',
+};
+
+const REPORT_PRIORITY: Record<string, Report['priority']> = {
+  harassment: 'high',
+  fake: 'high',
+  inappropriate: 'medium',
+  spam: 'medium',
+  other: 'low',
+};
+
+function toPageReport(row: AdminReportItem): Report {
+  return {
+    id: row.id,
+    type: REPORT_TYPE_MAP[row.type] ?? 'content',
+    reason: row.reason,
+    reporterName: row.reporter?.name ?? row.reporter?.email ?? '\u2014',
+    targetName: row.reported?.name ?? row.reported?.email ?? '\u2014',
+    targetType: row.reported?.role ?? 'user',
+    status: row.status === 'reviewed' ? 'reviewing' : row.status,
+    priority: REPORT_PRIORITY[row.type] ?? 'low',
+    createdAt: row.createdAt,
+  };
+}
+
 type Report = {
   id: string;
   type: 'user' | 'message' | 'content' | 'spam';
@@ -50,7 +97,16 @@ type Report = {
   createdAt: string;
 };
 
-function ReportCard({ report }: { report: Report }) {
+type ResolveFn = (report: Report, resolution: 'resolved' | 'dismissed') => void;
+
+function ReportCard({
+  report,
+  onResolve,
+}: {
+  report: Report;
+  /** Absent for the illustrative rows, which have nothing to write to. */
+  onResolve?: ResolveFn;
+}) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     pending: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: <Clock className="icon-sm" /> },
     reviewing: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: <AlertTriangle className="icon-sm" /> },
@@ -113,8 +169,20 @@ function ReportCard({ report }: { report: Report }) {
                     <DropdownMenuItem>View Details</DropdownMenuItem>
                     <DropdownMenuItem>View Target</DropdownMenuItem>
                     <DropdownMenuItem>Contact Reporter</DropdownMenuItem>
-                    <DropdownMenuItem className="text-status-success">Mark Resolved</DropdownMenuItem>
-                    <DropdownMenuItem className="text-muted-foreground">Dismiss</DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-status-success"
+                      disabled={!onResolve || report.status === 'resolved'}
+                      onClick={() => onResolve?.(report, 'resolved')}
+                    >
+                      Mark Resolved
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-muted-foreground"
+                      disabled={!onResolve || report.status === 'dismissed'}
+                      onClick={() => onResolve?.(report, 'dismissed')}
+                    >
+                      Dismiss
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -128,7 +196,7 @@ function ReportCard({ report }: { report: Report }) {
                 </Avatar>
                 {report.reporterName}
               </span>
-              <span>{report.createdAt}</span>
+              <span><RelativeTime date={report.createdAt} format={formatRelativeTime} /></span>
             </div>
           </div>
         </div>
@@ -137,61 +205,95 @@ function ReportCard({ report }: { report: Report }) {
   );
 }
 
+/** Shown when the moderation queue is empty. */
+const SEED_REPORTS: Report[] = [
+  {
+    id: '1',
+    type: 'user',
+    reason: 'Harassment',
+    description: 'User sent multiple unwanted messages after being asked to stop.',
+    reporterName: 'John Doe',
+    targetName: 'Mike Johnson',
+    targetType: 'User',
+    status: 'pending',
+    priority: 'high',
+    createdAt: '2025-03-21T10:00:00.000Z',
+  },
+  {
+    id: '2',
+    type: 'spam',
+    reason: 'Spam Content',
+    description: 'Posting promotional links in community discussions.',
+    reporterName: 'Jane Smith',
+    targetName: 'Tom Brown',
+    targetType: 'User',
+    status: 'reviewing',
+    priority: 'medium',
+    createdAt: '2025-03-20T10:00:00.000Z',
+  },
+  {
+    id: '3',
+    type: 'content',
+    reason: 'Inappropriate Content',
+    description: 'Profile contains misleading information about credentials.',
+    reporterName: 'Sarah Williams',
+    targetName: 'Alex Chen',
+    targetType: 'Profile',
+    status: 'pending',
+    priority: 'medium',
+    createdAt: '2025-03-19T10:00:00.000Z',
+  },
+  {
+    id: '4',
+    type: 'message',
+    reason: 'Offensive Language',
+    reporterName: 'David Kim',
+    targetName: 'Conversation #1234',
+    targetType: 'Message',
+    status: 'resolved',
+    priority: 'low',
+    createdAt: '2025-03-18T10:00:00.000Z',
+  },
+];
+
 export default function AdminReportsPage() {
   const [search, setSearch] = useState('');
   const [type, setType] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('pending');
 
   // Mock data
-  const reports: Report[] = [
-    {
-      id: '1',
-      type: 'user',
-      reason: 'Harassment',
-      description: 'User sent multiple unwanted messages after being asked to stop.',
-      reporterName: 'John Doe',
-      targetName: 'Mike Johnson',
-      targetType: 'User',
-      status: 'pending',
-      priority: 'high',
-      createdAt: 'Mar 21, 2025',
+  /*
+   * The real moderation queue. The illustrative rows below are what an
+   * empty queue shows; they carry no resolve handler, because there is
+   * nothing behind them to resolve.
+   */
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+  const { data } = useQuery({
+    queryKey: ['admin', 'reports'],
+    queryFn: () => listAdminReports({ limit: 100 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.reports ?? []).map(toPageReport), [data]);
+  const isLive = live.length > 0;
+  const reports: Report[] = isLive ? live : SEED_REPORTS;
+
+  const resolve = useMutation({
+    mutationFn: ({ id, resolution }: { id: string; resolution: 'resolved' | 'dismissed' }) =>
+      resolveAdminReport(id, resolution),
+    onSuccess: (_r, variables) => {
+      void qc.invalidateQueries({ queryKey: ['admin', 'reports'] });
+      success(variables.resolution === 'resolved' ? 'Report resolved' : 'Report dismissed');
     },
-    {
-      id: '2',
-      type: 'spam',
-      reason: 'Spam Content',
-      description: 'Posting promotional links in community discussions.',
-      reporterName: 'Jane Smith',
-      targetName: 'Tom Brown',
-      targetType: 'User',
-      status: 'reviewing',
-      priority: 'medium',
-      createdAt: 'Mar 20, 2025',
-    },
-    {
-      id: '3',
-      type: 'content',
-      reason: 'Inappropriate Content',
-      description: 'Profile contains misleading information about credentials.',
-      reporterName: 'Sarah Williams',
-      targetName: 'Alex Chen',
-      targetType: 'Profile',
-      status: 'pending',
-      priority: 'medium',
-      createdAt: 'Mar 19, 2025',
-    },
-    {
-      id: '4',
-      type: 'message',
-      reason: 'Offensive Language',
-      reporterName: 'David Kim',
-      targetName: 'Conversation #1234',
-      targetType: 'Message',
-      status: 'resolved',
-      priority: 'low',
-      createdAt: 'Mar 18, 2025',
-    },
-  ];
+    onError: (err) =>
+      showError('Could not update the report', err instanceof Error ? err.message : undefined),
+  });
+
+  const onResolve: ResolveFn = (report, resolution) =>
+    resolve.mutate({ id: report.id, resolution });
+
 
   const filteredReports = reports.filter((r) => {
     const matchesSearch =
@@ -289,7 +391,7 @@ export default function AdminReportsPage() {
         {/* Reports List */}
         <div className="space-y-3">
           {filteredReports.map((report) => (
-            <ReportCard key={report.id} report={report} />
+            <ReportCard key={report.id} report={report} onResolve={isLive ? onResolve : undefined} />
           ))}
           {filteredReports.length === 0 && (
             <Card>
