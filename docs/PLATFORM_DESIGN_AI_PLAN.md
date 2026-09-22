@@ -650,3 +650,55 @@ Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έ�
 **Πιο ανεπτυγμένο προϊόν:** αυτή η γραμμή `cursor/ui-upgrade-cloudflare-preview-53e0` `6582dcb` — **199** μπροστά από `main`, 6 μπροστά από integration (docs + CI/a11y fixes: shared `prebuild`, AIInsightButton, feed Preferences). Integration 0 unique. Claude unique SHAs ακόμα `bd5e720`/`4b897c9` (ήδη cherry-picked / skip).
 
 Διαφορά αρχείων προς Claude: σχόλια στο Button, αγγλικά labels στο `/feed`, import `LocalTime` αντί `RelativeTime`. Υιοθέτηση θα **αφαιρούσε** bilingual names και hydration-stable timestamps. Καμία παράλειψη αναβάθμισης.
+
+## 21. Έλεγχος 2026-09-22 — σύγκλιση branches, και η πρώτη μέτρηση όλων των 142 routes
+
+### 21.1 Branches
+
+`git fetch --all --prune`. Τοπικό `integration/ai-platform-upgrade` == remote (0 ahead / 0 behind) στο `6ff0dbc`, +90 commits από τον προηγούμενο έλεγχο. Σε κάθε άλλο remote branch, commits **που δεν υπάρχουν στο HEAD**:
+
+| branch | μη-συγχωνευμένα | κρίση |
+|---|---|---|
+| `cursor/ui-upgrade-cloudflare-preview-53e0` `5d630f3` | 0 | πρόγονος (merge `47e1660`) |
+| `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3` | 0 | πρόγονος |
+| `main` `91d6ea3` | 0 | πρόγονος |
+| `claude/project-audit-upgrade-y2ebnr` `4b897c9` | 2 (`bd5e720`, `4b897c9`) | **ουσία ήδη μέσα** — βλ. κάτω |
+
+Ο έλεγχος του Claude δεν έμεινε στους τίτλους. `bd5e720` (53 αρχεία, «nameless icon button = compile error»): ο φρουρός τύπων υπάρχει στο `button.tsx` (γρ. 83, 109–112, ίδιο τρίτο μέλος union για widened `size`), και το typecheck περνά — άρα κάθε icon button του HEAD **έχει** όνομα, αλλιώς δεν θα μεταγλωττιζόταν. 43/53 αρχεία θα συγκρούονταν σε cherry-pick γιατί η integration τα ξαναδούλεψε από τότε. `4b897c9`: αφαιρεί την εξαίρεση hydration #418 από το gate — το HEAD την αφαίρεσε ήδη (`RelativeTime`) **και** κράτησε θετικό regression test (`relative timestamps hydrate without a mismatch`, 5 tests έναντι 4 του Claude). Το commit message του Claude υπόσχεται test «every control keeps its name at phone width» — **το diff του δεν το περιέχει**. Τίποτα να τραβηχτεί.
+
+Τρία αρχεία σε εξέλιξη από την προηγούμενη συνεδρία (readiness bars διπλά ξεθωριασμένες, banner που αντέφασκε στο demo, γένος στο `strings-research`) — typecheck καθαρό, committed `de5a74d`.
+
+### 21.2 Επαλήθευση HEAD
+
+API: 187/187, typecheck καθαρό. Web: typecheck καθαρό· **455/456** — το ένα `MobileNavigation › closes when the already-current destination is selected` είναι `Test timed out in 60000ms`, όχι assertion. Σε απομόνωση 18/21 με τρία timeouts· τα ίδια tests που πέρναγαν σε 845ms στις 09-16 τώρα 8–130s, ενώ ο dev server μεταγλώττιζε 142 routes για το sweep (846 CPU-s, 1.5GB). Περιβαλλοντικό· δεν το δηλώνω πράσινο, δεν το δηλώνω regression.
+
+### 21.3 Sweep 142 static routes @1440 (Playwright, demo mode, platform_admin)
+
+Πρώτη φορά που μετριέται **ολόκληρη** η πλατφόρμα σε μία σάρωση, όχι τρεις σελίδες.
+
+| μέτρηση | αποτέλεσμα |
+|---|---|
+| non-200 | **1** — `/investor/dashboard` **500**: Server Component με 270 γραμμές νεκρού «legacy» κώδικα κάτω από το `redirect()`, που εισήγαγαν `useState` → Turbopack αρνείται. Διορθώθηκε στο πρότυπο των 7 γραμμών του `/mentor/dashboard`. Τίποτα δεν χάθηκε: το `/dashboard/investor` αποδίδει watchlist/pipeline/portfolio από το API. |
+| page errors | 2 — το παραπάνω, και `Maximum update depth exceeded` στο `/auth/sso-complete` **μία φορά**, αμέσως μετά το `/auth/oauth-callback` στο ίδιο tab. 3 απομονωμένες επαναλήψεις (με/χωρίς demo): 0 errors. Καταγράφεται ως παρατηρηθέν-μία-φορά, όχι ως διορθωμένο. |
+| οριζόντια κύλιση | 1 — `/profile/edit` 68px |
+| ανώνυμα controls | **17 routes, 94 controls**: `/calendar` 30, `/learning` 10, `/admin/feature-flags` 9, `/settings/ai` 9, `/investors` 6, `/members` 6, … Ο compile-time φρουρός πιάνει μόνο `<Button size="icon">`· αυτά είναι raw `<button>`/`<a>` και role-surface σελίδες. |
+| Greek <15% (>30 λέξεις) | **74/142** — admin ×17, org ×10, provider ×8, tenant ×6, investor ×5, mentor ×5, settings ×4, και `/reputation`, `/members`, `/investors`, `/endorsements`, `/marketplace`, `/mentoring`, `/help`. Ο ισχυρισμός «18 σελίδες» δεν επιβεβαιώνεται· είναι το μισό προϊόν. |
+| χωρίς Ask AI seam | 13 |
+| dead bands >60px | 9 routes ×1–2 |
+
+### 21.4 Ο ισχυρισμός «nothing on screen is invented» (`3983a79`) — ελέγχθηκε
+
+Σελίδες χωρίς κανένα fetch, με hardcoded αριθμητικά, **χωρίς** `SampleDataNotice`, και `status: 'complete'` στο registry: `/reputation` (12 figures — «Profile Completeness 85/100», badges, ιστορικό, **ίδια για κάθε χρήστη**, ενώ υπάρχουν `gamification` + `endorsements` API), `/coaching` (5), `/expert-reviews` (5), `/tenant/programs` (5), `/org/cohorts/[id]` (3). Επιπλέον `mentor/earnings`, `provider/analytics` με `const MOCK_*` arrays. Ο ισχυρισμός ισχύει για τις σελίδες που άγγιξε το commit· δεν ισχύει για την πλατφόρμα.
+
+### 21.5 AI seam, μετρημένο
+
+26 δηλώσεις (16 reads, 9 writes, 1 navigate) σε ~22 domains, έναντι **47 API modules**. Χωρίς καμία ενέργεια: `profile` (ο assistant δεν διαβάζει/γράφει το προφίλ του χρήστη), `gamification`, `messaging` read (μόνο send), `connections` read (μόνο send), `events`/`groups`/`milestones` write (μόνο read), `billing`, `org`/`tenant`/`admin` σύνολο, `marketplace`, `learning`, `polls`. Ο tool-call loop σε streaming που το §17.5 δήλωνε ανοιχτό **είναι πλέον συνδεδεμένος** (`ollama.service.ts:209` συναρμολογεί, `ai.controller.ts:169/287` επιθεωρεί, `useAIChat.ts:327` προτείνει). Snapshots σελίδας: 4/156.
+
+### 21.6 Σειρά (από τη μέτρηση, όχι από γούστο)
+
+1. **Ειλικρίνεια πρώτα**: 7 σελίδες που δείχνουν εφευρεμένα δεδομένα ως πραγματικά — είτε API, είτε `SampleDataNotice`, είτε `status: 'partial'`. Ένα βράδυ, μηδέν ρίσκο.
+2. **94 ανώνυμα controls / 17 routes** — αντικειμενικό WCAG failure· `/calendar` μόνο του είναι το ένα τρίτο.
+3. **`/profile/edit` 68px overflow**.
+4. **AI reach**: `get_profile`/`update_profile`, `get_messages`, `get_connections`, writes για milestones/events — ο πυρήνας ενός AI-first προϊόντος είναι να ξέρει τον χρήστη του.
+5. **74 English-only routes** — κατά ρόλο (settings → member-facing → investor/mentor/provider → org/tenant → admin), με τη σύμβαση `strings-*.ts` + `catalogGuard.test.ts` ανά σελίδα.
+6. 13 routes χωρίς Ask AI, 9 dead bands.
