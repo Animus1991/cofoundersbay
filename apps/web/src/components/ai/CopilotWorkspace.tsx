@@ -53,7 +53,10 @@ const STARTERS: { en: string; el: string; writes?: boolean }[] = [
   { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
   { en: 'Open my calendar', el: 'Άνοιξε το ημερολόγιό μου' },
   { en: 'How is my fundraising going?', el: 'Πώς πάει η χρηματοδότηση;' },
-  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist', writes: true },
+  // Two adjacent chips named one thing twice - "στη shortlist" here and
+  // "από τη λίστα" on the next line. The planner matches both; the reader
+  // should not have to.
+  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα', writes: true },
   { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα', writes: true },
   { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', writes: true },
 ];

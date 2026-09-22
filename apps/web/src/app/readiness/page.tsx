@@ -1126,10 +1126,14 @@ export default function ReadinessPage() {
                     minimum, so the rise is shown without being exaggerated. */}
                 <div className="mt-3 flex h-10 items-end gap-1 lg:h-[40px]">
                   {demoHistory.map((h, i) => (
+                    // Dimmed once, not twice: bg-primary/40 under an opacity
+                    // starting at 0.4 left the oldest bar at ~16% alpha, and the
+                    // 38→61 climb read as one flat row of pale blocks. Full
+                    // colour, and the fade alone carries the passage of weeks.
                     <div
                       key={i}
-                      className="flex-1 rounded-sm bg-primary/40 transition-all"
-                      style={{ height: `${(h.score / 100) * 100}%`, opacity: 0.4 + (i / demoHistory.length) * 0.6 }}
+                      className="flex-1 rounded-sm bg-primary transition-all"
+                      style={{ height: `${Math.max(h.score, 4)}%`, opacity: 0.35 + (i / (demoHistory.length - 1 || 1)) * 0.65 }}
                     />
                   ))}
                 </div>
@@ -1149,7 +1153,11 @@ export default function ReadinessPage() {
           </TabsList>
 
           <TabsContent value="dimensions" className="mt-5">
-            {!workspaceId && (
+            {/* The showcase has a workspace - /builder opens it - and its own
+                banner above already says the scores are illustrative. Telling a
+                demo visitor that no workspace is connected contradicted the
+                page one click away. */}
+            {!workspaceId && !isDemo && (
               <div className={cn('mb-5 flex items-start gap-3 rounded-xl border p-4', STATUS.warning.border, STATUS.warning.bg)}>
                 <AlertCircle className={cn('mt-0.5 icon-sm flex-shrink-0', STATUS.warning.icon)} />
                 <div className="min-w-0">
