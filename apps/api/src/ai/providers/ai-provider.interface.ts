@@ -45,6 +45,11 @@ export interface ChatOptions {
    * offered one.
    */
   tools?: ToolCatalogEntry[];
+  /**
+   * Receives tool calls produced by this exact request. Providers are
+   * singletons, so tool-call state must stay request-local.
+   */
+  onToolCalls?: (toolCalls: unknown) => void;
 }
 
 export interface ProviderHealthStatus {

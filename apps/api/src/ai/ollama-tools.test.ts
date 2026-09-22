@@ -9,7 +9,7 @@ import { OllamaService } from './ollama.service';
  * Streaming is the interesting case. Ollama sends tool calls inside a streamed
  * message rather than as character deltas, and may send more than one such
  * message, so they are collected across the whole stream instead of the last
- * one winning. They are read back through `takeLastToolCalls`, which clears
+ * one winning. They are delivered through `onToolCalls`, which is passed per
  * them, because `chatStream` yields strings and every existing caller depends
  * on that signature.
  *
@@ -55,6 +55,30 @@ beforeEach(() => {
 
 function bodyOf(call: number = 0): Record<string, unknown> {
   return JSON.parse(fetchMock.mock.calls[call][1].body);
+}
+
+/**
+ * Collects what a single request produced.
+ *
+ * Tool calls used to live on the service as `lastToolCalls` and be read back
+ * with a `takeLastToolCalls()` reader. A provider is a singleton, so two
+ * chats shared that field and could consume each other's proposals; delivery
+ * is per-request now, through the `onToolCalls` option.
+ */
+function collector() {
+  const seen: unknown[] = [];
+  return {
+    onToolCalls: (calls: unknown) => {
+      seen.push(calls);
+    },
+    /** What this request delivered, or null when it delivered nothing. */
+    get last(): unknown {
+      return seen.length ? seen[seen.length - 1] : null;
+    },
+    get count(): number {
+      return seen.length;
+    },
+  };
 }
 
 describe('offering the catalogue to the model', () => {
@@ -117,15 +141,18 @@ describe('reading tool calls back off a stream', () => {
     );
 
     const instance = service();
+    const sink = collector();
     const chunks: string[] = [];
-    for await (const chunk of instance.chatStream([{ role: 'user', content: 'hi' }])) {
+    for await (const chunk of instance.chatStream([{ role: 'user', content: 'hi' }], {
+      onToolCalls: sink.onToolCalls,
+    })) {
       chunks.push(chunk);
     }
 
     // Text still streams exactly as before.
     expect(chunks.join('')).toBe('looking and searching');
 
-    const calls = instance.takeLastToolCalls() as Array<{ function: { name: string } }>;
+    const calls = sink.last as Array<{ function: { name: string } }>;
     expect(calls.map((c) => c.function.name)).toEqual(['get_graph', 'search_people']);
   });
 
@@ -142,16 +169,19 @@ describe('reading tool calls back off a stream', () => {
     );
 
     const instance = service();
-    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }])) {
+    const sink = collector();
+    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }], {
+      onToolCalls: sink.onToolCalls,
+    })) {
       /* drain */
     }
 
-    expect(instance.takeLastToolCalls()).toEqual([
+    expect(sink.last).toEqual([
       { function: { name: 'navigate', arguments: { href: '/matches' } } },
     ]);
   });
 
-  it('clears the calls once read, so a later turn cannot inherit them', async () => {
+  it('delivers to this request only, so a later turn cannot inherit them', async () => {
     fetchMock.mockResolvedValue(
       streamResponse([
         { message: { tool_calls: [{ function: { name: 'get_graph', arguments: {} } }] } },
@@ -160,26 +190,44 @@ describe('reading tool calls back off a stream', () => {
     );
 
     const instance = service();
-    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }])) {
+    const first = collector();
+    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }], {
+      onToolCalls: first.onToolCalls,
+    })) {
       /* drain */
     }
+    expect(first.last).not.toBeNull();
 
-    expect(instance.takeLastToolCalls()).not.toBeNull();
-    expect(instance.takeLastToolCalls()).toBeNull();
+    // A second request on the same singleton gets its own sink, so nothing of
+    // the first turn's can reach it. That is the whole point of the change.
+    fetchMock.mockResolvedValue(
+      streamResponse([{ message: { content: 'text only' } }, { done: true }]),
+    );
+    const second = collector();
+    for await (const _ of instance.chatStream([{ role: 'user', content: 'again' }], {
+      onToolCalls: second.onToolCalls,
+    })) {
+      /* drain */
+    }
+    expect(second.last).toBeNull();
+    expect(first.count).toBe(1);
   });
 
   it('reports null when the model asked for nothing', async () => {
     fetchMock.mockResolvedValue(streamResponse([{ message: { content: 'just text' } }, { done: true }]));
 
     const instance = service();
-    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }])) {
+    const sink = collector();
+    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }], {
+      onToolCalls: sink.onToolCalls,
+    })) {
       /* drain */
     }
 
-    expect(instance.takeLastToolCalls()).toBeNull();
+    expect(sink.last).toBeNull();
   });
 
-  it('starts each stream clean even when the consumer stops early', async () => {
+  it('still reports what it collected when the consumer stops early', async () => {
     fetchMock.mockResolvedValue(
       streamResponse([
         { message: { tool_calls: [{ function: { name: 'get_graph', arguments: {} } }] } },
@@ -189,19 +237,24 @@ describe('reading tool calls back off a stream', () => {
     );
 
     const instance = service();
+    const stopped = collector();
     // Abandoning the generator runs its `finally`, which is where the calls are
-    // published — and where the next stream's reset has to happen, since an
-    // aborted stream never reaches the end of the loop.
-    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }])) {
+    // delivered — so an aborted stream still reports what it had assembled.
+    for await (const _ of instance.chatStream([{ role: 'user', content: 'hi' }], {
+      onToolCalls: stopped.onToolCalls,
+    })) {
       break;
     }
-    expect(instance.takeLastToolCalls()).not.toBeNull();
+    expect(stopped.last).not.toBeNull();
 
     fetchMock.mockResolvedValue(streamResponse([{ message: { content: 'text only' } }, { done: true }]));
-    for await (const _ of instance.chatStream([{ role: 'user', content: 'again' }])) {
+    const next = collector();
+    for await (const _ of instance.chatStream([{ role: 'user', content: 'again' }], {
+      onToolCalls: next.onToolCalls,
+    })) {
       /* drain */
     }
-    expect(instance.takeLastToolCalls()).toBeNull();
+    expect(next.last).toBeNull();
   });
 
   it('ignores a malformed tool_calls field instead of throwing', async () => {
@@ -215,13 +268,16 @@ describe('reading tool calls back off a stream', () => {
     );
 
     const instance = service();
+    const sink = collector();
     const chunks: string[] = [];
-    for await (const chunk of instance.chatStream([{ role: 'user', content: 'hi' }])) {
+    for await (const chunk of instance.chatStream([{ role: 'user', content: 'hi' }], {
+      onToolCalls: sink.onToolCalls,
+    })) {
       chunks.push(chunk);
     }
 
     expect(chunks.join('')).toBe('ok');
-    expect(instance.takeLastToolCalls()).toBeNull();
+    expect(sink.last).toBeNull();
   });
 });
 
