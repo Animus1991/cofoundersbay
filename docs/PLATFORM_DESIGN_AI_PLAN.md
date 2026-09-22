@@ -702,3 +702,20 @@ API: 187/187, typecheck καθαρό. Web: typecheck καθαρό· **455/456** 
 4. **AI reach**: `get_profile`/`update_profile`, `get_messages`, `get_connections`, writes για milestones/events — ο πυρήνας ενός AI-first προϊόντος είναι να ξέρει τον χρήστη του.
 5. **74 English-only routes** — κατά ρόλο (settings → member-facing → investor/mentor/provider → org/tenant → admin), με τη σύμβαση `strings-*.ts` + `catalogGuard.test.ts` ανά σελίδα.
 6. 13 routes χωρίς Ask AI, 9 dead bands.
+
+### 21.7 Οπτικός έλεγχος 32 στιγμιοτύπων (founder surfaces, demo) — 2026-09-22
+
+Τα στιγμιότυπα του χρήστη δείχνουν `/dashboard/founder` με «42/100 · 3 διαστάσεις (Team/Product/Market)» και «Ορόσημα 0/4». **Το HEAD δεν αποδίδει αυτά**: μέτρηση σε καθαρό browser δίνει 52/100 · 6 διαστάσεις (profile/research/artifacts/collaboration/momentum/ecosystem) και 6/12 ορόσημα — το mock των τριών διαστάσεων αντικαταστάθηκε στο `6ff0dbc`, και το σχόλιο στο `preview-api.ts:1470` το λέει ρητά. Ο browser του χρήστη σέρβιρε παλιό bundle· χρειάζεται hard reload. Δεν είναι εύρημα κώδικα.
+
+Επαληθευμένα στο HEAD και διορθωμένα:
+
+| εύρημα | αιτία | διόρθωση |
+|---|---|---|
+| `/builder/pitch-deck` «Αίτημα χρηματοδότησης: —» ενώ `/fundraising` και dashboard λένε $750K στόχος | το deck δεν διάβαζε τον γύρο | prefill από `fundraisingRoundView()` — **μόνο demo**, ποτέ πάνω από πληκτρολογημένη τιμή, ίδιο πρότυπο με το `companyName ← workspaceName` |
+| `/ai` τέσσερα νήματα «Νέα συνομιλία», ανοίγουν κενά | το demo `/api/ai/chat` αγνοούσε το `conversationId`· ο server (`ai-conversation.service.ts:151`) προσαρτά και μετονομάζει από το πρώτο μήνυμα | το preview layer κάνει το ίδιο, ίδια περικοπή 50 χαρακτήρων |
+| `/builder` «Τα παραδοτέα σας είναι έτοιμα για αξιολόγηση» δίπλα σε «0 ολοκληρωμένα» | trigger = `documents.length >= 2`, όχι ολοκλήρωση | το κείμενο λέει τι ισχύει: «N έγγραφα σε εξέλιξη — ένας ειδικός μπορεί να αξιολογήσει τα προσχέδια» |
+| `/readiness` 61 vs `/builder` 42 | στο HEAD και τα δύο 61 (ίδιο endpoint, ίδιο `DEMO_CRITERIA`, seed = 61) | καμία — stale bundle |
+
+Δύο βαθμολογίες «ετοιμότητας» παραμένουν σκόπιμα (52 πρόοδος ιδρυτή / 61 αξιολόγηση επενδυτή-επιταχυντή), ονοματισμένες και διασυνδεδεμένες από το `5e701fa`. Η συγχώνευσή τους είναι απόφαση προϊόντος, όχι bug.
+
+`/reputation` (§21.4 #1) έγινε: διαβάζει gamification XP/badges/streak, ίδια hooks με το dashboard, δίγλωσσο, `SampleDataNotice` στο demo. Μένουν από το #1: `/coaching`, `/expert-reviews`, `/tenant/programs`, `/org/cohorts/[id]`, `mentor/earnings`, `provider/analytics`.

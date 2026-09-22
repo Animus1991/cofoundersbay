@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -223,6 +225,32 @@ export function PitchDeckBuilder({
       });
     }
   }, [workspaceName, data.companyName]);
+
+  /*
+   * The ask follows the round the same way the company name follows the
+   * workspace. /fundraising and the dashboard both say the showcase is raising
+   * a $750K seed; this deck said "—" beside "Funding ask" on the same account,
+   * which is the kind of contradiction between adjacent pages the product is
+   * meant not to have. Demo only: the round model is the demo's, and seeding a
+   * real founder's deck with a sample figure would be inventing their ask.
+   * Same guard as the company name — never overwrite something typed.
+   */
+  useEffect(() => {
+    if (data.askAmount || !isPreviewDemo()) return;
+    const round = fundraisingRoundView();
+    const ask = fmtMoney(round.target, round.currency);
+    setData((prev) => {
+      if (prev.askAmount) return prev;
+      const next = { ...prev, askAmount: ask };
+      try {
+        const saved = JSON.parse(savedRef.current) as PitchDeckData;
+        if (!saved.askAmount) savedRef.current = snapshotOf(next);
+      } catch {
+        savedRef.current = snapshotOf(next);
+      }
+      return next;
+    });
+  }, [data.askAmount]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {

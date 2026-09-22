@@ -174,11 +174,18 @@ function BuilderPageContent() {
           <div className={cn('flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center', STATUS.warning.border, STATUS.warning.bg)}>
             <CfbGlyph name="award" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
             <div className="min-w-0 flex-1">
+              {/* The trigger is "two or more documents exist", not "documents
+                  are finished" — the stat card a few pixels below can say
+                  "0 completed" while this banner runs. So the claim is about
+                  what an expert can do with drafts, not that the work is done. */}
               <p className="text-sm font-semibold text-foreground">
-                <BilingualText en="Your artifacts are ready for expert review" el="Τα παραδοτέα σας είναι έτοιμα για αξιολόγηση ειδικού" />
+                <BilingualText
+                  en={`${documents.length} documents in progress — an expert can review drafts now`}
+                  el={`${documents.length} έγγραφα σε εξέλιξη — ένας ειδικός μπορεί να αξιολογήσει τα προσχέδια τώρα`}
+                />
               </p>
               <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                <BilingualText en="Get actionable feedback from a domain expert — investors, mentors, or industry specialists." el="Λάβετε πρακτική ανατροφοδότηση από ειδικό τομέα — επενδυτές, μέντορες ή ειδικούς κλάδου." />
+                <BilingualText en="Early feedback from an investor, mentor or industry specialist is cheapest before the documents are finished." el="Η έγκαιρη ανατροφοδότηση από επενδυτή, μέντορα ή ειδικό κλάδου κοστίζει λιγότερο πριν ολοκληρωθούν τα έγγραφα." />
               </p>
             </div>
             <a href="/expert-reviews" className="shrink-0">

@@ -1893,6 +1893,27 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
   if (pathname === '/api/ai/chat' || pathname === '/api/ai/chat/stream') {
     const text = String(body.message ?? '');
+    // The server does two things with a `conversationId` that this layer
+    // ignored: it appends both turns to the thread, and — if the thread is
+    // still called "New Conversation" — it renames it after the first user
+    // message (ai-conversation.service.ts:151, 50 chars + ellipsis). Without
+    // either, every demo thread stayed "Νέα συνομιλία" forever and reopened
+    // empty; the visitor's /ai sidebar was four identical rows. Same rule,
+    // same truncation, so the two modes read alike.
+    const convId = typeof body.conversationId === 'string' ? body.conversationId : null;
+    const conv = convId ? PREVIEW_AI_CONVERSATIONS.find((c) => c.id === convId) : undefined;
+    if (conv && text) {
+      const reply = `Preview copilot received: “${text}”. Use the in-app assistant tools for live graph actions.`;
+      const at = new Date().toISOString();
+      conv.messages.push(
+        { id: `ai-msg-${Date.now()}-u`, role: 'user', content: text, createdAt: at },
+        { id: `ai-msg-${Date.now()}-a`, role: 'assistant', content: reply, model: 'copilot', createdAt: at },
+      );
+      conv.updatedAt = at;
+      if (conv.title === 'New Conversation' || conv.title === 'New conversation' || !conv.title) {
+        conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+      }
+    }
     return {
       message: text
         ? `Preview copilot received: “${text}”. Use the in-app assistant tools for live graph actions.`
