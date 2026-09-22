@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, ChevronRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -423,8 +424,11 @@ export default function FounderDashboardContent() {
     attentionItems.push({
       href: vrs.lowestDimension.href,
       glyph: 'chart',
+      // "Ανύψωση" was a literal rendering of "Lift" that means physically
+      // raising something. The colon form also matches the milestone chip
+      // beside it ("Επόμενο: …") and sidesteps declining the dimension name.
       en: `Lift ${vrs.lowestDimension.label} (${vrs.lowestDimension.score}%)`,
-      el: `Ανύψωση ${vrs.lowestDimension.label} (${vrs.lowestDimension.score}%)`,
+      el: `Βελτιώστε: ${ventureDimensionEl(vrs.lowestDimension.key, vrs.lowestDimension.label)} (${vrs.lowestDimension.score}%)`,
     });
   }
 

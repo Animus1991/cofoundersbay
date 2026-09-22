@@ -1418,15 +1418,69 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
   if (pathname === '/api/dashboard/venture-readiness') {
+    /*
+     * Platform engagement, not startup readiness - two different questions that
+     * used to wear the same name here.
+     *
+     * This endpoint asks how much of the platform the founder has actually
+     * used; /readiness asks how close the venture is to raising. This payload
+     * once answered with three dimensions called Team, Product and Market -
+     * three of the six names /readiness uses for the other question - so the
+     * two screens looked like they disagreed about one number when they were
+     * never measuring the same thing. The six below are the dimensions
+     * `computeVentureReadiness` really returns, with its real weights.
+     *
+     * Every score is derived from `signals` with that method's own thresholds,
+     * so the demo agrees with what the other demo screens show: one research
+     * board holding six items (/research), two documents in one workspace
+     * (/builder), eight connections and one mentoring session.
+     */
+    const signals = {
+      boardCount: 1,
+      totalNodes: 6,
+      docCount: 2,
+      connectionCount: 8,
+      sessionCount: 1,
+      recentConnectionCount: 2,
+      eventRsvpCount: 2,
+      groupCount: 2,
+    };
+
+    // 9 of the 10 profile checks - everything but "7+ skills", which is why the
+    // profile-strength card says "Skills (5+)".
+    const profileScore = 90;
+    // 20 for having a board + 20 for five or more nodes.
+    const researchScore = 40;
+    // 20 for having a workspace + 20 for at least one document.
+    const artifactScore = 40;
+    // 15 + 15 for eight connections, + 20 for one session.
+    const collaborationScore = 50;
+    // 50 for at least one connection accepted in the last 14 days.
+    const momentumScore = 50;
+    // 25 for an event RSVP + 25 for a group membership.
+    const ecosystemScore = 50;
+
+    const dimensions = [
+      { key: 'profile', label: 'Profile Depth', score: profileScore, weight: 15, href: '/profile' },
+      { key: 'research', label: 'Research Depth', score: researchScore, weight: 20, href: '/research' },
+      { key: 'artifacts', label: 'Artifact Quality', score: artifactScore, weight: 25, href: '/builder' },
+      { key: 'collaboration', label: 'Collaboration', score: collaborationScore, weight: 20, href: '/connections' },
+      { key: 'momentum', label: 'Momentum (14d)', score: momentumScore, weight: 10, href: '/activity' },
+      { key: 'ecosystem', label: 'Ecosystem Engagement', score: ecosystemScore, weight: 10, href: '/events' },
+    ];
+
     return {
-      overall: 42,
-      dimensions: [
-        { key: 'team', label: 'Team', score: 50, weight: 1, href: '/profile' },
-        { key: 'product', label: 'Product', score: 35, weight: 1, href: '/builder' },
-        { key: 'market', label: 'Market', score: 40, weight: 1, href: '/research' },
-      ],
-      lowestDimension: { key: 'product', label: 'Product', score: 35, weight: 1, href: '/builder' },
-      signals: { boardCount: 1, totalNodes: 6, docCount: 2, connectionCount: 8, sessionCount: 1 },
+      overall: Math.round(
+        profileScore * 0.15 +
+          researchScore * 0.2 +
+          artifactScore * 0.25 +
+          collaborationScore * 0.2 +
+          momentumScore * 0.1 +
+          ecosystemScore * 0.1,
+      ),
+      dimensions,
+      lowestDimension: [...dimensions].sort((a, b) => a.score - b.score)[0],
+      signals,
     };
   }
 

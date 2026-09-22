@@ -15,6 +15,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -159,7 +160,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className={cn('flex min-w-0 items-center gap-2', compact ? 'text-sm' : 'text-base')}>
             <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
-            <BilingualText en="Venture Readiness Score" el="Βαθμός ετοιμότητας εγχειρήματος" />
+            <BilingualText en="Founder progress score" el="Βαθμός προόδου ιδρυτή" />
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>
             <Link href="/achievements" className="shrink-0">
@@ -174,7 +175,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           <RadialGauge score={vrs.overall} />
           <div className="min-w-0 flex-1 text-center sm:text-left">
             <p className={cn('text-sm font-semibold', tierColor)}>
-              <BilingualText en={`${tierEn} readiness`} el={`${tierEl} ετοιμότητα`} />
+              <BilingualText en={`${tierEn} progress`} el={`${tierEl} πρόοδος`} />
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               <BilingualText
@@ -182,13 +183,29 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                 el={`Ζυγισμένος σε ${dimensionCount} διαστάσεις προόδου ιδρυτή`}
               />
             </p>
+            {/* Two different questions used to share the word "readiness": how
+                much of the platform this founder has put to work, and how close
+                the venture is to raising. Name the other one and link it. */}
+            <p className="mt-1 text-xs text-muted-foreground">
+              <Link href="/readiness" className="underline underline-offset-2 hover:text-foreground">
+                <BilingualText
+                  en="Investor and accelerator readiness is scored separately"
+                  el="Η ετοιμότητα για επενδυτές και επιταχυντές βαθμολογείται ξεχωριστά"
+                  compact
+                />
+              </Link>
+            </p>
             {vrs.lowestDimension?.href && (
               <div className={cn('mt-2 flex items-start justify-center gap-1.5 text-xs sm:justify-start', STATUS.warning.text)}>
                 <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
                 <span className="min-w-0 text-pretty">
                   <BilingualText en="Lowest" el="Χαμηλότερη" compact />{': '}
                   <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">
-                    {vrs.lowestDimension.label}
+                    <BilingualText
+                      en={vrs.lowestDimension.label}
+                      el={ventureDimensionEl(vrs.lowestDimension.key, vrs.lowestDimension.label)}
+                      compact
+                    />
                   </Link>{' '}
                   ({vrs.lowestDimension.score}%)
                 </span>
@@ -205,7 +222,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                 <Link href={dim.href} className="group block rounded-sm">
                   <div className="mb-1 flex items-center justify-between gap-2 text-xs">
                     <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
-                      {dim.label}
+                      <BilingualText en={dim.label} el={ventureDimensionEl(dim.key, dim.label)} compact />
                       {weightShare(dim.weight) !== null && (
                         <span className="ml-1 hidden text-muted-foreground/60 sm:inline">
                           ·{' '}
