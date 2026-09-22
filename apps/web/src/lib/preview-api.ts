@@ -2089,7 +2089,23 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       levelLabel: 'Builder',
       xpToNextLevel: 80,
       levelProgress: 84,
-      recentEvents: [],
+      // The showcase's last week, in the event vocabulary EVENT_CONFIG uses on
+      // the server (apps/api gamification.types.ts). Used to be `[]`, which left
+      // /reputation's Overview and History empty for the one account every
+      // visitor sees. These are the actions the rest of the demo already
+      // implies: two Builder artifacts, a closed milestone, a mentor review
+      // acted on, a collaborator invited. Amounts are the config's base XP
+      // (25/40/50/60/80/100), so a reader cross-checking against the ladder
+      // finds them exact. No STREAK_BONUS row: its base is 0 and the server
+      // computes it, so a literal here would be an invented number.
+      recentEvents: [
+        { id: 'xp-1', eventType: 'IMPROVE_ARTIFACT', xpAmount: 40, entityType: 'artifact', metadata: null, createdAt: NOW },
+        { id: 'xp-2', eventType: 'APPLY_FEEDBACK', xpAmount: 80, entityType: 'review', metadata: null, createdAt: '2026-09-03T09:05:00.000Z' },
+        { id: 'xp-3', eventType: 'RECEIVE_MENTOR_FEEDBACK', xpAmount: 60, entityType: 'review', metadata: null, createdAt: '2026-09-02T18:40:00.000Z' },
+        { id: 'xp-4', eventType: 'COMPLETE_MILESTONE', xpAmount: 100, entityType: 'milestone', metadata: null, createdAt: '2026-09-01T11:00:00.000Z' },
+        { id: 'xp-5', eventType: 'CREATE_ARTIFACT', xpAmount: 25, entityType: 'artifact', metadata: null, createdAt: '2026-08-30T14:30:00.000Z' },
+        { id: 'xp-6', eventType: 'INVITE_COLLABORATOR', xpAmount: 50, entityType: 'workspace', metadata: null, createdAt: '2026-08-29T10:10:00.000Z' },
+      ],
       streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW },
     };
   }
