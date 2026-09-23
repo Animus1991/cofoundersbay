@@ -553,9 +553,16 @@ const SPECIALTY_KEYWORDS: Record<SessionType, string[]> = {
 };
 
 function specialtiesFrom(words: readonly string[]): SessionType[] {
-  const haystack = words.join(' ').toLowerCase();
+  /*
+   * Whole words, not substrings: "ops" sits inside "develops". Every
+   * non-letter becomes a space and both sides are padded, so a keyword
+   * matches only where a word actually starts and ends, and a hyphenated
+   * keyword still matches because it is normalised the same way.
+   */
+  const normalise = (text: string) => ` ${text.toLowerCase().replace(/[^a-z]+/g, ' ').trim()} `;
+  const haystack = normalise(words.join(' '));
   return (Object.keys(SPECIALTY_KEYWORDS) as SessionType[]).filter((type) =>
-    SPECIALTY_KEYWORDS[type].some((keyword) => haystack.includes(keyword)),
+    SPECIALTY_KEYWORDS[type].some((keyword) => haystack.includes(normalise(keyword))),
   );
 }
 

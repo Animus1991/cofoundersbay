@@ -1257,6 +1257,162 @@ export async function getDashboardActivity(params?: { limit?: number; offset?: n
   return apiRequest(url);
 }
 
+// --- Expert reviews ---------------------------------------------------------
+//
+// `ExpertReview` has been in the schema since it was written with no controller
+// over it, so /expert-reviews held its own fixed arrays and its "request a
+// review" button had nothing to call. These wrap the module that now reads it.
+
+export type ExpertReviewPerson = {
+  id: string;
+  displayName: string | null;
+  headline: string | null;
+  avatarUrl: string | null;
+};
+
+export type ExpertReviewType =
+  | 'pitch_deck'
+  | 'business_model'
+  | 'financial_model'
+  | 'legal_structure'
+  | 'market_analysis'
+  | 'go_to_market'
+  | 'technical_architecture'
+  | 'product_strategy'
+  | 'general';
+
+export type ExpertReviewStatus =
+  | 'requested'
+  | 'accepted'
+  | 'in_progress'
+  | 'submitted'
+  | 'declined'
+  | 'expired';
+
+export type ExpertReviewItem = {
+  id: string;
+  requester: ExpertReviewPerson;
+  expert: ExpertReviewPerson;
+  workspaceId: string | null;
+  reviewType: ExpertReviewType;
+  status: ExpertReviewStatus;
+  requestMessage: string | null;
+  documents: Record<string, unknown>[];
+  summaryFeedback: string | null;
+  strengths: Record<string, unknown>[];
+  improvements: Record<string, unknown>[];
+  scoreOverall: number | null;
+  scoresByArea: Record<string, number>;
+  isPaid: boolean;
+  agreedFee: number | null;
+  currency: string;
+  requestedAt: string;
+  acceptedAt: string | null;
+  dueDate: string | null;
+  submittedAt: string | null;
+  rating: number | null;
+  ratingComment: string | null;
+};
+
+export type ExpertDirectoryItem = {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  headline: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  skills: string[];
+  specializations: string[];
+  industries: string[];
+  isVerified: boolean;
+  isFree: boolean;
+  feeFrom: number | null;
+  currency: string;
+  completedReviews: number;
+  rating: number | null;
+};
+
+export type ExpertReviewSummary = {
+  total: number;
+  open: number;
+  submitted: number;
+  avgRating: number | null;
+  avgScore: number | null;
+};
+
+export async function listExpertReviews(params?: {
+  side?: 'requester' | 'expert';
+  status?: ExpertReviewStatus;
+  limit?: number;
+}): Promise<{ reviews: ExpertReviewItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.side) sp.set('side', params.side);
+  if (params?.status) sp.set('status', params.status);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  return apiRequest(`/api/expert-reviews${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getExpertReviewSummary(
+  side: 'requester' | 'expert' = 'requester',
+): Promise<ExpertReviewSummary> {
+  return apiRequest(`/api/expert-reviews/summary?side=${side}`);
+}
+
+export async function listExperts(params?: {
+  search?: string;
+  limit?: number;
+}): Promise<{ experts: ExpertDirectoryItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.search) sp.set('search', params.search);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  return apiRequest(`/api/expert-reviews/experts${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function requestExpertReview(body: {
+  expertId: string;
+  reviewType?: ExpertReviewType;
+  requestMessage?: string;
+  workspaceId?: string;
+  documents?: Record<string, unknown>[];
+  dueDate?: string;
+  isPaid?: boolean;
+  agreedFee?: number;
+  currency?: string;
+}): Promise<{ review: ExpertReviewItem }> {
+  return apiRequest('/api/expert-reviews', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateExpertReview(
+  id: string,
+  body: {
+    status?: ExpertReviewStatus;
+    summaryFeedback?: string;
+    strengths?: Record<string, unknown>[];
+    improvements?: Record<string, unknown>[];
+    scoreOverall?: number;
+    scoresByArea?: Record<string, number>;
+    dueDate?: string | null;
+  },
+): Promise<{ review: ExpertReviewItem }> {
+  return apiRequest(`/api/expert-reviews/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function rateExpertReview(
+  id: string,
+  body: { rating: number; ratingComment?: string },
+): Promise<{ review: ExpertReviewItem }> {
+  return apiRequest(`/api/expert-reviews/${id}/rating`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
 // --- Provider services ----------------------------------------------------
 //
 // `ServiceOffer` and `ServiceInquiry` have been in the schema since it was

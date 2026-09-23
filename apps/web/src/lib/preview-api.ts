@@ -1161,6 +1161,150 @@ function previewMentors() {
   }));
 }
 
+/**
+ * Expert reviews of the Harbor deliverables.
+ *
+ * The Builder banner offers a review of the founder's artifacts; these are
+ * what that offer leads to. The experts are the showcase's own mentors, so a
+ * visitor meets the same people here, on /coaching and in /matches.
+ */
+function previewExpertReviews() {
+  const sarah = {
+    id: 'user-sarah',
+    displayName: 'Dr. Sarah Kim',
+    headline: 'Startup mentor - Ex-Google - 3x founder',
+    avatarUrl: null,
+  };
+  const nikos = {
+    id: 'user-nikos',
+    displayName: 'Nikos Andreou',
+    headline: 'Angel investor - Seed',
+    avatarUrl: null,
+  };
+  const me = {
+    id: ME_ID,
+    displayName: 'Alex Demo',
+    headline: 'Founder at Harbor',
+    avatarUrl: null,
+  };
+
+  return [
+    {
+      id: 'preview-exrev-1',
+      requester: me,
+      expert: sarah,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      reviewType: 'pitch_deck',
+      status: 'submitted',
+      requestMessage: 'Twelve slides for the seed round. Is the traction slide honest enough?',
+      documents: [] as Record<string, unknown>[],
+      summaryFeedback:
+        'The narrative holds until slide six, where the traction claim outruns the evidence behind it. Lead with the retention curve you already have rather than the pipeline you hope for - it is the stronger number and it is the one you can defend.',
+      strengths: [
+        { area: 'Problem', comment: 'Named in one sentence, with a cost attached to it.' },
+        { area: 'Team', comment: 'The complementary-skills story lands without being laboured.' },
+      ] as Record<string, unknown>[],
+      improvements: [
+        { area: 'Traction', recommendation: 'Replace the pipeline figure with second-week retention.' },
+        { area: 'Ask', recommendation: 'State the use of funds in three lines, not eight.' },
+      ] as Record<string, unknown>[],
+      scoreOverall: 7,
+      scoresByArea: { problem: 8, team: 8, traction: 5, market: 7, ask: 6 },
+      isPaid: false,
+      agreedFee: null,
+      currency: 'EUR',
+      requestedAt: previewIsoInDays(-18, 9),
+      acceptedAt: previewIsoInDays(-17, 9),
+      dueDate: previewIsoInDays(-10, 9),
+      submittedAt: previewIsoInDays(-11, 9),
+      rating: 5,
+      ratingComment: 'Changed what we led with. Worth the week of waiting.',
+    },
+    {
+      id: 'preview-exrev-2',
+      requester: me,
+      expert: nikos,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      reviewType: 'business_model',
+      status: 'in_progress',
+      requestMessage: 'The BMC is still a draft - mainly want a read on the pricing block.',
+      documents: [] as Record<string, unknown>[],
+      summaryFeedback: null,
+      strengths: [] as Record<string, unknown>[],
+      improvements: [] as Record<string, unknown>[],
+      scoreOverall: null,
+      scoresByArea: {} as Record<string, number>,
+      isPaid: false,
+      agreedFee: null,
+      currency: 'EUR',
+      requestedAt: previewIsoInDays(-6, 9),
+      acceptedAt: previewIsoInDays(-5, 9),
+      dueDate: previewIsoInDays(4, 9),
+      submittedAt: null,
+      rating: null,
+      ratingComment: null,
+    },
+    {
+      id: 'preview-exrev-3',
+      requester: me,
+      expert: sarah,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      reviewType: 'financial_model',
+      status: 'requested',
+      requestMessage: 'Three-year model, first pass. Mostly checking the assumptions are not silly.',
+      documents: [] as Record<string, unknown>[],
+      summaryFeedback: null,
+      strengths: [] as Record<string, unknown>[],
+      improvements: [] as Record<string, unknown>[],
+      scoreOverall: null,
+      scoresByArea: {} as Record<string, number>,
+      isPaid: true,
+      agreedFee: 250,
+      currency: 'EUR',
+      requestedAt: previewIsoInDays(-2, 9),
+      acceptedAt: null,
+      dueDate: previewIsoInDays(9, 9),
+      submittedAt: null,
+      rating: null,
+      ratingComment: null,
+    },
+  ];
+}
+
+/**
+ * The expert directory, from the same mentors /coaching lists.
+ *
+ * Their standing is counted from the reviews above rather than written out, so
+ * the directory and the review list cannot disagree about how many reviews an
+ * expert has delivered.
+ */
+function previewExperts() {
+  const reviews = previewExpertReviews();
+  return previewMentors().map((m) => {
+    const delivered = reviews.filter((r) => r.expert.id === m.userId && r.status === 'submitted');
+    const ratings = delivered.map((r) => r.rating).filter((r): r is number => r != null);
+    return {
+      id: m.userId,
+      userId: m.userId,
+      displayName: m.displayName,
+      headline: m.headline,
+      bio: m.bio,
+      avatarUrl: m.avatarUrl,
+      skills: m.skills,
+      specializations: m.skills,
+      industries: m.industries,
+      isVerified: m.availabilityStatus === 'available',
+      isFree: m.isFree,
+      feeFrom: m.isFree ? null : m.hourlyRate,
+      currency: m.currency ?? 'EUR',
+      completedReviews: delivered.length,
+      rating: ratings.length
+        ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+        : null,
+    };
+  });
+}
+
 function kitchenSink() {
   return {
     ok: true,
@@ -2416,6 +2560,33 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname === '/api/mentorship/mentors') {
     const mentors = previewMentors();
     return { mentors, total: mentors.length, page: 1, totalPages: 1 };
+  }
+
+  // -- Expert reviews, over the model that had no controller until now -------
+  if (pathname === '/api/expert-reviews/experts') {
+    const experts = previewExperts();
+    return { experts, total: experts.length };
+  }
+  if (pathname === '/api/expert-reviews/summary') {
+    const reviews = previewExpertReviews();
+    const rated = reviews.filter((r) => r.rating != null);
+    const scored = reviews.filter((r) => r.scoreOverall != null);
+    return {
+      total: reviews.length,
+      open: reviews.filter((r) => ['requested', 'accepted', 'in_progress'].includes(r.status))
+        .length,
+      submitted: reviews.filter((r) => r.status === 'submitted').length,
+      avgRating: rated.length
+        ? Number((rated.reduce((a, r) => a + (r.rating ?? 0), 0) / rated.length).toFixed(1))
+        : null,
+      avgScore: scored.length
+        ? Number((scored.reduce((a, r) => a + (r.scoreOverall ?? 0), 0) / scored.length).toFixed(1))
+        : null,
+    };
+  }
+  if (pathname === '/api/expert-reviews') {
+    const reviews = previewExpertReviews();
+    return { reviews, total: reviews.length };
   }
 
   if (pathname === '/api/milestones/summary') {
