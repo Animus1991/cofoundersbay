@@ -66,6 +66,7 @@ import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoleProvider } from '@/contexts/RoleContext';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
+import { PageRailProvider } from '@/components/layout/PageRailContext';
 import { SkipToContent } from '@/components/layout/SkipToContent';
 import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
 import { PopupChatProvider } from '@/contexts/PopupChatContext';
@@ -150,6 +151,7 @@ export default function RootLayout({
                 <TenantProvider>
                   <RoleProvider>
                     <SidebarProvider>
+                      <PageRailProvider>
                       <ServiceWorkerRegistration />
                       <NetworkProvider>
                         <ApiHealthProbe />
@@ -181,6 +183,7 @@ export default function RootLayout({
                           </ConfirmProvider>
                         </ToastProvider>
                       </NetworkProvider>
+                      </PageRailProvider>
                     </SidebarProvider>
                   </RoleProvider>
                 </TenantProvider>

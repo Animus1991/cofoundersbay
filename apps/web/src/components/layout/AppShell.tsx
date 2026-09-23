@@ -15,6 +15,8 @@ import { CfbGlyph, glyphForHref } from '@/components/icons/CfbGlyph';
 import { AIComposer } from '@/components/ai/AIComposer';
 import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
+import { PageRail, type PageRailSection } from './PageRail';
+import { usePageRail } from './PageRailContext';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -51,6 +53,7 @@ export function AppShellFrame({
   contentClassName,
 }: AppShellFrameProps) {
   const { expanded, mounted } = useSidebar();
+  const { pinned: railPinned, hasRail } = usePageRail();
 
   return (
     <InAppShellFrame.Provider value={true}>
@@ -66,14 +69,22 @@ export function AppShellFrame({
 
         {/* Main column — offset by sidebar width on lg+ */}
         <div
+          // Named group, so anything inside can lay itself out for the width
+          // the rail actually leaves rather than for the viewport.
+          data-rail={hasRail ? (railPinned ? 'pinned' : 'strip') : 'none'}
           className={cn(
-            'flex min-w-0 flex-col',
+            'group/shell flex min-w-0 flex-col',
             fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
             'transition-[margin-left] duration-200 ease-out',
             // Rail from `sm` (68px), drawer from `lg`. Below `sm` the nav is the
             // bottom bar and the column takes the full width.
             'sm:ml-[4.25rem]',
             (mounted ? expanded : true) ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
+            // The page rail, on the other side. The collapsed strip is always
+            // reserved on a page that has one, so pinning and unpinning slides
+            // the panel rather than reflowing the whole column twice.
+            'transition-[margin-right] duration-200 ease-out',
+            hasRail && (railPinned ? 'lg:mr-[20.25rem]' : 'lg:mr-[3.25rem]'),
           )}
         >
           <MemoTopBar />
@@ -139,6 +150,16 @@ type AppShellProps = {
    * Pass `false` to hide (AI workspace, pages that already own the CTA).
    */
   askAi?: string | false;
+  /**
+   * The page's supporting tools, in the right-hand rail.
+   *
+   * Filters, view switches, export, page settings, secondary figures - the
+   * controls that are *about* the page rather than the page itself. The main
+   * column then carries only what the page exists to do.
+   *
+   * Omit it and nothing changes: a page without a rail keeps the full width.
+   */
+  rail?: PageRailSection[];
 };
 
 /**
@@ -161,6 +182,7 @@ export function AppShell({
   fullHeight = false,
   contentClassName,
   askAi,
+  rail,
 }: AppShellProps) {
   const insideFrame = useContext(InAppShellFrame);
   const pathname = usePathname() ?? '/';
@@ -184,7 +206,9 @@ export function AppShell({
     <div className={cn('space-y-5', insideFrame && contentClassName)}>
       {(pageTitle || pageDescription || actions || showAskAi || showHelp) && (
         <header className="space-y-3">
-          <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+          {/* Stacks under a pinned rail: at that width a side-by-side header
+              gives the title about 90px and the Ask AI bar the rest. */}
+          <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6 group-data-[rail=pinned]/shell:lg:flex-col group-data-[rail=pinned]/shell:lg:gap-3">
             <div className="flex min-w-0 flex-1 items-start gap-2.5">
               <CfbGlyph
                 name={glyphForHref(pathname)}
@@ -210,7 +234,7 @@ export function AppShell({
               </div>
             </div>
             {(showHelp || showAskAi) && (
-              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:shrink-0 lg:justify-end">
+              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:shrink-0 lg:justify-end group-data-[rail=pinned]/shell:lg:w-full">
                 {showHelp && <PageContextualHelp compact defaultOpen={false} />}
                 {showAskAi && (
                   <AIComposer
@@ -230,11 +254,22 @@ export function AppShell({
     </div>
   );
 
-  if (insideFrame) return body;
+  // The rail travels with the body, inside or outside a frame, so a page keeps
+  // its tools whichever way its section mounts the chrome.
+  const withRail = rail && rail.length > 0 ? (
+    <>
+      {body}
+      <PageRail sections={rail} />
+    </>
+  ) : (
+    body
+  );
+
+  if (insideFrame) return withRail;
 
   return (
     <AppShellFrame fullHeight={fullHeight} contentClassName={contentClassName}>
-      {body}
+      {withRail}
     </AppShellFrame>
   );
 }

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useDraggable } from '@/hooks/useDraggable';
 import { bilingualAria } from '@/lib/i18n/format';
 import { LogoIcon } from '@/components/brand/Logo';
+import { usePageRail } from '@/components/layout/PageRailContext';
 
 /**
  * Floating chat bubble shown on all pages except /messages.
@@ -16,6 +17,10 @@ import { LogoIcon } from '@/components/brand/Logo';
  * never stack in the same corner.
  */
 export function ChatBubble() {
+  // Read with the other contexts, above the early return below: a hook
+  // called after `if (hidden) return null` runs on some renders and not
+  // others, which is exactly the order change React refuses.
+  const { pinned: railPinned, hasRail } = usePageRail();
   const pathname = usePathname();
   const unreadMessages = useMessagingUnreadCount();
   const { isOpen, isMinimized, open, restore } = usePopupChat();
@@ -59,7 +64,12 @@ export function ChatBubble() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-6 right-6 z-50 hidden lg:block"
+      className={cn(
+        'pointer-events-none fixed bottom-6 z-50 hidden transition-[right] duration-200 ease-out lg:block',
+        // Clear of the page rail: the strip on a page that has one, the whole
+        // panel while it is pinned. Without this the bubble sat behind it.
+        !hasRail ? 'right-6' : railPinned ? 'right-[21.25rem]' : 'right-[4.25rem]',
+      )}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}

@@ -12,6 +12,7 @@ import {
   ClipboardList, Zap, BookOpen,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -728,35 +729,113 @@ export default function CoachingPage() {
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);
   const completedActions = totalActionItems.filter((a) => a.done).length;
 
+  /*
+   * The four figures, and the six filters.
+   *
+   * They used to sit above the sessions, so the first thing a founder met on
+   * their coaching page was a row of totals. They are still exactly the same
+   * figures and the same chips - reachable from the strip on the right, and
+   * kept open by anyone who wants them there.
+   */
+  const railStats = [
+    { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
+    { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+    { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
+    { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  ];
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Summary',
+      labelEl: 'Σύνοψη',
+      content: (
+        <div className="space-y-2">
+          {railStats.map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
+            <div
+              key={labelEn}
+              className="flex items-center gap-3 rounded-lg border border-border/50 bg-card p-2.5"
+            >
+              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
+                <Icon className="icon-sm" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-base font-bold leading-none text-foreground">{value}</p>
+                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={labelEn} el={labelEl} compact wrap />
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Filter coaches',
+      labelEl: 'Φίλτρα coaches',
+      // The badge is what makes a collapsed rail honest: a filter that is on
+      // has to be visible without opening anything, or the list looks wrong.
+      badge: specialtyFilter ? 1 : null,
+      content: (
+        <div className="space-y-3">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            <BilingualText
+              en="Narrow the coach list by what you want help with."
+              el="Περιορίστε τη λίστα coaches με βάση το τι θέλετε να δουλέψετε."
+              stacked
+              wrap
+            />
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
+              const on = specialtyFilter === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => {
+                    setSpecialtyFilter((prev) => (prev === key ? null : key));
+                    // Filtering the coach list is only visible on that tab.
+                    setActiveTab('find');
+                  }}
+                  className={cn(
+                    'flex min-h-9 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all hover:opacity-80',
+                    cfg.color,
+                    on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
+                  )}
+                >
+                  <cfg.icon className="icon-sm" aria-hidden="true" />
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
+                </button>
+              );
+            })}
+          </div>
+          {specialtyFilter && (
+            <button
+              type="button"
+              onClick={() => setSpecialtyFilter(null)}
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              <BilingualText en="Clear filter" el="Καθαρισμός φίλτρου" compact />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
+      rail={rail}
       title="Coaching"
       description="Accountability, clarity, and execution coaching for founders and teams"
       descriptionEl="Καθοδήγηση λογοδοσίας, διαύγειας και εκτέλεσης για ιδρυτές και ομάδες"
     >
       <div className="space-y-6 pb-10">
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-            { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
-            { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-          ].map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
-            <Card key={labelEn} className="shadow-sm border-border/50">
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
-                  <Icon className="icon-sm" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Upcoming session banner */}
         {upcoming.length > 0 && (
@@ -789,8 +868,10 @@ export default function CoachingPage() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex items-center justify-between gap-3">
-            <TabsList className="h-9">
+          {/* Wraps rather than clips: four tabs and a primary action do not
+              fit one row once the rail takes its width. */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <TabsList className="h-9 flex-wrap">
               <TabsTrigger value="sessions" className="text-xs"><BilingualText en="My Sessions" el="Οι συνεδρίες μου" compact /></TabsTrigger>
               <TabsTrigger value="find" className="text-xs"><BilingualText en="Find a Coach" el="Εύρεση coach" compact /></TabsTrigger>
               <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
@@ -837,30 +918,33 @@ export default function CoachingPage() {
 
           {/* Find a Coach */}
           <TabsContent value="find" className="mt-4 space-y-4">
-            {/* Session type filter chips */}
-            {/* Filtering needs no server — the list is right here. These chips
-                looked like filters and did nothing; now they are filters. */}
-            <div className="flex flex-wrap gap-2">
-              {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
-                const on = specialtyFilter === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setSpecialtyFilter((prev) => (prev === key ? null : key))}
-                    className={cn(
-                      'flex min-h-11 items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80 md:min-h-0',
-                      cfg.color,
-                      on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
-                    )}
-                  >
-                    <cfg.icon className="icon-sm" aria-hidden="true" />
-                    <BilingualText en={cfg.label} el={cfg.labelEl} compact />
-                  </button>
-                );
-              })}
-            </div>
+            {/* The chips live in the page rail now. What stays here is the
+                one thing a filtered list owes the reader: which filter is on,
+                and a way out of it. */}
+            {specialtyFilter && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <BilingualText en="Filtered by" el="Φιλτραρισμένο κατά" compact />
+                <span
+                  className={cn(
+                    'flex items-center gap-1 rounded-full border px-2 py-0.5',
+                    SESSION_TYPE_CONFIG[specialtyFilter].color,
+                  )}
+                >
+                  <BilingualText
+                    en={SESSION_TYPE_CONFIG[specialtyFilter].label}
+                    el={SESSION_TYPE_CONFIG[specialtyFilter].labelEl}
+                    compact
+                  />
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSpecialtyFilter(null)}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  <BilingualText en="Clear" el="Καθαρισμός" compact />
+                </button>
+              </div>
+            )}
 
             <div className="space-y-3">
               {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
