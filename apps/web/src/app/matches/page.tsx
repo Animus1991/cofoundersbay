@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -661,13 +662,185 @@ export default function MatchesPage() {
   ];
 
   const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
+  /* How many, for the rail's badge - availability is one filter however many
+     values it holds, because that is how the reader thinks of it. */
+  const activeFilterCount =
+    (activeFilter !== 'all' ? 1 : 0) +
+    (roleFilter !== 'all' ? 1 : 0) +
+    (nameSearch ? 1 : 0) +
+    (locationFilter ? 1 : 0) +
+    (availFilter.size > 0 ? 1 : 0);
 
   const askAi = hasToken && visible.length > 0
     ? `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`
     : 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.';
 
+  /*
+   * The filter column, as a rail.
+   *
+   * These are the same four filters and the same sort the page has always
+   * had, in the same order, with the same behaviour. What changes is that
+   * they stop costing 220px of the results on every visit that is not a
+   * filtering visit.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      // The count is what keeps a collapsed rail honest: a narrowed list
+      // with no visible reason reads as a broken list.
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-2.5">
+
+          {/* Tier filter */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact wrap />
+          </p>
+          {TIER_TABS.map(tab => {
+          const isActive = activeFilter === tab.key;
+          return (
+          <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
+          className={cn(
+          'flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+          isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+          )}>
+          <span className="flex items-center gap-1.5">
+          {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
+          <BilingualText
+          en={tab.labelEn}
+          el={tab.labelEl}
+          compact
+          secondaryClassName={isActive ? 'text-primary-foreground' : undefined}
+          />
+          </span>
+          <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
+          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+          {counts[tab.key]}
+          </span>
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Role filter */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+          <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
+          </p>
+          {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
+          const isActive = roleFilter === key;
+          return (
+          <button key={key} onClick={() => setRoleFilter(key)}
+          className={cn(
+          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+          isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+          )}>
+          <Icon className="icon-sm shrink-0" />
+          <BilingualText en={labelEn} el={labelEl} compact />
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Location */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-1.5">
+          <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
+          <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
+          </p>
+          <div className="relative">
+          <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
+          <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+          placeholder="City or country..."
+          className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
+          {locationFilter && (
+          <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <X className="icon-sm" />
+          </button>
+          )}
+          </div>
+          </CardContent>
+          </Card>
+
+          {/* Availability */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
+          </p>
+          {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
+          const isOn = availFilter.has(key);
+          return (
+          <button key={key} onClick={() => setAvailFilter(prev => {
+          const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
+          })}
+          className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
+          isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <span className={cn('mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
+          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
+          </span>
+          <BilingualText en={labelEn} el={labelEl} compact wrap />
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Clear all */}
+          {hasActiveFilters && (
+          <button
+          onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
+          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
+          <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
+          </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'sort',
+      glyph: 'compare',
+      labelEn: 'Sort',
+      labelEl: 'Ταξινόμηση',
+      content: (
+        <div className="space-y-2.5">
+          {/* Sort */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
+          </p>
+          {([
+          { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
+          { key: 'name'   as SortKey, labelEn: matchesEn('sort_name_az'),    labelEl: matchesEl('sort_name_az'),    icon: ArrowUpDown },
+          { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
+          ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
+          <button key={key} onClick={() => setSortBy(key)}
+          className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
+          sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <Icon className="mt-0.5 icon-sm shrink-0" />
+          <BilingualText en={labelEn} el={labelEl} compact wrap />
+          </button>
+          ))}
+          </CardContent>
+          </Card>
+
+        </div>
+      ),
+    },
+  ];
   return (
     <AppShell
+      rail={rail}
       title={matchesEn('page_title')}
       description={matchesEn('page_description')}
       showHelp
@@ -816,138 +989,6 @@ export default function MatchesPage() {
           <div className="flex gap-4 items-start">
 
             {/* ── Sticky filter sidebar (desktop md+) ── */}
-            <aside className="hidden md:flex flex-col w-[220px] shrink-0 sticky top-[calc(3.5rem+1.25rem)] space-y-2.5 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-hide pb-4">
-
-              {/* Tier filter */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact wrap />
-                  </p>
-                  {TIER_TABS.map(tab => {
-                    const isActive = activeFilter === tab.key;
-                    return (
-                      <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
-                        className={cn(
-                          'flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        <span className="flex items-center gap-1.5">
-                          {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
-                          <BilingualText
-                            en={tab.labelEn}
-                            el={tab.labelEl}
-                            compact
-                            secondaryClassName={isActive ? 'text-primary-foreground' : undefined}
-                          />
-                        </span>
-                        <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
-                          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                          {counts[tab.key]}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Role filter */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
-                    <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
-                  </p>
-                  {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
-                    const isActive = roleFilter === key;
-                    return (
-                      <button key={key} onClick={() => setRoleFilter(key)}
-                        className={cn(
-                          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        <Icon className="icon-sm shrink-0" />
-                        <BilingualText en={labelEn} el={labelEl} compact />
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Location */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-1.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
-                    <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
-                  </p>
-                  <div className="relative">
-                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
-                    <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                      placeholder="City or country..."
-                      className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
-                    {locationFilter && (
-                      <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        <X className="icon-sm" />
-                      </button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Availability */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
-                  </p>
-                  {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
-                    const isOn = availFilter.has(key);
-                    return (
-                      <button key={key} onClick={() => setAvailFilter(prev => {
-                        const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
-                      })}
-                        className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
-                          isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                        <span className={cn('mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border-2 transition-colors',
-                          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
-                          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
-                        </span>
-                        <BilingualText en={labelEn} el={labelEl} compact wrap />
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Sort */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
-                  </p>
-                  {([
-                    { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
-                    { key: 'name'   as SortKey, labelEn: matchesEn('sort_name_az'),    labelEl: matchesEl('sort_name_az'),    icon: ArrowUpDown },
-                    { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
-                  ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
-                    <button key={key} onClick={() => setSortBy(key)}
-                      className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
-                        sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                      <Icon className="mt-0.5 icon-sm shrink-0" />
-                      <BilingualText en={labelEn} el={labelEl} compact wrap />
-                    </button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Clear all */}
-              {hasActiveFilters && (
-                <button
-                  onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
-                  className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
-                  <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
-                </button>
-              )}
-            </aside>
 
             {/* ── Results column ── */}
             <div className="flex-1 min-w-0 space-y-4">
