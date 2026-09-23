@@ -3514,6 +3514,95 @@ export async function getOrgCohorts(slug: string, params?: {
   return apiRequest(`/api/org/${slug}/cohorts?${sp}`);
 }
 
+/**
+ * One cohort's dashboard, in a single request.
+ *
+ * Participants, the match suggestions between them, the mentoring they hold
+ * with each other, and the totals over all three - fetched together so the
+ * page does not flicker through five loading states.
+ */
+export type CohortParticipant = {
+  id: string;
+  userId: string;
+  role: 'founder' | 'mentor' | 'investor';
+  cohortRole: string;
+  name: string | null;
+  email: string;
+  headline: string | null;
+  avatarUrl: string | null;
+  location: string | null;
+  joinedAt: string;
+  status: 'active' | 'inactive' | 'pending';
+};
+
+export type CohortMatchPerson = {
+  id: string;
+  name: string | null;
+  role: string | null;
+  avatarUrl: string | null;
+};
+
+export type CohortMatch = {
+  id: string;
+  a: CohortMatchPerson;
+  b: CohortMatchPerson;
+  score: number;
+  status: 'pending' | 'viewed' | 'saved' | 'dismissed' | 'connected';
+  generatedAt: string;
+  reasons: string[];
+};
+
+export type CohortSession = {
+  id: string;
+  mentor: { id: string; name: string | null; avatarUrl: string | null };
+  mentee: { id: string; name: string | null; avatarUrl: string | null };
+  title: string | null;
+  scheduledAt: string;
+  duration: number;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  rating: number | null;
+};
+
+export type CohortDetail = {
+  cohort: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    capacity: number | null;
+    isPublic: boolean;
+    isActive: boolean;
+    imageUrl: string | null;
+    tags: string[];
+    organizerId: string;
+    createdAt: string;
+  };
+  participants: CohortParticipant[];
+  matches: CohortMatch[];
+  sessions: CohortSession[];
+  stats: {
+    participants: number;
+    founders: number;
+    mentors: number;
+    investors: number;
+    completedSessions: number;
+    upcomingSessions: number;
+    matches: number;
+    connectedMatches: number;
+    avgMatchScore: number | null;
+    avgSessionRating: number | null;
+  };
+};
+
+export async function getOrgCohortDetail(
+  slug: string,
+  cohortId: string,
+): Promise<CohortDetail> {
+  return apiRequest(`/api/org/${slug}/cohorts/${cohortId}`);
+}
+
 export type OrgMember = {
   id: string;
   displayName: string;

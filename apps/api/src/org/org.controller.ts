@@ -36,6 +36,14 @@ export class OrgController {
     });
   }
 
+  @Get(':slug/cohorts/:cohortId')
+  async getOrgCohortDetail(
+    @Param('slug') slug: string,
+    @Param('cohortId') cohortId: string,
+  ) {
+    return this.orgService.getOrgCohortDetail(slug, cohortId);
+  }
+
   @Get(':slug/members')
   async getOrgMembers(
     @Param('slug') slug: string,
