@@ -719,3 +719,34 @@ API: 187/187, typecheck καθαρό. Web: typecheck καθαρό· **455/456** 
 Δύο βαθμολογίες «ετοιμότητας» παραμένουν σκόπιμα (52 πρόοδος ιδρυτή / 61 αξιολόγηση επενδυτή-επιταχυντή), ονοματισμένες και διασυνδεδεμένες από το `5e701fa`. Η συγχώνευσή τους είναι απόφαση προϊόντος, όχι bug.
 
 `/reputation` (§21.4 #1) έγινε: διαβάζει gamification XP/badges/streak, ίδια hooks με το dashboard, δίγλωσσο, `SampleDataNotice` στο demo. Μένουν από το #1: `/coaching`, `/expert-reviews`, `/tenant/programs`, `/org/cohorts/[id]`, `mentor/earnings`, `provider/analytics`.
+
+## 22. Page rail — κύματα, με μέτρηση (2026-09-24)
+
+### 22.1 Το εργαλείο
+
+`node scripts/rail-candidates.mjs` — για κάθε `page.tsx` (ακολουθώντας ένα επίπεδο delegation) μετρά controls και ανιχνεύει **οικογένειες** βοηθητικών controls: filters, views, export, settings, summary, help. Υποψήφια = ≥3 οικογένειες χωρίς rail. Το `acc83e8` ανέφερε 45 με χαλαρότερο κριτήριο· αυτό δίνει **17** με αυστηρό — και συμφωνούν στην κορυφή. Η λίστα είναι αναπαραγώγιμη· μια σελίδα μπαίνει ή βγαίνει με λόγο, όχι με γούστο.
+
+| route | ctrl | fam | οικογένειες |
+|---|---|---|---|
+| `/research/[boardId]` | 76 | 5 | filters, views, export, settings, help |
+| `/admin/user-management` | 39 | 4 | filters, views, export, help |
+| `/org/[slug]/admin` | 26 | 4 | filters, export, settings, summary |
+| `/org/settings` | 42 | 3 | filters, views, settings |
+| `/data-room/[id]` | 41 | 3 | filters, views, export |
+| `/admin/billing` | 31 | 3 | filters, export, settings |
+| `/fundraising` | 31 | 3 | filters, export, help |
+| `/feed` · `/projects` · `/admin/communities` · `/dashboard/founder` · `/admin/feature-flags` · `/discover` · `/dashboard/incubator` · `/marketplace` · `/help` · `/calendar` | 9–21 | 3 | |
+
+Με rail: `/coaching`, `/matches` (Claude), `/admin` (§22.2), `/research/[boardId]` (§22.3).
+
+### 22.2 `/admin` — 2ο κύμα
+
+Έξι σύνολα → rail «Σύνολα πλατφόρμας» (badge = ανοιχτές αναφορές)· 12 tabs → και ως λίστα στο rail (τα tabs μένουν). Δύο ελαττώματα σε κοινό κώδικα: React key warning (το admin layout δίνει στο frame δύο αδέλφια, το δεύτερο το RSC `children` χωρίς key — keyed Fragments) και ο τίτλος του ανοιχτού rail που κόβονταν (stacked+wrap στο `PageRail.tsx`).
+
+### 22.3 `/research/[boardId]` — 3ο κύμα, ο καμβάς
+
+Η σελίδα στήνει δικό της chrome (SideNav/TopBar, όχι AppShellFrame), άρα κρατά μόνη της το πλάτος της λωρίδας (ίδιες τιμές με το frame). Το μενού «More» με 30 στοιχεία έγινε **έξι οικογένειες** — Προβολή, Εισαγωγή, Βοηθός & ανάλυση, Φίλτρα κόμβων (ο ίδιος `NodeFilterBar`, ίδιο state, badge = ενεργά φίλτρα), Εξαγωγή & κοινοποίηση, Ρυθμίσεις & διάταξη — κάθε γραμμή καλεί τον handler που καλεί το menu item. Toolbar και More **μένουν όπως είναι**: ο καμβάς είναι εργαλείο, η γρήγορη διαδρομή του είναι η γραμμή εργαλείων.
+
+Δύο ελαττώματα που βρήκε το probe: (α) το peeked panel βρισκόταν **κάτω** από τη γραμμή εργαλείων του καμβά (`z-50` σε μη-απομονωμένη στήλη έναντι rail `z-30`) — κλικ στο rail πέφταν στο toolbar. Rail → `z-40` (ίδιο layer με το SideNav, συμμετρικό chrome) και η στήλη του καμβά `isolate`. (β) **Προϋπάρχον, μετρημένο, όχι διορθωμένο εδώ**: η γραμμή εργαλείων είναι **1.734px** πλατιά σε κάθε viewport — υπερχειλίζει στα 1280 (−552) και 1440 (−392) με ή χωρίς rail (ο rail κοστίζει 52). Ο τίτλος «Research canvas» πέφτει πάνω στο «Add node». Επόμενο: η δευτερεύουσα ομάδα (snap/AI/summary/branch/history), που έχει πλέον σπίτι στο rail και στο More, να συμπτύσσεται και κάτω από `2xl`, όπως ήδη κάνει κάτω από `sm`.
+
+Επαλήθευση: typecheck καθαρό, rail contract 5/5, ο καμβάς παραχωρεί 43px, 6 sections στη λωρίδα, εναλλαγή πλέγματος μέσα από το rail αλλάζει το state που διαβάζει το toolbar, 0 errors.

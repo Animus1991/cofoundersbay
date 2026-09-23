@@ -74,6 +74,8 @@ import { EntityReferenceSelector } from '@/components/research/EntityReferenceSe
 import { NodeFilterBar } from '@/components/research/NodeTagsEditor';
 import { CanvasCopilotPanel } from '@/components/research/CanvasCopilotPanel';
 import { CanvasDrawToolbar, type DrawTool } from '@/components/research/CanvasDrawToolbar';
+import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { MERMAID_STARTERS } from '@/components/research/MermaidDiagramNode';
 import { getTemplateDefaultContent } from '@/components/research/VisualTemplateNode';
 import { computeLayout, type LayoutAlgorithm } from '@/lib/autoLayout';
@@ -1932,6 +1934,7 @@ export default function ResearchBoardPage() {
   }, []);
 
   const { expanded, toggle, setExpanded } = useSidebar();
+  const { pinned: railPinned, hasRail } = usePageRail();
 
   // Mounted guard: prevents hydration mismatch by ensuring SSR and first
   // client render both show the same loading placeholder. The real query
@@ -2112,17 +2115,169 @@ export default function ResearchBoardPage() {
   // Show a stable loading spinner until mounted + query resolves
   const showLoading = !mounted || isLoading;
 
+  /*
+   * The page rail: the "More" menu's thirty items, as six families.
+   *
+   * A canvas is a tool, and a tool's fast path is its toolbar - so the
+   * toolbar and the More menu keep every button they had. What the rail adds
+   * is the same actions sorted by what the reader is looking for: how the
+   * canvas is shown, what to insert, what the assistant can do, how to filter
+   * the board, how to get it out, and its settings. Each row calls the handler
+   * the menu item calls; nothing here is a second implementation.
+   *
+   * The filter section renders the same NodeFilterBar the column toggles,
+   * bound to the same state, so a tag ticked in the rail is ticked in the
+   * bar - and the strip's badge counts active filters, which is how a
+   * filtered canvas stays honest while the bar is hidden.
+   */
+  type RailRow = { icon: React.ElementType; en: string; el: string; onClick: () => void; pressed?: boolean; tone?: string };
+  const railRows = (rows: RailRow[]) => (
+    <ul className="space-y-0.5">
+      {rows.map(({ icon: Icon, en, el, onClick, pressed, tone }) => (
+        <li key={en}>
+          <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={pressed}
+            className={cn(
+              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70',
+              pressed && 'bg-primary/10 text-primary',
+            )}
+          >
+            <Icon className={cn('icon-sm shrink-0', tone)} aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en={en} el={el} compact wrap /></span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+  const activeFilters = filterTags.length + (filterSearch.trim() ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'view',
+      glyph: 'discover',
+      labelEn: 'View',
+      labelEl: 'Προβολή',
+      content: railRows([
+        { icon: Grid3X3, en: showGrid ? researchEn('hide_grid') : researchEn('show_grid'), el: showGrid ? researchEl('hide_grid') : researchEl('show_grid'), onClick: () => setShowGrid(!showGrid), pressed: showGrid },
+        { icon: Magnet, en: snapToGrid ? researchEn('disable_snap') : researchEn('enable_snap'), el: snapToGrid ? researchEl('disable_snap') : researchEl('enable_snap'), onClick: () => setSnapToGrid((v) => !v), pressed: snapToGrid },
+        { icon: Map, en: showMiniMap ? researchEn('hide_map') : researchEn('show_map'), el: showMiniMap ? researchEl('hide_map') : researchEl('show_map'), onClick: () => issue('toggle_minimap'), pressed: showMiniMap },
+        { icon: Layers, en: showRulers ? researchEn('hide_rulers') : researchEn('rulers'), el: showRulers ? researchEl('hide_rulers') : researchEl('rulers'), onClick: () => issue('toggle_rulers'), pressed: showRulers },
+        { icon: Layers, en: researchEn('fit_nodes'), el: researchEl('fit_nodes'), onClick: () => issue('fit_view') },
+        { icon: Keyboard, en: researchEn('shortcuts'), el: researchEl('shortcuts'), onClick: () => setShowShortcuts(true) },
+      ]),
+    },
+    {
+      id: 'insert',
+      glyph: 'builder',
+      labelEn: 'Insert',
+      labelEl: 'Εισαγωγή',
+      content: railRows([
+        { icon: StickyNote, en: researchEn('add_sticky'), el: researchEl('add_sticky'), onClick: () => issue('add_sticky'), tone: 'text-amber-500' },
+        { icon: Grid3X3, en: researchEn('create_group'), el: researchEl('create_group'), onClick: () => issue('group'), tone: 'text-blue-500' },
+        {
+          icon: LinkIcon, en: researchEn('add_link'), el: researchEl('add_link'),
+          onClick: () => {
+            const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
+            if (url) createNodeMutation.mutate({ type: 'link', title: url, url, posX: (window.innerWidth / 2 - pan.x) / zoom, posY: (window.innerHeight / 2 - pan.y) / zoom });
+          },
+        },
+        { icon: Users, en: researchEn('ref_entity'), el: researchEl('ref_entity'), onClick: () => setShowEntitySelector(true) },
+      ]),
+    },
+    {
+      id: 'ai',
+      glyph: 'spark',
+      labelEn: 'Assistant & analysis',
+      labelEl: 'Βοηθός & ανάλυση',
+      badge: showAIPanel || showBoardSummary ? 1 : null,
+      content: railRows([
+        { icon: Sparkles, en: researchEn('ask_ai'), el: researchEl('ask_ai'), onClick: () => openAskAi() },
+        { icon: Sparkles, en: researchEn('ai_analysis'), el: researchEl('ai_analysis'), onClick: () => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }, pressed: showAIPanel },
+        { icon: BarChart3, en: researchEn('board_summary'), el: researchEl('board_summary'), onClick: () => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }, pressed: showBoardSummary },
+        { icon: History, en: researchEn('canvas_history'), el: researchEl('canvas_history'), onClick: () => setShowHistoryDrawer((v) => !v), pressed: showHistoryDrawer },
+      ]),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Filter nodes',
+      labelEl: 'Φίλτρα κόμβων',
+      badge: activeFilters || null,
+      content: board ? (
+        <div className="space-y-3">
+          <NodeFilterBar
+            availableTags={Array.from(new Set(board.nodes.flatMap((n) => n.tags)))}
+            selectedTags={filterTags}
+            onTagsChange={setFilterTags}
+            searchQuery={filterSearch}
+            onSearchChange={setFilterSearch}
+          />
+          {railRows([{ icon: Filter, en: showFilterBar ? researchEn('hide_filters') : researchEn('show_filters'), el: showFilterBar ? researchEl('hide_filters') : researchEl('show_filters'), onClick: () => setShowFilterBar((v) => !v), pressed: showFilterBar }])}
+        </div>
+      ) : null,
+    },
+    {
+      id: 'export',
+      glyph: 'applications',
+      labelEn: 'Export & share',
+      labelEl: 'Εξαγωγή & κοινοποίηση',
+      content: (
+        <div className="space-y-2">
+          {board && <BoardExport board={board} canvasRef={canvasRef as React.RefObject<HTMLDivElement>} />}
+          {railRows([
+            { icon: Download, en: researchEn('export_png'), el: researchEl('export_png'), onClick: () => issue('export', { query: 'png' }), tone: 'text-blue-500' },
+            { icon: Download, en: researchEn('export_svg'), el: researchEl('export_svg'), onClick: () => issue('export', { query: 'svg' }) },
+            { icon: Download, en: researchEn('export_json'), el: researchEl('export_json'), onClick: () => issue('export', { query: 'json' }) },
+            { icon: FileText, en: researchEn('export_md'), el: researchEl('export_md'), onClick: () => issue('export', { query: 'markdown' }) },
+            { icon: Copy, en: researchEn('copy_outline'), el: researchEl('copy_outline'), onClick: () => issue('copy_outline') },
+            { icon: Copy, en: researchEn('share_link'), el: researchEl('share_link'), onClick: () => issue('share_link') },
+          ])}
+        </div>
+      ),
+    },
+    {
+      id: 'settings',
+      glyph: 'sliders',
+      labelEn: 'Board settings & layout',
+      labelEl: 'Ρυθμίσεις & διάταξη',
+      content: (
+        <div className="space-y-3">
+          {railRows([{ icon: Settings, en: researchEn('board_settings'), el: researchEl('board_settings'), onClick: () => setShowBoardSettings(true) }])}
+          <p className="px-2.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <BilingualText en={researchEn('auto_layout')} el={researchEl('auto_layout')} compact />
+          </p>
+          {railRows(([
+            { alg: 'dagre-tb' as LayoutAlgorithm, en: 'Top to bottom', el: 'Πάνω προς κάτω' },
+            { alg: 'dagre-lr' as LayoutAlgorithm, en: 'Left to right', el: 'Αριστερά προς δεξιά' },
+            { alg: 'dagre-bt' as LayoutAlgorithm, en: 'Bottom to top', el: 'Κάτω προς πάνω' },
+            { alg: 'dagre-rl' as LayoutAlgorithm, en: 'Right to left', el: 'Δεξιά προς αριστερά' },
+            { alg: 'grid' as LayoutAlgorithm, en: 'Grid', el: 'Πλέγμα' },
+            { alg: 'radial' as LayoutAlgorithm, en: 'Radial', el: 'Ακτινωτή' },
+          ]).map(({ alg, en, el }) => ({ icon: Network, en, el, onClick: () => issue('auto_layout', { query: alg }), tone: 'text-violet-500' })))}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="h-[100dvh] bg-background overflow-hidden">
+      <PageRail sections={rail} />
       {/* Sidebar */}
       <SideNav />
 
       {/* Main content area - offset by sidebar */}
       <div
         className={cn(
-          'h-[100dvh] flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
+          // `isolate`: this column uses z-50 internally (toolbar, overlays). A
+          // stacking context of its own keeps those layers inside the column,
+          // so they order against each other and not against the fixed chrome.
+          'relative isolate h-[100dvh] flex flex-col overflow-hidden transition-[margin-left,margin-right] duration-200 ease-out',
           'sm:ml-[4.25rem]',
           expanded ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
+          // This page mounts its own chrome rather than AppShellFrame, so it
+          // reserves the page rail's strip itself - same widths the frame uses.
+          hasRail && (railPinned ? 'lg:mr-[20.25rem]' : 'lg:mr-[3.25rem]'),
         )}
       >
         <TopBar />

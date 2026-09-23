@@ -107,7 +107,12 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
         aria-label={bilingualAria('Page tools', 'Εργαλεία σελίδας')}
         // Below `lg` this is a sheet opened from the header, not a rail: two
         // rails do not fit on a tablet.
-        className="fixed bottom-0 right-0 top-0 z-30 hidden lg:flex"
+        // Same layer as the left sidebar (SideNav is z-40): the two are the
+        // same kind of chrome, and a peeked panel has to float over anything a
+        // page puts in its own column. At z-30 the research canvas's toolbar
+        // (z-50 inside a non-isolated column) sat on top of the panel's header
+        // and its first rows, and clicks landed on the toolbar instead.
+        className="fixed bottom-0 right-0 top-0 z-40 hidden lg:flex"
         style={{ paddingTop: 'var(--top-banner-stack, 0px)' }}
         onMouseEnter={openPeek}
         onMouseLeave={closePeek}
