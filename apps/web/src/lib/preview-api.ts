@@ -1008,6 +1008,159 @@ const PREVIEW_ANALYTICS_OVERVIEW = {
   },
 };
 
+/**
+ * A date relative to now, so "upcoming" stays upcoming whenever the showcase
+ * is opened. Evaluated when a request is answered, never during render, so it
+ * cannot disagree between the server pass and hydration.
+ */
+function previewIsoInDays(days: number, hour = 14): string {
+  const d = new Date(Date.now() + days * 86_400_000);
+  d.setUTCHours(hour, 0, 0, 0);
+  return d.toISOString();
+}
+
+const PREVIEW_COACHING_REL_ID = 'preview-rel-sarah';
+
+/**
+ * The founder's one coaching relationship.
+ *
+ * Dr. Sarah Kim is the demo's mentor on /matches, /jobs, /opportunities and
+ * the dashboard's upcoming panel; she is the coach here too, rather than a
+ * fourth person invented for this page.
+ */
+const PREVIEW_MENTORSHIP_RELATIONSHIPS = [
+  {
+    id: PREVIEW_COACHING_REL_ID,
+    mentorId: 'user-sarah',
+    menteeId: ME_ID,
+    status: 'active' as const,
+    goals: { primary: 'Reach product-market fit' },
+    focusAreas: ['Execution', 'Product roadmap', 'Go-to-market'],
+    startedAt: '2026-07-15T09:00:00.000Z',
+    completedAt: null,
+    nextSessionAt: previewIsoInDays(2),
+    totalSessions: 3,
+    mentor: {
+      id: 'user-sarah',
+      displayName: 'Dr. Sarah Kim',
+      headline: 'Startup mentor - Ex-Google - 3x founder',
+      avatarUrl: null,
+    },
+    mentee: {
+      id: ME_ID,
+      displayName: 'Alex Demo',
+      headline: 'Founder at Harbor',
+      avatarUrl: null,
+      role: 'founder',
+    },
+  },
+];
+
+/** Three sessions: the one the dashboard announces, and the two behind it. */
+function previewMentorshipSessions() {
+  return [
+    {
+      id: 'preview-msess-3',
+      relationshipId: PREVIEW_COACHING_REL_ID,
+      title: 'Roadmap review before the seed round',
+      description: null,
+      scheduledAt: previewIsoInDays(2),
+      duration: 45,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: 'https://meet.example.com/harbor-roadmap',
+      meetingLocation: null,
+      status: 'scheduled' as const,
+      agenda: 'Walk the 12-slide narrative, then cut the roadmap to what closes the round.',
+      mentorNotes: null,
+      menteeNotes: null,
+      actionItems: [] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: null,
+      createdAt: '2026-09-10T09:00:00.000Z',
+    },
+    {
+      id: 'preview-msess-2',
+      relationshipId: PREVIEW_COACHING_REL_ID,
+      title: 'Pricing and unit economics',
+      description: null,
+      scheduledAt: previewIsoInDays(-9),
+      duration: 60,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: null,
+      meetingLocation: null,
+      status: 'completed' as const,
+      agenda: 'Test the pricing story against five real conversations.',
+      mentorNotes: null,
+      menteeNotes:
+        'Charge per seat, not per workspace - the value scales with the team, and the objection we kept hearing was about seats we were not charging for.',
+      actionItems: [
+        { task: 'Rewrite the pricing page around seats', done: true },
+        { task: 'Run five pricing conversations', done: true },
+        { task: 'Recompute unit economics at the new price', done: false },
+      ] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: 5,
+      createdAt: '2026-09-01T09:00:00.000Z',
+    },
+    {
+      id: 'preview-msess-1',
+      relationshipId: PREVIEW_COACHING_REL_ID,
+      title: 'First 20 beta users',
+      description: null,
+      scheduledAt: previewIsoInDays(-23),
+      duration: 45,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: null,
+      meetingLocation: null,
+      status: 'completed' as const,
+      agenda: 'Who to invite first, and what to measure once they are in.',
+      mentorNotes: null,
+      menteeNotes:
+        'Invite in cohorts of five so onboarding friction is visible, and measure the second session rather than the first.',
+      actionItems: [
+        { task: 'Invite the first cohort of five', done: true },
+        { task: 'Instrument second-session return', done: false },
+      ] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: 4,
+      createdAt: '2026-08-18T09:00:00.000Z',
+    },
+  ];
+}
+
+/**
+ * The mentor directory, from the people the showcase already knows.
+ *
+ * Built from PEOPLE rather than written out, so a coach on this page is
+ * someone a visitor can also meet on /matches and /discover.
+ */
+function previewMentors() {
+  const mentors = PEOPLE.filter((p) => p.role === 'mentor' || p.role === 'investor');
+  return mentors.map((p, i) => ({
+    id: `preview-mentor-${p.userId}`,
+    userId: p.userId,
+    displayName: p.displayName,
+    headline: p.headline ?? null,
+    bio: p.bio ?? null,
+    avatarUrl: p.avatarUrl ?? null,
+    location: p.location ?? null,
+    industries: p.industries ?? [],
+    skills: p.skillNames ?? [],
+    startupStages: ['pre_seed', 'seed'],
+    yearsExperience: null,
+    availabilityStatus: (i === 0 ? 'available' : 'limited') as 'available' | 'limited',
+    isFree: i !== 0,
+    hourlyRate: i === 0 ? 150 : null,
+    currency: i === 0 ? 'EUR' : null,
+    sessionCount: i === 0 ? 3 : 0,
+    rating: i === 0 ? 4.5 : null,
+    reviewCount: i === 0 ? 2 : 0,
+  }));
+}
+
 function kitchenSink() {
   return {
     ok: true,
@@ -2242,6 +2395,27 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       return next;
     }
     return found ?? previewBuilderDocs[0];
+  }
+
+  // -- Mentorship, which /coaching reads from the founder's side --------------
+  if (pathname === '/api/mentorship/relationships') {
+    return { relationships: PREVIEW_MENTORSHIP_RELATIONSHIPS };
+  }
+  const mentorshipSessionsMatch = pathname.match(
+    /^\/api\/mentorship\/relationships\/([^/]+)\/sessions$/,
+  );
+  if (mentorshipSessionsMatch) {
+    return {
+      sessions:
+        mentorshipSessionsMatch[1] === PREVIEW_COACHING_REL_ID ? previewMentorshipSessions() : [],
+    };
+  }
+  if (pathname === '/api/mentorship/sessions/upcoming') {
+    return { sessions: previewMentorshipSessions().filter((x) => x.status === 'scheduled') };
+  }
+  if (pathname === '/api/mentorship/mentors') {
+    const mentors = previewMentors();
+    return { mentors, total: mentors.length, page: 1, totalPages: 1 };
   }
 
   if (pathname === '/api/milestones/summary') {
