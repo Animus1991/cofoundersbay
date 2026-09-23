@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { AdminGuard } from '@/components/auth/AdminGuard';
@@ -53,10 +54,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           survives navigation between admin sections. The negative margins
           cancel appShellMainClasses' padding so the bar spans the column. */}
       <AppShellFrame>
-        <div className="-mx-3 -mt-3 mb-4 sm:-mx-6 lg:-mx-[1.2rem]">
-          <AdminSubNav />
-        </div>
-        {children}
+        {/* Two siblings, both keyed. `children` is the page element as Next
+            delivers it from the server payload, which carries no key; as the
+            second item of a two-item list it is what React complains about
+            ("Each child in a list should have a unique key") the moment the
+            frame re-reconciles that list - which a page rail causes, because
+            the rail tells the frame to reserve its strip. The only admin page
+            without the warning was the only one without a rail. Keyed
+            fragments make the list stable without adding a wrapper element. */}
+        <Fragment key="admin-subnav">
+          <div className="-mx-3 -mt-3 mb-4 sm:-mx-6 lg:-mx-[1.2rem]">
+            <AdminSubNav />
+          </div>
+        </Fragment>
+        <Fragment key="admin-page">{children}</Fragment>
       </AppShellFrame>
     </AdminGuard>
   );

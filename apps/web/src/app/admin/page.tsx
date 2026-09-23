@@ -77,6 +77,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatCard } from '@/components/common/StatCard';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+
+/** The tab row, as data, so the rail can list the same twelve places. */
+const ADMIN_SECTIONS = [
+  { value: 'reports', labelEn: 'Reports', labelEl: 'Αναφορές', icon: Flag },
+  { value: 'users', labelEn: 'Users', labelEl: 'Χρήστες', icon: Users },
+  { value: 'content', labelEn: 'Content', labelEl: 'Περιεχόμενο', icon: Layers },
+  { value: 'cohorts', labelEn: 'Cohorts', labelEl: 'Κύκλοι', icon: GraduationCap },
+  { value: 'analytics', labelEn: 'Analytics', labelEl: 'Αναλυτικά', icon: BarChart3 },
+  { value: 'audit', labelEn: 'Audit log', labelEl: 'Αρχείο ελέγχου', icon: Shield },
+  { value: 'email', labelEn: 'Email templates', labelEl: 'Πρότυπα email', icon: Mail },
+  { value: 'gamification', labelEn: 'Gamification', labelEl: 'Gamification', icon: Zap },
+  { value: 'score-inspector', labelEn: 'Score inspector', labelEl: 'Επιθεώρηση βαθμολογιών', icon: BarChart3 },
+  { value: 'abuse', labelEn: 'Abuse monitor', labelEl: 'Παρακολούθηση κατάχρησης', icon: AlertTriangle },
+  { value: 'experiments', labelEn: 'Experiments', labelEl: 'Πειράματα', icon: FlaskConical },
+  { value: 'behavior', labelEn: 'Behavior AI', labelEl: 'Behavior AI', icon: Brain },
+] as const;
 import { AdminAnalyticsDashboard } from '@/components/admin/AdminAnalyticsDashboard';
 import { ScoreInspector } from '@/components/admin/ScoreInspector';
 import { AbuseMonitorPanel } from '@/components/admin/AbuseMonitorPanel';
@@ -602,59 +620,116 @@ export default function AdminPage() {
       )
     : users;
 
+  /*
+   * The six platform totals used to sit above the tabs, so the first thing an
+   * admin saw was a row of figures rather than the queue they came to work.
+   * Same six cards, same values, same trends, one gesture to the right - and
+   * the badge on the collapsed strip is the open-reports count, so the one
+   * figure that asks for action is visible without opening anything.
+   */
+  const openReports = stats?.pendingReports ?? pendingReports;
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Platform totals',
+      labelEl: 'Σύνολα πλατφόρμας',
+      badge: openReports > 0 ? openReports : null,
+      content: (
+        <div className="space-y-2">
+          <StatCard
+            label="Total Users"
+            value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+            trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
+          />
+          <StatCard
+            label="Active Today"
+            value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Pending Reports"
+            value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
+            icon={<Flag className="icon-md" aria-hidden="true" />}
+            trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
+          />
+          <StatCard
+            label="Connections"
+            value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Messages"
+            value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Events"
+            value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+        </div>
+      ),
+    },
+    {
+      // Twelve tabs is a row that wraps and scrolls; the same twelve as a
+      // list, with the queue that needs attention counted, is what a rail is
+      // for. The tabs stay - this is a second way to the same places.
+      id: 'sections',
+      glyph: 'sliders',
+      labelEn: 'Sections',
+      labelEl: 'Ενότητες',
+      content: (
+        <ul className="space-y-1">
+          {ADMIN_SECTIONS.map(({ value, labelEn, labelEl, icon: Icon }) => {
+            const count = value === 'reports' ? openReports : 0;
+            const active = activeTab === value;
+            return (
+              <li key={value}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab(value)}
+                  aria-current={active ? 'true' : undefined}
+                  className={cn(
+                    'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70',
+                    active && 'bg-primary/10 text-primary',
+                  )}
+                >
+                  <Icon className="icon-sm shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">
+                    <BilingualText en={labelEn} el={labelEl} compact />
+                  </span>
+                  {count > 0 && (
+                    <Badge variant="destructive" className="h-5 shrink-0 px-1.5 text-xs tabular-nums">{count}</Badge>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title="Admin Dashboard"
       description="Manage users, moderate content, and monitor platform health"
       showHelp
+      rail={rail}
       actions={
         <Button
           variant="secondary"
           size="sm"
           className="gap-2"
-          onClick={() => { void refetchReports(); void refetchUsers(); }}
+          onClick={() => { void refetchReports(); void refetchUsers(); void refetchStats(); }}
         >
           <RefreshCw className="icon-sm" aria-hidden="true" />
           Refresh
         </Button>
       }
     >
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-        <StatCard
-          label="Total Users"
-          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-          trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
-        />
-        <StatCard
-          label="Active Today"
-          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Pending Reports"
-          value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
-          icon={<Flag className="icon-md" aria-hidden="true" />}
-          trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
-        />
-        <StatCard
-          label="Connections"
-          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Messages"
-          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Events"
-          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-      </div>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

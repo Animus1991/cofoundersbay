@@ -129,9 +129,14 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
             {open && (
               <div className="flex h-full w-[17rem] flex-col">
                 <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
-                  <p className="min-w-0 truncate text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    <BilingualText en={active.labelEn} el={active.labelEl} compact />
-                  </p>
+                  {/* Stacked, not inline-truncated: "PLATFORM TOTALS · ΣΥΝΟΛΑ
+                      ΠΛΑΤΦΟΡΜΑΣ" is wider than the panel, and an ellipsis on
+                      the one line that names what the reader is looking at is
+                      the wrong thing to lose. Two short lines fit any label the
+                      contract test lets through. */}
+                  <div className="min-w-0 text-xs font-semibold uppercase leading-snug tracking-wider text-muted-foreground">
+                    <BilingualText en={active.labelEn} el={active.labelEl} stacked wrap />
+                  </div>
                   <button
                     type="button"
                     onClick={togglePinned}
