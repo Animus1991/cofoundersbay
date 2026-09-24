@@ -54,6 +54,7 @@ import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
 import type { BuilderDocument } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN, BUILDER_STAT } from './BuilderStageChrome';
 import {
@@ -512,84 +513,180 @@ export function BuilderWorkspace({ onOpenStage }: { onOpenStage?: (tab: string) 
     );
   }
 
+  /*
+   * What sits around the building, rather than being it.
+   *
+   * The tabs, the documents and Quick Actions are the page - Quick Actions
+   * is how a document gets created. Four tiles restating totals above the
+   * tabs are not, and neither is a card listing the six readiness dimensions
+   * on a page that is not about readiness: /readiness owns that, and this
+   * card links to it.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Workspace summary',
+      labelEl: 'Σύνοψη χώρου εργασίας',
+      content: (
+        <div className="space-y-3">
+          <div className="builder-overview-stats grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Card className="min-w-0">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className={BUILDER_STAT}>{overallCompletion}%</div>
+                    <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                      <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact wrap />
+                    </div>
+                  </div>
+                  <CfbGlyph name="builder" className="icon-sm shrink-0 text-muted-foreground/70" />
+                </div>
+                <Progress value={overallCompletion} className="mt-2 h-1.5" />
+              </CardContent>
+            </Card>
+
+            <Card className="min-w-0">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className={cn(BUILDER_STAT, dimensionColor(overallReadiness))}>
+                      {assessingReadiness ? <Loader2 className="icon-lg animate-spin" /> : `${overallReadiness}%`}
+                    </div>
+                    <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                      <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact wrap />
+                    </div>
+                  </div>
+                  <CfbGlyph name="award" className="icon-sm shrink-0 text-muted-foreground/70" />
+                </div>
+                <Progress value={overallReadiness} className="mt-2 h-1.5" />
+              </CardContent>
+            </Card>
+
+            <Card className="min-w-0">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className={cn(BUILDER_STAT, completedDocs > 0 ? STATUS.success.text : 'text-foreground')}>{completedDocs}</div>
+                    <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                      <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact wrap />
+                    </div>
+                    <div className="mt-1.5 text-xs text-muted-foreground">
+                      {inProgressDocs}{' '}
+                      <BilingualText en={builderEn('in_progress')} el={builderEl('in_progress')} compact />
+                    </div>
+                  </div>
+                  <CfbGlyph name="flag" className="icon-sm shrink-0 text-muted-foreground/70" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="min-w-0">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className={cn(BUILDER_STAT, 'text-foreground')}>{collaborators.length}</div>
+                    <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
+                      <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact wrap />
+                    </div>
+                    <div className="mt-2 -space-x-1.5 flex min-h-5">
+                      {collaborators.slice(0, 4).map(c => (
+                        <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
+                          <AvatarImage src={c.user.avatarUrl} />
+                          <AvatarFallback className="text-2xs">{(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                  </div>
+                  <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground/70" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'readiness',
+      glyph: 'target',
+      labelEn: 'Readiness progress',
+      labelEl: 'Πρόοδος ετοιμότητας',
+      content: (
+        <div className="space-y-3">
+          {/* Progress card. The flex column continues onto the content so
+              the footer below can reach the bottom of whatever height this
+              card is given by the taller card beside it. */}
+          <Card className="flex min-w-0 flex-col">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CfbGlyph name="flag" className="icon-sm" />
+                <BilingualText en={builderEn('startup_progress')} el={builderEl('startup_progress')} compact />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-1 flex-col space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    <BilingualText en={builderEn('overall_completion')} el={builderEl('overall_completion')} compact />
+                  </span>
+                  <span className="font-medium">{overallCompletion}%</span>
+                </div>
+                <Progress value={overallCompletion} className="h-1.5" />
+              </div>
+
+              {/* Every dimension, not the first four. This card sits beside
+                  Quick Actions in a two-column row, so it stretched to that
+                  card's height and ended 166px early — and the content that
+                  would have filled the gap was already fetched and then
+                  sliced away. The reader now sees the whole assessment, and
+                  the same figures no longer disagree with /readiness, which
+                  has always listed all of them. */}
+              {readinessDimensions.map(dim => (
+                <div key={dim.dimension} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      <DimensionLabel d={dim.dimension} />
+                    </span>
+                    <span className={cn('font-medium', dimensionColor(dim.score))}>{dim.score}%</span>
+                  </div>
+                  <Progress value={dim.score} className="h-1.5" />
+                </div>
+              ))}
+
+              {assessingReadiness && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="icon-sm animate-spin" />
+                  <BilingualText en={builderEn('assessing')} el={builderEl('assessing')} compact />
+                </div>
+              )}
+
+              {/* `mt-auto` puts this at the foot of whatever height the row
+                  gives the card, so the 76px still left after un-slicing the
+                  dimensions carries a way out of the card instead of air —
+                  and the two surfaces that score the same venture, Builder
+                  and /readiness, are finally linked from this side too. */}
+              {readinessDimensions.length > 0 && (
+                <Button asChild variant="ghost" size="sm" className="mt-auto w-full justify-between gap-1.5">
+                  <Link href="/readiness">
+                    <BilingualText en={builderEn('full_readiness_report')} el={builderEl('full_readiness_report')} compact />
+                    <ArrowRight className="icon-sm" />
+                  </Link>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
+  ];
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="min-w-0 space-y-6 overflow-x-clip">
-      {/* ── Stats Bar ──────────────────────────────────────────────────── */}
-      <div className="builder-overview-stats grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="min-w-0">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className={BUILDER_STAT}>{overallCompletion}%</div>
-                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-                  <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact wrap />
-                </div>
-              </div>
-              <CfbGlyph name="builder" className="icon-sm shrink-0 text-muted-foreground/70" />
-            </div>
-            <Progress value={overallCompletion} className="mt-2 h-1.5" />
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className={cn(BUILDER_STAT, dimensionColor(overallReadiness))}>
-                  {assessingReadiness ? <Loader2 className="icon-lg animate-spin" /> : `${overallReadiness}%`}
-                </div>
-                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-                  <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact wrap />
-                </div>
-              </div>
-              <CfbGlyph name="award" className="icon-sm shrink-0 text-muted-foreground/70" />
-            </div>
-            <Progress value={overallReadiness} className="mt-2 h-1.5" />
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className={cn(BUILDER_STAT, completedDocs > 0 ? STATUS.success.text : 'text-foreground')}>{completedDocs}</div>
-                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-                  <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact wrap />
-                </div>
-                <div className="mt-1.5 text-xs text-muted-foreground">
-                  {inProgressDocs}{' '}
-                  <BilingualText en={builderEn('in_progress')} el={builderEl('in_progress')} compact />
-                </div>
-              </div>
-              <CfbGlyph name="flag" className="icon-sm shrink-0 text-muted-foreground/70" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className={cn(BUILDER_STAT, 'text-foreground')}>{collaborators.length}</div>
-                <div className="mt-0.5 text-2xs uppercase leading-snug tracking-wide text-muted-foreground">
-                  <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact wrap />
-                </div>
-                <div className="mt-2 -space-x-1.5 flex min-h-5">
-                  {collaborators.slice(0, 4).map(c => (
-                    <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
-                      <AvatarImage src={c.user.avatarUrl} />
-                      <AvatarFallback className="text-2xs">{(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  ))}
-                </div>
-              </div>
-              <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground/70" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Declared here because the data is here, and rendered here because
+          this is a component, not a page: there is no AppShell to hand a
+          `rail` prop to. PageRail is fixed, so it lands in the same place. */}
+      <PageRail sections={rail} />
 
       {/* ── Tabs ──────────────────────────────────────────────────────────── */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -639,69 +736,7 @@ export function BuilderWorkspace({ onOpenStage }: { onOpenStage?: (tab: string) 
         {/* ── Overview Tab ──────────────────────────────────────────────── */}
         <TabsContent value="overview" className="mt-4 space-y-6">
           <div className="builder-overview-type space-y-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Progress card. The flex column continues onto the content so
-                the footer below can reach the bottom of whatever height this
-                card is given by the taller card beside it. */}
-            <Card className="flex min-w-0 flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <CfbGlyph name="flag" className="icon-sm" />
-                  <BilingualText en={builderEn('startup_progress')} el={builderEl('startup_progress')} compact />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col space-y-4">
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      <BilingualText en={builderEn('overall_completion')} el={builderEl('overall_completion')} compact />
-                    </span>
-                    <span className="font-medium">{overallCompletion}%</span>
-                  </div>
-                  <Progress value={overallCompletion} className="h-1.5" />
-                </div>
-
-                {/* Every dimension, not the first four. This card sits beside
-                    Quick Actions in a two-column row, so it stretched to that
-                    card's height and ended 166px early — and the content that
-                    would have filled the gap was already fetched and then
-                    sliced away. The reader now sees the whole assessment, and
-                    the same figures no longer disagree with /readiness, which
-                    has always listed all of them. */}
-                {readinessDimensions.map(dim => (
-                  <div key={dim.dimension} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        <DimensionLabel d={dim.dimension} />
-                      </span>
-                      <span className={cn('font-medium', dimensionColor(dim.score))}>{dim.score}%</span>
-                    </div>
-                    <Progress value={dim.score} className="h-1.5" />
-                  </div>
-                ))}
-
-                {assessingReadiness && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="icon-sm animate-spin" />
-                    <BilingualText en={builderEn('assessing')} el={builderEl('assessing')} compact />
-                  </div>
-                )}
-
-                {/* `mt-auto` puts this at the foot of whatever height the row
-                    gives the card, so the 76px still left after un-slicing the
-                    dimensions carries a way out of the card instead of air —
-                    and the two surfaces that score the same venture, Builder
-                    and /readiness, are finally linked from this side too. */}
-                {readinessDimensions.length > 0 && (
-                  <Button asChild variant="ghost" size="sm" className="mt-auto w-full justify-between gap-1.5">
-                    <Link href="/readiness">
-                      <BilingualText en={builderEn('full_readiness_report')} el={builderEl('full_readiness_report')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 gap-6">
 
             {/* Quick Actions card */}
             <Card className="min-w-0">

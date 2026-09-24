@@ -16,7 +16,13 @@ import { describe, expect, it } from 'vitest';
  * is exactly the kind of check that stops happening after the third wave.
  */
 
-const APP_DIR = 'src/app';
+/*
+ * Both roots. A rail is declared where its data is: usually the route file,
+ * sometimes the page's content component beside it, and sometimes a shared
+ * component under src/components - /builder keeps its workspace there.
+ * Checking only src/app left those rails unguarded.
+ */
+const RAIL_ROOTS = ['src/app', 'src/components'];
 const GLYPH_SOURCE = 'src/components/icons/CfbGlyph.tsx';
 
 /**
@@ -136,7 +142,7 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   'key:use_template',
 ]);
 
-const pages = walk(APP_DIR)
+const pages = RAIL_ROOTS.flatMap(walk)
   .map((path) => ({ path: path.replace(/\\/g, '/'), source: readFileSync(path, 'utf8') }))
   .filter((page) => page.source.includes('const rail: PageRailSection[]'));
 
