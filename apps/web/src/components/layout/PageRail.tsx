@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, PanelRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, PanelRight, SlidersHorizontal } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -54,6 +55,8 @@ export type PageRailSection = {
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const { pinned, peeked, open, togglePinned, setPeeked, setHasRail } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tell the frame a rail exists, so the main column reserves the strip and the
@@ -101,12 +104,93 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
 
   const active = sections.find((section) => section.id === activeId) ?? sections[0];
 
+  const totalBadge = sections.reduce((sum, section) => {
+    const b = section.badge;
+    return sum + (typeof b === 'number' ? b : b ? 1 : 0);
+  }, 0);
+
   return (
     <TooltipProvider delayDuration={300}>
+      {/*
+        Below `lg` there is no room for a second rail, so the same sections open
+        as a bottom sheet from a floating button. This path did not exist in the
+        first cut - the strip was `hidden lg:flex` and nothing replaced it - so
+        every control a page had moved into its rail was simply gone on a tablet
+        or a phone. The sheet is the same `sections` array: same labels, same
+        badges, same content, same handlers. The button sits above the mobile
+        bottom nav and clear of the chat bubble, which is desktop-only.
+      */}
+      <div className="lg:hidden">
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              aria-label={bilingualAria(
+                totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
+                totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
+              )}
+              className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-card text-foreground shadow-lg sm:bottom-6"
+            >
+              <SlidersHorizontal className="icon-md" aria-hidden="true" />
+              {totalBadge > 0 && (
+                <span
+                  className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-[10px] font-semibold leading-[1.1rem] text-primary-foreground"
+                  aria-hidden="true"
+                >
+                  {totalBadge}
+                </span>
+              )}
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
+            <SheetHeader className="text-left">
+              <SheetTitle><BilingualText en="Page tools" el="Εργαλεία σελίδας" /></SheetTitle>
+              <SheetDescription>
+                <BilingualText
+                  en="Everything this page offers beyond its main content."
+                  el="Ό,τι προσφέρει αυτή η σελίδα πέρα από το κύριο περιεχόμενο."
+                  compact
+                />
+              </SheetDescription>
+            </SheetHeader>
+            <ul className="mt-3 divide-y divide-border/60">
+              {sections.map((section) => {
+                const expanded = (sheetExpanded ?? sections[0]?.id) === section.id;
+                const badge = section.badge === 0 || section.badge == null ? null : section.badge;
+                return (
+                  <li key={section.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSheetExpanded(expanded ? '' : section.id)}
+                      aria-expanded={expanded}
+                      aria-controls={`page-rail-sheet-${section.id}`}
+                      className="tap-target flex min-h-12 w-full items-center gap-3 py-2 text-left"
+                    >
+                      <CfbGlyph name={section.glyph} className="icon-md shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 text-sm font-medium">
+                        <BilingualText en={section.labelEn} el={section.labelEl} compact />
+                      </span>
+                      {badge != null && (
+                        <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-5 text-primary-foreground">{badge}</span>
+                      )}
+                      <ChevronDown className={cn('icon-sm shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-180')} aria-hidden="true" />
+                    </button>
+                    {expanded && (
+                      <div id={`page-rail-sheet-${section.id}`} className="pb-4 pl-9">
+                        {section.content}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </SheetContent>
+        </Sheet>
+      </div>
+
       <aside
         aria-label={bilingualAria('Page tools', 'Εργαλεία σελίδας')}
-        // Below `lg` this is a sheet opened from the header, not a rail: two
-        // rails do not fit on a tablet.
+        // Desktop only; below `lg` the sheet above carries the same sections.
         // Same layer as the left sidebar (SideNav is z-40): the two are the
         // same kind of chrome, and a peeked panel has to float over anything a
         // page puts in its own column. At z-30 the research canvas's toolbar
