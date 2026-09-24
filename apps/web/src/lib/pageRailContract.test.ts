@@ -19,12 +19,19 @@ import { describe, expect, it } from 'vitest';
 const APP_DIR = 'src/app';
 const GLYPH_SOURCE = 'src/components/icons/CfbGlyph.tsx';
 
+/**
+ * Every .tsx under src/app, not only page.tsx.
+ *
+ * A large page keeps its body in a content component beside the route file -
+ * /dashboard/founder does - and that is where its rail is declared. Walking
+ * only page.tsx meant those rails were never checked at all.
+ */
 function walk(dir: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) out.push(...walk(full));
-    else if (entry === 'page.tsx') out.push(full);
+    else if (entry.endsWith('.tsx') && !entry.endsWith('.test.tsx')) out.push(full);
   }
   return out;
 }

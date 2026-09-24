@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowRight, ChevronRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -608,8 +609,78 @@ export default function FounderDashboardContent() {
     );
   }
 
+  /*
+   * The two blocks on this page that are not oversight.
+   *
+   * A dashboard exists to be read at a glance, so most of it stays: the
+   * readiness score, the round, the matches, the milestones, profile
+   * strength, what happened and what is next. XP and badges answer how the
+   * product is rewarding you rather than how the venture is doing, and Quick
+   * Actions is nine destinations - navigation, which already has a sidebar.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'shortcuts',
+      glyph: 'spark',
+      labelEn: 'Quick actions',
+      labelEl: 'Γρήγορες ενέργειες',
+      content: (
+        <div className="space-y-3">
+          {/* Quick Actions Grid */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-2 pb-2">
+              {/* List, not a 3×3 app-icon grid: the nine destinations stay,
+                  the bordered tiles were the noisiest block on the rail.
+                  Ask AI is visually first so the control surface is obvious. */}
+              <div className="flex flex-col">
+                {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      'flex min-h-9 min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/50',
+                      href === '/ai' && 'bg-primary/[0.04] font-medium',
+                    )}
+                  >
+                    <CfbGlyph
+                      name={glyph}
+                      className={cn('icon-sm shrink-0', href === '/ai' ? 'text-primary-accessible' : 'text-muted-foreground')}
+                    />
+                    <span className="min-w-0 leading-snug">
+                      <BilingualText en={labelEn} el={labelEl} compact wrap />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
+    {
+      id: 'progress',
+      glyph: 'award',
+      labelEn: 'Progress and badges',
+      labelEl: 'Πρόοδος και εμβλήματα',
+      content: (
+        <div className="space-y-4">
+          {/* XP Progress Widget */}
+          <XPProgressWidget />
+
+          {/* Badges Widget */}
+          <BadgesWidget />
+        </div>
+      ),
+    },
+  ];
   return (
     <AppShell
+      rail={rail}
       showHelp
       // One Ask AI in the header, not three. AppShell renders its own whenever the
       // page has a title, and this page was additionally passing an AIInsightButton
@@ -1004,45 +1075,7 @@ export default function FounderDashboardContent() {
             {/* Behavioral Nudge */}
             <BehavioralNudge surface="dashboard" />
 
-            {/* XP Progress Widget */}
-            <XPProgressWidget />
 
-            {/* Badges Widget */}
-            <BadgesWidget />
-
-            {/* Quick Actions Grid */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">
-                  <BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-2 pb-2">
-                {/* List, not a 3×3 app-icon grid: the nine destinations stay,
-                    the bordered tiles were the noisiest block on the rail.
-                    Ask AI is visually first so the control surface is obvious. */}
-                <div className="flex flex-col">
-                  {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={cn(
-                        'flex min-h-9 min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/50',
-                        href === '/ai' && 'bg-primary/[0.04] font-medium',
-                      )}
-                    >
-                      <CfbGlyph
-                        name={glyph}
-                        className={cn('icon-sm shrink-0', href === '/ai' ? 'text-primary-accessible' : 'text-muted-foreground')}
-                      />
-                      <span className="min-w-0 leading-snug">
-                        <BilingualText en={labelEn} el={labelEl} compact wrap />
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Recent Activity */}
             <Card>
