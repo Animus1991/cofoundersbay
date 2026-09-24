@@ -11,6 +11,7 @@ import {
 import { formatDistanceToNow, type Locale } from 'date-fns';
 import { el as elLocale, enUS } from 'date-fns/locale';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -334,46 +335,22 @@ export default function ResearchBoardsPage() {
     { id: 'nodes', labelEn: researchEn('sort_nodes'), labelEl: researchEl('sort_nodes') },
   ];
 
-  return (
-    <AppShell
-      showHelp
-      askAi="Help me open a market, product, or competitive research board and tell me what to capture first."
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setTemplatesDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
-            <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
-          </Button>
-          <Button size="sm" onClick={() => setCreateDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
-            <Plus className="icon-sm" />
-            <BilingualText en={researchEn('new_board')} el={researchEl('new_board')} compact />
-          </Button>
-        </div>
-      }
-    >
-      {bootLoad && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
-          <Loader2 className="icon-xl animate-spin text-primary-accessible" />
-          <p className="text-sm text-muted-foreground">
-            <BilingualText en={researchEn('loading')} el={researchEl('loading')} compact />
-          </p>
-        </div>
-      )}
-      {!bootLoad && error && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
-          <AlertCircle className="icon-lg mb-3 text-destructive-accessible" />
-          <p className="mb-4 text-destructive-accessible">
-            <BilingualText en={researchEn('load_fail')} el={researchEl('load_fail')} />
-          </p>
-          <Button size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
-            <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
-          </Button>
-        </div>
-      )}
-      {!bootLoad && !error && (
-        <>
-          <BehavioralNudge surface="canvas" compact className="mb-5" />
-
+  /*
+   * What counts the list, and what narrows it.
+   *
+   * The boards are the page, and so are the two ways to start one - the
+   * header buttons and the template cards, which for a founder with no
+   * boards are the way in. These two are not: three tiles counting what the
+   * list already shows, and twelve controls in a row above it.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Summary',
+      labelEl: 'Σύνοψη',
+      content: (
+        <div className="space-y-3">
           <div className="grid min-w-0 gap-5 lg:grid-cols-3">
             <Card className="min-w-0">
               <CardContent className="flex h-full flex-col gap-4 p-5">
@@ -464,39 +441,18 @@ export default function ResearchBoardsPage() {
               </CardContent>
             </Card>
           </div>
-
-          <section className="mt-8">
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-semibold">
-                  <BilingualText en={researchEn('templates_heading')} el={researchEl('templates_heading')} compact />
-                </h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  <BilingualText en={researchEn('templates_hint')} el={researchEl('templates_hint')} wrap />
-                </p>
-              </div>
-              <Button variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setTemplatesDialogOpen(true)}>
-                <BilingualText en={researchEn('templates_see_all')} el={researchEl('templates_see_all')} compact />
-              </Button>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {BOARD_TEMPLATES.slice(0, 3).map((template) => (
-                <ResearchTemplateTile key={template.id} template={template} onSelect={handleSelectTemplate} />
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              <BilingualText en={researchEn('link_builder')} el={researchEl('link_builder')} compact />
-              {' · '}
-              <Link href="/builder?tab=idea_core" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_idea')} el={researchEl('link_idea')} compact />
-              </Link>
-              {' · '}
-              <Link href="/builder?tab=market_analysis" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_market')} el={researchEl('link_market')} compact />
-              </Link>
-            </p>
-          </section>
-
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Find a board',
+      labelEl: 'Εύρεση πίνακα',
+      // A narrowed list with no visible reason reads as a broken list.
+      badge: (filter !== 'all' ? 1 : 0) + (searchQuery.trim() ? 1 : 0) || null,
+      content: (
+        <div className="space-y-3">
           <div className="mb-4 mt-8 flex flex-col gap-3">
             <div className="relative w-full min-w-0">
               <Search className="icon-sm absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -561,6 +517,84 @@ export default function ResearchBoardsPage() {
               </div>
             </div>
           </div>
+        </div>
+      ),
+    },
+  ];
+  return (
+    <AppShell
+      rail={rail}
+      showHelp
+      askAi="Help me open a market, product, or competitive research board and tell me what to capture first."
+      actions={
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setTemplatesDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
+            <CfbGlyph name="spark" className="icon-sm" />
+            <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
+          </Button>
+          <Button size="sm" onClick={() => setCreateDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
+            <Plus className="icon-sm" />
+            <BilingualText en={researchEn('new_board')} el={researchEl('new_board')} compact />
+          </Button>
+        </div>
+      }
+    >
+      {bootLoad && (
+        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
+          <Loader2 className="icon-xl animate-spin text-primary-accessible" />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={researchEn('loading')} el={researchEl('loading')} compact />
+          </p>
+        </div>
+      )}
+      {!bootLoad && error && (
+        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
+          <AlertCircle className="icon-lg mb-3 text-destructive-accessible" />
+          <p className="mb-4 text-destructive-accessible">
+            <BilingualText en={researchEn('load_fail')} el={researchEl('load_fail')} />
+          </p>
+          <Button size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
+            <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
+          </Button>
+        </div>
+      )}
+      {!bootLoad && !error && (
+        <>
+          <BehavioralNudge surface="canvas" compact className="mb-5" />
+
+
+          <section className="mt-8">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold">
+                  <BilingualText en={researchEn('templates_heading')} el={researchEl('templates_heading')} compact />
+                </h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  <BilingualText en={researchEn('templates_hint')} el={researchEl('templates_hint')} wrap />
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setTemplatesDialogOpen(true)}>
+                <BilingualText en={researchEn('templates_see_all')} el={researchEl('templates_see_all')} compact />
+              </Button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {BOARD_TEMPLATES.slice(0, 3).map((template) => (
+                <ResearchTemplateTile key={template.id} template={template} onSelect={handleSelectTemplate} />
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              <BilingualText en={researchEn('link_builder')} el={researchEl('link_builder')} compact />
+              {' · '}
+              <Link href="/builder?tab=idea_core" className="text-foreground underline-offset-4 hover:underline">
+                <BilingualText en={researchEn('link_idea')} el={researchEl('link_idea')} compact />
+              </Link>
+              {' · '}
+              <Link href="/builder?tab=market_analysis" className="text-foreground underline-offset-4 hover:underline">
+                <BilingualText en={researchEn('link_market')} el={researchEl('link_market')} compact />
+              </Link>
+            </p>
+          </section>
+
 
           {boards.length === 0 && filter === 'all' && (
             <div className="rounded-2xl border border-border/60 bg-card/60 px-5 py-10 text-center">

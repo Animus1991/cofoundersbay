@@ -120,6 +120,13 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // column it is the button under the average-response-time figure it
   // belongs to. Descriptive text beside a number, not a second button.
   'key:reply_faster',
+  // /research: "items" is a unit, not a control - the rail's summary tile
+  // counts them and every board card is labelled in the same word.
+  'key:items',
+  // /research: the rail's Continue tile falls back to "use a template"
+  // only when there is no board to continue - the other branch of a
+  // ternary, never rendered beside the header button that owns the action.
+  'key:use_template',
 ]);
 
 const pages = walk(APP_DIR)
