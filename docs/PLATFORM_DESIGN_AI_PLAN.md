@@ -828,3 +828,16 @@ Production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-ap
 | axe WCAG 2.1 A/AA — 33 σελίδες (όλες οι 21 με rail + όσες άλλαξαν) × 2 πλάτη | πρώτη εκτέλεση: 31/33 καθαρές ανά πλάτος (ευρήματα στο §23.5)· τελική, στο τελικό build, 34 σελίδες (+`/builder`) × 2: **0 παραβιάσεις**, 0 page errors, 0 key warnings |
 
 Τι **δεν** αποδεικνύουν: οι σελίδες τρέχουν πάνω σε mock API με κενές συλλογές, άρα πολλά στοιχεία εμφανίζονται μόνο με demo/seed δεδομένα· persistence, JWT και Redis δεν ελέγχονται εδώ. Lint δεν αναφέρεται — το `next lint` δεν έχει flat config (AGENTS.md).
+
+## 24. Έλεγχος 2026-09-24 (preview branch) — fast-forward, καμία παράλειψη
+
+`git fetch origin --prune` πάνω στο `cursor/ui-upgrade-cloudflare-preview-53e0` `5d630f3`.
+
+| branch | commits μόνο εκεί (όχι στο `5d630f3`) | κρίση |
+|---|---|---|
+| `integration/ai-platform-upgrade` `7f1298b` | 48 | αυστηρός απόγονος (`merge-base` = `5d630f3`) |
+| `claude/project-audit-upgrade-y2ebnr` `34c2944` | 59 | αυστηρός απόγονος του integration (`merge-base` = `7f1298b`) |
+| `main` `91d6ea3` | 0 | πρόγονος |
+| `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3` | 0 | πρόγονος |
+
+`git merge --ff-only origin/claude/project-audit-upgrade-y2ebnr`. Το HEAD είναι το `34c2944`: **260** commits μπροστά από το `main`, και ταυτόσημο με το μοναδικό tip που περιέχει integration + γύρο 11 (§21–§23). Κανένα άλλο remote branch δεν έχει commit που λείπει. Δεν υπήρχε divergence, άρα δεν έγινε cherry-pick και δεν έμεινε τίποτα απέξω.
