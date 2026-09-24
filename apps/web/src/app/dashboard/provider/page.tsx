@@ -286,7 +286,7 @@ export default function ProviderDashboard() {
             icon={Package}
             label="Active Services"
             value={providerStats.activeServices}
-            href="/marketplace/my-services"
+            href="/provider/services"
           />
           <StatCard
             icon={Briefcase}

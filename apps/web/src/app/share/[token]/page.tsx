@@ -452,7 +452,7 @@ export default function SharePage() {
                       Sign in or create a free account to comment on this document.
                     </p>
                   </div>
-                  <Button size="sm" onClick={() => window.location.href = '/auth/login'}>
+                  <Button size="sm" onClick={() => window.location.href = '/login'}>
                     Sign In
                   </Button>
                 </CardContent>

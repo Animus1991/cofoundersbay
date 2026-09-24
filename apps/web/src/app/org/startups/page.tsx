@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgStartups } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 /**
@@ -103,7 +104,7 @@ function StartupCard({ startup }: { startup: Startup }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/org/startups/${startup.id}`} className="font-medium hover:text-primary-accessible transition-colors">
+                <Link href={`/profiles/${startup.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {startup.name}
                 </Link>
                 <p className="text-sm text-muted-foreground">
@@ -122,13 +123,24 @@ function StartupCard({ startup }: { startup: Startup }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/org/startups/${startup.id}`}>View Details</Link>
+                      <Link href={`/profiles/${startup.id}`}>View Details</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/builder/${startup.id}`}>Open Workspace</Link>
+                      <Link href="/builder">Open Workspace</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Assign Mentor</DropdownMenuItem>
-                    <DropdownMenuItem>Send Message</DropdownMenuItem>
+                    {/* A cohort "startup" is its member (id = user id, see
+                        toStartup), so details are their profile and a message
+                        opens a thread with them. Both links pointed at
+                        /org/startups/:id, which never existed. */}
+                    <UnavailableMenuItem
+                      en="Assign Mentor"
+                      el="Ανάθεση μέντορα"
+                      reasonEn="Mentor assignments are not stored yet."
+                      reasonEl="Οι αναθέσεις μεντόρων δεν αποθηκεύονται ακόμη."
+                    />
+                    <DropdownMenuItem asChild>
+                      <Link href={`/messages?to=${startup.id}`}>Send Message</Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

@@ -965,7 +965,7 @@ export default function CoachingPage() {
               {/* Mentor signup is the real version of this — the form exists
                   and is wired. */}
               <Button variant="outline" size="sm" asChild>
-                <Link href="/mentor/profile-setup">
+                <Link href="/mentor/profile">
                   <BilingualText en="Apply as coach" el="Αίτηση ως coach" compact wrap />
                 </Link>
               </Button>

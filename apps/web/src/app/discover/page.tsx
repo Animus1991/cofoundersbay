@@ -390,7 +390,7 @@ export default function DiscoverPage() {
               </div>
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                 {hits.slice(0, 4).map((h) => (
-                  <Link key={h.id} href={`/profile/${h.userId}`}
+                  <Link key={h.id} href={`/profiles/${h.userId}`}
                     className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
                       {h.displayName?.charAt(0) ?? '?'}

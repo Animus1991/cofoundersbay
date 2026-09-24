@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/components/ui/toast';
+import { ScheduleSessionDialog, RescheduleSessionDialog, SessionNotesDialog } from '@/components/mentoring/SessionDialogs';
 import {
   Calendar,
   Clock,
@@ -25,10 +28,17 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import {
   getUpcomingMentorshipSessions,
+  updateMentorshipSession,
   type MentorshipSessionItem,
 } from '@/lib/api';
 
-function SessionCard({ session }: { session: MentorshipSessionItem }) {
+type SessionActions = {
+  onReschedule: (s: MentorshipSessionItem) => void;
+  onCancel: (s: MentorshipSessionItem) => void;
+  onNotes: (s: MentorshipSessionItem) => void;
+};
+
+function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: MentorshipSessionItem } & SessionActions) {
   const statusColors: Record<string, string> = {
     scheduled: 'bg-status-info-bg text-status-info border-status-info-border',
     completed: 'bg-status-success-bg text-status-success border-status-success-border',
@@ -105,10 +115,11 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
                     </a>
                   </Button>
                 )}
-                <Button size="sm" variant="outline" className="h-7 text-xs">
+                {/* Both had no handler. */}
+                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onReschedule(session)}>
                   Reschedule
                 </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-accessible">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-accessible" onClick={() => onCancel(session)}>
                   Cancel
                 </Button>
               </div>
@@ -116,10 +127,8 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
 
             {session.status === 'completed' && (
               <div className="flex gap-2 mt-3">
-                <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
-                  <Link href={`/mentor/sessions/${session.id}/notes`}>
-                    View Notes
-                  </Link>
+                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onNotes(session)}>
+                  View Notes
                 </Button>
               </div>
             )}
@@ -139,6 +148,62 @@ export default function MentorSessionsPage() {
     queryFn: getUpcomingMentorshipSessions,
     enabled: hasSession && mounted,
   });
+  const queryClient = useQueryClient();
+  const confirm = useConfirm();
+  const { success, error: toastError } = useToast();
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [menteeHint, setMenteeHint] = useState<string | null>(null);
+  const [rescheduling, setRescheduling] = useState<MentorshipSessionItem | null>(null);
+  const [notesFor, setNotesFor] = useState<MentorshipSessionItem | null>(null);
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['mentorship-sessions-upcoming'] });
+
+  // /mentor/sessions?new=1&mentee=<id> - how the mentees page asks for a new
+  // session with a particular mentee. Read after mount so SSR and hydration
+  // agree and no Suspense boundary is needed.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('new') === '1') {
+      setMenteeHint(q.get('mentee'));
+      setScheduleOpen(true);
+    }
+  }, []);
+
+  const cancelSession = async (s: MentorshipSessionItem) => {
+    const ok = await confirm({
+      title: 'Cancel this session?',
+      description: 'Your mentee sees it as cancelled. You can schedule a new one at any time.',
+      confirmLabel: 'Cancel session',
+    });
+    if (!ok) return;
+    try {
+      await updateMentorshipSession(s.id, { status: 'cancelled' });
+      success('Session cancelled');
+      refresh();
+    } catch (e) {
+      toastError('Could not cancel the session', e instanceof Error ? e.message : undefined);
+    }
+  };
+  const actions: SessionActions = { onReschedule: setRescheduling, onCancel: (s) => void cancelSession(s), onNotes: setNotesFor };
+  const dialogs = (
+    <>
+      <ScheduleSessionDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        initialMenteeId={menteeHint}
+        onScheduled={() => { success('Session scheduled'); refresh(); }}
+      />
+      <RescheduleSessionDialog
+        session={rescheduling}
+        onOpenChange={(o) => { if (!o) setRescheduling(null); }}
+        onSaved={() => { success('Session rescheduled'); refresh(); }}
+      />
+      <SessionNotesDialog
+        session={notesFor}
+        onOpenChange={(o) => { if (!o) setNotesFor(null); }}
+        onSaved={() => { success('Notes saved'); refresh(); }}
+      />
+    </>
+  );
 
   const sessions = data?.sessions || [];
   const upcomingSessions = sessions.filter((s) => s.status === 'scheduled');
@@ -187,11 +252,9 @@ export default function MentorSessionsPage() {
               <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
               Refresh
             </Button>
-            <Button asChild>
-              <Link href="/mentor/sessions/new">
-                <Plus className="mr-2 icon-sm" />
-                Schedule Session
-              </Link>
+            <Button onClick={() => setScheduleOpen(true)}>
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
+              Schedule Session
             </Button>
           </div>
         </>
@@ -258,7 +321,7 @@ export default function MentorSessionsPage() {
               </div>
             ) : upcomingSessions.length > 0 ? (
               upcomingSessions.map((session) => (
-                <SessionCard key={session.id} session={session} />
+                <SessionCard key={session.id} session={session} {...actions} />
               ))
             ) : (
               <Card>
@@ -268,11 +331,9 @@ export default function MentorSessionsPage() {
                   <p className="text-sm text-muted-foreground mt-1">
                     Schedule a session with one of your mentees
                   </p>
-                  <Button className="mt-4" asChild>
-                    <Link href="/mentor/sessions/new">
-                      <Plus className="mr-2 icon-sm" />
-                      Schedule Session
-                    </Link>
+                  <Button className="mt-4" onClick={() => setScheduleOpen(true)}>
+                    <Plus className="mr-2 icon-sm" aria-hidden="true" />
+                    Schedule Session
                   </Button>
                 </CardContent>
               </Card>
@@ -286,7 +347,7 @@ export default function MentorSessionsPage() {
               </div>
             ) : pastSessions.length > 0 ? (
               pastSessions.map((session) => (
-                <SessionCard key={session.id} session={session} />
+                <SessionCard key={session.id} session={session} {...actions} />
               ))
             ) : (
               <Card>
@@ -302,6 +363,7 @@ export default function MentorSessionsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      {dialogs}
     </AppShell>
   );
 }

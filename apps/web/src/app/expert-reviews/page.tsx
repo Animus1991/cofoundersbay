@@ -804,7 +804,7 @@ export default function ExpertReviewsPage() {
               </p>
               {/* Mentor signup is the form that exists and is wired. */}
               <Button variant="outline" size="sm" asChild>
-                <Link href="/mentor/profile-setup">
+                <Link href="/mentor/profile">
                   <BilingualText en="Apply as expert" el="Αίτηση ως ειδικός" compact wrap />
                 </Link>
               </Button>

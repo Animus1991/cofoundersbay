@@ -171,7 +171,7 @@ export default function PricingPage() {
   const apiPlans = plansData?.plans ?? [];
 
   async function handleCheckout(plan: typeof PLANS[0]) {
-    if (plan.id === 'enterprise') { window.location.href = '/contact'; return; }
+    if (plan.id === 'enterprise') { window.location.href = 'mailto:enterprise@cofounderbay.com?subject=Enterprise%20plan'; return; }
     if (!hasSession) { window.location.href = '/register'; return; }
     const apiPlan = apiPlans.find(p => p.name === plan.apiName);
     const priceId = annual ? apiPlan?.stripePriceIdAnnual : apiPlan?.stripePriceIdMonthly;
@@ -441,7 +441,7 @@ export default function PricingPage() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/contact">Talk to sales</Link>
+              <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise%20plan">Talk to sales</a>
             </Button>
           </div>
         </div>

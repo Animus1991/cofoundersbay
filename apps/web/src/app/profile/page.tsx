@@ -717,7 +717,7 @@ export default function ProfilePage() {
                   <BilingualText en={profileEn('copy_link')} el={profileEl('copy_link')} />
                 </Button>
                 <Button variant="outline" className="w-full gap-2" asChild>
-                  <Link href="/settings/general" className="block w-full">
+                  <Link href="/settings" className="block w-full">
                     <Zap className="icon-sm" />
                     <BilingualText en={profileEn('settings')} el={profileEl('settings')} />
                   </Link>

@@ -2024,6 +2024,11 @@ export async function listEvents(params?: {
   return apiRequest(url, undefined, { retryOn401: false });
 }
 
+/** One event, with the viewer's RSVP. GET /events/:eventId (OptionalJwtAuthGuard). */
+export async function getEvent(eventId: string): Promise<{ event: EventItem }> {
+  return apiRequest(`/api/events/${encodeURIComponent(eventId)}`, undefined, { retryOn401: false });
+}
+
 export async function createEvent(body: {
   title: string;
   description?: string;

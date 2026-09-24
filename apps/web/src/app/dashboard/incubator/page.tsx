@@ -278,7 +278,7 @@ export default function IncubatorDashboard() {
               Incubator Admin
             </Badge>
             <Button size="sm" asChild>
-              <Link href="/org/programs/new">
+              <Link href="/tenant/programs">
                 <Plus className="mr-1.5 icon-sm" />
                 New Program
               </Link>
@@ -394,7 +394,7 @@ export default function IncubatorDashboard() {
               </CardHeader>
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/org/programs/new">
+                  <Link href="/tenant/programs">
                     <Plus className="mr-2 icon-sm" />
                     Create Program
                   </Link>

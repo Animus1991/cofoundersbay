@@ -338,7 +338,7 @@ export default function TestOnboardingPage() {
           
           {progress === 100 && !hasErrors && (
             <Button asChild>
-              <Link href="/onboarding/enhanced-onboarding">
+              <Link href="/onboarding">
                 <Rocket className="icon-sm mr-2" />
                 Try Enhanced Onboarding
               </Link>

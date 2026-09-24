@@ -117,7 +117,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
                 </Link>
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
-                <Link href={`/mentor/sessions/new?mentee=${relationship.menteeId}`}>
+                <Link href={`/mentor/sessions?new=1&mentee=${relationship.menteeId}`}>
                   <Calendar className="icon-sm mr-1" />
                   Schedule
                 </Link>

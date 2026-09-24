@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import {
   FileText,
   Search,
@@ -45,6 +44,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 /**
@@ -116,12 +118,15 @@ const APPLICATION_STATUS: Record<ApplicationStatus, { tone: StatusTone; icon: Re
 type DecideFn = (application: Application, status: 'accepted' | 'rejected') => void;
 
 function ApplicationCard({
+  onReview,
   application,
   onDecide,
 }: {
   application: Application;
   /** Absent for the illustrative rows, which have nothing to write to. */
   onDecide?: DecideFn;
+  /** Opens the review dialog; the row title and the menu item both use it. */
+  onReview: (application: Application) => void;
 }) {
   const config = APPLICATION_STATUS[application.status];
   const statusColors = STATUS[config.tone];
@@ -141,9 +146,14 @@ function ApplicationCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/org/applications/${application.id}`} className="font-medium hover:text-primary-accessible transition-colors">
+                {/* Linked to /org/applications/:id, a route that never existed. */}
+                <button
+                  type="button"
+                  onClick={() => onReview(application)}
+                  className="text-left font-medium hover:text-primary-accessible transition-colors"
+                >
                   {application.startupName}
-                </Link>
+                </button>
                 <p className="text-sm text-muted-foreground">
                   by {application.founderName} · {application.industry}
                 </p>
@@ -160,9 +170,7 @@ function ApplicationCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/org/applications/${application.id}`}>Review Application</Link>
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onReview(application)}>Review Application</DropdownMenuItem>
                     {/*
                       * "Mark as Shortlisted" and "Schedule Interview" are gone
                       * rather than left inert: the participant status enum has
@@ -333,6 +341,8 @@ export default function OrgApplicationsPage() {
       showError('Could not record the decision', err instanceof Error ? err.message : undefined),
   });
 
+  const [reviewing, setReviewing] = useState<Application | null>(null);
+
   const onDecide: DecideFn = (application, status) => {
     const programId = (application as Application & { programId?: string }).programId;
     if (!programId) return;
@@ -451,6 +461,7 @@ export default function OrgApplicationsPage() {
               key={application.id}
               application={application}
               onDecide={isLive ? onDecide : undefined}
+              onReview={setReviewing}
             />
           ))}
           {filteredApplications.length === 0 && (
@@ -458,6 +469,55 @@ export default function OrgApplicationsPage() {
           )}
         </div>
       </div>
+      <Dialog open={reviewing !== null} onOpenChange={(o) => { if (!o) setReviewing(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{reviewing?.startupName}</DialogTitle>
+            <DialogDescription>
+              {reviewing ? `by ${reviewing.founderName} · ${reviewing.program}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          {reviewing && (
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="capitalize">{reviewing.status.replace('_', ' ')}</dd>
+              <dt className="text-muted-foreground">Industry</dt>
+              <dd>{reviewing.industry || '\u2014'}</dd>
+              <dt className="text-muted-foreground">Stage</dt>
+              <dd>{reviewing.stage || '\u2014'}</dd>
+              <dt className="text-muted-foreground">Submitted</dt>
+              <dd>{reviewing.submittedAt}</dd>
+              {reviewing.score != null && (
+                <>
+                  <dt className="text-muted-foreground">Score</dt>
+                  <dd>{reviewing.score}</dd>
+                </>
+              )}
+            </dl>
+          )}
+          <DialogFooter className="gap-2">
+            {reviewing && isLive ? (
+              <>
+                <Button
+                  variant="outline"
+                  disabled={reviewing.status === 'rejected'}
+                  onClick={() => { onDecide(reviewing, 'rejected'); setReviewing(null); }}
+                >
+                  Reject
+                </Button>
+                <Button
+                  disabled={reviewing.status === 'accepted'}
+                  onClick={() => { onDecide(reviewing, 'accepted'); setReviewing(null); }}
+                >
+                  Accept
+                </Button>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">Sample application - decisions write only to live applications.</p>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

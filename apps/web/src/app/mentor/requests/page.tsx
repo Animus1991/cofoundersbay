@@ -145,7 +145,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
               )}
               {request.status === 'accepted' && (
                 <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
-                  <Link href={`/mentor/sessions/new?mentee=${request.requesterId}`}>
+                  <Link href={`/mentor/sessions?new=1&mentee=${request.requesterId}`}>
                     <Calendar className="icon-sm mr-1" />
                     Schedule Session
                   </Link>

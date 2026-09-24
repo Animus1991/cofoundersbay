@@ -99,7 +99,7 @@ function ProgramCard({ program }: { program: Program }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Link href={`/org/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
+              <Link href={`/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                 {program.name}
               </Link>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
@@ -131,13 +131,13 @@ function ProgramCard({ program }: { program: Program }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/org/programs/${program.id}`}>View Details</Link>
+                <Link href={`/programs/${program.id}`}>View Details</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/org/programs/${program.id}/edit`}>Edit Program</Link>
+                <Link href="/tenant/programs">Edit Program</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/org/programs/${program.id}/participants`}>Manage Participants</Link>
+                <Link href="/org/applications">Manage Participants</Link>
               </DropdownMenuItem>
               {/*
                 * "Duplicate" is gone rather than left inert: there is no
@@ -243,7 +243,7 @@ export default function OrgProgramsPage() {
       description="Create, run, and review accelerator, bootcamp, and incubator programs."
       actions={(
         <Button asChild>
-          <Link href="/org/programs/new">
+          <Link href="/tenant/programs">
             <Plus className="mr-2 icon-sm" />
             New Program
           </Link>

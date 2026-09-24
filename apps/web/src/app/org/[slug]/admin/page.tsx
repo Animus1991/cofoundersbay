@@ -483,7 +483,7 @@ export default function OrgAdminPage() {
             </div>
           </div>
           <Button variant="outline" asChild>
-            <Link href={`/org/${slug}/settings`}>
+            <Link href="/org/settings">
               <Settings className="icon-sm mr-2" aria-hidden="true" />
               Settings
             </Link>

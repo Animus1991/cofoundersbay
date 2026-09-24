@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgMentors } from '@/components/common/EmptyStates';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
@@ -127,10 +128,12 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                     <DropdownMenuItem asChild>
                       <Link href={`/p/${mentor.userId}`}>View Profile</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Assign to Startup</DropdownMenuItem>
-                    <DropdownMenuItem>View Sessions</DropdownMenuItem>
-                    <DropdownMenuItem>Send Message</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-accessible">Remove from Pool</DropdownMenuItem>
+                    <UnavailableMenuItem en="Assign to Startup" el="Ανάθεση σε startup" reasonEn="Mentor assignments are not stored yet." reasonEl="Οι αναθέσεις μεντόρων δεν αποθηκεύονται ακόμη." />
+                    <UnavailableMenuItem en="View Sessions" el="Συνεδρίες" reasonEn="No organisation-wide session view yet." reasonEl="Δεν υπάρχει ακόμη προβολή συνεδριών ανά οργανισμό." />
+                    <DropdownMenuItem asChild>
+                      <Link href={`/messages?to=${mentor.userId}`}>Send Message</Link>
+                    </DropdownMenuItem>
+                    <UnavailableMenuItem className="text-destructive-accessible" en="Remove from Pool" el="Αφαίρεση από τη δεξαμενή" reasonEn="The pool is read from mentor profiles; there is no pool membership to remove." reasonEl="Η δεξαμενή προκύπτει από τα προφίλ μεντόρων· δεν υπάρχει συμμετοχή για αφαίρεση." />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -262,12 +265,15 @@ export default function OrgMentorsPage() {
   return (
     <AppShell
       title="Mentor Pool"
-      description="Manage mentors available to your cohorts. Invite by email or onboard from the platform directory."
+      description="Manage mentors available to your cohorts. Find them in the platform's mentor directory."
       actions={(
+        // Linked to /org/mentors/invite, which never existed, and promised
+        // email invites no endpoint sends. The directory is where a mentor is
+        // found today.
         <Button asChild>
-          <Link href="/org/mentors/invite">
-            <Plus className="mr-2 icon-sm" />
-            Invite Mentor
+          <Link href="/mentoring">
+            <Plus className="mr-2 icon-sm" aria-hidden="true" />
+            Find a mentor to invite
           </Link>
         </Button>
       )}

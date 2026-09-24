@@ -454,7 +454,7 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
       description="Launch your first accelerator, bootcamp, or incubator program. Track applications, cohorts, and outcomes in one place."
       action={(
         <Button asChild>
-          <Link href="/org/programs/new">
+          <Link href="/tenant/programs">
             <Plus className="mr-1.5 icon-sm" /> Create program
           </Link>
         </Button>
@@ -525,17 +525,17 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
       icon={GraduationCap}
       tone="success"
       title="No mentors invited yet"
-      description="Mentors are vetted advisors you can assign to startups in your cohorts. Invite them by email or pick from the platform directory."
+      description="Mentors are vetted advisors you can assign to startups in your cohorts. Find them in the platform's mentor directory."
       action={(
         <Button asChild>
-          <Link href="/org/mentors/invite">
-            <Plus className="mr-1.5 icon-sm" /> Invite mentor
+          <Link href="/mentoring">
+            <Plus className="mr-1.5 icon-sm" aria-hidden="true" /> Find a mentor
           </Link>
         </Button>
       )}
       secondary={(
         <Button asChild variant="outline">
-          <Link href="/mentoring">Browse directory</Link>
+          <Link href="/org/startups">See your startups</Link>
         </Button>
       )}
       className={className}
