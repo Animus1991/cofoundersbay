@@ -750,3 +750,81 @@ API: 187/187, typecheck καθαρό. Web: typecheck καθαρό· **455/456** 
 Δύο ελαττώματα που βρήκε το probe: (α) το peeked panel βρισκόταν **κάτω** από τη γραμμή εργαλείων του καμβά (`z-50` σε μη-απομονωμένη στήλη έναντι rail `z-30`) — κλικ στο rail πέφταν στο toolbar. Rail → `z-40` (ίδιο layer με το SideNav, συμμετρικό chrome) και η στήλη του καμβά `isolate`. (β) **Προϋπάρχον, μετρημένο, όχι διορθωμένο εδώ**: η γραμμή εργαλείων είναι **1.734px** πλατιά σε κάθε viewport — υπερχειλίζει στα 1280 (−552) και 1440 (−392) με ή χωρίς rail (ο rail κοστίζει 52). Ο τίτλος «Research canvas» πέφτει πάνω στο «Add node». Επόμενο: η δευτερεύουσα ομάδα (snap/AI/summary/branch/history), που έχει πλέον σπίτι στο rail και στο More, να συμπτύσσεται και κάτω από `2xl`, όπως ήδη κάνει κάτω από `sm`.
 
 Επαλήθευση: typecheck καθαρό, rail contract 5/5, ο καμβάς παραχωρεί 43px, 6 sections στη λωρίδα, εναλλαγή πλέγματος μέσα από το rail αλλάζει το state που διαβάζει το toolbar, 0 errors.
+
+## 23. Γύρος 11 — λειτουργικότητα σε πλήρες εύρος, rail κύμα 4, ο assistant βλέπει τον rail (2026-09-24)
+
+### 23.1 Συγχώνευση
+
+`777eb2b` — `integration/ai-platform-upgrade @7f1298b` μέσα στο δικό μας branch. Το δέντρο μετά το merge είναι **ταυτόσημο** με το integration (tag ασφαλείας `pre-round11-merge`). Κανένα remote branch δεν έχει commits που μας λείπουν (έλεγχος `git rev-list HEAD..origin/*` στο τέλος του γύρου).
+
+### 23.2 Κανένα control που δεν κάνει τίποτα
+
+Στατικό sweep όλων των `src/**/*.tsx`. Κάθε control είναι πλέον ένα από: **συνδεδεμένο** σε υπάρχον endpoint · **σύνδεσμος** σε route που υπάρχει · **απενεργοποιημένο με δηλωμένο λόγο** (`UnavailableMenuItem`, ή `disabled` + `title`). Καμία λειτουργία δεν αφαιρέθηκε.
+
+| εύρημα | πριν | μετά | guard |
+|---|---|---|---|
+| `<DropdownMenuItem>` χωρίς handler | 104 | 0 | `deadControls.test.ts` |
+| `<Button>` χωρίς handler / link / form / disabled | 103 | 0 | `deadControls.test.ts` (επαληθευμένο ότι πιάνει ενσωματωμένο νεκρό κουμπί) |
+| εσωτερικοί σύνδεσμοι σε route που δεν υπάρχει | 47 (23 routes) | 0 | `internalLinks.test.ts` |
+| icon buttons χωρίς όνομα | 110 | 0 | τύπος `Button` + `controlNames.test.ts` |
+| `SelectTrigger` χωρίς όνομα | 81 | 0 | τύπος `SelectTrigger` (compile error) |
+| σελίδες με 2+ ορατά `<h1>` | 29 | 0 | sweep |
+
+Νέες σελίδες για τους συνδέσμους που έπεφταν σε 404: `/events/[id]` (RSVP, .ics, κοινοποίηση), `/programs/[id]` (αίτηση με cover note), `/startups/[id]` (στάδιο, αστέρι, pass, σημειώσεις, ιστορικό μέσω `investorDeal`), `/unauthorized`. Νέοι διάλογοι mentoring (προγραμματισμός, μετάθεση, σημειώσεις) αντί για τα ανύπαρκτα `/mentor/sessions/new` και `/mentor/sessions/:id/notes`. Κοινό `lib/csv.ts` (RFC 4180) για κάθε export.
+
+### 23.3 Page rail — κύμα 4
+
+| route | column (κύρια λειτουργία) | rail sections | τι προστέθηκε στο εύρος |
+|---|---|---|---|
+| `/admin/tenants` | λίστα, επιλογή, ενέργειες | Σύνολα · Φίλτρα · Εργαλεία | αναζήτηση, select-all, CSV |
+| `/mentor/earnings` | ιστορικό, μηνιαίο, payout | Σύνολα εσόδων · Περίοδος · Εξαγωγή | CSV μέσω κοινού quoting |
+| `/tenant/programs` | προγράμματα | Σύνολα · Κατάσταση προγράμματος | προεπιλογή «τρέχοντα» (τα ζωντανά δεδομένα ήρθαν από το `a31af0a`) |
+| `/provider/analytics` | δείκτες + 3 γραφήματα | Περίοδος (+ανανέωση) · Με μια ματιά · Εξαγωγή | weekly summary του API, CSV δεικτών/ημερών |
+| `/admin/users` | κατάλογος + αναζήτηση | Σύνολα · Φίλτρα · Εργαλεία | μέτρηση Banned, ρόλος «Οργανισμός» στο φίλτρο |
+| `/admin/reports` | ουρά (tabs) + αναζήτηση | Σύνολα · Φίλτρα · Εργαλεία | tab «Απορριφθείσες», φίλτρο προτεραιότητας, CSV |
+| `/admin/programs` | λίστα + αναζήτηση | Σύνολα · Φίλτρα · Εργαλεία | Draft/Archived μετρήσεις, φίλτρο τύπου, CSV |
+
+Σελίδες με rail: **21**. `scripts/rail-candidates.mjs` καταγράφει πλέον τις 7 που **απορρίφθηκαν με λόγο** (`/org/settings`, `/admin/feature-flags`, `/dashboard/founder`, `/dashboard/incubator`, `/discover`, `/help`, `/groups/manage`) — ανοιχτοί υποψήφιοι: **0**.
+
+**Guard σε επίπεδο state.** Ο έλεγχος «ίδιο control σε column και rail» σύγκρινε μόνο ετικέτες· ένα rail «Status» δίπλα σε `<Select>` με «All Status» περνούσε. Τώρα: state που ο rail *δείχνει* (`aria-pressed`/`aria-checked`/`checked`/`value`) απαγορεύεται να είναι δεμένο σε control της στήλης (`value=` / `onValueChange=`). Επαληθεύτηκε ότι αποτυγχάνει σε ενσωματωμένο διπλότυπο.
+
+### 23.4 Ο assistant βλέπει και ανοίγει τον rail
+
+- Ο mounted rail δημοσιεύει τον **πίνακα περιεχομένων** του (id, ετικέτες EN/EL, badge — ποτέ το περιεχόμενο) στο `PageRailContext` και σε bus για executors εκτός React.
+- Το `PageContextPacket` αποκτά `rail.sections` στη γλώσσα του αναγνώστη· φτάνει και στο τοπικό engine και στο μοντέλο (το context γίνεται JSON στο system prompt — καμία αλλαγή API).
+- Νέα δηλωμένη δυνατότητα **`open_rail_section`**: `writes: false`, `invalidates: []`, `reversal: none` (δεν γράφεται τίποτα· κλείνει με Escape / έξοδο δείκτη / κουμπί κλεισίματος του φύλλου), `auditSubject: page_rail_section`. Ο executor αρνείται section που δεν υπάρχει και λέει ποια υπάρχουν.
+- Το τοπικό engine: στο «τι βλέπω εδώ;» αναφέρει τα sections με τα badges· στο «δείξε μου τα φίλτρα» / «export this list» προτείνει το άνοιγμα (EN/EL, ρήμα θέασης απαραίτητο ώστε «filter founders in Athens» να μένει αναζήτηση). Μεταφράσεις σε όλες τις 8 γλώσσες του καταλόγου.
+- **Bug που βρέθηκε στη διαδρομή:** το `openRailSection` άνοιγε *και* το φύλλο κινητού σε κάθε πλάτος — το φύλλο γίνεται portal, οπότε το `lg:hidden` δεν το έκρυβε και στο desktop εμφανιζόταν modal φύλλο πάνω από το peek (επηρέαζε και τα «Show filters» / preferences / φίλτρα καμβά). Τώρα μία επιφάνεια ανά πλάτος (`matchMedia(min-width: 1024px)`), με test που θα αποτύγχανε στον παλιό κώδικα.
+
+### 23.5 Τι βρήκε η ζωντανή επαλήθευση — και διορθώθηκε
+
+Production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-api.mjs`, 160 routes (οι 156 + οι 4 νέες σελίδες), 1440 και 390.
+
+| εύρημα | πού | αιτία | διόρθωση | guard |
+|---|---|---|---|---|
+| «NaNy ago» | `/admin/users` Last Active | `formatRelativeTime` σε μη-ημερομηνία («2 hours ago», «Never») | επιστρέφει την τιμή όπως δόθηκε / «—» | `utils.test.ts` |
+| «NaN%» | `/recommendations` Acceptance Rate | πεδίο που λείπει από μερικό payload | `typeof === 'number'` αλλιώς «—» | sweep κειμένου |
+| «Ready to join undefined?», κενό `<h1>` | `/t/[slug]` | tenant χωρίς `name`/`displayName` | ένα `tenantName` με fallback στο slug του URL | sweep κειμένου |
+| toggle ορατότητας layer χωρίς όνομα | `/research/[boardId]` inspector | παιδί `{visible ? <Eye/> : <EyeOff/>}` — ο guard έβλεπε μόνο ένα icon element | όνομα + `aria-pressed`· **+10 ακόμη** ίδιου σχήματος (send/snapshot με spinner, checkboxes επιλογής) | `controlNames` (ternary) |
+| Capture / Align menus χωρίς όνομα στα 1440 | canvas toolbar | η μόνη ετικέτα `hidden 2xl:inline` | `aria-label`· ίδιο σχήμα σε Share (builder) και Reload (offline banner) | `controlNames` (hidden label) |
+| `color-contrast` | `/recommendations` badges | λευκό σε emerald-500 (2,5:1) | semantic chips (`STATUS.*.chip`) | axe |
+| `color-contrast` | canvas rail πατημένη γραμμή | `text-primary` | `text-primary-accessible` | axe |
+| `color-contrast` | `/builder` χρονοσφραγίδες | `text-muted-foreground/60` | πλήρες muted — και σε 13 ακόμη σημεία (11 κειμένου, 2 icon buttons) (τα placeholders και τα διακοσμητικά icons μένουν) | axe |
+| 0 `<h1>` | canvas, `/share` (μη διαθέσιμο), OAuth callback, επιβεβαίωση email | ο τίτλος κατάστασης ήταν `h2`/`CardTitle`· ο καμβάς δεν είχε ορατό τίτλο | `h1` (ο καμβάς: `sr-only` με τον τίτλο του board) | sweep |
+| κενά combobox | `/org/settings` | `SelectValue` χωρίς placeholder | placeholders | sweep |
+
+Ο §22.3(β) (γραμμή εργαλείων καμβά 1.734px) **δεν ισχύει πια**: μετρημένο scrollWidth = clientWidth στα 1280/1440/1920 (διορθώθηκε στο integration `b0b7126`).
+
+### 23.6 Πύλες
+
+| πύλη | αποτέλεσμα |
+|---|---|
+| web typecheck | 0 errors |
+| api typecheck | 0 errors |
+| web vitest | 55 αρχεία, 510/510 |
+| api vitest | 8 αρχεία, 187/187 |
+| sweep 160 routes × {1440, 390}, στο τελικό build | 0 page errors · 0 React key warnings · 0 οριζόντια υπερχείλιση · ακριβώς 1 `<h1>` παντού · 0 controls χωρίς όνομα · 0 «NaN/undefined/Invalid Date» · 21 rails |
+| behaviour probes | 17/17 (Preferences: peek στο desktop χωρίς modal, sheet στο κινητό· φίλτρα `/admin/users` στενεύουν τη λίστα και το badge μετρά· `/admin/reports` Dismissed + priority· περίοδος `/provider/analytics` από rail σε 1440 και 390· canvas toolbar χωρά σε 1280/1440/1920) |
+| axe WCAG 2.1 A/AA — 33 σελίδες (όλες οι 21 με rail + όσες άλλαξαν) × 2 πλάτη | πρώτη εκτέλεση: 31/33 καθαρές ανά πλάτος (ευρήματα στο §23.5)· τελική, στο τελικό build, 34 σελίδες (+`/builder`) × 2: **0 παραβιάσεις**, 0 page errors, 0 key warnings |
+
+Τι **δεν** αποδεικνύουν: οι σελίδες τρέχουν πάνω σε mock API με κενές συλλογές, άρα πολλά στοιχεία εμφανίζονται μόνο με demo/seed δεδομένα· persistence, JWT και Redis δεν ελέγχονται εδώ. Lint δεν αναφέρεται — το `next lint` δεν έχει flat config (AGENTS.md).
