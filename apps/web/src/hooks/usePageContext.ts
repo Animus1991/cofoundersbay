@@ -8,6 +8,7 @@ import type { PageContextPacket } from '@/lib/copilot-engine';
 import { usePageSnapshot, type PageSnapshot } from '@/contexts/PageSnapshotContext';
 import { getPageMeta } from '@/lib/page-registry';
 import { usePageRail } from '@/components/layout/PageRailContext';
+import { usePageControlList } from '@/lib/page-controls';
 
 /**
  * The floor every page stands on when it publishes nothing itself.
@@ -64,6 +65,19 @@ export function usePageContext(): PageContextPacket {
   // pointless until this line changed. `useI18n` carries a working default, so
   // this is safe outside the provider too.
   const { locale } = useI18n();
+  // The page's own controls, in the reader's language, handlers left behind.
+  const pageControls = usePageControlList();
+  const el = locale === 'el';
+  const controlsKey = JSON.stringify(
+    pageControls.map((c) => ({
+      id: c.id,
+      label: el ? c.labelEl : c.labelEn,
+      writes: c.writes,
+      ...(c.options?.length ? { options: c.options.map((o) => ({ value: o.value, label: el ? o.labelEl : o.labelEn })) } : {}),
+      ...(c.current !== undefined ? { current: c.current } : {}),
+      ...(c.unavailableEn ? { unavailable: el ? (c.unavailableEl ?? c.unavailableEn) : c.unavailableEn } : {}),
+    })),
+  );
   // The rail's table of contents, in the reader's language. Without it the
   // assistant could describe the column and nothing to its right - a user
   // asking "where are the filters?" on /admin/users was told nothing.
@@ -93,9 +107,10 @@ export function usePageContext(): PageContextPacket {
         locale,
         ...(screen ? { screen } : {}),
         ...(railKey !== '[]' ? { rail: { sections: JSON.parse(railKey) as NonNullable<PageContextPacket['rail']>['sections'] } } : {}),
+        ...(controlsKey !== '[]' ? { controls: JSON.parse(controlsKey) as NonNullable<PageContextPacket['controls']> } : {}),
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- snapshotKey stands in for snapshot by value
-    [pathname, role?.primaryRole, locale, snapshotKey, railKey],
+    [pathname, role?.primaryRole, locale, snapshotKey, railKey, controlsKey],
   );
 }

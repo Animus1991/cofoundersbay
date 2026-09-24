@@ -235,6 +235,81 @@ export function railSectionFor<T extends { id: string; label: string }>(
   return undefined;
 }
 
+/**
+ * Which of the page's own controls a message asks for, and with which choice.
+ *
+ * Pages register their controls (`usePageControls`); the page context lists
+ * them with their options. A control is matched by the words of its label
+ * and, when it takes a choice, by the words of one option - "show only
+ * suspended users" picks the status filter's Suspended; "suspend Mike
+ * Johnson" picks the Suspend command's Mike Johnson row.
+ *
+ * Words are compared without accents and by a five-letter stem, so
+ * "suspended" meets "Suspend" and «φίλτρα» meets «Φιλτράρισμα». A control
+ * that takes a choice needs one option to match and, unless its own label
+ * matched too, a verb of looking or acting, so a passing mention of a value
+ * does not press anything. The best score wins; ties go to the page's order.
+ */
+type ControlLike = {
+  id: string;
+  label: string;
+  writes: boolean;
+  options?: { value: string; label: string }[];
+  unavailable?: string;
+};
+
+const CONTROL_STOPWORDS = new Set([
+  'the', 'and', 'for', 'only', 'all', 'any', 'this', 'that', 'page', 'show', 'with', 'from', 'into', 'please', 'can', 'you',
+  'και', 'του', 'της', 'των', 'τον', 'την', 'για', 'από', 'μόνο', 'μονο', 'όλα', 'ολα', 'όλοι', 'ολοι', 'όλες', 'αυτή', 'αυτη',
+  'σελίδα', 'σελιδα', 'δείξε', 'δειξε', 'μου', 'οποιαδήποτε', 'οποιαδηποτε', 'οποιοσδήποτε', 'οποιοσδηποτε',
+]);
+const CONTROL_VERBS =
+  /\b(show|only|filter|narrow|list|set|switch|change|pick|choose|use|sort|export|download|open|run|make|mark|apply)\b|δείξ|δειξ|μόνο|μονο|φίλτρ|φιλτρ|άλλαξ|αλλαξ|βάλε|βαλε|κάνε|κανε|εξαγ|άνοιξ|ανοιξ|ταξιν/i;
+
+function wordsOf(text: string): string[] {
+  return fold(text)
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length >= 3 && !/^\d+$/.test(w) && !CONTROL_STOPWORDS.has(w));
+}
+function stem(word: string): string {
+  return word.length > 5 ? word.slice(0, 5) : word;
+}
+
+export function pageControlFor<T extends ControlLike>(
+  message: string,
+  controls: readonly T[],
+): { control: T; option?: NonNullable<T['options']>[number] } | undefined {
+  const said = new Set(wordsOf(message).map(stem));
+  const hits = (text: string) => wordsOf(text).filter((w) => said.has(stem(w))).length;
+  const verb = CONTROL_VERBS.test(message);
+
+  let best: { control: T; option?: NonNullable<T['options']>[number]; score: number } | undefined;
+  for (const control of controls) {
+    const labelWords = wordsOf(control.label);
+    const labelScore = hits(control.label);
+    if (control.options?.length) {
+      for (const option of control.options) {
+        const optionWords = wordsOf(option.label);
+        const optionScore = hits(option.label);
+        // Every word of the option must be there: "Mike" alone should not
+        // pick "Mike Johnson" over "Mike Chen".
+        if (optionScore === 0 || optionScore < optionWords.length) continue;
+        if (labelScore === 0 && !verb) continue;
+        const score = optionScore * 2 + labelScore;
+        if (!best || score > best.score) best = { control, option, score };
+      }
+    } else {
+      // A plain button: most of its label's words, and at least two when it
+      // has two ("Export users"), so "users" alone does not export them.
+      const needed = Math.min(2, labelWords.length);
+      if (labelScore < Math.max(1, needed)) continue;
+      const score = labelScore;
+      if (!best || score > best.score) best = { control, score };
+    }
+  }
+  return best ? { control: best.control, option: best.option } : undefined;
+}
+
 export function detectAnalyticsPeriod(message: string): string | undefined {
   return PERIOD_ALIASES.find((alias) => includesAny(message, alias.keys))?.period;
 }

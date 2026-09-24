@@ -45,6 +45,7 @@ import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
 import { currentRailSections, openCurrentRailSection } from '@/components/layout/PageRailContext';
+import { runPageControl } from '@/lib/page-controls';
 
 /**
  * The web app's half of the capability contract.
@@ -188,6 +189,20 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     ok: true,
     href: requireString(payload, 'href') || '/dashboard',
   }),
+
+  // A page's own controls (`usePageControls`). The registry refuses the
+  // wrong kind, so a view control never runs as a write or the reverse.
+  use_page_control: async (payload) => {
+    const control = requireString(payload, 'control');
+    if (!control) return { ok: false, error: 'Missing control' };
+    return runPageControl(control, requireString(payload, 'value') || undefined, false);
+  },
+
+  run_page_command: async (payload) => {
+    const control = requireString(payload, 'control');
+    if (!control) return { ok: false, error: 'Missing command' };
+    return runPageControl(control, requireString(payload, 'value') || undefined, true);
+  },
 
   open_rail_section: async (payload) => {
     const section = requireString(payload, 'section');

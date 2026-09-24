@@ -351,6 +351,95 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Open', el: 'Άνοιγμα' },
   },
   {
+    // A page's own controls, as the page context lists them under `controls`:
+    // filters, periods, sorting, exports, opening a panel. The page registers
+    // the same handler its button calls (`usePageControls`), so this reaches
+    // nothing the page does not already offer.
+    id: 'use_page_control',
+    kind: 'mutation',
+    label: { en: 'Use a control on this page', el: 'Χρήση ελέγχου αυτής της σελίδας' },
+    description: {
+      en: 'Press one of the current page’s view controls - a filter, a period, a sort, an export, a panel - exactly as the reader could. Only controls listed in the page context with writes=false exist; pass the chosen option’s value when the control lists options.',
+      el: 'Πατά έναν από τους ελέγχους προβολής της τρέχουσας σελίδας - φίλτρο, περίοδο, ταξινόμηση, εξαγωγή, πάνελ - όπως θα μπορούσε ο αναγνώστης. Υπάρχουν μόνο όσοι αναφέρονται στο πλαίσιο της σελίδας με writes=false· δώστε την τιμή της επιλογής όταν ο έλεγχος έχει επιλογές.',
+    },
+    params: [
+      {
+        name: 'control',
+        type: 'string',
+        required: true,
+        description: { en: 'The control id, exactly as the page context lists it.', el: 'Το id του ελέγχου, όπως ακριβώς το αναφέρει το πλαίσιο της σελίδας.' },
+      },
+      {
+        name: 'value',
+        type: 'string',
+        required: false,
+        description: { en: 'The chosen option’s value, for a control that lists options.', el: 'Η τιμή της επιλογής, για έλεγχο με επιλογές.' },
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: { en: 'What the reader will see pressed, used in the proposal.', el: 'Τι θα δει ο αναγνώστης να πατιέται, για την πρόταση.' },
+      },
+    ],
+    // View controls only; the executor refuses a control that writes.
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is stored. The same control on the page sets it back.',
+        el: 'Δεν αποθηκεύεται τίποτα. Ο ίδιος έλεγχος στη σελίδα το επαναφέρει.',
+      },
+    },
+    auditSubject: { param: 'control', entityType: 'page_control' },
+    confirmLabel: { en: 'Apply', el: 'Εφαρμογή' },
+  },
+  {
+    // The same, for a control that changes stored data: suspend a user,
+    // resolve a report, archive a programme. Separate so `writes` is true
+    // exactly when a write can happen, which is what the confirm card reads.
+    id: 'run_page_command',
+    kind: 'mutation',
+    label: { en: 'Run a command on this page', el: 'Εκτέλεση εντολής αυτής της σελίδας' },
+    description: {
+      en: 'Run one of the current page’s commands - a control that changes stored data - with the same handler and the same confirmations the page uses. Only controls listed in the page context with writes=true exist; pass the chosen option’s value (often the row to act on).',
+      el: 'Εκτελεί μία από τις εντολές της τρέχουσας σελίδας - έλεγχο που αλλάζει αποθηκευμένα δεδομένα - με τον ίδιο handler και τις ίδιες επιβεβαιώσεις της σελίδας. Υπάρχουν μόνο όσες αναφέρονται στο πλαίσιο της σελίδας με writes=true· δώστε την τιμή της επιλογής (συχνά τη γραμμή που αφορά).',
+    },
+    params: [
+      {
+        name: 'control',
+        type: 'string',
+        required: true,
+        description: { en: 'The command id, exactly as the page context lists it.', el: 'Το id της εντολής, όπως ακριβώς το αναφέρει το πλαίσιο της σελίδας.' },
+      },
+      {
+        name: 'value',
+        type: 'string',
+        required: false,
+        description: { en: 'The chosen option’s value, for a command that lists options.', el: 'Η τιμή της επιλογής, για εντολή με επιλογές.' },
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: { en: 'What the reader will see run, used in the proposal.', el: 'Τι θα δει ο αναγνώστης να εκτελείται, για την πρόταση.' },
+      },
+    ],
+    writes: true,
+    // The page's handler refreshes what it changed, as it does for a click.
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'This runs the page’s own command, so the assistant cannot take it back. Where the page offers the opposite command (reinstate, reopen), that is how to reverse it.',
+        el: 'Εκτελεί την εντολή της ίδιας της σελίδας, οπότε ο βοηθός δεν μπορεί να την αναιρέσει. Όπου η σελίδα προσφέρει την αντίθετη εντολή (επαναφορά, επανάνοιγμα), έτσι αναστρέφεται.',
+      },
+    },
+    auditSubject: { param: 'control', entityType: 'page_command' },
+    confirmLabel: { en: 'Run', el: 'Εκτέλεση' },
+  },
+  {
     id: 'shortlist_add',
     kind: 'mutation',
     label: { en: 'Save to shortlist', el: 'Αποθήκευση στη λίστα' },

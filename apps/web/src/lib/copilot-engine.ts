@@ -16,7 +16,7 @@ import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { planCopilotTools, detectPersonName, asksAboutThisPage, railSectionFor } from '@/lib/copilot-planner';
+import { planCopilotTools, detectPersonName, asksAboutThisPage, railSectionFor, pageControlFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import type {
   CopilotAction,
@@ -49,6 +49,20 @@ export type PageContextPacket = {
    * assistant opens a section with `open_rail_section` by its id.
    */
   rail?: { sections: { id: string; label: string; badge?: number | string }[] };
+  /**
+   * The page’s own controls (`usePageControls`), in the reader’s language:
+   * what each is called, whether it writes, its choices and the one in
+   * effect. The assistant proposes `use_page_control` / `run_page_command`
+   * with an id from this list.
+   */
+  controls?: {
+    id: string;
+    label: string;
+    writes: boolean;
+    options?: { value: string; label: string }[];
+    current?: string;
+    unavailable?: string;
+  }[];
   entity?: { type: string; id: string };
   role?: string | null;
   locale?: string;
@@ -485,6 +499,40 @@ export async function runCopilotTurn(
         payload: { section: wanted.id, label: wanted.label },
         status: 'pending',
       });
+    }
+  }
+
+  // The page's own controls. Offered by name when the reader asks what the
+  // page is, and proposed when a message names one - with the choice it
+  // names. A view control runs as `use_page_control`, a command that writes
+  // as `run_page_command`, so the card's warning matches what will happen.
+  const pageControls = pageContext?.controls ?? [];
+  if (pageControls.length > 0) {
+    const usable = pageControls.filter((c) => !c.unavailable);
+    if (asksAboutThisPage(userMessage) && usable.length > 0) {
+      sections.push(t('You can ask me to use: {controls}.', { controls: usable.map((c) => c.label).join(', ') }));
+    }
+    const hit = pageControlFor(userMessage, pageControls);
+    if (hit) {
+      const { control, option } = hit;
+      const what = option ? `${control.label}: ${option.label}` : control.label;
+      if (control.unavailable) {
+        sections.push(t('{control} is not available right now: {reason}', { control: control.label, reason: control.unavailable }));
+      } else if (option && control.current === option.value) {
+        sections.push(t('{control} is already set to {option}.', { control: control.label, option: option.label }));
+      } else {
+        actions.push({
+          id: newId('control'),
+          tool: control.writes ? 'run_page_command' : 'use_page_control',
+          title: what,
+          description: control.writes
+            ? t('Runs the page’s own command. Nothing happens until you confirm.')
+            : t('Changes what this page shows. Nothing is stored.'),
+          confirmLabel: control.writes ? t('Run') : t('Apply'),
+          payload: { control: control.id, label: what, ...(option ? { value: option.value } : {}) },
+          status: 'pending',
+        });
+      }
     }
   }
 
