@@ -33,6 +33,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { getAnalyticsOverview } from '@/lib/api';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
@@ -95,13 +97,15 @@ function MetricCard({
 }: {
   icon: React.ElementType;
   label: string;
-  value: number;
+  value: number | string;
   unit?: string;
-  change: number;
+  change?: number | null;
   trend: 'up' | 'down' | 'neutral';
   format?: 'number' | 'currency' | 'percent';
 }) {
-  const displayValue = format === 'currency'
+  const displayValue = typeof value === 'string'
+    ? value
+    : format === 'currency'
     ? `$${value.toLocaleString('en-GB')}`
     : format === 'percent'
     ? `${value}%`
@@ -122,7 +126,7 @@ function MetricCard({
           trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'
         )}>
           <TrendIcon trend={trend} />
-          <span>{trend !== 'neutral' ? `${Math.abs(change)}%` : 'No change'} vs last period</span>
+          <span>{trend !== 'neutral' && change != null ? `${Math.abs(change)}% vs last period` : 'vs last period'}</span>
         </div>
       </CardContent>
     </Card>
@@ -134,12 +138,45 @@ export default function ProviderAnalyticsPage() {
   const { showDemoData } = useDemoData();
   const [period, setPeriod] = useState('30d');
 
+  /* The analytics API serves the signed-in user's own numbers - the mock
+     grid only fills in when the demo toggle is on. */
+  const overviewQuery = useQuery({
+    queryKey: ['analytics', 'overview', period],
+    queryFn: () => getAnalyticsOverview(period),
+    enabled: hasSession && mounted && !showDemoData,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const live = overviewQuery.data ?? null;
+
   const overview = showDemoData ? MOCK_OVERVIEW : null;
-  const weeklyViews = showDemoData ? MOCK_WEEKLY_VIEWS : [];
   const conversions = showDemoData ? MOCK_CONVERSIONS : [];
   const trafficSources = showDemoData ? MOCK_TRAFFIC_SOURCES : [];
   const topServices = showDemoData ? MOCK_TOP_SERVICES : [];
+
+  /* Daily profile views come from the same series either way: the demo week
+     or the API's per-day rows, labelled by weekday. */
+  const weeklyViews: { day: string; views: number; inquiries: number }[] = showDemoData
+    ? MOCK_WEEKLY_VIEWS
+    : (live?.profileViews ?? []).map((d) => ({
+        day: new Date(d.date).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short' }),
+        views: d.views,
+        inquiries: 0,
+      }));
   const maxViews = weeklyViews.length ? Math.max(...weeklyViews.map(d => d.views)) : 1;
+
+  /* Live metric cards only claim what the overview actually measures; the
+     demo grid keeps its six authored tiles under the sample-data notice. */
+  const liveMetrics = live
+    ? [
+        { icon: Eye, label: 'Profile Views', value: live.metrics.profileViews, change: live.metrics.profileViewsChange },
+        { icon: Users, label: 'New Connections', value: live.metrics.newConnections, change: live.metrics.newConnectionsChange },
+        { icon: MessageCircle, label: 'Messages Sent', value: live.metrics.messagesSent, change: live.metrics.messagesSentChange },
+        { icon: Eye, label: 'Search Appearances', value: live.metrics.searchAppearances ?? '—', change: live.metrics.searchAppearancesChange },
+        { icon: Star, label: 'Engagement Rate', value: live.metrics.engagementRate ?? '—', change: live.metrics.engagementRateChange },
+        { icon: Clock, label: 'Avg Response', value: live.weeklySummary.avgResponseTime ?? '—', change: null },
+      ]
+    : [];
 
   if (!mounted) {
     return (
@@ -157,6 +194,13 @@ export default function ProviderAnalyticsPage() {
   return (
     <AppShell>
       <div className="py-6 space-y-6">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Provider analytics"
+            detail="The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement."
+            askAiPrompt="Why does the analytics page show sample numbers?"
+          />
+        )}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -178,8 +222,14 @@ export default function ProviderAnalyticsPage() {
                 <SelectItem value="1y">Last year</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm">
-              <RefreshCw className="icon-sm" />
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label="Refresh analytics"
+              onClick={() => overviewQuery.refetch()}
+              disabled={overviewQuery.isFetching}
+            >
+              <RefreshCw className={cn('icon-sm', overviewQuery.isFetching && 'animate-spin')} />
             </Button>
           </div>
         </div>
@@ -194,6 +244,20 @@ export default function ProviderAnalyticsPage() {
           <MetricCard icon={DollarSign} label="Revenue" value={overview.revenue.value} change={overview.revenue.change} trend={overview.revenue.trend} format="currency" />
           <MetricCard icon={Clock} label="Response Rate" value={overview.responseRate.value} change={overview.responseRate.change} trend={overview.responseRate.trend} format="percent" />
         </div>
+        )}
+        {!showDemoData && live && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
+            {liveMetrics.map((m) => (
+              <MetricCard
+                key={m.label}
+                icon={m.icon}
+                label={m.label}
+                value={m.value}
+                change={m.change}
+                trend={typeof m.change === 'number' ? (m.change > 0 ? 'up' : m.change < 0 ? 'down' : 'neutral') : 'neutral'}
+              />
+            ))}
+          </div>
         )}
 
         <Tabs defaultValue="overview">
@@ -211,6 +275,9 @@ export default function ProviderAnalyticsPage() {
                   <CardTitle className="text-base">Daily Views & Inquiries</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {weeklyViews.length === 0 && (
+                    <p className="py-16 text-center text-sm text-muted-foreground">No profile views recorded in this period.</p>
+                  )}
                   <div className="flex items-end gap-2 h-44">
                     {weeklyViews.map(d => (
                       <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
@@ -230,7 +297,9 @@ export default function ProviderAnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/80 inline-block" />Profile Views</span>
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" />Inquiries</span>
+                    {showDemoData && (
+                      <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" />Inquiries</span>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -240,6 +309,9 @@ export default function ProviderAnalyticsPage() {
                   <CardTitle className="text-base">Traffic Sources</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {trafficSources.length === 0 && (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Traffic sources are not tracked yet.</p>
+                  )}
                   {trafficSources.map(src => (
                     <div key={src.source}>
                       <div className="flex items-center justify-between text-sm mb-1">
@@ -266,6 +338,9 @@ export default function ProviderAnalyticsPage() {
                 <CardTitle className="text-base">Client Acquisition Funnel</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {conversions.length === 0 && (
+                  <p className="py-8 text-center text-sm text-muted-foreground">The acquisition funnel is not tracked yet.</p>
+                )}
                 {conversions.map((stage, i) => (
                   <div key={stage.stage} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
@@ -286,9 +361,11 @@ export default function ProviderAnalyticsPage() {
                     </div>
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground pt-2">
-                  Overall conversion rate: <span className="font-semibold text-foreground">4.1%</span> — above platform average of 2.8%
-                </p>
+                {conversions.length > 0 && (
+                  <p className="text-xs text-muted-foreground pt-2">
+                    Overall conversion rate: <span className="font-semibold text-foreground">4.1%</span> — above platform average of 2.8%
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -301,6 +378,9 @@ export default function ProviderAnalyticsPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
+                  {topServices.length === 0 && (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Per-service performance is not tracked yet.</p>
+                  )}
                   {topServices.map(svc => (
                     <div key={svc.name} className="flex items-center gap-4 px-4 py-3">
                       <div className="flex-1 min-w-0">

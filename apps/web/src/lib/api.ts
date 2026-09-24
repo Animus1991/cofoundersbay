@@ -5219,6 +5219,36 @@ export async function getMyPrograms(): Promise<{ programs: ProgramItem[] }> {
   return apiRequest(`/api/programs/my-programs`);
 }
 
+/** The tenant-admin view: every program of the caller's organisation,
+ *  including drafts. `GET /programs/organization/:orgId` returns a bare array. */
+export async function listOrganizationPrograms(
+  organizationId: string,
+  params?: { status?: string; programType?: string },
+): Promise<ProgramItem[]> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  if (params?.programType) q.set('programType', params.programType);
+  return apiRequest(`/api/programs/organization/${organizationId}${q.toString() ? `?${q}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function createProgram(
+  organizationId: string,
+  body: {
+    name: string;
+    slug: string;
+    description?: string;
+    programType: string;
+    startDate?: string;
+    endDate?: string;
+    capacity?: number;
+  },
+): Promise<ProgramItem> {
+  return apiRequest(`/api/programs/organization/${organizationId}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
 /**
  * Updates a program. The controller has exposed PATCH all along; the web had
  * no client for it, which is why "Archive" in the program menu did nothing.

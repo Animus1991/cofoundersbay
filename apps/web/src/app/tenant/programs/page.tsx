@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Award,
   Search,
@@ -14,11 +15,28 @@ import {
   Eye,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/components/ui/toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +44,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EmptyTenantPrograms } from '@/components/common/EmptyStates';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import {
+  createProgram,
+  listOrganizationPrograms,
+  updateProgram,
+  type ProgramItem,
+} from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 type Program = {
@@ -33,17 +58,79 @@ type Program = {
   name: string;
   description: string;
   type: string;
-  status: 'draft' | 'active' | 'completed' | 'archived';
+  status: 'draft' | 'upcoming' | 'active' | 'completed' | 'archived';
   startups: number;
-  mentors: number;
+  mentors?: number;
   startDate: string;
   endDate: string;
   progress: number;
 };
 
-function ProgramCard({ program }: { program: Program }) {
+const PROGRAM_TYPES = [
+  'accelerator',
+  'incubator',
+  'course',
+  'competition',
+  'grant',
+  'challenge',
+  'bootcamp',
+  'fellowship',
+] as const;
+
+/** Program has no progress column; for a live row the honest figure is how
+ *  far the schedule has run. Mock rows keep their authored numbers. */
+function scheduleProgress(start: string | null, end: string | null): number {
+  if (!start || !end) return 0;
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (!(e > s)) return 0;
+  const now = Date.now();
+  return Math.min(100, Math.max(0, Math.round(((now - s) / (e - s)) * 100)));
+}
+
+function fmtDate(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', {
+    timeZone: 'UTC',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function toViewProgram(p: ProgramItem & { name?: string; _count?: { participants?: number } }): Program {
+  return {
+    id: p.id,
+    name: p.name ?? p.title ?? 'Untitled program',
+    description: p.description ?? '',
+    type: p.programType,
+    status: (p.status as Program['status']) ?? 'draft',
+    startups: p._count?.participants ?? p.participantCount ?? 0,
+    startDate: fmtDate(p.startDate),
+    endDate: fmtDate(p.endDate),
+    progress: scheduleProgress(p.startDate, p.endDate),
+  };
+}
+
+const slugify = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'program';
+
+function ProgramCard({
+  program,
+  live,
+  onEdit,
+  onArchive,
+}: {
+  program: Program;
+  live: boolean;
+  onEdit: (p: Program) => void;
+  onArchive: (p: Program) => void;
+}) {
   const statusColors: Record<string, string> = {
     draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    upcoming: 'bg-status-accent-bg text-status-accent border-status-accent-border',
     active: 'bg-status-success-bg text-status-success border-status-success-border',
     completed: 'bg-status-info-bg text-status-info border-status-info-border',
     archived: 'bg-status-warning-bg text-status-warning border-status-warning-border',
@@ -58,7 +145,7 @@ function ProgramCard({ program }: { program: Program }) {
               <Link href={`/tenant/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                 {program.name}
               </Link>
-              <Badge variant="outline" className={cn('text-xs', statusColors[program.status])}>
+              <Badge variant="outline" className={cn('text-xs capitalize', statusColors[program.status])}>
                 {program.status}
               </Badge>
             </div>
@@ -66,11 +153,17 @@ function ProgramCard({ program }: { program: Program }) {
               {program.description}
             </p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
-              <Badge variant="secondary" className="text-xs">{program.type}</Badge>
+              <Badge variant="secondary" className="text-xs capitalize">{program.type.replace('_', ' ')}</Badge>
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
-                {program.startups} startups
+                {program.startups} participants
               </span>
+              {typeof program.mentors === 'number' && (
+                <span className="flex items-center gap-1">
+                  <Award className="icon-sm" aria-hidden="true" />
+                  {program.mentors} mentors
+                </span>
+              )}
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" aria-hidden="true" />
                 {program.startDate} - {program.endDate}
@@ -99,11 +192,20 @@ function ProgramCard({ program }: { program: Program }) {
                   View Details
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!live}
+                title={live ? undefined : 'Illustrative row — there is nothing to edit'}
+                onClick={() => onEdit(program)}
+              >
                 <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Program
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible">
+              <DropdownMenuItem
+                disabled={!live}
+                title={live ? undefined : 'Illustrative row — there is nothing to archive'}
+                className="text-destructive-accessible"
+                onClick={() => onArchive(program)}
+              >
                 <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>
@@ -115,72 +217,92 @@ function ProgramCard({ program }: { program: Program }) {
   );
 }
 
+type ProgramForm = {
+  id?: string;
+  name: string;
+  description: string;
+  programType: string;
+  startDate: string;
+  endDate: string;
+};
+
+const EMPTY_FORM: ProgramForm = {
+  name: '',
+  description: '',
+  programType: 'accelerator',
+  startDate: '',
+  endDate: '',
+};
+
 export default function TenantProgramsPage() {
   const [search, setSearch] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
+  const [form, setForm] = useState<ProgramForm>(EMPTY_FORM);
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+  const { organizationId } = useCurrentOrgMembership();
 
-  // Mock data
-  const programs: Program[] = [
-    {
-      id: '1',
-      name: 'Spring Accelerator 2025',
-      description: 'A 12-week intensive accelerator program for early-stage startups in the tech sector.',
-      type: 'Accelerator',
-      status: 'active',
-      startups: 12,
-      mentors: 8,
-      startDate: 'Jan 2025',
-      endDate: 'Apr 2025',
-      progress: 65,
+  const programsQuery = useQuery({
+    queryKey: ['tenant', 'programs', organizationId],
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const isLive = Boolean(organizationId) && Array.isArray(programsQuery.data);
+  const livePrograms = isLive
+    ? (programsQuery.data as ProgramItem[]).map(toViewProgram)
+    : [];
+
+  // Illustrative until the organisation resolves — flagged as sample below.
+  const programs = isLive ? livePrograms : SAMPLE_PROGRAMS;
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const body = {
+        name: form.name.trim(),
+        description: form.description.trim() || undefined,
+        programType: form.programType,
+        startDate: form.startDate || undefined,
+        endDate: form.endDate || undefined,
+      };
+      if (form.id) {
+        return updateProgram(form.id, body);
+      }
+      return createProgram(organizationId!, { ...body, slug: slugify(form.name) });
     },
-    {
-      id: '2',
-      name: 'AI Innovation Lab',
-      description: 'Specialized program for AI/ML startups with access to compute resources and expert mentorship.',
-      type: 'Innovation Lab',
-      status: 'active',
-      startups: 8,
-      mentors: 5,
-      startDate: 'Feb 2025',
-      endDate: 'Aug 2025',
-      progress: 30,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['tenant', 'programs', organizationId] });
+      success(form.id ? 'Program updated' : 'Program created');
+      setFormOpen(false);
+      setForm(EMPTY_FORM);
     },
-    {
-      id: '3',
-      name: 'Pre-seed Bootcamp',
-      description: 'Intensive 4-week bootcamp for founders preparing for their first fundraise.',
-      type: 'Bootcamp',
-      status: 'active',
-      startups: 8,
-      mentors: 4,
-      startDate: 'Mar 2025',
-      endDate: 'Mar 2025',
-      progress: 90,
+    onError: (err) =>
+      showError('Could not save the program', err instanceof Error ? err.message : undefined),
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => updateProgram(id, { status: 'archived' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['tenant', 'programs', organizationId] });
+      success('Program archived');
     },
-    {
-      id: '4',
-      name: 'Fall Accelerator 2024',
-      description: 'Previous cohort of our flagship accelerator program.',
-      type: 'Accelerator',
-      status: 'completed',
-      startups: 10,
-      mentors: 8,
-      startDate: 'Sep 2024',
-      endDate: 'Dec 2024',
-      progress: 100,
-    },
-    {
-      id: '5',
-      name: 'Summer Accelerator 2025',
-      description: 'Upcoming accelerator cohort for summer 2025.',
-      type: 'Accelerator',
-      status: 'draft',
-      startups: 0,
-      mentors: 0,
-      startDate: 'Jun 2025',
-      endDate: 'Sep 2025',
-      progress: 0,
-    },
-  ];
+    onError: (err) =>
+      showError('Could not archive the program', err instanceof Error ? err.message : undefined),
+  });
+
+  const openEdit = (p: Program) => {
+    setForm({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      programType: p.type,
+      startDate: '',
+      endDate: '',
+    });
+    setFormOpen(true);
+  };
 
   const filteredPrograms = programs.filter(
     (p) =>
@@ -194,13 +316,28 @@ export default function TenantProgramsPage() {
       title="Programs"
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
       actions={(
-        <Button>
+        <Button
+          disabled={!organizationId}
+          title={organizationId ? undefined : 'Join an organisation to create programs'}
+          onClick={() => {
+            setForm(EMPTY_FORM);
+            setFormOpen(true);
+          }}
+        >
           <Plus className="mr-2 icon-sm" />
           Create Program
         </Button>
       )}
     >
       <div className="space-y-6">
+
+        {!isLive && (
+          <SampleDataNotice
+            surface="Programs"
+            detail="These programs are illustrative until your organisation's program list loads."
+            askAiPrompt="Why does the programs page show sample programs?"
+          />
+        )}
 
         {/* Search */}
         <div className="relative max-w-md">
@@ -231,7 +368,7 @@ export default function TenantProgramsPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Startups</p>
+              <p className="text-sm text-muted-foreground">Total Participants</p>
               <p className="text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.startups, 0)}
               </p>
@@ -241,7 +378,7 @@ export default function TenantProgramsPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Mentors</p>
               <p className="text-xl font-bold">
-                {programs.reduce((acc, p) => acc + p.mentors, 0)}
+                {programs.reduce((acc, p) => acc + (p.mentors ?? 0), 0)}
               </p>
             </CardContent>
           </Card>
@@ -250,13 +387,168 @@ export default function TenantProgramsPage() {
         {/* Programs List */}
         <div className="space-y-3">
           {filteredPrograms.map((program) => (
-            <ProgramCard key={program.id} program={program} />
+            <ProgramCard
+              key={program.id}
+              program={program}
+              live={isLive}
+              onEdit={openEdit}
+              onArchive={(p) => archiveMutation.mutate(p.id)}
+            />
           ))}
           {filteredPrograms.length === 0 && (
             <EmptyTenantPrograms filtersActive={!!search} onClearFilters={() => setSearch('')} />
           )}
         </div>
       </div>
+
+      {/* Create / edit program */}
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{form.id ? 'Edit program' : 'Create program'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="program-name">Name</Label>
+              <Input
+                id="program-name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Spring Accelerator 2026"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="program-desc">Description</Label>
+              <Input
+                id="program-desc"
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select
+                value={form.programType}
+                onValueChange={(v) => setForm((f) => ({ ...f, programType: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROGRAM_TYPES.map((t) => (
+                    <SelectItem key={t} value={t} className="capitalize">
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="program-start">Start date</Label>
+                <Input
+                  id="program-start"
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="program-end">End date</Label>
+                <Input
+                  id="program-end"
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!form.name.trim() || saveMutation.isPending}
+              onClick={() => saveMutation.mutate()}
+            >
+              {saveMutation.isPending ? 'Saving…' : form.id ? 'Save changes' : 'Create program'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
+}
+
+// Kept as the illustrative set for demo mode and for organisations whose
+// program list has not answered yet - it is flagged by SampleDataNotice.
+const SAMPLE_PROGRAMS: Program[] = [
+  {
+    id: '1',
+    name: 'Spring Accelerator 2025',
+    description: 'A 12-week intensive accelerator program for early-stage startups in the tech sector.',
+    type: 'accelerator',
+    status: 'active',
+    startups: 12,
+    mentors: 8,
+    startDate: 'Jan 2025',
+    endDate: 'Apr 2025',
+    progress: 65,
+  },
+  {
+    id: '2',
+    name: 'AI Innovation Lab',
+    description: 'Specialized program for AI/ML startups with access to compute resources and expert mentorship.',
+    type: 'course',
+    status: 'active',
+    startups: 8,
+    mentors: 5,
+    startDate: 'Feb 2025',
+    endDate: 'Aug 2025',
+    progress: 30,
+  },
+  {
+    id: '3',
+    name: 'Pre-seed Bootcamp',
+    description: 'Intensive 4-week bootcamp for founders preparing for their first fundraise.',
+    type: 'bootcamp',
+    status: 'active',
+    startups: 8,
+    mentors: 4,
+    startDate: 'Mar 2025',
+    endDate: 'Mar 2025',
+    progress: 90,
+  },
+  {
+    id: '4',
+    name: 'Fall Accelerator 2024',
+    description: 'Previous cohort of our flagship accelerator program.',
+    type: 'accelerator',
+    status: 'completed',
+    startups: 10,
+    mentors: 8,
+    startDate: 'Sep 2024',
+    endDate: 'Dec 2024',
+    progress: 100,
+  },
+  {
+    id: '5',
+    name: 'Summer Accelerator 2025',
+    description: 'Upcoming accelerator cohort for summer 2025.',
+    type: 'accelerator',
+    status: 'draft',
+    startups: 0,
+    mentors: 0,
+    startDate: 'Jun 2025',
+    endDate: 'Sep 2025',
+    progress: 0,
+  },
+];
+
+/** The tenant page manages the caller's own organisation; reuse the shared
+ *  membership hook so the org id resolves the same way as everywhere else. */
+function useCurrentOrgMembership() {
+  const { membership } = useCurrentOrg();
+  return { organizationId: membership?.organizationId ?? null };
 }
