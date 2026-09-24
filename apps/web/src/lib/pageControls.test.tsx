@@ -233,7 +233,13 @@ describe('pages that offer controls', () => {
         if (i === -1) break;
         from = i + 1;
         const start = Math.max(s.lastIndexOf('export default function', i), s.lastIndexOf('\nfunction ', i), s.lastIndexOf('\nexport function ', i));
-        if (/\n {2}(?:if \([^\n]*\)\s*)?return\b/.test(s.slice(start, i))) offenders.push(file);
+        const before = s.slice(start, i);
+        // Both shapes: `if (x) return ...` on one line, and a component-level
+        // `if (x) {` whose next line returns - the second is what slipped
+        // through on /mentor/earnings (React #310 in the live sweep).
+        if (/\n {2}(?:if \([^\n]*\)\s*)?return\b/.test(before) || /\n {2}if \([^\n]*\)\s*\{\s*\n\s*return\b/.test(before)) {
+          offenders.push(file);
+        }
       }
     }
     expect(offenders).toEqual([]);

@@ -123,6 +123,22 @@ export default function MentorEarningsPage() {
   const paidCount = transactions.filter(t => t.status === 'paid').length;
   const avgPerSession = paidCount > 0 ? totalEarned / paidCount : 0;
 
+  // Offered to the assistant: the rail's period and export. Above the
+  // loading return: a hook after it runs on some renders and not others
+  // (React #310 on this page in the round-12 sweep).
+  usePageControls([
+    choiceControl('period', 'Earnings period', 'Περίοδος εσόδων', PERIODS, period, setPeriod),
+    {
+      id: 'export_csv',
+      labelEn: 'Export sessions as CSV',
+      labelEl: 'Εξαγωγή συνεδριών σε CSV',
+      writes: false,
+      unavailableEn: transactions.length ? undefined : 'There are no sessions in this period to export.',
+      unavailableEl: transactions.length ? undefined : 'Δεν υπάρχουν συνεδρίες σε αυτή την περίοδο για εξαγωγή.',
+      run: exportCsv,
+    },
+  ]);
+
   if (!mounted) {
     return (
       <AppShell>
@@ -151,19 +167,6 @@ export default function MentorEarningsPage() {
    * history, so they sit one gesture away; the badge on the totals is the
    * number of sessions still awaiting payout.
    */
-  // Offered to the assistant: the rail's period and export.
-  usePageControls([
-    choiceControl('period', 'Earnings period', 'Περίοδος εσόδων', PERIODS, period, setPeriod),
-    {
-      id: 'export_csv',
-      labelEn: 'Export sessions as CSV',
-      labelEl: 'Εξαγωγή συνεδριών σε CSV',
-      writes: false,
-      unavailableEn: transactions.length ? undefined : 'There are no sessions in this period to export.',
-      unavailableEl: transactions.length ? undefined : 'Δεν υπάρχουν συνεδρίες σε αυτή την περίοδο για εξαγωγή.',
-      run: exportCsv,
-    },
-  ]);
 
   const rail: PageRailSection[] = [
     {

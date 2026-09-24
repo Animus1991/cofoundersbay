@@ -195,8 +195,10 @@ export default function TenantsAdminPage() {
       labelEn: 'Open tenant settings',
       labelEl: 'Άνοιγμα ρυθμίσεων tenant',
       writes: false,
-      options: (tenants ?? []).map((t) => ({ value: t.id, labelEn: t.displayName || t.name, labelEl: t.displayName || t.name })),
-      run: (value) => setSelectedTenant((tenants ?? []).find((t) => t.id === value) ?? null),
+      // The page's guarded list: the payload is not always an array (the
+      // comment on tenantList says why), and `.map` on it threw.
+      options: tenantList.map((t) => ({ value: t.id, labelEn: t.displayName || t.name, labelEl: t.displayName || t.name })),
+      run: (value) => setSelectedTenant(tenantList.find((t) => t.id === value) ?? null),
     },
   ]);
 
