@@ -502,7 +502,6 @@ export default function MatchesPage() {
   const [lastPassed, setLastPassed] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState('');
   const [availFilter, setAvailFilter] = useState<Set<AvailFilter>>(new Set());
   const [previewTarget, setPreviewTarget] = useState<SearchHit | null>(null);
@@ -694,39 +693,6 @@ export default function MatchesPage() {
       badge: activeFilterCount || null,
       content: (
         <div className="space-y-2.5">
-
-          {/* Tier filter */}
-          <Card className="shadow-sm border-border/50">
-          <CardContent className="p-3 space-y-0.5">
-          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-          <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact wrap />
-          </p>
-          {TIER_TABS.map(tab => {
-          const isActive = activeFilter === tab.key;
-          return (
-          <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
-          className={cn(
-          'flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-          isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-          )}>
-          <span className="flex items-center gap-1.5">
-          {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
-          <BilingualText
-          en={tab.labelEn}
-          el={tab.labelEl}
-          compact
-          secondaryClassName={isActive ? 'text-primary-foreground' : undefined}
-          />
-          </span>
-          <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
-          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-          {counts[tab.key]}
-          </span>
-          </button>
-          );
-          })}
-          </CardContent>
-          </Card>
 
           {/* Role filter */}
           <Card className="shadow-sm border-border/50">
@@ -993,63 +959,27 @@ export default function MatchesPage() {
             {/* ── Results column ── */}
             <div className="flex-1 min-w-0 space-y-4">
 
-              {/* Mobile: scrollable tier chips + filters toggle */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
-                <button onClick={() => setShowAdvancedFilters(s => !s)}
-                  className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
-                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border/60 text-muted-foreground')}>
-                  <SlidersHorizontal className="icon-sm" /> Filters
-                  {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
-                </button>
-                {TIER_TABS.filter(t => t.key !== 'all').map(tab => {
+              {/* Tier chips: the page's primary filter, at every width.
+                  Secondary filters (role, location, availability) and sort
+                  live in the page rail - the expanded panel that used to sit
+                  here duplicated them, so it is gone rather than doubled. */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
+                {TIER_TABS.map(tab => {
                   const isActive = activeFilter === tab.key;
                   return (
-                    <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
-                      className={cn('flex min-h-10 shrink-0 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
+                    <button key={tab.key} onClick={() => setActiveFilter(isActive && tab.key !== 'all' ? 'all' : tab.key)}
+                      className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
                         isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
                       {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
                       <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
+                      <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
+                        isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+                        {counts[tab.key]}
+                      </span>
                     </button>
                   );
                 })}
               </div>
-
-              {/* Mobile: expanded filter panel */}
-              {showAdvancedFilters && (
-                <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
-                  <div className="grid gap-3 grid-cols-2">
-                    <div>
-                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
-                        <BilingualText en={matchesEn('tier')} el={matchesEl('tier')} compact />
-                      </label>
-                      <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
-                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {TIER_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
-                        <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
-                      </label>
-                      <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
-                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {ROLE_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
-                      <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                        placeholder="City or country..." className="h-10 w-full rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
-                    </div>
-                  </div>
-                  {hasActiveFilters && (
-                    <button onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setLocationFilter(''); setAvailFilter(new Set()); }}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      Clear all
-                    </button>
-                  )}
-                </div>
-              )}
 
               {/* Results toolbar */}
               <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">

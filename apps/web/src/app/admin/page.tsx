@@ -80,21 +80,6 @@ import { StatCard } from '@/components/common/StatCard';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 
-/** The tab row, as data, so the rail can list the same twelve places. */
-const ADMIN_SECTIONS = [
-  { value: 'reports', labelEn: 'Reports', labelEl: 'Αναφορές', icon: Flag },
-  { value: 'users', labelEn: 'Users', labelEl: 'Χρήστες', icon: Users },
-  { value: 'content', labelEn: 'Content', labelEl: 'Περιεχόμενο', icon: Layers },
-  { value: 'cohorts', labelEn: 'Cohorts', labelEl: 'Κύκλοι', icon: GraduationCap },
-  { value: 'analytics', labelEn: 'Analytics', labelEl: 'Αναλυτικά', icon: BarChart3 },
-  { value: 'audit', labelEn: 'Audit log', labelEl: 'Αρχείο ελέγχου', icon: Shield },
-  { value: 'email', labelEn: 'Email templates', labelEl: 'Πρότυπα email', icon: Mail },
-  { value: 'gamification', labelEn: 'Gamification', labelEl: 'Gamification', icon: Zap },
-  { value: 'score-inspector', labelEn: 'Score inspector', labelEl: 'Επιθεώρηση βαθμολογιών', icon: BarChart3 },
-  { value: 'abuse', labelEn: 'Abuse monitor', labelEl: 'Παρακολούθηση κατάχρησης', icon: AlertTriangle },
-  { value: 'experiments', labelEn: 'Experiments', labelEl: 'Πειράματα', icon: FlaskConical },
-  { value: 'behavior', labelEn: 'Behavior AI', labelEl: 'Behavior AI', icon: Brain },
-] as const;
 import { AdminAnalyticsDashboard } from '@/components/admin/AdminAnalyticsDashboard';
 import { ScoreInspector } from '@/components/admin/ScoreInspector';
 import { AbuseMonitorPanel } from '@/components/admin/AbuseMonitorPanel';
@@ -673,41 +658,34 @@ export default function AdminPage() {
       ),
     },
     {
-      // Twelve tabs is a row that wraps and scrolls; the same twelve as a
-      // list, with the queue that needs attention counted, is what a rail is
-      // for. The tabs stay - this is a second way to the same places.
-      id: 'sections',
+      // The page's utilities, moved out of the header and the audit tab's
+      // card header: one Refresh for every query the page runs, and the
+      // audit-log export. Moved, not copied - the header and the card no
+      // longer carry either button.
+      id: 'tools',
       glyph: 'sliders',
-      labelEn: 'Sections',
-      labelEl: 'Ενότητες',
+      labelEn: 'Data tools',
+      labelEl: 'Εργαλεία δεδομένων',
       content: (
-        <ul className="space-y-1">
-          {ADMIN_SECTIONS.map(({ value, labelEn, labelEl, icon: Icon }) => {
-            const count = value === 'reports' ? openReports : 0;
-            const active = activeTab === value;
-            return (
-              <li key={value}>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab(value)}
-                  aria-current={active ? 'true' : undefined}
-                  className={cn(
-                    'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70',
-                    active && 'bg-primary/10 text-primary',
-                  )}
-                >
-                  <Icon className="icon-sm shrink-0" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 truncate">
-                    <BilingualText en={labelEn} el={labelEl} compact />
-                  </span>
-                  {count > 0 && (
-                    <Badge variant="destructive" className="h-5 shrink-0 px-1.5 text-xs tabular-nums">{count}</Badge>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="space-y-0.5">
+          <button
+            type="button"
+            onClick={() => { void refetchReports(); void refetchUsers(); void refetchStats(); }}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh all data" el="Ανανέωση όλων των δεδομένων" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportAuditLogCSV}
+            disabled={!auditData?.logs?.length}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Export audit log (CSV)" el="Εξαγωγή αρχείου ελέγχου (CSV)" compact wrap /></span>
+          </button>
+        </div>
       ),
     },
   ];
@@ -718,17 +696,6 @@ export default function AdminPage() {
       description="Manage users, moderate content, and monitor platform health"
       showHelp
       rail={rail}
-      actions={
-        <Button
-          variant="secondary"
-          size="sm"
-          className="gap-2"
-          onClick={() => { void refetchReports(); void refetchUsers(); void refetchStats(); }}
-        >
-          <RefreshCw className="icon-sm" aria-hidden="true" />
-          Refresh
-        </Button>
-      }
     >
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -1200,16 +1167,6 @@ export default function AdminPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Admin Audit Log</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={exportAuditLogCSV}
-                  disabled={!auditData?.logs?.length}
-                  className="gap-1.5"
-                >
-                  <Download className="icon-sm" />
-                  Export CSV
-                </Button>
               </div>
             </CardHeader>
             <CardContent className="p-0">

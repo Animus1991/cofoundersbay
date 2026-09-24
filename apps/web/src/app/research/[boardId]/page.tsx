@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ZoomIn, ZoomOut, Maximize2, Upload, StickyNote, Magnet,
-  FileText, Link as LinkIcon, MoreHorizontal,
+  FileText, Link as LinkIcon,
   Loader2, Settings, Users, Sparkles, Map, History,
   Filter, Grid3X3, Layers, Copy, GitBranch,
   Undo2, Redo2, Keyboard, Search, X,
@@ -482,7 +482,6 @@ export default function ResearchBoardPage() {
   // Filtering state
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterSearch, setFilterSearch] = useState('');
-  const [showFilterBar, setShowFilterBar] = useState(false);
 
   // Panel states
   const [showAIPanel, setShowAIPanel] = useState(false);
@@ -1869,7 +1868,7 @@ export default function ResearchBoardPage() {
       }
       else if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
         e.preventDefault();
-        setShowFilterBar(true);
+        openRailSection('filters');
       }
       // Fit-to-content (F)
       else if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey) {
@@ -1934,7 +1933,7 @@ export default function ResearchBoardPage() {
   }, []);
 
   const { expanded, toggle, setExpanded } = useSidebar();
-  const { pinned: railPinned, hasRail } = usePageRail();
+  const { pinned: railPinned, hasRail, openRailSection } = usePageRail();
 
   // Mounted guard: prevents hydration mismatch by ensuring SSR and first
   // client render both show the same loading placeholder. The real query
@@ -2039,7 +2038,7 @@ export default function ResearchBoardPage() {
     toggleGrid: () => setShowGrid((v) => !v),
     toggleSnap: () => setSnapToGrid((v) => !v),
     find: (query) => {
-      setShowFilterBar(true);
+      openRailSection('filters');
       if (query) setFilterSearch(query);
     },
     autoLayout: (alg) => { void handleAutoLayout(alg); },
@@ -2116,19 +2115,17 @@ export default function ResearchBoardPage() {
   const showLoading = !mounted || isLoading;
 
   /*
-   * The page rail: the "More" menu's thirty items, as six families.
+   * The page rail: the secondary controls, as six families.
    *
    * A canvas is a tool, and a tool's fast path is its toolbar - so the
-   * toolbar and the More menu keep every button they had. What the rail adds
-   * is the same actions sorted by what the reader is looking for: how the
-   * canvas is shown, what to insert, what the assistant can do, how to filter
-   * the board, how to get it out, and its settings. Each row calls the handler
-   * the menu item calls; nothing here is a second implementation.
+   * toolbar keeps only creation, connection, Ask AI, undo/redo, zoom and the
+   * branch selector. The rail owns everything else outright - the old More
+   * menu is gone rather than duplicated, and the contract test fails the
+   * build if a control ever appears in both places again.
    *
-   * The filter section renders the same NodeFilterBar the column toggles,
-   * bound to the same state, so a tag ticked in the rail is ticked in the
-   * bar - and the strip's badge counts active filters, which is how a
-   * filtered canvas stays honest while the bar is hidden.
+   * The filter section is the NodeFilterBar, bound to the same state the
+   * canvas reads - and the strip's badge counts active filters, which is how a
+   * filtered canvas stays honest while the rail is closed.
    */
   type RailRow = { icon: React.ElementType; en: string; el: string; onClick: () => void; pressed?: boolean; tone?: string };
   const railRows = (rows: RailRow[]) => (
@@ -2192,7 +2189,6 @@ export default function ResearchBoardPage() {
       labelEl: 'Βοηθός & ανάλυση',
       badge: showAIPanel || showBoardSummary ? 1 : null,
       content: railRows([
-        { icon: Sparkles, en: researchEn('ask_ai'), el: researchEl('ask_ai'), onClick: () => openAskAi() },
         { icon: Sparkles, en: researchEn('ai_analysis'), el: researchEl('ai_analysis'), onClick: () => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }, pressed: showAIPanel },
         { icon: BarChart3, en: researchEn('board_summary'), el: researchEl('board_summary'), onClick: () => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }, pressed: showBoardSummary },
         { icon: History, en: researchEn('canvas_history'), el: researchEl('canvas_history'), onClick: () => setShowHistoryDrawer((v) => !v), pressed: showHistoryDrawer },
@@ -2213,7 +2209,6 @@ export default function ResearchBoardPage() {
             searchQuery={filterSearch}
             onSearchChange={setFilterSearch}
           />
-          {railRows([{ icon: Filter, en: showFilterBar ? researchEn('hide_filters') : researchEn('show_filters'), el: showFilterBar ? researchEl('hide_filters') : researchEl('show_filters'), onClick: () => setShowFilterBar((v) => !v), pressed: showFilterBar }])}
         </div>
       ) : null,
     },
@@ -2325,7 +2320,7 @@ export default function ResearchBoardPage() {
                 compact
               />
             </span>
-            <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1 hidden sm:flex" />
+            <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1 hidden 2xl:flex" />
           </div>
 
           <div className="hidden sm:block h-5 w-px bg-border/60" />
@@ -2339,7 +2334,7 @@ export default function ResearchBoardPage() {
             title={t(researchEn('note_title'), researchEl('note_title'))}
           >
             <StickyNote className="icon-sm text-amber-500" />
-            <span className="hidden md:inline">
+            <span className="hidden 2xl:inline">
               <BilingualText en={researchEn('note')} el={researchEl('note')} compact />
             </span>
           </Button>
@@ -2349,7 +2344,7 @@ export default function ResearchBoardPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs" aria-label={researchEn('add_node')}>
                 <Plus className="icon-sm" aria-hidden="true" />
-                <span className="hidden md:inline">
+                <span className="hidden 2xl:inline">
                   <BilingualText en={researchEn('add_node')} el={researchEl('add_node')} compact />
                 </span>
                 <ChevronDown className="icon-sm opacity-60" />
@@ -2421,7 +2416,7 @@ export default function ResearchBoardPage() {
             aria-label={bilingualAria(researchEn('upload'), researchEl('upload'))}
           >
             <Upload className="icon-sm" />
-            <span className="hidden md:inline">
+            <span className="hidden 2xl:inline">
               <BilingualText en={researchEn('upload')} el={researchEl('upload')} compact />
             </span>
           </Button>
@@ -2435,7 +2430,7 @@ export default function ResearchBoardPage() {
             title={t(researchEn('connect_title'), researchEl('connect_title'))}
           >
             <GitBranch className="icon-sm text-emerald-500" />
-            <span className="hidden md:inline">
+            <span className="hidden 2xl:inline">
               <BilingualText en={researchEn('connect')} el={researchEl('connect')} compact />
             </span>
           </Button>
@@ -2444,7 +2439,7 @@ export default function ResearchBoardPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs">
                 <FlaskConical className="icon-sm" />
-                <span className="hidden lg:inline">
+                <span className="hidden 2xl:inline">
                   <BilingualText en={researchEn('capture')} el={researchEl('capture')} compact />
                 </span>
               </Button>
@@ -2469,22 +2464,12 @@ export default function ResearchBoardPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button
-            variant={showFilterBar ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-8 w-8 p-0 rounded-xl"
-            onClick={() => setShowFilterBar((v) => !v)}
-            title={t(researchEn('find_nodes'), researchEl('find_nodes'))}
-          >
-            <Search className="icon-sm" />
-          </Button>
-
           {selectedNodeIds.size >= 2 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs">
                   <Layers className="icon-sm" />
-                  <span className="hidden lg:inline">
+                  <span className="hidden 2xl:inline">
                     <BilingualText en={researchEn('align')} el={researchEl('align')} compact />
                   </span>
                 </Button>
@@ -2539,7 +2524,7 @@ export default function ResearchBoardPage() {
             title={t(researchEn('ask_ai_canvas'), researchEl('ask_ai_canvas'))}
           >
             <CfbGlyph name="spark" className="icon-sm" />
-            <span className="hidden md:inline">
+            <span className="hidden 2xl:inline">
               <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
             </span>
           </Button>
@@ -2579,253 +2564,25 @@ export default function ResearchBoardPage() {
             >
               <Maximize2 className="icon-sm" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:inline-flex h-7 w-7 p-0"
-              onClick={() => issue('fit_view')}
-              title={t(researchEn('fit_nodes'), researchEl('fit_nodes'))}
-            >
-              <Layers className="icon-sm" />
-            </Button>
           </div>
 
           <div className="hidden sm:block h-5 w-px bg-border/60" />
 
-          <div className="hidden sm:contents">
-          {/* Snap-to-grid toggle */}
-          <Button
-            variant={snapToGrid ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => setSnapToGrid((v) => !v)}
-            title={snapToGrid ? t(researchEn('snap_on'), researchEl('snap_on')) : t(researchEn('snap_off'), researchEl('snap_off'))}
-          >
-            <Magnet className="icon-sm" />
-          </Button>
-
-          <div className="h-5 w-px bg-border/60" />
-
-          {/* AI Analysis toggle */}
-          <Button
-            variant={showAIPanel ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }}
-            title={t(researchEn('ai_analysis'), researchEl('ai_analysis'))}
-          >
-            <Sparkles className="icon-sm" />
-          </Button>
-
-          {/* Board Summary toggle */}
-          <Button
-            variant={showBoardSummary ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }}
-            title={t(researchEn('board_summary'), researchEl('board_summary'))}
-          >
-            <BarChart3 className="icon-sm" />
-          </Button>
-
-          {/* Branch Selector */}
-          <CanvasBranchSelector
-            boardId={boardId}
-            activeBranchId={activeBranchId}
-            onBranchSelect={(id, name) => { setActiveBranchId(id); setActiveBranchName(name); }}
-            onCreateBranch={() => setShowHistoryDrawer(true)}
-          />
-
-          {/* Board History */}
-          <Button
-            variant={showHistoryDrawer ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => setShowHistoryDrawer((v) => !v)}
-            title={t(researchEn('canvas_history'), researchEl('canvas_history'))}
-          >
-            <History className="icon-sm" />
-          </Button>
+          {/* Branch Selector — the one secondary control that stays on the
+              toolbar: which branch you are on is part of what you are looking
+              at, not a tool you reach for. Everything else in this spot moved
+              to the page rail. */}
+          <div className="hidden sm:block">
+            <CanvasBranchSelector
+              boardId={boardId}
+              activeBranchId={activeBranchId}
+              onBranchSelect={(id, name) => { setActiveBranchId(id); setActiveBranchName(name); }}
+              onCreateBranch={() => setShowHistoryDrawer(true)}
+            />
           </div>
 
-          {/* More menu — houses all secondary actions */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 shrink-0"
-                aria-label={bilingualAria(researchEn('canvas_more'), researchEl('canvas_more'))}
-              >
-                <MoreHorizontal className="icon-sm" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => openAskAi()}>
-                <CfbGlyph name="spark" className="icon-sm mr-2" />
-                <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }}>
-                <Sparkles className="icon-sm mr-2" />
-                <BilingualText en={researchEn('ai_analysis')} el={researchEl('ai_analysis')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }}>
-                <BarChart3 className="icon-sm mr-2" />
-                <BilingualText en={researchEn('board_summary')} el={researchEl('board_summary')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowHistoryDrawer((v) => !v)}>
-                <History className="icon-sm mr-2" />
-                <BilingualText en={researchEn('canvas_history')} el={researchEl('canvas_history')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => {
-                const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
-                if (url) {
-                  createNodeMutation.mutate({
-                    type: 'link',
-                    title: url,
-                    url,
-                    posX: (window.innerWidth / 2 - pan.x) / zoom,
-                    posY: (window.innerHeight / 2 - pan.y) / zoom,
-                  });
-                }
-              }}>
-                <LinkIcon className="icon-sm mr-2" />
-                <BilingualText en={researchEn('add_link')} el={researchEl('add_link')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowEntitySelector(true)}>
-                <Users className="icon-sm mr-2" />
-                <BilingualText en={researchEn('ref_entity')} el={researchEl('ref_entity')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowGrid(!showGrid)}>
-                <Grid3X3 className="icon-sm mr-2" />
-                <BilingualText
-                  en={showGrid ? researchEn('hide_grid') : researchEn('show_grid')}
-                  el={showGrid ? researchEl('hide_grid') : researchEl('show_grid')}
-                  compact
-                />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSnapToGrid((v) => !v)}>
-                <Magnet className="icon-sm mr-2" />
-                <BilingualText
-                  en={snapToGrid ? researchEn('disable_snap') : researchEn('enable_snap')}
-                  el={snapToGrid ? researchEl('disable_snap') : researchEl('enable_snap')}
-                  compact
-                />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('fit_view')}>
-                <Layers className="icon-sm mr-2" />
-                <BilingualText en={researchEn('fit_nodes')} el={researchEl('fit_nodes')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => issue('group')}>
-                <Grid3X3 className="icon-sm mr-2 text-blue-500" />
-                <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('add_sticky')}>
-                <StickyNote className="icon-sm mr-2 text-amber-500" />
-                <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowFilterBar((v) => !v)}>
-                <Filter className="icon-sm mr-2" />
-                <BilingualText
-                  en={showFilterBar ? researchEn('hide_filters') : researchEn('show_filters')}
-                  el={showFilterBar ? researchEl('hide_filters') : researchEl('show_filters')}
-                  compact
-                />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('toggle_minimap')}>
-                <Map className="icon-sm mr-2" />
-                <BilingualText
-                  en={showMiniMap ? researchEn('hide_map') : researchEn('show_map')}
-                  el={showMiniMap ? researchEl('hide_map') : researchEl('show_map')}
-                  compact
-                />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowBoardSettings(true)}>
-                <Settings className="icon-sm mr-2" />
-                <BilingualText en={researchEn('board_settings')} el={researchEl('board_settings')} compact />
-              </DropdownMenuItem>
-              {board && (
-                <DropdownMenuItem asChild>
-                  <div className="p-0">
-                    <BoardExport board={board} canvasRef={canvasRef as React.RefObject<HTMLDivElement>} />
-                  </div>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => issue('export', { query: 'png' })}>
-                <Download className="icon-sm mr-2 text-blue-500" />
-                <BilingualText en={researchEn('export_png')} el={researchEl('export_png')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('export', { query: 'svg' })}>
-                <Download className="icon-sm mr-2" />
-                <BilingualText en={researchEn('export_svg')} el={researchEl('export_svg')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('copy_outline')}>
-                <Copy className="icon-sm mr-2" />
-                <BilingualText en={researchEn('copy_outline')} el={researchEl('copy_outline')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('export', { query: 'json' })}>
-                <Download className="icon-sm mr-2" />
-                <BilingualText en={researchEn('export_json')} el={researchEl('export_json')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('export', { query: 'markdown' })}>
-                <FileText className="icon-sm mr-2" />
-                <BilingualText en={researchEn('export_md')} el={researchEl('export_md')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('share_link')}>
-                <Copy className="icon-sm mr-2" />
-                <BilingualText en={researchEn('share_link')} el={researchEl('share_link')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('toggle_rulers')}>
-                <BilingualText
-                  en={showRulers ? researchEn('hide_rulers') : researchEn('rulers')}
-                  el={showRulers ? researchEl('hide_rulers') : researchEl('rulers')}
-                  compact
-                />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {/* Auto Layout */}
-              <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <BilingualText en={researchEn('auto_layout')} el={researchEl('auto_layout')} compact />
-              </div>
-              {([
-                { alg: 'dagre-tb' as LayoutAlgorithm, en: 'Top to bottom', el: 'Πάνω προς κάτω' },
-                { alg: 'dagre-lr' as LayoutAlgorithm, en: 'Left to right', el: 'Αριστερά προς δεξιά' },
-                { alg: 'dagre-bt' as LayoutAlgorithm, en: 'Bottom to top', el: 'Κάτω προς πάνω' },
-                { alg: 'dagre-rl' as LayoutAlgorithm, en: 'Right to left', el: 'Δεξιά προς αριστερά' },
-                { alg: 'grid' as LayoutAlgorithm, en: 'Grid', el: 'Πλέγμα' },
-                { alg: 'radial' as LayoutAlgorithm, en: 'Radial', el: 'Ακτινωτή' },
-              ]).map(({ alg, en, el }) => (
-                <DropdownMenuItem key={alg} onClick={() => issue('auto_layout', { query: alg })} className="gap-2 text-xs">
-                  <Network className="icon-sm text-violet-500" />
-                  <BilingualText en={en} el={el} compact />
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
-                <Keyboard className="icon-sm mr-2" />
-                <BilingualText en={researchEn('shortcuts')} el={researchEl('shortcuts')} compact />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
-      {/* Filter Bar */}
-      {showFilterBar && board && (
-        <div className="px-4 py-2 border-b bg-card/80 backdrop-blur shrink-0 z-40">
-          <NodeFilterBar
-            availableTags={Array.from(new Set(board.nodes.flatMap((n) => n.tags)))}
-            selectedTags={filterTags}
-            onTagsChange={setFilterTags}
-            searchQuery={filterSearch}
-            onSearchChange={setFilterSearch}
-          />
-        </div>
-      )}
 
       {/* Canvas → Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (

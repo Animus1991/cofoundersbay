@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -41,6 +42,15 @@ type PageRailCtx = {
   /** True while a page has actually registered a rail. */
   hasRail: boolean;
   setHasRail: (value: boolean) => void;
+  /**
+   * Open the rail on a named section: a peek on the desktop, the sheet below
+   * `lg`. This is how a keyboard shortcut, a canvas command or an assistant
+   * action can take the reader straight to a tool instead of leaving them to
+   * find it. No-op while no rail is mounted.
+   */
+  openRailSection: (id: string) => void;
+  /** The mounted rail registers its opener; internal to PageRail. */
+  registerRailOpener: (open: (id: string) => void) => void;
 };
 
 const PageRailContext = createContext<PageRailCtx>({
@@ -53,6 +63,8 @@ const PageRailContext = createContext<PageRailCtx>({
   setPeeked: () => {},
   hasRail: false,
   setHasRail: () => {},
+  openRailSection: () => {},
+  registerRailOpener: () => {},
 });
 
 const KEY = 'cfb:page-rail';
@@ -69,6 +81,14 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
   const [peeked, setPeeked] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [hasRail, setHasRail] = useState(false);
+  /* The opener belongs to whichever PageRail is mounted, so it lives in a ref
+     rather than state: registering it must not re-render the provider's whole
+     subtree. A no-op until a rail registers. */
+  const railOpener = useRef<(id: string) => void>(() => {});
+  const openRailSection = useCallback((id: string) => railOpener.current(id), []);
+  const registerRailOpener = useCallback((open: (id: string) => void) => {
+    railOpener.current = open;
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -119,6 +139,8 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
         setPeeked,
         hasRail,
         setHasRail,
+        openRailSection,
+        registerRailOpener,
       }}
     >
       {children}

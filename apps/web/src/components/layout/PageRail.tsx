@@ -53,7 +53,7 @@ export type PageRailSection = {
  * two are separate.
  */
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
-  const { pinned, peeked, open, togglePinned, setPeeked, setHasRail } = usePageRail();
+  const { pinned, peeked, open, togglePinned, setPeeked, setHasRail, registerRailOpener } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
@@ -72,6 +72,18 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   useEffect(() => {
     if (open && !activeId && sections.length > 0) setActiveId(sections[0].id);
   }, [open, activeId, sections]);
+
+  // `openRailSection` (a shortcut, a canvas command, an assistant action) lands
+  // here: select the section and open whichever surface this width uses - a
+  // peek on the desktop, the sheet below `lg`.
+  useEffect(() => {
+    registerRailOpener((id) => {
+      setActiveId(id);
+      setSheetExpanded(id);
+      setSheetOpen(true);
+      setPeeked(true);
+    });
+  }, [registerRailOpener, setPeeked]);
 
   // Escape closes a peek. It deliberately does not unpin: Escape dismisses what
   // is floating, it does not undo a preference.
