@@ -3358,6 +3358,13 @@ export type OrgProfile = {
   industry: string | null;
   focus: string | null;
   size: string | null;
+  /** Declared on the model and returned by the profile read; the update
+   *  endpoint passes them straight through to Prisma. */
+  type?: string;
+  country?: string | null;
+  timezone?: string | null;
+  primaryColor?: string | null;
+  settings?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
   _count: {
@@ -5231,6 +5238,11 @@ export async function updateOrganization(
     email: string;
     location: string;
     industry: string;
+    type: string;
+    country: string;
+    timezone: string;
+    primaryColor: string;
+    settings: Record<string, unknown>;
   }>,
 ): Promise<{ organization: OrgProfile }> {
   return apiRequest(`/api/organizations/${organizationId}`, {

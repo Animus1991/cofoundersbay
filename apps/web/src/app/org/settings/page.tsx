@@ -12,10 +12,17 @@ import {
   Globe,
   Save,
 } from 'lucide-react';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
-import { getOrgProfile, updateOrganization } from '@/lib/api';
+import {
+  getOrgProfile,
+  listOrganizationMembers,
+  updateOrganization,
+  updateOrganizationMember,
+  type OrgAdminMember,
+} from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,15 +62,44 @@ export default function OrgSettingsPage() {
   const [orgName, setOrgName] = useState('');
   const [orgDescription, setOrgDescription] = useState('');
   const [website, setWebsite] = useState('');
+  /* type, country and timezone are real columns on the model — the selects
+     used to render `defaultValue` and go nowhere. */
+  const [orgType, setOrgType] = useState('accelerator');
+  const [country, setCountry] = useState('');
+  const [timezone, setTimezone] = useState('');
+  const [primaryColor, setPrimaryColor] = useState('#6366f1');
+  /* Access policies persist under `settings.policies` on the organisation. */
+  const [policies, setPolicies] = useState<Record<string, boolean>>({
+    publicProfile: true,
+    openApplications: true,
+    mentorSelfRegistration: false,
+    workspaceAccess: true,
+  });
+  const savedSettings = profileData?.org?.settings ?? null;
+
+  const membersQuery = useQuery({
+    queryKey: ['org', 'admin-members', organizationId],
+    queryFn: () => listOrganizationMembers(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 30_000,
+    retry: 0,
+  });
 
   // Seed the form once the profile arrives, without stamping over edits made
   // while it was in flight.
   const [seeded, setSeeded] = useState(false);
   useEffect(() => {
     if (seeded || !profileData?.org) return;
-    setOrgName(profileData.org?.name ?? '');
-    setOrgDescription(profileData.org?.description ?? '');
-    setWebsite(profileData.org?.website ?? '');
+    const org = profileData.org;
+    setOrgName(org?.name ?? '');
+    setOrgDescription(org?.description ?? '');
+    setWebsite(org?.website ?? '');
+    if (org?.type) setOrgType(org.type);
+    setCountry(org?.country ?? '');
+    setTimezone(org?.timezone ?? '');
+    if (org?.primaryColor) setPrimaryColor(org.primaryColor);
+    const saved = (org?.settings as { policies?: Record<string, boolean> } | null)?.policies;
+    if (saved) setPolicies((prev) => ({ ...prev, ...saved }));
     setSeeded(true);
   }, [profileData, seeded]);
 
@@ -73,6 +109,9 @@ export default function OrgSettingsPage() {
         name: orgName.trim(),
         description: orgDescription.trim(),
         website: website.trim(),
+        type: orgType,
+        country,
+        timezone,
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['org'] });
@@ -81,7 +120,51 @@ export default function OrgSettingsPage() {
     onError: (err) =>
       showError('Could not save the details', err instanceof Error ? err.message : undefined),
   });
-  const [primaryColor, setPrimaryColor] = useState('#6366f1');
+
+  const saveBranding = useMutation({
+    mutationFn: () => updateOrganization(organizationId!, { primaryColor }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['org'] });
+      success('Branding saved');
+    },
+    onError: (err) =>
+      showError('Could not save the branding', err instanceof Error ? err.message : undefined),
+  });
+
+  const savePolicies = useMutation({
+    mutationFn: (next: Record<string, boolean>) =>
+      updateOrganization(organizationId!, {
+        settings: { ...(savedSettings ?? {}), policies: next },
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['org'] });
+      success('Access policies saved');
+    },
+    onError: (err) =>
+      showError('Could not save the policies', err instanceof Error ? err.message : undefined),
+  });
+  const setPolicy = (key: string, value: boolean) => {
+    const next = { ...policies, [key]: value };
+    setPolicies(next);
+    if (organizationId) savePolicies.mutate(next);
+  };
+
+  const changeMemberRole = useMutation({
+    mutationFn: ({ memberId, role }: { memberId: string; role: string }) =>
+      updateOrganizationMember(organizationId!, memberId, { role }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['org', 'admin-members', organizationId] });
+      success('Role updated');
+    },
+    onError: (err) =>
+      showError('Could not update the role', err instanceof Error ? err.message : undefined),
+  });
+
+  const memberName = (m: OrgAdminMember) =>
+    m.user?.profile?.displayName ||
+    [m.user?.profile?.firstName, m.user?.profile?.lastName].filter(Boolean).join(' ') ||
+    m.user?.email ||
+    'Member';
 
   return (
     <AppShell
@@ -140,7 +223,7 @@ export default function OrgSettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="orgType">Organization Type</Label>
-                    <Select defaultValue="accelerator">
+                    <Select value={orgType} onValueChange={setOrgType}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -157,7 +240,7 @@ export default function OrgSettingsPage() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
-                    <Select defaultValue="gr">
+                    <Select value={country} onValueChange={setCountry}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -171,7 +254,7 @@ export default function OrgSettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
-                    <Select defaultValue="europe_athens">
+                    <Select value={timezone} onValueChange={setTimezone}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -213,7 +296,7 @@ export default function OrgSettingsPage() {
                     <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
                       <Building2 className="icon-xl text-muted-foreground" />
                     </div>
-                    <Button variant="outline">Upload Logo</Button>
+                    <Button variant="outline" disabled title="Logo storage is not connected yet">Upload Logo</Button>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -237,22 +320,27 @@ export default function OrgSettingsPage() {
                   <Label>Custom Domain</Label>
                   <div className="flex items-center gap-2">
                     <Input placeholder="accelerator.yourdomain.com" />
-                    <Button variant="outline">Verify</Button>
+                    <Button variant="outline" disabled title="Custom domains are not connected yet">Verify</Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Set up a custom domain for your organization's portal
                   </p>
                 </div>
-                {/*
-                  * Branding has no field on the organisation model — colours
-                  * and logos live on `Tenant`, not here — so this stays
-                  * disabled with the reason on it rather than looking live and
-                  * doing nothing.
-                  */}
-                <Button disabled title="Branding is configured under Tenant settings">
-                  <Save className="mr-2 icon-sm" aria-hidden="true" />
-                  Save Branding
-                </Button>
+                {/* primaryColor is a real column; the logo and custom domain
+                    have no backing field, so their controls stay inert with the
+                    reason on them rather than looking live. */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    disabled={!organizationId || saveBranding.isPending}
+                    onClick={() => saveBranding.mutate()}
+                  >
+                    <Save className="mr-2 icon-sm" aria-hidden="true" />
+                    {saveBranding.isPending ? 'Saving…' : 'Save Branding'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Saves the primary colour. Logo and domain are not stored yet.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -271,33 +359,48 @@ export default function OrgSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">5 team members</p>
-                  <Button>Invite Member</Button>
+                  <p className="text-sm text-muted-foreground">
+                    {membersQuery.data
+                      ? `${membersQuery.data.length} team member${membersQuery.data.length === 1 ? '' : 's'}`
+                      : 'Members could not be loaded'}
+                  </p>
+                  <Button asChild>
+                    <Link href={slug ? `/org/${slug}/admin` : '/org/dashboard'}>Invite Member</Link>
+                  </Button>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    { name: 'John Doe', email: 'john@example.com', role: 'Admin' },
-                    { name: 'Jane Smith', email: 'jane@example.com', role: 'Program Manager' },
-                    { name: 'Mike Johnson', email: 'mike@example.com', role: 'Reviewer' },
-                  ].map((member) => (
-                    <div key={member.email} className="flex items-center justify-between p-3 rounded-lg border">
+                  {(membersQuery.data ?? []).map((member) => (
+                    <div key={member.id} className="flex items-center justify-between p-3 rounded-lg border">
                       <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="font-medium">{memberName(member)}</p>
+                        <p className="text-sm text-muted-foreground">{member.user?.email}</p>
                       </div>
-                      <Select defaultValue={member.role.toLowerCase().replace(' ', '_')}>
-                        <SelectTrigger className="w-[150px]">
+                      <Select
+                        value={member.role}
+                        onValueChange={(role) =>
+                          changeMemberRole.mutate({ memberId: member.id, role })
+                        }
+                        disabled={member.role === 'owner'}
+                      >
+                        <SelectTrigger className="w-[170px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Admin</SelectItem>
                           <SelectItem value="program_manager">Program Manager</SelectItem>
+                          <SelectItem value="mentor">Mentor</SelectItem>
                           <SelectItem value="reviewer">Reviewer</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="member">Member</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   ))}
+                  {!membersQuery.data && (
+                    <p className="text-xs text-muted-foreground">
+                      The member list lives under the organisation&apos;s admin page until the
+                      directory responds.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -316,42 +419,24 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Public Profile</p>
-                    <p className="text-sm text-muted-foreground">
-                      Allow your organization to be discovered publicly
-                    </p>
+                {[
+                  { key: 'publicProfile', label: 'Public Profile', hint: 'Allow your organization to be discovered publicly' },
+                  { key: 'openApplications', label: 'Open Applications', hint: 'Accept applications from any startup' },
+                  { key: 'mentorSelfRegistration', label: 'Mentor Self-Registration', hint: 'Allow mentors to request to join your pool' },
+                  { key: 'workspaceAccess', label: 'Startup Workspace Access', hint: 'Org admins can view all startup workspaces' },
+                ].map((p) => (
+                  <div key={p.key} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{p.label}</p>
+                      <p className="text-sm text-muted-foreground">{p.hint}</p>
+                    </div>
+                    <Switch
+                      checked={policies[p.key]}
+                      onCheckedChange={(v) => setPolicy(p.key, v)}
+                      disabled={!organizationId || savePolicies.isPending}
+                    />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Open Applications</p>
-                    <p className="text-sm text-muted-foreground">
-                      Accept applications from any startup
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Mentor Self-Registration</p>
-                    <p className="text-sm text-muted-foreground">
-                      Allow mentors to request to join your pool
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Startup Workspace Access</p>
-                    <p className="text-sm text-muted-foreground">
-                      Org admins can view all startup workspaces
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
@@ -369,13 +454,17 @@ export default function OrgSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  Plan and payment details are illustrative — billing is not connected to the
+                  organisation yet.
+                </p>
                 <div className="p-4 rounded-lg border bg-primary/5">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold">Organization Pro</p>
                       <p className="text-sm text-muted-foreground">$299/month · Billed annually</p>
                     </div>
-                    <Button variant="outline">Change Plan</Button>
+                    <Button variant="outline" disabled title="Billing is not connected yet">Change Plan</Button>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -402,7 +491,7 @@ export default function OrgSettingsPage() {
                       <CreditCard className="icon-md" aria-hidden="true" />
                       <span>•••• •••• •••• 4242</span>
                     </div>
-                    <Button variant="ghost" size="sm">Update</Button>
+                    <Button variant="ghost" size="sm" disabled title="Billing is not connected yet">Update</Button>
                   </div>
                 </div>
               </CardContent>
