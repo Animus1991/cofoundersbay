@@ -304,6 +304,53 @@ export const ACTION_DECLARATIONS = [
     confirmLabel: { en: 'Go', el: 'Μετάβαση' },
   },
   {
+    // A page's supporting tools - its filters, totals, period, exports - live
+    // in the page rail on the right, and the page context lists the rail's
+    // sections by id. Without this the assistant could say "the filters are
+    // in the panel on the right" and nothing more.
+    id: 'open_rail_section',
+    kind: 'mutation',
+    label: { en: 'Open a page tools section', el: 'Άνοιγμα ενότητας εργαλείων σελίδας' },
+    description: {
+      en: 'Open one section of the current page’s tools panel (the rail on the right; a sheet on phones), such as its filters, totals or export. Only sections listed in the page context exist.',
+      el: 'Ανοίγει μία ενότητα του πάνελ εργαλείων της τρέχουσας σελίδας (η στήλη δεξιά· φύλλο στα κινητά), π.χ. φίλτρα, σύνολα ή εξαγωγή. Υπάρχουν μόνο οι ενότητες που αναφέρει το πλαίσιο της σελίδας.',
+    },
+    params: [
+      {
+        name: 'section',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The section id, exactly as the page context’s rail lists it, e.g. "filters".',
+          el: 'Το id της ενότητας, όπως ακριβώς το αναφέρει το rail του πλαισίου σελίδας, π.χ. «filters».',
+        },
+      },
+      {
+        name: 'label',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'The section’s name as the reader sees it, used in the proposal.',
+          el: 'Το όνομα της ενότητας όπως το βλέπει ο αναγνώστης, για την πρόταση.',
+        },
+      },
+    ],
+    // It shows a panel; it changes no data and moves the reader nowhere.
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is written, so there is nothing to undo. The panel closes with Escape or when the pointer leaves it; on a phone, with the sheet’s close button. A panel you had pinned open stays pinned.',
+        el: 'Δεν γράφεται τίποτα, άρα δεν υπάρχει κάτι να αναιρεθεί. Το πάνελ κλείνει με Escape ή όταν ο δείκτης φύγει από πάνω του· στο κινητό, με το κουμπί κλεισίματος του φύλλου. Ένα πάνελ που είχατε καρφιτσώσει μένει καρφιτσωμένο.',
+      },
+    },
+    // Filed against the section, not against a user: the audit's default
+    // treats the first required argument as a user id.
+    auditSubject: { param: 'section', entityType: 'page_rail_section' },
+    confirmLabel: { en: 'Open', el: 'Άνοιγμα' },
+  },
+  {
     id: 'shortlist_add',
     kind: 'mutation',
     label: { en: 'Save to shortlist', el: 'Αποθήκευση στη λίστα' },

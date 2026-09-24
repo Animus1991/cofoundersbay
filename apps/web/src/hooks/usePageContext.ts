@@ -7,6 +7,7 @@ import { useI18n } from '@/components/common/I18nProvider';
 import type { PageContextPacket } from '@/lib/copilot-engine';
 import { usePageSnapshot, type PageSnapshot } from '@/contexts/PageSnapshotContext';
 import { getPageMeta } from '@/lib/page-registry';
+import { usePageRail } from '@/components/layout/PageRailContext';
 
 /**
  * The floor every page stands on when it publishes nothing itself.
@@ -63,6 +64,17 @@ export function usePageContext(): PageContextPacket {
   // pointless until this line changed. `useI18n` carries a working default, so
   // this is safe outside the provider too.
   const { locale } = useI18n();
+  // The rail's table of contents, in the reader's language. Without it the
+  // assistant could describe the column and nothing to its right - a user
+  // asking "where are the filters?" on /admin/users was told nothing.
+  const { sections: railSections } = usePageRail();
+  const railKey = JSON.stringify(
+    railSections.map((s) => ({
+      id: s.id,
+      label: locale === 'el' ? s.labelEl : s.labelEn,
+      ...(s.badge != null && s.badge !== 0 ? { badge: s.badge } : {}),
+    })),
+  );
 
   // Serialised for the dependency list: the snapshot is rebuilt by its page on
   // every render, so comparing by identity would make this memo useless and
@@ -80,9 +92,10 @@ export function usePageContext(): PageContextPacket {
         role: role?.primaryRole ?? null,
         locale,
         ...(screen ? { screen } : {}),
+        ...(railKey !== '[]' ? { rail: { sections: JSON.parse(railKey) as NonNullable<PageContextPacket['rail']>['sections'] } } : {}),
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- snapshotKey stands in for snapshot by value
-    [pathname, role?.primaryRole, locale, snapshotKey],
+    [pathname, role?.primaryRole, locale, snapshotKey, railKey],
   );
 }

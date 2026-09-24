@@ -33,6 +33,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_messages: { en: 'Any unread messages?', el: 'Έχω αδιάβαστα μηνύματα;' },
   get_connections: { en: 'Who is waiting on my connections?', el: 'Ποιος περιμένει στις συνδέσεις μου;' },
   navigate: { en: 'Open matches', el: 'Άνοιξε τις αντιστοιχίσεις' },
+  open_rail_section: { en: 'Show me the filters on this page', el: 'Δείξε μου τα φίλτρα αυτής της σελίδας' },
   shortlist_add: { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα' },
   shortlist_remove: { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα' },
   send_connection: { en: 'Connect with Elena', el: 'Σύνδεση με την Elena' },

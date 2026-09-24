@@ -195,6 +195,46 @@ export function asksAboutThisPage(message: string): boolean {
   return includesAny(message.toLowerCase(), THIS_PAGE_PHRASES);
 }
 
+/**
+ * Which section of the page rail the reader is asking for, if any.
+ *
+ * A railed page keeps its filters, totals, period and exports in the panel on
+ * the right; the page context lists that panel's sections by id and label.
+ * Each family pairs what a reader says with how sections are named, in both
+ * languages, and a match needs a verb of looking ("show", "where", "open") so
+ * that "filter founders in Athens" stays a search. Export is its own verb.
+ *
+ * Returns the first listed section the asked-for family names, so a page's
+ * own order decides between two candidates.
+ */
+const RAIL_FAMILIES: { ask: RegExp; section: RegExp; selfVerb?: boolean }[] = [
+  // A status picker is a filter too (/tenant/programs calls its section
+  // "Program status").
+  { ask: /\b(filters?|narrow)\b|φίλτρ|φιλτρ/i, section: /filter|narrow|status|φίλτρ|φιλτρ|κατάστασ/i },
+  {
+    ask: /\b(totals?|figures?|stats|statistics|numbers|counts|at a glance|summary)\b|σύνολ|συνολ|στατιστ|αριθμ/i,
+    section: /total|figure|glance|summary|σύνολ|συνολ|στατιστ/i,
+  },
+  { ask: /\b(export|download|csv)\b|εξαγωγ|εξάγ|κατέβασ/i, section: /export|tools|εξαγωγ|εργαλεί/i, selfVerb: true },
+  { ask: /\b(period|window|date range|time range|timeframe)\b|περίοδ|περιοδ/i, section: /period|window|range|περίοδ/i },
+  { ask: /\b(sort|sorting|order by)\b|ταξινόμ|ταξινομ/i, section: /sort|order|ταξινόμ/i },
+  { ask: /\b(settings|preferences|options)\b|ρυθμίσ|ρυθμισ|προτιμήσ/i, section: /setting|preference|option|ρυθμίσ|προτιμ/i },
+];
+const LOOK_VERBS = /\b(open|show|see|view|where|find|display|bring up|take me|go to)\b|άνοιξ|ανοιξ|δείξ|δειξ|πού|που είναι|εμφάνισ|βρίσκ/i;
+
+export function railSectionFor<T extends { id: string; label: string }>(
+  message: string,
+  sections: readonly T[],
+): T | undefined {
+  for (const family of RAIL_FAMILIES) {
+    if (!family.ask.test(message)) continue;
+    if (!family.selfVerb && !LOOK_VERBS.test(message)) continue;
+    const hit = sections.find((s) => family.section.test(`${s.id} ${s.label}`));
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
 export function detectAnalyticsPeriod(message: string): string | undefined {
   return PERIOD_ALIASES.find((alias) => includesAny(message, alias.keys))?.period;
 }

@@ -44,6 +44,7 @@ import { isPreviewDemo } from '@/lib/preview-demo';
 import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
+import { currentRailSections, openCurrentRailSection } from '@/components/layout/PageRailContext';
 
 /**
  * The web app's half of the capability contract.
@@ -187,6 +188,21 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     ok: true,
     href: requireString(payload, 'href') || '/dashboard',
   }),
+
+  open_rail_section: async (payload) => {
+    const section = requireString(payload, 'section');
+    if (!section) return { ok: false, error: 'Missing section' };
+    if (openCurrentRailSection(section)) return { ok: true };
+    // The page changed, or the model named a section this page does not have.
+    // Saying which exist lets the reader pick instead of seeing nothing open.
+    const available = currentRailSections().map((s) => s.labelEn);
+    return {
+      ok: false,
+      error: available.length
+        ? `This page has no "${section}" section. Its tools are: ${available.join(', ')}.`
+        : 'This page has no tools panel.',
+    };
+  },
 
   shortlist_add: async (payload) => {
     const userId = requireString(payload, 'userId');

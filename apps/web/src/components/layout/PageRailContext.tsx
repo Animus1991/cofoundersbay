@@ -27,6 +27,46 @@ import {
  *   pointer leaves. Reflowing the page on hover would make the content jump
  *   under the reader's eyes every time they crossed the right edge.
  */
+/**
+ * What a mounted rail offers, without its content.
+ *
+ * The content is React nodes and stays with the page; this is the table of
+ * contents - enough for the assistant to know the page has a "Narrow the
+ * list" section with two filters on, and to open it by id.
+ */
+export type RailSectionSummary = {
+  id: string;
+  labelEn: string;
+  labelEl: string;
+  badge: number | string | null;
+};
+
+/*
+ * The same two things for code that runs outside React - an assistant
+ * action's executor is a plain async function, like the canvas command bus's.
+ * The provider keeps this current; it is empty whenever no rail is mounted.
+ */
+const railBus: { sections: RailSectionSummary[]; open: (id: string) => void } = {
+  sections: [],
+  open: () => {},
+};
+
+/** The sections of the rail on screen now, or none. */
+export function currentRailSections(): readonly RailSectionSummary[] {
+  return railBus.sections;
+}
+
+/**
+ * Open a section of the rail on screen now. Returns false, and does nothing,
+ * when there is no rail or it has no section by that id - a caller told
+ * "opened" for a section that does not exist would say so to the user.
+ */
+export function openCurrentRailSection(id: string): boolean {
+  if (!railBus.sections.some((section) => section.id === id)) return false;
+  railBus.open(id);
+  return true;
+}
+
 type PageRailCtx = {
   /** Kept open by choice; the main column is offset for it. */
   pinned: boolean;
@@ -51,6 +91,10 @@ type PageRailCtx = {
   openRailSection: (id: string) => void;
   /** The mounted rail registers its opener; internal to PageRail. */
   registerRailOpener: (open: (id: string) => void) => void;
+  /** The mounted rail's sections, for the assistant's view of the page. */
+  sections: readonly RailSectionSummary[];
+  /** The mounted rail registers its sections; internal to PageRail. */
+  registerRailSections: (sections: RailSectionSummary[]) => void;
 };
 
 const PageRailContext = createContext<PageRailCtx>({
@@ -65,6 +109,8 @@ const PageRailContext = createContext<PageRailCtx>({
   setHasRail: () => {},
   openRailSection: () => {},
   registerRailOpener: () => {},
+  sections: [],
+  registerRailSections: () => {},
 });
 
 const KEY = 'cfb:page-rail';
@@ -88,6 +134,20 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
   const openRailSection = useCallback((id: string) => railOpener.current(id), []);
   const registerRailOpener = useCallback((open: (id: string) => void) => {
     railOpener.current = open;
+    railBus.open = open;
+  }, []);
+
+  /* Compared by value: the page rebuilds its section array on every render,
+     and storing each new identity would re-render the whole subtree each
+     time for a table of contents that did not change. */
+  const [sections, setSections] = useState<RailSectionSummary[]>([]);
+  const sectionsKey = useRef('');
+  const registerRailSections = useCallback((next: RailSectionSummary[]) => {
+    const key = JSON.stringify(next);
+    railBus.sections = next;
+    if (key === sectionsKey.current) return;
+    sectionsKey.current = key;
+    setSections(next);
   }, []);
 
   useEffect(() => {
@@ -141,6 +201,8 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
         setHasRail,
         openRailSection,
         registerRailOpener,
+        sections,
+        registerRailSections,
       }}
     >
       {children}

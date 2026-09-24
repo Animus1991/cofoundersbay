@@ -16,7 +16,7 @@ import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { planCopilotTools, detectPersonName, asksAboutThisPage } from '@/lib/copilot-planner';
+import { planCopilotTools, detectPersonName, asksAboutThisPage, railSectionFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import type {
   CopilotAction,
@@ -42,6 +42,13 @@ export type PageContextPacket = {
     figures?: Record<string, string | number>;
     actions?: readonly string[];
   };
+  /**
+   * The page rail's sections, when the page has one: its supporting tools,
+   * named as the reader sees them, with the badge the strip shows (active
+   * filters, pending items). The content itself stays on the page; the
+   * assistant opens a section with `open_rail_section` by its id.
+   */
+  rail?: { sections: { id: string; label: string; badge?: number | string }[] };
   entity?: { type: string; id: string };
   role?: string | null;
   locale?: string;
@@ -451,6 +458,34 @@ export async function runCopilotTurn(
     else if (screen.state === 'demo') parts.push(t('These are showcase figures, not your account.'));
 
     sections.push(parts.join(' '));
+  }
+
+  // The page rail: the tools to the right of the column. Named when the
+  // reader asks about the page, and opened on request - "show me the
+  // filters" on /admin/users used to get nothing, because the assistant
+  // could see the column and not the panel beside it.
+  const railSections = pageContext?.rail?.sections ?? [];
+  if (railSections.length > 0) {
+    if (asksAboutThisPage(userMessage)) {
+      sections.push(
+        t('Its tools panel has: {sections}.', {
+          sections: railSections.map((s) => (s.badge != null ? `${s.label} (${s.badge})` : s.label)).join(', '),
+        }),
+      );
+    }
+    const wanted = railSectionFor(userMessage, railSections);
+    if (wanted) {
+      sections.push(t('{section} is in this page’s tools panel.', { section: wanted.label }));
+      actions.push({
+        id: newId('rail'),
+        tool: 'open_rail_section',
+        title: t('Open {section}', { section: wanted.label }),
+        description: t('Opens it in the panel on the right, or as a sheet on a phone. Nothing is changed.'),
+        confirmLabel: t('Open'),
+        payload: { section: wanted.id, label: wanted.label },
+        status: 'pending',
+      });
+    }
   }
 
   for (const tool of planned) {

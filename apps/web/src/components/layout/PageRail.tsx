@@ -53,7 +53,7 @@ export type PageRailSection = {
  * two are separate.
  */
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
-  const { pinned, peeked, open, togglePinned, setPeeked, setHasRail, registerRailOpener } = usePageRail();
+  const { pinned, peeked, open, togglePinned, setPeeked, setHasRail, registerRailOpener, registerRailSections } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
@@ -67,6 +67,19 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
     return () => setHasRail(false);
   }, [sections.length, setHasRail]);
 
+  // The table of contents, for the assistant: ids, labels and badges, never
+  // the content. Emptied on unmount so a page without a rail is not described
+  // with the last page's sections.
+  const summaryKey = JSON.stringify(sections.map((s) => [s.id, s.labelEn, s.labelEl, s.badge ?? null]));
+  useEffect(() => {
+    registerRailSections(
+      (JSON.parse(summaryKey) as [string, string, string, number | string | null][]).map(
+        ([id, labelEn, labelEl, badge]) => ({ id, labelEn, labelEl, badge }),
+      ),
+    );
+  }, [summaryKey, registerRailSections]);
+  useEffect(() => () => registerRailSections([]), [registerRailSections]);
+
   // The first section is the one a reader most likely wants; opening the rail
   // with everything collapsed would cost a second click to do anything.
   useEffect(() => {
@@ -76,12 +89,21 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   // `openRailSection` (a shortcut, a canvas command, an assistant action) lands
   // here: select the section and open whichever surface this width uses - a
   // peek on the desktop, the sheet below `lg`.
+  //
+  // One surface per width. The sheet's content is portaled, so the `lg:hidden`
+  // wrapper does not hide it: opening both put a modal bottom sheet over the
+  // desktop peek. Without matchMedia (tests, very old engines) the sheet is
+  // the one that works at every width.
   useEffect(() => {
     registerRailOpener((id) => {
       setActiveId(id);
       setSheetExpanded(id);
-      setSheetOpen(true);
-      setPeeked(true);
+      const desktop =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(min-width: 1024px)').matches;
+      if (desktop) setPeeked(true);
+      else setSheetOpen(true);
     });
   }, [registerRailOpener, setPeeked]);
 
