@@ -30,12 +30,12 @@ export function OrgContent({ org, slug }: OrgContentProps) {
   });
 
   const { data: cohortsData, isLoading: cohortsLoading } = useQuery({
-    queryKey: ['org-cohorts', slug],
+    queryKey: ['org', 'cohorts', slug],
     queryFn: () => getOrgCohorts(slug),
   });
 
   const { data: membersData, isLoading: membersLoading } = useQuery({
-    queryKey: ['org-members', slug],
+    queryKey: ['org', 'members', slug],
     queryFn: () => getOrgMembers(slug),
   });
 

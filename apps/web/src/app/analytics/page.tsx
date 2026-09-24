@@ -581,7 +581,7 @@ export default function AnalyticsPage() {
   });
 
   const { data: achievements } = useQuery({
-    queryKey: ['analytics', 'achievements'],
+    queryKey: ['achievements', 'analytics'],
     queryFn: getAnalyticsAchievements,
     staleTime: 60_000,
     retry: 0,

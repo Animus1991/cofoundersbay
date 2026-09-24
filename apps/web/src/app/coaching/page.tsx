@@ -655,7 +655,7 @@ export default function CoachingPage() {
    * coach's name beside every session without a second lookup.
    */
   const { data: relationshipData, isLoading: relationshipsLoading } = useQuery({
-    queryKey: ['mentorship', 'relationships', 'mentee'],
+    queryKey: ['mentorships', 'mentee'],
     queryFn: () => getMyMentorships('mentee'),
     staleTime: 60_000,
     retry: 0,
@@ -702,7 +702,7 @@ export default function CoachingPage() {
    * unconditionally, so a real founder browsed three coaches who do not exist.
    */
   const { data: mentorData, isLoading: coachesLoading } = useQuery({
-    queryKey: ['mentorship', 'mentors', 'coaching'],
+    queryKey: ['mentors', 'coaching'],
     queryFn: () => discoverMentors({ limit: 24 }),
     staleTime: 5 * 60_000,
     retry: 0,

@@ -271,19 +271,19 @@ export default function ProviderDashboardPage() {
    * rated ones - so a row cannot be a project here and an open inquiry there.
    */
   const { data: inquiryPage, isLoading: inquiriesLoading } = useQuery({
-    queryKey: ['provider', 'dashboard', 'inquiries'],
+    queryKey: ['provider', 'inquiries', 'dashboard'],
     queryFn: () => listServiceInquiries({ side: 'provider', limit: 5 }),
     staleTime: 30_000,
     retry: 0,
   });
   const { data: projectPage, isLoading: projectsLoading } = useQuery({
-    queryKey: ['provider', 'dashboard', 'projects'],
+    queryKey: ['provider', 'projects', 'dashboard'],
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 5 }),
     staleTime: 30_000,
     retry: 0,
   });
   const { data: reviewPage, isLoading: reviewsLoading } = useQuery({
-    queryKey: ['provider', 'dashboard', 'reviews'],
+    queryKey: ['provider', 'reviews', 'dashboard'],
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 3 }),
     staleTime: 60_000,
     retry: 0,

@@ -164,7 +164,7 @@ export default function OrgAnalyticsPage() {
 
   const queryClient = useQueryClient();
   const { data: programsData } = useQuery({
-    queryKey: ['org', 'programs'],
+    queryKey: ['programs', 'mine'],
     queryFn: getMyPrograms,
     staleTime: 60_000,
     retry: 0,

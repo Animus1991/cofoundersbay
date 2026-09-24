@@ -106,7 +106,7 @@ export default function TenantDashboardPage() {
     retry: 0,
   });
   const { data: eventsData } = useQuery({
-    queryKey: ['tenant', 'events'],
+    queryKey: ['events', 'tenant'],
     queryFn: () => listEvents({ scope: 'upcoming', limit: 5 }),
     staleTime: 60_000,
     retry: 0,

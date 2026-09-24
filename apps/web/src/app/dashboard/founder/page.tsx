@@ -32,7 +32,7 @@ export default async function FounderDashboardPage() {
 
   await Promise.allSettled([
     seed(queryKeys.me.profile(), '/api/me/profile'),
-    seed(['dashboard-stats'], '/api/dashboard/stats'),
+    seed(['dashboard', 'stats', 'founder'], '/api/dashboard/stats'),
     // Must stay `queryKeys.recommendations` (= ['recommendations']) to match the
     // client's useQuery. It previously prefetched ['recommendations', {limit:5}],
     // which hydrates into a different cache entry — so this fetch was paid for on

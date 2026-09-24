@@ -216,7 +216,7 @@ export default function AdminProgramsPage() {
   // Programs are public reads; the list was a fixed array dated 2025 while
   // GET /programs served every organisation's programmes.
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['admin', 'programs'],
+    queryKey: ['programs', 'admin'],
     queryFn: () => listPrograms({ limit: 100 }),
     staleTime: 60_000,
     retry: 0,
@@ -248,7 +248,7 @@ export default function AdminProgramsPage() {
           : err instanceof Error ? err.message : undefined,
       );
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'programs'] });
+      void queryClient.invalidateQueries({ queryKey: ['programs'] });
     }
   };
 

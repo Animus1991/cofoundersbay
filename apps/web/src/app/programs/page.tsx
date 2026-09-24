@@ -392,7 +392,7 @@ export default function ProgramsPage() {
   });
 
   const { data: myData } = useQuery({
-    queryKey: ['programs', 'my'],
+    queryKey: ['programs', 'mine'],
     queryFn: getMyPrograms,
     staleTime: 2 * 60 * 1000,
   });
@@ -408,7 +408,7 @@ export default function ProgramsPage() {
     onSuccess: () => {
       success('Application submitted!');
       setApplyTarget(null);
-      qc.invalidateQueries({ queryKey: ['programs', 'my'] });
+      qc.invalidateQueries({ queryKey: ['programs'] });
     },
     onError: () => toastError('Failed to submit application'),
   });

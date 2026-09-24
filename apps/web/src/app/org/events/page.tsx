@@ -271,7 +271,7 @@ export default function OrgEventsPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'events'],
+    queryKey: ['events', 'org'],
     queryFn: () => listEvents({ scope: 'mine', limit: 50 }),
     staleTime: 60_000,
     retry: 0,
@@ -303,7 +303,7 @@ export default function OrgEventsPage() {
     } catch (err) {
       toastError('Could not duplicate the event', err instanceof Error ? err.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['org', 'events'] });
+      void queryClient.invalidateQueries({ queryKey: ['events'] });
     }
   };
 

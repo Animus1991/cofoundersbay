@@ -169,7 +169,7 @@ function OrgOwnershipSection({
   onUpdate: (data: { visibility?: ResearchBoardVisibility }) => void;
 }) {
   const { data: orgData, isLoading } = useQuery({
-    queryKey: ['user-org-memberships'],
+    queryKey: ['org', 'my-memberships'],
     queryFn: () => getUserOrganizations(),
   });
 

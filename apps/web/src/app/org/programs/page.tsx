@@ -84,7 +84,7 @@ function ProgramCard({ program }: { program: Program }) {
   const archive = useMutation({
     mutationFn: () => updateProgram(program.id, { status: 'archived' }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['org', 'programs'] });
+      void qc.invalidateQueries({ queryKey: ['programs'] });
       success('Program archived');
     },
     onError: (err) =>
@@ -218,7 +218,7 @@ export default function OrgProgramsPage() {
    * screen still teaches its shape rather than opening empty.
    */
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'programs'],
+    queryKey: ['programs', 'mine'],
     queryFn: getMyPrograms,
     staleTime: 60_000,
     retry: 0,

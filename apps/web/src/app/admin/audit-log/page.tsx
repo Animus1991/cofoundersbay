@@ -116,7 +116,7 @@ export default function AdminAuditLogPage() {
   const [page, setPage] = useState(0);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['admin-audit-logs', entityType, action, page],
+    queryKey: ['admin', 'audit-logs', entityType, action, page],
     queryFn: () =>
       listAdminAuditLogs({
         entityType: entityType !== 'all' ? entityType : undefined,

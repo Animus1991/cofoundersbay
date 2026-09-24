@@ -458,23 +458,23 @@ export default function AdminPage() {
   const [newCohort, setNewCohort] = useState({ name: '', slug: '', description: '', startDate: '', endDate: '', capacity: '' });
 
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: ['admin', 'stats'],
     queryFn: () => getAdminStats(),
     staleTime: 30_000,
   });
 
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
-    queryKey: ['admin-reports'],
+    queryKey: ['admin', 'reports', 'home'],
     queryFn: () => listAdminReports({ limit: 100 }),
   });
 
   const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
-    queryKey: ['admin-users', userSearch],
+    queryKey: ['admin', 'users', 'home', userSearch],
     queryFn: () => listAdminUsers({ q: userSearch || undefined, limit: 100 }),
   });
 
   const { data: auditData, isLoading: auditLoading } = useQuery({
-    queryKey: ['admin-audit-logs'],
+    queryKey: ['admin', 'audit-logs', 'home'],
     queryFn: () => listAdminAuditLogs({ limit: 50 }),
     enabled: activeTab === 'audit',
   });
@@ -503,14 +503,14 @@ export default function AdminPage() {
   });
 
   const { data: eventsData, isLoading: eventsLoading, isError: eventsError, refetch: refetchEvents } = useQuery({
-    queryKey: ['admin-events'],
+    queryKey: ['events', 'admin'],
     queryFn: () => listEvents({ limit: 50 }),
     enabled: activeTab === 'content',
     retry: 1,
   });
 
   const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
-    queryKey: ['admin-jobs'],
+    queryKey: ['jobs', 'admin'],
     queryFn: () => listJobs({ limit: 50 }),
     enabled: activeTab === 'content',
     retry: 1,
@@ -520,8 +520,8 @@ export default function AdminPage() {
     mutationFn: ({ type, id, featured }: { type: 'event' | 'group' | 'job'; id: string; featured: boolean }) =>
       featureContent(type, id, featured),
     onSuccess: (_, { featured }) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-events'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
       success(featured ? 'Featured' : 'Unfeatured', 'Content visibility updated.');
     },
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
@@ -531,8 +531,8 @@ export default function AdminPage() {
     mutationFn: ({ type, id }: { type: 'event' | 'group' | 'job'; id: string }) =>
       removeContent(type, id, 'Removed by admin'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-events'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
       success('Removed', 'Content removed from the platform.');
     },
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
@@ -568,8 +568,8 @@ export default function AdminPage() {
         moderationStatus: banUserId ? 'banned' : undefined,
       }),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       if (vars.banUserId) success('User banned', 'Report resolved and user banned.');
       else if (vars.status === 'resolved') success('Report resolved', 'Action recorded.');
       else success('Report dismissed', 'No action taken.');
@@ -581,7 +581,7 @@ export default function AdminPage() {
     mutationFn: ({ userId, status }: { userId: string; status: 'active' | 'suspended' | 'banned' }) =>
       updateAdminUserModeration(userId, status),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       const labels: Record<string, string> = {
         active: 'reactivated',
         suspended: 'suspended',

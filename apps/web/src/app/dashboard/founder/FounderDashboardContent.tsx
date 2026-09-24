@@ -371,7 +371,7 @@ export default function FounderDashboardContent() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ['dashboard-stats'],
+    queryKey: ['dashboard', 'stats', 'founder'],
     queryFn: getDashboardStats,
     enabled: hasSession && mounted,
   });

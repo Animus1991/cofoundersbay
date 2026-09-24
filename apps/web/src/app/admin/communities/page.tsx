@@ -276,7 +276,7 @@ export default function AdminCommunitiesPage() {
 
   // Mock data
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'communities'],
+    queryKey: ['groups', 'admin'],
     queryFn: () => listGroups({ limit: 100, sort: 'popular' }),
     staleTime: 60_000,
     retry: 0,
@@ -285,7 +285,7 @@ export default function AdminCommunitiesPage() {
   const createMutation = useMutation({
     mutationFn: createGroup,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'communities'] });
+      void queryClient.invalidateQueries({ queryKey: ['groups'] });
       success('Community created', `${form.name} is now listed.`);
       setCreateOpen(false);
       setForm({ name: '', description: '', category: '', privacy: 'public' });
@@ -296,7 +296,7 @@ export default function AdminCommunitiesPage() {
   const updateMutation = useMutation({
     mutationFn: (vars: { id: string; body: Parameters<typeof updateGroup>[1] }) => updateGroup(vars.id, vars.body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'communities'] });
+      void queryClient.invalidateQueries({ queryKey: ['groups'] });
       success('Community updated', `${form.name} was saved.`);
       setCreateOpen(false);
       setEditing(null);
@@ -308,7 +308,7 @@ export default function AdminCommunitiesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteGroup(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'communities'] });
+      void queryClient.invalidateQueries({ queryKey: ['groups'] });
       success('Community deleted');
     },
     onError: () => toastError('Could not delete the community', 'The groups API rejected the request.'),

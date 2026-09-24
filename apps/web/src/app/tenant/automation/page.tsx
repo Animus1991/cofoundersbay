@@ -251,7 +251,7 @@ export default function TenantAutomationPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const { data: rulesData, isLoading, refetch } = useQuery({
-    queryKey: ['tenant-automation-rules', tenantId, filter],
+    queryKey: ['automation-rules', 'tenant', tenantId, filter],
     queryFn: () => listAutomationRules({ status: filter === 'all' ? undefined : filter, limit: 100 }),
     enabled: !!tenantId,
     staleTime: 30_000,
