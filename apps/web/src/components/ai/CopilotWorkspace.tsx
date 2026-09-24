@@ -238,7 +238,7 @@ export function CopilotWorkspace({
                       onClick={() => void chat.loadConversation(conv.id)}
                       className={cn(
                         'tap-target min-h-11 w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted/70',
-                        chat.conversationId === conv.id && 'bg-primary/10 text-primary',
+                        chat.conversationId === conv.id && 'bg-primary/10 text-primary-accessible',
                       )}
                     >
                       <span className="line-clamp-2">
