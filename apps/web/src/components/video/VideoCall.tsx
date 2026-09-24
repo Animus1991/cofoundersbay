@@ -68,10 +68,10 @@ export function VideoCall({ className }: VideoCallProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
+            <Button aria-label="Call settings" variant="ghost" size="sm">
               <Settings className="icon-sm" />
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button aria-label="Full screen" variant="ghost" size="sm">
               <Maximize2 className="icon-sm" />
             </Button>
             <Button 

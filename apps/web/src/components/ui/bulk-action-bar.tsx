@@ -103,21 +103,29 @@ interface BulkCheckboxProps {
   id: string;
   selectedIds: string[];
   onToggle: (id: string) => void;
+  /**
+   * What the box selects - "Select Acme Corp". Required: a bare checkbox in a
+   * list row is announced as "checkbox, not checked" with nothing to say
+   * which row it belongs to.
+   */
+  label: string;
   className?: string;
 }
 
-export function BulkCheckbox({ id, selectedIds, onToggle, className }: BulkCheckboxProps) {
+export function BulkCheckbox({ id, selectedIds, onToggle, label, className }: BulkCheckboxProps) {
   const checked = selectedIds.includes(id);
   return (
     <input
       type="checkbox"
+      aria-label={label}
       checked={checked}
       onChange={() => onToggle(id)}
       onClick={(e) => e.stopPropagation()}
       className={cn(
+        // No resting fade: at 40% the unchecked box drew its edge well under
+        // the 3:1 a control's boundary needs (WCAG 1.4.11), and the rows that
+        // use it carry no `group` class, so it never came back on hover.
         'h-4 w-4 rounded border-border cursor-pointer accent-primary',
-        'transition-opacity',
-        !checked && 'opacity-40 group-hover:opacity-100',
         className,
       )}
     />

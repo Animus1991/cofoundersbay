@@ -199,7 +199,7 @@ export function EnhancedMemberDirectory() {
                     value={filters.role}
                     onValueChange={(value) => setFilters({ ...filters, role: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -218,7 +218,7 @@ export function EnhancedMemberDirectory() {
                     value={filters.location}
                     onValueChange={(value) => setFilters({ ...filters, location: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Location">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -238,7 +238,7 @@ export function EnhancedMemberDirectory() {
                     value={filters.experience}
                     onValueChange={(value) => setFilters({ ...filters, experience: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Experience">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -257,7 +257,7 @@ export function EnhancedMemberDirectory() {
                     value={filters.availability}
                     onValueChange={(value) => setFilters({ ...filters, availability: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Availability">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -305,7 +305,7 @@ export function EnhancedMemberDirectory() {
           Showing {filteredMembers.length} of {members.length} members
         </span>
         <Select defaultValue="match">
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger aria-label="Sort by" className="w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

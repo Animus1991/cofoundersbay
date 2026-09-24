@@ -16,7 +16,7 @@ export default function ReferralsLoading() {
             </div>
           ))}
         </div>
-        <div className="grid gap-5 lg:grid-cols-[1fr_350px]">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_350px]">
           <div className="space-y-4">
             <div className="rounded-xl border border-border/50 bg-card p-5 space-y-4">
               <Skeleton className="h-5 w-32" />

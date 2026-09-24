@@ -62,10 +62,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.verification.name}</span>
-          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button aria-label="Copy record name" onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.verification.value}</span>
-          <button onClick={() => copy(instructions.verification?.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button aria-label="Copy record value" onClick={() => copy(instructions.verification?.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">TTL</span>
           <span>{instructions.verification.ttl}</span>
           <span />
@@ -79,10 +79,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.cname.name}</span>
-          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button aria-label="Copy CNAME name" onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.cname.value}</span>
-          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button aria-label="Copy CNAME value" onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
         </div>
       </div>
       <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
@@ -205,7 +205,7 @@ function DomainRow({
             <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
-          <Button
+          <Button aria-label="Remove domain"
             size="sm"
             variant="ghost"
             onClick={() => void handleRemove()}

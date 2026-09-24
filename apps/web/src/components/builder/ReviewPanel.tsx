@@ -169,7 +169,7 @@ function ReviewDecisionDialog({
               <Label>Rating (optional)</Label>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(n => (
-                  <button
+                  <button aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-pressed={rating !== null && n <= rating}
                     key={n}
                     type="button"
                     onClick={() => setRating(n === rating ? null : n)}
@@ -375,7 +375,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                           <RotateCcw className="icon-sm mr-1.5" />
                           Request Changes
                         </Button>
-                        <Button
+                        <Button aria-label="Reject"
                           size="sm"
                           variant="outline"
                           className="h-7 w-7 p-0 text-xs border-status-danger-border text-status-danger hover:bg-status-danger-bg"

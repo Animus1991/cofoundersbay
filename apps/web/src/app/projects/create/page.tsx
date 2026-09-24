@@ -353,7 +353,7 @@ export default function CreateProjectPage() {
                     onChange={(e) => setCustomRole(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRole(customRole))}
                   />
-                  <Button type="button" variant="outline" className="rounded-xl" onClick={() => addRole(customRole)}>
+                  <Button aria-label="Add role" type="button" variant="outline" className="rounded-xl" onClick={() => addRole(customRole)}>
                     <Plus className="icon-sm" />
                   </Button>
                 </div>
@@ -362,7 +362,7 @@ export default function CreateProjectPage() {
                     {rolesNeeded.map((role) => (
                       <Badge key={role} variant="secondary" className="gap-1 rounded-full">
                         {role}
-                        <button type="button" onClick={() => removeRole(role)}>
+                        <button aria-label={`Remove ${role}`} type="button" onClick={() => removeRole(role)}>
                           <X className="icon-sm" />
                         </button>
                       </Badge>
@@ -408,7 +408,7 @@ export default function CreateProjectPage() {
                     onChange={(e) => setCustomTag(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
                   />
-                  <Button type="button" variant="outline" className="rounded-xl" onClick={addCustomTag}>
+                  <Button aria-label="Add tag" type="button" variant="outline" className="rounded-xl" onClick={addCustomTag}>
                     <Plus className="icon-sm" />
                   </Button>
                 </div>

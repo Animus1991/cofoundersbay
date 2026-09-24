@@ -169,7 +169,7 @@ export default function AdminAuditLogPage() {
             />
           </div>
           <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(0); }}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger aria-label="Entity type" className="w-[160px]">
               <SelectValue placeholder="Entity type" />
             </SelectTrigger>
             <SelectContent>
@@ -179,7 +179,7 @@ export default function AdminAuditLogPage() {
             </SelectContent>
           </Select>
           <Select value={action} onValueChange={(v) => { setAction(v); setPage(0); }}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger aria-label="Action" className="w-[160px]">
               <SelectValue placeholder="Action" />
             </SelectTrigger>
             <SelectContent>

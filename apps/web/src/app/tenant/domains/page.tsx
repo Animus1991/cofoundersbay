@@ -291,7 +291,7 @@ function DomainRow({
             <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
-          <Button
+          <Button aria-label="Remove domain"
             size="sm" variant="ghost"
             onClick={() => void handleRemove()}
             disabled={remove.isPending}

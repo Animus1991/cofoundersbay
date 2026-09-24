@@ -692,7 +692,7 @@ export default function FundraisingPage() {
                   </p>
                 </div>
               </div>
-              <ChevronRight className="icon-sm shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              <ChevronRight className="icon-sm shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100" />
             </Link>
           ))}
         </div>

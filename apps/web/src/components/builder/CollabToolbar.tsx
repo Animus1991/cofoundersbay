@@ -144,7 +144,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
             <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
               <ExternalLink className="icon-sm text-muted-foreground shrink-0" />
               <span className="text-sm truncate flex-1 font-mono">{generatedUrl}</span>
-              <Button size="sm" variant="ghost" onClick={handleCopy}>
+              <Button aria-label="Copy link" size="sm" variant="ghost" onClick={handleCopy}>
                 <Copy className="icon-sm" />
               </Button>
             </div>

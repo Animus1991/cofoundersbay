@@ -4,10 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  X, Plus, UserPlus, MessageCircle, ArrowLeftRight, Sparkles,
-  MapPin, Briefcase, GraduationCap, Clock, Target, Users,
-  CheckCircle, XCircle, Minus, ChevronDown, ChevronUp,
-  BarChart3, Zap, Heart, Share2, Download,
+  X, Plus, UserPlus, MessageCircle, Sparkles, MapPin, Briefcase, GraduationCap, Clock, Target, Users, CheckCircle, XCircle, Minus, ChevronDown, ChevronUp, BarChart3, Zap, Heart, Share2, Download,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
@@ -335,19 +332,9 @@ export default function ComparePage() {
   };
 
   return (
-    <AppShell>
-      <div className="space-y-6 pb-10">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <ArrowLeftRight className="icon-lg text-primary-accessible" />
-              Compare Profiles
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Compare up to {MAX_PROFILES} profiles side by side
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleShare}>
               <Share2 className="icon-sm mr-1" aria-hidden="true" />
@@ -360,8 +347,10 @@ export default function ComparePage() {
               </Button>
             )}
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="space-y-6 pb-10">
         {/* Empty State */}
         {profileIds.length === 0 && (
           <EmptyState

@@ -438,7 +438,7 @@ function PostCard({
                   onChange={(e) => setCommentText(e.target.value)}
                   className="min-h-[60px] resize-none"
                 />
-                <Button
+                <Button aria-label={bilingualAria('Post comment', 'Δημοσίευση σχολίου')}
                   size="sm"
                   disabled={!commentText.trim()}
                   onClick={() => {

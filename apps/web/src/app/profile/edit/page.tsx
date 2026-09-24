@@ -223,7 +223,7 @@ function TagInput({
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
-            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+            <button aria-label={`Remove ${tag}`} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
               <X className="icon-sm" />
             </button>
           </Badge>
@@ -553,7 +553,7 @@ export default function ProfileEditPage() {
         </div>
       }
     >
-      <div className="grid gap-6 pb-24 lg:grid-cols-[1fr_320px] lg:pb-10">
+      <div className="grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -630,7 +630,7 @@ export default function ProfileEditPage() {
                             {form.displayName[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                           <Camera className="icon-xl text-white" />
                         </div>
                       </div>

@@ -389,7 +389,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   <Download className="icon-sm" />
                 </a>
               )}
-              <button
+              <button aria-label="Close"
                 onClick={onClose}
                 className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
               >
@@ -407,7 +407,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               >
                 <Tag className="icon-sm" />
                 {tag}
-                <button
+                <button aria-label={`Remove ${tag}`}
                   onClick={() => removeTag(tag)}
                   className="ml-0.5 hover:text-primary/70 transition-colors"
                 >
@@ -423,7 +423,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 placeholder="Add tag..."
                 className="h-6 px-2 rounded bg-secondary text-2xs outline-none placeholder:text-muted-foreground min-w-[80px]"
               />
-              <button
+              <button aria-label="Add tag"
                 onClick={addTag}
                 className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible transition-colors"
               >
@@ -438,16 +438,16 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
           {isImage && node.url && (
             <div className="flex flex-col items-center min-h-full p-4 gap-3">
               <div className="flex items-center gap-2">
-                <button onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
+                <button aria-label="Zoom out" onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <ZoomOut className="icon-sm" />
                 </button>
                 <span className="text-xs text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
-                <button onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
+                <button aria-label="Zoom in" onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <ZoomIn className="icon-sm" />
                 </button>
-                <button onClick={() => setImgZoom(1)}
+                <button aria-label="Reset zoom" onClick={() => setImgZoom(1)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <Maximize2 className="icon-sm" />
                 </button>
@@ -1473,7 +1473,7 @@ export default function ResearchCanvas() {
                   <Keyboard className="icon-md text-primary-accessible" />
                   Keyboard Shortcuts
                 </h2>
-                <button
+                <button aria-label="Close shortcuts"
                   onClick={() => setShowShortcuts(false)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
                 >

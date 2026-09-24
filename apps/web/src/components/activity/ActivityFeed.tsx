@@ -147,7 +147,7 @@ export function ActivityFeed() {
                         • <RelativeTime date={activity.createdAt} format={formatTime} />
                       </span>
                     </div>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button aria-label="Activity actions" variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <MoreHorizontal className="icon-sm" />
                     </Button>
                   </div>

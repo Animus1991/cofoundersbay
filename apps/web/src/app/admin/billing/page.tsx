@@ -258,7 +258,7 @@ export default function AdminBillingPage() {
       badge: statusFilter !== ALL_STATUSES ? 1 : null,
       content: (
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger>
+          <SelectTrigger aria-label="Subscription status">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -292,12 +292,6 @@ export default function AdminBillingPage() {
   return (
     <AppShell rail={rail}>
       <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Billing Administration</h1>
-          <p className="text-sm text-muted-foreground">Subscriptions, invoices, plans, and coupons.</p>
-        </div>
-
         {/* Tabs */}
         <Tabs defaultValue="subscriptions">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -436,7 +430,7 @@ export default function AdminBillingPage() {
                     <div className="space-y-1.5">
                       <Label className="text-xs">Discount type</Label>
                       <Select value={couponForm.discountType} onValueChange={v => setCouponForm(p => ({ ...p, discountType: v }))}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger aria-label="Discount type" className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -529,7 +523,7 @@ export default function AdminBillingPage() {
             <div className="space-y-1.5">
               <Label className="text-xs">New plan</Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="New plan">
                   <SelectValue placeholder="Select plan" />
                 </SelectTrigger>
                 <SelectContent>

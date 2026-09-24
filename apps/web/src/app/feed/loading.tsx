@@ -26,7 +26,7 @@ function PostSkeleton() {
 
 export default function FeedLoading() {
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       {/* Main feed column */}
       <div className="space-y-4">
         {/* Create post skeleton */}

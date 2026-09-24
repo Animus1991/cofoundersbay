@@ -224,7 +224,7 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="orgType">Organization Type</Label>
                     <Select value={orgType} onValueChange={setOrgType}>
-                      <SelectTrigger>
+                      <SelectTrigger id="orgType">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -241,7 +241,7 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
                     <Select value={country} onValueChange={setCountry}>
-                      <SelectTrigger>
+                      <SelectTrigger id="country">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -255,7 +255,7 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
                     <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger>
+                      <SelectTrigger id="timezone">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -382,7 +382,7 @@ export default function OrgSettingsPage() {
                         }
                         disabled={member.role === 'owner'}
                       >
-                        <SelectTrigger className="w-[170px]">
+                        <SelectTrigger aria-label={`Role for ${memberName(member)}`} className="w-[170px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -431,6 +431,7 @@ export default function OrgSettingsPage() {
                       <p className="text-sm text-muted-foreground">{p.hint}</p>
                     </div>
                     <Switch
+                      aria-label={p.label}
                       checked={policies[p.key]}
                       onCheckedChange={(v) => setPolicy(p.key, v)}
                       disabled={!organizationId || savePolicies.isPending}

@@ -3,19 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Eye,
-  MessageCircle,
-  Star,
-  Users,
-  DollarSign,
-  Clock,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  RefreshCw,
+  TrendingUp, TrendingDown, Eye, MessageCircle, Star, Users, DollarSign, Clock, ArrowUp, ArrowDown, Minus, RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -192,27 +180,12 @@ export default function ProviderAnalyticsPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {showDemoData && (
-          <SampleDataNotice
-            surface="Provider analytics"
-            detail="The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement."
-            askAiPrompt="Why does the analytics page show sample numbers?"
-          />
-        )}
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="icon-lg text-primary-accessible" />
-              Analytics
-            </h1>
-            <p className="text-muted-foreground">Track your profile performance and service metrics</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex items-center gap-2">
             <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger aria-label="Period" className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -232,7 +205,17 @@ export default function ProviderAnalyticsPage() {
               <RefreshCw className={cn('icon-sm', overviewQuery.isFetching && 'animate-spin')} />
             </Button>
           </div>
-        </div>
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Provider analytics"
+            detail="The metric cards, traffic sources, funnel and service rows are illustrative - live analytics cover profile views, connections, messages and engagement."
+            askAiPrompt="Why does the analytics page show sample numbers?"
+          />
+        )}
 
         {/* Metric Grid */}
         {overview && (

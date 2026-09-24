@@ -229,7 +229,7 @@ export default function OrgAnalyticsPage() {
       actions={(
         <>
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger aria-label="Time period" className="w-[140px]">
               <SelectValue placeholder="Time period" />
             </SelectTrigger>
             <SelectContent>

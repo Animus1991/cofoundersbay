@@ -146,7 +146,7 @@ function ProfileCardInner({
                 <p className="text-xs text-muted-foreground truncate">{profile.headline}</p>
               )}
             </div>
-            <Button size="sm" variant="ghost" onClick={onConnect}>
+            <Button aria-label="Connect" size="sm" variant="ghost" onClick={onConnect}>
               <UserPlus className="icon-sm" />
             </Button>
           </div>
@@ -159,7 +159,7 @@ function ProfileCardInner({
     return (
       <Card className={cn('group relative overflow-hidden', className)}>
         {/* Featured gradient border */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
         
         {profile.matchScore && (
           <div className="absolute top-3 right-3 z-10">

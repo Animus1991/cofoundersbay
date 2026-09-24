@@ -191,7 +191,7 @@ function MilestoneCard({
               <div className="relative shrink-0">
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="rounded-xl p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
+                  className="rounded-xl p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-within:opacity-100"
                   aria-label={bilingualAria(milestoneEn('more'), milestoneEl('more'))}
                 >
                   <MoreVertical className="icon-sm" />
@@ -507,7 +507,7 @@ export default function MilestonesPage() {
               aria-label={bilingualAria(milestoneEn('search_ph'), milestoneEl('search_ph'))}
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <button aria-label="Clear search" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 <X className="icon-sm" />
               </button>
             )}

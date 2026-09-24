@@ -324,7 +324,7 @@ export default function OrgStartupsPage() {
             />
           </div>
           <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectTrigger aria-label="Program" className="w-full sm:w-[200px]">
               <SelectValue placeholder="Program" />
             </SelectTrigger>
             <SelectContent>
@@ -335,7 +335,7 @@ export default function OrgStartupsPage() {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>

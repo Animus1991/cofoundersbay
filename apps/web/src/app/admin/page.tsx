@@ -1087,7 +1087,7 @@ export default function AdminPage() {
                       <Button aria-label="Delete"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100"
+                        className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100"
                         onClick={() => deleteCohortMutation.mutate(cohort.id)}
                         disabled={deleteCohortMutation.isPending}
                       >

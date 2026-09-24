@@ -587,7 +587,7 @@ export default function RecommendationsPage() {
               />
               <span className="text-xs font-semibold w-8 text-right">{minScore}%</span>
               {minScore > 0 && (
-                <button onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
+                <button aria-label="Clear minimum score" onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
                   <X className="icon-sm" />
                 </button>
               )}

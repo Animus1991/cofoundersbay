@@ -459,7 +459,7 @@ export default function TenantBrandingPage() {
                               <Image className="icon-lg text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <Camera className="icon-lg text-white" />
                           </div>
                         </div>
@@ -507,7 +507,7 @@ export default function TenantBrandingPage() {
                               <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             <Camera className="icon-sm text-white" />
                           </div>
                         </div>
@@ -803,6 +803,7 @@ export default function TenantBrandingPage() {
                       </p>
                     </div>
                     <Switch
+                      aria-label="Branding Status"
                       checked={branding?.isBrandingActive ?? false}
                       onCheckedChange={(checked) => {
                         if (checked) publishMutation.mutate();

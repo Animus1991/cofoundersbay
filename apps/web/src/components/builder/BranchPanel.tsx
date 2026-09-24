@@ -333,7 +333,7 @@ export function BranchPanel({
                         {!readonly && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
+                              <Button aria-label="Branch actions" variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
                                 <MoreHorizontal className="icon-sm" />
                               </Button>
                             </DropdownMenuTrigger>

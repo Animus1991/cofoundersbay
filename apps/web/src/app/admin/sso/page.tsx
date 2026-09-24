@@ -445,7 +445,7 @@ function SSOConfigPanel({
                       <button type="button" onClick={() => toggleActive(p)} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                         {p.isActive ? 'Disable' : 'Enable'}
                       </button>
-                      <button type="button" onClick={async () => { if (await confirmDeleteProvider(p)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive-accessible hover:opacity-70">
+                      <button aria-label="Delete provider" type="button" onClick={async () => { if (await confirmDeleteProvider(p)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive-accessible hover:opacity-70">
                         <Trash2 className="icon-sm" />
                       </button>
                     </div>
@@ -642,7 +642,7 @@ function SSOConfigPanel({
                           : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-accessible hover:underline">Mark verified</button>}
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>
-                      <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-accessible">
+                      <button aria-label="Remove domain mapping" onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-accessible">
                         <Trash2 className="icon-sm" />
                       </button>
                     </div>
@@ -663,7 +663,7 @@ function SSOConfigPanel({
                       className="h-8 rounded-xl border border-input bg-background px-2 text-xs">
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}
                     </select>
-                    <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-accessible">
+                    <button aria-label="Remove rule" onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-accessible">
                       <X className="icon-sm" />
                     </button>
                   </div>

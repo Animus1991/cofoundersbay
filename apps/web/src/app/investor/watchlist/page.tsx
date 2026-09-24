@@ -76,7 +76,7 @@ type ActivityItem = {
   startupId: string;
   startupName: string;
   logoUrl: string | null;
-  type: 'milestone' | 'fundraise' | 'team' | 'deck' | 'update';
+  type: 'milestone' | 'fundraise' | 'team' | 'deck' | 'update' | 'stage_change' | 'note';
   title: string;
   time: string;
 };
@@ -113,10 +113,15 @@ function toWatched(deal: InvestorDeal): WatchedStartup {
     watchedSince: deal.createdAt,
     alertsEnabled: deal.alertsEnabled,
     lastActivity: deal.lastActivityAt,
-    activityType: (deal.recentEvents[0]?.type as WatchedStartup['activityType']) ?? 'update',
+    activityType: toWatchedActivity(deal.recentEvents?.[0]?.type),
     progressChange: 0,
     notes: deal.notes ?? '',
   };
+}
+
+/** Only four kinds headline a card; anything else (a stage change, a note) reads as an update. */
+function toWatchedActivity(type: string | null | undefined): WatchedStartup['activityType'] {
+  return type === 'fundraise' || type === 'milestone' || type === 'team' ? type : 'update';
 }
 
 const MOCK_WATCHED: WatchedStartup[] = [
@@ -216,7 +221,18 @@ const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; color:
   team: { label: 'Team', color: 'bg-status-accent-bg text-status-accent' },
   deck: { label: 'Deck', color: 'bg-status-warning-bg text-status-warning' },
   update: { label: 'Update', color: 'bg-gray-500/10 text-muted-foreground' },
+  // InvestorDealEvent.type also records these two (schema.prisma). They were
+  // missing here while the live mapping cast the API's string straight to
+  // this union, so the first stage change on the board threw inside `.map`
+  // and blanked the Activity tab.
+  stage_change: { label: 'Stage change', color: 'bg-status-info-bg text-status-info' },
+  note: { label: 'Note', color: 'bg-gray-500/10 text-muted-foreground' },
 };
+
+/** Narrow the API's free-form event type to one this page can render. */
+function toActivityType(type: string | null | undefined): ActivityItem['type'] {
+  return type && type in ACTIVITY_TYPE_CONFIG ? (type as ActivityItem['type']) : 'update';
+}
 
 function WatchlistCard({ startup }: { startup: WatchedStartup }) {
   const [alertsEnabled, setAlertsEnabled] = useState(startup.alertsEnabled);
@@ -378,7 +394,7 @@ export default function InvestorWatchlistPage() {
     startupId: event.dealId,
     startupName: event.dealName,
     logoUrl: event.logoUrl,
-    type: (event.type as ActivityItem['type']) ?? 'update',
+    type: toActivityType(event.type),
     title: event.title,
     time: event.createdAt,
   }));
@@ -391,19 +407,9 @@ export default function InvestorWatchlistPage() {
   const alertCount = watched.filter(s => s.alertsEnabled).length;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Eye className="icon-lg text-primary-accessible" />
-              Watchlist
-            </h1>
-            <p className="text-muted-foreground">
-              Track startups on your radar with alerts on key changes
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1.5">
               <Bell className="icon-sm" />
@@ -416,7 +422,10 @@ export default function InvestorWatchlistPage() {
               </Link>
             </Button>
           </div>
-        </div>
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">

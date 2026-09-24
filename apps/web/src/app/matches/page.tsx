@@ -728,7 +728,7 @@ export default function MatchesPage() {
           placeholder="City or country..."
           className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
           {locationFilter && (
-          <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <button aria-label="Clear location filter" onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
           <X className="icon-sm" />
           </button>
           )}
@@ -1197,7 +1197,7 @@ export default function MatchesPage() {
             }}>
             <X className="icon-sm" /> Pass All
           </Button>
-          <button onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
+          <button aria-label="Exit selection" onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
             className="text-muted-foreground hover:text-foreground transition-colors ml-1">
             <X className="icon-sm" />
           </button>

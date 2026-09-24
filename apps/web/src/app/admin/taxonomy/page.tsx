@@ -158,7 +158,7 @@ function SkillDialog({
           <div>
             <label className="block text-sm font-medium mb-1">Category</label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Category">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -252,14 +252,9 @@ export default function AdminTaxonomyPage() {
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Taxonomy Management</h1>
-            <p className="text-muted-foreground">Manage skills, categories, and classification systems</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex items-center gap-2">
             <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
               <RefreshCw className="icon-sm" aria-hidden="true" />
@@ -269,8 +264,10 @@ export default function AdminTaxonomyPage() {
               Add Skill
             </Button>
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
@@ -331,7 +328,7 @@ export default function AdminTaxonomyPage() {
                   className="pl-9 h-9"
                 />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <button aria-label="Clear search" onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
                     <X className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </button>
                 )}

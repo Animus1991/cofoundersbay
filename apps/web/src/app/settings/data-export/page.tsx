@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Download, FileText, Database, Shield, Clock, Check,
+  Download, FileText, Shield, Clock, Check,
   AlertTriangle, Loader2, ArrowLeft, Archive, Trash2,
   User, MessageCircle, Calendar, Briefcase, Settings,
 } from 'lucide-react';
@@ -269,20 +269,6 @@ export default function DataExportPage() {
           Back to Settings
         </Link>
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Database className="icon-lg text-primary-accessible" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground">Export Your Data</h1>
-              <p className="text-sm text-muted-foreground">
-                Download a copy of your information from CoFounderBay
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* GDPR Info */}
         <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">

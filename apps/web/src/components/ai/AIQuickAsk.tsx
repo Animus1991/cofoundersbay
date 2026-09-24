@@ -86,7 +86,7 @@ export function AIQuickAsk({
             <span>{getAgentIcon(agentId)}</span>
             Quick AI Ask
           </span>
-          <button
+          <button aria-label="Close"
             onClick={handleClose}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >

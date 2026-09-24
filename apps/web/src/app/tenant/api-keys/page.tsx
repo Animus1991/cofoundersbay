@@ -26,6 +26,8 @@ import {
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { EmptyTenantApiKeys } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 
 type ApiKey = {
   id: string;
@@ -50,7 +52,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
   const revealedKey = `${apiKey.prefix}abc123xyz789defghijklmnopqr`;
 
   return (
-    <div className={cn('p-4 rounded-lg border transition-all hover:border-primary/20', !apiKey.isActive && 'opacity-60')}>
+    <div className={cn('p-4 rounded-lg border transition-all hover:border-primary/20', !apiKey.isActive && 'surface-inactive')}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -86,9 +88,10 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Edit Scopes</DropdownMenuItem>
-            <DropdownMenuItem>Regenerate</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Revoke</DropdownMenuItem>
+            {/* No key service exists; each item says so rather than closing silently. */}
+            <UnavailableMenuItem en="Edit Scopes" el="Επεξεργασία δικαιωμάτων" reasonEn="No key service yet." reasonEl="Δεν υπάρχει ακόμη υπηρεσία κλειδιών." />
+            <UnavailableMenuItem en="Regenerate" el="Αναδημιουργία" reasonEn="No key service yet." reasonEl="Δεν υπάρχει ακόμη υπηρεσία κλειδιών." />
+            <UnavailableMenuItem className="text-destructive-accessible" icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Revoke" el="Ανάκληση" reasonEn="Sample key - nothing to revoke." reasonEl="Δείγμα - δεν υπάρχει κάτι να ανακληθεί." />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -104,9 +107,21 @@ export default function TenantApiKeysPage() {
     <AppShell
       title="API Keys"
       description="Manage API keys for programmatic access to your tenant data"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Create API Key</Button>}
+      actions={
+        // Had no handler; there is no key-issuing service behind this page.
+        <Button size="sm" disabled title="API key issuing has no backend yet">
+          <Plus className="mr-2 icon-sm" aria-hidden="true" />Create API Key
+        </Button>
+      }
     >
       <div className="space-y-5">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="API keys"
+            detail="These keys are illustrative - no key-issuing service exists yet, so none of them authenticate anything."
+            askAiPrompt="Why does the API keys page show sample keys?"
+          />
+        )}
         <Card className="border-status-warning-border bg-status-warning-bg">
           <CardContent className="p-4 flex items-center gap-3">
             <Shield className="icon-md text-status-warning shrink-0" />

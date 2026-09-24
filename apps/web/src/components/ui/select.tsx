@@ -12,9 +12,36 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
+/**
+ * A select trigger must be named, and the compiler says so.
+ *
+ * Radix renders the trigger as `role="combobox"`, and a combobox does not take
+ * its name from its content: the visible value ("All statuses", "Last 30
+ * days") is what is *selected*, not what the control *is*. So a trigger with
+ * only a `<SelectValue />` inside is announced as a bare "combobox", and axe
+ * reports it under button-name. A sweep found 81 such triggers across 38 files
+ * - every filter row, every settings form - because the visible label beside
+ * them (`<Label>Timezone</Label>`, a `<p>` reading "Status") was never tied to
+ * the control.
+ *
+ * One of three props is required:
+ * - `aria-label`: the name, matching the visible label where there is one
+ *   (WCAG 2.5.3, label in name);
+ * - `aria-labelledby`: the id of the visible label element;
+ * - `id`: when a `<Label htmlFor>` points at this trigger. The compiler cannot
+ *   check that the label exists, which is why the axe gate stays.
+ */
+type SelectTriggerName =
+  | { 'aria-label': string }
+  | { 'aria-labelledby': string }
+  | { id: string }
+
+type SelectTriggerProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> &
+  SelectTriggerName
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
+  SelectTriggerProps
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}

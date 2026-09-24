@@ -368,7 +368,7 @@ export function CanvasCopilotPanel({
           <span className="text-sm font-semibold truncate">Canvas Copilot</span>
           <span className="text-2xs px-1.5 py-0.5 rounded-full bg-status-accent/10 text-status-accent font-medium">BETA</span>
         </div>
-        <button onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
+        <button aria-label="Close" onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
           <X className="icon-sm text-muted-foreground" />
         </button>
       </div>
@@ -467,9 +467,9 @@ export function CanvasCopilotPanel({
                     <div className="text-xs leading-relaxed text-foreground/90 whitespace-pre-wrap">
                       {msg.content}
                     </div>
-                    <button
+                    <button aria-label="Copy message"
                       onClick={() => navigator.clipboard.writeText(msg.content)}
-                      className="absolute -top-1 -right-1 p-0.5 rounded opacity-0 group-hover:opacity-100 bg-muted border border-border transition-opacity"
+                      className="absolute -top-1 -right-1 p-0.5 rounded opacity-0 group-hover:opacity-100 focus-within:opacity-100 bg-muted border border-border transition-opacity"
                     >
                       <Copy className="w-2.5 h-2.5 text-muted-foreground" aria-hidden="true" />
                     </button>

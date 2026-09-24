@@ -29,6 +29,8 @@ import {
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { EmptyTenantWebhooks } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 
 type WebhookItem = {
   id: string;
@@ -80,7 +82,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
   const truncUrl = webhook.url.length > 48 ? webhook.url.slice(0, 48) + '…' : webhook.url;
 
   return (
-    <Card className={cn('transition-all', !active && 'opacity-60')}>
+    <Card className={cn('transition-all', !active && 'surface-inactive')}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -104,7 +106,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Switch checked={active} onCheckedChange={setActive} />
+            <Switch checked={active} onCheckedChange={setActive} aria-label={`Deliver to ${truncUrl}`} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-label="More options" variant="ghost" size="icon">
@@ -112,10 +114,14 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
-                <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" />Resend Last</DropdownMenuItem>
-                <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" />View Logs</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+                {/* No webhook service exists, so none of these can act.
+                    They stay visible - they are what this surface is for -
+                    and say why they are unavailable instead of silently
+                    closing the menu. */}
+                <UnavailableMenuItem icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Edit" el="Επεξεργασία" reasonEn="No webhook backend yet." reasonEl="Δεν υπάρχει ακόμη backend webhooks." />
+                <UnavailableMenuItem icon={<RefreshCw className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Resend Last" el="Επαναποστολή τελευταίου" reasonEn="No deliveries are sent yet." reasonEl="Δεν αποστέλλονται ακόμη παραδόσεις." />
+                <UnavailableMenuItem icon={<ArrowRight className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="View Logs" el="Αρχεία καταγραφής" reasonEn="No delivery log exists yet." reasonEl="Δεν υπάρχει ακόμη αρχείο παραδόσεων." />
+                <UnavailableMenuItem className="text-destructive-accessible" icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Delete" el="Διαγραφή" reasonEn="Sample endpoint - nothing to delete." reasonEl="Δείγμα - δεν υπάρχει κάτι να διαγραφεί." />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -137,9 +143,21 @@ export default function TenantWebhooksPage() {
     <AppShell
       title="Webhooks"
       description="Send real-time event notifications to external services"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Webhook</Button>}
+      actions={
+        // Had no handler; there is no webhook service to register one with.
+        <Button size="sm" disabled title="Webhook delivery has no backend yet">
+          <Plus className="mr-2 icon-sm" aria-hidden="true" />Add Webhook
+        </Button>
+      }
     >
       <div className="space-y-5">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Webhooks"
+            detail="These endpoints are illustrative - webhook delivery has no backend yet, so nothing here sends, retries or logs."
+            askAiPrompt="Why does the webhooks page show sample endpoints?"
+          />
+        )}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {[
             { label: 'Active Webhooks', value: webhooks.filter(w => w.isActive).length },

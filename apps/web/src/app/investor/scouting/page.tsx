@@ -271,17 +271,9 @@ export default function InvestorScoutingPage() {
   const activeFilters = [industry !== 'all' && industry, stage !== 'all' && stage, model !== 'all' && model].filter(Boolean) as string[];
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Compass className="icon-lg text-primary-accessible" />
-              Scout Startups
-            </h1>
-            <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex items-center gap-2">
             <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="List view" aria-pressed={viewMode === 'list'}>
               <List className="icon-sm" />
@@ -290,8 +282,10 @@ export default function InvestorScoutingPage() {
               <LayoutGrid className="icon-sm" />
             </Button>
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Featured */}
         {featured.length > 0 && (
           <Card className="border-primary/20 bg-primary/2">
@@ -326,26 +320,26 @@ export default function InvestorScoutingPage() {
               <Input placeholder="Search by name, industry, or keyword..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger className="w-full sm:w-[140px]"><SelectValue placeholder="Industry" /></SelectTrigger>
+              <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder="Industry" /></SelectTrigger>
               <SelectContent>
                 {industries.map(i => <SelectItem key={i} value={i}>{i === 'all' ? 'All Industries' : i}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger className="w-full sm:w-[130px]"><SelectValue placeholder="Stage" /></SelectTrigger>
+              <SelectTrigger aria-label="Stage" className="w-full sm:w-[130px]"><SelectValue placeholder="Stage" /></SelectTrigger>
               <SelectContent>
                 {stages.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Stages' : s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger className="w-full sm:w-[120px]"><SelectValue placeholder="Model" /></SelectTrigger>
+              <SelectTrigger aria-label="Business model" className="w-full sm:w-[120px]"><SelectValue placeholder="Model" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Models</SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm" /><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Sort by" className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm" /><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="match">Best Match</SelectItem>
                 <SelectItem value="readiness">Readiness</SelectItem>
@@ -359,7 +353,7 @@ export default function InvestorScoutingPage() {
               {activeFilters.map(f => (
                 <Badge key={f} variant="secondary" className="gap-1 text-xs">
                   {f}
-                  <button onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
+                  <button aria-label={`Remove filter ${f}`} onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
                     <X className="icon-sm" />
                   </button>
                 </Badge>

@@ -125,7 +125,7 @@ function ConnectionCard({
                 <Check className="icon-sm" />
                 <BilingualText en={connectionsEn('accept')} el={connectionsEl('accept')} compact />
               </Button>
-              <Button
+              <Button aria-label={bilingualAria(connectionsEn('decline'), connectionsEl('decline'))}
                 variant="ghost"
                 size="sm"
                 className="gap-1 text-muted-foreground hover:text-destructive-accessible"

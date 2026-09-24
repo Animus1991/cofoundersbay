@@ -178,7 +178,7 @@ const NotificationRow = memo(function NotificationRow({
         {item.body && (
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>
         )}
-        <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           {item.link && (
             <Link
               href={item.link}

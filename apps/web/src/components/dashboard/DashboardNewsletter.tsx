@@ -67,7 +67,7 @@ export function DashboardNewsletter({
             type="email"
             aria-label="Newsletter email"
           />
-          <Button size="sm" className="shrink-0">
+          <Button aria-label="Subscribe" size="sm" className="shrink-0">
             <ArrowRight className="icon-sm" />
           </Button>
         </div>

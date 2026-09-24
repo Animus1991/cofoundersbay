@@ -233,6 +233,11 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
   linked_builder: { en: 'Linked to Builder', el: 'Συνδεδεμένο με τον Builder' },
   layers: { en: 'Layers', el: 'Επίπεδα' },
   format: { en: 'Format', el: 'Μορφή' },
+  inspector_idle_hint: {
+    en: 'Select a node to use format, text and arrange tools.',
+    el: 'Επιλέξτε έναν κόμβο για τα εργαλεία μορφής, κειμένου και διάταξης.',
+  },
+  inspector_region: { en: 'Selection tools', el: 'Εργαλεία επιλογής' },
   opacity: { en: 'Opacity', el: 'Διαφάνεια' },
   stroke: { en: 'Stroke', el: 'Περίγραμμα' },
   shadow: { en: 'Shadow', el: 'Σκιά' },

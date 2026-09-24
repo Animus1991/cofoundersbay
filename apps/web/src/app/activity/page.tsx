@@ -152,7 +152,7 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
           <Link
             href={item.href}
             aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}
-            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
           >
             <ArrowRight className="icon-sm" aria-hidden="true" />
           </Link>
@@ -206,7 +206,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
           <Link
             href={item.link}
             aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}
-            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
           >
             <ExternalLink className="icon-sm" aria-hidden="true" />
           </Link>
@@ -365,7 +365,7 @@ export default function ActivityPage() {
           })}
         </div>
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_280px]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
           {/* Main feed */}
           <div>
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }}>

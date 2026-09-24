@@ -3189,7 +3189,7 @@ export default function ResearchBoardPage() {
                 <Keyboard className="icon-md text-primary-accessible" />
                 Keyboard Shortcuts
               </h2>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>
+              <Button aria-label="Close shortcuts" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>
                 <X className="icon-sm" />
               </Button>
             </div>

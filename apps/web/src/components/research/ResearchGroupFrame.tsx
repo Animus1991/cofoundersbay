@@ -158,7 +158,7 @@ export function ResearchGroupFrame({
         )}
 
         {/* Action buttons — visible on hover */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
           {/* Color picker */}
           <div ref={colorPickerRef} className="relative">
             <button
@@ -235,17 +235,17 @@ export function ResearchGroupFrame({
       {isSelected && !group.locked && !group.collapsed && (
         <>
           <div
-            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity rounded-r"
+            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity rounded-r"
             style={{ backgroundColor: `${group.color}20` }}
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }}
           />
           <div
-            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity rounded-b"
+            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity rounded-b"
             style={{ backgroundColor: `${group.color}20` }}
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }}
           />
           <div
-            className="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}
           >
             <svg viewBox="0 0 14 14" className="w-full h-full">

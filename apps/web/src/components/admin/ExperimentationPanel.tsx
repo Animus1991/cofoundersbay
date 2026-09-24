@@ -138,7 +138,7 @@ function ExperimentCard({
             <BarChart2 className="icon-sm" />
             {expanded ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
           </button>
-          <button onClick={del} className="text-muted-foreground hover:text-status-danger">
+          <button aria-label="Delete experiment" onClick={del} className="text-muted-foreground hover:text-status-danger">
             <Trash2 className="icon-sm" />
           </button>
         </div>
@@ -373,7 +373,7 @@ function ConfigEditor() {
             <option value="">All categories</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button onClick={load} className="text-muted-foreground hover:text-status-accent">
+          <button aria-label="Refresh" onClick={load} className="text-muted-foreground hover:text-status-accent">
             <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -500,7 +500,7 @@ export function ExperimentationPanel() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{experiments.length} experiment{experiments.length !== 1 ? 's' : ''}</p>
             <div className="flex gap-2">
-              <button
+              <button aria-label="Refresh experiments"
                 onClick={loadExperiments}
                 className="text-muted-foreground hover:text-status-accent"
               >

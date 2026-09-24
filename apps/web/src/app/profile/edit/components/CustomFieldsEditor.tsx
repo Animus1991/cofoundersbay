@@ -127,7 +127,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                             updateField(field.id, { type: value as CustomField['type'] })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger aria-label="Field Type">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -178,7 +178,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     </div>
                   </div>
 
-                  <Button
+                  <Button aria-label="Remove field"
                     variant="ghost"
                     size="sm"
                     onClick={() => removeField(field.id)}

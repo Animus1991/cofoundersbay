@@ -82,7 +82,7 @@ function ProviderCard({
     : !!(provider.oidcIssuerUrl && provider.oidcClientId);
 
   return (
-    <Card className={provider.isActive ? undefined : 'opacity-60'}>
+    <Card className={provider.isActive ? undefined : 'surface-inactive'}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -115,8 +115,8 @@ function ProviderCard({
             )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Switch checked={provider.isActive} onCheckedChange={() => onToggle(provider)} />
-            <button
+            <Switch checked={provider.isActive} onCheckedChange={() => onToggle(provider)} aria-label={`${provider.providerName} active`} />
+            <button aria-label="Delete provider"
               onClick={() => void handleDelete()}
               className="text-muted-foreground hover:text-destructive-accessible transition-colors"
             >
@@ -159,7 +159,7 @@ function DomainRow({
             Mark Verified
           </button>
         )}
-        <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive-accessible transition-colors ml-1">
+        <button aria-label="Delete mapping" onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive-accessible transition-colors ml-1">
           <X className="icon-sm" />
         </button>
       </div>
@@ -201,7 +201,7 @@ function RoleMappingEditor({
                   <option key={role} value={role}>{role}</option>
                 )}
               </select>
-              <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive-accessible">
+              <button aria-label="Remove rule" type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive-accessible">
                 <X className="icon-sm" />
               </button>
             </div>
@@ -566,7 +566,7 @@ export default function TenantSSOPage() {
                           <p className="text-sm font-medium">{label}</p>
                           <p className="text-xs text-muted-foreground">{desc}</p>
                         </div>
-                        <Switch checked={value} onCheckedChange={set} />
+                        <Switch checked={value} onCheckedChange={set} aria-label={label} />
                       </div>
                     ))}
                   </>
@@ -621,7 +621,7 @@ export default function TenantSSOPage() {
                           <p className="text-sm font-medium">Enforce email domain</p>
                           <p className="text-xs text-muted-foreground">Reject SSO logins from domains not in the allowed list</p>
                         </div>
-                        <Switch checked={enforceEmailDomain} onCheckedChange={setEnforceEmailDomain} />
+                        <Switch checked={enforceEmailDomain} onCheckedChange={setEnforceEmailDomain} aria-label="Enforce email domain" />
                       </div>
                     </CardContent>
                   </Card>

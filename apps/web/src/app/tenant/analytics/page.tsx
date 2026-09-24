@@ -115,7 +115,7 @@ export default function TenantAnalyticsPage() {
       description="Member growth, engagement, and program activity. Filter by time range to compare periods."
       actions={(
         <Select defaultValue="30d">
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger aria-label="Time period" className="w-[150px]">
             <SelectValue placeholder="Time period" />
           </SelectTrigger>
           <SelectContent>

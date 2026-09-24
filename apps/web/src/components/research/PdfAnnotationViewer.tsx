@@ -290,7 +290,7 @@ export function PdfAnnotationViewer({
               <span className="text-2xs font-medium text-foreground">
                 {annotationMode === 'highlight' ? 'Click and drag to highlight' : 'Click to add note'}
               </span>
-              <button
+              <button aria-label="Cancel annotation"
                 onClick={() => setAnnotationMode(null)}
                 className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-secondary"
               >
@@ -328,7 +328,7 @@ export function PdfAnnotationViewer({
                         <div className="w-3 h-3 rounded" style={{ backgroundColor: a.color }} />
                         <span className="text-2xs text-muted-foreground">Page {a.page}</span>
                       </div>
-                      <button
+                      <button aria-label="Remove annotation"
                         onClick={() => removeAnnotation(a.id)}
                         className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive-accessible transition-colors"
                       >

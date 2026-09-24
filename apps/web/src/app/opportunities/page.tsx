@@ -329,7 +329,7 @@ function ProposalCard({
   const statusCfg = PROPOSAL_STATUS[proposal.status] ?? PROPOSAL_STATUS.pending;
 
   return (
-    <Card className={cn('transition-all', !isPending && 'opacity-70')}>
+    <Card className={cn('transition-all', !isPending && 'surface-inactive')}>
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">

@@ -234,7 +234,7 @@ export function AIAnalysisPanel({
           <p className="text-xs font-semibold text-foreground">AI Research Assistant</p>
           <p className="text-2xs text-muted-foreground">Analyze, extract, and synthesize</p>
         </div>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+        <button aria-label="Close" onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="icon-sm" />
         </button>
       </div>
@@ -266,7 +266,7 @@ export function AIAnalysisPanel({
         <div className="flex-none flex items-start gap-2 px-3 py-2 bg-destructive/10 border-b border-destructive/20 text-2xs text-destructive-accessible overflow-hidden">
           <AlertCircle className="icon-sm shrink-0 mt-0.5" />
           <span className="flex-1">{errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="shrink-0"><X className="icon-sm" /></button>
+          <button aria-label="Dismiss error" onClick={() => setErrorMsg(null)} className="shrink-0"><X className="icon-sm" /></button>
         </div>
       )}
 
@@ -519,7 +519,7 @@ export function AIAnalysisPanel({
                     <button onClick={commitSynthesis} className="flex-1 h-7 rounded-lg bg-status-success/15 text-status-success hover:bg-status-success/25 text-2xs font-semibold transition-colors flex items-center justify-center gap-1">
                       <Plus className="icon-sm" /> Add to canvas
                     </button>
-                    <button onClick={() => setSynthResult(null)} className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
+                    <button aria-label="Clear result" onClick={() => setSynthResult(null)} className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
                       <Trash2 className="icon-sm" />
                     </button>
                   </div>

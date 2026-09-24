@@ -3,16 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Calendar,
-  Clock,
-  Plus,
-  Trash2,
-  Save,
-  CheckCircle2,
-  AlertCircle,
-  Globe,
-  Info,
-  RefreshCw,
+  Clock, Plus, Trash2, Save, CheckCircle2, AlertCircle, Globe, Info, RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -147,32 +138,24 @@ export default function MentorAvailabilityPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="icon-lg text-primary-accessible" />
-              Availability Settings
-            </h1>
-            <p className="text-muted-foreground">
-              Define when mentees can book sessions with you
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <Button onClick={handleSave} disabled={isSaving}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Changes
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Status Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Accepting Requests</span>
-                <Switch checked={isAccepting} onCheckedChange={setIsAccepting} />
+                <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests" />
               </div>
               <p className="text-xs text-muted-foreground">
                 {isAccepting ? 'You are visible to mentees' : 'Hidden from mentee discovery'}
@@ -217,7 +200,7 @@ export default function MentorAvailabilityPage() {
               </CardHeader>
               <CardContent>
                 <Select value={timezone} onValueChange={setTimezone}>
-                  <SelectTrigger className="w-72">
+                  <SelectTrigger aria-label="Timezone" className="w-72">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -255,7 +238,7 @@ export default function MentorAvailabilityPage() {
                           {daySlots.map(slot => (
                             <div key={slot.id} className="flex items-center gap-2">
                               <Select value={slot.startTime} onValueChange={v => updateSlot(slot.id, 'startTime', v)}>
-                                <SelectTrigger className="w-32 h-8 text-xs">
+                                <SelectTrigger aria-label={`${day.label} start time`} className="w-32 h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -266,7 +249,7 @@ export default function MentorAvailabilityPage() {
                               </Select>
                               <span className="text-muted-foreground text-xs">to</span>
                               <Select value={slot.endTime} onValueChange={v => updateSlot(slot.id, 'endTime', v)}>
-                                <SelectTrigger className="w-32 h-8 text-xs">
+                                <SelectTrigger aria-label={`${day.label} end time`} className="w-32 h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -303,7 +286,7 @@ export default function MentorAvailabilityPage() {
                   <div className="space-y-2">
                     <Label>Default Session Duration</Label>
                     <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))}>
-                      <SelectTrigger>
+                      <SelectTrigger aria-label="Default Session Duration">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -318,7 +301,7 @@ export default function MentorAvailabilityPage() {
                   <div className="space-y-2">
                     <Label>Buffer Between Sessions</Label>
                     <Select value={String(bufferTime)} onValueChange={v => setBufferTime(Number(v))}>
-                      <SelectTrigger>
+                      <SelectTrigger aria-label="Buffer Between Sessions">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -333,7 +316,7 @@ export default function MentorAvailabilityPage() {
                   <div className="space-y-2">
                     <Label>Minimum Notice Period</Label>
                     <Select value={String(noticeHours)} onValueChange={v => setNoticeHours(Number(v))}>
-                      <SelectTrigger>
+                      <SelectTrigger aria-label="Minimum Notice Period">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

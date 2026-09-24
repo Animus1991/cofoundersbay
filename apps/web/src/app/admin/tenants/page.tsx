@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   Building2, Plus, Settings, Palette, Globe, Mail, FileText,
   Eye, Save, X, Upload, Check, AlertTriangle, ExternalLink,
   ChevronRight, Trash2, Users, Image as ImageIcon, Type,
+  Search, RefreshCw, Download,
 } from 'lucide-react';
 import {
   listTenants, createTenant, updateTenant, deleteTenant,
@@ -23,6 +24,31 @@ import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/b
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
 import { analytics } from '@/lib/analytics';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { cn } from '@/lib/utils';
+
+type StatusFilter = 'all' | TenantItem['status'];
+type BrandingFilter = 'all' | 'branded' | 'unbranded';
+
+const STATUS_OPTIONS: { value: StatusFilter; en: string; el: string }[] = [
+  { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+  { value: 'active', en: 'Active', el: 'Ενεργοί' },
+  { value: 'draft', en: 'Draft', el: 'Πρόχειροι' },
+  { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+];
+
+const BRANDING_OPTIONS: { value: BrandingFilter; en: string; el: string }[] = [
+  { value: 'all', en: 'Any branding', el: 'Οποιαδήποτε επωνυμία' },
+  { value: 'branded', en: 'With a logo', el: 'Με λογότυπο' },
+  { value: 'unbranded', en: 'No logo yet', el: 'Χωρίς λογότυπο' },
+];
+
+/** RFC 4180 quoting: a tenant name with a comma must not become two columns. */
+function csvCell(value: string | null | undefined): string {
+  const text = value ?? '';
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
 
 const TENANT_DELETE_DESCRIPTION = (
   <BilingualText
@@ -47,8 +73,43 @@ export default function TenantsAdminPage() {
   // object threw on the first stat card. Narrowing once means the rest of the
   // page can treat it as the array it already assumed it was.
   const tenantList = Array.isArray(tenants) ? tenants : [];
-  const tenantIds = tenantList.map((t) => t.id);
-  const { selectedIds, toggle, clear, isAllSelected, isPartiallySelected } = useBulkSelection(tenantIds);
+
+  // Search is the column's own control - finding a tenant is what the list is
+  // for. Status and branding narrow it from the rail.
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [brandingFilter, setBrandingFilter] = useState<BrandingFilter>('all');
+  const visibleTenants = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tenantList.filter((t) => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (brandingFilter === 'branded' && !t.logoUrl) return false;
+      if (brandingFilter === 'unbranded' && t.logoUrl) return false;
+      if (!q) return true;
+      return [t.name, t.displayName, t.slug].some((v) => v?.toLowerCase().includes(q));
+    });
+  }, [tenantList, search, statusFilter, brandingFilter]);
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (brandingFilter !== 'all' ? 1 : 0);
+
+  // Selection follows what is on screen: "select all" must not reach tenants
+  // a filter is hiding, or a bulk suspend would act on rows nobody saw.
+  const tenantIds = visibleTenants.map((t) => t.id);
+  const { selectedIds, toggle, toggleAll, clear, isAllSelected, isPartiallySelected } = useBulkSelection(tenantIds);
+
+  const exportCsv = () => {
+    const header = ['name', 'display_name', 'slug', 'status', 'website', 'has_logo', 'created_at'];
+    const rows = visibleTenants.map((t) =>
+      [t.name, t.displayName, t.slug, t.status, t.website, t.logoUrl ? 'yes' : 'no', t.createdAt].map(csvCell).join(','),
+    );
+    const blob = new Blob([[header.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tenants-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    void analytics.track('tenant_export_csv', { count: visibleTenants.length });
+  };
 
   const bulkActions = [
     {
@@ -92,8 +153,11 @@ export default function TenantsAdminPage() {
     switch (status) {
       case 'active':
         return <Badge className="bg-status-success-bg text-status-success border-status-success-border">Active</Badge>;
-      case 'pending':
-        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border">Pending</Badge>;
+      // `TenantItem['status']` is draft | active | suspended. This used to
+      // match 'pending', which the API never sends, so a draft tenant fell
+      // through to the raw string "draft" in a grey badge.
+      case 'draft':
+        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border">Draft</Badge>;
       case 'suspended':
         return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border">Suspended</Badge>;
       default:
@@ -101,69 +165,188 @@ export default function TenantsAdminPage() {
     }
   };
 
+  const totals = [
+    { id: 'total', en: 'Total tenants', el: 'Σύνολο tenants', value: tenantList.length, icon: Building2, tone: 'text-primary-accessible' },
+    { id: 'active', en: 'Active', el: 'Ενεργοί', value: tenantList.filter((t) => t.status === 'active').length, icon: Check, tone: 'text-status-success' },
+    { id: 'branded', en: 'With branding', el: 'Με επωνυμία', value: tenantList.filter((t) => t.logoUrl).length, icon: Palette, tone: 'text-status-accent' },
+    { id: 'suspended', en: 'Suspended', el: 'Σε αναστολή', value: tenantList.filter((t) => t.status === 'suspended').length, icon: AlertTriangle, tone: 'text-status-warning' },
+  ];
+  const suspendedCount = totals[3].value;
+
+  /*
+   * The page rail. The column is the tenant list and the search that finds a
+   * row in it; the totals, the two narrowing filters and the list tools are
+   * about the list, so they sit one gesture away. The three stat cards that
+   * opened the page are the first three rows of "Totals" - same figures, same
+   * icons - and the badge is the suspended count, the one total that asks for
+   * someone to look.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'Tenant totals',
+      labelEl: 'Σύνολα tenants',
+      badge: suspendedCount || null,
+      content: (
+        <ul className="space-y-2">
+          {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
+              <span className="min-w-0 flex-1 text-sm text-muted-foreground">
+                <BilingualText en={en} el={el} compact wrap />
+              </span>
+              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Narrow the list',
+      labelEl: 'Φιλτράρισμα λίστας',
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-4">
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Status" el="Κατάσταση" compact />
+            </legend>
+            {STATUS_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={statusFilter === o.value}
+                onClick={() => { setStatusFilter(o.value); clear(); }}
+                className={cn(
+                  'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+                  statusFilter === o.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+                )}
+              >
+                <BilingualText en={o.en} el={o.el} compact wrap />
+              </button>
+            ))}
+          </fieldset>
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Branding" el="Επωνυμία" compact />
+            </legend>
+            {BRANDING_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={brandingFilter === o.value}
+                onClick={() => { setBrandingFilter(o.value); clear(); }}
+                className={cn(
+                  'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+                  brandingFilter === o.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+                )}
+              >
+                <BilingualText en={o.en} el={o.el} compact wrap />
+              </button>
+            ))}
+          </fieldset>
+        </div>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'List tools',
+      labelEl: 'Εργαλεία λίστας',
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh tenants" el="Ανανέωση tenants" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={visibleTenants.length === 0}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText
+                en={`Export ${visibleTenants.length} as CSV`}
+                el={`Εξαγωγή ${visibleTenants.length} σε CSV`}
+                compact
+                wrap
+              />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title="Tenant Management"
+      titleEl="Διαχείριση tenants"
       description="Manage organizations and their white-label branding"
+      descriptionEl="Διαχείριση οργανισμών και της white-label επωνυμίας τους"
+      rail={rail}
       actions={
         <Button onClick={() => setIsCreating(true)} className="gap-2">
-          <Plus className="icon-sm" />
-          Create Tenant
+          <Plus className="icon-sm" aria-hidden="true" />
+          <BilingualText en="Create Tenant" el="Νέος tenant" compact />
         </Button>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Overview Stats */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Tenants</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Building2 className="icon-md text-primary-accessible" />
-              <span className="text-xl font-bold">{tenantList.length}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Check className="icon-md text-status-success" />
-              <span className="text-xl font-bold">
-                {tenantList.filter((t) => t.status === 'active').length}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">With Branding</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Palette className="icon-md text-status-accent" />
-              <span className="text-xl font-bold">
-                {tenantList.filter((t) => t.logoUrl).length}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tenant List */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Organizations</CardTitle>
-          <CardDescription>
-            Configure branding, SSO, and settings for each tenant
-          </CardDescription>
+      <Card>
+        <CardHeader className="gap-3 sm:flex-row sm:items-end sm:justify-between sm:space-y-0">
+          <div>
+            <CardTitle><BilingualText en="Organizations" el="Οργανισμοί" compact /></CardTitle>
+            <CardDescription>
+              <BilingualText
+                en="Configure branding, SSO, and settings for each tenant"
+                el="Ρυθμίσεις επωνυμίας, SSO και παραμέτρων ανά tenant"
+                compact
+                wrap
+              />
+            </CardDescription>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="pointer-events-none absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); clear(); }}
+              placeholder={bilingualInline('Search name or slug', 'Αναζήτηση ονόματος ή slug')}
+              aria-label={bilingualAria('Search tenants', 'Αναζήτηση tenants')}
+              className="pl-9"
+            />
+          </div>
         </CardHeader>
         <CardContent>
+          {/* What a filtered list owes its reader: which filter is on, and a
+              way out of it. The filters themselves live in the rail. */}
+          {activeFilterCount > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <span>
+                <BilingualText
+                  en={`Showing ${visibleTenants.length} of ${tenantList.length}`}
+                  el={`Εμφανίζονται ${visibleTenants.length} από ${tenantList.length}`}
+                  compact
+                />
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setStatusFilter('all'); setBrandingFilter('all'); clear(); }}
+              >
+                <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
+              </Button>
+            </div>
+          )}
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -172,51 +355,78 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" />
-              <p>Failed to load tenants</p>
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" aria-hidden="true" />
+              <p><BilingualText en="Failed to load tenants" el="Αποτυχία φόρτωσης tenants" compact /></p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
-                Retry
+                <BilingualText en="Retry" el="Επανάληψη" compact />
               </Button>
             </div>
           ) : tenantList.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="icon-xl mx-auto mb-2" />
-              <p>No tenants configured yet</p>
+              <Building2 className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <p><BilingualText en="No tenants configured yet" el="Δεν υπάρχουν ακόμη tenants" compact /></p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
-                <Plus className="icon-sm" />
-                Create First Tenant
+                <Plus className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Create First Tenant" el="Δημιουργία πρώτου tenant" compact />
               </Button>
+            </div>
+          ) : visibleTenants.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Search className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <p>
+                <BilingualText
+                  en="No tenant matches this search and these filters."
+                  el="Κανένας tenant δεν ταιριάζει με την αναζήτηση και τα φίλτρα."
+                  compact
+                  wrap
+                />
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
-              {tenantList.map((tenant) => (
+              <label className="flex items-center gap-3 px-4 pb-1 text-xs font-medium text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(el) => { if (el) el.indeterminate = isPartiallySelected; }}
+                  onChange={toggleAll}
+                  className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+                />
+                <BilingualText
+                  en={`Select all ${visibleTenants.length}`}
+                  el={`Επιλογή όλων (${visibleTenants.length})`}
+                  compact
+                />
+              </label>
+              {visibleTenants.map((tenant) => (
                 <div
                   key={tenant.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-border/60 hover:bg-muted/30 transition-colors"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
                     <BulkCheckbox
                       id={tenant.id}
                       selectedIds={selectedIds}
                       onToggle={toggle}
+                      label={`Select ${tenant.displayName || tenant.name}`}
                       className="shrink-0"
                     />
                     {tenant.logoUrl ? (
                       <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="icon-md text-primary-accessible" />
+                        <Building2 className="icon-md text-primary-accessible" aria-hidden="true" />
                       </div>
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-medium">{tenant.displayName || tenant.name}</h3>
-                      <p className="text-sm text-muted-foreground">/{tenant.slug}</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-medium">{tenant.displayName || tenant.name}</h3>
+                      <p className="truncate text-sm text-muted-foreground">/{tenant.slug}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-3">
                     {getStatusBadge(tenant.status)}
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
-                      <Settings className="icon-sm" />
+                    <Button aria-label={`Settings for ${tenant.displayName || tenant.name}`} variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
+                      <Settings className="icon-sm" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>

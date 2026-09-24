@@ -163,7 +163,7 @@ export function BoardSummaryPanel({
           <p className="text-xs font-semibold text-foreground">Board Summary</p>
           <p className="text-2xs text-muted-foreground truncate">{boardTitle}</p>
         </div>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+        <button aria-label="Close" onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="icon-sm" />
         </button>
       </div>

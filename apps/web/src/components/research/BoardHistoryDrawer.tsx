@@ -364,7 +364,7 @@ export function BoardHistoryDrawer({
                           </div>
                         </div>
 
-                        <Button
+                        <Button aria-label="Preview version"
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0 shrink-0 opacity-60 hover:opacity-100"

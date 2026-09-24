@@ -103,7 +103,7 @@ export function EntityReferenceSelector({
           <DialogTitle>
             {selectedType ? (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
+                <Button aria-label="Back" variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
                   <X className="icon-sm" />
                 </Button>
                 Add {ENTITY_TYPES.find((t) => t.type === selectedType)?.label} Reference
@@ -205,7 +205,7 @@ export function EntityReferenceSelector({
                         <div className="text-sm text-muted-foreground truncate">{entity.subtitle}</div>
                       )}
                     </div>
-                    <Check className="icon-sm text-primary-accessible opacity-0 group-hover:opacity-100" />
+                    <Check className="icon-sm text-primary-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100" />
                   </button>
                 );
               })}

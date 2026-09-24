@@ -209,7 +209,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                   <div className="absolute -right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/message:opacity-100 transition-opacity">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <Button aria-label="Message actions" variant="ghost" size="sm" className="h-6 w-6 p-0">
                           <MoreVertical className="icon-sm" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -266,7 +266,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
               <span className="font-medium">{replyingTo.senderName}</span>
             </div>
           </div>
-          <Button
+          <Button aria-label="Cancel reply"
             variant="ghost"
             size="sm"
             onClick={() => setReplyingTo(null)}

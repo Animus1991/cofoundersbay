@@ -135,7 +135,14 @@ export function SideNav() {
               <Logo size="sm" />
             </OptimizedLink>
           ) : (
-            <OptimizedLink href="/" className="flex h-11 w-11 items-center justify-center hover:opacity-80 transition-opacity">
+            <OptimizedLink
+              href="/"
+              // Collapsed, the logo is the mark alone - no wordmark to name the
+              // link - so every page with a collapsed sidebar (and the research
+              // canvas, which always collapses it) had a nameless home link.
+              aria-label="CoFounderBay home"
+              className="flex h-11 w-11 items-center justify-center hover:opacity-80 transition-opacity"
+            >
               <LogoIcon size={35} />
             </OptimizedLink>
           )}

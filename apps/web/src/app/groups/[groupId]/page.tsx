@@ -99,7 +99,7 @@ function PostCard({
               <span className="ml-2 text-xs text-muted-foreground"><RelativeTime date={post.createdAt} format={formatRelativeTime} /></span>
             </div>
             {isOwn && (
-              <button
+              <button aria-label="Delete post"
                 onClick={() => onDelete(post.id)}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors"
               >
@@ -217,6 +217,12 @@ export default function GroupDetailPage() {
   const [submittingPost, setSubmittingPost] = useState(false);
   const [togglingMembership, setTogglingMembership] = useState(false);
   const [activeSection, setActiveSection] = useState<'feed' | 'members'>('feed');
+  // `?section=members` - how the admin directory's "Manage Members" lands
+  // here. Read after mount (not via useSearchParams) so the first render
+  // matches the server's and no Suspense boundary is needed.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('section') === 'members') setActiveSection('members');
+  }, []);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -355,7 +361,7 @@ export default function GroupDetailPage() {
                   )}
                 </div>
                 <div className="pb-1">
-                  <h1 className="font-display text-xl sm:text-2xl xl:text-3xl font-bold">{group.name}</h1>
+                  <h2 className="font-display text-xl sm:text-2xl xl:text-3xl font-bold">{group.name}</h2>
                   <div className="flex items-center gap-3 mt-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
@@ -434,7 +440,7 @@ export default function GroupDetailPage() {
 
         {/* Feed section */}
         {activeSection === 'feed' && (
-          <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="space-y-4">
               {/* Create post */}
               {isMember && (

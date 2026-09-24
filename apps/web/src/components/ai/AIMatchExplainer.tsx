@@ -100,7 +100,7 @@ export function AIMatchExplainer({
 
       {explanation && (
         <div className="relative rounded-xl border border-status-accent-border bg-status-accent-bg p-4 animate-in fade-in slide-in-from-top-2">
-          <button
+          <button aria-label="Dismiss explanation"
             onClick={() => setExplanation(null)}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
           >

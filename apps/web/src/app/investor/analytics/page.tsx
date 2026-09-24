@@ -201,17 +201,9 @@ export default function InvestorAnalyticsPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="icon-lg text-primary-accessible" />
-              Investment Analytics
-            </h1>
-            <p className="text-muted-foreground">Deal flow performance and portfolio insights</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex items-center gap-2">
             {(['3m', '6m', '1y'] as const).map(p => (
               <Button key={p} size="sm" variant={period === p ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setPeriod(p)}>
@@ -219,8 +211,10 @@ export default function InvestorAnalyticsPage() {
               </Button>
             ))}
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* KPI Grid */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {kpis.map(kpi => (

@@ -718,7 +718,7 @@ function ProfileStep({
             <div>
               <label className="block text-sm font-medium mb-2">Timezone</label>
               <Select value={data.timezone} onValueChange={(value) => setData({ ...data, timezone: value })}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Timezone">
                   <SelectValue placeholder="Select timezone" />
                 </SelectTrigger>
                 <SelectContent>
@@ -894,7 +894,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
               })
             }
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label="Commitment Level">
               <SelectValue placeholder="Select commitment level" />
             </SelectTrigger>
             <SelectContent>
@@ -918,7 +918,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
               })
             }
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label="Notification Frequency">
               <SelectValue placeholder="Select notification frequency" />
             </SelectTrigger>
             <SelectContent>

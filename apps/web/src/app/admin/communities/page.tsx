@@ -17,7 +17,9 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createGroup, listGroups, type GroupPrivacy, type GroupView } from '@/lib/api';
+import { createGroup, updateGroup, deleteGroup, listGroups, type GroupPrivacy, type GroupView } from '@/lib/api';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useToast } from '@/components/ui/toast';
@@ -71,6 +73,7 @@ function toCommunity(group: GroupView): Community {
     description: group.description ?? undefined,
     category: group.category ?? '\u2014',
     visibility: group.privacy === 'secret' ? 'private' : group.privacy,
+    privacy: group.privacy,
     memberCount: group.memberCount,
     postCount: group.postCount,
     createdAt: group.createdAt,
@@ -89,9 +92,19 @@ type Community = {
   createdAt: string;
   status: 'active' | 'archived' | 'flagged';
   tenant?: string;
+  /** The group's own privacy, kept so Edit can seed its form exactly. */
+  privacy?: GroupPrivacy;
 };
 
-function CommunityCard({ community }: { community: Community }) {
+function CommunityCard({
+  community,
+  onEdit,
+  onDelete,
+}: {
+  community: Community;
+  onEdit: (c: Community) => void;
+  onDelete: (c: Community) => void;
+}) {
   const visibilityIcons: Record<string, React.ReactNode> = {
     public: <Globe className="icon-sm" />,
     private: <Lock className="icon-sm" />,
@@ -117,7 +130,7 @@ function CommunityCard({ community }: { community: Community }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/communities/${community.id}`} className="font-medium hover:text-primary-accessible transition-colors">
+                  <Link href={`/groups/${community.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                     {community.name}
                   </Link>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -139,13 +152,28 @@ function CommunityCard({ community }: { community: Community }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/communities/${community.id}`}>View Community</Link>
+                      <Link href={`/groups/${community.id}`}>View Community</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Edit Settings</DropdownMenuItem>
-                    <DropdownMenuItem>Manage Members</DropdownMenuItem>
-                    <DropdownMenuItem>View Reports</DropdownMenuItem>
-                    <DropdownMenuItem className="text-status-warning">Archive</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-accessible">Delete</DropdownMenuItem>
+                    {/* All five below had no handler, and both links above
+                        pointed at /communities/:id, a route that does not
+                        exist - the groups surface is /groups/[groupId]. */}
+                    <DropdownMenuItem onSelect={() => onEdit(community)}>Edit Settings</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/groups/${community.id}?section=members`}>Manage Members</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/reports">View Reports</Link>
+                    </DropdownMenuItem>
+                    <UnavailableMenuItem
+                      className="text-status-warning"
+                      en="Archive"
+                      el="Αρχειοθέτηση"
+                      reasonEn="Groups have no archived state in the schema yet."
+                      reasonEl="Οι ομάδες δεν έχουν ακόμη κατάσταση αρχειοθέτησης."
+                    />
+                    <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(community)}>
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -240,6 +268,9 @@ export default function AdminCommunitiesPage() {
   const [visibility, setVisibility] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [createOpen, setCreateOpen] = useState(false);
+  /** Set when the dialog edits an existing group rather than creating one. */
+  const [editing, setEditing] = useState<Community | null>(null);
+  const confirm = useConfirm();
   const [form, setForm] = useState({ name: '', description: '', category: '', privacy: 'public' as GroupPrivacy });
 
   // Mock data
@@ -261,8 +292,52 @@ export default function AdminCommunitiesPage() {
     onError: () => toastError('Could not create the community', 'The groups API rejected the request. Check the name and try again.'),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (vars: { id: string; body: Parameters<typeof updateGroup>[1] }) => updateGroup(vars.id, vars.body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'communities'] });
+      success('Community updated', `${form.name} was saved.`);
+      setCreateOpen(false);
+      setEditing(null);
+      setForm({ name: '', description: '', category: '', privacy: 'public' });
+    },
+    onError: () => toastError('Could not save the community', 'The groups API rejected the change.'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteGroup(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'communities'] });
+      success('Community deleted');
+    },
+    onError: () => toastError('Could not delete the community', 'The groups API rejected the request.'),
+  });
+
   const live = useMemo(() => (data?.groups ?? []).map(toCommunity), [data]);
   const showingSeed = !isLoading && live.length === 0;
+
+  const openEdit = (c: Community) => {
+    if (showingSeed) {
+      toastError('Nothing to edit', 'These rows are samples until the groups API returns communities.');
+      return;
+    }
+    setEditing(c);
+    setForm({ name: c.name, description: c.description ?? '', category: c.category === '\u2014' ? '' : c.category, privacy: c.privacy ?? 'public' });
+    setCreateOpen(true);
+  };
+
+  const confirmDelete = async (c: Community) => {
+    if (showingSeed) {
+      toastError('Nothing to delete', 'These rows are samples until the groups API returns communities.');
+      return;
+    }
+    const ok = await confirm({
+      title: `Delete ${c.name}?`,
+      description: 'The group, its posts and its member list are removed. This cannot be undone.',
+      confirmLabel: 'Delete community',
+    });
+    if (ok) deleteMutation.mutate(c.id);
+  };
   const communities: Community[] = live.length > 0 ? live : isLoading ? [] : SEED_COMMUNITIES;
 
 
@@ -312,7 +387,7 @@ export default function AdminCommunitiesPage() {
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground">Visibility</p>
             <Select value={visibility} onValueChange={setVisibility}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger aria-label="Visibility" className="w-full">
                 <SelectValue placeholder="Visibility" />
               </SelectTrigger>
               <SelectContent>
@@ -326,7 +401,7 @@ export default function AdminCommunitiesPage() {
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground">Status</p>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger aria-label="Status" className="w-full">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -352,22 +427,17 @@ export default function AdminCommunitiesPage() {
   ];
 
   return (
-    <AppShell rail={rail}>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Communities</h1>
-            <p className="text-muted-foreground">
-              Manage platform communities
-            </p>
-          </div>
+    <AppShell rail={rail}
+      actions={
+        <>
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
             Create Community
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {showingSeed && (
           <SampleDataNotice
             surface="Communities"
@@ -390,7 +460,7 @@ export default function AdminCommunitiesPage() {
         {/* Communities List */}
         <div className="space-y-3">
           {filteredCommunities.map((community) => (
-            <CommunityCard key={community.id} community={community} />
+            <CommunityCard key={community.id} community={community} onEdit={openEdit} onDelete={confirmDelete} />
           ))}
           {filteredCommunities.length === 0 && (
             <Card>
@@ -406,12 +476,23 @@ export default function AdminCommunitiesPage() {
         </div>
       </div>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) {
+            setEditing(null);
+            setForm({ name: '', description: '', category: '', privacy: 'public' });
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create community</DialogTitle>
+            <DialogTitle>{editing ? `Edit ${editing.name}` : 'Create community'}</DialogTitle>
             <DialogDescription>
-              Creates a real group via the groups API. The slug is derived from the name.
+              {editing
+                ? 'Saves to the group through the groups API.'
+                : 'Creates a real group via the groups API. The slug is derived from the name.'}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -420,6 +501,18 @@ export default function AdminCommunitiesPage() {
               e.preventDefault();
               const slug = form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
               if (!form.name.trim() || !slug) return;
+              if (editing) {
+                updateMutation.mutate({
+                  id: editing.id,
+                  body: {
+                    name: form.name.trim(),
+                    description: form.description.trim(),
+                    category: form.category.trim(),
+                    privacy: form.privacy,
+                  },
+                });
+                return;
+              }
               createMutation.mutate({
                 name: form.name.trim(),
                 slug,
@@ -474,8 +567,10 @@ export default function AdminCommunitiesPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending || !form.name.trim()}>
-                {createMutation.isPending ? 'Creating…' : 'Create'}
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending || !form.name.trim()}>
+                {editing
+                  ? updateMutation.isPending ? 'Saving…' : 'Save'
+                  : createMutation.isPending ? 'Creating…' : 'Create'}
               </Button>
             </DialogFooter>
           </form>

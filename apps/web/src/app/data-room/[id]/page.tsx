@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { useParams } from 'next/navigation';
 import {
   FileText,
@@ -469,14 +470,14 @@ export default function DataRoomPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
+                  <Button aria-label="List view" aria-pressed={viewMode === 'list'}
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
                   >
                     <List className="icon-sm" />
                   </Button>
-                  <Button
+                  <Button aria-label="Grid view" aria-pressed={viewMode === 'grid'}
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
@@ -566,27 +567,18 @@ export default function DataRoomPage() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    <Eye className="icon-sm mr-2" />
-                                    View
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Download className="icon-sm mr-2" />
-                                    Download
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Share2 className="icon-sm mr-2" />
+                                  {/* The data room has no storage backend (see the
+                                      notice above), so the file actions say so; Share
+                                      opens the page's own share-access dialog. */}
+                                  <UnavailableMenuItem icon={<Eye className="icon-sm mr-2 mt-0.5" aria-hidden="true" />} en="View" el="Προβολή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
+                                  <UnavailableMenuItem icon={<Download className="icon-sm mr-2 mt-0.5" aria-hidden="true" />} en="Download" el="Λήψη" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
+                                  <DropdownMenuItem onSelect={() => setIsShareDialogOpen(true)}>
+                                    <Share2 className="icon-sm mr-2" aria-hidden="true" />
                                     Share
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem>
-                                    <Edit className="icon-sm mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem className="text-destructive-accessible">
-                                    <Trash2 className="icon-sm mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
+                                  <UnavailableMenuItem icon={<Edit className="icon-sm mr-2 mt-0.5" aria-hidden="true" />} en="Edit" el="Επεξεργασία" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
+                                  <UnavailableMenuItem className="text-destructive-accessible" icon={<Trash2 className="icon-sm mr-2 mt-0.5" aria-hidden="true" />} en="Delete" el="Διαγραφή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
@@ -609,19 +601,19 @@ export default function DataRoomPage() {
                                   <Button aria-label="More options"
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    // focus-visible too: a keyboard user tabbing onto an
+                                    // opacity-0 button saw nothing where focus was.
+                                    className="h-8 w-8 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
                                   >
                                     <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>View</DropdownMenuItem>
-                                  <DropdownMenuItem>Download</DropdownMenuItem>
-                                  <DropdownMenuItem>Share</DropdownMenuItem>
+                                  <UnavailableMenuItem en="View" el="Προβολή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
+                                  <UnavailableMenuItem en="Download" el="Λήψη" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
+                                  <DropdownMenuItem onSelect={() => setIsShareDialogOpen(true)}>Share</DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-destructive-accessible">
-                                    Delete
-                                  </DropdownMenuItem>
+                                  <UnavailableMenuItem className="text-destructive-accessible" en="Delete" el="Διαγραφή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
@@ -738,13 +730,11 @@ export default function DataRoomPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Activity</DropdownMenuItem>
-                            <DropdownMenuItem>Edit Access</DropdownMenuItem>
-                            <DropdownMenuItem>Resend Invite</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setActiveTab('activity')}>View Activity</DropdownMenuItem>
+                            <UnavailableMenuItem en="Edit Access" el="Επεξεργασία πρόσβασης" reasonEn="Sample investor - no access records yet." reasonEl="Δείγμα - δεν υπάρχουν ακόμη εγγραφές πρόσβασης." />
+                            <UnavailableMenuItem en="Resend Invite" el="Επαναποστολή πρόσκλησης" reasonEn="Sample investor - no access records yet." reasonEl="Δείγμα - δεν υπάρχουν ακόμη εγγραφές πρόσβασης." />
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive-accessible">
-                              Revoke Access
-                            </DropdownMenuItem>
+                            <UnavailableMenuItem className="text-destructive-accessible" en="Revoke Access" el="Ανάκληση πρόσβασης" reasonEn="Sample investor - no access records yet." reasonEl="Δείγμα - δεν υπάρχουν ακόμη εγγραφές πρόσβασης." />
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

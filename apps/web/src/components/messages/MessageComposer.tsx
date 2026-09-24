@@ -106,7 +106,7 @@ export function MessageComposer({
                   <File className="icon-sm text-muted-foreground" />
                 )}
                 <span className="max-w-[150px] truncate">{file.name}</span>
-                <button
+                <button aria-label="Remove attachment"
                   onClick={() => removeAttachment(index)}
                   className="text-muted-foreground hover:text-foreground"
                 >
@@ -148,7 +148,7 @@ export function MessageComposer({
               rows={1}
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-1">
-              <Button
+              <Button aria-label="Attach file"
                 type="button"
                 variant="ghost"
                 size="sm"
@@ -158,7 +158,7 @@ export function MessageComposer({
               >
                 <Paperclip className="icon-sm" />
               </Button>
-              <Button
+              <Button aria-label="Insert emoji"
                 type="button"
                 variant="ghost"
                 size="sm"

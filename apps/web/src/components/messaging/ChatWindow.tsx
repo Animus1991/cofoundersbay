@@ -766,7 +766,7 @@ export function ChatWindow({
               >
                 <Paperclip className="icon-sm text-muted-foreground" />
                 <span className="max-w-[220px] truncate">{f.name}</span>
-                <button
+                <button aria-label="Remove file"
                   type="button"
                   className="text-muted-foreground hover:text-destructive-accessible"
                   onClick={() =>

@@ -224,22 +224,17 @@ export default function MentorRequestsPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Mentee Requests</h1>
-            <p className="text-muted-foreground">
-              Review and manage mentorship requests
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
             <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
             Refresh
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>

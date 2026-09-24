@@ -58,7 +58,7 @@ function CommentBubble({
           isOwn
             ? 'bg-primary text-primary-foreground rounded-tr-sm'
             : 'bg-secondary text-foreground rounded-tl-sm',
-          comment.resolved && 'opacity-60',
+          comment.resolved && 'surface-inactive',
         )}>
           {comment.body}
           {comment.resolved && (
@@ -66,7 +66,7 @@ function CommentBubble({
           )}
         </div>
         <div className={cn(
-          'flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity',
+          'flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity',
           isOwn ? 'flex-row-reverse' : 'flex-row',
         )}>
           {!comment.resolved && (
@@ -161,7 +161,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
               {showResolved ? 'Hide resolved' : `+${resolved.length} resolved`}
             </button>
           )}
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
+          <Button aria-label="Close comments" variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
             <X className="icon-sm" />
           </Button>
         </div>

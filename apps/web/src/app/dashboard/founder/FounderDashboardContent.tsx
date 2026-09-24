@@ -296,7 +296,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <span className={cn('flex items-center gap-0.5 text-sm font-bold tabular-nums', scoreColor)}>
           <CfbGlyph name="spark" className="icon-sm" />{score}%
         </span>
-        <ChevronRight className="icon-sm hidden text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 sm:block" />
+        <ChevronRight className="icon-sm hidden text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 sm:block" />
       </div>
     </Link>
   );

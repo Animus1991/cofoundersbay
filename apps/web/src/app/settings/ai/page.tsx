@@ -86,8 +86,8 @@ const RESPONSE_STYLES = [
 /** The product's switch, with this page's prop names. See the note on the same
     wrapper in `settings/page.tsx`: the hand-rolled copy this replaces had a
     square track, so `rounded-full` drew a circle. */
-function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
-  return <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />;
+function Toggle({ checked, onChange, disabled, label }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; label: string }) {
+  return <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} aria-label={label} />;
 }
 
 export default function AISettingsPage() {
@@ -183,18 +183,10 @@ export default function AISettingsPage() {
             <ArrowLeft className="icon-sm" />
             {t('Back to Settings')}
           </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                  <CfbGlyph name="spark" className="icon-md" />
-                </div>
-                {t('AI Assistant Settings')}
-              </h1>
-              <p className="mt-1 text-muted-foreground">
-                Customize how the AI assistant works for you
-              </p>
-            </div>
+          {/* The page title lives in the shell header; a second, larger
+              "AI Assistant Settings" here made the page open with its own name
+              twice. The links beside it stay. */}
+          <div className="flex items-center justify-end">
             <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" className="gap-2">
               <Link href="/ai/capabilities">
@@ -271,7 +263,7 @@ export default function AISettingsPage() {
                     value={prefs.preferredModel}
                     onValueChange={(v) => updatePref('preferredModel', v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Preferred Model">
                       <SelectValue placeholder="Select model" />
                     </SelectTrigger>
                     <SelectContent>
@@ -303,7 +295,7 @@ export default function AISettingsPage() {
                     value={prefs.defaultAgent}
                     onValueChange={(v) => updatePref('defaultAgent', v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Default Agent">
                       <SelectValue placeholder="Select agent" />
                     </SelectTrigger>
                     <SelectContent>
@@ -339,7 +331,7 @@ export default function AISettingsPage() {
                   value={String(prefs.temperature)}
                   onValueChange={(v) => updatePref('temperature', parseFloat(v))}
                 >
-                  <SelectTrigger className="w-full sm:w-48">
+                  <SelectTrigger aria-label="Creativity (Temperature)" className="w-full sm:w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -363,7 +355,7 @@ export default function AISettingsPage() {
                   value={String(prefs.maxTokens)}
                   onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
                 >
-                  <SelectTrigger className="w-full sm:w-48">
+                  <SelectTrigger aria-label="Max Response Length" className="w-full sm:w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -435,6 +427,7 @@ export default function AISettingsPage() {
                   </p>
                 </div>
                 <Toggle
+                  label="Use Emojis"
                   checked={prefs.useEmoji}
                   onChange={(v) => updatePref('useEmoji', v)}
                 />
@@ -466,6 +459,7 @@ export default function AISettingsPage() {
                     <p className="text-sm text-muted-foreground">{desc}</p>
                   </div>
                   <Toggle
+                    label={label}
                     checked={prefs[key as keyof AIPreferences] as boolean}
                     onChange={(v) => updatePref(key as keyof AIPreferences, v)}
                   />
@@ -497,6 +491,7 @@ export default function AISettingsPage() {
                     <p className="text-sm text-muted-foreground">{desc}</p>
                   </div>
                   <Toggle
+                    label={label}
                     checked={prefs[key as keyof AIPreferences] as boolean}
                     onChange={(v) => updatePref(key as keyof AIPreferences, v)}
                   />

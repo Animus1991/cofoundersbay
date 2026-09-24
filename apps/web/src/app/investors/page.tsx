@@ -174,7 +174,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
                     <Building2 className="icon-sm" />
                     {investor.firmName}
-                    {investor.firmRole && <span className="text-muted-foreground/60"> · {investor.firmRole}</span>}
+                    {investor.firmRole && <span className="text-muted-foreground"> · {investor.firmRole}</span>}
                   </p>
                 )}
               </div>
@@ -182,7 +182,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                 <Badge variant="outline" className="text-xs font-normal">
                   {TYPE_LABEL[investor.investorType] ?? investor.investorType}
                 </Badge>
-                <button onClick={() => setSaved(!saved)} className="p-1 rounded hover:bg-muted transition-colors">
+                <button aria-label={saved ? `Saved: ${investor.displayName}` : `Save ${investor.displayName}`} aria-pressed={saved} type="button" onClick={() => setSaved(!saved)} className="p-1 rounded hover:bg-muted transition-colors">
                   <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
                 </button>
               </div>
@@ -297,7 +297,7 @@ export default function InvestorsPage() {
               <Input placeholder="Search by name, firm, or focus area..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={investorType} onValueChange={setInvestorType}>
-              <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
+              <SelectTrigger aria-label="Investor type" className="w-full sm:w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="angel_investor">Angel</SelectItem>
@@ -309,7 +309,7 @@ export default function InvestorsPage() {
               </SelectContent>
             </Select>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger className="w-full sm:w-[150px]"><SelectValue placeholder="Stage" /></SelectTrigger>
+              <SelectTrigger aria-label="Stage" className="w-full sm:w-[150px]"><SelectValue placeholder="Stage" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Stages</SelectItem>
                 <SelectItem value="pre-seed">Pre-Seed</SelectItem>
@@ -320,7 +320,7 @@ export default function InvestorsPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger aria-label="Sort by" className="w-full sm:w-[150px]">
                 <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>

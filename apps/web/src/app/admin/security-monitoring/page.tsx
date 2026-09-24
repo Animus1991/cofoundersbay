@@ -152,7 +152,7 @@ export default function SecurityMonitoringPage() {
           />
         </div>
         <Select value={level} onValueChange={setLevel}>
-          <SelectTrigger className="w-full sm:w-[160px]">
+          <SelectTrigger aria-label="Level" className="w-full sm:w-[160px]">
             <SelectValue placeholder="Level" />
           </SelectTrigger>
           <SelectContent>

@@ -178,7 +178,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
                   <span className="text-2xs text-muted-foreground"><RelativeTime date={comment.createdAt} format={timeAgo} /></span>
-                  <Button
+                  <Button aria-label="Close"
                     variant="ghost"
                     size="sm"
                     className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
@@ -439,7 +439,7 @@ export function CanvasCommentPins({
                 <Pin className="icon-sm text-primary-accessible" />
                 Add Pin Comment
               </div>
-              <Button
+              <Button aria-label="Cancel comment"
                 variant="ghost"
                 size="sm"
                 className="h-5 w-5 p-0"

@@ -394,7 +394,7 @@ export default function AdminUserManagementPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="mt-2">
+              <SelectTrigger aria-label="Role" className="mt-2">
                 <SelectValue placeholder="All roles" />
               </SelectTrigger>
               <SelectContent>
@@ -411,7 +411,7 @@ export default function AdminUserManagementPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="mt-2">
+              <SelectTrigger aria-label="Status" className="mt-2">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
@@ -426,7 +426,7 @@ export default function AdminUserManagementPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sort by</p>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="mt-2">
+              <SelectTrigger aria-label="Sort by" className="mt-2">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -653,10 +653,10 @@ export default function AdminUserManagementPage() {
               Page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              <Button aria-label="Previous page" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
                 <ChevronLeft className="icon-sm" />
               </Button>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+              <Button aria-label="Next page" variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
                 <ChevronRight className="icon-sm" />
               </Button>
             </div>

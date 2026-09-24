@@ -150,9 +150,9 @@ export function VisualTemplateNode({
           {config.title.toUpperCase()}
         </span>
         {!readOnly && (
-          <button
+          <button aria-label="Delete"
             onMouseDown={(e) => { e.stopPropagation(); onDelete?.(); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible opacity-0 group-hover:opacity-100 transition-all"
+            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all"
           >
             <Trash2 className="icon-sm" />
           </button>
@@ -194,7 +194,7 @@ export function VisualTemplateNode({
                 >
                   {cell.label}
                 </span>
-                <button
+                <button aria-label="Show hint"
                   onMouseDown={(e) => { e.stopPropagation(); setShowHint(showHint === cell.id ? null : cell.id); }}
                   className="opacity-0 hover:opacity-100 w-3.5 h-3.5 flex items-center justify-center text-muted-foreground/40"
                 >

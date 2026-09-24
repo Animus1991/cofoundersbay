@@ -44,7 +44,7 @@ export function SkillChip({
     >
       {label}
       {removable && (
-        <button
+        <button aria-label={`Remove ${label}`}
           type="button"
           onClick={(e) => {
             e.stopPropagation();

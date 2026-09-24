@@ -3,20 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  User,
-  Star,
-  BadgeCheck,
-  Clock,
-  Globe,
-  DollarSign,
-  Video,
-  Users,
-  Edit,
-  Save,
-  RefreshCw,
-  Plus,
-  X,
-  ChevronDown,
+  Star, BadgeCheck, Clock, Globe, DollarSign, Video, Users, Edit, Save, RefreshCw, Plus, X, ChevronDown,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -110,23 +97,17 @@ export default function MentorProfilePage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <User className="icon-lg text-primary-accessible" />
-              Mentor Profile
-            </h1>
-            <p className="text-muted-foreground">How mentees see you on the platform</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <Button onClick={handleSave} disabled={isSaving}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Preview Card */}
         <Card className="border-primary/20 bg-primary/2">
           <CardContent className="p-5">
@@ -196,7 +177,7 @@ export default function MentorProfilePage() {
                   <div className="space-y-2">
                     <Label>Years of Experience</Label>
                     <Select value={yearsExp} onValueChange={setYearsExp}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label="Years of Experience"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
@@ -207,7 +188,7 @@ export default function MentorProfilePage() {
                   <div className="space-y-2">
                     <Label>Hours Available / Week</Label>
                     <Select value={hoursPerWeek} onValueChange={setHoursPerWeek}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label="Hours Available / Week"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '8', '10', '15', '20'].map(v => (
                           <SelectItem key={v} value={v}>{v}h/week</SelectItem>
@@ -221,7 +202,7 @@ export default function MentorProfilePage() {
                     <p className="text-sm font-medium">Accepting New Mentees</p>
                     <p className="text-xs text-muted-foreground">Toggle visibility in mentee search</p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} />
+                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Mentees" />
                 </div>
               </CardContent>
             </Card>
@@ -339,7 +320,7 @@ export default function MentorProfilePage() {
                     <p className="text-sm font-medium">Free Mentoring</p>
                     <p className="text-xs text-muted-foreground">Offer sessions at no cost</p>
                   </div>
-                  <Switch checked={isFree} onCheckedChange={setIsFree} />
+                  <Switch checked={isFree} onCheckedChange={setIsFree} aria-label="Free Mentoring" />
                 </div>
                 {!isFree && (
                   <div className="space-y-2">
@@ -361,7 +342,7 @@ export default function MentorProfilePage() {
                 <div className="space-y-2">
                   <Label>Default Session Duration</Label>
                   <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                    <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Default Session Duration" className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {[15, 30, 45, 60, 90, 120].map(d => (
                         <SelectItem key={d} value={String(d)}>

@@ -211,7 +211,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                 <UserPlus className="icon-sm" />
                 Connect
               </Button>
-              <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+              <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                 <MessageCircle className="icon-sm" />
               </Button>
             </div>
@@ -259,7 +259,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                   <UserPlus className="icon-sm" />
                   Connect
                 </Button>
-                <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+                <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                   <MessageCircle className="icon-sm" />
                 </Button>
               </div>
@@ -541,16 +541,20 @@ export function MembersPageClient() {
                 size="sm"
                 onClick={() => setViewMode('grid')}
                 className="rounded-r-none"
+                aria-label="Grid view"
+                aria-pressed={viewMode === 'grid'}
               >
-                <Grid3x3 className="icon-sm" />
+                <Grid3x3 className="icon-sm" aria-hidden="true" />
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="rounded-l-none"
+                aria-label="List view"
+                aria-pressed={viewMode === 'list'}
               >
-                <List className="icon-sm" />
+                <List className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -567,7 +571,7 @@ export function MembersPageClient() {
                     value={selectedRole}
                     onValueChange={(value) => setSelectedRole(value as (typeof ROLE_OPTIONS)[number]['value'])}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -583,7 +587,7 @@ export function MembersPageClient() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Industry</label>
                   <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Industry">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -599,7 +603,7 @@ export function MembersPageClient() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Location</label>
                   <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Location">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -618,7 +622,7 @@ export function MembersPageClient() {
                     value={selectedAvailability}
                     onValueChange={(value) => setSelectedAvailability(value as (typeof AVAILABILITY_OPTIONS)[number]['value'])}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="Availability">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -654,7 +658,7 @@ export function MembersPageClient() {
           </p>
 
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger aria-label="Sort by" className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, type CSSProperties } from 'react';
 import {
   FileText, Image as ImageIcon, Link as LinkIcon, StickyNote,
   MoreHorizontal, Lock, Unlock, Trash2, X,
@@ -361,6 +361,12 @@ function fmtSize(bytes: number) {
 
 /* ─── Node colors for color picker ───────────────────────────── */
 
+/** Light-theme ink for a card painted with a pastel wash (see its use below). */
+const WASHED_INK = {
+  '--foreground': '220 26% 9%',
+  '--muted-foreground': '220 10% 36%',
+} as CSSProperties;
+
 export function ResearchNodeCard({
   node,
   isSelected,
@@ -620,8 +626,8 @@ export function ResearchNodeCard({
             <Spline className="icon-sm" style={{ color: '#EC4899' }} />
             <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-accessible">
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button aria-label="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-accessible">
               <Trash2 className="icon-sm" />
             </button>
           </div>
@@ -635,9 +641,9 @@ export function ResearchNodeCard({
         </div>
         {isSelected && !node.locked && onResizeStart && (
           <>
-            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
-            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
-            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }} />
+            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
+            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
+            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }} />
           </>
         )}
       </div>
@@ -699,14 +705,14 @@ export function ResearchNodeCard({
               />
             ))}
           </div>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <button
               onClick={(e) => { e.stopPropagation(); onUpdate({ locked: !node.locked }); }}
               className="w-4 h-4 flex items-center justify-center rounded hover:bg-black/10"
             >
               {node.locked ? <Lock className="w-2.5 h-2.5" style={{ color: stickyColor.accent }} aria-hidden="true" /> : <Unlock className="w-2.5 h-2.5 opacity-40" aria-hidden="true" />}
             </button>
-            <button
+            <button aria-label="Delete"
               onClick={handleDelete}
               className="w-4 h-4 flex items-center justify-center rounded hover:bg-status-danger/20"
             >
@@ -768,9 +774,9 @@ export function ResearchNodeCard({
         {/* Resize handles */}
         {isSelected && !node.locked && onResizeStart && (
           <>
-            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
-            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
-            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}>
+            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
+            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
+            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}>
               <svg viewBox="0 0 14 14" className="w-full h-full"><path d="M12 2L2 12M12 6L6 12M12 10L10 12" stroke={stickyColor.accent} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" /></svg>
             </div>
           </>
@@ -799,6 +805,14 @@ export function ResearchNodeCard({
         width: `${node.width}px`,
         height: node.collapsed ? 'auto' : undefined,
         backgroundColor: wash,
+        // A wash is a light pastel in every theme, but the text on the card
+        // reads theme tokens - so in the dark theme the title was
+        // `--foreground` at 96% lightness on a yellow note, about 1.1:1, and
+        // the type label and body sat not far above it. Scoping the light
+        // theme's ink to a washed card keeps every token-driven line on it
+        // legible without touching the unwashed cards, which sit on the
+        // canvas background and must keep following the theme.
+        ...(wash ? WASHED_INK : null),
         zIndex: isSelected ? 10 : (node.zIndex || 2),
         ...nodeChromeCss(node.metadata),
       }}
@@ -822,9 +836,9 @@ export function ResearchNodeCard({
             </span>
           )}
         </div>
-        <div ref={menuRef} className={cn('relative flex items-center gap-0.5 transition-opacity', isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}>
+        <div ref={menuRef} className={cn('relative flex items-center gap-0.5 transition-opacity', isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100')}>
           {node.locked && <Lock className="icon-sm text-muted-foreground" />}
-          <button
+          <button aria-label="More actions"
             onClick={(e) => { e.stopPropagation(); setShowMenu((p) => !p); setShowColorPicker(false); }}
             className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
@@ -1158,17 +1172,17 @@ export function ResearchNodeCard({
         <>
           {/* Right edge */}
           <div
-            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 rounded-r"
+            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity hover:bg-primary/20 rounded-r"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }}
           />
           {/* Bottom edge */}
           <div
-            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 rounded-b"
+            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity hover:bg-primary/20 rounded-b"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }}
           />
           {/* Corner handle */}
           <div
-            className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}
           >
             <svg viewBox="0 0 14 14" className="w-full h-full">

@@ -526,7 +526,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 >
                   Link
                 </button>
-                <button onClick={() => setShowLinkInput(false)} className="text-muted-foreground hover:text-foreground">
+                <button aria-label="Cancel link" onClick={() => setShowLinkInput(false)} className="text-muted-foreground hover:text-foreground">
                   <X className="icon-sm" />
                 </button>
               </>
@@ -621,9 +621,9 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                     )}
                     placeholder={idx === 0 ? 'Add first item…' : 'Add item…'}
                   />
-                  <button
+                  <button aria-label="Remove item"
                     onClick={() => removeChecklistItem(item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive-accessible"
+                    className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive-accessible"
                   >
                     <X className="icon-sm" />
                   </button>
@@ -676,7 +676,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
           {isImage && node.url && (
             <div className="flex flex-col items-center min-h-full p-4 gap-3">
               <div className="flex items-center gap-2">
-                <button
+                <button aria-label="Zoom out"
                   onClick={() => setImgZoom((z) => Math.max(0.2, z - 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
@@ -685,13 +685,13 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 <span className="text-xs text-muted-foreground min-w-[44px] text-center">
                   {Math.round(imgZoom * 100)}%
                 </span>
-                <button
+                <button aria-label="Zoom in"
                   onClick={() => setImgZoom((z) => Math.min(4, z + 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <ZoomIn className="icon-sm" />
                 </button>
-                <button
+                <button aria-label="Reset zoom"
                   onClick={() => setImgZoom(1)}
                   className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >

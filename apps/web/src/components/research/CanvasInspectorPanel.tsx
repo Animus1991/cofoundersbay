@@ -77,7 +77,9 @@ function RailButton({
       )}
       onClick={onClick}
     >
-      <BilingualText en={en} el={el} compact />
+      {/* `wrap`, not truncate: at half of a 220px panel, "Find & replace ·
+          Εύρεση" became "Fi… Εύρε…" on every row. */}
+      <BilingualText en={en} el={el} compact wrap />
     </Button>
   );
 }
@@ -136,7 +138,7 @@ export function CanvasInspectorPanel({
             <Layers className="icon-sm" />
             <BilingualText en={researchEn('layers')} el={researchEl('layers')} compact />
           </div>
-          <Button variant="ghost" size="sm" className="h-7 w-7 rounded-xl p-0" onClick={onAddLayer}>
+          <Button aria-label="Add layer" variant="ghost" size="sm" className="h-7 w-7 rounded-xl p-0" onClick={onAddLayer}>
             <Plus className="icon-sm" />
           </Button>
         </div>
@@ -154,7 +156,7 @@ export function CanvasInspectorPanel({
                 {layer.name}
               </button>
               <span className="flex items-center gap-0.5">
-                <button
+                <button aria-label={layer.locked ? `Unlock ${layer.name}` : `Lock ${layer.name}`}
                   type="button"
                   className="rounded-lg p-1 text-muted-foreground hover:bg-muted/40"
                   onClick={() => onLockLayer(layer.id)}
@@ -175,7 +177,25 @@ export function CanvasInspectorPanel({
           ))}
         </ul>
       </div>
-      <div className="relative z-0 min-h-0 flex-1 cursor-default overflow-y-auto overscroll-contain p-3">
+      <div
+        className="relative z-0 min-h-0 flex-1 cursor-default overflow-y-auto overscroll-contain p-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+        // With nothing selected every control below is disabled, which left a
+        // scrolling region with nothing in it a keyboard could reach (axe
+        // scrollable-region-focusable). It takes focus itself only then.
+        role="region"
+        aria-label={bilingualAria(researchEn('inspector_region'), researchEl('inspector_region'))}
+        tabIndex={idle ? 0 : undefined}
+      >
+        {idle && (
+          <p className="mb-2 rounded-lg bg-muted/40 px-2 py-1.5 text-2xs leading-snug text-muted-foreground">
+            <BilingualText
+              en={researchEn('inspector_idle_hint')}
+              el={researchEl('inspector_idle_hint')}
+              stacked
+              wrap
+            />
+          </p>
+        )}
         <div className={cn(idle && 'opacity-50')}>
           <p className="mb-1.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={researchEn('format')} el={researchEl('format')} compact />
@@ -314,7 +334,7 @@ export function CanvasInspectorPanel({
                 title={bilingualAria(researchEn(row.label), researchEl(row.label))}
                 onClick={() => onLink(row.href)}
               >
-                <BilingualText en={researchEn(row.label)} el={researchEl(row.label)} compact />
+                <BilingualText en={researchEn(row.label)} el={researchEl(row.label)} compact wrap />
               </Button>
             ))}
           </div>

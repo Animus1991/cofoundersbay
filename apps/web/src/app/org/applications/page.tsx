@@ -432,7 +432,7 @@ export default function OrgApplicationsPage() {
             />
           </div>
           <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectTrigger aria-label="Program" className="w-full sm:w-[200px]">
               <SelectValue placeholder="Program" />
             </SelectTrigger>
             <SelectContent>

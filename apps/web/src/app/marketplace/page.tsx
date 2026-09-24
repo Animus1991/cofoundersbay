@@ -139,7 +139,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
     <Card className={cn(
       'group transition-all hover:shadow-md hover:border-primary/20',
       featured && 'border-primary/30 bg-primary/[0.02]',
-      !provider.isAvailable && 'opacity-75',
+      !provider.isAvailable && 'surface-inactive',
     )}>
       <CardContent className="p-5 space-y-4">
         {/* Header */}
@@ -330,7 +330,7 @@ export default function MarketplacePage() {
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground">Sort by</p>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger aria-label="Sort by" className="w-full">
                 <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <SelectValue />
               </SelectTrigger>

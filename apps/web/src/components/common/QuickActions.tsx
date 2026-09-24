@@ -102,7 +102,7 @@ export function QuickActions({
                 {action.label}
               </span>
               {/* Icon button */}
-              <button
+              <button aria-label={action.label}
                 className={cn(
                   'h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-white transition-transform hover:scale-110',
                   action.color

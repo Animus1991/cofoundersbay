@@ -1862,6 +1862,21 @@ html {
   .card-compact { @apply p-3 sm:p-4; }      /* Compact cards - lists, dense info */
   .card-comfortable { @apply p-4 sm:p-6; }  /* Comfortable cards - default */
 
+  /* ── An item that is switched off ──
+     Paused webhooks, disabled flags, inactive API keys, unlisted services were
+     all drawn at `opacity-60`. Opacity fades the text with the card, and at 60%
+     the muted secondary line lands near 2.5:1 on the card in every theme -
+     axe failed /admin/feature-flags (8 nodes), /provider/services (7) and
+     /tenant/webhooks (4) on exactly that. "Off" is a state, and the state is
+     already said by the switch and the badge beside it; the card only has to
+     look quieter, which a recessed fill and a dashed edge do without taking
+     any contrast from the words. */
+  .surface-inactive {
+    background-color: hsl(var(--muted) / 0.45);
+    border-style: dashed;
+    box-shadow: none;
+  }
+
   /* ── The seam under a card heading ──
      `CardContent` carries `pt-0`, so the whole distance from a card's title to
      its first line of body is this one value: the header's bottom padding. It

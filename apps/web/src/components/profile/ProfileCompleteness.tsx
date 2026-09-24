@@ -220,7 +220,7 @@ export function ProfileCompleteness({
                         <p className="text-sm font-medium text-foreground">{field.label}</p>
                         <p className="text-xs text-muted-foreground truncate">{field.description}</p>
                       </div>
-                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
                     </Link>
                   );
                 })}

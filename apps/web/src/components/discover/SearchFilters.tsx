@@ -495,7 +495,7 @@ export function SearchFilters({
               className="gap-1 pr-1"
             >
               {pill.label}
-              <button
+              <button aria-label={`Remove filter ${pill.label}`} type="button"
                 onClick={pill.onRemove}
                 className="ml-1 rounded-full p-0.5 hover:bg-background/50"
               >

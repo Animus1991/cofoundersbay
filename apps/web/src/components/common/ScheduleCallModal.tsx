@@ -319,7 +319,7 @@ export function ScheduleCallModal({
             <div className="space-y-2">
               <Label>Duration</Label>
               <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Duration">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

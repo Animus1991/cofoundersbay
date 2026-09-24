@@ -179,16 +179,9 @@ export default function MentorSessionsPage() {
   const totalDuration = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Sessions</h1>
-            <p className="text-muted-foreground">
-              Manage your mentorship sessions
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
               <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
@@ -201,8 +194,10 @@ export default function MentorSessionsPage() {
               </Link>
             </Button>
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>

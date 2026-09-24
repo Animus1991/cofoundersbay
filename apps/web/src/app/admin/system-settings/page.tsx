@@ -68,14 +68,14 @@ export default function SystemSettingsPage() {
                   <p className="font-medium">Maintenance mode</p>
                   <p className="text-sm text-muted-foreground">Temporarily limit access for upgrades</p>
                 </div>
-                <Switch checked={maintenance} onCheckedChange={setMaintenance} />
+                <Switch checked={maintenance} onCheckedChange={setMaintenance} aria-label="Maintenance mode" />
               </div>
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
                   <p className="font-medium">Open registration</p>
                   <p className="text-sm text-muted-foreground">Allow new account signups</p>
                 </div>
-                <Switch checked={signupOpen} onCheckedChange={setSignupOpen} />
+                <Switch checked={signupOpen} onCheckedChange={setSignupOpen} aria-label="Open registration" />
               </div>
             </CardContent>
           </Card>

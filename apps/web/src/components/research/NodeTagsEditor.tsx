@@ -91,7 +91,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
                   className={cn('gap-1 pr-1', getTagColor(tag))}
                 >
                   {tag}
-                  <button
+                  <button aria-label={`Remove ${tag}`}
                     onClick={() => removeTag(tag)}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
                   >
@@ -141,7 +141,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
             className={cn('gap-1 pr-1', getTagColor(tag))}
           >
             {tag}
-            <button
+            <button aria-label={`Remove ${tag}`}
               onClick={() => removeTag(tag)}
               className="ml-1 hover:bg-black/10 rounded-full p-0.5"
             >
@@ -158,7 +158,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button
+        <Button aria-label="Add tag"
           variant="outline"
           size="sm"
           onClick={() => inputValue.trim() && addTag(inputValue)}

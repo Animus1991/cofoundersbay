@@ -172,7 +172,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query && (
-            <Button
+            <Button aria-label="Clear search"
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"

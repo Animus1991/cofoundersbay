@@ -52,6 +52,18 @@ import {
   type ProgramItem,
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+
+const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
+  { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
+  { value: 'all', en: 'All programs', el: 'Όλα τα προγράμματα' },
+  { value: 'active', en: 'Active', el: 'Ενεργά' },
+  { value: 'upcoming', en: 'Upcoming', el: 'Επερχόμενα' },
+  { value: 'draft', en: 'Draft', el: 'Πρόχειρα' },
+  { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένα' },
+  { value: 'archived', en: 'Archived', el: 'Αρχειοθετημένα' },
+];
 
 type Program = {
   id: string;
@@ -236,6 +248,11 @@ const EMPTY_FORM: ProgramForm = {
 
 export default function TenantProgramsPage() {
   const [search, setSearch] = useState('');
+  // Archiving writes status 'archived', and until now nothing ever hid an
+  // archived program: it stayed in the list next to the live ones. The
+  // default view is everything that is not archived; "Archived" and "All" are
+  // one click away in the rail.
+  const [statusFilter, setStatusFilter] = useState<(typeof PROGRAM_STATUS_FILTERS)[number]['value']>('current');
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<ProgramForm>(EMPTY_FORM);
   const qc = useQueryClient();
@@ -306,15 +323,81 @@ export default function TenantProgramsPage() {
 
   const filteredPrograms = programs.filter(
     (p) =>
-      !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase())
+      (statusFilter === 'all' ||
+        (statusFilter === 'current' ? p.status !== 'archived' : p.status === statusFilter)) &&
+      (!search ||
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase()))
   );
+  const statusFilterOn = statusFilter !== 'current';
+  const archivedCount = programs.filter((p) => p.status === 'archived').length;
+
+  const totals = [
+    { id: 'total', en: 'Total Programs', el: 'Σύνολο προγραμμάτων', value: programs.length, tone: '' },
+    { id: 'active', en: 'Active', el: 'Ενεργά', value: programs.filter((p) => p.status === 'active').length, tone: 'text-status-success' },
+    { id: 'participants', en: 'Total Participants', el: 'Σύνολο συμμετεχόντων', value: programs.reduce((acc, p) => acc + p.startups, 0), tone: '' },
+    { id: 'mentors', en: 'Total Mentors', el: 'Σύνολο μεντόρων', value: programs.reduce((acc, p) => acc + (p.mentors ?? 0), 0), tone: '' },
+  ];
+
+  /*
+   * The page rail: the four totals that sat between the search and the list,
+   * and the status filter the archive action always needed. The column is the
+   * search and the programs.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'Program totals',
+      labelEl: 'Σύνολα προγραμμάτων',
+      content: (
+        <ul className="space-y-2">
+          {totals.map((t) => (
+            <li key={t.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-3">
+              <span className="text-sm text-muted-foreground"><BilingualText en={t.en} el={t.el} compact wrap /></span>
+              <span className={cn('text-lg font-bold tabular-nums', t.tone)}>{t.value}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'status',
+      glyph: 'target',
+      labelEn: 'Program status',
+      labelEl: 'Κατάσταση προγράμματος',
+      badge: statusFilterOn ? 1 : null,
+      content: (
+        <div className="space-y-1" role="radiogroup" aria-label="Program status">
+          {PROGRAM_STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              role="radio"
+              aria-checked={statusFilter === f.value}
+              onClick={() => setStatusFilter(f.value)}
+              className={cn(
+                'tap-target flex min-h-9 w-full items-center justify-between gap-2 rounded-lg px-2.5 text-left text-sm transition-colors',
+                statusFilter === f.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+              )}
+            >
+              <BilingualText en={f.en} el={f.el} compact wrap />
+              {f.value === 'archived' && archivedCount > 0 && (
+                <span className="text-xs tabular-nums text-muted-foreground">{archivedCount}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      ),
+    },
+  ];
+  const activeStatusLabel = PROGRAM_STATUS_FILTERS.find((f) => f.value === statusFilter);
 
   return (
     <AppShell
       title="Programs"
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
+      rail={rail}
       actions={(
         <Button
           disabled={!organizationId}
@@ -350,39 +433,18 @@ export default function TenantProgramsPage() {
           />
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Programs</p>
-              <p className="text-xl font-bold">{programs.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-status-success">
-                {programs.filter((p) => p.status === 'active').length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Participants</p>
-              <p className="text-xl font-bold">
-                {programs.reduce((acc, p) => acc + p.startups, 0)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Mentors</p>
-              <p className="text-xl font-bold">
-                {programs.reduce((acc, p) => acc + (p.mentors ?? 0), 0)}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {statusFilterOn && activeStatusLabel && (
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <BilingualText
+              en={`Showing: ${activeStatusLabel.en} (${filteredPrograms.length})`}
+              el={`Εμφανίζονται: ${activeStatusLabel.el} (${filteredPrograms.length})`}
+              compact
+            />
+            <Button variant="ghost" size="sm" onClick={() => setStatusFilter('current')}>
+              <BilingualText en="Show current programs" el="Τρέχοντα προγράμματα" compact />
+            </Button>
+          </div>
+        )}
 
         {/* Programs List */}
         <div className="space-y-3">
@@ -396,7 +458,10 @@ export default function TenantProgramsPage() {
             />
           ))}
           {filteredPrograms.length === 0 && (
-            <EmptyTenantPrograms filtersActive={!!search} onClearFilters={() => setSearch('')} />
+            <EmptyTenantPrograms
+              filtersActive={!!search || statusFilterOn}
+              onClearFilters={() => { setSearch(''); setStatusFilter('current'); }}
+            />
           )}
         </div>
       </div>
@@ -431,7 +496,7 @@ export default function TenantProgramsPage() {
                 value={form.programType}
                 onValueChange={(v) => setForm((f) => ({ ...f, programType: v }))}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

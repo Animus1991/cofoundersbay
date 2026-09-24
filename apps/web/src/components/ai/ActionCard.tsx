@@ -37,7 +37,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
       className={cn(
         'rounded-lg border bg-card px-3 py-2.5 shadow-sm',
         done && 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20',
-        (dismissed || undone) && 'opacity-60',
+        (dismissed || undone) && 'surface-inactive',
         failed && 'border-destructive/40',
       )}
     >

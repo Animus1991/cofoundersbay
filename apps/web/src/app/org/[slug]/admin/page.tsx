@@ -403,7 +403,7 @@ export default function OrgAdminPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="mt-2">
+              <SelectTrigger aria-label="Role" className="mt-2">
                 <SelectValue placeholder="All roles" />
               </SelectTrigger>
               <SelectContent>
@@ -420,7 +420,7 @@ export default function OrgAdminPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="mt-2">
+              <SelectTrigger aria-label="Status" className="mt-2">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
@@ -736,7 +736,7 @@ export default function OrgAdminPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
               <Select value={inviteRole} onValueChange={setInviteRole}>
-                <SelectTrigger className="mt-2">
+                <SelectTrigger aria-label="Role" className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

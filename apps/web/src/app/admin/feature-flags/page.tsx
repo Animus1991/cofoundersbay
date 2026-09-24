@@ -15,8 +15,16 @@ import {
   adminListExperiments,
   adminActivateExperiment,
   adminDeactivateExperiment,
+  adminUpdateExperiment,
+  adminDeleteExperiment,
   type ExperimentRecord,
 } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,19 +148,27 @@ const MOCK_FLAGS: FeatureFlag[] = [
   },
 ];
 
-function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string, enabled: boolean) => void | Promise<void> }) {
+type FlagActions = {
+  onToggle: (id: string, enabled: boolean) => void | Promise<void>;
+  onEdit: (flag: FeatureFlag, mode: 'details' | 'rollout') => void;
+  onCopyKey: (flag: FeatureFlag) => void;
+  onDelete: (flag: FeatureFlag) => void;
+};
+
+function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: FeatureFlag } & FlagActions) {
   const statusCfg = STATUS_CONFIG[flag.status];
   const StatusIcon = statusCfg.icon;
   const isEnabled = flag.status !== 'disabled';
 
   return (
-    <Card className={cn('transition-all', !isEnabled && 'opacity-60')}>
+    <Card className={cn('transition-all', !isEnabled && 'surface-inactive')}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Switch
             checked={isEnabled}
             onCheckedChange={(v) => void onToggle(flag.id, v)}
             className="mt-0.5"
+            aria-label={`${isEnabled ? 'Disable' : 'Enable'} ${flag.name}`}
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -194,10 +210,12 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Flag</DropdownMenuItem>
-              <DropdownMenuItem><Percent className="mr-2 icon-sm" />Set Rollout %</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Copy Key</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+              {/* None of these four had a handler. The experiments API they
+                  map to has PATCH and DELETE (admin.controller.ts). */}
+              <DropdownMenuItem onSelect={() => onEdit(flag, 'details')}><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Flag</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onEdit(flag, 'rollout')}><Percent className="mr-2 icon-sm" aria-hidden="true" />Set Rollout %</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onCopyKey(flag)}><Copy className="mr-2 icon-sm" aria-hidden="true" />Copy Key</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -233,6 +251,68 @@ export default function AdminFeatureFlagsPage() {
    * switch moved and the platform never heard about it. It activates or
    * deactivates the experiment now, and the list refreshes from the server.
    */
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
+  const [editing, setEditing] = useState<{ flag: FeatureFlag; mode: 'details' | 'rollout' } | null>(null);
+  const [draft, setDraft] = useState({ name: '', description: '', rollout: 100 });
+  const [saving, setSaving] = useState(false);
+
+  const refuseOnSample = () =>
+    toastError('Nothing to change', 'These flags are samples until the experiments API returns rows.');
+
+  const openEdit = (flag: FeatureFlag, mode: 'details' | 'rollout') => {
+    if (!isLive) return refuseOnSample();
+    setDraft({ name: flag.name, description: flag.description, rollout: flag.rolloutPct ?? 100 });
+    setEditing({ flag, mode });
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await adminUpdateExperiment(
+        editing.flag.id,
+        editing.mode === 'rollout'
+          ? { splitRatio: Math.min(100, Math.max(0, Math.round(draft.rollout))) }
+          : { name: draft.name.trim(), description: draft.description.trim() },
+      );
+      success('Flag saved', editing.mode === 'rollout' ? `${editing.flag.key} now rolls out to ${draft.rollout}%.` : `${draft.name} was updated.`);
+      setEditing(null);
+    } catch (err) {
+      toastError('Could not save the flag', err instanceof Error ? err.message : undefined);
+    } finally {
+      setSaving(false);
+      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+    }
+  };
+
+  const copyKey = async (flag: FeatureFlag) => {
+    try {
+      await navigator.clipboard.writeText(flag.key);
+      success('Key copied', flag.key);
+    } catch {
+      toastError('Could not copy', 'The browser refused clipboard access.');
+    }
+  };
+
+  const deleteFlag = async (flag: FeatureFlag) => {
+    if (!isLive) return refuseOnSample();
+    const ok = await confirm({
+      title: `Delete ${flag.name}?`,
+      description: 'The experiment and its assignments are removed. Code that reads this key falls back to its default.',
+      confirmLabel: 'Delete flag',
+    });
+    if (!ok) return;
+    try {
+      await adminDeleteExperiment(flag.id);
+      success('Flag deleted', flag.key);
+    } catch (err) {
+      toastError('Could not delete the flag', err instanceof Error ? err.message : undefined);
+    } finally {
+      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+    }
+  };
+
   const handleToggle = async (id: string, enabled: boolean) => {
     if (!isLive) return;
     // Optimistic, then reconciled.
@@ -277,12 +357,15 @@ export default function AdminFeatureFlagsPage() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button aria-label="About feature flags" variant="outline" size="sm">
                   <Info className="icon-sm" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-xs max-w-xs">Feature flags are scaffold-level. Backend persistence is not yet implemented.</p>
+                <p className="text-xs max-w-xs">
+                  Each flag is an experiment: the switch activates it, the rollout is its split ratio, and every
+                  change is saved through the experiments API. Sample flags show until the API returns rows.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -348,12 +431,68 @@ export default function AdminFeatureFlagsPage() {
               </Card>
             ) : (
               filtered.map((flag) => (
-                <FlagCard key={flag.id} flag={flag} onToggle={handleToggle} />
+                <FlagCard
+                  key={flag.id}
+                  flag={flag}
+                  onToggle={handleToggle}
+                  onEdit={openEdit}
+                  onCopyKey={copyKey}
+                  onDelete={deleteFlag}
+                />
               ))
             )}
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={editing !== null} onOpenChange={(open) => { if (!open) setEditing(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editing?.mode === 'rollout' ? 'Set rollout' : 'Edit flag'}</DialogTitle>
+            <DialogDescription>
+              {editing?.mode === 'rollout'
+                ? 'The share of users who get variant B. 100% is fully on; the switch still turns the flag off entirely.'
+                : 'Saved to the experiment. The key is fixed, because code reads it.'}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => { e.preventDefault(); void saveEdit(); }}
+          >
+            {editing?.mode === 'rollout' ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="flag-rollout">Rollout (%)</Label>
+                <Input
+                  id="flag-rollout"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={draft.rollout}
+                  onChange={(e) => setDraft((d) => ({ ...d, rollout: Number(e.target.value) }))}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="flag-name">Name</Label>
+                  <Input id="flag-name" value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="flag-description">Description</Label>
+                  <Input id="flag-description" value={draft.description} onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))} />
+                </div>
+              </>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+              <Button type="submit" disabled={saving || (editing?.mode === 'details' && !draft.name.trim())}>
+                {saving ? 'Saving…' : 'Save'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

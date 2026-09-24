@@ -320,7 +320,7 @@ export function EnhancedMessageThread({
 
                   {/* Message actions */}
                   <div className={cn(
-                    "absolute top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1",
+                    "absolute top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-1",
                     isOwn ? "left-0 -translate-x-full" : "right-0 translate-x-full"
                   )}>
                     <Button aria-label="Reply"
@@ -477,7 +477,7 @@ export function EnhancedMessageThread({
             </Button>
           </div>
 
-          <Button
+          <Button aria-label="Send message"
             onClick={handleSend}
             disabled={!messageText.trim() && attachments.length === 0}
             className="rounded-full h-12 w-12"

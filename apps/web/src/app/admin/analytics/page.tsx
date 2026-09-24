@@ -61,7 +61,7 @@ export default function AdminAnalyticsPage() {
       actions={
         <div className="flex flex-wrap gap-2">
           <Select value={range} onValueChange={setRange}>
-            <SelectTrigger className="w-[140px] h-9">
+            <SelectTrigger aria-label="Time range" className="w-[140px] h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

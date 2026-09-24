@@ -1,6 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { listPrograms, deleteProgram, type ProgramItem } from '@/lib/api';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import Link from 'next/link';
 import {
   Award,
@@ -38,6 +47,9 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Program = {
+  /** Set on live rows; the owning organisation's own programs page. */
+  orgSlug?: string;
+  description?: string;
   id: string;
   name: string;
   organization: string;
@@ -57,7 +69,48 @@ const PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
   archived: 'warning',
 };
 
-function ProgramCard({ program }: { program: Program }) {
+/** Month and year, in the page's existing "Jan 2025" style. */
+function monthYear(iso: string | null): string {
+  if (!iso) return '\u2014';
+  return new Date(iso).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
+/** Share of the programme's calendar that has elapsed, for the progress bar. */
+function elapsed(start: string | null, end: string | null): number {
+  if (!start || !end) return 0;
+  const a = new Date(start).getTime();
+  const b = new Date(end).getTime();
+  if (!(b > a)) return 0;
+  return Math.round(Math.min(1, Math.max(0, (Date.now() - a) / (b - a))) * 100);
+}
+
+function toProgram(p: ProgramItem): Program {
+  const known: Program['status'][] = ['draft', 'active', 'completed', 'archived'];
+  return {
+    id: p.id,
+    name: p.title,
+    organization: p.organization?.name ?? '\u2014',
+    orgSlug: p.organization?.slug,
+    description: p.description ?? undefined,
+    type: p.programType,
+    status: known.includes(p.status as Program['status']) ? (p.status as Program['status']) : 'draft',
+    startups: p.participantCount ?? 0,
+    mentors: 0,
+    startDate: monthYear(p.startDate),
+    endDate: monthYear(p.endDate),
+    progress: elapsed(p.startDate, p.endDate),
+  };
+}
+
+function ProgramCard({
+  program,
+  onView,
+  onArchive,
+}: {
+  program: Program;
+  onView: (p: Program) => void;
+  onArchive: (p: Program) => void;
+}) {
   const statusColors = STATUS[PROGRAM_STATUS_TONE[program.status]];
 
   return (
@@ -103,18 +156,33 @@ function ProgramCard({ program }: { program: Program }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              {/* The three items here had no handler. */}
+              <DropdownMenuItem onSelect={() => onView(program)}>
                 <Eye className="mr-2 icon-sm" aria-hidden="true" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                Edit Program
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible">
-                <Trash2 className="mr-2 icon-sm" />
-                Archive
-              </DropdownMenuItem>
+              {program.orgSlug ? (
+                <DropdownMenuItem asChild>
+                  <Link href={`/org/${program.orgSlug}/admin`}>
+                    <Edit className="mr-2 icon-sm" aria-hidden="true" />
+                    Edit in {program.organization}
+                  </Link>
+                </DropdownMenuItem>
+              ) : (
+                <UnavailableMenuItem
+                  icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                  en="Edit Program"
+                  el="Επεξεργασία προγράμματος"
+                  reasonEn="A sample row - live programs are edited by their organisation."
+                  reasonEl="Δείγμα - τα πραγματικά προγράμματα τα επεξεργάζεται ο οργανισμός τους."
+                />
+              )}
+              {program.status !== 'archived' && (
+                <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onArchive(program)}>
+                  <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+                  Archive
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -127,14 +195,58 @@ export default function AdminProgramsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Mock data
-  const programs: Program[] = [
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
+  const [viewing, setViewing] = useState<Program | null>(null);
+
+  // Programs are public reads; the list was a fixed array dated 2025 while
+  // GET /programs served every organisation's programmes.
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'programs'],
+    queryFn: () => listPrograms({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const live = useMemo(() => (Array.isArray(data?.programs) ? data.programs : []).map(toProgram), [data]);
+  const showingSample = !isLoading && live.length === 0;
+
+  const archive = async (p: Program) => {
+    if (!p.orgSlug) {
+      toastError('Nothing to archive', 'This is a sample row until the programs API returns programmes.');
+      return;
+    }
+    const ok = await confirm({
+      title: `Archive ${p.name}?`,
+      description: 'The programme stops taking applications and leaves active lists. Archived programmes stay readable.',
+      confirmLabel: 'Archive',
+    });
+    if (!ok) return;
+    try {
+      await deleteProgram(p.id);
+      success('Programme archived', p.name);
+    } catch (err) {
+      // The service allows this only to members of the owning organisation
+      // (ProgramService.delete -> checkMemberAccess), so say which rule it was.
+      toastError(
+        'Could not archive the programme',
+        err instanceof Error && /403|forbidden|member/i.test(err.message)
+          ? `Only members of ${p.organization} can archive it.`
+          : err instanceof Error ? err.message : undefined,
+      );
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'programs'] });
+    }
+  };
+
+  const sample: Program[] = [
     { id: '1', name: 'Spring Accelerator 2025', organization: 'TechHub', type: 'Accelerator', status: 'active', startups: 12, mentors: 8, startDate: 'Jan 2025', endDate: 'Apr 2025', progress: 65 },
     { id: '2', name: 'AI Innovation Lab', organization: 'AI Ventures', type: 'Innovation Lab', status: 'active', startups: 8, mentors: 5, startDate: 'Feb 2025', endDate: 'Aug 2025', progress: 30 },
     { id: '3', name: 'Pre-seed Bootcamp', organization: 'StartupU', type: 'Bootcamp', status: 'active', startups: 8, mentors: 4, startDate: 'Mar 2025', endDate: 'Mar 2025', progress: 90 },
     { id: '4', name: 'Fall Accelerator 2024', organization: 'TechHub', type: 'Accelerator', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100 },
     { id: '5', name: 'FinTech Incubator', organization: 'FinLab', type: 'Incubator', status: 'active', startups: 6, mentors: 4, startDate: 'Jan 2025', endDate: 'Jul 2025', progress: 45 },
   ];
+  const programs: Program[] = live.length > 0 ? live : isLoading ? [] : sample;
 
   const filteredPrograms = programs.filter((p) => {
     const matchesSearch =
@@ -148,16 +260,13 @@ export default function AdminProgramsPage() {
   return (
     <AppShell>
       <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Programs</h1>
-            <p className="text-muted-foreground">
-              Manage all programs across the platform
-            </p>
-          </div>
-        </div>
-
+        {showingSample && (
+          <SampleDataNotice
+            surface="Programs"
+            detail="The programs API returned no programmes, so these rows show the layout. Live programmes appear here as organisations create them."
+            askAiPrompt="Why does the admin programs page show sample programmes?"
+          />
+        )}
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -170,7 +279,7 @@ export default function AdminProgramsPage() {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -220,7 +329,7 @@ export default function AdminProgramsPage() {
         {/* Programs List */}
         <div className="space-y-3">
           {filteredPrograms.map((program) => (
-            <ProgramCard key={program.id} program={program} />
+            <ProgramCard key={program.id} program={program} onView={setViewing} onArchive={archive} />
           ))}
           {filteredPrograms.length === 0 && (
             <Card>
@@ -235,6 +344,33 @@ export default function AdminProgramsPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={viewing !== null} onOpenChange={(open) => { if (!open) setViewing(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{viewing?.name}</DialogTitle>
+            <DialogDescription>{viewing?.organization} · {viewing?.type}</DialogDescription>
+          </DialogHeader>
+          {viewing && (
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="capitalize">{viewing.status}</dd>
+              <dt className="text-muted-foreground">Dates</dt>
+              <dd>{viewing.startDate} – {viewing.endDate}</dd>
+              <dt className="text-muted-foreground">Startups</dt>
+              <dd>{viewing.startups}</dd>
+              <dt className="text-muted-foreground">Calendar elapsed</dt>
+              <dd>{viewing.progress}%</dd>
+              {viewing.description && (
+                <>
+                  <dt className="col-span-2 text-muted-foreground">Description</dt>
+                  <dd className="col-span-2 whitespace-pre-line">{viewing.description}</dd>
+                </>
+              )}
+            </dl>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

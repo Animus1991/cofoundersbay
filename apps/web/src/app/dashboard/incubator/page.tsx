@@ -120,7 +120,7 @@ function ProgramCard({ program }: { program: any }) {
           </div>
         </div>
       </div>
-      <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100" />
     </Link>
   );
 }
@@ -265,9 +265,9 @@ export default function IncubatorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
-            </h1>
+            </h2>
             <p className="text-muted-foreground">
               Manage your programs and portfolio companies
             </p>

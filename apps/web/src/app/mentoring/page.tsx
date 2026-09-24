@@ -552,7 +552,7 @@ function BookingCard({
                     {isActing ? <Loader2 className="icon-sm animate-spin" /> : <CheckCircle className="icon-sm" />}
                     Confirm
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
+                  <Button aria-label="Decline" size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
                     className="text-muted-foreground hover:text-destructive-accessible">
                     <XCircle className="icon-sm" />
                   </Button>

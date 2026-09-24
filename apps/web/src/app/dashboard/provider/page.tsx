@@ -267,9 +267,9 @@ export default function ProviderDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
-            </h1>
+            </h2>
             <p className="text-muted-foreground">
               Manage your services and client projects
             </p>

@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
 import { formatDate } from '@/lib/i18n/format';
@@ -145,7 +146,11 @@ function ShortlistCard({
         )}
 
         {/* Avatar */}
-        <Link href={`/profiles/${item.userId}`} className="shrink-0">
+        <Link
+          href={`/profiles/${item.userId}`}
+          className="shrink-0"
+          aria-label={profile?.displayName || say(shortlistEn('view_profile'), shortlistEl('view_profile'))}
+        >
           {profile?.avatarUrl ? (
             <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
           ) : (
@@ -204,7 +209,7 @@ function ShortlistCard({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
               <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <Edit2 className="icon-sm" />
               </button>
@@ -442,7 +447,7 @@ export default function ShortlistPage() {
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
               {/* w-44 is 176px, and "Newest first · Νεότερα πρώτα" is 76px past that. */}
-              <SelectTrigger className="h-9 w-auto min-w-[11rem] text-sm">
+              <SelectTrigger aria-label="Sort by" className="h-9 w-auto min-w-[11rem] text-sm">
                 <ArrowUpDown className="mr-1.5 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -454,11 +459,11 @@ export default function ShortlistPage() {
               </SelectContent>
             </Select>
             <div className="flex items-center rounded-lg border border-border/60 p-0.5">
-              <button onClick={() => setViewMode('list')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                <List className="icon-sm" />
+              <button type="button" aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+                <List className="icon-sm" aria-hidden="true" />
               </button>
-              <button onClick={() => setViewMode('grid')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'grid' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                <Grid3X3 className="icon-sm" />
+              <button type="button" aria-label={bilingualAria('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'grid' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+                <Grid3X3 className="icon-sm" aria-hidden="true" />
               </button>
             </div>
             <Button

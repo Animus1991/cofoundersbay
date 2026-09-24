@@ -200,7 +200,7 @@ export default function MentorReviewsPage() {
             />
           </div>
           <Select value={ratingFilter} onValueChange={setRatingFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Rating" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Rating" />
             </SelectTrigger>
             <SelectContent>

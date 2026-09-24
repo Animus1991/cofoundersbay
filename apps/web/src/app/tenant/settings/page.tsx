@@ -125,7 +125,7 @@ export default function TenantSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="timezone">Timezone</Label>
                   <Select value={timezone} onValueChange={setTimezone}>
-                    <SelectTrigger>
+                    <SelectTrigger id="timezone">
                       <SelectValue placeholder="Select timezone" />
                     </SelectTrigger>
                     <SelectContent>
@@ -139,7 +139,7 @@ export default function TenantSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="language">Default Language</Label>
                   <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger>
+                    <SelectTrigger id="language">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
                     <SelectContent>
@@ -153,7 +153,7 @@ export default function TenantSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="currency">Currency</Label>
                   <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger>
+                    <SelectTrigger id="currency">
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
                     <SelectContent>
@@ -184,7 +184,7 @@ export default function TenantSettingsPage() {
                       New members must be approved by an admin
                     </p>
                   </div>
-                  <Switch checked={requireApproval} onCheckedChange={setRequireApproval} />
+                  <Switch checked={requireApproval} onCheckedChange={setRequireApproval} aria-label="Require Approval for New Members" />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -193,7 +193,7 @@ export default function TenantSettingsPage() {
                       Automatically approve members from specific email domains
                     </p>
                   </div>
-                  <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
+                  <Switch checked={autoApprove} onCheckedChange={setAutoApprove} aria-label="Auto-approve from Allowed Domains" />
                 </div>
                 {autoApprove && (
                   <div className="space-y-2">
@@ -215,7 +215,7 @@ export default function TenantSettingsPage() {
                 <div className="space-y-2">
                   <Label>SSO Provider</Label>
                   <Select defaultValue="none">
-                    <SelectTrigger>
+                    <SelectTrigger aria-label="SSO Provider">
                       <SelectValue placeholder="Select provider" />
                     </SelectTrigger>
                     <SelectContent>
@@ -248,7 +248,7 @@ export default function TenantSettingsPage() {
                       Send email notifications to members
                     </p>
                   </div>
-                  <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+                  <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} aria-label="Email Notifications" />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -257,7 +257,7 @@ export default function TenantSettingsPage() {
                       Send weekly summary emails to members
                     </p>
                   </div>
-                  <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} />
+                  <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} aria-label="Weekly Digest" />
                 </div>
               </CardContent>
             </Card>

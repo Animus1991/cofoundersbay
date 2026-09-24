@@ -154,7 +154,7 @@ export function BookingCalendar({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       {/* Main content */}
       <div className="space-y-6">
         {/* Mentor info */}

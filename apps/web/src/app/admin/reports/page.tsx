@@ -315,16 +315,6 @@ export default function AdminReportsPage() {
   return (
     <AppShell>
       <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Reports & Moderation</h1>
-            <p className="text-muted-foreground">
-              Review and manage user reports
-            </p>
-          </div>
-        </div>
-
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
@@ -375,7 +365,7 @@ export default function AdminReportsPage() {
             />
           </div>
           <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Report type" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>

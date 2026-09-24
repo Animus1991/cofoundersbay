@@ -182,7 +182,7 @@ function ProjectCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-xl opacity-0 transition-opacity group-hover:opacity-100"
+                className="h-8 w-8 rounded-xl opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
                 aria-label={bilingualAria(projectEn('more'), projectEl('more'))}
               >
                 <MoreVertical className="icon-sm" />
@@ -476,7 +476,7 @@ export default function ProjectsPage() {
               <BilingualText en={projectEn('industry')} el={projectEl('industry')} compact />
             </p>
             <Select value={industryFilter} onValueChange={setIndustryFilter}>
-              <SelectTrigger className="w-full rounded-xl">
+              <SelectTrigger aria-label={t(projectEn('industry'), projectEl('industry'))} className="w-full rounded-xl">
                 <SelectValue placeholder={t(projectEn('industry'), projectEl('industry'))} />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -587,7 +587,7 @@ export default function ProjectsPage() {
                 aria-label={bilingualAria(projectEn('search_ph'), projectEl('search_ph'))}
               />
               {searchQuery && (
-                <button type="button" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <button aria-label="Clear search" type="button" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   <X className="icon-sm" />
                 </button>
               )}

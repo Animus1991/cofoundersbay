@@ -353,16 +353,9 @@ export default function ProviderDashboardPage() {
   };
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Provider Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage your services and client projects
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href="/provider/services">
@@ -371,8 +364,10 @@ export default function ProviderDashboardPage() {
               </Link>
             </Button>
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>

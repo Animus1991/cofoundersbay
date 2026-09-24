@@ -99,6 +99,7 @@ export type AnalyticsEvent =
   | { event: 'tenant_bulk_activate'; properties: { count: number } }
   | { event: 'tenant_bulk_suspend'; properties: { count: number } }
   | { event: 'tenant_bulk_delete'; properties: { count: number } }
+  | { event: 'tenant_export_csv'; properties: { count: number } }
   // Feature flags (A/B)
   | { event: 'feature_flag_evaluated'; properties: { flag: string; variant: string } };
 

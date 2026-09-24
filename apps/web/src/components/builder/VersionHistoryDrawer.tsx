@@ -115,7 +115,7 @@ function VersionCard({
         <Button
           size="sm"
           variant="ghost"
-          className="opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2 shrink-0 text-xs"
+          className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity h-7 px-2 shrink-0 text-xs"
           onClick={() => onRestore(v)}
           disabled={restoring}
         >

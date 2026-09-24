@@ -257,7 +257,19 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   </button>
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">{active.content}</div>
+                {/* Focusable because a section can be all figures and no
+                    controls (/calendar's month totals, /admin's platform
+                    totals): a scrolling panel with nothing a keyboard can land
+                    on cannot be scrolled from the keyboard at all (axe
+                    scrollable-region-focusable). */}
+                <div
+                  role="region"
+                  aria-label={bilingualAria(active.labelEn, active.labelEl)}
+                  tabIndex={0}
+                  className="min-h-0 flex-1 overflow-y-auto px-3 py-3 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                >
+                  {active.content}
+                </div>
               </div>
             )}
           </div>
@@ -318,6 +330,17 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                       )}
                       aria-expanded={isActive}
+                      // The strip is a column of icons: the tooltip shows the
+                      // section's name to a pointer, but a tooltip is not an
+                      // accessible name, so without this every section button
+                      // was announced as "button" (axe button-name on all 14
+                      // railed pages). The badge is spoken because it is the
+                      // reason to open the section at all.
+                      aria-label={
+                        badge != null
+                          ? bilingualAria(`${section.labelEn}, ${badge}`, `${section.labelEl}, ${badge}`)
+                          : bilingualAria(section.labelEn, section.labelEl)
+                      }
                     >
                       <CfbGlyph name={section.glyph} className="icon-md" />
                       {badge != null && (

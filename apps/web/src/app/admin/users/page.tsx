@@ -16,10 +16,12 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
-import { listAdminUsers, type AdminUserItem } from '@/lib/api';
+import { listAdminUsers, updateAdminUserModeration, changeUserRole, type AdminUserItem } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,6 +39,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -80,7 +83,15 @@ type User = {
   tenant?: string;
 };
 
-function UserRow({ user }: { user: User }) {
+/** The schema's roles (`enum Role`), in the order an admin reaches for them. */
+const ASSIGNABLE_ROLES = ['founder', 'mentor', 'investor', 'org', 'admin'] as const;
+
+type RowActions = {
+  onModerate: (user: User, status: 'active' | 'suspended' | 'banned') => void;
+  onRole: (user: User, role: (typeof ASSIGNABLE_ROLES)[number]) => void;
+};
+
+function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: <CheckCircle2 className="icon-sm" /> },
     suspended: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: <AlertTriangle className="icon-sm" /> },
@@ -134,31 +145,49 @@ function UserRow({ user }: { user: User }) {
           <DropdownMenuItem asChild>
             <Link href={`/p/${user.id}`}>View Profile</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Mail className="mr-2 icon-sm" aria-hidden="true" />
-            Send Email
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Shield className="mr-2 icon-sm" aria-hidden="true" />
-            Change Role
+          {/* Every item below had no handler: Send Email, Change Role,
+              Suspend, Reactivate and Ban closed the menu and did nothing.
+              The routes were there all along (admin.controller.ts:
+              PATCH users/:userId/role, PATCH users/:userId/moderation). */}
+          <DropdownMenuItem asChild>
+            <a href={`mailto:${user.email}`}>
+              <Mail className="mr-2 icon-sm" aria-hidden="true" />
+              Send Email
+            </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuLabel className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Shield className="icon-sm" aria-hidden="true" />
+            Change Role
+          </DropdownMenuLabel>
+          {ASSIGNABLE_ROLES.map((r) => {
+            const current = user.role.toLowerCase() === r;
+            return (
+              <DropdownMenuItem key={r} disabled={current} onSelect={() => onRole(user, r)} className="pl-8 capitalize">
+                {r}
+                {current && <CheckCircle2 className="ml-auto icon-sm text-primary-accessible" aria-label="Current role" />}
+              </DropdownMenuItem>
+            );
+          })}
+          <DropdownMenuSeparator />
           {user.status === 'active' && (
-            <DropdownMenuItem className="text-status-warning">
-              <AlertTriangle className="mr-2 icon-sm" />
+            <DropdownMenuItem className="text-status-warning" onSelect={() => onModerate(user, 'suspended')}>
+              <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
               Suspend User
             </DropdownMenuItem>
           )}
-          {user.status === 'suspended' && (
-            <DropdownMenuItem className="text-status-success">
-              <CheckCircle2 className="mr-2 icon-sm" />
-              Reactivate User
+          {(user.status === 'suspended' || user.status === 'banned') && (
+            <DropdownMenuItem className="text-status-success" onSelect={() => onModerate(user, 'active')}>
+              <CheckCircle2 className="mr-2 icon-sm" aria-hidden="true" />
+              {user.status === 'banned' ? 'Lift Ban' : 'Reactivate User'}
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem className="text-destructive-accessible">
-            <UserX className="mr-2 icon-sm" />
-            Ban User
-          </DropdownMenuItem>
+          {user.status !== 'banned' && (
+            <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onModerate(user, 'banned')}>
+              <UserX className="mr-2 icon-sm" aria-hidden="true" />
+              Ban User
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -239,6 +268,49 @@ export default function AdminUsersPage() {
 
   const live = useMemo(() => (data?.users ?? []).map(toPageUser), [data]);
   const users: User[] = live.length > 0 ? live : isLoading ? [] : SEED_USERS;
+  const isLive = live.length > 0;
+  const queryClient = useQueryClient();
+  const { success, error } = useToast();
+  const confirm = useConfirm();
+
+  // Writes go to the real directory only. The seed rows show the screen's
+  // shape on an empty instance; acting on them would report a change that
+  // never reached any account.
+  const refuseOnSeed = () => {
+    error('Nothing to update', 'These rows are illustrative until the user directory loads.');
+  };
+
+  const moderate: RowActions['onModerate'] = async (user, next) => {
+    if (!isLive) return refuseOnSeed();
+    if (next === 'banned') {
+      const ok = await confirm({
+        title: `Ban ${user.name}?`,
+        description: 'They are signed out and cannot sign back in until the ban is lifted from this menu.',
+        confirmLabel: 'Ban user',
+      });
+      if (!ok) return;
+    }
+    try {
+      await updateAdminUserModeration(user.id, next);
+      success('Status updated', `${user.name} is now ${next}.`);
+    } catch (err) {
+      error('Could not update the status', err instanceof Error ? err.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    }
+  };
+
+  const assignRole: RowActions['onRole'] = async (user, next) => {
+    if (!isLive) return refuseOnSeed();
+    try {
+      await changeUserRole(user.id, next);
+      success('Role updated', `${user.name} is now ${next}.`);
+    } catch (err) {
+      error('Could not change the role', err instanceof Error ? err.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    }
+  };
 
 
   const filteredUsers = users.filter((u) => {
@@ -251,6 +323,18 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  const exportCsv = () => {
+    const cell = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const rows = filteredUsers.map((u) => [u.name, u.email, u.role, u.status, u.createdAt, u.lastActive].map((v) => cell(v ?? '')).join(','));
+    const csv = ['name,email,role,status,created_at,last_active', ...rows].join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const statusCounts = {
     all: users.length,
     active: users.filter((u) => u.status === 'active').length,
@@ -259,19 +343,17 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <AppShell>
+    <AppShell
+      actions={
+        <>
+          {/* Had no handler. Exports what the filters show. */}
+          <Button onClick={exportCsv} disabled={filteredUsers.length === 0}>
+            Export Users
+          </Button>
+        </>
+      }
+    >
       <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">User Management</h1>
-            <p className="text-muted-foreground">
-              Manage platform users and permissions
-            </p>
-          </div>
-          <Button>Export Users</Button>
-        </div>
-
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
@@ -312,7 +394,7 @@ export default function AdminUsersPage() {
             />
           </div>
           <Select value={role} onValueChange={setRole}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Role" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Role" />
             </SelectTrigger>
             <SelectContent>
@@ -324,7 +406,7 @@ export default function AdminUsersPage() {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -349,7 +431,7 @@ export default function AdminUsersPage() {
             <div className="w-8" />
           </div>
           {filteredUsers.map((user) => (
-            <UserRow key={user.id} user={user} />
+            <UserRow key={user.id} user={user} onModerate={moderate} onRole={assignRole} />
           ))}
           {filteredUsers.length === 0 && (
             <CardContent className="py-12 text-center">

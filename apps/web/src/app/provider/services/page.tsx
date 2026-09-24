@@ -51,7 +51,7 @@ function ServiceCard({ service }: { service: Service }) {
   const [isActive, setIsActive] = useState(service.isActive);
 
   return (
-    <Card className={cn('transition-all', !isActive && 'opacity-60')}>
+    <Card className={cn('transition-all', !isActive && 'surface-inactive')}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -101,7 +101,7 @@ function ServiceCard({ service }: { service: Service }) {
               <span className="text-xs text-muted-foreground">
                 {isActive ? 'Active' : 'Inactive'}
               </span>
-              <Switch checked={isActive} onCheckedChange={setIsActive} />
+              <Switch checked={isActive} onCheckedChange={setIsActive} aria-label={`Active: ${service.name}`} />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -15,6 +15,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
@@ -200,14 +201,24 @@ function ResourceCard({ resource }: { resource: Resource }) {
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setSaved(!saved)}
+            aria-pressed={saved}
+            aria-label={
+              saved
+                ? bilingualAria(`Saved: ${resource.title}`, `Αποθηκευμένο: ${resource.title}`)
+                : bilingualAria(`Save ${resource.title}`, `Αποθήκευση: ${resource.title}`)
+            }
             // WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows.
+            // Unsaved was text-muted-foreground/40: an icon that is the whole
+            // control needs 3:1 against the card (WCAG 1.4.11), and 40% of the
+            // muted tone is well under it in every theme.
             className={cn(
               'shrink-0 -m-1 mt-0.5 inline-flex tap-target items-center justify-center transition-colors',
-              saved ? 'text-primary-accessible' : 'text-muted-foreground/40 hover:text-muted-foreground',
+              saved ? 'text-primary-accessible' : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            <Bookmark className={cn('icon-sm', saved && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', saved && 'fill-current')} aria-hidden="true" />
           </button>
         </div>
 

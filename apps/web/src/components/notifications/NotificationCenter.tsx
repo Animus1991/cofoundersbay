@@ -103,7 +103,7 @@ function NotificationRow({
           <span className="text-xs text-muted-foreground"><RelativeTime date={notification.createdAt} format={getTimeAgo} /></span>
           <div className="flex items-center gap-1">
             {!notification.readAt && (
-              <Button
+              <Button aria-label="Mark as read"
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0"
@@ -115,7 +115,7 @@ function NotificationRow({
                 <Check className="icon-sm" />
               </Button>
             )}
-            <Button
+            <Button aria-label="Delete notification"
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"

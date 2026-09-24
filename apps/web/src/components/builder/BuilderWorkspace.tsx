@@ -350,7 +350,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
               <BilingualText en={builderEn('doc_type')} el={builderEl('doc_type')} compact />
             </Label>
             <Select value={docType} onValueChange={setDocType}>
-              <SelectTrigger className="min-h-11">
+              <SelectTrigger aria-label={builderEn('doc_type')} className="min-h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

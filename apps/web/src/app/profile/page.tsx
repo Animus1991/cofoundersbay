@@ -430,9 +430,9 @@ export default function ProfilePage() {
               <div className="flex-1 space-y-3 pt-2 md:pt-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
+                    <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
                       {profile.displayName}
-                    </h1>
+                    </h2>
                     {profile.headline ? (
                       <p className="text-base md:text-lg text-muted-foreground font-medium">
                         {profile.headline}
@@ -482,7 +482,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* Main content column.
               A flex column from `lg` so the last card can take the slack: the
               sidebar runs 315px longer than this column, which left a void down

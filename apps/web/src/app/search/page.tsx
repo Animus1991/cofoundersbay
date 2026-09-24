@@ -264,7 +264,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               )}
             </div>
 
-            <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0" />
           </div>
         </CardContent>
       </Card>

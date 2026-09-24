@@ -3,16 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Briefcase,
-  Save,
-  RefreshCw,
-  BadgeCheck,
-  Globe,
-  DollarSign,
-  Star,
-  Building2,
-  Users,
-  TrendingUp,
+  Save, RefreshCw, BadgeCheck, Globe, DollarSign, Star, Building2, Users, TrendingUp,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -116,23 +107,17 @@ export default function ProviderProfilePage() {
   const serviceTypeLabel = SERVICE_TYPES.find(s => s.value === serviceType)?.label ?? serviceType;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Briefcase className="icon-lg text-primary-accessible" />
-              Service Provider Profile
-            </h1>
-            <p className="text-muted-foreground">How startups discover your services</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <Button onClick={handleSave} disabled={isSaving}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="py-6 space-y-6">
         {/* Preview Card */}
         <Card className="border-primary/20">
           <CardContent className="p-5">
@@ -190,7 +175,7 @@ export default function ProviderProfilePage() {
                 <div className="space-y-2">
                   <Label>Service Type</Label>
                   <Select value={serviceType} onValueChange={setServiceType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Service Type"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SERVICE_TYPES.map(s => (
                         <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
@@ -221,7 +206,7 @@ export default function ProviderProfilePage() {
                   <div className="space-y-2">
                     <Label>Years in Business</Label>
                     <Select value={yearsInBusiness} onValueChange={setYearsInBusiness}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label="Years in Business"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
@@ -244,7 +229,7 @@ export default function ProviderProfilePage() {
                     <p className="text-sm font-medium">Accepting New Clients</p>
                     <p className="text-xs text-muted-foreground">Show in service provider discovery</p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} />
+                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Clients" />
                 </div>
               </CardContent>
             </Card>

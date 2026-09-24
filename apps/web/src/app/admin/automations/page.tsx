@@ -96,7 +96,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
       >
         <div className="flex items-center justify-between p-5 border-b">
           <h2 id="automation-rule-title" className="text-lg font-semibold">Create Automation Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -196,7 +196,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold">Edit Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -388,21 +388,16 @@ export default function AutomationsPage() {
   const failureCount = rules.filter(r => r.failureCount > 0).length;
 
   return (
-    <AppShell>
-      <div className="max-w-[84rem] mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Automation Rules</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Event-driven workflows — triggers, conditions, actions
-            </p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
             <Plus className="icon-sm" />New Rule
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="max-w-[84rem] mx-auto px-4 sm:px-6 py-8 space-y-6">
         <CreateRuleSlideOver
           open={showCreate}
           onClose={() => setShowCreate(false)}

@@ -202,7 +202,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Assign role</label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Assign role"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="founder">Founder</SelectItem>
                 <SelectItem value="mentor">Mentor</SelectItem>
@@ -342,7 +342,7 @@ export default function TenantMembersPage() {
             <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>

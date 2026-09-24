@@ -135,7 +135,7 @@ function CollaboratorRow({
           </div>
         )}
         {canManage && (
-          <Button
+          <Button aria-label="Remove member"
             variant="ghost"
             size="sm"
             className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive-accessible"

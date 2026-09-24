@@ -330,12 +330,11 @@ export default function MatchComparePage() {
           <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
             <ArrowLeft className="icon-md" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Compare Matches</h1>
-            <p className="text-muted-foreground">
-              Compare up to 3 potential co-founders side by side
-            </p>
-          </div>
+          {/* The shell above already titles the page; this row keeps only
+              the two ways back, plus the one fact the shell does not say. */}
+          <p className="flex-1 text-sm text-muted-foreground">
+            Compare up to 3 potential co-founders side by side
+          </p>
           <Button variant="outline" asChild>
             <Link href="/matches">
               Back to Matches

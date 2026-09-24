@@ -590,7 +590,10 @@ export default function PitchDeckPage() {
               {slides.map((_, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => setCurrentSlide(i)}
+                  aria-label={`Slide ${i + 1} of ${slides.length}`}
+                  aria-current={i === currentSlide ? 'step' : undefined}
                   className={cn(
                     'rounded-full transition-all',
                     i === currentSlide
