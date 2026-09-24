@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, PanelRight, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -57,6 +58,9 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
+  /* Which section is open at full size. A section is legible in the panel
+     and comfortable here; this is the second, not a substitute. */
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tell the frame a rail exists, so the main column reserves the strip and the
@@ -137,6 +141,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   };
 
   const active = sections.find((section) => section.id === activeId) ?? sections[0];
+  const expanded = sections.find((section) => section.id === expandedId) ?? null;
 
   const totalBadge = sections.reduce((sum, section) => {
     const b = section.badge;
@@ -260,10 +265,22 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   <div className="min-w-0 text-xs font-semibold uppercase leading-snug tracking-wider text-muted-foreground">
                     <BilingualText en={active.labelEn} el={active.labelEl} stacked wrap />
                   </div>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(active.id)}
+                    className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                    aria-label={bilingualAria(
+                      `Open ${active.labelEn} at full size`,
+                      `Άνοιγμα «${active.labelEl}» σε πλήρες μέγεθος`,
+                    )}
+                  >
+                    <Maximize2 className="icon-sm" aria-hidden="true" />
+                  </button>
                   <button
                     type="button"
                     onClick={togglePinned}
-                    className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                    className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                     aria-pressed={pinned}
                     aria-label={
                       pinned
@@ -277,6 +294,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                       <ChevronLeft className="icon-sm" aria-hidden="true" />
                     )}
                   </button>
+                  </div>
                 </div>
 
                 {/* Focusable because a section can be all figures and no
@@ -288,6 +306,10 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   role="region"
                   aria-label={bilingualAria(active.labelEn, active.labelEl)}
                   tabIndex={0}
+                  // The stylesheet keys on this to collapse viewport-driven
+                  // grids: `lg:grid-cols-4` still fires at 320px because `lg:`
+                  // asks about the window, not this box.
+                  data-rail-content=""
                   className="min-h-0 flex-1 overflow-y-auto px-3 py-3 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                 >
                   {active.content}
@@ -385,6 +407,31 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
           </div>
         </div>
       </aside>
+
+      {/*
+        Full size, on demand.
+
+        The same `content` node as the panel, in a centred dialog wide enough
+        for the layout it was written for - and deliberately without
+        `data-rail-content`, so the one-column rule does not apply and a
+        four-up grid is four-up again. This is the answer to content that is
+        legible in the rail but cramped: room when it is asked for, and a
+        reading column that stays free the rest of the time.
+      */}
+      <Dialog open={expandedId != null} onOpenChange={(o) => !o && setExpandedId(null)}>
+        <DialogContent className="max-h-[85dvh] w-[min(92vw,48rem)] max-w-none overflow-y-auto">
+          {expanded && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  <BilingualText en={expanded.labelEn} el={expanded.labelEl} />
+                </DialogTitle>
+              </DialogHeader>
+              <div className="mt-2">{expanded.content}</div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }

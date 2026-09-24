@@ -2270,3 +2270,31 @@ html {
 
 
 
+
+/* ── Page rail content ──────────────────────────────────────────────────────
+   Tailwind's `sm:` and `lg:` are viewport queries, not container queries. A
+   block authored for a ~1200px column keeps its `lg:grid-cols-4` when it is
+   moved into a 320px rail, because the viewport is still wide - so four
+   ~60px columns get made and the labels overlap into noise. That is exactly
+   what happened to the "where to go next" and "next steps" sections.
+
+   Tailwind 3.4 has no container queries and the plugin would be a dependency
+   for this one rule, so the panel states the constraint its width implies:
+   inside it, a grid is one column. Specificity does the work (0,2,0 beats a
+   utility's 0,1,0), so no `!important` is needed and nothing else is touched.
+
+   Content that genuinely reads better in columns at 320px opts out with
+   `data-rail-keep-layout`. The expand dialog does not carry the attribute at
+   all, so the same content renders there at its designed layout. */
+[data-rail-content] .grid:not([data-rail-keep-layout]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Widths chosen for a page column overflow a rail. Cap them rather than let
+   the panel scroll sideways. */
+[data-rail-content] .max-w-md,
+[data-rail-content] .max-w-lg,
+[data-rail-content] .max-w-xl,
+[data-rail-content] .max-w-2xl {
+  max-width: 100%;
+}
