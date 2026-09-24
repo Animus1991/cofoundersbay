@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { Sparkles } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -12,6 +12,7 @@ import Link from 'next/link';
 
 function AIPageInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { hasSession, mounted } = useSession();
   const initialPrompt = searchParams?.get('q') ?? undefined;
 
@@ -64,7 +65,15 @@ function AIPageInner() {
             />
           </p>
         </div>
-        <CopilotWorkspace variant="page" initialPrompt={initialPrompt ?? undefined} />
+        {/* A question arriving in ?q= is sent, not just typed in: eleven
+            "Ask AI about this" links land here, and each used to leave the
+            reader to press send a second time. The address then drops ?q so
+            a reload does not ask again. */}
+        <CopilotWorkspace
+          variant="page"
+          autoPrompt={initialPrompt ?? null}
+          onAutoPromptSent={() => router.replace('/ai', { scroll: false })}
+        />
       </div>
     </AppShell>
   );

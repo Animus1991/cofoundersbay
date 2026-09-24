@@ -1,7 +1,8 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { ArrowRight } from 'lucide-react';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -9,8 +10,13 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 
 /**
- * Inline Ask AI field. Submits to `/ai?q=` so the assistant page and the
- * chat bubble stay the real surfaces — this is an entry, not a replacement.
+ * Inline Ask AI field - an entry to the assistant, not a replacement for it.
+ *
+ * It asks in place: the in-page assistant opens and sends the question with
+ * this page's context (its controls, rail sections and snapshot), so "show
+ * only suspended users" can be done here. It used to navigate to /ai?q=,
+ * which dropped that context and only pre-filled the question. /ai itself,
+ * or a tree without the popup, still goes to the full page.
  */
 export function AIComposer({
   prompt,
@@ -20,12 +26,19 @@ export function AIComposer({
   className?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const popup = usePopupChatOptional();
   const sayOne = useBilingualString();
   const [value, setValue] = useState('');
 
   function submit(event?: FormEvent) {
     event?.preventDefault();
     const q = value.trim() || prompt;
+    if (popup && !pathname?.startsWith('/ai')) {
+      popup.ask(q);
+      setValue('');
+      return;
+    }
     router.push(`/ai?q=${encodeURIComponent(q)}`);
   }
 

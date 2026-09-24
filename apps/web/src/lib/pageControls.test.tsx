@@ -190,6 +190,14 @@ describe('an assistant turn on a page with controls', () => {
     expect(turn.message).toContain('Status filter is already set to Suspended.');
   });
 
+  it('answers a page request with the page alone, not a general briefing', async () => {
+    // Planned by the engine itself (no tools passed): the planner would add a
+    // graph read to a short turn; the page answered it, so none runs.
+    const turn = await runCopilotTurn('show only suspended users', context);
+    expect(turn.actions.some((a) => a.tool === 'use_page_control')).toBe(true);
+    expect(turn.usedTools).not.toContain('get_graph');
+  });
+
   it('names what it can use when asked about the page', async () => {
     const turn = await runCopilotTurn('what can I do on this page?', context, { tools: [] });
     expect(turn.message).toContain('You can ask me to use: Status filter, Export users as CSV, Suspend user.');

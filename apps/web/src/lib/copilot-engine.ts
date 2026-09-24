@@ -339,8 +339,8 @@ export async function runCopilotTurn(
 ): Promise<CopilotTurnResult> {
   const replyLocale = replyLocaleFor(userMessage, pageContext?.locale);
   const t = translatorFor(replyLocale);
-  const planned = options?.tools ? [...options.tools] : planCopilotTools(userMessage);
-  const usedTools = planned.map((t) => t.name);
+  let planned = options?.tools ? [...options.tools] : planCopilotTools(userMessage);
+  let usedTools = planned.map((t) => t.name);
   const citations: CopilotCitation[] = [];
   const actions: CopilotAction[] = [];
   const sections: string[] = [];
@@ -534,6 +534,18 @@ export async function runCopilotTurn(
         });
       }
     }
+  }
+
+  // A request this page answers itself - "show only suspended users",
+  // "show me the filters" - needs nothing else. The planner adds a general
+  // graph read to short turns because it cannot see the page; here the page
+  // is known, and a briefing on readiness and intros under "Status filter:
+  // Suspended" only buried the answer. The model's own reads are untouched.
+  const answeredByPage = actions.some((a) => a.tool === 'use_page_control' || a.tool === 'run_page_command' || a.tool === 'open_rail_section')
+    || sections.some((line) => line.length > 0 && pageControls.some((c) => line.startsWith(c.label)));
+  if (answeredByPage && !options?.tools) {
+    planned = planned.filter((t) => t.name !== 'get_graph');
+    usedTools = planned.map((t) => t.name);
   }
 
   for (const tool of planned) {

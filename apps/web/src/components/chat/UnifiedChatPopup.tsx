@@ -181,7 +181,7 @@ export function UnifiedChatPopup() {
   const pathname = usePathname();
   const router = useRouter();
   const { hasSession, mounted: sessionReady } = useSession();
-  const { isOpen, isMinimized, initialUserId, preferredTab, close, minimize, restore } = usePopupChat();
+  const { isOpen, isMinimized, initialUserId, preferredTab, pendingPrompt, consumePrompt, close, minimize, restore } = usePopupChat();
   const { setActiveConversationId, markConversationRead } = useMessaging();
   const sayOne = useBilingualString();
 
@@ -671,7 +671,14 @@ export function UnifiedChatPopup() {
       </div>
 
       {/* ── AI Tab ── */}
-      {activeTab === 'ai' && <CopilotWorkspace variant="popup" onExpand={handleAIExpand} />}
+      {activeTab === 'ai' && (
+        <CopilotWorkspace
+          variant="popup"
+          onExpand={handleAIExpand}
+          autoPrompt={pendingPrompt}
+          onAutoPromptSent={consumePrompt}
+        />
+      )}
 
       {/* ── Messages Tab ── */}
       {activeTab === 'messages' && (

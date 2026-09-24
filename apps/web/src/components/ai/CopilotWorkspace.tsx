@@ -128,12 +128,21 @@ type CopilotWorkspaceProps = {
   variant?: 'page' | 'popup';
   initialPrompt?: string;
   onExpand?: () => void;
+  /**
+   * A question to send as soon as the assistant is ready - the header's Ask
+   * AI bar hands its question here, so it is asked on the page it came from.
+   * Sent once; `onAutoPromptSent` clears it at the source.
+   */
+  autoPrompt?: string | null;
+  onAutoPromptSent?: () => void;
 };
 
 export function CopilotWorkspace({
   variant = 'page',
   initialPrompt,
   onExpand,
+  autoPrompt,
+  onAutoPromptSent,
 }: CopilotWorkspaceProps) {
   const router = useRouter();
   const sayOne = useBilingualString();
@@ -155,6 +164,23 @@ export function CopilotWorkspace({
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat.messages, chat.isStreaming]);
+
+  // Send a handed-over question once. Waits out a reply still streaming
+  // rather than dropping the question.
+  // `sentPrompt` makes it once even where effects run twice (development);
+  // it resets when the prompt clears, so the same question can be asked again.
+  const sentPrompt = useRef<string | null>(null);
+  useEffect(() => {
+    if (!autoPrompt) {
+      sentPrompt.current = null;
+      return;
+    }
+    if (chat.isStreaming || sentPrompt.current === autoPrompt) return;
+    sentPrompt.current = autoPrompt;
+    onAutoPromptSent?.();
+    void chat.sendMessage(autoPrompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chat.sendMessage identity is not stable; the prompt is the trigger
+  }, [autoPrompt, chat.isStreaming]);
 
   const handleConfirm = async (action: CopilotAction) => {
     const result = await chat.confirmAction(action);

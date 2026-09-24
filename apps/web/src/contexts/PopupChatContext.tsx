@@ -12,6 +12,18 @@ interface PopupChatContextValue {
   /** Tab to show on the next open; null keeps the last used tab. */
   preferredTab: PopupChatTab | null;
   open: (targetUserId?: string, tab?: PopupChatTab) => void;
+  /**
+   * Ask the assistant something from anywhere on a page, and send it.
+   *
+   * The header's Ask AI bar navigated to /ai?q=, which left the page - and
+   * with it the page context the assistant reads (its controls, its rail,
+   * its snapshot) - and only pre-filled the question, so it took a second
+   * send. This opens the in-page assistant on the AI tab and sends there.
+   */
+  ask: (prompt: string) => void;
+  /** The question `ask` is waiting to send, until the assistant takes it. */
+  pendingPrompt: string | null;
+  consumePrompt: () => void;
   close: () => void;
   toggle: () => void;
   minimize: () => void;
@@ -25,6 +37,16 @@ export function PopupChatProvider({ children }: { children: React.ReactNode }) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [initialUserId, setInitialUserId] = useState<string | null>(null);
   const [preferredTab, setPreferredTab] = useState<PopupChatTab | null>(null);
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+
+  const ask = useCallback((prompt: string) => {
+    setInitialUserId(null);
+    setPreferredTab('ai');
+    setPendingPrompt(prompt);
+    setIsOpen(true);
+    setIsMinimized(false);
+  }, []);
+  const consumePrompt = useCallback(() => setPendingPrompt(null), []);
 
   const open = useCallback((targetUserId?: string, tab?: PopupChatTab) => {
     setInitialUserId(targetUserId ?? null);
@@ -51,10 +73,15 @@ export function PopupChatProvider({ children }: { children: React.ReactNode }) {
   const restore  = useCallback(() => setIsMinimized(false), []);
 
   return (
-    <PopupChatContext.Provider value={{ isOpen, isMinimized, initialUserId, preferredTab, open, close, toggle, minimize, restore }}>
+    <PopupChatContext.Provider value={{ isOpen, isMinimized, initialUserId, preferredTab, open, ask, pendingPrompt, consumePrompt, close, toggle, minimize, restore }}>
       {children}
     </PopupChatContext.Provider>
   );
+}
+
+/** The same, or null outside the provider (a component that can fall back). */
+export function usePopupChatOptional() {
+  return useContext(PopupChatContext);
 }
 
 export function usePopupChat() {
