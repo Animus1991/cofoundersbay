@@ -1,5 +1,6 @@
 'use client';
 
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { useState, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -269,6 +270,25 @@ export default function NotificationsPage() {
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
+
+  // Offered to the assistant: the category tab, unread-only, and mark all
+  // read - the header button's own mutation, so it writes (and says so).
+  usePageControls([
+    choiceControl('category', 'Notification category', 'Κατηγορία ειδοποιήσεων', FILTER_TABS.map((t) => ({ value: t.value, en: t.labelEn, el: t.labelEl })), activeTab, (v) => { setActiveTab(v); setSelectedIds(new Set()); }),
+    choiceControl('unread_only', 'Unread filter', 'Φίλτρο αδιάβαστων', [
+      { value: 'all', en: 'All notifications', el: 'Όλες οι ειδοποιήσεις' },
+      { value: 'unread', en: 'Unread only', el: 'Μόνο αδιάβαστες' },
+    ], showUnreadOnly ? 'unread' : 'all', (v) => setShowUnreadOnly(v === 'unread')),
+    {
+      id: 'mark_all_read',
+      labelEn: 'Mark all notifications read',
+      labelEl: 'Σήμανση όλων ως αναγνωσμένων',
+      writes: true,
+      unavailableEn: unreadCount === 0 ? 'Nothing is unread.' : undefined,
+      unavailableEl: unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined,
+      run: () => markAllRead.mutate(),
+    },
+  ]);
 
   const deleteN = useMutation({
     mutationFn: deleteNotification,

@@ -1,5 +1,6 @@
 'use client';
 
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -204,6 +205,22 @@ export default function GroupsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sort, setSort] = useState<'popular' | 'recent' | 'trending'>('popular');
   const [typeFilter, setTypeFilter] = useState('all');
+  // Offered to the assistant: tab, category, sort and type, and the create
+  // form, through the same setters. Joining and leaving stay on the cards.
+  usePageControls([
+    choiceControl('tab', 'Communities tab', 'Καρτέλα κοινοτήτων', [
+      { value: 'discover', en: 'Discover', el: 'Ανακάλυψη' },
+      { value: 'my-groups', en: 'My communities', el: 'Οι κοινότητές μου' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('category', 'Community category', 'Κατηγορία κοινότητας', CATEGORIES.map((c) => ({ value: c, en: c === 'All' ? 'All categories' : c, el: c === 'All' ? 'Όλες οι κατηγορίες' : c })), selectedCategory, setSelectedCategory),
+    choiceControl('sort', 'Sort communities', 'Ταξινόμηση κοινοτήτων', [
+      { value: 'popular', en: 'Popular', el: 'Δημοφιλείς' },
+      { value: 'recent', en: 'Recent', el: 'Πρόσφατες' },
+      { value: 'trending', en: 'Trending', el: 'Ανερχόμενες' },
+    ], sort, (v) => setSort(v as typeof sort)),
+    choiceControl('type', 'Community type', 'Τύπος κοινότητας', TYPE_FILTERS.map((t) => ({ value: t.value, en: t.value === 'all' ? 'Any type' : t.label, el: t.value === 'all' ? 'Οποιοσδήποτε τύπος' : t.label })), typeFilter, setTypeFilter),
+    { id: 'create', labelEn: 'Open the create community form', labelEl: 'Άνοιγμα φόρμας νέας κοινότητας', writes: false, run: () => setShowCreateModal(true) },
+  ]);
 
   const discoverQuery = useQuery({
     queryKey: ['groups', 'discover', selectedCategory, searchQuery, sort],

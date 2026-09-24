@@ -1,5 +1,6 @@
 'use client';
 
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -49,6 +50,26 @@ export default function EventsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [filter, setFilter] = useState<EventFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  // Offered to the assistant: the tab, the format filter and the layout,
+  // through the same setters. RSVPs and creating events are capabilities of
+  // their own (rsvp_event, create_event).
+  usePageControls([
+    choiceControl('tab', 'Events tab', 'Καρτέλα εκδηλώσεων', [
+      { value: 'upcoming', en: 'Upcoming', el: 'Επερχόμενες' },
+      { value: 'my-events', en: 'My Events', el: 'Οι εκδηλώσεις μου' },
+      { value: 'past', en: 'Past', el: 'Παρελθούσες' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('format', 'Event format filter', 'Φίλτρο μορφής εκδήλωσης', [
+      { value: 'all', en: 'Any format', el: 'Οποιαδήποτε μορφή' },
+      { value: 'online', en: 'Online', el: 'Διαδικτυακές' },
+      { value: 'in-person', en: 'In-person', el: 'Δια ζώσης' },
+      { value: 'hybrid', en: 'Hybrid', el: 'Υβριδικές' },
+    ], filter, (v) => setFilter(v as EventFilter)),
+    choiceControl('view', 'Events layout', 'Διάταξη εκδηλώσεων', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as ViewMode)),
+  ]);
 
   const hasToken = useIsAuthenticated();
 

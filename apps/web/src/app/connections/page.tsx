@@ -1,5 +1,6 @@
 'use client';
 
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -241,6 +242,16 @@ export default function ConnectionsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [tab, setTab] = useState<'intros' | 'received' | 'sent' | 'accepted'>('intros');
+  // Offered to the assistant: the tab, through the same setter. Accepting or
+  // declining a request is respond_to_connection, a capability of its own.
+  usePageControls([
+    choiceControl('tab', 'Connections tab', 'Καρτέλα συνδέσεων', [
+      { value: 'intros', en: 'Intros', el: 'Συστάσεις' },
+      { value: 'received', en: 'Received requests', el: 'Ληφθέντα αιτήματα' },
+      { value: 'sent', en: 'Sent requests', el: 'Σταλμένα αιτήματα' },
+      { value: 'accepted', en: 'Connected', el: 'Συνδεδεμένοι' },
+    ], tab, (v) => setTab(v as typeof tab)),
+  ]);
   const [justAcceptedUser, setJustAcceptedUser] = useState<{
     id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null;
   } | null>(null);
