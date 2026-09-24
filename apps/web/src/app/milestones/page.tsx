@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -457,111 +458,85 @@ export default function MilestonesPage() {
   const trackerHasItems = (summaryData?.total ?? 0) > 0 || allMilestones.length > 0;
   const showFilteredEmpty = milestones.length === 0 && (hasActiveFilters || trackerHasItems);
 
-  return (
-    <AppShell
-      showHelp
-      askAi="Help me pick the next milestone from Builder, the pitch deck, and what is already overdue."
-      actions={
-        <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => setCreateOpen(true)}>
-          <Plus className="icon-sm" /> <BilingualText en={milestoneEn('new_milestone')} el={milestoneEl('new_milestone')} compact />
-        </Button>
-      }
-    >
-      <div className="space-y-4">
-        <button
-          type="button"
-          onClick={() => openAskAi()}
-          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
-        >
-          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-foreground">
-              <BilingualText en={milestoneEn('ask_ai_plan')} el={milestoneEl('ask_ai_plan')} stacked />
-            </span>
-            <span className="block text-2xs text-muted-foreground">
-              <BilingualText en={milestoneEn('ask_ai_hint')} el={milestoneEl('ask_ai_hint')} />
-            </span>
-          </span>
-        </button>
-
-        {/* Summary strip */}
-        {waiting ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
-            ))}
-          </div>
-        ) : (
-          <SummaryBar summary={summaryData} />
-        )}
-
-        {/* Search + Category filter */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-48">
-            <Search className="icon-sm absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t(milestoneEn('search_ph'), milestoneEl('search_ph'))}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 rounded-xl pl-8 text-sm"
-              aria-label={bilingualAria(milestoneEn('search_ph'), milestoneEl('search_ph'))}
-            />
-            {searchQuery && (
-              <button aria-label="Clear search" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                <X className="icon-sm" />
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {CATEGORY_ORDER.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setCategoryFilter(cat)}
-                className={cn(
-                  'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
-                  categoryFilter === cat
-                    ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                    : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {cat === 'all'
-                  ? <BilingualText en={milestoneEn('all')} el={milestoneEl('all')} compact />
-                  : <BilingualText en={milestoneEn(MILESTONE_CATEGORY_KEYS[cat])} el={milestoneEl(MILESTONE_CATEGORY_KEYS[cat])} compact />}
-              </button>
-            ))}
-          </div>
+  /*
+   * What counts the list and what narrows it.
+   *
+   * The milestones are the page, and so are the status tabs: those are how
+   * you slice the list, not decoration around it. Five tiles counting the
+   * same list, a search box with a category filter, and a priority select
+   * that shared a row with the tabs and made it wrap - those are not.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Summary',
+      labelEl: 'Σύνοψη',
+      content: (
+        <div className="space-y-3">
+          {/* Summary strip */}
+          {waiting ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))}
+            </div>
+          ) : (
+            <SummaryBar summary={summaryData} />
+          )}
         </div>
-
-        {/* Filters + view */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Status tabs */}
-          <div className="flex flex-wrap gap-1.5">
-            {statusTabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setStatusFilter(tab.value)}
-                className={cn(
-                    'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
-                  statusFilter === tab.value
-                    ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                    : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <BilingualText en={milestoneEn(tab.labelKey)} el={milestoneEl(tab.labelKey)} compact />
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className={cn(
-                    'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs',
-                    statusFilter === tab.value ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
-                  )}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Narrow the list',
+      labelEl: 'Περιορισμός λίστας',
+      // Search, category and priority each narrow what is on screen; the
+      // reader has to be able to see that without opening the rail.
+      badge:
+        (searchQuery.trim() ? 1 : 0) +
+          (categoryFilter !== 'all' ? 1 : 0) +
+          (priorityFilter !== 'all' ? 1 : 0) || null,
+      content: (
+        <div className="space-y-4">
+          {/* Search + Category filter */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-48">
+              <Search className="icon-sm absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t(milestoneEn('search_ph'), milestoneEl('search_ph'))}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 rounded-xl pl-8 text-sm"
+                aria-label={bilingualAria(milestoneEn('search_ph'), milestoneEl('search_ph'))}
+              />
+              {searchQuery && (
+                <button aria-label="Clear search" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="icon-sm" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {CATEGORY_ORDER.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategoryFilter(cat)}
+                  className={cn(
+                    'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
+                    categoryFilter === cat
+                      ? 'border-primary/40 bg-primary/10 text-primary-accessible'
+                      : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {cat === 'all'
+                    ? <BilingualText en={milestoneEn('all')} el={milestoneEl('all')} compact />
+                    : <BilingualText en={milestoneEn(MILESTONE_CATEGORY_KEYS[cat])} el={milestoneEl(MILESTONE_CATEGORY_KEYS[cat])} compact />}
+                </button>
+              ))}
+            </div>
           </div>
-
-          {/* Priority + View + Refresh */}
           <div className="flex items-center gap-2">
             <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-border/50 bg-secondary/30 px-3 py-1.5">
               {/* The glyph is the only thing next to this control, and a glyph
@@ -604,6 +579,70 @@ export default function MilestonesPage() {
               <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
           </div>
+        </div>
+      ),
+    },
+  ];
+  return (
+    <AppShell
+      rail={rail}
+      showHelp
+      askAi="Help me pick the next milestone from Builder, the pitch deck, and what is already overdue."
+      actions={
+        <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => setCreateOpen(true)}>
+          <Plus className="icon-sm" /> <BilingualText en={milestoneEn('new_milestone')} el={milestoneEl('new_milestone')} compact />
+        </Button>
+      }
+    >
+      <div className="space-y-4">
+        <button
+          type="button"
+          onClick={() => openAskAi()}
+          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
+        >
+          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-medium text-foreground">
+              <BilingualText en={milestoneEn('ask_ai_plan')} el={milestoneEl('ask_ai_plan')} stacked />
+            </span>
+            <span className="block text-2xs text-muted-foreground">
+              <BilingualText en={milestoneEn('ask_ai_hint')} el={milestoneEl('ask_ai_hint')} />
+            </span>
+          </span>
+        </button>
+
+
+
+        {/* Status tabs. The priority select and the view toggle shared this
+            row and made it wrap; they are in the rail now. */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Status tabs */}
+          <div className="flex flex-wrap gap-1.5">
+            {statusTabs.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={cn(
+                    'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
+                  statusFilter === tab.value
+                    ? 'border-primary/40 bg-primary/10 text-primary-accessible'
+                    : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <BilingualText en={milestoneEn(tab.labelKey)} el={milestoneEl(tab.labelKey)} compact />
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className={cn(
+                    'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs',
+                    statusFilter === tab.value ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
+                  )}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Priority + View + Refresh */}
         </div>
 
         {/* List */}
