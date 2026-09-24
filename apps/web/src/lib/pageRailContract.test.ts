@@ -100,6 +100,16 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // column's EmptyState shows the same words only when a filtered list came
   // back empty - recovery copy inside an empty state, not a second toolbar.
   'key:clear_filters',
+  // /readiness: the rail's Next steps owns the standing Builder shortcut;
+  // the column shows the same words only inside the "no workspace connected"
+  // warning, which renders only when there is none - the remedy for that
+  // warning, not a second shortcut.
+  'key:open_builder',
+  // /readiness: this scan reads the file, not the render branch. The page
+  // has an early return for "no workspace yet" that renders its own shell
+  // with no rail at all, and offers the same Ask-AI button there. A reader
+  // never sees both, because they are different screens.
+  'key:ask_ai_plan',
 ]);
 
 const pages = walk(APP_DIR)

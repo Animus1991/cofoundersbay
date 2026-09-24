@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { readinessEn, readinessEl } from '@/lib/i18n/strings-readiness';
 import { bilingualInline, bilingualAria, formatShortDate } from '@/lib/i18n/format';
@@ -719,6 +721,9 @@ export default function ReadinessPage() {
   const [mode, setMode] = useState<'live' | 'demo' | null>(null);
   const [demoOverlay, setDemoOverlay] = useState<ReadinessOverlay>({});
   const isDemo = mode === 'demo';
+  // Read here, with the component's other context: the Priority-actions tab
+  // sends the reader to the rail's AI panel rather than duplicating it.
+  const { openRailSection } = usePageRail();
 
   // Read after mount, never during render: the server has no session storage,
   // so reading it while rendering would make the markup disagree on which
@@ -917,8 +922,224 @@ export default function ReadinessPage() {
     .sort((a, b) => b.weight - a.weight)[0];
   const askPrompt = `My overall startup readiness is ${overallScore}%. Weakest dimensions: ${weakDims.map((d) => `${d.labelEn} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0]?.en ?? 'needs work'}`).join('; ') || 'none'}. What should I do next in Builder, interviews, or fundraising?`;
 
+  /*
+   * What sits around the answer rather than being it.
+   *
+   * The gauge, the radar and the six dimensions are why this page exists.
+   * These four - the same score read for two audiences, the seven-week
+   * trend, the AI plan and the four ways out - used to occupy the top of
+   * the page, so the dimensions were below the fold. Same cards, same
+   * buttons, same CSV export; one gesture away instead of first.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'audiences',
+      glyph: 'target',
+      labelEn: 'Readiness by audience',
+      labelEl: 'Ετοιμότητα ανά κοινό',
+      content: <div className="space-y-3">
+        {/* Accelerator readiness */}
+        <Card className="min-w-0">
+        {/* `h-full`: the grid stretches the Card, but this column was only as
+        tall as its own content, so the `mt-auto` on the button below had
+        nothing to push against and left 85px of empty card under it. */}
+        <CardContent className="flex h-full flex-col gap-4 p-5">
+        <div className="flex min-w-0 items-center gap-3">
+        <div className="rounded-xl bg-primary/10 p-2.5">
+        <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
+        </div>
+        <div className="min-w-0">
+        <p className="text-sm font-semibold"><BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} stacked wrap /></p>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} wrap /></p>
+        </div>
+        </div>
+        <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
+        <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
+        {accelScore >= 70
+        ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(accelScore))}><TrendingUp className="icon-sm" /> <BilingualText en={readinessEn('ready_to_apply')} el={readinessEl('ready_to_apply')} compact /></span>
+        : accelScore >= 50
+        ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(accelScore))}><Minus className="icon-sm" /> <BilingualText en={readinessEn('almost_ready')} el={readinessEl('almost_ready')} compact /></span>
+        : <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(accelScore))}><TrendingDown className="icon-sm" /> <BilingualText en={readinessEn('not_ready_yet')} el={readinessEl('not_ready_yet')} compact /></span>
+        }
+        </div>
+        <Progress value={accelScore} label="Accelerator readiness" className="h-2" />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+        <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
+        </p>
+        <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
+        <Link href="/programs"><CfbGlyph name="award" className="icon-sm mr-1.5 shrink-0" aria-hidden="true" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact wrap /></Link>
+        </Button>
+        </CardContent>
+        </Card>
+
+        {/* Investor readiness */}
+        <Card className="min-w-0">
+        {/* `h-full`: the grid stretches the Card, but this column was only as
+        tall as its own content, so the `mt-auto` on the button below had
+        nothing to push against and left 85px of empty card under it. */}
+        <CardContent className="flex h-full flex-col gap-4 p-5">
+        <div className="flex min-w-0 items-center gap-3">
+        <div className="rounded-xl bg-primary/10 p-2.5">
+        <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
+        </div>
+        <div className="min-w-0">
+        <p className="text-sm font-semibold"><BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} stacked wrap /></p>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} wrap /></p>
+        </div>
+        </div>
+        <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
+        <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
+        {investScore >= 70
+        ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(investScore))}><TrendingUp className="icon-sm" /> <BilingualText en={readinessEn('fundable_signal')} el={readinessEl('fundable_signal')} compact /></span>
+        : investScore >= 50
+        ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(investScore))}><Minus className="icon-sm" /> <BilingualText en={readinessEn('building_traction')} el={readinessEl('building_traction')} compact /></span>
+        : <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(investScore))}><TrendingDown className="icon-sm" /> <BilingualText en={readinessEn('pre_investment_stage')} el={readinessEl('pre_investment_stage')} compact /></span>
+        }
+        </div>
+        <Progress value={investScore} label="Investor readiness" className="h-2" />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+        <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
+        </p>
+        <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
+        <Link href="/investors"><CfbGlyph name="discover" className="icon-sm mr-1.5 shrink-0" aria-hidden="true" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact wrap /></Link>
+        </Button>
+        </CardContent>
+        </Card>
+      </div>,
+    },
+    {
+      id: 'plan',
+      glyph: 'spark',
+      labelEn: 'AI plan',
+      labelEl: 'Πλάνο AI',
+      content: <div className="space-y-3">
+        {/* AI Insight Panel */}
+        <Card className="border-primary/20 bg-primary/[0.03]">
+        <CardHeader className="pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
+        <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+        <BilingualText en={readinessEn('ai_insight')} el={readinessEl('ai_insight')} compact />
+        </CardTitle>
+        <AIInsightButton
+        className="h-8"
+        prompt={`${askPrompt} Draft a 7-day plan.`}
+        />
+        </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+        {weakDims.slice(0, 3).map((d) => (
+        <div key={d.key} className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3">
+        <CfbGlyph name="spark" className={cn('mt-0.5 icon-sm flex-shrink-0', STATUS.warning.icon)} />
+        <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-foreground">
+        <BilingualText en={d.labelEn} el={d.labelEl} wrap /> — {Math.round((d.score / d.maxScore) * 100)}%
+        </p>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+        <BilingualText en={d.recommendations[0]?.en ?? ''} el={d.recommendations[0]?.el} />
+        </p>
+        </div>
+        </div>
+        ))}
+        {weakDims.length === 0 && (
+        <div className="flex items-center gap-2.5 p-3">
+        <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
+        <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_strong')} el={readinessEl('all_dimensions_strong')} /></p>
+        </div>
+        )}
+        <AskAiButton
+        variant="ghost"
+        className="w-full"
+        prompt={askPrompt}
+        labelEn={readinessEn('ask_ai_plan')}
+        labelEl={readinessEl('ask_ai_plan')}
+        />
+        </CardContent>
+        </Card>
+      </div>,
+    },
+    {
+      id: 'history',
+      glyph: 'chart',
+      labelEn: 'Score history',
+      labelEl: 'Ιστορικό βαθμολογίας',
+      content: <div className="space-y-3">
+        <Card>
+        <CardContent className="p-4">
+        <p className="mb-2.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact wrap /></p>
+        {isDemo ? <>
+        <div className="flex items-end gap-2.5">
+        <span className="text-xl font-bold tabular-nums">{overallScore}</span>
+        <span className={cn('mb-1 flex items-center gap-0.5 text-xs', TREND.up)}>
+        <TrendingUp className="icon-sm" />+{overallScore - demoHistory[0].score}{' '}
+        <BilingualText en={readinessEn('pts')} el={readinessEl('pts')} compact />
+        </span>
+        </div>
+        {/* 40px, not 24. The seven weeks span 38→61, and in a 20px
+        strip that whole journey was five pixels — the bars read as
+        one flat row. The baseline stays at zero rather than at the
+        minimum, so the rise is shown without being exaggerated. */}
+        <div className="mt-3 flex h-10 items-end gap-1 lg:h-[40px]">
+        {demoHistory.map((h, i) => (
+        // Dimmed once, not twice: bg-primary/40 under an opacity
+        // starting at 0.4 left the oldest bar at ~16% alpha, and the
+        // 38→61 climb read as one flat row of pale blocks. Full
+        // colour, and the fade alone carries the passage of weeks.
+        <div
+        key={i}
+        className="flex-1 rounded-sm bg-primary transition-all"
+        style={{ height: `${Math.max(h.score, 4)}%`, opacity: 0.35 + (i / (demoHistory.length - 1 || 1)) * 0.65 }}
+        />
+        ))}
+        </div>
+        </> : <p className="text-sm text-muted-foreground"><BilingualText en="Readiness history is not available yet." el="Το ιστορικό ετοιμότητας δεν είναι ακόμη διαθέσιμο." /></p>}
+        </CardContent>
+        </Card>
+      </div>,
+    },
+    {
+      id: 'next',
+      glyph: 'flag',
+      labelEn: 'Next steps',
+      labelEl: 'Επόμενα βήματα',
+      content: <div className="space-y-3">
+        {/* Quick Actions */}
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
+        <Link href="/builder">
+        <CfbGlyph name="builder" className="icon-sm" />
+        <span className="text-sm font-medium"><BilingualText en={readinessEn('open_builder')} el={readinessEl('open_builder')} compact /></span>
+        <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
+        </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
+        <Link href="/mentoring">
+        <CfbGlyph name="mentor" className="icon-sm" />
+        <span className="text-sm font-medium"><BilingualText en={readinessEn('find_mentor')} el={readinessEl('find_mentor')} compact /></span>
+        <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
+        </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
+        <Link href="/programs">
+        <CfbGlyph name="award" className="icon-sm" />
+        <span className="text-sm font-medium"><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></span>
+        <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('accelerators_cohorts')} el={readinessEl('accelerators_cohorts')} compact /></span>
+        </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
+        <Link href="/expert-reviews">
+        <CfbGlyph name="shield" className="icon-sm" />
+        <span className="text-sm font-medium"><BilingualText en={readinessEn('expert_review')} el={readinessEl('expert_review')} compact /></span>
+        <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('expert_review_hint')} el={readinessEl('expert_review_hint')} compact /></span>
+        </Link>
+        </Button>
+        </div>
+      </div>,
+    },
+  ];
   return (
-    <AppShell actions={reassessAction} showHelp askAi={askPrompt}>
+    <AppShell
+      rail={rail} actions={reassessAction} showHelp askAi={askPrompt}>
       <div className="min-w-0 space-y-6 overflow-x-clip">
         {apiData.lastAssessedAt && (
           <p className="text-sm text-muted-foreground">
@@ -942,7 +1163,9 @@ export default function ReadinessPage() {
           </div>
         )}
 
-        <div className="grid min-w-0 gap-5 lg:grid-cols-3">
+        {/* One card now: the two audience readouts moved to the rail, so the
+            gauge no longer shares a row with two restatements of itself. */}
+        <div className="grid min-w-0 gap-5">
           <Card className="min-w-0 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/15 via-indigo-500/5 to-transparent lg:col-span-1">
             <CardContent className="flex h-full flex-col items-center gap-4 p-5 text-center">
               <ScoreEmblem
@@ -991,155 +1214,12 @@ export default function ReadinessPage() {
             </CardContent>
           </Card>
 
-          {/* Accelerator readiness */}
-          <Card className="min-w-0">
-            {/* `h-full`: the grid stretches the Card, but this column was only as
-                tall as its own content, so the `mt-auto` on the button below had
-                nothing to push against and left 85px of empty card under it. */}
-            <CardContent className="flex h-full flex-col gap-4 p-5">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="rounded-xl bg-primary/10 p-2.5">
-                  <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold"><BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} stacked wrap /></p>
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} wrap /></p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
-                {accelScore >= 70
-                  ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(accelScore))}><TrendingUp className="icon-sm" /> <BilingualText en={readinessEn('ready_to_apply')} el={readinessEl('ready_to_apply')} compact /></span>
-                  : accelScore >= 50
-                  ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(accelScore))}><Minus className="icon-sm" /> <BilingualText en={readinessEn('almost_ready')} el={readinessEl('almost_ready')} compact /></span>
-                  : <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(accelScore))}><TrendingDown className="icon-sm" /> <BilingualText en={readinessEn('not_ready_yet')} el={readinessEl('not_ready_yet')} compact /></span>
-                }
-              </div>
-              <Progress value={accelScore} label="Accelerator readiness" className="h-2" />
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
-              </p>
-              <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
-                <Link href="/programs"><CfbGlyph name="award" className="icon-sm mr-1.5 shrink-0" aria-hidden="true" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact wrap /></Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Investor readiness */}
-          <Card className="min-w-0">
-            {/* `h-full`: the grid stretches the Card, but this column was only as
-                tall as its own content, so the `mt-auto` on the button below had
-                nothing to push against and left 85px of empty card under it. */}
-            <CardContent className="flex h-full flex-col gap-4 p-5">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="rounded-xl bg-primary/10 p-2.5">
-                  <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold"><BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} stacked wrap /></p>
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} wrap /></p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
-                {investScore >= 70
-                  ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(investScore))}><TrendingUp className="icon-sm" /> <BilingualText en={readinessEn('fundable_signal')} el={readinessEl('fundable_signal')} compact /></span>
-                  : investScore >= 50
-                  ? <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(investScore))}><Minus className="icon-sm" /> <BilingualText en={readinessEn('building_traction')} el={readinessEl('building_traction')} compact /></span>
-                  : <span className={cn('mb-1 flex items-center gap-1 text-xs', readinessSignalText(investScore))}><TrendingDown className="icon-sm" /> <BilingualText en={readinessEn('pre_investment_stage')} el={readinessEl('pre_investment_stage')} compact /></span>
-                }
-              </div>
-              <Progress value={investScore} label="Investor readiness" className="h-2" />
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
-              </p>
-              <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
-                <Link href="/investors"><CfbGlyph name="discover" className="icon-sm mr-1.5 shrink-0" aria-hidden="true" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact wrap /></Link>
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Radar + AI Insights row */}
-        <div className="grid min-w-0 gap-5 lg:grid-cols-5">
-          <div className="min-w-0 lg:col-span-3">
+        <div className="grid min-w-0 gap-5">
+          <div className="min-w-0">
             <ReadinessRadarChart dimensions={dimensions} />
-          </div>
-          <div className="min-w-0 space-y-4 lg:col-span-2">
-            {/* AI Insight Panel */}
-            <Card className="border-primary/20 bg-primary/[0.03]">
-              <CardHeader className="pb-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
-                    <BilingualText en={readinessEn('ai_insight')} el={readinessEl('ai_insight')} compact />
-                  </CardTitle>
-                  <AIInsightButton
-                    className="h-8"
-                    prompt={`${askPrompt} Draft a 7-day plan.`}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {weakDims.slice(0, 3).map((d) => (
-                  <div key={d.key} className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3">
-                    <CfbGlyph name="spark" className={cn('mt-0.5 icon-sm flex-shrink-0', STATUS.warning.icon)} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-foreground">
-                        <BilingualText en={d.labelEn} el={d.labelEl} wrap /> — {Math.round((d.score / d.maxScore) * 100)}%
-                      </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                        <BilingualText en={d.recommendations[0]?.en ?? ''} el={d.recommendations[0]?.el} />
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                {weakDims.length === 0 && (
-                  <div className="flex items-center gap-2.5 p-3">
-                    <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
-                    <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_strong')} el={readinessEl('all_dimensions_strong')} /></p>
-                  </div>
-                )}
-                <AskAiButton
-                  variant="ghost"
-                  className="w-full"
-                  prompt={askPrompt}
-                  labelEn={readinessEn('ask_ai_plan')}
-                  labelEl={readinessEl('ask_ai_plan')}
-                />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="mb-2.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact wrap /></p>
-                {isDemo ? <>
-                <div className="flex items-end gap-2.5">
-                  <span className="text-xl font-bold tabular-nums">{overallScore}</span>
-                  <span className={cn('mb-1 flex items-center gap-0.5 text-xs', TREND.up)}>
-                    <TrendingUp className="icon-sm" />+{overallScore - demoHistory[0].score}{' '}
-                    <BilingualText en={readinessEn('pts')} el={readinessEl('pts')} compact />
-                  </span>
-                </div>
-                {/* 40px, not 24. The seven weeks span 38→61, and in a 20px
-                    strip that whole journey was five pixels — the bars read as
-                    one flat row. The baseline stays at zero rather than at the
-                    minimum, so the rise is shown without being exaggerated. */}
-                <div className="mt-3 flex h-10 items-end gap-1 lg:h-[40px]">
-                  {demoHistory.map((h, i) => (
-                    // Dimmed once, not twice: bg-primary/40 under an opacity
-                    // starting at 0.4 left the oldest bar at ~16% alpha, and the
-                    // 38→61 climb read as one flat row of pale blocks. Full
-                    // colour, and the fade alone carries the passage of weeks.
-                    <div
-                      key={i}
-                      className="flex-1 rounded-sm bg-primary transition-all"
-                      style={{ height: `${Math.max(h.score, 4)}%`, opacity: 0.35 + (i / (demoHistory.length - 1 || 1)) * 0.65 }}
-                    />
-                  ))}
-                </div>
-                </> : <p className="text-sm text-muted-foreground"><BilingualText en="Readiness history is not available yet." el="Το ιστορικό ετοιμότητας δεν είναι ακόμη διαθέσιμο." /></p>}
-              </CardContent>
-            </Card>
           </div>
         </div>
 
@@ -1245,13 +1325,18 @@ export default function ReadinessPage() {
                       </div>
                     );})
                 )}
-                <AskAiButton
+                {/* The AI plan lives in the rail now. Rather than a second
+                    button with the same prompt, this opens that section - the
+                    reader ends up at the panel, not at a copy of its trigger. */}
+                <Button
                   variant="ghost"
+                  size="sm"
                   className="w-full"
-                  prompt={askPrompt}
-                  labelEn={readinessEn('ask_ai_plan')}
-                  labelEl={readinessEl('ask_ai_plan')}
-                />
+                  onClick={() => openRailSection('plan')}
+                >
+                  <CfbGlyph name="spark" className="icon-sm mr-1.5" aria-hidden="true" />
+                  <BilingualText en="Open the AI plan" el="Άνοιγμα πλάνου AI" compact />
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -1390,37 +1475,6 @@ export default function ReadinessPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Quick Actions */}
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/builder">
-              <CfbGlyph name="builder" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={readinessEn('open_builder')} el={readinessEl('open_builder')} compact /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/mentoring">
-              <CfbGlyph name="mentor" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={readinessEn('find_mentor')} el={readinessEl('find_mentor')} compact /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/programs">
-              <CfbGlyph name="award" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('accelerators_cohorts')} el={readinessEl('accelerators_cohorts')} compact /></span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/expert-reviews">
-              <CfbGlyph name="shield" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={readinessEn('expert_review')} el={readinessEl('expert_review')} compact /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('expert_review_hint')} el={readinessEl('expert_review_hint')} compact /></span>
-            </Link>
-          </Button>
-        </div>
       </div>
     </AppShell>
   );
