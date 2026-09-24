@@ -29,6 +29,9 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
   get_investor_board: { en: 'What is on my deal board?', el: 'Τι έχω στον πίνακα επενδύσεων;' },
   get_builder_state: { en: 'Show my Startup Builder workspaces', el: 'Δείξε τους χώρους Startup Builder' },
+  get_profile: { en: 'Show my profile', el: 'Δείξε το προφίλ μου' },
+  get_messages: { en: 'Any unread messages?', el: 'Έχω αδιάβαστα μηνύματα;' },
+  get_connections: { en: 'Who is waiting on my connections?', el: 'Ποιος περιμένει στις συνδέσεις μου;' },
   navigate: { en: 'Open matches', el: 'Άνοιξε τις αντιστοιχίσεις' },
   shortlist_add: { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα' },
   shortlist_remove: { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα' },
@@ -39,6 +42,12 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   workspace_create: { en: 'Create a workspace called Helios', el: 'Δημιούργησε χώρο εργασίας «Ήλιος»' },
   investor_track_startup: { en: 'Track NeuralFlow on my board', el: 'Παρακολούθησε τη NeuralFlow στον πίνακά μου' },
   investor_move_stage: { en: 'Move PayStream to due diligence', el: 'Μετέφερε το PayStream σε δέουσα επιμέλεια' },
+  update_profile: { en: 'Change my headline to Founder & CEO', el: 'Άλλαξε τον τίτλο μου σε Founder & CEO' },
+  respond_to_connection: { en: 'Accept Nikos’ connection request', el: 'Αποδέξου το αίτημα σύνδεσης του Νίκου' },
+  create_milestone: { en: 'Add a milestone: close the pre-seed round by June', el: 'Πρόσθεσε ορόσημο: κλείσιμο pre-seed γύρου ως τον Ιούνιο' },
+  update_milestone_status: { en: 'Mark the pitch deck milestone as done', el: 'Ολοκλήρωσε το ορόσημο του pitch deck' },
+  rsvp_event: { en: 'RSVP me as going to the demo day', el: 'Δήλωσέ με συμμετέχοντα στο demo day' },
+  create_event: { en: 'Create a networking event next month', el: 'Δημιούργησε εκδήλωση networking τον επόμενο μήνα' },
   canvas_command: { en: 'Add a note on the canvas titled Pricing', el: 'Πρόσθεσε σημείωση στον καμβά «Τιμή»' },
 };
 

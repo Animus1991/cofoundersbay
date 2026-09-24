@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getEndorsementStats,
+  getMeProfile,
   getMilestoneSummary,
   getMyGroups,
   getPendingEndorsements,
   getUpcomingMentorshipSessions,
+  listConnectionRequests,
   listEvents,
   listJobs,
+  listMessageConversations,
   listMilestones,
   listOpportunities,
   listResearchBoards,
@@ -41,6 +44,9 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   getUpcomingMentorshipSessions: vi.fn(),
   listShortlist: vi.fn(),
   listResearchBoards: vi.fn(),
+  getMeProfile: vi.fn(),
+  listMessageConversations: vi.fn(),
+  listConnectionRequests: vi.fn(),
 }));
 vi.mock('@/lib/builder-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/builder-api')>()),
@@ -63,6 +69,9 @@ beforeEach(() => {
   vi.mocked(listShortlist).mockReset();
   vi.mocked(listResearchBoards).mockReset();
   vi.mocked(getWorkspaces).mockReset();
+  vi.mocked(getMeProfile).mockReset();
+  vi.mocked(listMessageConversations).mockReset();
+  vi.mocked(listConnectionRequests).mockReset();
 });
 
 describe('the reader map', () => {
@@ -301,5 +310,118 @@ describe('the language of the reply', () => {
     const turn = await runCopilotTurn('ποια ορόσημα έχω;', { route: '/ai', locale: 'en' });
     expect(turn.message).toContain('1 από 2 ορόσημα ολοκληρωμένα (50%).');
     expect(turn.message).toContain('1 εκπρόθεσμα');
+  });
+});
+
+describe('reading your profile', () => {
+  it('shows the record the profile page shows, with both profile actions', async () => {
+    vi.mocked(getMeProfile).mockResolvedValue({
+      hasCompletedOnboarding: true,
+      profile: {
+        id: 'p1', userId: 'u1', displayName: 'Alex Demo', headline: 'Founder',
+        bio: 'Building things.', location: 'Athens, Greece', timezone: 'Europe/Athens',
+        languages: ['English', 'Greek'], avatarUrl: null, rolePayload: null,
+        visibilityRules: null, role: 'founder',
+        skills: [{ skillId: 's1', skillName: 'Product', slug: 'product', level: 'advanced' }],
+        createdAt: '', updatedAt: '',
+      },
+    });
+
+    const read = await AREA_READERS.get_profile({}, en);
+
+    expect(read.section).toContain('**Alex Demo** — Founder');
+    expect(read.section).toContain('Athens, Greece');
+    expect(read.section).toContain('Skills: Product.');
+    expect(read.citations).toEqual([expect.objectContaining({ type: 'person', id: 'u1', href: '/profile' })]);
+    const hrefs = read.actions.map((a) => a.href);
+    expect(hrefs).toContain('/profile');
+    expect(hrefs).toContain('/profile/edit');
+  });
+
+  it('offers onboarding when there is no profile', async () => {
+    vi.mocked(getMeProfile).mockResolvedValue({ profile: null, hasCompletedOnboarding: false });
+    const read = await AREA_READERS.get_profile({}, en);
+    expect(read.section).toContain('not set up yet');
+    expect(read.actions).toEqual([expect.objectContaining({ href: '/profile/edit' })]);
+  });
+});
+
+describe('reading your conversations', () => {
+  it('counts the unread and lists threads most recent first', async () => {
+    vi.mocked(listMessageConversations).mockResolvedValue({
+      conversations: [
+        {
+          id: 'c1', type: 'direct',
+          recipient: { id: 'u2', displayName: 'Elena', headline: null, avatarUrl: null, role: 'founder', isOnline: true, lastSeenAt: null },
+          lastMessage: { id: 'm1', body: 'See you Thursday', senderId: 'u2', createdAt: '' },
+          unreadCount: 2, isPinned: false, isArchived: false, updatedAt: '2026-05-01T10:00:00Z',
+        },
+        {
+          id: 'c2', type: 'direct',
+          recipient: { id: 'u3', displayName: 'Marcus', headline: null, avatarUrl: null, role: 'mentor', isOnline: false, lastSeenAt: null },
+          lastMessage: null, unreadCount: 0, isPinned: true, isArchived: false, updatedAt: '2026-04-01T10:00:00Z',
+        },
+      ],
+    });
+
+    const read = await AREA_READERS.get_messages({}, en);
+
+    expect(read.section).toContain('2 conversations');
+    expect(read.section).toContain('2 unread');
+    expect(read.section).toContain('**Elena**');
+    expect(read.section).toContain('See you Thursday');
+    expect(read.section).toContain('pinned');
+    expect(read.citations).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: 'conversation', id: 'c1', href: '/messages?c=c1' })]),
+    );
+    expect(read.actions).toEqual([expect.objectContaining({ tool: 'navigate', href: '/messages' })]);
+  });
+
+  it('says so when the inbox is empty, and survives a non-list response', async () => {
+    vi.mocked(listMessageConversations).mockResolvedValue({ conversations: [] });
+    expect((await AREA_READERS.get_messages({}, en)).section).toBe('No conversations yet.');
+
+    vi.mocked(listMessageConversations).mockResolvedValue({ conversations: { ok: true } } as never);
+    expect((await AREA_READERS.get_messages({}, en)).section).toBe('No conversations yet.');
+  });
+});
+
+describe('reading your connections', () => {
+  it('states the network size and turns each waiting request into an accept action', async () => {
+    vi.mocked(listConnectionRequests).mockImplementation(async (params) => {
+      if (params?.type === 'accepted') {
+        return { connections: [{ id: 'a1' }, { id: 'a2' }] } as never;
+      }
+      if (params?.type === 'sent') return { connections: [] } as never;
+      return {
+        connections: [
+          {
+            id: 'r1', requesterId: 'u9', receiverId: 'me', status: 'pending', message: 'Lets talk',
+            createdAt: '', updatedAt: '',
+            requester: { id: 'u9', displayName: 'Nikos', avatarUrl: null, role: 'founder', headline: 'Ex-PM' },
+            receiver: { id: 'me', displayName: 'Me', avatarUrl: null, role: 'founder', headline: null },
+          },
+        ],
+      } as never;
+    });
+
+    const read = await AREA_READERS.get_connections({}, en);
+
+    expect(read.section).toContain('2 connections');
+    expect(read.section).toContain('1 requests waiting on you');
+    expect(read.section).toContain('**Nikos**');
+    const accept = read.actions.find((a) => a.tool === 'respond_to_connection');
+    expect(accept).toMatchObject({
+      payload: { connectionId: 'r1', decision: 'accepted' },
+      status: 'pending',
+    });
+    expect(read.actions.some((a) => a.tool === 'navigate' && a.href === '/connections')).toBe(true);
+  });
+
+  it('says so when nobody is waiting', async () => {
+    vi.mocked(listConnectionRequests).mockResolvedValue({ connections: [] } as never);
+    const read = await AREA_READERS.get_connections({}, en);
+    expect(read.section).toContain('No requests waiting for an answer.');
+    expect(read.actions.every((a) => a.tool === 'navigate')).toBe(true);
   });
 });

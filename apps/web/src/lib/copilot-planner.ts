@@ -108,6 +108,15 @@ function includesWord(haystack: string, needles: string[]): boolean {
  * έρχονται» all name the area, and naming it is enough to be worth reading.
  */
 const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
+  { keys: ['my profile', 'my bio', 'my headline', 'το προφιλ μου', 'προφιλ μου'], tool: 'get_profile' },
+  {
+    keys: ['message', 'inbox', 'unread', 'conversation', 'συνομιλι', 'μηνυματ', 'αδιαβαστ'],
+    tool: 'get_messages',
+  },
+  {
+    keys: ['connection', 'my network', 'intro request', 'συνδεσ', 'αιτημα συνδεσ', 'δικτυο μου'],
+    tool: 'get_connections',
+  },
   { keys: ['event', 'meetup', 'webinar', 'workshop', 'demo day', 'εκδηλωσ'], tool: 'get_events' },
   { keys: ['milestone', 'overdue', 'οροσημ', 'εκπροθεσμ'], tool: 'get_milestones' },
   { keys: ['job', 'open role', 'hiring', 'θεσεις εργασιας', 'αγγελι', 'προσληψ'], tool: 'get_jobs' },

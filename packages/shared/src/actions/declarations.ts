@@ -231,6 +231,39 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_profile',
+    kind: 'read',
+    label: { en: 'Read your profile', el: 'Ανάγνωση του προφίλ σου' },
+    description: {
+      en: 'Read the signed-in user’s own profile: display name, headline, bio, location, languages, role and skills — the same record the Profile page shows.',
+      el: 'Διαβάζει το ίδιο το προφίλ του χρήστη: όνομα, τίτλο, βιογραφικό, τοποθεσία, γλώσσες, ρόλο και δεξιότητες — την ίδια εγγραφή που δείχνει η σελίδα Προφίλ.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_messages',
+    kind: 'read',
+    label: { en: 'Read your conversations', el: 'Ανάγνωση των συνομιλιών σου' },
+    description: {
+      en: 'Read the signed-in user’s message conversations: who each thread is with, the last message, how many are unread and whether it is pinned. Returns up to five.',
+      el: 'Διαβάζει τις συνομιλίες του χρήστη: με ποιον είναι κάθε νήμα, το τελευταίο μήνυμα, πόσα είναι αδιάβαστα και αν είναι καρφιτσωμένο. Επιστρέφει έως πέντε.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_connections',
+    kind: 'read',
+    label: { en: 'Read your connections', el: 'Ανάγνωση των συνδέσεών σου' },
+    description: {
+      en: 'Read the signed-in user’s network: how many accepted connections there are, and which requests are still waiting — incoming ones the user can answer and outgoing ones still pending.',
+      el: 'Διαβάζει το δίκτυο του χρήστη: πόσες αποδεκτές συνδέσεις υπάρχουν και ποια αιτήματα περιμένουν ακόμη — εισερχόμενα που μπορεί να απαντήσει και εξερχόμενα σε εκκρεμότητα.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'navigate',
     kind: 'mutation',
     label: { en: 'Open a page', el: 'Άνοιγμα σελίδας' },
@@ -651,6 +684,372 @@ export const ACTION_DECLARATIONS = [
     },
     auditSubject: { param: 'dealId', entityType: 'investor_deal' },
     confirmLabel: { en: 'Move it', el: 'Μετακίνηση' },
+  },
+  {
+    id: 'update_profile',
+    kind: 'mutation',
+    label: { en: 'Update your profile', el: 'Ενημέρωση του προφίλ σου' },
+    description: {
+      en: 'Change fields on the signed-in user’s own profile — headline, bio, location or timezone — through the same endpoint the profile editor saves with. Writes only after confirmation.',
+      el: 'Αλλάζει πεδία του ίδιου του προφίλ του χρήστη — τίτλο, βιογραφικό, τοποθεσία ή ζώνη ώρας — μέσα από το ίδιο endpoint που αποθηκεύει η σελίδα επεξεργασίας. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [
+      {
+        name: 'headline',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'New headline, up to 300 characters.',
+          el: 'Νέος τίτλος, έως 300 χαρακτήρες.',
+        },
+      },
+      {
+        name: 'bio',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'New bio, up to 5000 characters.',
+          el: 'Νέο βιογραφικό, έως 5000 χαρακτήρες.',
+        },
+      },
+      {
+        name: 'location',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'New location, e.g. "Athens, Greece".',
+          el: 'Νέα τοποθεσία, π.χ. «Αθήνα, Ελλάδα».',
+        },
+      },
+      {
+        name: 'timezone',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'New IANA timezone, e.g. "Europe/Athens".',
+          el: 'Νέα ζώνη ώρας IANA, π.χ. «Europe/Athens».',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['profile'],
+    reversal: {
+      // The executor reads the profile before writing and hands the previous
+      // values back as `undo.prior`, so the undo restores exactly what was
+      // there — including empty fields, written back as empty strings.
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The values being replaced are read first and the undo writes exactly those back.',
+        el: 'Πλήρως αναστρέψιμο. Οι τιμές που αντικαθίστανται διαβάζονται πρώτα και η αναίρεση γράφει ακριβώς αυτές πίσω.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Update profile', el: 'Ενημέρωση προφίλ' },
+  },
+  {
+    id: 'respond_to_connection',
+    kind: 'mutation',
+    label: { en: 'Answer a connection request', el: 'Απάντηση αιτήματος σύνδεσης' },
+    description: {
+      en: 'Accept or decline a connection request sent to the signed-in user. The request id comes from a prior read of your connections. Writes only after confirmation.',
+      el: 'Αποδέχεται ή απορρίπτει αίτημα σύνδεσης που εστάλη στον χρήστη. Το id προέρχεται από προηγούμενη ανάγνωση των συνδέσεων. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [
+      {
+        name: 'connectionId',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Id of the pending request. Must come from a prior read of your connections.',
+          el: 'Το id του εκκρεμούς αιτήματος. Πρέπει να προέρχεται από προηγούμενη ανάγνωση των συνδέσεων.',
+        },
+      },
+      {
+        name: 'decision',
+        type: 'string',
+        required: true,
+        enumValues: ['accepted', 'declined'],
+        description: {
+          en: 'Whether to accept or decline the request.',
+          el: 'Αποδοχή ή απόρριψη του αιτήματος.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['connections', 'graph'],
+    reversal: {
+      // `PATCH /connections/:id` answers the request and notifies the
+      // requester. The only delete route is the sender's withdraw, which the
+      // receiver cannot call — an answered request has no route that
+      // un-answers it.
+      kind: 'none',
+      explanation: {
+        en: 'Not reversible. Answering notifies the other person immediately, and there is no action that turns an accepted or declined request back into a pending one.',
+        el: 'Δεν αναιρείται. Η απάντηση ειδοποιεί τον άλλον αμέσως και δεν υπάρχει ενέργεια που να ξανακάνει εκκρεμές ένα αποδεκτό ή απορριφθέν αίτημα.',
+      },
+    },
+    auditSubject: { param: 'connectionId', entityType: 'connection' },
+    confirmLabel: { en: 'Answer request', el: 'Απάντηση αιτήματος' },
+  },
+  {
+    id: 'create_milestone',
+    kind: 'mutation',
+    label: { en: 'Create a milestone', el: 'Δημιουργία ορόσημου' },
+    description: {
+      en: 'Add a milestone to the signed-in user’s list — the same rows the Milestones page tracks and the summary counts. Writes only after confirmation.',
+      el: 'Προσθέτει ορόσημο στη λίστα του χρήστη — τις ίδιες εγγραφές που παρακολουθεί η σελίδα Ορόσημα και μετρά η σύνοψη. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [
+      {
+        name: 'title',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'What the milestone is, e.g. "Close pre-seed round".',
+          el: 'Τι είναι το ορόσημο, π.χ. «Κλείσιμο pre-seed γύρου».',
+        },
+      },
+      {
+        name: 'description',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'More detail on what done looks like.',
+          el: 'Περισσότερες λεπτομέρειες για το τι σημαίνει ολοκληρωμένο.',
+        },
+      },
+      {
+        name: 'dueDate',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Deadline as an ISO date, e.g. "2026-06-01".',
+          el: 'Προθεσμία σε ISO μορφή, π.χ. «2026-06-01».',
+        },
+      },
+      {
+        name: 'priority',
+        type: 'string',
+        required: false,
+        enumValues: ['low', 'medium', 'high'],
+        description: {
+          en: 'How urgent it is. Defaults to the product’s normal priority.',
+          el: 'Πόσο επείγον είναι. Αν παραλειφθεί ισχύει η κανονική προτεραιότητα.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['milestones'],
+    reversal: {
+      // `DELETE /milestones/:id` removes the row, and the executor hands back
+      // the id it created — the undo deletes that exact milestone, not one
+      // that happens to share a title.
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. Deleting the milestone that was just created removes the row entirely; nobody else is notified either way.',
+        el: 'Πλήρως αναστρέψιμο. Η διαγραφή του ορόσημου που μόλις δημιουργήθηκε αφαιρεί εντελώς την εγγραφή· δεν ειδοποιείται κανείς.',
+      },
+    },
+    auditSubject: { param: 'title', entityType: 'milestone' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Create milestone', el: 'Δημιουργία ορόσημου' },
+  },
+  {
+    id: 'update_milestone_status',
+    kind: 'mutation',
+    label: { en: 'Update a milestone’s status', el: 'Ενημέρωση κατάστασης ορόσημου' },
+    description: {
+      en: 'Move one of the signed-in user’s milestones to a new status — start it, block it, complete it or cancel it. The milestone can be named by id from a prior read, or by exact title.',
+      el: 'Μετακινεί ένα ορόσημο του χρήστη σε νέα κατάσταση — έναρξη, εμπόδιο, ολοκλήρωση ή ακύρωση. Το ορόσημο δίνεται με id από προηγούμενη ανάγνωση ή με ακριβή τίτλο.',
+    },
+    params: [
+      {
+        name: 'status',
+        type: 'string',
+        required: true,
+        enumValues: ['todo', 'in_progress', 'blocked', 'completed', 'cancelled'],
+        description: {
+          en: 'The status to move it to.',
+          el: 'Η κατάσταση προορισμού.',
+        },
+      },
+      {
+        name: 'milestoneId',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Id of the milestone, from a prior read of your milestones.',
+          el: 'Το id του ορόσημου, από προηγούμενη ανάγνωση των ορόσημων.',
+        },
+      },
+      {
+        name: 'title',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Exact milestone title, used when the id is not known.',
+          el: 'Ακριβής τίτλος ορόσημου, όταν δεν είναι γνωστό το id.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['milestones'],
+    reversal: {
+      // The executor reads the milestone first and hands the status it moved
+      // away from back as `undo.fromStatus`, so the undo restores where it
+      // actually was rather than guessing a default.
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. The status it had is read before the move and the undo sets exactly that back.',
+        el: 'Πλήρως αναστρέψιμο. Η προηγούμενη κατάσταση διαβάζεται πριν τη μετακίνηση και η αναίρεση την επαναφέρει ακριβώς.',
+      },
+    },
+    auditSubject: { param: 'milestoneId', entityType: 'milestone' },
+    confirmLabel: { en: 'Update status', el: 'Ενημέρωση κατάστασης' },
+  },
+  {
+    id: 'rsvp_event',
+    kind: 'mutation',
+    label: { en: 'RSVP to an event', el: 'Δήλωση συμμετοχής σε εκδήλωση' },
+    description: {
+      en: 'Set the signed-in user’s RSVP on an event — going, interested or not going. The event can be named by id from a prior read, or by exact title.',
+      el: 'Ορίζει τη συμμετοχή του χρήστη σε εκδήλωση — θα πάω, ενδιαφέρομαι ή δεν θα πάω. Η εκδήλωση δίνεται με id από προηγούμενη ανάγνωση ή με ακριβή τίτλο.',
+    },
+    params: [
+      {
+        name: 'status',
+        type: 'string',
+        required: true,
+        enumValues: ['going', 'interested', 'not_going'],
+        description: {
+          en: 'The RSVP to set.',
+          el: 'Η συμμετοχή που θα οριστεί.',
+        },
+      },
+      {
+        name: 'eventId',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Id of the event, from a prior read of events.',
+          el: 'Το id της εκδήλωσης, από προηγούμενη ανάγνωση εκδηλώσεων.',
+        },
+      },
+      {
+        name: 'eventTitle',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Exact event title, used when the id is not known.',
+          el: 'Ακριβής τίτλος εκδήλωσης, όταν δεν είναι γνωστό το id.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['events'],
+    reversal: {
+      // The RSVP route upserts — it cannot remove a row. The undo writes back
+      // the status read before the change, and `not_going` where there was no
+      // RSVP at all: the row remains, which is why this is partial.
+      kind: 'partial',
+      explanation: {
+        en: 'Restores the RSVP you had before, or marks you as not going when there was none — the RSVP record itself cannot be deleted, only set back.',
+        el: 'Επαναφέρει τη συμμετοχή που είχες πριν, ή σε δηλώνει ως μη συμμετέχοντα αν δεν υπήρχε — η εγγραφή συμμετοχής δεν διαγράφεται, μόνο επαναφέρεται.',
+      },
+    },
+    auditSubject: { param: 'eventId', entityType: 'event' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Set RSVP', el: 'Ορισμός συμμετοχής' },
+  },
+  {
+    id: 'create_event',
+    kind: 'mutation',
+    label: { en: 'Create an event', el: 'Δημιουργία εκδήλωσης' },
+    description: {
+      en: 'Publish an event on the platform — meetup, webinar, workshop, demo day or networking — visible to members the moment it is created. Writes only after confirmation.',
+      el: 'Δημοσιεύει εκδήλωση στην πλατφόρμα — meetup, webinar, workshop, demo day ή networking — ορατή στα μέλη μόλις δημιουργηθεί. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [
+      {
+        name: 'title',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Event title, 2–120 characters.',
+          el: 'Τίτλος εκδήλωσης, 2–120 χαρακτήρες.',
+        },
+      },
+      {
+        name: 'startAt',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Start date and time in ISO 8601, e.g. "2026-06-10T18:00:00+03:00".',
+          el: 'Ημερομηνία και ώρα έναρξης σε ISO 8601, π.χ. «2026-06-10T18:00:00+03:00».',
+        },
+      },
+      {
+        name: 'type',
+        type: 'string',
+        required: false,
+        enumValues: ['meetup', 'webinar', 'workshop', 'demo_day', 'networking', 'other'],
+        description: {
+          en: 'What kind of event it is. Defaults to networking.',
+          el: 'Είδος εκδήλωσης. Αν παραλειφθεί, θεωρείται networking.',
+        },
+      },
+      {
+        name: 'description',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'What the event is about, up to 5000 characters.',
+          el: 'Περί τίνος πρόκειται, έως 5000 χαρακτήρες.',
+        },
+      },
+      {
+        name: 'location',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Where it happens, e.g. a venue or city. Leave out for online events.',
+          el: 'Πού γίνεται, π.χ. χώρος ή πόλη. Παραλείπεται για online.',
+        },
+      },
+      {
+        name: 'isOnline',
+        type: 'boolean',
+        required: false,
+        description: {
+          en: 'True when the event is held online.',
+          el: 'True όταν η εκδήλωση γίνεται online.',
+        },
+      },
+      {
+        name: 'endAt',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'End date and time in ISO 8601.',
+          el: 'Ημερομηνία και ώρα λήξης σε ISO 8601.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['events'],
+    reversal: {
+      // EventsController has create, list, get and rsvp — no update and no
+      // delete. Once published the event is visible to members and nothing
+      // the client can call takes it down.
+      kind: 'none',
+      explanation: {
+        en: 'Not reversible. There is no endpoint that updates or removes an event — once created it is listed for members, so check the details before confirming.',
+        el: 'Δεν αναιρείται. Δεν υπάρχει endpoint που να ενημερώνει ή να αφαιρεί εκδήλωση — μόλις δημιουργηθεί εμφανίζεται στα μέλη, οπότε έλεγξε τα στοιχεία πριν επιβεβαιώσεις.',
+      },
+    },
+    auditSubject: { param: 'title', entityType: 'event' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Publish event', el: 'Δημοσίευση εκδήλωσης' },
   },
   {
     id: 'canvas_command',

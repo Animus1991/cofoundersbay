@@ -2,17 +2,22 @@ import type { ReadActionId } from '@cofounderbay/shared';
 import {
   getEndorsementStats,
   getInvestorSummary,
+  getMeProfile,
   getMilestoneSummary,
   getMyGroups,
   getPendingEndorsements,
   getUpcomingMentorshipSessions,
+  listConnectionRequests,
   listEvents,
   listInvestorDeals,
   listJobs,
+  listMessageConversations,
   listMilestones,
   listOpportunities,
   listResearchBoards,
   listShortlist,
+  type ConnectionRequestItem,
+  type ConversationSummary,
   type EndorsementItem,
   type EventItem,
   type GroupView,
@@ -484,6 +489,129 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     });
 
     return { section: `${t('Your workspaces:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_profile(_args, { t }) {
+    const result = await getMeProfile();
+    const profile = result?.profile;
+    if (!profile) {
+      return {
+        section: t('Your profile is not set up yet — finish onboarding and it becomes the page the network sees.'),
+        citations: [],
+        actions: [openArea(t, '/profile/edit', t('Set up your profile'), t('Name, headline and what you are looking for.'))],
+      };
+    }
+
+    const actions = [
+      openArea(t, '/profile', t('Open your profile'), t('See it the way the network does.')),
+      openArea(t, '/profile/edit', t('Edit your profile'), t('Change your headline, bio or location.')),
+    ];
+    const citations: CopilotCitation[] = [
+      { type: 'person', id: profile.userId ?? profile.id, label: profile.displayName, href: '/profile' },
+    ];
+
+    const lines = [`**${profile.displayName}**${profile.headline ? ` — ${profile.headline}` : ''}`];
+    const bio = profile.bio?.trim();
+    if (bio) lines.push(bio.length > 220 ? `${bio.slice(0, 220)}…` : bio);
+    const details = [
+      profile.location ?? '',
+      asList<string>(profile.languages).join(', '),
+      profile.role ? t('role: {role}', { role: profile.role }) : '',
+    ].filter(Boolean);
+    if (details.length) lines.push(details.join(' · '));
+    const skills = asList<{ skillName?: string | null }>(profile.skills)
+      .map((skill) => skill?.skillName)
+      .filter((name): name is string => Boolean(name));
+    if (skills.length) {
+      lines.push(t('Skills: {list}.', { list: skills.slice(0, 6).join(', ') }));
+    }
+
+    return { section: lines.join('\n'), citations, actions };
+  },
+
+  async get_messages(_args, { t, locale }) {
+    const result = await listMessageConversations();
+    const conversations = asList<ConversationSummary>(result?.conversations)
+      .slice()
+      .sort((a, b) => Date.parse(b.updatedAt ?? '') - Date.parse(a.updatedAt ?? ''));
+    const actions = [openArea(t, '/messages', t('Open messages'), t('Read and answer your threads.'))];
+
+    if (conversations.length === 0) {
+      return { section: t('No conversations yet.'), citations: [], actions };
+    }
+
+    const unread = conversations.reduce((sum, c) => sum + (c?.unreadCount ?? 0), 0);
+    const parts = [
+      t('{count} conversations', { count: conversations.length }),
+      unread > 0 ? t('{count} unread', { count: unread }) : t('all read'),
+    ];
+
+    const citations: CopilotCitation[] = [];
+    const lines = conversations.slice(0, LIMIT).map((convo) => {
+      const name = convo?.recipient?.displayName ?? t('Conversation');
+      citations.push({ type: 'conversation', id: convo.id, label: name, href: `/messages?c=${convo.id}` });
+      const details = [
+        convo?.lastMessage?.body
+          ? `“${convo.lastMessage.body.length > 80 ? `${convo.lastMessage.body.slice(0, 80)}…` : convo.lastMessage.body}”`
+          : '',
+        convo?.unreadCount ? t('{count} unread', { count: convo.unreadCount }) : '',
+        convo?.isPinned ? t('pinned') : '',
+        formatWhen(convo?.updatedAt, locale, false),
+      ].filter(Boolean);
+      return `• **${name}**${details.length ? ` — ${details.join(' · ')}` : ''}`;
+    });
+
+    return { section: `${parts.join(' · ')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_connections(_args, { t }) {
+    // All three together: the size of the network, who is waiting on the user
+    // and who the user is still waiting on. `received` is the only list the
+    // user can act on, so it is also the one that produces action cards.
+    const [acceptedResult, receivedResult, sentResult] = await Promise.all([
+      listConnectionRequests({ type: 'accepted' }),
+      listConnectionRequests({ type: 'received' }),
+      listConnectionRequests({ type: 'sent' }),
+    ]);
+    const accepted = asList<ConnectionRequestItem>(acceptedResult?.connections);
+    const received = asList<ConnectionRequestItem>(receivedResult?.connections)
+      .filter((c) => c?.status === 'pending');
+    const sent = asList<ConnectionRequestItem>(sentResult?.connections)
+      .filter((c) => c?.status === 'pending');
+    const actions = [openArea(t, '/connections', t('Open connections'), t('Answer requests and grow your network.'))];
+
+    const parts = [
+      t('{count} connections', { count: accepted.length }),
+      received.length ? t('{count} requests waiting on you', { count: received.length }) : '',
+      sent.length ? t('{count} sent, still pending', { count: sent.length }) : '',
+    ].filter(Boolean);
+
+    const citations: CopilotCitation[] = [];
+    if (received.length === 0) {
+      parts.push(t('No requests waiting for an answer.'));
+    } else {
+      const lines = received.slice(0, LIMIT).map((request) => {
+        const person = request?.requester;
+        const name = person?.displayName ?? request?.requesterId ?? t('Someone');
+        citations.push({ type: 'person', id: person?.id ?? request.id, label: name, href: '/connections' });
+        const details = [person?.headline ?? '', request?.message ? `“${request.message}”` : ''].filter(Boolean);
+        // The request is actionable, so the answer carries the action too —
+        // answering is exactly what the waiting list is for.
+        actions.push({
+          id: newId('conn'),
+          tool: 'respond_to_connection',
+          title: t('Accept {name}', { name }),
+          description: person?.headline ?? t('Add them to your network.'),
+          confirmLabel: t('Accept'),
+          payload: { connectionId: request.id, decision: 'accepted' },
+          status: 'pending',
+        });
+        return `• **${name}**${details.length ? ` — ${details.join(' · ')}` : ''}`;
+      });
+      parts.push(`${t('Waiting on you:')}\n${lines.join('\n')}`);
+    }
+
+    return { section: parts.join(' '), citations, actions };
   },
 };
 

@@ -3,10 +3,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   archiveWorkspace,
   assessReadiness,
+  createEvent,
   createInvestorDeal,
+  createMilestone,
   deleteInvestorDeal,
+  deleteMilestone,
   getInvestorDeal,
+  getMeProfile,
+  getMilestone,
+  listEvents,
+  listMilestones,
+  respondToConnectionRequest,
+  rsvpEvent,
   updateInvestorDeal,
+  updateMilestone,
+  updateProfile,
   withdrawConnectionRequest,
   getOrCreateDirectConversation,
   removeFromShortlist,
@@ -44,6 +55,17 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   deleteInvestorDeal: vi.fn(),
   getInvestorDeal: vi.fn(),
   updateInvestorDeal: vi.fn(),
+  getMeProfile: vi.fn(),
+  updateProfile: vi.fn(),
+  respondToConnectionRequest: vi.fn(),
+  createMilestone: vi.fn(),
+  getMilestone: vi.fn(),
+  listMilestones: vi.fn(),
+  updateMilestone: vi.fn(),
+  deleteMilestone: vi.fn(),
+  listEvents: vi.fn(),
+  createEvent: vi.fn(),
+  rsvpEvent: vi.fn(),
 }));
 // Not a showcase unless a test says so: the executors take a different path
 // in demo mode, and every case below states which one it is exercising.
@@ -70,6 +92,17 @@ const trackDeal = vi.mocked(createInvestorDeal);
 const untrackDeal = vi.mocked(deleteInvestorDeal);
 const readDeal = vi.mocked(getInvestorDeal);
 const patchDeal = vi.mocked(updateInvestorDeal);
+const readProfile = vi.mocked(getMeProfile);
+const patchProfile = vi.mocked(updateProfile);
+const answerRequest = vi.mocked(respondToConnectionRequest);
+const makeMilestone = vi.mocked(createMilestone);
+const readMilestone = vi.mocked(getMilestone);
+const readMilestones = vi.mocked(listMilestones);
+const patchMilestone = vi.mocked(updateMilestone);
+const removeMilestone = vi.mocked(deleteMilestone);
+const readEvents = vi.mocked(listEvents);
+const makeEvent = vi.mocked(createEvent);
+const setRsvp = vi.mocked(rsvpEvent);
 
 /** One dimension carrying a single criterion, in the state asked for. */
 function assessment(completed: boolean) {
@@ -123,6 +156,17 @@ beforeEach(() => {
   untrackDeal.mockReset();
   readDeal.mockReset();
   patchDeal.mockReset();
+  readProfile.mockReset();
+  patchProfile.mockReset();
+  answerRequest.mockReset();
+  makeMilestone.mockReset();
+  readMilestone.mockReset();
+  readMilestones.mockReset();
+  patchMilestone.mockReset();
+  removeMilestone.mockReset();
+  readEvents.mockReset();
+  makeEvent.mockReset();
+  setRsvp.mockReset();
   localStorage.clear();
   sessionStorage.clear();
   demo.on = false;
@@ -212,7 +256,7 @@ describe('action registry coverage', () => {
     // This used to be a pair of tool ids inside CopilotWorkspace.
     const navigates = listActions().filter((spec) => spec.navigatesOnSuccess).map((s) => s.id).sort();
     expect(navigates).toEqual(
-      ['analytics_set_period', 'canvas_command', 'navigate', 'readiness_tick_criterion', 'start_or_send_message', 'workspace_create'],
+      ['analytics_set_period', 'canvas_command', 'create_event', 'create_milestone', 'navigate', 'readiness_tick_criterion', 'rsvp_event', 'start_or_send_message', 'update_profile', 'workspace_create'],
     );
 
     // Saving to a shortlist reports where the result can be seen without
@@ -914,5 +958,205 @@ describe('route resolution', () => {
   it('returns nothing rather than guessing', () => {
     expect(resolveRouteTarget('qqqq zzzz not a page at all')).toBeUndefined();
     expect(detectNavigateHref('what should I do next')).toBeUndefined();
+  });
+});
+
+describe('profile writes', () => {
+  it('patches only the declared fields and keeps the previous values for the undo', async () => {
+    readProfile.mockResolvedValue({
+      profile: {
+        id: 'p1',
+        userId: 'u1',
+        displayName: 'Alex',
+        headline: 'Old headline',
+        bio: null,
+        location: 'Athens',
+        timezone: 'Europe/Athens',
+        languages: null,
+        avatarUrl: null,
+        rolePayload: null,
+        visibilityRules: null,
+        role: 'founder',
+        skills: [],
+        createdAt: '',
+        updatedAt: '',
+      },
+      hasCompletedOnboarding: true,
+    });
+    patchProfile.mockResolvedValue({} as Awaited<ReturnType<typeof updateProfile>>);
+
+    const outcome = await executeAction('update_profile', {
+      headline: 'New headline',
+      location: 'Berlin',
+      // Not a declared field — dropped, never sent.
+      email: 'nobody@example.com',
+    });
+
+    expect(outcome.ok).toBe(true);
+    expect(patchProfile).toHaveBeenCalledWith({ headline: 'New headline', location: 'Berlin' });
+    expect(outcome.undo).toEqual({ prior: { headline: 'Old headline', location: 'Athens' } });
+  });
+
+  it('writes the read-back values back on undo, including empty fields', async () => {
+    patchProfile.mockResolvedValue({} as Awaited<ReturnType<typeof updateProfile>>);
+    const undone = await undoAction('update_profile', {}, { prior: { headline: 'Old', bio: '' } });
+    expect(undone.ok).toBe(true);
+    expect(patchProfile).toHaveBeenCalledWith({ headline: 'Old', bio: '' });
+  });
+
+  it('refuses an empty payload and a demo profile before reaching the API', async () => {
+    expect((await executeAction('update_profile', {})).ok).toBe(false);
+    demo.on = true;
+    expect((await executeAction('update_profile', { headline: 'x' })).ok).toBe(false);
+    expect(patchProfile).not.toHaveBeenCalled();
+  });
+});
+
+describe('connection writes', () => {
+  it('answers a pending request with the decision asked for', async () => {
+    answerRequest.mockResolvedValue({ connection: { id: 'c1' } } as Awaited<ReturnType<typeof respondToConnectionRequest>>);
+    const outcome = await executeAction('respond_to_connection', { connectionId: 'c1', decision: 'accepted' });
+    expect(outcome.ok).toBe(true);
+    expect(answerRequest).toHaveBeenCalledWith('c1', 'accepted');
+  });
+
+  it('refuses an unknown decision and cannot be undone', async () => {
+    expect((await executeAction('respond_to_connection', { connectionId: 'c1', decision: 'maybe' })).ok).toBe(false);
+    expect(answerRequest).not.toHaveBeenCalled();
+    expect(isUndoable('respond_to_connection')).toBe(false);
+    expect((await undoAction('respond_to_connection', { connectionId: 'c1' })).ok).toBe(false);
+  });
+});
+
+describe('milestone writes', () => {
+  it('creates a milestone and keeps the id it made for the undo', async () => {
+    makeMilestone.mockResolvedValue({ id: 'm1' } as Awaited<ReturnType<typeof createMilestone>>);
+    const outcome = await executeAction('create_milestone', {
+      title: 'Close pre-seed',
+      dueDate: '2026-06-01',
+      priority: 'high',
+      // Not a declared priority value — dropped, not sent.
+      notes: 'ignored field is fine to drop',
+    });
+    expect(outcome.ok).toBe(true);
+    expect(outcome.undo).toEqual({ milestoneId: 'm1' });
+    expect(makeMilestone).toHaveBeenCalledWith({
+      title: 'Close pre-seed',
+      dueDate: '2026-06-01',
+      priority: 'high',
+    });
+
+    removeMilestone.mockResolvedValue({ ok: true });
+    expect((await undoAction('create_milestone', {}, outcome.undo)).ok).toBe(true);
+    expect(removeMilestone).toHaveBeenCalledWith('m1');
+  });
+
+  it('refuses a titleless milestone before reaching the API', async () => {
+    expect((await executeAction('create_milestone', {})).ok).toBe(false);
+    expect(makeMilestone).not.toHaveBeenCalled();
+  });
+
+  it('reads the milestone before moving it, so the undo restores where it was', async () => {
+    readMilestone.mockResolvedValue({ id: 'm1', status: 'todo' } as Awaited<ReturnType<typeof getMilestone>>);
+    patchMilestone.mockResolvedValue({ id: 'm1', status: 'completed' } as Awaited<ReturnType<typeof updateMilestone>>);
+
+    const outcome = await executeAction('update_milestone_status', { milestoneId: 'm1', status: 'completed' });
+    expect(outcome.ok).toBe(true);
+    expect(patchMilestone).toHaveBeenCalledWith('m1', { status: 'completed' });
+    expect(outcome.undo).toEqual({ milestoneId: 'm1', fromStatus: 'todo' });
+
+    patchMilestone.mockResolvedValue({ id: 'm1', status: 'todo' } as Awaited<ReturnType<typeof updateMilestone>>);
+    expect((await undoAction('update_milestone_status', {}, outcome.undo)).ok).toBe(true);
+    expect(patchMilestone).toHaveBeenLastCalledWith('m1', { status: 'todo' });
+  });
+
+  it('resolves a milestone by exact title when the id is not known', async () => {
+    readMilestones.mockResolvedValue({
+      milestones: [{ id: 'm9', title: 'Ship MVP', status: 'in_progress' }],
+      nextCursor: null,
+      total: 1,
+    } as Awaited<ReturnType<typeof listMilestones>>);
+    readMilestone.mockResolvedValue({ id: 'm9', status: 'in_progress' } as Awaited<ReturnType<typeof getMilestone>>);
+    patchMilestone.mockResolvedValue({ id: 'm9', status: 'completed' } as Awaited<ReturnType<typeof updateMilestone>>);
+
+    const outcome = await executeAction('update_milestone_status', { title: 'Ship MVP', status: 'completed' });
+    expect(outcome.ok).toBe(true);
+    expect(patchMilestone).toHaveBeenCalledWith('m9', { status: 'completed' });
+  });
+
+  it('refuses a no-op status and an unknown milestone without writing', async () => {
+    readMilestone.mockResolvedValue({ id: 'm1', status: 'completed' } as Awaited<ReturnType<typeof getMilestone>>);
+    expect((await executeAction('update_milestone_status', { milestoneId: 'm1', status: 'completed' })).ok).toBe(false);
+
+    readMilestones.mockResolvedValue({ milestones: [], nextCursor: null, total: 0 } as Awaited<ReturnType<typeof listMilestones>>);
+    expect((await executeAction('update_milestone_status', { title: 'Nope', status: 'completed' })).ok).toBe(false);
+    expect(patchMilestone).not.toHaveBeenCalled();
+  });
+});
+
+describe('event writes', () => {
+  it('sets an RSVP by id and keeps the status it replaced for the undo', async () => {
+    readEvents.mockResolvedValue({
+      events: [{ id: 'e1', title: 'Demo Day', viewerRsvp: 'interested' }],
+    } as Awaited<ReturnType<typeof listEvents>>);
+    setRsvp.mockResolvedValue({ ok: true, status: 'going' });
+
+    const outcome = await executeAction('rsvp_event', { eventId: 'e1', status: 'going' });
+    expect(outcome.ok).toBe(true);
+    expect(setRsvp).toHaveBeenCalledWith('e1', 'going');
+    expect(outcome.undo).toEqual({ eventId: 'e1', priorStatus: 'interested' });
+
+    setRsvp.mockResolvedValue({ ok: true, status: 'interested' });
+    expect((await undoAction('rsvp_event', {}, outcome.undo)).ok).toBe(true);
+    expect(setRsvp).toHaveBeenLastCalledWith('e1', 'interested');
+  });
+
+  it('resolves an event by exact title and falls back to not_going when there was no RSVP', async () => {
+    readEvents.mockResolvedValue({
+      events: [{ id: 'e2', title: 'Founder Meetup', viewerRsvp: null }],
+    } as Awaited<ReturnType<typeof listEvents>>);
+    setRsvp.mockResolvedValue({ ok: true, status: 'going' });
+
+    const outcome = await executeAction('rsvp_event', { eventTitle: 'Founder Meetup', status: 'going' });
+    expect(outcome.ok).toBe(true);
+    expect(setRsvp).toHaveBeenCalledWith('e2', 'going');
+
+    setRsvp.mockResolvedValue({ ok: true, status: 'not_going' });
+    expect((await undoAction('rsvp_event', {}, outcome.undo)).ok).toBe(true);
+    expect(setRsvp).toHaveBeenLastCalledWith('e2', 'not_going');
+  });
+
+  it('refuses a repeated RSVP and an unknown event without writing', async () => {
+    readEvents.mockResolvedValue({
+      events: [{ id: 'e1', title: 'Demo Day', viewerRsvp: 'going' }],
+    } as Awaited<ReturnType<typeof listEvents>>);
+    expect((await executeAction('rsvp_event', { eventId: 'e1', status: 'going' })).ok).toBe(false);
+    expect((await executeAction('rsvp_event', { eventTitle: 'No such thing', status: 'going' })).ok).toBe(false);
+    expect(setRsvp).not.toHaveBeenCalled();
+  });
+
+  it('publishes an event and links to it, with no undo because none exists', async () => {
+    makeEvent.mockResolvedValue({ event: { id: 'e9' } } as Awaited<ReturnType<typeof createEvent>>);
+    const outcome = await executeAction('create_event', {
+      title: 'Pitch Night',
+      startAt: '2026-07-01T18:00:00+03:00',
+      type: 'demo_day',
+      isOnline: true,
+    });
+    expect(outcome.ok).toBe(true);
+    expect(outcome.href).toBe('/events/e9');
+    expect(makeEvent).toHaveBeenCalledWith({
+      title: 'Pitch Night',
+      startAt: '2026-07-01T18:00:00+03:00',
+      type: 'demo_day',
+      isOnline: true,
+    });
+    expect(isUndoable('create_event')).toBe(false);
+  });
+
+  it('refuses a titleless or undated event before reaching the API', async () => {
+    expect((await executeAction('create_event', { startAt: '2026-07-01T18:00:00Z' })).ok).toBe(false);
+    expect((await executeAction('create_event', { title: 'X', startAt: 'not a date' })).ok).toBe(false);
+    expect(makeEvent).not.toHaveBeenCalled();
   });
 });

@@ -34,7 +34,7 @@ import type { InvalidationTopic } from '@cofounderbay/shared';
 import { getActionSpec, isUndoable, undoAction as runUndo } from '@/lib/action-registry';
 import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
-import { CONNECTION_KEYS, MESSAGE_KEYS, queryKeys } from '@/lib/query-keys';
+import { CONNECTION_KEYS, MESSAGE_KEYS, PROFILE_KEYS, queryKeys } from '@/lib/query-keys';
 
 export interface AIMessage {
   id: string;
@@ -98,6 +98,11 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   // One key covers the board, its summary and its activity: they are one row.
   investor: [['investor']],
   research: [['research-boards'], ['research-board']],
+  profile: [...PROFILE_KEYS],
+  // The page keys its list by the filters in state, so the base key is the
+  // only shape that reaches every variant of it.
+  milestones: [['milestones']],
+  events: [['events']],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

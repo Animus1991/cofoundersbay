@@ -87,7 +87,10 @@ export type InvalidationTopic =
   | 'workspaces'
   | 'investor'
   | 'graph'
-  | 'research';
+  | 'research'
+  | 'profile'
+  | 'milestones'
+  | 'events';
 
 export type ActionDeclaration = {
   id: string;

@@ -169,12 +169,12 @@ export default function ProviderAnalyticsPage() {
      demo grid keeps its six authored tiles under the sample-data notice. */
   const liveMetrics = live
     ? [
-        { icon: Eye, label: 'Profile Views', value: live.metrics.profileViews, change: live.metrics.profileViewsChange },
-        { icon: Users, label: 'New Connections', value: live.metrics.newConnections, change: live.metrics.newConnectionsChange },
-        { icon: MessageCircle, label: 'Messages Sent', value: live.metrics.messagesSent, change: live.metrics.messagesSentChange },
-        { icon: Eye, label: 'Search Appearances', value: live.metrics.searchAppearances ?? '—', change: live.metrics.searchAppearancesChange },
-        { icon: Star, label: 'Engagement Rate', value: live.metrics.engagementRate ?? '—', change: live.metrics.engagementRateChange },
-        { icon: Clock, label: 'Avg Response', value: live.weeklySummary.avgResponseTime ?? '—', change: null },
+        { icon: Eye, label: 'Profile Views', value: live.metrics?.profileViews, change: live.metrics?.profileViewsChange },
+        { icon: Users, label: 'New Connections', value: live.metrics?.newConnections, change: live.metrics?.newConnectionsChange },
+        { icon: MessageCircle, label: 'Messages Sent', value: live.metrics?.messagesSent, change: live.metrics?.messagesSentChange },
+        { icon: Eye, label: 'Search Appearances', value: live.metrics?.searchAppearances ?? '—', change: live.metrics?.searchAppearancesChange },
+        { icon: Star, label: 'Engagement Rate', value: live.metrics?.engagementRate ?? '—', change: live.metrics?.engagementRateChange },
+        { icon: Clock, label: 'Avg Response', value: live.weeklySummary?.avgResponseTime ?? '—', change: null },
       ]
     : [];
 

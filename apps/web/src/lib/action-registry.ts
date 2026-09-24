@@ -10,11 +10,24 @@ import {
 } from '@cofounderbay/shared';
 import {
   assessReadiness,
+  createEvent,
+  createMilestone,
+  deleteMilestone,
+  getMeProfile,
+  getMilestone,
   getOrCreateDirectConversation,
+  listEvents,
+  listMilestones,
   removeFromShortlist,
+  respondToConnectionRequest,
+  rsvpEvent,
   saveToShortlist,
   sendConnectionRequest,
+  updateMilestone,
+  updateProfile,
   updateReadinessCriterion,
+  type MilestonePriority,
+  type MilestoneStatus,
 } from '@/lib/api';
 import { createWorkspace } from '@/lib/builder-api';
 import {
@@ -295,9 +308,176 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     if (!isCanvasCommandOp(op)) return { ok: false, error: 'Unknown canvas command' };
     return runCanvasCommand(op, payload);
   },
+
+  update_profile: async (payload) => {
+    // Only the fields the declaration offers; anything else in the payload is
+    // dropped here rather than sent to an endpoint that would reject it.
+    const patch: Record<string, string> = {};
+    for (const key of ['headline', 'bio', 'location', 'timezone'] as const) {
+      const value = requireString(payload, key).trim();
+      if (value) patch[key] = value;
+    }
+    if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update' };
+
+    if (isPreviewDemo()) {
+      return { ok: false, error: 'The demo profile cannot be changed. Sign in to edit yours.' };
+    }
+
+    // Read first: the undo restores exactly these values, including fields
+    // that were empty — a null restores as an empty string, which both the
+    // schema and the page treat the same way.
+    const { profile } = await getMeProfile();
+    const prior: Record<string, string> = {};
+    for (const key of Object.keys(patch)) {
+      const value = profile?.[key as keyof typeof profile];
+      prior[key] = typeof value === 'string' ? value : '';
+    }
+
+    await updateProfile(patch);
+    return { ok: true, href: '/profile', undo: { prior } };
+  },
+
+  respond_to_connection: async (payload) => {
+    const connectionId = requireString(payload, 'connectionId');
+    if (!connectionId) return { ok: false, error: 'Missing request' };
+    const decision = requireString(payload, 'decision');
+    if (decision !== 'accepted' && decision !== 'declined') {
+      return { ok: false, error: 'Unknown decision' };
+    }
+    await respondToConnectionRequest(connectionId, decision);
+    return { ok: true, href: '/connections' };
+  },
+
+  create_milestone: async (payload) => {
+    const title = requireString(payload, 'title').trim();
+    if (!title) return { ok: false, error: 'Missing milestone title' };
+    if (isPreviewDemo()) {
+      return { ok: false, error: 'Demo milestones are fixed. Sign in to create your own.' };
+    }
+
+    const description = requireString(payload, 'description').trim() || undefined;
+    const dueDate = requireString(payload, 'dueDate').trim() || undefined;
+    const priority = requireString(payload, 'priority');
+    const created = await createMilestone({
+      title,
+      ...(description ? { description } : {}),
+      ...(dueDate ? { dueDate } : {}),
+      ...(MILESTONE_PRIORITIES.includes(priority as MilestonePriority)
+        ? { priority: priority as MilestonePriority }
+        : {}),
+    });
+    return created?.id
+      ? { ok: true, href: '/milestones', undo: { milestoneId: created.id } }
+      : { ok: true, href: '/milestones' };
+  },
+
+  update_milestone_status: async (payload) => {
+    const status = requireString(payload, 'status');
+    if (!MILESTONE_STATUSES.includes(status as MilestoneStatus)) {
+      return { ok: false, error: 'Unknown status' };
+    }
+
+    const milestoneId = await resolveMilestoneId(payload);
+    if (!milestoneId) return { ok: false, error: 'Missing milestone' };
+
+    // Read first — the undo needs the status it had, which the payload cannot
+    // carry. Same no-op guard as the criteria writer: flipping a status that
+    // is already set would leave an undo for a change that never happened.
+    const before = await getMilestone(milestoneId);
+    const fromStatus = before?.status;
+    if (fromStatus === status) {
+      return { ok: false, error: 'That milestone is already in that state' };
+    }
+
+    await updateMilestone(milestoneId, { status: status as MilestoneStatus });
+    return {
+      ok: true,
+      href: '/milestones',
+      ...(fromStatus ? { undo: { milestoneId, fromStatus } } : {}),
+    };
+  },
+
+  rsvp_event: async (payload) => {
+    const status = requireString(payload, 'status');
+    if (!RSVP_STATUSES.includes(status)) return { ok: false, error: 'Unknown RSVP' };
+
+    // The upcoming list carries both the id the title resolves to and the
+    // RSVP the undo restores, so one read serves both halves.
+    const list = await listEvents({ scope: 'upcoming', limit: 50 });
+    const events = Array.isArray(list?.events) ? list.events : [];
+
+    let eventId = requireString(payload, 'eventId');
+    let priorStatus: string | null = null;
+    if (eventId) {
+      priorStatus = events.find((event) => event?.id === eventId)?.viewerRsvp ?? null;
+    } else {
+      const title = requireString(payload, 'eventTitle').trim().toLowerCase();
+      if (!title) return { ok: false, error: 'Missing event' };
+      const found = events.find((event) => event?.title?.toLowerCase() === title);
+      if (!found) return { ok: false, error: 'No upcoming event with that title' };
+      eventId = found.id;
+      priorStatus = found.viewerRsvp ?? null;
+    }
+    if (priorStatus === status) {
+      return { ok: false, error: 'You are already marked that way' };
+    }
+
+    await rsvpEvent(eventId, status as 'going' | 'interested' | 'not_going');
+    return {
+      ok: true,
+      href: `/events/${eventId}`,
+      undo: { eventId, priorStatus },
+    };
+  },
+
+  create_event: async (payload) => {
+    const title = requireString(payload, 'title').trim();
+    if (!title) return { ok: false, error: 'Missing event title' };
+    const startAt = requireString(payload, 'startAt').trim();
+    if (!startAt || Number.isNaN(Date.parse(startAt))) {
+      return { ok: false, error: 'Missing or invalid start time' };
+    }
+
+    const type = requireString(payload, 'type');
+    const endAt = requireString(payload, 'endAt').trim();
+    const description = requireString(payload, 'description').trim();
+    const location = requireString(payload, 'location').trim();
+    const created = await createEvent({
+      title,
+      startAt,
+      ...(EVENT_TYPES.includes(type) ? { type: type as 'meetup' | 'webinar' | 'workshop' | 'demo_day' | 'networking' | 'other' } : {}),
+      ...(description ? { description } : {}),
+      ...(location ? { location } : {}),
+      ...(payload?.isOnline === true ? { isOnline: true } : {}),
+      ...(endAt && !Number.isNaN(Date.parse(endAt)) ? { endAt } : {}),
+    });
+    const eventId = created?.event?.id;
+    return { ok: true, href: eventId ? `/events/${eventId}` : '/events' };
+  },
 };
 
 const ANALYTICS_PERIODS = ['7d', '14d', '30d', '90d'];
+const MILESTONE_STATUSES = ['todo', 'in_progress', 'blocked', 'completed', 'cancelled'];
+const MILESTONE_PRIORITIES = ['low', 'medium', 'high'];
+const RSVP_STATUSES = ['going', 'interested', 'not_going'];
+const EVENT_TYPES = ['meetup', 'webinar', 'workshop', 'demo_day', 'networking', 'other'];
+
+/**
+ * A milestone by id, or by exact title when that is what the model had.
+ *
+ * The read tools cite milestones by id, so a model that read first names the
+ * id. A model acting on "mark the pitch deck done" only has the words, and
+ * resolving them here is what keeps that call from inventing an id.
+ */
+async function resolveMilestoneId(payload: Record<string, unknown>): Promise<string> {
+  const id = requireString(payload, 'milestoneId');
+  if (id) return id;
+  const title = requireString(payload, 'title').trim().toLowerCase();
+  if (!title) return '';
+  const list = await listMilestones({ limit: 50 });
+  const milestones = Array.isArray(list?.milestones) ? list.milestones : [];
+  return milestones.find((m) => m?.title?.toLowerCase() === title)?.id ?? '';
+}
 
 /**
  * Exhaustive over every declaration that claims `full` or `partial`
@@ -387,6 +567,55 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     }
     notifyReadinessChanged();
     return { ok: true, href: '/builder' };
+  },
+
+  /** Writes back the values the executor read before patching. */
+  update_profile: async (_payload, context) => {
+    const prior = context?.prior;
+    if (!prior || typeof prior !== 'object') {
+      return { ok: false, error: 'No previous values to restore' };
+    }
+    const patch: Record<string, string> = {};
+    for (const [key, value] of Object.entries(prior)) {
+      patch[key] = typeof value === 'string' ? value : '';
+    }
+    if (Object.keys(patch).length === 0) {
+      return { ok: false, error: 'No previous values to restore' };
+    }
+    await updateProfile(patch);
+    return { ok: true, href: '/profile' };
+  },
+
+  /** Deletes the milestone it created, by the id the executor handed back. */
+  create_milestone: async (_payload, context) => {
+    const milestoneId = requireString(context, 'milestoneId');
+    if (!milestoneId) return { ok: false, error: 'No milestone to remove' };
+    await deleteMilestone(milestoneId);
+    return { ok: true, href: '/milestones' };
+  },
+
+  /** Restores the status the milestone actually had, not a default. */
+  update_milestone_status: async (_payload, context) => {
+    const milestoneId = requireString(context, 'milestoneId');
+    const fromStatus = requireString(context, 'fromStatus');
+    if (!milestoneId || !MILESTONE_STATUSES.includes(fromStatus as MilestoneStatus)) {
+      return { ok: false, error: 'No previous status to restore' };
+    }
+    await updateMilestone(milestoneId, { status: fromStatus as MilestoneStatus });
+    return { ok: true, href: '/milestones' };
+  },
+
+  /**
+   * Restores the RSVP read before the change, or `not_going` when there was
+   * none — the route only upserts, which is why the declaration says partial.
+   */
+  rsvp_event: async (_payload, context) => {
+    const eventId = requireString(context, 'eventId');
+    if (!eventId) return { ok: false, error: 'No event to update' };
+    const prior = requireString(context, 'priorStatus');
+    const status = RSVP_STATUSES.includes(prior) ? prior : 'not_going';
+    await rsvpEvent(eventId, status as 'going' | 'interested' | 'not_going');
+    return { ok: true, href: `/events/${eventId}` };
   },
 };
 
