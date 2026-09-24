@@ -94,7 +94,6 @@ const rows = walk(APP).map((p) => {
 const DECLINED = {
   '/org/settings': 'a settings form: its selects and toggles are the page, not options on it',
   '/admin/feature-flags': 'the stat strip mirrors the tabs one-for-one, so the tabs already are the filter',
-  '/dashboard/founder': 'a dashboard: the summary cards are the content',
   '/dashboard/incubator': 'a dashboard: the summary cards are the content',
   '/discover': 'a search page: the filters are how it is used',
   '/help': 'a help centre: search and categories are the content',

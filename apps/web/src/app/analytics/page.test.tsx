@@ -6,7 +6,17 @@ import AnalyticsPage from './page';
 
 vi.mock('@/lib/api', () => ({ getAnalyticsOverview: vi.fn(), getAnalyticsAchievements: vi.fn() }));
 vi.mock('@/lib/preview-demo', () => ({ isPreviewDemo: () => false }));
-vi.mock('@/components/layout/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
+// The page's period and refresh live in its rail now; the stand-in renders the
+// rail's sections as the open panel would, so the same controls are tested
+// where the reader finds them.
+vi.mock('@/components/layout/AppShell', () => ({
+  AppShell: ({ children, rail }: { children: React.ReactNode; rail?: { id: string; labelEn: string; content: React.ReactNode }[] }) => (
+    <main>
+      {children}
+      {rail?.map((section) => <section key={section.id} aria-label={section.labelEn}>{section.content}</section>)}
+    </main>
+  ),
+}));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <>{en}</> }));
 vi.mock('@/contexts/PopupChatContext', () => ({
   usePopupChat: () => ({

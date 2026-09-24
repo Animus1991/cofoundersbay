@@ -5,7 +5,17 @@ import ReadinessPage from './page';
 import { assessReadiness, updateReadinessCriterion } from '@/lib/api';
 
 vi.mock('@/lib/api', () => ({ assessReadiness: vi.fn(), updateReadinessCriterion: vi.fn() }));
-vi.mock('@/components/layout/AppShell', () => ({ AppShell: ({ children, actions }: any) => <main>{actions}{children}</main> }));
+// The score history and the audience readouts live in the page's rail now;
+// the stand-in renders the rail's sections as the open panel would.
+vi.mock('@/components/layout/AppShell', () => ({
+  AppShell: ({ children, actions, rail }: any) => (
+    <main>
+      {actions}
+      {children}
+      {rail?.map((section: any) => <section key={section.id} aria-label={section.labelEn}>{section.content}</section>)}
+    </main>
+  ),
+}));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: any) => <span>{en}</span> }));
 vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ error: vi.fn() }) }));
 vi.mock('@/contexts/PopupChatContext', () => ({
