@@ -95,7 +95,15 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           </div>
           <div className="mt-3 flex items-center justify-end gap-2 border-t border-border/40 pt-3">
             {postTypes.slice(0, 4).map((pt) => (
-              <Button key={pt.type} variant="ghost" size="sm" className="gap-1.5 text-xs">
+              // Each opens the composer already set to its type; before, they
+              // relied on the click bubbling to the card and the type was lost.
+              <Button
+                key={pt.type}
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={(e) => { e.stopPropagation(); setPostType(pt.type); setIsExpanded(true); }}
+              >
                 {pt.emoji} {pt.label}
               </Button>
             ))}

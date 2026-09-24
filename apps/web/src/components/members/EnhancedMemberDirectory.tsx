@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -404,13 +405,17 @@ export function EnhancedMemberDirectory() {
                   )}
 
                   <div className="flex gap-2 pt-2">
-                    <Button size="sm" className="flex-1 gap-2">
-                      <UserPlus className="icon-sm" />
-                      Connect
+                    <Button size="sm" className="flex-1 gap-2" asChild>
+                      <Link href={`/profiles/${member.id}`}>
+                        <UserPlus className="icon-sm" aria-hidden="true" />
+                        Connect
+                      </Link>
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <MessageSquare className="icon-sm" />
-                      Message
+                    <Button size="sm" variant="outline" className="gap-2" asChild>
+                      <Link href={`/messages?to=${member.id}`}>
+                        <MessageSquare className="icon-sm" aria-hidden="true" />
+                        Message
+                      </Link>
                     </Button>
                   </div>
                 </div>

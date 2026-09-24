@@ -185,11 +185,21 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
             </div>
 
             <div className="flex gap-2 mt-3">
-              <Button size="sm" variant="outline">
-                <MessageSquare className="mr-1 icon-sm" />
-                Message
-              </Button>
-              <Button size="sm">Update</Button>
+              {/* Neither had a handler. */}
+              {project.clientId ? (
+                <Button size="sm" variant="outline" asChild>
+                  <Link href={`/messages?to=${project.clientId}`}>
+                    <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+                    Message
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline" disabled>
+                  <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+                  Message
+                </Button>
+              )}
+              <Button size="sm" disabled title="Projects do not track progress yet">Update</Button>
             </div>
           </div>
         </div>

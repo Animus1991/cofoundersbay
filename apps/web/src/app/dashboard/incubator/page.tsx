@@ -162,11 +162,13 @@ function ApplicationCard({ application }: { application: any }) {
         <p className="text-xs text-muted-foreground">{application.industry} · {application.stage}</p>
         <p className="text-xs text-muted-foreground mt-1">Applied for: {application.program}</p>
         <div className="flex gap-2 mt-2">
-          <Button size="sm" variant="default">
-            Review
+          {/* Neither had a handler. Applications are reviewed - and the
+              founder contacted - from the applications page. */}
+          <Button size="sm" variant="default" asChild>
+            <Link href="/org/applications">Review</Link>
           </Button>
-          <Button size="sm" variant="outline">
-            Schedule Call
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/messages">Schedule Call</Link>
           </Button>
         </div>
       </div>

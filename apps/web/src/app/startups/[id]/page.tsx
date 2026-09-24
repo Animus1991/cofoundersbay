@@ -279,7 +279,7 @@ export default function StartupDealPage() {
               <CardContent className="p-5 text-sm">
                 <p className="text-xs text-muted-foreground"><BilingualText en="Founder" el="Ιδρυτής" compact /></p>
                 <Link href={`/profiles/${deal.founder.id}`} className="font-medium hover:text-primary-accessible">
-                  {deal.founder.displayName ?? '—'}
+                  {deal.founder?.displayName ?? '—'}
                 </Link>
                 {deal.founder.headline && <p className="text-muted-foreground">{deal.founder.headline}</p>}
               </CardContent>

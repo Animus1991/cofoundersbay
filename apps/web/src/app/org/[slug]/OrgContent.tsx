@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
@@ -104,14 +105,25 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               )}
 
               <div className="flex gap-2 pt-1">
-                <Button size="sm" className="h-8 px-4 text-xs font-medium gap-1.5">
+                {/* Neither had a handler. There is no follow model; Contact
+                    uses the organisation's own address when it lists one. */}
+                <Button size="sm" className="h-8 px-4 text-xs font-medium gap-1.5" disabled title="Following organisations is not supported yet">
                   <Users className="icon-sm" aria-hidden="true" />
                   Follow
                 </Button>
-                <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5">
-                  <Mail className="icon-sm" aria-hidden="true" />
-                  Contact
-                </Button>
+                {org.email || org.website ? (
+                  <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5" asChild>
+                    <a href={org.email ? `mailto:${org.email}` : org.website!} target={org.email ? undefined : '_blank'} rel="noopener noreferrer">
+                      <Mail className="icon-sm" aria-hidden="true" />
+                      Contact
+                    </a>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5" disabled title="This organisation has not listed a contact">
+                    <Mail className="icon-sm" aria-hidden="true" />
+                    Contact
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -214,8 +226,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           <span className="text-xs text-muted-foreground">
                             <RelativeTime date={opp.createdAt} format={formatRelativeTime} />
                           </span>
-                          <Button size="sm" variant="ghost" className="h-7 text-xs px-3">
-                            View
+                          <Button size="sm" variant="ghost" className="h-7 text-xs px-3" asChild>
+                            <Link href="/opportunities">View</Link>
                           </Button>
                         </div>
                       </div>

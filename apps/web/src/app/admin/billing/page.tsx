@@ -114,11 +114,13 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
       </div>
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
-        <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={`Download invoice ${inv.invoiceNumber}`}>
-            <Download className="icon-sm" />
-          </Button>
-        </a>
+        // A <button> inside an <a> is two interactive elements nested - one
+        // tab stop too many and axe nested-interactive. The link is the control.
+        <Button asChild variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+          <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer" aria-label={`Download invoice ${inv.invoiceNumber}`}>
+            <Download className="icon-sm" aria-hidden="true" />
+          </a>
+        </Button>
       )}
     </div>
   );

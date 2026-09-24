@@ -212,6 +212,7 @@ export default function InvestorPipelinePage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [showPassed, setShowPassed] = useState(false);
+  const [starredOnly, setStarredOnly] = useState(false);
 
   /*
    * The board is server state now. The demo fixtures stay as what an empty
@@ -265,7 +266,7 @@ export default function InvestorPipelinePage() {
   }, [deals]);
 
   const filteredDeals = deals.filter((d) =>
-    !search || d.name.toLowerCase().includes(search.toLowerCase())
+    (!search || d.name.toLowerCase().includes(search.toLowerCase())) && (!starredOnly || d.starred)
   );
 
   const getDealsByStage = (stage: PipelineStage) =>
@@ -337,9 +338,11 @@ export default function InvestorPipelinePage() {
               className="pl-9"
             />
           </div>
-          <Button variant="outline">
-            <Filter className="mr-2 icon-sm" />
-            Filters
+          {/* "Filters" had no handler. The one filter the board's data
+              supports beyond search is the star an investor puts on a deal. */}
+          <Button variant={starredOnly ? 'default' : 'outline'} aria-pressed={starredOnly} onClick={() => setStarredOnly((v) => !v)}>
+            <Filter className="mr-2 icon-sm" aria-hidden="true" />
+            Starred only
           </Button>
         </div>
 

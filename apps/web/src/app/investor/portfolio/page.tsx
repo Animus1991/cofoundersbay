@@ -28,6 +28,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { downloadCsv } from '@/lib/csv';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
@@ -284,8 +285,20 @@ export default function InvestorPortfolioPage() {
       title="Portfolio"
       description="Track your investments and returns"
       actions={
-        <Button variant="outline" size="sm">
-          <Download className="mr-2 icon-sm" />Export Report
+        // Had no handler. The whole portfolio, one row per investment.
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={investments.length === 0}
+          onClick={() =>
+            downloadCsv(
+              'portfolio',
+              ['name', 'industry', 'stage', 'status', 'invested_at', 'amount', 'current_value', 'return_pct', 'team_size'],
+              investments.map((i) => [i.name, i.industry, i.stage, i.status, i.investedAt, i.amount, i.currentValue, i.returnPct, i.teamSize]),
+            )
+          }
+        >
+          <Download className="mr-2 icon-sm" aria-hidden="true" />Export Report
         </Button>
       }
     >

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -331,8 +332,8 @@ export function SmartRecommendations() {
                   <X className="icon-sm" />
                   Dismiss
                 </Button>
-                <Button variant="ghost" size="icon" aria-label={`View details for ${rec.title}`}>
-                  <ChevronRight className="icon-sm" />
+                <Button variant="ghost" size="icon" aria-label={`View details for ${rec.title}`} disabled title="Recommendation details are not available yet">
+                  <ChevronRight className="icon-sm" aria-hidden="true" />
                 </Button>
               </div>
             </CardContent>
@@ -353,7 +354,7 @@ export function SmartRecommendations() {
                 Complete your profile to get personalized recommendations
               </p>
             </div>
-            <Button>Complete Profile</Button>
+            <Button asChild><Link href="/profile/edit">Complete Profile</Link></Button>
           </div>
         </Card>
       )}

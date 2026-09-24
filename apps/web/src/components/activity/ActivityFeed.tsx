@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Heart, 
@@ -147,7 +148,7 @@ export function ActivityFeed() {
                         • <RelativeTime date={activity.createdAt} format={formatTime} />
                       </span>
                     </div>
-                    <Button aria-label="Activity actions" variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button aria-label="Activity actions" variant="ghost" size="sm" className="h-8 w-8 p-0" disabled title="No actions for activity items yet">
                       <MoreHorizontal className="icon-sm" />
                     </Button>
                   </div>
@@ -215,13 +216,16 @@ export function ActivityFeed() {
                       {activity.metadata?.stats?.likes || 0}
                     </Button>
 
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <MessageSquare className="icon-sm mr-2" />
+                    {/* Counts, not actions: there is no comment or share
+                        route for activity items. Disabled so they do not
+                        pose as buttons that do nothing. */}
+                    <Button variant="ghost" size="sm" className="flex-1" disabled aria-label={`${activity.metadata?.stats?.comments || 0} comments`}>
+                      <MessageSquare className="icon-sm mr-2" aria-hidden="true" />
                       {activity.metadata?.stats?.comments || 0}
                     </Button>
 
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="icon-sm mr-2" />
+                    <Button variant="ghost" size="sm" className="flex-1" disabled aria-label={`${activity.metadata?.stats?.shares || 0} shares`}>
+                      <Share2 className="icon-sm mr-2" aria-hidden="true" />
                       {activity.metadata?.stats?.shares || 0}
                     </Button>
                   </div>
@@ -240,7 +244,7 @@ export function ActivityFeed() {
             <p className="text-sm text-muted-foreground mb-4">
               Start connecting with people to see their activity
             </p>
-            <Button>Discover People</Button>
+            <Button asChild><Link href="/discover">Discover People</Link></Button>
           </CardContent>
         </Card>
       )}

@@ -44,7 +44,8 @@ export function LanguageSwitcher({ className, iconOnly = false }: { className?: 
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9 shrink-0', className)} aria-label={t('Language')}>
+      // Placeholder until mount; the real switcher replaces it.
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9 shrink-0', className)} aria-label={t('Language')} disabled>
           <Globe className="icon-sm" />
       </Button>
     );

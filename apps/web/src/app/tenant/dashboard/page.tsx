@@ -284,8 +284,10 @@ export default function TenantDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm">Upcoming Events</CardTitle>
-            <Button variant="ghost" size="sm" className="gap-1.5">
-              <Calendar className="icon-sm" /> Add Event
+            <Button variant="ghost" size="sm" className="gap-1.5" asChild>
+              <Link href="/events/create">
+                <Calendar className="icon-sm" aria-hidden="true" /> Add Event
+              </Link>
             </Button>
           </CardHeader>
           <CardContent>

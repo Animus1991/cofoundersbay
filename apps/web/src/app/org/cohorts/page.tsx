@@ -238,7 +238,12 @@ export default function OrgCohortsPage() {
     <AppShell
       title="Cohorts"
       description="Manage program cohorts and participants"
-      actions={<Button className="gap-1.5"><Plus className="icon-sm" aria-hidden="true" /> Create Cohort</Button>}
+      actions={
+        // Had no handler; cohorts are created on the platform-admin route.
+        <Button className="gap-1.5" disabled title="Cohorts are created by platform administrators for now">
+          <Plus className="icon-sm" aria-hidden="true" /> Create Cohort
+        </Button>
+      }
     >
       <div className="space-y-6">
 

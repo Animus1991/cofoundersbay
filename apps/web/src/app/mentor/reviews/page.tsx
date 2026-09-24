@@ -75,12 +75,14 @@ function ReviewCard({ review }: { review: Review }) {
             </div>
             <p className="text-sm text-muted-foreground mt-2">{review.comment}</p>
             <div className="flex items-center gap-4 mt-3">
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <ThumbsUp className="mr-1 icon-sm" />
+              {/* Neither had a handler, and reviews have no helpful count or
+                  reply field to write - the same as on the provider side. */}
+              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title="Reviews cannot be marked helpful yet">
+                <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
                 Helpful ({review.helpful})
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <MessageSquare className="mr-1 icon-sm" />
+              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title="Replies to reviews are not stored yet">
+                <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
                 Reply
               </Button>
             </div>

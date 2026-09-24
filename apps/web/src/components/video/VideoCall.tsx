@@ -68,10 +68,15 @@ export function VideoCall({ className }: VideoCallProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button aria-label="Call settings" variant="ghost" size="sm">
+            <Button aria-label="Call settings" variant="ghost" size="sm" disabled title="Call settings are not available yet">
               <Settings className="icon-sm" />
             </Button>
-            <Button aria-label="Full screen" variant="ghost" size="sm">
+            <Button
+              aria-label="Full screen"
+              variant="ghost"
+              size="sm"
+              onClick={() => void remoteVideoRef.current?.parentElement?.requestFullscreen?.()}
+            >
               <Maximize2 className="icon-sm" />
             </Button>
             <Button 

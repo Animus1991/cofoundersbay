@@ -403,6 +403,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
 export default function InvestorWatchlistPage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
+  const [alertsOnly, setAlertsOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   /*
@@ -473,7 +474,8 @@ export default function InvestorWatchlistPage() {
   const activity = liveActivity.length > 0 ? liveActivity : showDemoData ? MOCK_ACTIVITY : [];
 
   const filtered = watched.filter(
-    s => !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.tagline.toLowerCase().includes(search.toLowerCase())
+    s => (!search || s.name.toLowerCase().includes(search.toLowerCase()) || s.tagline.toLowerCase().includes(search.toLowerCase()))
+      && (!alertsOnly || s.alertsEnabled)
   );
 
   const alertCount = watched.filter(s => s.alertsEnabled).length;
@@ -546,9 +548,10 @@ export default function InvestorWatchlistPage() {
                   className="pl-9"
                 />
               </div>
-              <Button variant="outline" size="sm">
-                <Filter className="mr-1.5 icon-sm" />
-                Filter
+              {/* "Filter" had no handler; alerts are the watchlist's own facet. */}
+              <Button variant={alertsOnly ? 'default' : 'outline'} size="sm" aria-pressed={alertsOnly} onClick={() => setAlertsOnly((v) => !v)}>
+                <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
+                Alerts on only
               </Button>
               {selectedIds.size > 0 && (
                 <Button variant="outline" size="sm" asChild>

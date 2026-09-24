@@ -232,8 +232,8 @@ export function ScheduleCallModal({
                     Sync with Google Calendar or Outlook for automatic availability
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0">
-                  <ExternalLink className="icon-sm mr-1" />
+                <Button variant="outline" size="sm" className="shrink-0" disabled title="Calendar sync is not available yet">
+                  <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
                   Connect
                 </Button>
               </CardContent>
@@ -387,7 +387,34 @@ export function ScheduleCallModal({
               <Button variant="outline" className="flex-1" onClick={resetAndClose}>
                 Done
               </Button>
-              <Button className="flex-1">
+              {/* Had no handler: a .ics of the call just scheduled. */}
+              <Button
+                className="flex-1"
+                disabled={!selectedDate || !selectedTime}
+                onClick={() => {
+                  if (!selectedDate || !selectedTime) return;
+                  const [h, m] = selectedTime.replace(/\s?(AM|PM)$/i, '').split(':').map(Number);
+                  const pm = /PM$/i.test(selectedTime) && h < 12;
+                  const am12 = /AM$/i.test(selectedTime) && h === 12;
+                  const start = new Date(selectedDate);
+                  start.setHours((pm ? h + 12 : am12 ? 0 : h) || 0, m || 0, 0, 0);
+                  const end = new Date(start.getTime() + Number(duration) * 60_000);
+                  const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+                  const ics = [
+                    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CoFounderBay//Calls//EN', 'BEGIN:VEVENT',
+                    `UID:${stamp(start)}-${recipientId}@cofounderbay`, `DTSTAMP:${stamp(new Date())}`,
+                    `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`,
+                    `SUMMARY:Call with ${recipientName.replace(/[,;\\]/g, ' ')}`,
+                    'END:VEVENT', 'END:VCALENDAR',
+                  ].join('\r\n');
+                  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'call.ics';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
                 Add to Calendar
               </Button>
             </div>

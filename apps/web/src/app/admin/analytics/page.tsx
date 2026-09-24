@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 import { BarChart3, Download, RefreshCw, Rocket, TrendingUp, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { downloadCsv } from '@/lib/csv';
+import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminStats } from '@/lib/api';
 import { HelpCallout } from '@/components/common/HelpCallout';
@@ -34,7 +36,7 @@ export default function AdminAnalyticsPage() {
    * Tenants read a dash: the platform stats count users, connections and
    * content, not workspaces, and a tenant count is not derivable from them.
    */
-  const { data } = useQuery({
+  const { data, refetch, isFetching } = useQuery({
     queryKey: ['admin', 'stats'],
     queryFn: getAdminStats,
     staleTime: 60_000,
@@ -71,11 +73,21 @@ export default function AdminAnalyticsPage() {
               <SelectItem value="1y">Last year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="icon-sm mr-1.5" /> Refresh
+          {/* Both had no handler. */}
+          <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+            <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" /> Refresh
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="icon-sm mr-1.5" /> Export
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              downloadCsv('platform-analytics', ['metric', 'value'], [
+                ...Object.entries(METRICS).map(([k, v]) => [k, v ?? '']),
+                ...Object.entries(byRole).map(([role, n]) => [`users_${role}`, n as number]),
+              ])
+            }
+          >
+            <Download className="icon-sm mr-1.5" aria-hidden="true" /> Export
           </Button>
         </div>
       }

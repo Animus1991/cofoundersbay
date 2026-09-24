@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
@@ -477,21 +478,30 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col">
-              <Users className="icon-lg mb-2" aria-hidden="true" />
-              <span className="text-sm">User Management</span>
+            {/* Four "quick actions" that went nowhere; each opens its section. */}
+            <Button asChild variant="outline" className="h-20 flex-col">
+              <Link href="/admin/user-management">
+                <Users className="icon-lg mb-2" aria-hidden="true" />
+                <span className="text-sm">User Management</span>
+              </Link>
             </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Shield className="icon-lg mb-2" aria-hidden="true" />
-              <span className="text-sm">Security</span>
+            <Button asChild variant="outline" className="h-20 flex-col">
+              <Link href="/admin/security-monitoring">
+                <Shield className="icon-lg mb-2" aria-hidden="true" />
+                <span className="text-sm">Security</span>
+              </Link>
             </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Activity className="icon-lg mb-2" aria-hidden="true" />
-              <span className="text-sm">Analytics</span>
+            <Button asChild variant="outline" className="h-20 flex-col">
+              <Link href="/admin/analytics">
+                <Activity className="icon-lg mb-2" aria-hidden="true" />
+                <span className="text-sm">Analytics</span>
+              </Link>
             </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Briefcase className="icon-lg mb-2" aria-hidden="true" />
-              <span className="text-sm">Business</span>
+            <Button asChild variant="outline" className="h-20 flex-col">
+              <Link href="/admin/billing">
+                <Briefcase className="icon-lg mb-2" aria-hidden="true" />
+                <span className="text-sm">Business</span>
+              </Link>
             </Button>
           </div>
         </CardContent>

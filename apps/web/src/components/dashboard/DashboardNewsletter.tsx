@@ -66,8 +66,10 @@ export function DashboardNewsletter({
             className="flex-1 text-sm"
             type="email"
             aria-label="Newsletter email"
+            disabled
+            title="The newsletter has no subscription service yet"
           />
-          <Button aria-label="Subscribe" size="sm" className="shrink-0">
+          <Button aria-label="Subscribe" size="sm" className="shrink-0" disabled title="The newsletter has no subscription service yet">
             <ArrowRight className="icon-sm" />
           </Button>
         </div>

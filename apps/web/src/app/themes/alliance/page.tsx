@@ -2,6 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,12 +45,14 @@ export default function AllianceThemePage() {
               Join the premier network for startup founders, investors, and innovators
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-status-info hover:bg-status-info-bg">
-                Get Started
-                <ChevronRight className="ml-2 icon-md" />
+              <Button size="lg" className="bg-white text-status-info hover:bg-status-info-bg" asChild>
+                <Link href="/register">
+                  Get Started
+                  <ChevronRight className="ml-2 icon-md" aria-hidden="true" />
+                </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                Learn More
+              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
+                <Link href="/pricing">Learn More</Link>
               </Button>
             </div>
           </div>
@@ -120,7 +123,7 @@ export default function AllianceThemePage() {
                       </div>
                       <p className="text-sm text-muted-foreground">CEO & Founder at TechVentures</p>
                     </div>
-                    <Button variant="outline" size="sm" className="rounded-full">
+                    <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="rounded-full">
                       <Users className="icon-sm mr-2" />
                       Connect
                     </Button>
@@ -150,15 +153,15 @@ export default function AllianceThemePage() {
                   </div>
 
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                    <Button variant="ghost" size="sm" className="flex-1">
+                    <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <Heart className="icon-sm mr-2" />
                       Like
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
+                    <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <MessageSquare className="icon-sm mr-2" />
                       Message
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
+                    <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <Share2 className="icon-sm mr-2" />
                       Share
                     </Button>
@@ -201,8 +204,8 @@ export default function AllianceThemePage() {
                 <p className="text-sm text-blue-100 mb-4">
                   Unlock premium features and connect with top founders
                 </p>
-                <Button className="w-full bg-white text-status-info hover:bg-status-info-bg">
-                  Get Started
+                <Button className="w-full bg-white text-status-info hover:bg-status-info-bg" asChild>
+                  <Link href="/pricing">Get Started</Link>
                 </Button>
               </CardContent>
             </Card>

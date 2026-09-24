@@ -146,8 +146,26 @@ function InquiryCard({
             <p className="text-sm text-muted-foreground mt-2">{inquiry.message}</p>
             {inquiry.status === 'new' && (
               <div className="flex gap-2 mt-3">
-                <Button size="sm">Reply</Button>
-                <Button size="sm" variant="outline">View Details</Button>
+                {/* Both had no handler; they do what the menu's Reply and
+                    View Profile do. */}
+                <Button
+                  size="sm"
+                  disabled={!inquiry.clientId}
+                  onClick={() => {
+                    if (!inquiry.clientId) return;
+                    onStatus?.(inquiry, 'in_discussion');
+                    window.location.assign(`/messages?to=${inquiry.clientId}`);
+                  }}
+                >
+                  Reply
+                </Button>
+                {inquiry.clientId ? (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/profiles/${inquiry.clientId}`}>View Details</Link>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" disabled>View Details</Button>
+                )}
               </div>
             )}
           </div>

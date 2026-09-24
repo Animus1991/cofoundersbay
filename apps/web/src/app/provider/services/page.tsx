@@ -24,7 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
-import { listMyMarketplaceServices, updateMarketplaceService, deleteMarketplaceService, type MarketplaceServiceItem } from '@/lib/api';
+import { listMyMarketplaceServices, createMarketplaceService, updateMarketplaceService, deleteMarketplaceService, type MarketplaceServiceItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -256,7 +256,14 @@ export default function ProviderServicesPage() {
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
   const [editing, setEditing] = useState<Service | null>(null);
-  const [draft, setDraft] = useState({ title: '', description: '', pricing: '' });
+  const [draft, setDraft] = useState({ title: '', description: '', pricing: '', providerName: '' });
+  // "Add Service" (header and empty state) had no handler; the same dialog
+  // creates a listing through POST /marketplace.
+  const [creating, setCreating] = useState(false);
+  const openCreate = () => {
+    setDraft({ title: '', description: '', pricing: '', providerName: '' });
+    setCreating(true);
+  };
   const [saving, setSaving] = useState(false);
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['provider', 'services'] });
 
@@ -270,7 +277,7 @@ export default function ProviderServicesPage() {
       } finally { refresh(); }
     },
     onEdit: (svc) => {
-      setDraft({ title: svc.name, description: svc.description, pricing: svc.price === '\u2014' ? '' : svc.price });
+      setDraft({ title: svc.name, description: svc.description, pricing: svc.price === '\u2014' ? '' : svc.price, providerName: '' });
       setEditing(svc);
     },
     onDelete: async (svc) => {
@@ -290,6 +297,25 @@ export default function ProviderServicesPage() {
   } : {};
 
   const saveEdit = async () => {
+    if (creating) {
+      setSaving(true);
+      try {
+        await createMarketplaceService({
+          title: draft.title.trim(),
+          description: draft.description.trim() || undefined,
+          pricing: draft.pricing.trim() || undefined,
+          providerName: draft.providerName.trim(),
+        });
+        success('Listing created', draft.title);
+        setCreating(false);
+      } catch (e) {
+        toastError('Could not create the listing', e instanceof Error ? e.message : undefined);
+      } finally {
+        setSaving(false);
+        refresh();
+      }
+      return;
+    }
     if (!editing) return;
     setSaving(true);
     try {
@@ -315,7 +341,7 @@ export default function ProviderServicesPage() {
     <AppShell
       title="My Services"
       description="Manage your service offerings"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Service</Button>}
+      actions={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Service</Button>}
     >
       <div className="space-y-6">
         {!showDemoData && services.length === 0 && (
@@ -324,7 +350,7 @@ export default function ProviderServicesPage() {
             title="No services listed"
             description="Create your first service offering to start receiving bookings."
             askAiPrompt="I have not listed any services. Help me describe a first offering based on a typical service provider on CoFounderBay."
-            action={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Service</Button>}
+            action={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Service</Button>}
           />
         )}
 
@@ -383,11 +409,11 @@ export default function ProviderServicesPage() {
           )}
         </div>
       </div>
-      <Dialog open={editing !== null} onOpenChange={(o) => { if (!o) setEditing(null); }}>
+      <Dialog open={editing !== null || creating} onOpenChange={(o) => { if (!o) { setEditing(null); setCreating(false); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit listing</DialogTitle>
-            <DialogDescription>Saved to your marketplace listing.</DialogDescription>
+            <DialogTitle>{creating ? 'New listing' : 'Edit listing'}</DialogTitle>
+            <DialogDescription>{creating ? 'Published to the services marketplace.' : 'Saved to your marketplace listing.'}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void saveEdit(); }}>
             <div className="space-y-1.5">
@@ -398,13 +424,21 @@ export default function ProviderServicesPage() {
               <Label htmlFor="svc-description">Description</Label>
               <Textarea id="svc-description" rows={4} value={draft.description} onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))} />
             </div>
+            {creating && (
+              <div className="space-y-1.5">
+                <Label htmlFor="svc-provider">Provider name</Label>
+                <Input id="svc-provider" value={draft.providerName} onChange={(e) => setDraft((d) => ({ ...d, providerName: e.target.value }))} placeholder="Your name or firm" required />
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="svc-pricing">Pricing</Label>
               <Input id="svc-pricing" value={draft.pricing} onChange={(e) => setDraft((d) => ({ ...d, pricing: e.target.value }))} placeholder="e.g. From €500" />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
-              <Button type="submit" disabled={saving || !draft.title.trim()}>{saving ? 'Saving…' : 'Save'}</Button>
+              <Button type="button" variant="outline" onClick={() => { setEditing(null); setCreating(false); }}>Cancel</Button>
+              <Button type="submit" disabled={saving || !draft.title.trim() || (creating && !draft.providerName.trim())}>
+                {saving ? 'Saving…' : creating ? 'Publish' : 'Save'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

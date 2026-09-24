@@ -87,15 +87,15 @@ function ReviewCard({ review }: { review: Review }) {
             )}
 
             <div className="flex items-center gap-4 mt-3">
-              <Button variant="ghost" size="sm" className="h-8 text-xs">
-                <ThumbsUp className="mr-1 icon-sm" />
+              <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title="Reviews cannot be marked helpful yet">
+                <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
                 {/* Nobody can mark a review helpful — there is no field
                     and no endpoint — so the count is not shown. */}
                 Helpful
               </Button>
               {!review.response && (
-                <Button variant="ghost" size="sm" className="h-8 text-xs">
-                  <MessageSquare className="mr-1 icon-sm" />
+                <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title="Responses to reviews are not stored yet">
+                  <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
                   Respond
                 </Button>
               )}

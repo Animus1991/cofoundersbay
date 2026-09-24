@@ -8,6 +8,7 @@ import {
   AlertTriangle, CheckCircle2, Loader2, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { downloadCsv } from '@/lib/csv';
 import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
@@ -149,7 +150,19 @@ export default function AdminAuditLogPage() {
             <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} aria-hidden="true" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
+          {/* Had no handler. Exports the rows the filters show. */}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={filtered.length === 0}
+            onClick={() =>
+              downloadCsv(
+                'audit-log',
+                ['created_at', 'actor', 'action', 'entity_type', 'entity_id', 'meta'],
+                filtered.map((l) => [l.createdAt, l.actorEmail, l.action, l.entityType, l.entityId, JSON.stringify(l.meta ?? {})]),
+              )
+            }
+          >
             <Download className="mr-2 icon-sm" aria-hidden="true" />
             Export
           </Button>

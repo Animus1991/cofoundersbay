@@ -291,9 +291,12 @@ export default function InvestorDashboard() {
                     Trending Startups
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-1.5 icon-sm" />
-                      Filter
+                    {/* Had no handler; scouting is where startups are filtered. */}
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/investor/scouting">
+                        <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
+                        Filter
+                      </Link>
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/discover">

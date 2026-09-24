@@ -315,8 +315,10 @@ export function EnhancedMessageThread({
                                   {formatFileSize(attachment.size)}
                                 </p>
                               </div>
-                              <Button aria-label="Download" size="icon" variant="ghost" className="h-8 w-8">
-                                <Download className="icon-sm" aria-hidden="true" />
+                              <Button aria-label={`Download ${attachment.name}`} size="icon" variant="ghost" className="h-8 w-8" asChild>
+                                <a href={attachment.url} download={attachment.name}>
+                                  <Download className="icon-sm" aria-hidden="true" />
+                                </a>
                               </Button>
                             </>
                           )}
@@ -479,6 +481,8 @@ export function EnhancedMessageThread({
               rows={1}
             />
             <Button aria-label="Add emoji"
+              disabled
+              title="Emoji picker is not available here yet"
               variant="ghost"
               size="icon"
               className="absolute right-2 bottom-2"

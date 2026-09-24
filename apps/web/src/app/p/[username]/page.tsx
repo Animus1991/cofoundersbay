@@ -255,8 +255,18 @@ export default function PublicProfilePage() {
                           Connect
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" aria-label="Share profile">
-                        <Share2 className="icon-sm" />
+                      {/* Had no handler. */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Share profile"
+                        onClick={() => {
+                          const url = window.location.href;
+                          if (navigator.share) void navigator.share({ url }).catch(() => {});
+                          else void navigator.clipboard?.writeText(url);
+                        }}
+                      >
+                        <Share2 className="icon-sm" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>

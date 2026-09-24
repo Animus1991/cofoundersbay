@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { downloadCsv } from '@/lib/csv';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { getMyPrograms, getOrgMembers, getOrgMentorPool } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -160,6 +162,7 @@ export default function OrgAnalyticsPage() {
   const { slug, membership } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
 
+  const queryClient = useQueryClient();
   const { data: programsData } = useQuery({
     queryKey: ['org', 'programs'],
     queryFn: getMyPrograms,
@@ -240,11 +243,28 @@ export default function OrgAnalyticsPage() {
               <SelectItem value="all">All time</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" title="Refresh" aria-label="Refresh">
-            <RefreshCw className="icon-sm" />
+          {/* Both had no handler. */}
+          <Button
+            variant="outline"
+            size="icon"
+            title="Refresh"
+            aria-label="Refresh"
+            onClick={() => void queryClient.invalidateQueries({ queryKey: ['org'] })}
+          >
+            <RefreshCw className="icon-sm" aria-hidden="true" />
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Download className="icon-sm" /> Export
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() =>
+              downloadCsv('org-analytics', ['section', 'name', 'value'], [
+                ...Object.entries(stats).map(([k, v]) => ['summary', k, v ?? '']),
+                ...programMetrics.map((p) => ['program', p.name, `${p.startups} startups, ${p.progress}% of capacity`]),
+              ])
+            }
+          >
+            <Download className="icon-sm" aria-hidden="true" /> Export
           </Button>
         </>
       )}

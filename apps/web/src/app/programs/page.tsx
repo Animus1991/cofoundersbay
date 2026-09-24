@@ -327,7 +327,9 @@ function ProgramCard({
                 </Button>
               )}
               {isEnrolled && (
-                <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40">
+                // A state, not an action: it looked like a button and did
+                // nothing. Disabled, so it reads as "Applied, unavailable".
+                <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40" disabled>
                   <CheckCircle2 className="icon-sm mr-1.5" aria-hidden="true" />
                   <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
                 </Button>

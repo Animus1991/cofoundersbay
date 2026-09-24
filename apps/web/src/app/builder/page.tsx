@@ -188,11 +188,12 @@ function BuilderPageContent() {
                 <BilingualText en="Early feedback from an investor, mentor or industry specialist is cheapest before the documents are finished." el="Η έγκαιρη ανατροφοδότηση από επενδυτή, μέντορα ή ειδικό κλάδου κοστίζει λιγότερο πριν ολοκληρωθούν τα έγγραφα." />
               </p>
             </div>
-            <a href="/expert-reviews" className="shrink-0">
-              <Button variant="ghost" size="sm" className={cn('h-9 w-full gap-1 text-xs font-semibold hover:bg-status-warning-bg sm:w-auto', STATUS.warning.text)}>
-                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="icon-sm" />
-              </Button>
-            </a>
+            {/* One control: a <button> nested in an <a> is two (axe nested-interactive). */}
+            <Button asChild variant="ghost" size="sm" className={cn('h-9 w-full shrink-0 gap-1 text-xs font-semibold hover:bg-status-warning-bg sm:w-auto', STATUS.warning.text)}>
+              <a href="/expert-reviews">
+                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="icon-sm" aria-hidden="true" />
+              </a>
+            </Button>
             <button
               type="button"
               onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}

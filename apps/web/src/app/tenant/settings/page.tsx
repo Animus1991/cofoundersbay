@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import {
   Settings,
@@ -284,7 +285,7 @@ export default function TenantSettingsPage() {
                       <p className="font-medium">{integration.name}</p>
                       <p className="text-sm text-muted-foreground">{integration.description}</p>
                     </div>
-                    <Button variant={integration.connected ? 'outline' : 'default'} size="sm">
+                    <Button variant={integration.connected ? 'outline' : 'default'} size="sm" disabled title="Third-party integrations are not available yet">
                       {integration.connected ? 'Disconnect' : 'Connect'}
                     </Button>
                   </div>
@@ -304,9 +305,11 @@ export default function TenantSettingsPage() {
                   <div className="flex-1">
                     <Input value="sk_live_xxxxxxxxxxxxxxxxxxxxx" readOnly className="font-mono text-sm" />
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Key className="mr-2 icon-sm" />
-                    Regenerate
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/tenant/api-keys">
+                      <Key className="mr-2 icon-sm" aria-hidden="true" />
+                      Manage keys
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -333,8 +336,8 @@ export default function TenantSettingsPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline">Change Plan</Button>
-                  <Button variant="outline">View Invoices</Button>
+                  <Button variant="outline" asChild><Link href="/tenant/billing">Change Plan</Link></Button>
+                  <Button variant="outline" asChild><Link href="/tenant/billing">View Invoices</Link></Button>
                 </div>
               </CardContent>
             </Card>
@@ -353,7 +356,7 @@ export default function TenantSettingsPage() {
                     <p className="font-medium">•••• •••• •••• 4242</p>
                     <p className="text-sm text-muted-foreground">Expires 12/2026</p>
                   </div>
-                  <Button variant="outline" size="sm">Update</Button>
+                  <Button variant="outline" size="sm" asChild><Link href="/tenant/billing">Update</Link></Button>
                 </div>
               </CardContent>
             </Card>

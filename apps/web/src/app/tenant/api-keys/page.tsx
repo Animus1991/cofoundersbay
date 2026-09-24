@@ -68,7 +68,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
             <Button aria-label="Hide" variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
               {revealed ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
             </Button>
-            <Button aria-label="Copy" variant="ghost" size="icon"><Copy className="icon-sm" aria-hidden="true" /></Button>
+            <Button aria-label="Copy key" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(revealedKey)}><Copy className="icon-sm" aria-hidden="true" /></Button>
           </div>
           <div className="flex flex-wrap gap-1 mt-2">
             {apiKey.scopes.map(s => (

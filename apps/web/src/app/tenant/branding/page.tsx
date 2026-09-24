@@ -347,9 +347,13 @@ export default function TenantBrandingPage() {
 
                   <div className="rounded-lg border p-5 space-y-3">
                     <p className="text-sm font-medium text-muted-foreground">Live Preview</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button style={{ backgroundColor: form.primaryColor ?? undefined }}>Primary</Button>
+                    {/* A picture of three buttons, not three controls: inert
+                        takes them out of the tab order and the a11y tree, and
+                        tabIndex -1 says the same to the dead-control guard. */}
+                    <div className="flex flex-wrap gap-2" inert>
+                      <Button tabIndex={-1} style={{ backgroundColor: form.primaryColor ?? undefined }}>Primary</Button>
                       <Button
+                        tabIndex={-1}
                         variant="outline"
                         style={{
                           borderColor: form.secondaryColor ?? undefined,
@@ -358,7 +362,7 @@ export default function TenantBrandingPage() {
                       >
                         Secondary
                       </Button>
-                      <Button variant="ghost" style={{ color: form.accentColor ?? undefined }}>
+                      <Button tabIndex={-1} variant="ghost" style={{ color: form.accentColor ?? undefined }}>
                         Accent
                       </Button>
                     </div>

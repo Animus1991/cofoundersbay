@@ -88,7 +88,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <code className="text-xs font-mono bg-muted px-2 py-0.5 rounded truncate max-w-xs">{truncUrl}</code>
-              <Button aria-label="Copy" variant="ghost" size="icon">
+              <Button aria-label="Copy URL" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(webhook.url)}>
                 <Copy className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
@@ -178,7 +178,7 @@ export default function TenantWebhooksPage() {
             <Card className="border-dashed">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">Add another endpoint</p>
-                <Button size="sm" variant="outline" className="mt-2"><Plus className="mr-1.5 icon-sm" aria-hidden="true" />Add Webhook</Button>
+                <Button size="sm" variant="outline" className="mt-2" disabled title="Webhook delivery has no backend yet"><Plus className="mr-1.5 icon-sm" aria-hidden="true" />Add Webhook</Button>
               </CardContent>
             </Card>
           </>

@@ -213,10 +213,20 @@ export default function OrgMembersPage() {
       title="Team Members"
       description="Invite and manage who can run programs, review applications, and access workspace settings."
       actions={(
-        <Button>
-          <UserPlus className="mr-2 icon-sm" />
-          Invite Member
-        </Button>
+        // Had no handler; invitations are sent from the organisation admin page.
+        slug ? (
+          <Button asChild>
+            <Link href={`/org/${slug}/admin`}>
+              <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
+              Invite Member
+            </Link>
+          </Button>
+        ) : (
+          <Button disabled title="Join an organisation to invite members">
+            <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
+            Invite Member
+          </Button>
+        )
       )}
     >
       <div className="space-y-6">

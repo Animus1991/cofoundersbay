@@ -226,8 +226,11 @@ function InvestorCard({ investor }: { investor: Investor }) {
                     <Eye className="icon-sm" />Profile
                   </Link>
                 </Button>
-                <Button size="sm" className="h-7 text-xs gap-1">
-                  <UserPlus className="icon-sm" />Request Intro
+                {/* Had no handler; an intro starts as a message thread. */}
+                <Button size="sm" className="h-7 text-xs gap-1" asChild>
+                  <Link href={`/messages?to=${investor.userId}`}>
+                    <UserPlus className="icon-sm" aria-hidden="true" />Request Intro
+                  </Link>
                 </Button>
               </div>
             </div>

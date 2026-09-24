@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { GraduationCap, Calendar, Star, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { HelpCallout } from '@/components/common/HelpCallout';
@@ -62,7 +63,10 @@ export default function MentorshipManagementPage() {
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="capitalize">{m.status}</Badge>
                 {m.status === 'pending' && (
-                  <Button size="sm">Review application</Button>
+                  // Had no handler; applications are reviewed where roles are set.
+                  <Button size="sm" asChild>
+                    <Link href="/admin/user-management">Review application</Link>
+                  </Button>
                           )}
                         </div>
                           </div>

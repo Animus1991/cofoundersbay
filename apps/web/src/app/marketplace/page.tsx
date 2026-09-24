@@ -216,12 +216,28 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <p className="truncate font-semibold text-sm">{provider.pricing}</p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-              <MessageCircle className="icon-sm" />Message
-            </Button>
-            <Button size="sm" className="h-8 text-xs" disabled={!provider.isAvailable}>
-              Request
-            </Button>
+            {/* Neither had a handler. A listing carries its provider's own
+                contact and website links, so those are what these open. */}
+            {provider.contactUrl ? (
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" asChild>
+                <a href={provider.contactUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="icon-sm" aria-hidden="true" />Message
+                </a>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled title="This provider has not listed a contact link">
+                <MessageCircle className="icon-sm" aria-hidden="true" />Message
+              </Button>
+            )}
+            {provider.isAvailable && (provider.websiteUrl || provider.contactUrl) ? (
+              <Button size="sm" className="h-8 text-xs" asChild>
+                <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer">Request</a>
+              </Button>
+            ) : (
+              <Button size="sm" className="h-8 text-xs" disabled title={provider.isAvailable ? 'This provider has not listed a request link' : 'Not taking new clients'}>
+                Request
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

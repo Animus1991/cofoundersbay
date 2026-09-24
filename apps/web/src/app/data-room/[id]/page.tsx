@@ -653,8 +653,8 @@ export default function DataRoomPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Investor Access</CardTitle>
-              <Button size="sm">
-                <Users className="icon-sm mr-2" />
+              <Button size="sm" onClick={() => setIsShareDialogOpen(true)}>
+                <Users className="icon-sm mr-2" aria-hidden="true" />
                 Add Investor
               </Button>
             </CardHeader>
@@ -805,7 +805,7 @@ export default function DataRoomPage() {
                       Require investors to sign NDA before accessing
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
                     Configure
                   </Button>
                 </div>
@@ -816,7 +816,7 @@ export default function DataRoomPage() {
                       Notify when documents are accessed or downloaded
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
                     Configure
                   </Button>
                 </div>
@@ -827,7 +827,7 @@ export default function DataRoomPage() {
                       Add investor email watermark to downloaded PDFs
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
                     Enable
                   </Button>
                 </div>
@@ -852,8 +852,8 @@ export default function DataRoomPage() {
                   <p className="text-sm text-muted-foreground">Elena Papadopoulos</p>
                 </div>
                 <div className="pt-4 border-t">
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="icon-sm mr-2" />
+                  <Button variant="destructive" size="sm" disabled title="The data room has no storage backend yet">
+                    <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                     Delete Room
                   </Button>
                 </div>
@@ -904,7 +904,7 @@ export default function DataRoomPage() {
             <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
               Cancel
             </Button>
-            <Button>Upload</Button>
+            <Button disabled title="The data room has no storage backend yet">Upload</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -920,12 +920,12 @@ export default function DataRoomPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div>
-              <p className="text-sm font-medium mb-2">Email Address</p>
-              <Input placeholder="investor@firm.com" />
+              <label htmlFor="dr-invite-email" className="text-sm font-medium mb-2 block">Email Address</label>
+              <Input id="dr-invite-email" type="email" placeholder="investor@firm.com" />
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">Access Level</p>
-              <select className="w-full p-2 border rounded-xl">
+              <label htmlFor="dr-invite-access" className="text-sm font-medium mb-2 block">Access Level</label>
+              <select id="dr-invite-access" className="w-full p-2 border rounded-xl">
                 <option value="view">View Only</option>
                 <option value="download">View & Download</option>
                 <option value="admin">Admin Access</option>
@@ -942,7 +942,9 @@ export default function DataRoomPage() {
             <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>
               Cancel
             </Button>
-            <Button>Send Invite</Button>
+            {/* Every button that would write here had no handler; with no
+                storage behind the room they say so rather than pretend. */}
+            <Button disabled title="The data room has no storage backend yet">Send Invite</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

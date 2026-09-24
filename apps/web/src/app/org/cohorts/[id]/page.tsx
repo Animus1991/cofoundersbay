@@ -40,6 +40,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { downloadCsv } from '@/lib/csv';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -488,15 +489,33 @@ export default function CohortDetailPage() {
       description={`${cohort.program} • ${formatDate(cohort.startDate)} - ${formatDate(cohort.endDate)}`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm">
+          {/* All three had no handler. Share copies this page; Export is
+              the participant list; a message to everyone has no group
+              thread to go to yet. */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void navigator.clipboard?.writeText(window.location.href)}
+          >
             <Share2 className="icon-sm mr-2" aria-hidden="true" />
             <BilingualText en="Share" el="Κοινοποίηση" compact />
           </Button>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={participants.length === 0}
+            onClick={() =>
+              downloadCsv(
+                `cohort-${cohort.name}`,
+                ['name', 'email', 'role', 'startup', 'status', 'joined', 'location', 'progress'],
+                participants.map((pt) => [pt.name, pt.email, pt.role, pt.startup, pt.status, pt.joinDate, pt.location, pt.progress]),
+              )
+            }
+          >
             <Download className="icon-sm mr-2" aria-hidden="true" />
             <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
-          <Button size="sm">
+          <Button size="sm" disabled title="Group messages to a whole cohort are not supported yet">
             <Mail className="icon-sm mr-2" aria-hidden="true" />
             <BilingualText en="Message All" el="Μήνυμα σε όλους" compact />
           </Button>
@@ -729,7 +748,7 @@ export default function CohortDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>All Participants</CardTitle>
-              <Button size="sm">
+              <Button size="sm" disabled title="Cohort membership is managed by platform administrators for now">
                 <Users className="icon-sm mr-2" aria-hidden="true" />
                 Add Participant
               </Button>
@@ -820,9 +839,11 @@ export default function CohortDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Matches</CardTitle>
-              <Button size="sm">
-                <Target className="icon-sm mr-2" aria-hidden="true" />
-                Generate Matches
+              <Button size="sm" asChild>
+                <Link href="/matches">
+                  <Target className="icon-sm mr-2" aria-hidden="true" />
+                  Generate Matches
+                </Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -927,9 +948,11 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>All Sessions</CardTitle>
-                <Button size="sm">
-                  <Calendar className="icon-sm mr-2" aria-hidden="true" />
-                  Schedule Session
+                <Button size="sm" asChild>
+                  <Link href="/mentor/sessions?new=1">
+                    <Calendar className="icon-sm mr-2" aria-hidden="true" />
+                    Schedule Session
+                  </Link>
                 </Button>
               </CardHeader>
               <CardContent>

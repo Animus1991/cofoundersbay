@@ -186,12 +186,12 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
           </div>
 
           {exportReq.status === 'ready' && exportReq.downloadUrl && (
-            <a href={exportReq.downloadUrl} download>
-              <Button size="sm" className="gap-2">
-                <Download className="icon-sm" />
+            <Button asChild size="sm" className="gap-2">
+              <a href={exportReq.downloadUrl} download>
+                <Download className="icon-sm" aria-hidden="true" />
                 Download
-              </Button>
-            </a>
+              </a>
+            </Button>
           )}
         </div>
 

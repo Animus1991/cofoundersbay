@@ -62,16 +62,17 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
         )}
       </div>
       {invoice.hostedInvoiceUrl && (
-        <a
-          href={invoice.hostedInvoiceUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="shrink-0"
-        >
-          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Download invoice ${invoice.invoiceNumber}`, `Λήψη τιμολογίου ${invoice.invoiceNumber}`)}>
-            <Download className="icon-sm" />
-          </Button>
-        </a>
+        // One control, not a button nested in a link (axe nested-interactive).
+        <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+          <a
+            href={invoice.hostedInvoiceUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={bilingualAria(`Download invoice ${invoice.invoiceNumber}`, `Λήψη τιμολογίου ${invoice.invoiceNumber}`)}
+          >
+            <Download className="icon-sm" aria-hidden="true" />
+          </a>
+        </Button>
       )}
     </div>
   );

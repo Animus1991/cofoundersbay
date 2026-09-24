@@ -83,8 +83,8 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
         <p className="text-xs text-muted-foreground">
           <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
         </p>
-        <Button variant="ghost" size="sm" className="mt-1 h-7 text-xs">
-          Reply
+        <Button variant="ghost" size="sm" className="mt-1 h-7 text-xs" asChild>
+          <Link href="/provider/inquiries">Reply</Link>
         </Button>
       </div>
     </div>

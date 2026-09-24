@@ -102,8 +102,10 @@ function ServiceCard({ service }: { service: any }) {
       {/* One of these per service row, all three announced as "button" with
           nothing to distinguish them. The service name is what tells them
           apart, so it belongs in the name. */}
-      <Button variant="ghost" size="icon" aria-label={`Settings for ${service.name}`}>
-        <Settings className="icon-sm" aria-hidden="true" />
+      <Button variant="ghost" size="icon" aria-label={`Settings for ${service.name}`} asChild>
+        <Link href="/provider/services">
+          <Settings className="icon-sm" aria-hidden="true" />
+        </Link>
       </Button>
     </div>
   );
@@ -153,11 +155,12 @@ function InquiryCard({ inquiry }: { inquiry: any }) {
         <p className="text-xs text-muted-foreground">Interested in: {inquiry.service}</p>
         <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{inquiry.message}</p>
         <div className="flex gap-2 mt-2">
-          <Button size="sm" variant="default">
-            Respond
+          {/* Neither had a handler; inquiries are answered on their page. */}
+          <Button size="sm" variant="default" asChild>
+            <Link href="/provider/inquiries">Respond</Link>
           </Button>
-          <Button size="sm" variant="outline">
-            View Profile
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/provider/inquiries">View Profile</Link>
           </Button>
         </div>
       </div>

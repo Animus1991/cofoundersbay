@@ -258,11 +258,13 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               <Button size="sm" variant="default" className="h-7 text-xs flex-1" asChild>
                 <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" />View</Link>
               </Button>
-              <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-                <GanttChart className="mr-1 icon-sm" />Pipeline
+              {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
+                  and Intro has no founder account to reach yet. */}
+              <Button size="sm" variant="outline" className="h-7 text-xs flex-1" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
+                <GanttChart className="mr-1 icon-sm" aria-hidden="true" />Pipeline
               </Button>
-              <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-                <MessageCircle className="mr-1 icon-sm" />Intro
+              <Button size="sm" variant="outline" className="h-7 text-xs flex-1" disabled title="Scouted startups are not linked to founder accounts yet">
+                <MessageCircle className="mr-1 icon-sm" aria-hidden="true" />Intro
               </Button>
             </div>
           </div>

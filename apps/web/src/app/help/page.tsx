@@ -311,12 +311,14 @@ export default function HelpPage() {
       title="Help & Support"
       description="Find answers, guides, and get in touch with the CoFounderBay team"
       actions={
-        <a href="mailto:support@cofounderbay.com">
-          <Button size="sm" className="gap-2">
-            <Mail className="icon-sm" />
+        // A <button> nested in an <a> is two controls in one place
+        // (axe nested-interactive); the link is the control.
+        <Button asChild size="sm" className="gap-2">
+          <a href="mailto:support@cofounderbay.com">
+            <Mail className="icon-sm" aria-hidden="true" />
             Contact Support
-          </Button>
-        </a>
+          </a>
+        </Button>
       }
     >
       <div className="space-y-6 pb-10">
@@ -458,12 +460,12 @@ export default function HelpPage() {
               Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <a href="mailto:support@cofounderbay.com">
-                <Button className="gap-2">
-                  <Mail className="icon-sm" />
+              <Button asChild className="gap-2">
+                <a href="mailto:support@cofounderbay.com">
+                  <Mail className="icon-sm" aria-hidden="true" />
                   Email Support
-                </Button>
-              </a>
+                </a>
+              </Button>
               <Button variant="outline" className="gap-2" asChild>
                 <Link href="/messages">
                   <MessageCircle className="icon-sm" />

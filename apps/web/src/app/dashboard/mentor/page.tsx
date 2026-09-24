@@ -95,8 +95,11 @@ function MenteeCard({ mentee }: { mentee: any }) {
           variant="ghost"
           size="icon"
           aria-label={`Message ${mentee.name}`}
+          asChild
         >
-          <MessageCircle className="icon-sm" aria-hidden="true" />
+          <Link href={mentee.id ? `/messages?to=${mentee.id}` : '/messages'}>
+            <MessageCircle className="icon-sm" aria-hidden="true" />
+          </Link>
         </Button>
       </div>
     </div>
@@ -129,8 +132,12 @@ function SessionCard({ session }: { session: any }) {
           {session.duration} min
         </Badge>
         {isUpcoming && (
-          <Button size="sm" variant="outline">
-            Join
+          <Button size="sm" variant="outline" asChild>
+            {session.meetingUrl ? (
+              <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">Join</a>
+            ) : (
+              <Link href="/mentor/sessions">Join</Link>
+            )}
           </Button>
         )}
       </div>

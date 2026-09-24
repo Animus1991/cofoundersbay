@@ -10,8 +10,10 @@ export default function GroupsLoading() {
       title="Groups"
       description="Join communities, share knowledge, and connect with like-minded founders"
       actions={
-        <Button className="gap-2">
-          <Plus className="icon-sm" />
+        // The loading shell's copy of the header action; the real one renders
+        // with the page. Disabled so it is not a control that does nothing.
+        <Button className="gap-2" disabled>
+          <Plus className="icon-sm" aria-hidden="true" />
           Create Group
         </Button>
       }

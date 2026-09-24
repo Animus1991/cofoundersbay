@@ -17,6 +17,7 @@ import {
   adminDeactivateExperiment,
   adminUpdateExperiment,
   adminDeleteExperiment,
+  adminCreateExperiment,
   type ExperimentRecord,
 } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
@@ -255,6 +256,34 @@ export default function AdminFeatureFlagsPage() {
   const confirm = useConfirm();
   const [editing, setEditing] = useState<{ flag: FeatureFlag; mode: 'details' | 'rollout' } | null>(null);
   const [draft, setDraft] = useState({ name: '', description: '', rollout: 100 });
+  const [creating, setCreating] = useState(false);
+  const [newFlag, setNewFlag] = useState({ key: '', name: '', description: '', rollout: 100 });
+
+  // "New Flag" had no handler. A flag is an experiment: variant A is "off",
+  // variant B is "on", and the rollout is the share that gets B.
+  const createFlag = async () => {
+    const key = newFlag.key.trim().toLowerCase().replace(/[^a-z0-9_.-]+/g, '_');
+    if (!key || !newFlag.name.trim()) return;
+    setSaving(true);
+    try {
+      await adminCreateExperiment({
+        key,
+        name: newFlag.name.trim(),
+        description: newFlag.description.trim() || undefined,
+        variantA: { enabled: false },
+        variantB: { enabled: true },
+        splitRatio: Math.min(100, Math.max(0, Math.round(newFlag.rollout))),
+      });
+      success('Flag created', `${key} starts inactive - switch it on when ready.`);
+      setCreating(false);
+      setNewFlag({ key: '', name: '', description: '', rollout: 100 });
+    } catch (err) {
+      toastError('Could not create the flag', err instanceof Error ? err.message : undefined);
+    } finally {
+      setSaving(false);
+      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+    }
+  };
   const [saving, setSaving] = useState(false);
 
   const refuseOnSample = () =>
@@ -369,7 +398,7 @@ export default function AdminFeatureFlagsPage() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
             New Flag
           </Button>
@@ -489,6 +518,36 @@ export default function AdminFeatureFlagsPage() {
               <Button type="submit" disabled={saving || (editing?.mode === 'details' && !draft.name.trim())}>
                 {saving ? 'Saving…' : 'Save'}
               </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={creating} onOpenChange={setCreating}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New flag</DialogTitle>
+            <DialogDescription>Created inactive. The key is what code reads, so it cannot change later.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void createFlag(); }}>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-flag-key">Key</Label>
+              <Input id="new-flag-key" value={newFlag.key} onChange={(e) => setNewFlag((f) => ({ ...f, key: e.target.value }))} placeholder="e.g. new_onboarding" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-flag-name">Name</Label>
+              <Input id="new-flag-name" value={newFlag.name} onChange={(e) => setNewFlag((f) => ({ ...f, name: e.target.value }))} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-flag-description">Description</Label>
+              <Input id="new-flag-description" value={newFlag.description} onChange={(e) => setNewFlag((f) => ({ ...f, description: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-flag-rollout">Rollout (%)</Label>
+              <Input id="new-flag-rollout" type="number" min={0} max={100} value={newFlag.rollout} onChange={(e) => setNewFlag((f) => ({ ...f, rollout: Number(e.target.value) }))} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreating(false)}>Cancel</Button>
+              <Button type="submit" disabled={saving || !newFlag.key.trim() || !newFlag.name.trim()}>{saving ? 'Creating…' : 'Create flag'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

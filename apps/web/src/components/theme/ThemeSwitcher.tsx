@@ -81,7 +81,8 @@ export function ThemeSwitcher({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)} aria-label={t('Theme')}>
+      // Placeholder until mount; the real switcher replaces it.
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)} aria-label={t('Theme')} disabled>
         <Moon className="icon-sm" />
       </Button>
     );
