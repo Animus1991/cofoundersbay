@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
@@ -433,9 +434,108 @@ export default function ProjectsPage() {
     </Button>
   );
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'overview',
+      glyph: 'chart',
+      labelEn: 'Project stats',
+      labelEl: 'Στατιστικά έργων',
+      content: (
+        <div className="space-y-2">
+          {[
+            { labelKey: 'stat_total' as const, value: stats.total, glyph: 'briefcase' as const, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+            { labelKey: 'stat_active' as const, value: stats.active, glyph: 'builder' as const, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { labelKey: 'stat_roles' as const, value: stats.openRoles, glyph: 'people' as const, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { labelKey: 'stat_industries' as const, value: stats.industries, glyph: 'chart' as const, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+          ].map((s) => (
+            <div key={s.labelKey} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', s.bg, s.color)}>
+                <CfbGlyph name={s.glyph} className="icon-sm" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
+                <p className="mt-0.5 text-2xs leading-snug text-muted-foreground">
+                  <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: industryFilter !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-3">
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+              <BilingualText en={projectEn('industry')} el={projectEl('industry')} compact />
+            </p>
+            <Select value={industryFilter} onValueChange={setIndustryFilter}>
+              <SelectTrigger className="w-full rounded-xl">
+                <SelectValue placeholder={t(projectEn('industry'), projectEl('industry'))} />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">{t(projectEn('all_industries'), projectEl('all_industries'))}</SelectItem>
+                {industries.map((ind) => (
+                  <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+            >
+              <X className="icon-sm shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1"><BilingualText en={projectEn('clear_filters')} el={projectEl('clear_filters')} compact wrap /></span>
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'view',
+      glyph: 'compare',
+      labelEn: 'Layout',
+      labelEl: 'Διάταξη',
+      content: (
+        <div className="flex rounded-xl border border-border p-0.5">
+          <Button
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="icon"
+            className="flex-1 rounded-xl"
+            onClick={() => setViewMode('grid')}
+            aria-label={bilingualAria(projectEn('view_grid'), projectEl('view_grid'))}
+            aria-pressed={viewMode === 'grid'}
+          >
+            <LayoutGrid className="icon-sm" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="icon"
+            className="flex-1 rounded-xl"
+            onClick={() => setViewMode('list')}
+            aria-label={bilingualAria(projectEn('view_list'), projectEl('view_list'))}
+            aria-pressed={viewMode === 'list'}
+          >
+            <List className="icon-sm" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
+      rail={rail}
       askAi="Projects is still sample data. Help me find collaborators from matches and shortlist instead of treating these cards as live."
       actions={createCta}
     >
@@ -460,32 +560,6 @@ export default function ProjectsPage() {
             </span>
           </span>
         </button>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { labelKey: 'stat_total' as const, value: stats.total, glyph: 'briefcase' as const, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-            { labelKey: 'stat_active' as const, value: stats.active, glyph: 'builder' as const, color: 'text-status-info', bg: 'bg-status-info-bg' },
-            { labelKey: 'stat_roles' as const, value: stats.openRoles, glyph: 'people' as const, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { labelKey: 'stat_industries' as const, value: stats.industries, glyph: 'chart' as const, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-          ].map((s) => (
-            <Card key={s.labelKey} className="rounded-xl border-border/40">
-              <CardContent className="flex items-center gap-3 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', s.bg, s.color)}>
-                  <CfbGlyph name={s.glyph} className="icon-sm" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
-                  {/* `truncate` on the wrapper *and* a truncating label: at
-                      1024px these tiles give the label about 54px and
-                      "Active / building · Ενεργά / κατασκευή" needs 97px. */}
-                  <p className="mt-0.5 text-2xs leading-snug text-muted-foreground">
-                    <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-4">
           <TabsList className="rounded-xl">
@@ -517,37 +591,6 @@ export default function ProjectsPage() {
                   <X className="icon-sm" />
                 </button>
               )}
-            </div>
-            <Select value={industryFilter} onValueChange={setIndustryFilter}>
-              <SelectTrigger className="w-[180px] rounded-xl">
-                <SelectValue placeholder={t(projectEn('industry'), projectEl('industry'))} />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="all">{t(projectEn('all_industries'), projectEl('all_industries'))}</SelectItem>
-                {industries.map((ind) => (
-                  <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex rounded-xl border border-border p-0.5">
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-xl"
-                onClick={() => setViewMode('grid')}
-                aria-label={bilingualAria(projectEn('view_grid'), projectEl('view_grid'))}
-              >
-                <LayoutGrid className="icon-sm" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-xl"
-                onClick={() => setViewMode('list')}
-                aria-label={bilingualAria(projectEn('view_list'), projectEl('view_list'))}
-              >
-                <List className="icon-sm" />
-              </Button>
             </div>
           </div>
 

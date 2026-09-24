@@ -23,6 +23,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -321,9 +322,76 @@ export default function CalendarPage() {
   const sessionCount = thisMonthEvents.filter((e) => e.type === 'session').length;
   const milestoneCount = thisMonthEvents.filter((e) => e.type === 'milestone').length;
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'stats',
+      glyph: 'chart',
+      labelEn: 'Month stats',
+      labelEl: 'Στατιστικά μήνα',
+      content: (
+        <div className="space-y-2">
+          {[
+            { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-accessible' },
+            { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-status-danger' },
+            { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-status-info' },
+            { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-status-warning' },
+          ].map(({ labelEn, labelEl, value, icon: Icon, color }) => (
+            <div key={labelEn} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <div className="rounded-lg bg-secondary p-2"><Icon className={cn('icon-sm', color)} aria-hidden="true" /></div>
+              <div>
+                <p className="text-lg font-bold leading-none tabular-nums">{value}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Event types',
+      labelEl: 'Τύποι εκδηλώσεων',
+      badge: typeFilter !== 'all' ? 1 : null,
+      content: (
+        /* The legend folded in here: each row already carries the type's icon
+           and bilingual name, and the active state says which one filters. */
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => setTypeFilter('all')}
+            aria-pressed={typeFilter === 'all'}
+            className={cn(
+              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
+              typeFilter === 'all' ? 'bg-primary/10 text-primary-accessible' : 'hover:bg-muted/70',
+            )}
+          >
+            <span className="min-w-0 flex-1"><BilingualText en="All" el="Όλα" compact /></span>
+          </button>
+          {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTypeFilter(key)}
+              aria-pressed={typeFilter === key}
+              className={cn(
+                'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
+                typeFilter === key ? 'bg-primary/10 text-primary-accessible' : 'hover:bg-muted/70',
+              )}
+            >
+              <cfg.icon className={cn('icon-sm shrink-0', cfg.color)} aria-hidden="true" />
+              <span className="min-w-0 flex-1"><BilingualText en={cfg.labelEn} el={cfg.labelEl} compact wrap /></span>
+            </button>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
+      rail={rail}
       askAi="The calendar still shows sample items. What live surfaces should I use for sessions, events, and milestones, and what should I do next?"
       actions={
         <div className="flex flex-wrap items-center gap-2">
@@ -348,36 +416,6 @@ export default function CalendarPage() {
           detail="Live sessions, events, and milestone due dates are not merged into one API yet. These items are samples so you can learn the layout. Ask the assistant to open Events or Milestones instead."
           askAiPrompt="The calendar still shows sample items. What live surfaces should I use for sessions, events, and milestones, and what should I do next?"
         />
-
-        {/* Stats strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-accessible' },
-            { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-status-danger' },
-            { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-status-info' },
-            { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-status-warning' },
-          ].map(({ labelEn, labelEl, value, icon: Icon, color }) => (
-            <Card key={labelEn}>
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
-                <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Type filter pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant={typeFilter === 'all' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setTypeFilter('all')}><BilingualText en="All" el="Όλα" compact /></Button>
-          {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
-            <Button key={key} variant={typeFilter === key ? 'default' : 'outline'} size="sm" className="gap-1" onClick={() => setTypeFilter(key)}>
-              <cfg.icon className="icon-sm" /> <BilingualText en={cfg.labelEn} el={cfg.labelEl} compact secondaryFrom="lg" />
-            </Button>
-          ))}
-        </div>
 
         {view === 'calendar' ? (
           <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
@@ -405,20 +443,6 @@ export default function CalendarPage() {
                 </CardContent>
               </Card>
 
-              {/* Legend */}
-              <Card>
-                <CardContent className="p-3 space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground mb-2"><BilingualText en="Event Types" el="Τύποι εκδηλώσεων" compact /></p>
-                  {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
-                    <div key={key} className="flex items-center gap-2 text-xs">
-                      <cfg.icon className={cn('icon-sm', cfg.color)} />
-                      <span className="text-muted-foreground">
-                        <BilingualText en={cfg.labelEn} el={cfg.labelEl} compact />
-                      </span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
             </div>
 
             {/* Right: Selected day events + upcoming */}

@@ -11,6 +11,7 @@ import {
   Globe, BadgeCheck, Store,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -230,29 +231,12 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
 // ── Stats Bar ──────────────────────────────────────────────────────────────────
 
-function StatsBar() {
-  const stats = [
-    { label: 'Verified Providers', value: '120+', icon: ShieldCheck },
-    { label: 'Avg. Rating', value: '4.8 / 5', icon: Star },
-    { label: 'Response Time', value: '< 24h', icon: Zap },
-    { label: 'Startups Served', value: '500+', icon: Users },
-  ];
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {stats.map(s => (
-        <Card key={s.label}>
-          <CardContent className="p-3 flex items-center gap-2">
-            <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
-            <div>
-              <p className="text-xs font-bold">{s.value}</p>
-              <p className="text-2xs text-muted-foreground">{s.label}</p>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
+const MARKETPLACE_STATS = [
+  { label: 'Verified Providers', value: '120+', icon: ShieldCheck },
+  { label: 'Avg. Rating', value: '4.8 / 5', icon: Star },
+  { label: 'Response Time', value: '< 24h', icon: Zap },
+  { label: 'Startups Served', value: '500+', icon: Users },
+];
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
@@ -315,8 +299,67 @@ export default function MarketplacePage() {
   const featured = filtered.filter(p => p.isFeatured);
   const regular = filtered.filter(p => !p.isFeatured);
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'stats',
+      glyph: 'chart',
+      labelEn: 'Marketplace stats',
+      labelEl: 'Στατιστικά αγοράς',
+      content: (
+        <div className="space-y-2">
+          {MARKETPLACE_STATS.map(s => (
+            <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border/60 p-3">
+              <s.icon className="h-4 w-4 shrink-0 text-primary-accessible" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-bold">{s.value}</p>
+                <p className="text-2xs text-muted-foreground">{s.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Sort & filters',
+      labelEl: 'Ταξινόμηση & φίλτρα',
+      badge: availableOnly ? 1 : null,
+      content: (
+        <div className="space-y-3">
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Sort by</p>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full">
+                <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rating">Highest Rated</SelectItem>
+                <SelectItem value="reviews">Most Reviewed</SelectItem>
+                <SelectItem value="clients">Most Clients</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAvailableOnly(!availableOnly)}
+            aria-pressed={availableOnly}
+            className={cn(
+              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
+              availableOnly ? 'bg-primary/10 text-primary-accessible' : 'hover:bg-muted/70',
+            )}
+          >
+            <CheckCircle className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">Available providers only</span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <AppShell showHelp>
+    <AppShell showHelp rail={rail}>
       <div className="space-y-6 pb-10">
         {backendProviders.length === 0 && (
           <SampleDataNotice
@@ -342,34 +385,16 @@ export default function MarketplacePage() {
           </CardContent>
         </Card>
 
-        {/* Stats */}
-        <StatsBar />
-
-        {/* Search & Sort */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input placeholder="Search services, providers, specialties..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-          </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[160px]">
-              <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-              <SelectItem value="reviews">Most Reviewed</SelectItem>
-              <SelectItem value="clients">Most Clients</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant={availableOnly ? 'default' : 'outline'}
-            size="sm"
-            className="h-10"
-            onClick={() => setAvailableOnly(!availableOnly)}
-          >
-            <CheckCircle className="mr-1.5 icon-sm" />Available
-          </Button>
+        {/* Search — sort and the availability filter live in the rail */}
+        <div className="relative max-w-xl">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Input
+            placeholder="Search services, providers, specialties..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9"
+            aria-label="Search services, providers, specialties"
+          />
         </div>
 
         {/* Category Tabs */}

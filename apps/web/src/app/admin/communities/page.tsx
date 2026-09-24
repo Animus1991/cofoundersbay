@@ -14,9 +14,21 @@ import {
   Calendar,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { listGroups, type GroupView } from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createGroup, listGroups, type GroupPrivacy, type GroupView } from '@/lib/api';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useToast } from '@/components/ui/toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -222,9 +234,13 @@ const SEED_COMMUNITIES: Community[] = [
 ];
 
 export default function AdminCommunitiesPage() {
+  const { success, error: toastError } = useToast();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [visibility, setVisibility] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', description: '', category: '', privacy: 'public' as GroupPrivacy });
 
   // Mock data
   const { data, isLoading } = useQuery({
@@ -234,7 +250,19 @@ export default function AdminCommunitiesPage() {
     retry: 0,
   });
 
+  const createMutation = useMutation({
+    mutationFn: createGroup,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'communities'] });
+      success('Community created', `${form.name} is now listed.`);
+      setCreateOpen(false);
+      setForm({ name: '', description: '', category: '', privacy: 'public' });
+    },
+    onError: () => toastError('Could not create the community', 'The groups API rejected the request. Check the name and try again.'),
+  });
+
   const live = useMemo(() => (data?.groups ?? []).map(toCommunity), [data]);
+  const showingSeed = !isLoading && live.length === 0;
   const communities: Community[] = live.length > 0 ? live : isLoading ? [] : SEED_COMMUNITIES;
 
 
@@ -248,8 +276,83 @@ export default function AdminCommunitiesPage() {
     return matchesSearch && matchesVisibility && matchesStatus;
   });
 
+  const activeFilterCount = (visibility !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'overview',
+      glyph: 'chart',
+      labelEn: 'Community stats',
+      labelEl: 'Στατιστικά κοινοτήτων',
+      badge: communities.filter((c) => c.status === 'flagged').length || null,
+      content: (
+        <div className="space-y-2">
+          {[
+            { label: 'Total Communities', value: communities.length },
+            { label: 'Total Members', value: communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB') },
+            { label: 'Total Posts', value: communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB') },
+            { label: 'Flagged', value: communities.filter((c) => c.status === 'flagged').length, danger: true },
+          ].map(({ label, value, danger }) => (
+            <div key={label} className="rounded-lg border border-border/60 p-3">
+              <p className="text-sm text-muted-foreground">{label}</p>
+              <p className={cn('mt-1 text-xl font-bold tabular-nums', danger && 'text-status-danger')}>{value}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-3">
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Visibility</p>
+            <Select value={visibility} onValueChange={setVisibility}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="tenant">Tenant</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Status</p>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="flagged">Flagged</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={() => { setVisibility('all'); setStatus('all'); }}
+              className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+            >
+              <span className="min-w-0 flex-1">Clear filters</span>
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <AppShell>
+    <AppShell rail={rail}>
       <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -259,79 +362,29 @@ export default function AdminCommunitiesPage() {
               Manage platform communities
             </p>
           </div>
-          <Button>
+          <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
             Create Community
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Communities</p>
-              <p className="text-xl font-bold">{communities.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Members</p>
-              <p className="text-xl font-bold">
-                {communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB')}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Posts</p>
-              <p className="text-xl font-bold">
-                {communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB')}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Flagged</p>
-              <p className="text-xl font-bold text-status-danger">
-                {communities.filter((c) => c.status === 'flagged').length}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {showingSeed && (
+          <SampleDataNotice
+            surface="Communities"
+            detail="The groups API returned no communities, so these rows are samples that show the layout. Creating a community writes to the real groups service."
+            askAiPrompt="The communities list is showing sample rows. What live group-management actions can you take here?"
+          />
+        )}
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
-            <Input
-              placeholder="Search communities..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={visibility} onValueChange={setVisibility}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Visibility" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="public">Public</SelectItem>
-              <SelectItem value="private">Private</SelectItem>
-              <SelectItem value="tenant">Tenant</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-              <SelectItem value="flagged">Flagged</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Search — the rail carries visibility and status */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+          <Input
+            placeholder="Search communities..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
 
         {/* Communities List */}
@@ -352,6 +405,82 @@ export default function AdminCommunitiesPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create community</DialogTitle>
+            <DialogDescription>
+              Creates a real group via the groups API. The slug is derived from the name.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const slug = form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+              if (!form.name.trim() || !slug) return;
+              createMutation.mutate({
+                name: form.name.trim(),
+                slug,
+                description: form.description.trim() || undefined,
+                category: form.category.trim() || undefined,
+                privacy: form.privacy,
+              });
+            }}
+          >
+            <div className="space-y-1.5">
+              <label htmlFor="community-name" className="text-sm font-medium">Name</label>
+              <Input
+                id="community-name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. AI Founders"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="community-description" className="text-sm font-medium">Description</label>
+              <Input
+                id="community-description"
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                placeholder="What is this community about?"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label htmlFor="community-category" className="text-sm font-medium">Category</label>
+                <Input
+                  id="community-category"
+                  value={form.category}
+                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                  placeholder="e.g. Technology"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="community-privacy" className="text-sm font-medium">Privacy</label>
+                <Select value={form.privacy} onValueChange={(v) => setForm((f) => ({ ...f, privacy: v as GroupPrivacy }))}>
+                  <SelectTrigger id="community-privacy">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="secret">Secret</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createMutation.isPending || !form.name.trim()}>
+                {createMutation.isPending ? 'Creating…' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

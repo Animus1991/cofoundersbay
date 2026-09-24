@@ -96,6 +96,10 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // behaviour - a spatial command surface, not a duplicate.
   'key:add_sticky',
   'key:create_group',
+  // /projects: the rail's Filters section owns the standing clear control; the
+  // column's EmptyState shows the same words only when a filtered list came
+  // back empty - recovery copy inside an empty state, not a second toolbar.
+  'key:clear_filters',
 ]);
 
 const pages = walk(APP_DIR)
