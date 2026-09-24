@@ -333,15 +333,19 @@ function ScoreEmblem({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div
-        className="relative"
-        style={{ width: wrap, height: wrap }}
-        role="img"
-        aria-label={bilingualAria(
-          `Overall readiness ${score} out of 100 — ${STATUS_LABEL[status].en}`,
-          `Συνολική ετοιμότητα ${score} στα 100 — ${STATUS_LABEL[status].el}`,
-        )}
-      >
+      <div className="relative" style={{ width: wrap, height: wrap }}>
+        {/* The image is the ring and the number; the dimension pips below are
+            links, and a link inside role="img" is flattened away for a screen
+            reader (axe nested-interactive). So the role wraps the picture and
+            the pips sit beside it. */}
+        <div
+          className="absolute inset-0"
+          role="img"
+          aria-label={bilingualAria(
+            `Overall readiness ${score} out of 100 — ${STATUS_LABEL[status].en}`,
+            `Συνολική ετοιμότητα ${score} στα 100 — ${STATUS_LABEL[status].el}`,
+          )}
+        >
         <div
           className="pointer-events-none absolute inset-[18px] rounded-full opacity-50 blur-3xl"
           style={{ backgroundColor: stroke }}
@@ -395,6 +399,7 @@ function ScoreEmblem({
           <span className={cn('rounded-full px-2.5 py-0.5 text-[11px] font-semibold leading-none', colors.bg, colors.text)}>
             <BilingualText en={STATUS_LABEL[status].en} el={STATUS_LABEL[status].el} compact />
           </span>
+        </div>
         </div>
         {dimensions.map((dim, index) => {
           const angle = (-90 + (index * 360) / dimensions.length) * (Math.PI / 180);

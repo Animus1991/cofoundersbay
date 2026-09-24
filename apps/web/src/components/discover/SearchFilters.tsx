@@ -1,5 +1,6 @@
 'use client';
 
+import { BilingualText } from '@/components/common/BilingualText';
 import { useState } from 'react';
 import {
   Filter,
@@ -57,10 +58,10 @@ type SearchFiltersProps = {
 };
 
 const roles = [
-  { value: 'founder', label: 'Founder' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'investor', label: 'Investor' },
-  { value: 'org', label: 'Organization' },
+  { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής' },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας' },
+  { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής' },
+  { value: 'org', label: 'Organization', labelEl: 'Οργανισμός' },
 ];
 
 const stages = [
@@ -464,7 +465,12 @@ export function SearchFilters({
 
       {/* Quick role filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-muted-foreground">Quick filter:</span>
+        {/* "Search only", not "Quick filter": the role chips above this row
+            narrow the results on screen, while these change the query sent to
+            the search - two rows of the same roles need to say which is which. */}
+        <span className="text-sm text-muted-foreground">
+          <BilingualText en="Search only:" el="Αναζήτηση μόνο σε:" compact />
+        </span>
         {roles.map((r) => (
           <Button
             key={r.value}
@@ -479,7 +485,7 @@ export function SearchFilters({
               }
             }}
           >
-            {r.label}
+            <BilingualText en={r.label} el={r.labelEl} compact />
           </Button>
         ))}
       </div>

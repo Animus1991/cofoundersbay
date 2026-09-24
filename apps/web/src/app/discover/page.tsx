@@ -325,7 +325,13 @@ export default function DiscoverPage() {
         {/* Role filter chips - shown for search & suggestions tabs */}
         {activeTab !== 'matches' && (
           <div className="flex min-w-0 items-center gap-2 overflow-x-auto pt-1 scrollbar-hide -mx-1 px-1">
-            <Filter className="icon-sm shrink-0 text-muted-foreground" />
+            <Filter className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+            {/* Said in words because a second role row sits below it: this one
+                narrows the results already shown; "Search only" below changes
+                what the search asks for. Same roles, different jobs. */}
+            <span className="shrink-0 text-xs text-muted-foreground">
+              <BilingualText en="Show" el="Εμφάνιση" compact />
+            </span>
             {ROLE_FILTERS.map((rf) => {
               const RIcon = rf.icon;
               const isActive = roleFilter === rf.value;

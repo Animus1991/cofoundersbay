@@ -61,6 +61,10 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   /* Which section is open at full size. A section is legible in the panel
      and comfortable here; this is the second, not a substitute. */
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // The dialog opens from state, not from a Radix trigger, so Radix has no
+  // trigger to hand focus back to and it fell to <body> on close. The button
+  // that opened it is remembered and refocused instead.
+  const expandButton = useRef<HTMLButtonElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tell the frame a rail exists, so the main column reserves the strip and the
@@ -267,6 +271,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   </div>
                   <div className="flex shrink-0 items-center gap-0.5">
                   <button
+                    ref={expandButton}
                     type="button"
                     onClick={() => setExpandedId(active.id)}
                     className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
@@ -419,7 +424,13 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
         reading column that stays free the rest of the time.
       */}
       <Dialog open={expandedId != null} onOpenChange={(o) => !o && setExpandedId(null)}>
-        <DialogContent className="max-h-[85dvh] w-[min(92vw,48rem)] max-w-none overflow-y-auto">
+        <DialogContent
+          className="max-h-[85dvh] w-[min(92vw,48rem)] max-w-none overflow-y-auto"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            expandButton.current?.focus();
+          }}
+        >
           {expanded && (
             <>
               <DialogHeader>

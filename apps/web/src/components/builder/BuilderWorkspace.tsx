@@ -694,7 +694,10 @@ export function BuilderWorkspace({ onOpenStage }: { onOpenStage?: (tab: string) 
           <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-xl sm:w-auto">
             <TabsTrigger value="overview" className="min-h-10 gap-1.5 text-xs">
               <CfbGlyph name="builder" className="icon-sm" />
-              <BilingualText en={builderEn('tab_overview')} el={builderEl('tab_overview')} compact />
+              {/* "Summary", not "Overview": this row sits inside the page's own
+                  Overview tab, and two adjacent tabs called Overview that do
+                  different things read as one control drawn twice. */}
+              <BilingualText en="Summary" el="Σύνοψη" compact />
             </TabsTrigger>
             <TabsTrigger value="documents" className="min-h-10 gap-1.5 text-xs">
               <CfbGlyph name="book" className="icon-sm" />

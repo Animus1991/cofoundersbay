@@ -222,7 +222,9 @@ export default function EventsPage() {
                 <button onClick={() => refetch()} className="text-sm text-primary-accessible hover:underline">Try again</button>
               </div>
             ) : loading ? (
-              <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}>
+              // Three columns at most: at four, each card kept ~170px beside
+              // its date box and the host collided with the attendee count.
+              <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <EventCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
                 ))}
@@ -275,7 +277,7 @@ export default function EventsPage() {
                   staggerDelay={50}
                   className={cn(
                     'grid gap-4',
-                    viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1',
+                    viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1',
                   )}
                 >
                   {rest.map((event) => (

@@ -209,7 +209,12 @@ export function AppShell({
           {/* Stacks under a pinned rail: at that width a side-by-side header
               gives the title about 90px and the Ask AI bar the rest. */}
           <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6 group-data-[rail=pinned]/shell:lg:flex-col group-data-[rail=pinned]/shell:lg:gap-3">
-            <div className="flex min-w-0 flex-1 items-start gap-2.5">
+            {/* A floor for the title. The Ask AI bar asked for 57.5rem and would
+                not shrink, so at 1440px the title kept ~370px and 10 of 138
+                bilingual titles broke mid-phrase ("Founder dashboard · Πίνακας
+                / ελέγχου ιδρυτή"). Now the bar gives way down to 20rem before
+                the title does; at 1920px nothing changes. */}
+            <div className="flex min-w-0 flex-1 items-start gap-2.5 lg:min-w-[min(100%,42rem)] group-data-[rail=pinned]/shell:lg:min-w-0">
               <CfbGlyph
                 name={glyphForHref(pathname)}
                 className="mt-1 icon-md shrink-0 text-primary-accessible"
@@ -234,7 +239,7 @@ export function AppShell({
               </div>
             </div>
             {(showHelp || showAskAi) && (
-              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:shrink-0 lg:justify-end group-data-[rail=pinned]/shell:lg:w-full">
+              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:min-w-[20rem] lg:shrink lg:justify-end group-data-[rail=pinned]/shell:lg:w-full">
                 {showHelp && <PageContextualHelp compact defaultOpen={false} />}
                 {showAskAi && (
                   <AIComposer

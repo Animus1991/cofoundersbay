@@ -311,10 +311,12 @@ export function EventCard({
           
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
+            {/* Wraps rather than squeezing: in a narrow card the type badge used
+                to take the title's width and cut it to two words. */}
+            <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
               <Link
                 href={`/events/${event.id}`}
-                className="font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
+                className="min-w-0 flex-1 basis-32 font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
               >
                 {event.title}
               </Link>
@@ -338,17 +340,17 @@ export function EventCard({
             </div>
             
             {/* Host & attendees */}
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage src={event.hostAvatar || undefined} />
                   <AvatarFallback className="bg-primary/20 text-primary-accessible text-2xs">
                     {event.hostName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground">by {event.hostName}</span>
+                <span className="min-w-0 truncate text-xs text-muted-foreground">by {event.hostName}</span>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
                 {event.attendeesCount} attending
               </span>
             </div>
