@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -568,8 +569,207 @@ export function PitchDeckBuilder({
     return slide.title;
   };
 
+  /*
+   * What is about the deck, rather than in it.
+   *
+   * The twelve slides and the generate buttons are the page. A strip
+   * restating the deck's own metadata above them is not, and neither is the
+   * details form at the foot - company name, tagline, ask and use of funds
+   * are what the cover and the ask slide read from, which makes them
+   * settings for the deck rather than a slide in it.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'deck-summary',
+      glyph: 'chart',
+      labelEn: 'Deck summary',
+      labelEl: 'Σύνοψη deck',
+      content: (
+        <div className="space-y-3">
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="flex flex-col justify-center gap-3">
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <div className={BUILDER_STAT}>{completionPercentage.toFixed(0)}%</div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        <BilingualText en={builderEn('pitch_complete')} el={builderEl('pitch_complete')} compact />
+                      </p>
+                    </div>
+                    <p className="text-xs tabular-nums text-muted-foreground">
+                      {filledCount}/{Math.max(data.slides.length, SLIDE_TEMPLATES.length)}{' '}
+                      <BilingualText en={builderEn('pitch_filled')} el={builderEl('pitch_filled')} compact />
+                    </p>
+                  </div>
+                  <Progress value={completionPercentage} className="h-1.5" />
+                  <p className="text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={builderEn('pitch_complete_hint')} el={builderEl('pitch_complete_hint')} />
+                  </p>
+                </div>
+
+                <div className="flex flex-col justify-center gap-2">
+                  <Label className="text-xs text-muted-foreground">
+                    <BilingualText en={builderEn('pitch_deck_type')} el={builderEl('pitch_deck_type')} compact />
+                  </Label>
+                  <Select
+                    value={data.deckType}
+                    onValueChange={(value) =>
+                      setData((prev) => ({ ...prev, deckType: value as PitchDeckData['deckType'] }))
+                    }
+                  >
+                    <SelectTrigger
+                      className="h-8 min-h-8 w-full rounded-xl text-xs"
+                      aria-label={bilingualAria(builderEn('pitch_deck_type'), builderEl('pitch_deck_type'))}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DECK_TYPES.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {t(builderEn(item.labelKey), builderEl(item.labelKey))}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={builderEn(activeDeck.hintKey)} el={builderEl(activeDeck.hintKey)} />
+                  </p>
+                </div>
+
+                <div className="flex flex-col justify-center gap-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">
+                      <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
+                    </span>
+                    <span className="min-w-0 truncate font-medium">{data.companyName || '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">
+                      <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
+                    </span>
+                    <span className="min-w-0 truncate font-medium">{data.askAmount || '—'}</span>
+                  </div>
+                  <Button asChild variant="ghost" size="sm" className={`${BUILDER_BTN} justify-start px-0`}>
+                    <Link href="/readiness">
+                      <CfbGlyph name="award" className="icon-sm mr-1.5" />
+                      <BilingualText en={builderEn('pitch_readiness')} el={builderEl('pitch_readiness')} compact />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
+    {
+      id: 'deck-details',
+      glyph: 'briefcase',
+      labelEn: 'Deck details',
+      labelEl: 'Στοιχεία deck',
+      content: (
+        <div className="space-y-3">
+          <Card className="min-w-0">
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className={BUILDER_CARD_TITLE}>
+                <BilingualText en={builderEn('pitch_info')} el={builderEl('pitch_info')} compact />
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                <BilingualText en={builderEn('pitch_info_hint')} el={builderEl('pitch_info_hint')} />
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="min-w-0 space-y-1.5">
+                  <Label>
+                    <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
+                  </Label>
+                  <Input
+                    className="min-h-11 rounded-xl"
+                    value={data.companyName}
+                    onChange={(event) => setData((prev) => ({ ...prev, companyName: event.target.value }))}
+                    placeholder={t(builderEn('pitch_company_ph'), builderEl('pitch_company_ph'))}
+                  />
+                </div>
+                <div className="min-w-0 space-y-1.5">
+                  <Label>
+                    <BilingualText en={builderEn('pitch_tagline')} el={builderEl('pitch_tagline')} compact />
+                  </Label>
+                  <Input
+                    className="min-h-11 rounded-xl"
+                    value={data.tagline}
+                    onChange={(event) => setData((prev) => ({ ...prev, tagline: event.target.value }))}
+                    placeholder={t(builderEn('pitch_tagline_ph'), builderEl('pitch_tagline_ph'))}
+                  />
+                </div>
+                <div className="min-w-0 space-y-1.5">
+                  <Label>
+                    <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
+                  </Label>
+                  <Input
+                    className="min-h-11 rounded-xl"
+                    value={data.askAmount}
+                    onChange={(event) => setData((prev) => ({ ...prev, askAmount: event.target.value }))}
+                    placeholder={t(builderEn('pitch_ask_ph'), builderEl('pitch_ask_ph'))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>
+                  <BilingualText en={builderEn('pitch_use_funds')} el={builderEl('pitch_use_funds')} compact />
+                </Label>
+                {data.useOfFunds.map((line, index) => (
+                  <div key={`fund-${index}`} className="flex gap-2">
+                    <Input
+                      className="rounded-xl"
+                      value={line}
+                      onChange={(event) => {
+                        const next = [...data.useOfFunds];
+                        next[index] = event.target.value;
+                        setData((prev) => ({ ...prev, useOfFunds: next }));
+                      }}
+                      placeholder={t(builderEn('pitch_use_funds_ph'), builderEl('pitch_use_funds_ph'))}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-xl"
+                      aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
+                      onClick={() =>
+                        setData((prev) => ({
+                          ...prev,
+                          useOfFunds: prev.useOfFunds.filter((_, i) => i !== index),
+                        }))
+                      }
+                    >
+                      <X className="icon-sm" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={BUILDER_BTN}
+                  onClick={() => setData((prev) => ({ ...prev, useOfFunds: [...prev.useOfFunds, ''] }))}
+                >
+                  <BilingualText en={builderEn('pitch_add_use')} el={builderEl('pitch_add_use')} compact />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
+  ];
   return (
     <div className="min-w-0 space-y-6 overflow-x-clip">
+      {/* Declared and rendered here: this is a component, not a page, so
+          there is no AppShell to take a `rail` prop. PageRail is fixed, so
+          it lands exactly where that prop would have put it. */}
+      <PageRail sections={rail} />
       <BuilderStageHeader
         glyph="builder"
         titleEn={builderEn('tab_pitch')}
@@ -616,80 +816,6 @@ export function PitchDeckBuilder({
         }
       />
 
-      <Card>
-        <CardContent className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="flex flex-col justify-center gap-3">
-              <div className="flex items-end justify-between gap-3">
-                <div>
-                  <div className={BUILDER_STAT}>{completionPercentage.toFixed(0)}%</div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    <BilingualText en={builderEn('pitch_complete')} el={builderEl('pitch_complete')} compact />
-                  </p>
-                </div>
-                <p className="text-xs tabular-nums text-muted-foreground">
-                  {filledCount}/{Math.max(data.slides.length, SLIDE_TEMPLATES.length)}{' '}
-                  <BilingualText en={builderEn('pitch_filled')} el={builderEl('pitch_filled')} compact />
-                </p>
-              </div>
-              <Progress value={completionPercentage} className="h-1.5" />
-              <p className="text-xs leading-snug text-muted-foreground">
-                <BilingualText en={builderEn('pitch_complete_hint')} el={builderEl('pitch_complete_hint')} />
-              </p>
-            </div>
-
-            <div className="flex flex-col justify-center gap-2">
-              <Label className="text-xs text-muted-foreground">
-                <BilingualText en={builderEn('pitch_deck_type')} el={builderEl('pitch_deck_type')} compact />
-              </Label>
-              <Select
-                value={data.deckType}
-                onValueChange={(value) =>
-                  setData((prev) => ({ ...prev, deckType: value as PitchDeckData['deckType'] }))
-                }
-              >
-                <SelectTrigger
-                  className="h-8 min-h-8 w-full rounded-xl text-xs"
-                  aria-label={bilingualAria(builderEn('pitch_deck_type'), builderEl('pitch_deck_type'))}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DECK_TYPES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {t(builderEn(item.labelKey), builderEl(item.labelKey))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs leading-snug text-muted-foreground">
-                <BilingualText en={builderEn(activeDeck.hintKey)} el={builderEl(activeDeck.hintKey)} />
-              </p>
-            </div>
-
-            <div className="flex flex-col justify-center gap-3 text-sm">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">
-                  <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
-                </span>
-                <span className="min-w-0 truncate font-medium">{data.companyName || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">
-                  <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
-                </span>
-                <span className="min-w-0 truncate font-medium">{data.askAmount || '—'}</span>
-              </div>
-              <Button asChild variant="ghost" size="sm" className={`${BUILDER_BTN} justify-start px-0`}>
-                <Link href="/readiness">
-                  <CfbGlyph name="award" className="icon-sm mr-1.5" />
-                  <BilingualText en={builderEn('pitch_readiness')} el={builderEl('pitch_readiness')} compact />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {data.slides.length === 0 ? (
         <Card>
@@ -1043,96 +1169,6 @@ export function PitchDeckBuilder({
         </>
       )}
 
-      <Card className="min-w-0">
-        <CardHeader className="p-3 sm:p-6">
-          <CardTitle className={BUILDER_CARD_TITLE}>
-            <BilingualText en={builderEn('pitch_info')} el={builderEl('pitch_info')} compact />
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            <BilingualText en={builderEn('pitch_info_hint')} el={builderEl('pitch_info_hint')} />
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="min-w-0 space-y-1.5">
-              <Label>
-                <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
-              </Label>
-              <Input
-                className="min-h-11 rounded-xl"
-                value={data.companyName}
-                onChange={(event) => setData((prev) => ({ ...prev, companyName: event.target.value }))}
-                placeholder={t(builderEn('pitch_company_ph'), builderEl('pitch_company_ph'))}
-              />
-            </div>
-            <div className="min-w-0 space-y-1.5">
-              <Label>
-                <BilingualText en={builderEn('pitch_tagline')} el={builderEl('pitch_tagline')} compact />
-              </Label>
-              <Input
-                className="min-h-11 rounded-xl"
-                value={data.tagline}
-                onChange={(event) => setData((prev) => ({ ...prev, tagline: event.target.value }))}
-                placeholder={t(builderEn('pitch_tagline_ph'), builderEl('pitch_tagline_ph'))}
-              />
-            </div>
-            <div className="min-w-0 space-y-1.5">
-              <Label>
-                <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
-              </Label>
-              <Input
-                className="min-h-11 rounded-xl"
-                value={data.askAmount}
-                onChange={(event) => setData((prev) => ({ ...prev, askAmount: event.target.value }))}
-                placeholder={t(builderEn('pitch_ask_ph'), builderEl('pitch_ask_ph'))}
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>
-              <BilingualText en={builderEn('pitch_use_funds')} el={builderEl('pitch_use_funds')} compact />
-            </Label>
-            {data.useOfFunds.map((line, index) => (
-              <div key={`fund-${index}`} className="flex gap-2">
-                <Input
-                  className="rounded-xl"
-                  value={line}
-                  onChange={(event) => {
-                    const next = [...data.useOfFunds];
-                    next[index] = event.target.value;
-                    setData((prev) => ({ ...prev, useOfFunds: next }));
-                  }}
-                  placeholder={t(builderEn('pitch_use_funds_ph'), builderEl('pitch_use_funds_ph'))}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-xl"
-                  aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
-                  onClick={() =>
-                    setData((prev) => ({
-                      ...prev,
-                      useOfFunds: prev.useOfFunds.filter((_, i) => i !== index),
-                    }))
-                  }
-                >
-                  <X className="icon-sm" />
-                </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className={BUILDER_BTN}
-              onClick={() => setData((prev) => ({ ...prev, useOfFunds: [...prev.useOfFunds, ''] }))}
-            >
-              <BilingualText en={builderEn('pitch_add_use')} el={builderEl('pitch_add_use')} compact />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
