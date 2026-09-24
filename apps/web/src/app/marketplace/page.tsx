@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -243,6 +243,11 @@ const MARKETPLACE_STATS = [
 export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [search, setSearch] = useState('');
+  // ?q= seeds the search - a provider's "Preview" lands on their listing.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) setSearch(q);
+  }, []);
   const [sortBy, setSortBy] = useState('rating');
   const [availableOnly, setAvailableOnly] = useState(false);
 

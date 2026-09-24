@@ -39,6 +39,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -789,9 +790,21 @@ export default function CohortDetailPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Profile</DropdownMenuItem>
-                            <DropdownMenuItem>Send Message</DropdownMenuItem>
-                            <DropdownMenuItem>View Progress</DropdownMenuItem>
+                            {/* None had a handler. A participant's id is their
+                                user id (toParticipant), so profile and thread
+                                are addressable; progress is the row itself. */}
+                            <DropdownMenuItem asChild>
+                              <Link href={`/profiles/${participant.id}`}>View Profile</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/messages?to=${participant.id}`}>Send Message</Link>
+                            </DropdownMenuItem>
+                            <UnavailableMenuItem
+                              en="View Progress"
+                              el="Πρόοδος"
+                              reasonEn={participant.progress !== undefined ? `${participant.progress}% - no milestone breakdown yet.` : 'No progress is tracked for this participant yet.'}
+                              reasonEl={participant.progress !== undefined ? `${participant.progress}% - δεν υπάρχει ακόμη ανάλυση ορόσημων.` : 'Δεν καταγράφεται ακόμη πρόοδος για αυτό το μέλος.'}
+                            />
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

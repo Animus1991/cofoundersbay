@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS } from '@/lib/semantic-colors';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
@@ -111,19 +113,22 @@ function ReportCard({ report }: { report: ModerationReport }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Eye className="mr-2 icon-sm" />View Content</DropdownMenuItem>
-              <DropdownMenuItem><CheckCircle className="mr-2 icon-sm" />Mark Resolved</DropdownMenuItem>
-              <DropdownMenuItem><XCircle className="mr-2 icon-sm" />Dismiss</DropdownMenuItem>
-              <DropdownMenuItem><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible"><Ban className="mr-2 icon-sm" />Ban User</DropdownMenuItem>
+              {/* The queue is sample data (see the notice above the list):
+                  there is no group-report store behind it, so none of
+                  these can act, and each says so. */}
+              <UnavailableMenuItem icon={<Eye className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="View Content" el="Προβολή περιεχομένου" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+              <UnavailableMenuItem icon={<CheckCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Mark Resolved" el="Επίλυση" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+              <UnavailableMenuItem icon={<XCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Dismiss" el="Απόρριψη" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+              <UnavailableMenuItem icon={<UserX className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Remove Member" el="Αφαίρεση μέλους" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+              <UnavailableMenuItem className="text-destructive-accessible" icon={<Ban className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Ban User" el="Αποκλεισμός χρήστη" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         {report.status === 'pending' && (
           <div className="flex gap-2 mt-3">
-            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 icon-sm" />Resolve</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 icon-sm" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30"><Ban className="mr-1 icon-sm" />Ban User</Button>
+            <Button size="sm" variant="default" className="h-7 text-xs" disabled title="Sample report - group reports have no queue yet"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Resolve</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs" disabled title="Sample report - group reports have no queue yet"><XCircle className="mr-1 icon-sm" aria-hidden="true" />Dismiss</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30" disabled title="Sample report - group reports have no queue yet"><Ban className="mr-1 icon-sm" aria-hidden="true" />Ban User</Button>
           </div>
         )}
       </CardContent>
@@ -151,6 +156,11 @@ export default function GroupsModerationPage() {
       description="Review and action community reports. High-priority items are flagged first so nothing urgent slips through."
     >
       <div className="space-y-6">
+        <SampleDataNotice
+          surface="Community moderation"
+          detail="These reports are samples - reports filed against people are handled in the platform moderation queue (Admin -> Reports), and group-level reports have no store yet."
+          askAiPrompt="Where do I handle reports about a member of my community?"
+        />
         {/* Alert Banner */}
         {highPriority > 0 && (
           <Card className="border-status-danger-border/40 bg-status-danger-bg">

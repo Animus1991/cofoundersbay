@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   Users,
@@ -97,7 +98,8 @@ const MOCK_MEMBERS: OrgMember[] = [
   { id: '6', name: 'New Recruit', email: 'recruit@startup.com', role: 'viewer', department: undefined, joinedAt: '—', lastActive: '—', status: 'invited' },
 ];
 
-function MemberRow({ member }: { member: OrgMember }) {
+/** `live` rows carry user ids; `adminHref` is where memberships are managed. */
+function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boolean; adminHref: string | null }) {
   const roleCfg = ROLE_CONFIG[member.role];
   const RoleIcon = roleCfg.icon;
 
@@ -142,12 +144,33 @@ function MemberRow({ member }: { member: OrgMember }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</DropdownMenuItem>
-          <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
+          {/* None had a handler. Roles and removal are managed on the
+              organisation's admin page, which writes membership rows; this
+              directory lists cohort members by user id. */}
+          {adminHref ? (
+            <DropdownMenuItem asChild>
+              <Link href={adminHref}><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem disabled><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</DropdownMenuItem>
+          )}
+          {live ? (
+            <DropdownMenuItem asChild>
+              <Link href={`/messages?to=${member.id}`}><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive-accessible">
-            <UserMinus className="mr-2 icon-sm" />Remove Member
-          </DropdownMenuItem>
+          {adminHref ? (
+            <DropdownMenuItem asChild className="text-destructive-accessible">
+              <Link href={adminHref}><UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member</Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem disabled className="text-destructive-accessible">
+              <UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -242,7 +265,7 @@ export default function OrgMembersPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 {filtered.map(member => (
-                  <MemberRow key={member.id} member={member} />
+                  <MemberRow key={member.id} member={member} live={live.length > 0} adminHref={slug ? `/org/${slug}/admin` : null} />
                 ))}
                 {filtered.length === 0 && (
                   <EmptyOrgMembers filtersActive={filtersActive} onClearFilters={clearFilters} />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   FolderKanban, Search, Filter, Plus, MoreVertical,
@@ -11,7 +11,10 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
-import { listInvestorDeals, type InvestorDeal } from '@/lib/api';
+import { listInvestorDeals, updateInvestorDeal, type InvestorDeal } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,7 +64,20 @@ const PIPELINE_STAGES: { key: PipelineStage; label: string; color: string }[] = 
   { key: 'invested', label: 'Invested', color: 'bg-green-500' },
 ];
 
-function DealCard({ deal }: { deal: Deal }) {
+/** The next stage forward on the board; null at the end or once passed. */
+function nextStage(stage: PipelineStage): PipelineStage | null {
+  const order: PipelineStage[] = ['discovered', 'reviewing', 'meeting', 'due_diligence', 'negotiating', 'invested'];
+  const i = order.indexOf(stage);
+  return i >= 0 && i < order.length - 1 ? order[i + 1] : null;
+}
+
+type DealActions = {
+  /** Absent on demo rows: there is no deal behind them to move. */
+  onMove?: (deal: Deal, stage: PipelineStage) => void;
+};
+
+function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
+  const next = nextStage(deal.pipelineStage);
   return (
     <div className="p-3 rounded-lg border bg-card hover:shadow-md transition-all cursor-pointer group">
       <div className="flex items-start gap-3">
@@ -88,10 +104,31 @@ function DealCard({ deal }: { deal: Deal }) {
             <DropdownMenuItem asChild>
               <Link href={`/startups/${deal.id}`}>View Details</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Move to Next Stage</DropdownMenuItem>
-            <DropdownMenuItem>Schedule Meeting</DropdownMenuItem>
-            <DropdownMenuItem>Add Note</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive-accessible">Pass</DropdownMenuItem>
+            {/* Four items here had no handler. Move and Pass write the
+                deal's stage; notes live on the deal page, which also has
+                the full history. */}
+            <DropdownMenuItem
+              disabled={!onMove || !next}
+              onSelect={() => { if (onMove && next) onMove(deal, next); }}
+            >
+              Move to Next Stage{next ? ` (${next.replace('_', ' ')})` : ''}
+            </DropdownMenuItem>
+            <UnavailableMenuItem
+              en="Schedule Meeting"
+              el="Προγραμματισμός συνάντησης"
+              reasonEn="Meetings with founders are not scheduled in-app yet - message them from the deal page."
+              reasonEl="Οι συναντήσεις με ιδρυτές δεν προγραμματίζονται ακόμη εδώ - στείλτε μήνυμα από τη σελίδα της συμφωνίας."
+            />
+            <DropdownMenuItem asChild>
+              <Link href={`/startups/${deal.id}`}>Add Note</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive-accessible"
+              disabled={!onMove || deal.pipelineStage === 'passed'}
+              onSelect={() => onMove?.(deal, 'passed')}
+            >
+              Pass
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -193,6 +230,29 @@ export default function InvestorPipelinePage() {
     [dealsPage],
   );
   const deals = liveDeals.length > 0 ? liveDeals : showDemoData ? MOCK_DEALS : [];
+  const isLive = liveDeals.length > 0;
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
+
+  const moveDeal = async (deal: Deal, stage: PipelineStage) => {
+    if (stage === 'passed') {
+      const ok = await confirm({
+        title: `Pass on ${deal.name}?`,
+        description: 'It leaves the active pipeline. You can bring it back from its deal page.',
+        confirmLabel: 'Pass',
+      });
+      if (!ok) return;
+    }
+    try {
+      await updateInvestorDeal(deal.id, { pipelineStage: stage });
+      success('Deal moved', `${deal.name} → ${stage.replace('_', ' ')}`);
+    } catch (e) {
+      toastError('Could not move the deal', e instanceof Error ? e.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['investor'] });
+    }
+  };
 
   const totalPipelineValue = useMemo(() => deals.reduce((s, d) => s + (d.askAmount ?? 0), 0), [deals]);
   // Averaged over the deals that carry a score, not over all of them: dividing
@@ -298,7 +358,7 @@ export default function InvestorPipelinePage() {
                 </div>
                 <div className="space-y-2 min-h-[200px] p-2 rounded-lg bg-muted/30">
                   {stageDeals.map((deal) => (
-                    <DealCard key={deal.id} deal={deal} />
+                    <DealCard key={deal.id} deal={deal} onMove={isLive ? (d, st) => void moveDeal(d, st) : undefined} />
                   ))}
                   {stageDeals.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-8">

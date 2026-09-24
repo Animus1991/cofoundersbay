@@ -22,6 +22,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { getOrgCohorts, type CohortItem } from '@/lib/api';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -164,14 +165,24 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                   View Details
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                Edit Cohort
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible">
-                <Trash2 className="mr-2 icon-sm" />
-                Archive
-              </DropdownMenuItem>
+              {/* Neither had a handler. Cohort writes exist only on the
+                  platform-admin routes (PATCH/DELETE /admin/cohorts/:id), so
+                  an organisation cannot make them from here yet. */}
+              <UnavailableMenuItem
+                icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                en="Edit Cohort"
+                el="Επεξεργασία κοόρτης"
+                reasonEn="Cohorts are edited by platform administrators for now."
+                reasonEl="Οι κοόρτες επεξεργάζονται προς το παρόν από διαχειριστές πλατφόρμας."
+              />
+              <UnavailableMenuItem
+                className="text-destructive-accessible"
+                icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                en="Archive"
+                el="Αρχειοθέτηση"
+                reasonEn="Cohorts are archived by platform administrators for now."
+                reasonEl="Οι κοόρτες αρχειοθετούνται προς το παρόν από διαχειριστές πλατφόρμας."
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

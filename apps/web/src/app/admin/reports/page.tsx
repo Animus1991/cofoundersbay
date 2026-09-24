@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Flag,
   Search,
   AlertTriangle,
@@ -80,6 +83,10 @@ function toPageReport(row: AdminReportItem): Report {
     status: row.status === 'reviewed' ? 'reviewing' : row.status,
     priority: REPORT_PRIORITY[row.type] ?? 'low',
     createdAt: row.createdAt,
+    targetId: row.reported?.id,
+    reporterId: row.reporter?.id,
+    reporterEmail: row.reporter?.email,
+    context: row.context,
   };
 }
 
@@ -95,6 +102,11 @@ type Report = {
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed';
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
+  /** Live rows only: the reported and reporting accounts. */
+  targetId?: string;
+  reporterId?: string;
+  reporterEmail?: string;
+  context?: unknown;
 };
 
 type ResolveFn = (report: Report, resolution: 'resolved' | 'dismissed') => void;
@@ -102,7 +114,9 @@ type ResolveFn = (report: Report, resolution: 'resolved' | 'dismissed') => void;
 function ReportCard({
   report,
   onResolve,
+  onView,
 }: {
+  onView: (report: Report) => void;
   report: Report;
   /** Absent for the illustrative rows, which have nothing to write to. */
   onResolve?: ResolveFn;
@@ -166,9 +180,22 @@ function ReportCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>View Target</DropdownMenuItem>
-                    <DropdownMenuItem>Contact Reporter</DropdownMenuItem>
+                    {/* These three had no handler. */}
+                    <DropdownMenuItem onSelect={() => onView(report)}>View Details</DropdownMenuItem>
+                    {report.targetId ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/admin/user-detail/${report.targetId}`}>View Target</Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem disabled>View Target</DropdownMenuItem>
+                    )}
+                    {report.reporterEmail ? (
+                      <DropdownMenuItem asChild>
+                        <a href={`mailto:${report.reporterEmail}?subject=${encodeURIComponent(`Your report: ${report.reason}`)}`}>Contact Reporter</a>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem disabled>Contact Reporter</DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       className="text-status-success"
                       disabled={!onResolve || report.status === 'resolved'}
@@ -258,6 +285,7 @@ const SEED_REPORTS: Report[] = [
 
 export default function AdminReportsPage() {
   const [search, setSearch] = useState('');
+  const [viewing, setViewing] = useState<Report | null>(null);
   const [type, setType] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('pending');
 
@@ -381,7 +409,7 @@ export default function AdminReportsPage() {
         {/* Reports List */}
         <div className="space-y-3">
           {filteredReports.map((report) => (
-            <ReportCard key={report.id} report={report} onResolve={isLive ? onResolve : undefined} />
+            <ReportCard key={report.id} report={report} onResolve={isLive ? onResolve : undefined} onView={setViewing} />
           ))}
           {filteredReports.length === 0 && (
             <Card>
@@ -396,6 +424,42 @@ export default function AdminReportsPage() {
           )}
         </div>
       </div>
+      <Dialog open={viewing !== null} onOpenChange={(o) => { if (!o) setViewing(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{viewing?.reason}</DialogTitle>
+            <DialogDescription>
+              {viewing ? `${viewing.reporterName} reported ${viewing.targetName}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          {viewing && (
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Type</dt>
+              <dd className="capitalize">{viewing.type}</dd>
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="capitalize">{viewing.status}</dd>
+              <dt className="text-muted-foreground">Priority</dt>
+              <dd className="capitalize">{viewing.priority}</dd>
+              <dt className="text-muted-foreground">Filed</dt>
+              <dd>{new Date(viewing.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })} UTC</dd>
+              {viewing.description && (
+                <>
+                  <dt className="col-span-2 text-muted-foreground">Description</dt>
+                  <dd className="col-span-2 whitespace-pre-line">{viewing.description}</dd>
+                </>
+              )}
+              {viewing.context != null && (
+                <>
+                  <dt className="col-span-2 text-muted-foreground">Context</dt>
+                  <dd className="col-span-2">
+                    <pre tabIndex={0} className="max-h-48 overflow-auto rounded-lg bg-muted/40 p-2 text-xs">{JSON.stringify(viewing.context, null, 2)}</pre>
+                  </dd>
+                </>
+              )}
+            </dl>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

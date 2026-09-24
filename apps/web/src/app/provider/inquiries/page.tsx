@@ -17,10 +17,11 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
-import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
+import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,9 +48,18 @@ type Inquiry = {
   receivedAt: string;
   status: 'new' | 'replied' | 'converted' | 'declined';
   budget?: string;
+  /** The requester's user id on live rows; Reply and View Profile use it. */
+  clientId?: string;
 };
 
-function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+function InquiryCard({
+  inquiry,
+  onStatus,
+}: {
+  inquiry: Inquiry;
+  /** Absent on sample rows: there is no inquiry behind them to update. */
+  onStatus?: (inquiry: Inquiry, status: 'in_discussion' | 'accepted' | 'declined') => void;
+}) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
     new: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Mail },
     replied: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock },
@@ -93,10 +103,39 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Reply</DropdownMenuItem>
-                    <DropdownMenuItem>Mark as Converted</DropdownMenuItem>
-                    <DropdownMenuItem>View Profile</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-accessible">Decline</DropdownMenuItem>
+                    {/* All four had no handler. Replying opens a thread with the
+                        client and moves the inquiry into discussion; converting
+                        accepts it; the statuses are the API's own. */}
+                    <DropdownMenuItem
+                      disabled={!inquiry.clientId}
+                      onSelect={() => {
+                        if (!inquiry.clientId) return;
+                        onStatus?.(inquiry, 'in_discussion');
+                        window.location.assign(`/messages?to=${inquiry.clientId}`);
+                      }}
+                    >
+                      Reply
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!onStatus || inquiry.status === 'converted'}
+                      onSelect={() => onStatus?.(inquiry, 'accepted')}
+                    >
+                      Mark as Converted
+                    </DropdownMenuItem>
+                    {inquiry.clientId ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/profiles/${inquiry.clientId}`}>View Profile</Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem disabled>View Profile</DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      className="text-destructive-accessible"
+                      disabled={!onStatus || inquiry.status === 'declined'}
+                      onSelect={() => onStatus?.(inquiry, 'declined')}
+                    >
+                      Decline
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -142,6 +181,7 @@ function toPageInquiry(row: ServiceInquiryItem): Inquiry {
   return {
     id: row.id,
     clientName: row.client?.displayName ?? 'Someone',
+    clientId: row.client?.id,
     clientAvatar: row.client?.avatarUrl ?? undefined,
     service: row.offer.title,
     message: row.message,
@@ -224,6 +264,18 @@ export default function ProviderInquiriesPage() {
   });
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toPageInquiry), [data]);
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const setStatus = async (inq: Inquiry, status: 'in_discussion' | 'accepted' | 'declined') => {
+    try {
+      await updateServiceInquiry(inq.id, { status });
+      if (status !== 'in_discussion') success(status === 'accepted' ? 'Marked as converted' : 'Inquiry declined', inq.clientName);
+    } catch (e) {
+      toastError('Could not update the inquiry', e instanceof Error ? e.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['provider', 'inquiries'] });
+    }
+  };
   const inquiries =
     live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_INQUIRIES : [];
 
@@ -303,7 +355,7 @@ export default function ProviderInquiriesPage() {
 
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filteredInquiries.map((inquiry) => (
-              <InquiryCard key={inquiry.id} inquiry={inquiry} />
+              <InquiryCard key={inquiry.id} inquiry={inquiry} onStatus={live.length > 0 ? (i, st) => void setStatus(i, st) : undefined} />
             ))}
             {filteredInquiries.length === 0 && (
               <Card>

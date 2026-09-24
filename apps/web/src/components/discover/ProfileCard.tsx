@@ -30,6 +30,8 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 
 export type ProfileCardData = {
   id: string;
@@ -112,6 +114,25 @@ function ProfileCardInner({
   className,
 }: ProfileCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
+  const [reporting, setReporting] = useState(false);
+  const { success, error: toastError } = useToast();
+
+  // "Share profile" and "Report" had no handler.
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profiles/${profile.userId}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: profile.displayName, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      success('Profile link copied');
+    } catch (e) {
+      // A dismissed share sheet is not an error worth reporting.
+      if (e instanceof Error && e.name === 'AbortError') return;
+      toastError('Could not share', 'The browser refused the share or clipboard request.');
+    }
+  };
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
@@ -308,8 +329,8 @@ function ProfileCardInner({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Share2 className="icon-sm mr-2" />
+                  <DropdownMenuItem onSelect={() => void shareProfile()}>
+                    <Share2 className="icon-sm mr-2" aria-hidden="true" />
                     Share profile
                   </DropdownMenuItem>
                   {profile.linkedinUrl && (
@@ -321,12 +342,21 @@ function ProfileCardInner({
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive-accessible">
-                    <Flag className="icon-sm mr-2" />
+                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => setReporting(true)}>
+                    <Flag className="icon-sm mr-2" aria-hidden="true" />
                     Report
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {reporting && (
+                <ReportBlockModal
+                  open
+                  onOpenChange={setReporting}
+                  userId={profile.userId}
+                  userName={profile.displayName}
+                  mode="report"
+                />
+              )}
             </div>
           </div>
         </CardContent>

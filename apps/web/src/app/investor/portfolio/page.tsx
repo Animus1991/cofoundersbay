@@ -28,6 +28,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -122,6 +123,22 @@ const MOCK_INVESTMENTS: Investment[] = [
   { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: 'Oct 2024', amount: '$50K', currentValue: '$250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: '2026-03-18T09:00:00.000Z' },
 ];
 
+/** One investment as a one-row CSV - what "Export Report" hands over. */
+function exportInvestment(inv: Investment) {
+  const cell = (v: string | number) => {
+    const t = String(v);
+    return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
+  };
+  const header = ['name', 'industry', 'stage', 'status', 'invested_at', 'amount', 'current_value', 'return_pct', 'team_size', 'last_update'];
+  const row = [inv.name, inv.industry, inv.stage, inv.status, inv.investedAt, inv.amount, inv.currentValue, inv.returnPct, inv.teamSize, inv.lastUpdate].map(cell);
+  const url = URL.createObjectURL(new Blob([`${header.join(',')}\n${row.join(',')}`], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${inv.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-report.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function InvestmentCard({ investment }: { investment: Investment }) {
   const statusColors: Record<string, string> = {
     active: 'bg-status-success-bg text-status-success border-status-success-border',
@@ -164,9 +181,18 @@ function InvestmentCard({ investment }: { investment: Investment }) {
                   <DropdownMenuItem asChild>
                     <Link href={`/startups/${investment.id}`}>View Startup</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>View Documents</DropdownMenuItem>
-                  <DropdownMenuItem>Add Update</DropdownMenuItem>
-                  <DropdownMenuItem>Export Report</DropdownMenuItem>
+                  {/* These three had no handler. Updates are events on the
+                      deal, added from its page; the report is this row. */}
+                  <UnavailableMenuItem
+                    en="View Documents"
+                    el="Έγγραφα"
+                    reasonEn="Portfolio documents have no storage yet."
+                    reasonEl="Τα έγγραφα χαρτοφυλακίου δεν έχουν ακόμη αποθήκευση."
+                  />
+                  <DropdownMenuItem asChild>
+                    <Link href={`/startups/${investment.id}`}>Add Update</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => exportInvestment(investment)}>Export Report</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

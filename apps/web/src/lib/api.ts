@@ -3160,6 +3160,31 @@ export async function createMarketplaceService(body: {
   });
 }
 
+/** PATCH /marketplace/:id - owner (or admin) only, enforced server-side. */
+export async function updateMarketplaceService(
+  id: string,
+  body: Partial<{
+    title: string;
+    description: string;
+    category: MarketplaceCategory;
+    pricing: string;
+    contactUrl: string;
+    websiteUrl: string;
+    tags: string[];
+    isActive: boolean;
+  }>,
+): Promise<{ service: MarketplaceServiceItem }> {
+  return apiRequest(`/api/marketplace/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+/** DELETE /marketplace/:id - owner (or admin) only, enforced server-side. */
+export async function deleteMarketplaceService(id: string): Promise<{ ok?: boolean }> {
+  return apiRequest(`/api/marketplace/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
 // ─────────────────────────────────────────────────────────────────
 // Admin API (Extended)
 // ─────────────────────────────────────────────────────────────────

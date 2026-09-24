@@ -33,7 +33,9 @@ import {
   createInvestorDeal,
   deleteInvestorDeal,
   listInvestorDeals,
+  updateInvestorDeal,
 } from '@/lib/api';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -129,6 +131,33 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     toggle.mutate();
   };
 
+  // "Add to Pipeline" had no handler. It is the watchlist add with the deal
+  // placed at Reviewing - or, when the startup is already watched, that
+  // deal moved to Reviewing.
+  const addToPipeline = useMutation({
+    mutationFn: async () => {
+      if (existing) {
+        await updateInvestorDeal(existing.id, { pipelineStage: 'reviewing' });
+        return;
+      }
+      await createInvestorDeal({
+        name: startup.name,
+        tagline: startup.tagline,
+        industry: startup.industry,
+        location: startup.location,
+        companyStage: startup.stage,
+        teamSize: startup.teamSize,
+        tags: startup.tags,
+        pipelineStage: 'reviewing',
+      });
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['investor'] });
+      success('Added to your pipeline', `${startup.name} is in Reviewing.`);
+    },
+    onError: (err) => showError('Could not add to the pipeline', err instanceof Error ? err.message : undefined),
+  });
+
   return (
     <Card className={cn('transition-all hover:shadow-md hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
       <CardContent className="p-4">
@@ -163,15 +192,30 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/startups/${startup.id}`}><Eye className="mr-2 icon-sm" />View Details</Link>
+                      {/* A startup already on the board opens its deal. */}
+                      <Link href={`/startups/${existing?.id ?? startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" />View Details</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem><GanttChart className="mr-2 icon-sm" />Add to Pipeline</DropdownMenuItem>
+                    <DropdownMenuItem disabled={addToPipeline.isPending} onSelect={() => addToPipeline.mutate()}>
+                      <GanttChart className="mr-2 icon-sm" aria-hidden="true" />Add to Pipeline
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setInWatchlist()}>
                       <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem><MessageCircle className="mr-2 icon-sm" />Request Intro</DropdownMenuItem>
-                    <DropdownMenuItem><GitCompare className="mr-2 icon-sm" />Compare</DropdownMenuItem>
+                    <UnavailableMenuItem
+                      icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                      en="Request Intro"
+                      el="Αίτημα γνωριμίας"
+                      reasonEn="Scouted startups are not linked to founder accounts yet."
+                      reasonEl="Οι startups της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών."
+                    />
+                    <UnavailableMenuItem
+                      icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                      en="Compare"
+                      el="Σύγκριση"
+                      reasonEn="Startup comparison is not built yet."
+                      reasonEl="Η σύγκριση startups δεν υπάρχει ακόμη."
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

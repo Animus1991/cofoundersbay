@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
@@ -267,6 +268,7 @@ function PostCard({
   onComment,
   onShare,
   onView,
+  onReport,
 }: {
   post: FeedPost;
   onLike: () => void;
@@ -274,6 +276,8 @@ function PostCard({
   onComment: () => void;
   onShare: () => void;
   onView?: () => void;
+  /** Opens the report dialog for the post's author. */
+  onReport: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -296,7 +300,11 @@ function PostCard({
 
 
   return (
-    <Card className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow">
+    <Card
+      id={`post-${post.id}`}
+      tabIndex={-1}
+      className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
+    >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
@@ -351,13 +359,14 @@ function PostCard({
                 <Bookmark className="icon-sm mr-2" />
                 {post.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link2 className="icon-sm mr-2" />
+              {/* Copy Link and Report had no handler. */}
+              <DropdownMenuItem onSelect={onShare}>
+                <Link2 className="icon-sm mr-2" aria-hidden="true" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive-accessible">
-                <Flag className="icon-sm mr-2" />
+              <DropdownMenuItem className="text-destructive-accessible" onSelect={onReport}>
+                <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -432,15 +441,21 @@ function PostCard({
                 <AvatarFallback className="text-xs">ME</AvatarFallback>
               </Avatar>
               <div className="flex-1 flex gap-2">
+                {/* The page passed onComment={() => {}}: Send cleared the
+                    box and nothing was stored - there is no comment route
+                    for feed posts. Until there is, the box says so instead
+                    of swallowing what someone wrote. */}
                 <Textarea
-                  placeholder="Write a comment..."
+                  placeholder={bilingualInline('Comments on feed posts are not saved yet', 'Τα σχόλια σε δημοσιεύσεις δεν αποθηκεύονται ακόμη')}
+                  aria-label={bilingualAria('Comment', 'Σχόλιο')}
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   className="min-h-[60px] resize-none"
+                  disabled
                 />
                 <Button aria-label={bilingualAria('Post comment', 'Δημοσίευση σχολίου')}
                   size="sm"
-                  disabled={!commentText.trim()}
+                  disabled
                   onClick={() => {
                     onComment();
                     setCommentText('');
@@ -705,8 +720,26 @@ export default function FeedPage() {
     success('Bookmark updated');
   };
 
+  const [reporting, setReporting] = useState<{ id: string; name: string } | null>(null);
+
+  // A shared link is /feed?post=<id>: bring that post into view and mark it,
+  // once it is in the list.
+  const [linkedPost, setLinkedPost] = useState<string | null>(null);
+  useEffect(() => {
+    setLinkedPost(new URLSearchParams(window.location.search).get('post'));
+  }, []);
+  useEffect(() => {
+    if (!linkedPost) return;
+    const el = document.getElementById(`post-${linkedPost}`);
+    if (!el) return;
+    el.setAttribute('data-linked', 'true');
+    el.scrollIntoView({ block: 'start' });
+    el.focus({ preventScroll: true });
+  });
+
   const handleShare = (postId: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/feed/post/${postId}`);
+    // Was /feed/post/:id, which does not exist. The feed scrolls to ?post=.
+    navigator.clipboard.writeText(`${window.location.origin}/feed?post=${encodeURIComponent(postId)}`);
     success('Link copied to clipboard!');
     
     // Record interaction
@@ -887,6 +920,7 @@ export default function FeedPage() {
                   onComment={() => {}}
                   onShare={() => handleShare(post.id)}
                   onView={() => handlePostView(post.id)}
+                  onReport={() => setReporting({ id: post.author.id, name: post.author.displayName })}
                 />
               ))}
             </div>
@@ -911,6 +945,15 @@ export default function FeedPage() {
             )}
         </div>
       </div>
+      {reporting && (
+        <ReportBlockModal
+          open
+          onOpenChange={(open) => { if (!open) setReporting(null); }}
+          userId={reporting.id}
+          userName={reporting.name}
+          mode="report"
+        />
+      )}
     </AppShell>
   );
 }

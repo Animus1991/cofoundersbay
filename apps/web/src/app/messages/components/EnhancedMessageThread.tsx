@@ -1,5 +1,7 @@
 'use client';
 
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -90,6 +92,7 @@ export function EnhancedMessageThread({
   const [showSearch, setShowSearch] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
+  const [reporting, setReporting] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -200,15 +203,19 @@ export function EnhancedMessageThread({
                 <Archive className="icon-sm mr-2" aria-hidden="true" />
                 Archive conversation
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem disabled={!otherParticipant} onSelect={() => setReporting(true)}>
                 <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive-accessible">
-                <Trash2 className="icon-sm mr-2" />
-                Delete conversation
-              </DropdownMenuItem>
+              <UnavailableMenuItem
+                className="text-destructive-accessible"
+                icon={<Trash2 className="icon-sm mr-2 mt-0.5" aria-hidden="true" />}
+                en="Delete conversation"
+                el="Διαγραφή συνομιλίας"
+                reasonEn="Conversations can be archived, not deleted."
+                reasonEl="Οι συνομιλίες αρχειοθετούνται, δεν διαγράφονται."
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -338,14 +345,17 @@ export function EnhancedMessageThread({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => void navigator.clipboard?.writeText(message.content)}>
                           <Copy className="icon-sm mr-2" aria-hidden="true" />
                           Copy
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Forward className="icon-sm mr-2" aria-hidden="true" />
-                          Forward
-                        </DropdownMenuItem>
+                        <UnavailableMenuItem
+                          icon={<Forward className="icon-sm mr-2 mt-0.5" aria-hidden="true" />}
+                          en="Forward"
+                          el="Προώθηση"
+                          reasonEn="Forwarding messages is not supported yet."
+                          reasonEl="Η προώθηση μηνυμάτων δεν υποστηρίζεται ακόμη."
+                        />
                         {isOwn && (
                           <>
                             <DropdownMenuSeparator />
@@ -486,6 +496,15 @@ export function EnhancedMessageThread({
           </Button>
         </div>
       </div>
+      {reporting && otherParticipant && (
+        <ReportBlockModal
+          open
+          onOpenChange={setReporting}
+          userId={otherParticipant.id}
+          userName={otherParticipant.name}
+          mode="report"
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getMyGroups, deleteGroup } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import Link from 'next/link';
 import {
   Users,
@@ -63,7 +69,12 @@ const MOCK_GROUPS: ManagedGroup[] = [
   { id: '4', name: 'CleanTech Builders', description: 'Founders working on climate and sustainability', category: 'CleanTech', privacy: 'public', memberCount: 234, postCount: 78, role: 'admin', isActive: false, lastActivity: '1 week ago' },
 ];
 
-function GroupCard({ group }: { group: ManagedGroup }) {
+type GroupActions = {
+  onInvite: (g: ManagedGroup) => void;
+  onDelete: (g: ManagedGroup) => void;
+};
+
+function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & GroupActions) {
   const privacyCfg = PRIVACY_CONFIG[group.privacy];
   const PrivacyIcon = privacyCfg.icon;
 
@@ -114,11 +125,31 @@ function GroupCard({ group }: { group: ManagedGroup }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Group</DropdownMenuItem>
-                <DropdownMenuItem><UserPlus className="mr-2 icon-sm" />Invite Members</DropdownMenuItem>
-                <DropdownMenuItem><Settings className="mr-2 icon-sm" />Group Settings</DropdownMenuItem>
+                {/* All four had no handler. Editing and settings happen on
+                    the group itself; inviting shares its link; deleting is
+                    the owner's, and the server enforces that. */}
+                <DropdownMenuItem asChild>
+                  <Link href={`/groups/${group.id}`}><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Group</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onInvite(group)}><UserPlus className="mr-2 icon-sm" aria-hidden="true" />Invite Members</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/groups/${group.id}?section=members`}><Settings className="mr-2 icon-sm" aria-hidden="true" />Group Settings</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete Group</DropdownMenuItem>
+                {group.role === 'owner' ? (
+                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(group)}>
+                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete Group
+                  </DropdownMenuItem>
+                ) : (
+                  <UnavailableMenuItem
+                    className="text-destructive-accessible"
+                    icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                    en="Delete Group"
+                    el="Διαγραφή ομάδας"
+                    reasonEn="Only the owner can delete a group."
+                    reasonEl="Μόνο ο ιδιοκτήτης μπορεί να διαγράψει μια ομάδα."
+                  />
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -130,13 +161,76 @@ function GroupCard({ group }: { group: ManagedGroup }) {
 
 export default function ManageGroupsPage() {
   const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
 
-  const filtered = MOCK_GROUPS.filter(g =>
+  // The groups the viewer runs, from GET /groups/my; this list was a fixed
+  // array. Plain membership is not management, so members are left out.
+  const { data, isLoading } = useQuery({
+    queryKey: ['groups', 'my'],
+    queryFn: getMyGroups,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const live: ManagedGroup[] = useMemo(
+    () =>
+      (data?.groups ?? [])
+        .filter((g) => g.memberRole === 'owner' || g.memberRole === 'admin' || g.memberRole === 'moderator')
+        .map((g) => ({
+          id: g.id,
+          name: g.name,
+          description: g.description ?? '',
+          category: g.category ?? '\u2014',
+          privacy: g.privacy,
+          memberCount: g.memberCount,
+          postCount: g.postCount,
+          role: g.memberRole as ManagedGroup['role'],
+          isActive: true,
+          lastActivity: new Date(g.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }),
+        })),
+    [data],
+  );
+  const showingSample = !isLoading && live.length === 0;
+  const groups: ManagedGroup[] = live.length > 0 ? live : isLoading ? [] : MOCK_GROUPS;
+
+  const actions: GroupActions = {
+    onInvite: async (g) => {
+      try {
+        await navigator.clipboard.writeText(`${window.location.origin}/groups/${g.id}`);
+        success('Invite link copied', `Anyone with the link can find ${g.name}${g.privacy === 'public' ? ' and join' : ' and request to join'}.`);
+      } catch {
+        toastError('Could not copy', 'The browser refused clipboard access.');
+      }
+    },
+    onDelete: async (g) => {
+      if (showingSample) {
+        toastError('Nothing to delete', 'These are sample communities until you run one.');
+        return;
+      }
+      const ok = await confirm({
+        title: `Delete ${g.name}?`,
+        description: 'The group, its posts and its member list are removed. This cannot be undone.',
+        confirmLabel: 'Delete group',
+      });
+      if (!ok) return;
+      try {
+        await deleteGroup(g.id);
+        success('Group deleted', g.name);
+      } catch (e) {
+        toastError('Could not delete the group', e instanceof Error ? e.message : undefined);
+      } finally {
+        void queryClient.invalidateQueries({ queryKey: ['groups'] });
+      }
+    },
+  };
+
+  const filtered = groups.filter(g =>
     !search || g.name.toLowerCase().includes(search.toLowerCase()) || g.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalMembers = MOCK_GROUPS.reduce((s, g) => s + g.memberCount, 0);
-  const pendingTotal = MOCK_GROUPS.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
+  const totalMembers = groups.reduce((s, g) => s + g.memberCount, 0);
+  const pendingTotal = groups.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
 
   return (
     <AppShell
@@ -152,10 +246,17 @@ export default function ManageGroupsPage() {
       )}
     >
       <div className="space-y-6">
+        {showingSample && (
+          <SampleDataNotice
+            surface="Manage communities"
+            detail="You do not run a community yet, so these are samples that show the layout."
+            askAiPrompt="How do I start and run a community on CoFounderBay?"
+          />
+        )}
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
-            { label: 'Groups Managed', value: MOCK_GROUPS.length },
+            { label: 'Groups Managed', value: groups.length },
             { label: 'Total Members', value: totalMembers.toLocaleString('en-GB') },
             { label: 'Pending Requests', value: pendingTotal },
           ].map(stat => (
@@ -177,7 +278,7 @@ export default function ManageGroupsPage() {
         {/* Groups */}
         <div className="space-y-3">
           {filtered.map(group => (
-            <GroupCard key={group.id} group={group} />
+            <GroupCard key={group.id} group={group} {...actions} />
           ))}
           {filtered.length === 0 && (
             search ? (

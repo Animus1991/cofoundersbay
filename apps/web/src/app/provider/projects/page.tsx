@@ -15,10 +15,16 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
-import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
+import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,6 +53,7 @@ function toProject(row: ServiceInquiryItem): Project {
   return {
     id: row.id,
     clientName: row.client?.displayName ?? 'A client',
+    clientId: row.client?.id,
     clientAvatar: row.client?.avatarUrl ?? undefined,
     service: row.offer.title,
     status: row.status === 'completed' ? 'completed' : 'active',
@@ -77,9 +84,17 @@ type Project = {
   dueDate: string;
   lastUpdate: string;
   amount: string;
+  /** The client's user id on live rows. */
+  clientId?: string;
 };
 
-function ProjectCard({ project }: { project: Project }) {
+type ProjectActions = {
+  onView: (p: Project) => void;
+  /** Absent on sample rows. */
+  onComplete?: (p: Project) => void;
+};
+
+function ProjectCard({ project, onView, onComplete }: { project: Project } & ProjectActions) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
     active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Clock },
     completed: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: CheckCircle },
@@ -118,10 +133,29 @@ function ProjectCard({ project }: { project: Project }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>View Details</DropdownMenuItem>
-                  <DropdownMenuItem>Update Progress</DropdownMenuItem>
-                  <DropdownMenuItem>Message Client</DropdownMenuItem>
-                  <DropdownMenuItem>Mark Complete</DropdownMenuItem>
+                  {/* All four had no handler. A project is an accepted service
+                      inquiry: it can be completed (status 'completed'), and
+                      its client messaged; it has no progress field to set. */}
+                  <DropdownMenuItem onSelect={() => onView(project)}>View Details</DropdownMenuItem>
+                  <UnavailableMenuItem
+                    en="Update Progress"
+                    el="Ενημέρωση προόδου"
+                    reasonEn="Projects do not track progress yet."
+                    reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο."
+                  />
+                  {project.clientId ? (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/messages?to=${project.clientId}`}>Message Client</Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem disabled>Message Client</DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    disabled={!onComplete || project.status === 'completed'}
+                    onSelect={() => onComplete?.(project)}
+                  >
+                    Mark Complete
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -242,6 +276,26 @@ export default function ProviderProjectsPage() {
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toProject), [data]);
   const projects: Project[] = live.length > 0 ? live : isLoading ? [] : SEED_PROJECTS;
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
+  const [viewing, setViewing] = useState<Project | null>(null);
+  const complete = async (p: Project) => {
+    const ok = await confirm({
+      title: `Mark the project for ${p.clientName} complete?`,
+      description: 'The client can then leave a review.',
+      confirmLabel: 'Mark complete',
+    });
+    if (!ok) return;
+    try {
+      await updateServiceInquiry(p.id, { status: 'completed' });
+      success('Project completed', p.clientName);
+    } catch (e) {
+      toastError('Could not complete the project', e instanceof Error ? e.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['provider', 'projects'] });
+    }
+  };
 
 
   const filteredProjects = projects.filter((p) => {
@@ -289,7 +343,7 @@ export default function ProviderProjectsPage() {
 
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} onView={setViewing} onComplete={live.length > 0 ? (pr) => void complete(pr) : undefined} />
             ))}
             {filteredProjects.length === 0 && (
               <Card>
@@ -305,6 +359,26 @@ export default function ProviderProjectsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <Dialog open={viewing !== null} onOpenChange={(o) => { if (!o) setViewing(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{viewing?.service}</DialogTitle>
+            <DialogDescription>{viewing?.clientName}{viewing?.clientCompany ? ` · ${viewing.clientCompany}` : ''}</DialogDescription>
+          </DialogHeader>
+          {viewing && (
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="capitalize">{viewing.status.replace('_', ' ')}</dd>
+              <dt className="text-muted-foreground">Agreed price</dt>
+              <dd>{viewing.amount || '\u2014'}</dd>
+              <dt className="text-muted-foreground">Started</dt>
+              <dd><RelativeTime date={viewing.startDate} format={formatRelativeTime} /></dd>
+              <dt className="text-muted-foreground">Last update</dt>
+              <dd><RelativeTime date={viewing.lastUpdate} format={formatRelativeTime} /></dd>
+            </dl>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

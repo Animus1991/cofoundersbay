@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn } from '@/lib/utils';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
@@ -193,10 +194,15 @@ export function PostCard({
                       <Flag className="icon-sm mr-2" />
                       Report post
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <UserMinus className="icon-sm mr-2" />
-                      Unfollow {author.displayName}
-                    </DropdownMenuItem>
+                    {/* No follow relationship exists in the API, so there is
+                        nothing to undo; the item says so instead of closing. */}
+                    <UnavailableMenuItem
+                      icon={<UserMinus className="icon-sm mr-2 mt-0.5" aria-hidden="true" />}
+                      en={`Unfollow ${author.displayName}`}
+                      el={`Άρση ακολούθησης: ${author.displayName}`}
+                      reasonEn="Following people is not supported yet."
+                      reasonEl="Η ακολούθηση ατόμων δεν υποστηρίζεται ακόμη."
+                    />
                   </>
                 )}
               </DropdownMenuContent>

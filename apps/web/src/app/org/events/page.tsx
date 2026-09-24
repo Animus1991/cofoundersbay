@@ -19,8 +19,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { useQuery } from '@tanstack/react-query';
-import { listEvents, type EventItem } from '@/lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createEvent, listEvents, type EventItem } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -174,7 +176,7 @@ const MOCK_EVENTS: OrgEvent[] = [
   },
 ];
 
-function EventCard({ event }: { event: OrgEvent }) {
+function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: OrgEvent) => void }) {
   const typeCfg = TYPE_CONFIG[event.type];
   const statusCfg = STATUS_CONFIG[event.status];
   const typeColors = STATUS[typeCfg.tone];
@@ -231,10 +233,31 @@ function EventCard({ event }: { event: OrgEvent }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Duplicate</DropdownMenuItem>
-              <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" />View Public Page</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+              {/* None of these had a handler. EventsController serves create
+                  and read but no update or delete, so Edit and Delete say
+                  so; Duplicate re-creates the event a week later; the public
+                  page is /events/:id. */}
+              <UnavailableMenuItem
+                icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                en="Edit"
+                el="Επεξεργασία"
+                reasonEn="Events cannot be edited after creation yet."
+                reasonEl="Οι εκδηλώσεις δεν επεξεργάζονται ακόμη μετά τη δημιουργία."
+              />
+              <DropdownMenuItem disabled={!onDuplicate} onSelect={() => onDuplicate?.(event)}>
+                <Copy className="mr-2 icon-sm" aria-hidden="true" />Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/events/${event.id}`}><ExternalLink className="mr-2 icon-sm" aria-hidden="true" />View Public Page</Link>
+              </DropdownMenuItem>
+              <UnavailableMenuItem
+                className="text-destructive-accessible"
+                icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                en="Delete"
+                el="Διαγραφή"
+                reasonEn="Events cannot be deleted yet."
+                reasonEl="Οι εκδηλώσεις δεν διαγράφονται ακόμη."
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -256,6 +279,33 @@ export default function OrgEventsPage() {
 
   const live = useMemo(() => (data?.events ?? []).map(toOrgEvent), [data]);
   const events = live.length > 0 ? live : isLoading ? [] : MOCK_EVENTS;
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+
+  const duplicate = async (e: OrgEvent) => {
+    const src = (data?.events ?? []).find((x) => x.id === e.id);
+    if (!src) return;
+    const week = 7 * 86_400_000;
+    try {
+      const created = await createEvent({
+        title: `${src.title} (copy)`,
+        description: src.description || undefined,
+        type: src.eventType,
+        startAt: new Date(new Date(src.startAt).getTime() + week).toISOString(),
+        endAt: src.endAt ? new Date(new Date(src.endAt).getTime() + week).toISOString() : undefined,
+        timezone: src.timezone ?? undefined,
+        location: src.location ?? undefined,
+        isOnline: src.isOnline,
+        meetingUrl: src.meetingUrl ?? undefined,
+        capacity: src.capacity ?? undefined,
+      });
+      success('Event duplicated', `${created?.event?.title ?? src.title} - one week later.`);
+    } catch (err) {
+      toastError('Could not duplicate the event', err instanceof Error ? err.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: ['org', 'events'] });
+    }
+  };
 
   const filtered = events.filter(e => {
     const q = search.toLowerCase();
@@ -322,7 +372,7 @@ export default function OrgEventsPage() {
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
             ))}
             {filtered.length === 0 && (
               <EmptyOrgEvents filtersActive={filtersActive} onClearFilters={clearFilters} />

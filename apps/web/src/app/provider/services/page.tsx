@@ -16,8 +16,15 @@ import {
   Star,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { useQuery } from '@tanstack/react-query';
-import { listMyMarketplaceServices, type MarketplaceServiceItem } from '@/lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { listMyMarketplaceServices, updateMarketplaceService, deleteMarketplaceService, type MarketplaceServiceItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,8 +54,21 @@ type Service = {
   reviews: number;
 };
 
-function ServiceCard({ service }: { service: Service }) {
+type ServiceActions = {
+  /** All absent on demo rows: there is no listing behind them. */
+  onActive?: (s: Service, active: boolean) => void;
+  onEdit?: (s: Service) => void;
+  onDelete?: (s: Service) => void;
+};
+
+function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service } & ServiceActions) {
   const [isActive, setIsActive] = useState(service.isActive);
+  // The switch moved local state and nothing else. On a live listing it now
+  // writes isActive through PATCH /marketplace/:id.
+  const toggleActive = (next: boolean) => {
+    setIsActive(next);
+    onActive?.(service, next);
+  };
 
   return (
     <Card className={cn('transition-all', !isActive && 'surface-inactive')}>
@@ -101,7 +121,7 @@ function ServiceCard({ service }: { service: Service }) {
               <span className="text-xs text-muted-foreground">
                 {isActive ? 'Active' : 'Inactive'}
               </span>
-              <Switch checked={isActive} onCheckedChange={setIsActive} aria-label={`Active: ${service.name}`} />
+              <Switch checked={isActive} onCheckedChange={toggleActive} aria-label={`Active: ${service.name}`} />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -110,16 +130,21 @@ function ServiceCard({ service }: { service: Service }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Edit className="mr-2 icon-sm" />
+                {/* All three had no handler. PATCH and DELETE /marketplace/:id
+                    exist (owner-only, enforced by the service); the public
+                    listing is the marketplace searched for this title. */}
+                <DropdownMenuItem disabled={!onEdit} onSelect={() => onEdit?.(service)}>
+                  <Edit className="mr-2 icon-sm" aria-hidden="true" />
                   Edit Service
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Eye className="mr-2 icon-sm" />
-                  Preview
+                <DropdownMenuItem asChild>
+                  <Link href={`/marketplace?q=${encodeURIComponent(service.name)}`}>
+                    <Eye className="mr-2 icon-sm" aria-hidden="true" />
+                    Preview
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive-accessible">
-                  <Trash2 className="mr-2 icon-sm" />
+                <DropdownMenuItem className="text-destructive-accessible" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
+                  <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -227,6 +252,61 @@ export default function ProviderServicesPage() {
 
   const live = useMemo(() => (data?.services ?? []).map(toPageService), [data]);
   const services = live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_SERVICES : [];
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
+  const [editing, setEditing] = useState<Service | null>(null);
+  const [draft, setDraft] = useState({ title: '', description: '', pricing: '' });
+  const [saving, setSaving] = useState(false);
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['provider', 'services'] });
+
+  const serviceActions: ServiceActions = live.length > 0 ? {
+    onActive: async (svc, active) => {
+      try {
+        await updateMarketplaceService(svc.id, { isActive: active });
+        success(active ? 'Listing is live' : 'Listing hidden', svc.name);
+      } catch (e) {
+        toastError('Could not change the listing', e instanceof Error ? e.message : undefined);
+      } finally { refresh(); }
+    },
+    onEdit: (svc) => {
+      setDraft({ title: svc.name, description: svc.description, pricing: svc.price === '\u2014' ? '' : svc.price });
+      setEditing(svc);
+    },
+    onDelete: async (svc) => {
+      const ok = await confirm({
+        title: `Delete ${svc.name}?`,
+        description: 'The listing leaves the marketplace. Past inquiries keep their history.',
+        confirmLabel: 'Delete listing',
+      });
+      if (!ok) return;
+      try {
+        await deleteMarketplaceService(svc.id);
+        success('Listing deleted', svc.name);
+      } catch (e) {
+        toastError('Could not delete the listing', e instanceof Error ? e.message : undefined);
+      } finally { refresh(); }
+    },
+  } : {};
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await updateMarketplaceService(editing.id, {
+        title: draft.title.trim(),
+        description: draft.description.trim(),
+        pricing: draft.pricing.trim(),
+      });
+      success('Listing saved', draft.title);
+      setEditing(null);
+    } catch (e) {
+      toastError('Could not save the listing', e instanceof Error ? e.message : undefined);
+    } finally {
+      setSaving(false);
+      refresh();
+    }
+  };
   const filteredServices = services.filter((s) =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -288,7 +368,7 @@ export default function ProviderServicesPage() {
         {/* Services List */}
         <div className="space-y-3">
           {filteredServices.map((service) => (
-            <ServiceCard key={service.id} service={service} />
+            <ServiceCard key={service.id} service={service} {...serviceActions} />
           ))}
           {filteredServices.length === 0 && (
             <Card>
@@ -303,6 +383,32 @@ export default function ProviderServicesPage() {
           )}
         </div>
       </div>
+      <Dialog open={editing !== null} onOpenChange={(o) => { if (!o) setEditing(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit listing</DialogTitle>
+            <DialogDescription>Saved to your marketplace listing.</DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void saveEdit(); }}>
+            <div className="space-y-1.5">
+              <Label htmlFor="svc-title">Title</Label>
+              <Input id="svc-title" value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="svc-description">Description</Label>
+              <Textarea id="svc-description" rows={4} value={draft.description} onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="svc-pricing">Pricing</Label>
+              <Input id="svc-pricing" value={draft.pricing} onChange={(e) => setDraft((d) => ({ ...d, pricing: e.target.value }))} placeholder="e.g. From €500" />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+              <Button type="submit" disabled={saving || !draft.title.trim()}>{saving ? 'Saving…' : 'Save'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

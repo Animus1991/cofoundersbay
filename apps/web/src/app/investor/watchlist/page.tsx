@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
@@ -29,8 +29,13 @@ import { formatRelativeTime } from '@/lib/utils';
 import {
   listInvestorDeals,
   getInvestorActivity,
+  updateInvestorDeal,
+  deleteInvestorDeal,
   type InvestorDeal,
 } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +54,8 @@ import { cn } from '@/lib/utils';
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
 type WatchedStartup = {
+  /** The founder's user id when the deal is linked to one; Request Intro messages them. */
+  founderId?: string;
   id: string;
   name: string;
   logoUrl: string | null;
@@ -88,6 +95,7 @@ type ActivityItem = {
  */
 function toWatched(deal: InvestorDeal): WatchedStartup {
   return {
+    founderId: deal.founder?.id,
     id: deal.id,
     name: deal.name,
     logoUrl: deal.logoUrl,
@@ -234,7 +242,13 @@ function toActivityType(type: string | null | undefined): ActivityItem['type'] {
   return type && type in ACTIVITY_TYPE_CONFIG ? (type as ActivityItem['type']) : 'update';
 }
 
-function WatchlistCard({ startup }: { startup: WatchedStartup }) {
+type WatchActions = {
+  onPromote: (s: WatchedStartup) => void;
+  onRemove: (s: WatchedStartup) => void;
+  onAlerts: (s: WatchedStartup, enabled: boolean) => void;
+};
+
+function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { startup: WatchedStartup; live: boolean } & WatchActions) {
   const [alertsEnabled, setAlertsEnabled] = useState(startup.alertsEnabled);
 
   return (
@@ -264,7 +278,10 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={() => setAlertsEnabled(!alertsEnabled)}
+                  // Toggled local state only; the deal has an alertsEnabled
+                  // column and PATCH writes it.
+                  onClick={() => { const next = !alertsEnabled; setAlertsEnabled(next); if (live) onAlerts(startup, next); }}
+                  aria-pressed={alertsEnabled}
                   title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
                 >
                   {alertsEnabled ? (
@@ -285,17 +302,36 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                         <Eye className="mr-2 icon-sm" /> View Details
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpRight className="mr-2 icon-sm" /> Add to Pipeline
+                    {/* These four had no handler. A watched startup is a
+                        deal at "discovered", so adding it to the pipeline
+                        moves it to "reviewing" and removing it deletes it. */}
+                    <DropdownMenuItem disabled={!live} onSelect={() => onPromote(startup)}>
+                      <ArrowUpRight className="mr-2 icon-sm" aria-hidden="true" /> Add to Pipeline
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <MessageCircle className="mr-2 icon-sm" /> Request Intro
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <GitCompare className="mr-2 icon-sm" /> Compare
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-accessible">
-                      <Trash2 className="mr-2 icon-sm" /> Remove from Watchlist
+                    {startup.founderId ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/messages?to=${startup.founderId}`}>
+                          <MessageCircle className="mr-2 icon-sm" aria-hidden="true" /> Request Intro
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <UnavailableMenuItem
+                        icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                        en="Request Intro"
+                        el="Αίτημα γνωριμίας"
+                        reasonEn="This startup is not linked to a founder account."
+                        reasonEl="Η startup δεν συνδέεται με λογαριασμό ιδρυτή."
+                      />
+                    )}
+                    <UnavailableMenuItem
+                      icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                      en="Compare"
+                      el="Σύγκριση"
+                      reasonEn="Deal comparison is not built yet."
+                      reasonEl="Η σύγκριση συμφωνιών δεν υπάρχει ακόμη."
+                    />
+                    <DropdownMenuItem className="text-destructive-accessible" disabled={!live} onSelect={() => onRemove(startup)}>
+                      <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> Remove from Watchlist
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -389,6 +425,42 @@ export default function InvestorWatchlistPage() {
 
   const liveWatched = (watchedPage?.deals ?? []).map(toWatched);
   const watched = liveWatched.length > 0 ? liveWatched : showDemoData ? MOCK_WATCHED : [];
+  const watchLive = liveWatched.length > 0;
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
+  const refreshBoard = () => void queryClient.invalidateQueries({ queryKey: ['investor'] });
+  const watchActions: WatchActions = {
+    onPromote: async (st) => {
+      try {
+        await updateInvestorDeal(st.id, { pipelineStage: 'reviewing' });
+        success('Added to pipeline', `${st.name} is now in Reviewing.`);
+      } catch (e) {
+        toastError('Could not add to pipeline', e instanceof Error ? e.message : undefined);
+      } finally { refreshBoard(); }
+    },
+    onRemove: async (st) => {
+      const ok = await confirm({
+        title: `Remove ${st.name} from your watchlist?`,
+        description: 'The deal and its notes are deleted from your board.',
+        confirmLabel: 'Remove',
+      });
+      if (!ok) return;
+      try {
+        await deleteInvestorDeal(st.id);
+        success('Removed from watchlist', st.name);
+      } catch (e) {
+        toastError('Could not remove it', e instanceof Error ? e.message : undefined);
+      } finally { refreshBoard(); }
+    },
+    onAlerts: async (st, enabled) => {
+      try {
+        await updateInvestorDeal(st.id, { alertsEnabled: enabled });
+      } catch (e) {
+        toastError('Could not change alerts', e instanceof Error ? e.message : undefined);
+      } finally { refreshBoard(); }
+    },
+  };
   const liveActivity: ActivityItem[] = (activityPage?.activity ?? []).map((event) => ({
     id: event.id,
     startupId: event.dealId,
@@ -490,7 +562,7 @@ export default function InvestorWatchlistPage() {
 
             <div className="space-y-3">
               {filtered.map(startup => (
-                <WatchlistCard key={startup.id} startup={startup} />
+                <WatchlistCard key={startup.id} startup={startup} live={watchLive} {...watchActions} />
               ))}
               {filtered.length === 0 && (
                 <Card>

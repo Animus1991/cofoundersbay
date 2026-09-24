@@ -17,9 +17,12 @@ import {
   Copy,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useTenant } from '@/components/providers/TenantContext';
-import { getTenantMembers, type TenantMemberItem } from '@/lib/api';
+import { getTenantMembers, updateTenantMember, removeTenantMember, type TenantMemberItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -67,6 +70,7 @@ import { cn } from '@/lib/utils';
 function toPageMember(row: TenantMemberItem): Member {
   return {
     id: row.id,
+    userId: row.userId,
     name: row.user.profile?.displayName ?? row.user.email,
     email: row.user.email,
     avatarUrl: row.user.profile?.avatarUrl ?? undefined,
@@ -78,6 +82,8 @@ function toPageMember(row: TenantMemberItem): Member {
 }
 
 type Member = {
+  /** The member's user id on live rows - the membership routes key on it. */
+  userId?: string;
   id: string;
   name: string;
   email: string;
@@ -113,7 +119,15 @@ function EngagementBar({ score }: { score: number }) {
   );
 }
 
-function MemberCard({ member }: { member: Member }) {
+const TENANT_ROLES = ['member', 'mentor', 'admin'] as const;
+
+type MemberActions = {
+  /** Absent on sample rows. */
+  onRole?: (m: Member, role: string) => void;
+  onRemove?: (m: Member) => void;
+};
+
+function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberActions) {
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
       <CardContent className="p-4">
@@ -145,10 +159,33 @@ function MemberCard({ member }: { member: Member }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
-                  <DropdownMenuItem><Shield className="mr-2 icon-sm" aria-hidden="true" />Change Role</DropdownMenuItem>
+                  {/* All three had no handler. PATCH and DELETE
+                      /tenants/:id/members/:userId exist. */}
+                  {member.userId ? (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive-accessible"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
+                  <p className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground">
+                    <Shield className="icon-sm" aria-hidden="true" />Change Role
+                  </p>
+                  {TENANT_ROLES.map((r) => (
+                    <DropdownMenuItem
+                      key={r}
+                      className="pl-8 capitalize"
+                      disabled={!onRole || member.role === r}
+                      onSelect={() => onRole?.(member, r)}
+                    >
+                      {r}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive-accessible" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
+                    <UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -270,6 +307,36 @@ export default function TenantMembersPage() {
     [data],
   );
   const members: Member[] = live.length > 0 ? live : isLoading ? [] : SEED_MEMBERS;
+  const queryClient = useQueryClient();
+  const { success: toastOk, error: toastFail } = useToast();
+  const confirm = useConfirm();
+  const refreshMembers = () => void queryClient.invalidateQueries({ queryKey: ['tenant', 'members', tenantId] });
+  const memberActions: MemberActions = live.length > 0 && tenantId ? {
+    onRole: async (m, role) => {
+      if (!m.userId) return;
+      try {
+        await updateTenantMember(tenantId, m.userId, { role });
+        toastOk('Role changed', `${m.name} is now ${role}.`);
+      } catch (e) {
+        toastFail('Could not change the role', e instanceof Error ? e.message : undefined);
+      } finally { refreshMembers(); }
+    },
+    onRemove: async (m) => {
+      if (!m.userId) return;
+      const ok = await confirm({
+        title: `Remove ${m.name}?`,
+        description: 'They lose access to this workspace. Their account itself is not deleted.',
+        confirmLabel: 'Remove member',
+      });
+      if (!ok) return;
+      try {
+        await removeTenantMember(tenantId, m.userId);
+        toastOk('Member removed', m.name);
+      } catch (e) {
+        toastFail('Could not remove the member', e instanceof Error ? e.message : undefined);
+      } finally { refreshMembers(); }
+    },
+  } : {};
 
 
   const filteredMembers = members.filter((m) => {
@@ -371,7 +438,7 @@ export default function TenantMembersPage() {
                 {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} found
               </p>
               {filteredMembers.map((member) => (
-                <MemberCard key={member.id} member={member} />
+                <MemberCard key={member.id} member={member} {...memberActions} />
               ))}
               {filteredMembers.length === 0 && (
                 <EmptyTenantMembers
