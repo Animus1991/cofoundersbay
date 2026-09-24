@@ -12,6 +12,7 @@ import {
 } from '@/lib/api';
 import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -634,41 +635,135 @@ export default function AnalyticsPage() {
     'Activity Score': [60, 65, 62, 70, 68, 74, 72],
   };
 
+  /*
+   * What frames the numbers, rather than being them.
+   *
+   * The period selector reframes every figure on the page, which is exactly
+   * what a rail is for - and it was sitting above them, pushing the first
+   * chart down. Achievements answer a different question on the same screen.
+   * The four links are links out. Same controls, same handlers.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'period',
+      glyph: 'chart',
+      labelEn: 'Period',
+      labelEl: 'Περίοδος',
+      // The reader should see which window they are looking at without
+      // opening anything; the list below is meaningless without it.
+      badge: period,
+      content: (
+        <div className="space-y-3">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            <BilingualText
+              en="Every figure on this page is measured over this window."
+              el="Κάθε μέγεθος σε αυτή τη σελίδα μετριέται σε αυτό το διάστημα."
+              stacked
+              wrap
+            />
+          </p>
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap gap-2.5">
+              {PERIODS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  aria-pressed={period === p}
+                  onClick={() => setPeriod(p)}
+                  className={cn(
+                    'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors focus-ring',
+                    period === p
+                      ? 'border-primary bg-primary/20 text-primary-accessible'
+                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                  )}
+                >
+                  {p === '7d' ? <BilingualText en="7 days" el="7 ημέρες" wrap /> : p === '14d' ? <BilingualText en="14 days" el="14 ημέρες" wrap /> : p === '30d' ? <BilingualText en="30 days" el="30 ημέρες" wrap /> : <BilingualText en="90 days" el="90 ημέρες" wrap />}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {/* AppShell's Ask AI carries this page's analytics prompt; this was a
+                  promptless duplicate beside it. `h-10` is gone too — it overrode
+                  the button ladder with a height that belongs to no step of it. */}
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => refetch()} loading={isFetching}>
+                <RefreshCw className="icon-sm" /><BilingualText en="Refresh" el="Ανανέωση" compact />
+              </Button>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'achievements',
+      glyph: 'award',
+      labelEn: 'Achievements',
+      labelEl: 'Επιτεύγματα',
+      content: (
+        <div className="space-y-3">
+          <AchievementsCard
+            achievements={Array.isArray(achievements)
+              ? achievements.map((item) => ({
+                  id: item.id,
+                  title: item.title,
+                  description: item.description,
+                  icon: item.icon,
+                  unlocked: Boolean(item.unlocked),
+                }))
+              : undefined}
+          />
+          {(!Array.isArray(achievements) || achievements.length === 0) && <BadgesWidget />}
+        </div>
+      ),
+    },
+    {
+      id: 'next',
+      glyph: 'flag',
+      labelEn: 'Where to go next',
+      labelEl: 'Πού να πάτε μετά',
+      content: (
+        <div className="space-y-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
+              <Link href="/profile">
+                <CfbGlyph name="profile" className="icon-sm" />
+                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_profile')} el={analyticsEl('open_profile')} wrap /></span>
+                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('build_profile')} el={analyticsEl('build_profile')} wrap /></span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
+              <Link href="/discover">
+                <CfbGlyph name="discover" className="icon-sm" />
+                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_discover')} el={analyticsEl('open_discover')} wrap /></span>
+                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('grow_network')} el={analyticsEl('grow_network')} wrap /></span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
+              <Link href="/messages">
+                <CfbGlyph name="messages" className="icon-sm" />
+                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_messages')} el={analyticsEl('open_messages')} wrap /></span>
+                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('reply_faster')} el={analyticsEl('reply_faster')} wrap /></span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
+              <Link href="/connections">
+                <CfbGlyph name="people" className="icon-sm" />
+                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_connections')} el={analyticsEl('open_connections')} wrap /></span>
+                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('grow_network')} el={analyticsEl('grow_network')} wrap /></span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+      ),
+    },
+  ];
   return (
     <AppShell
+      rail={rail}
       showHelp
       askAi={askPrompt}
       contentClassName="overflow-x-clip"
     >
       <div className="min-w-0 space-y-5 overflow-x-clip">
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-wrap gap-2.5">
-          {PERIODS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              aria-pressed={period === p}
-              onClick={() => setPeriod(p)}
-              className={cn(
-                'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors focus-ring',
-                period === p
-                  ? 'border-primary bg-primary/20 text-primary-accessible'
-                  : 'border-border/60 text-muted-foreground hover:border-primary/40',
-              )}
-            >
-              {p === '7d' ? <BilingualText en="7 days" el="7 ημέρες" wrap /> : p === '14d' ? <BilingualText en="14 days" el="14 ημέρες" wrap /> : p === '30d' ? <BilingualText en="30 days" el="30 ημέρες" wrap /> : <BilingualText en="90 days" el="90 ημέρες" wrap />}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          {/* AppShell's Ask AI carries this page's analytics prompt; this was a
-              promptless duplicate beside it. `h-10` is gone too — it overrode
-              the button ladder with a height that belongs to no step of it. */}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => refetch()} loading={isFetching}>
-            <RefreshCw className="icon-sm" /><BilingualText en="Refresh" el="Ανανέωση" compact />
-          </Button>
-        </div>
-      </div>
 
       <Tabs value={activeTab} onValueChange={(v) => { if (isTab(v)) setTab(v); }}>
         {/* Three equal columns capped at `max-w-md` is right on a phone, where
@@ -812,18 +907,6 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
-              <AchievementsCard
-                achievements={Array.isArray(achievements)
-                  ? achievements.map((item) => ({
-                      id: item.id,
-                      title: item.title,
-                      description: item.description,
-                      icon: item.icon,
-                      unlocked: Boolean(item.unlocked),
-                    }))
-                  : undefined}
-              />
-              {(!Array.isArray(achievements) || achievements.length === 0) && <BadgesWidget />}
             </>
           )}
         </TabsContent>
@@ -892,36 +975,6 @@ export default function AnalyticsPage() {
           )}
         </TabsContent>
       </Tabs>
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/profile">
-              <CfbGlyph name="profile" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_profile')} el={analyticsEl('open_profile')} wrap /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('build_profile')} el={analyticsEl('build_profile')} wrap /></span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/discover">
-              <CfbGlyph name="discover" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_discover')} el={analyticsEl('open_discover')} wrap /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('grow_network')} el={analyticsEl('grow_network')} wrap /></span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/messages">
-              <CfbGlyph name="messages" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_messages')} el={analyticsEl('open_messages')} wrap /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('reply_faster')} el={analyticsEl('reply_faster')} wrap /></span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-            <Link href="/connections">
-              <CfbGlyph name="people" className="icon-sm" />
-              <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_connections')} el={analyticsEl('open_connections')} wrap /></span>
-              <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('grow_network')} el={analyticsEl('grow_network')} wrap /></span>
-            </Link>
-          </Button>
-        </div>
       </div>
     </AppShell>
   );

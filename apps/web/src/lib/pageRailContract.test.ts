@@ -110,6 +110,16 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // with no rail at all, and offers the same Ask-AI button there. A reader
   // never sees both, because they are different screens.
   'key:ask_ai_plan',
+  // /analytics: the rail's "Where to go next" holds the standing shortcut
+  // strip. The column names the same two destinations only inside the
+  // "this dropped" alert, which renders only when a metric actually
+  // declined and points at the one that did - a remedy, not a shortcut.
+  'key:open_profile',
+  'key:open_messages',
+  // Same page: "reply faster" is the rail item's subtitle, and in the
+  // column it is the button under the average-response-time figure it
+  // belongs to. Descriptive text beside a number, not a second button.
+  'key:reply_faster',
 ]);
 
 const pages = walk(APP_DIR)
