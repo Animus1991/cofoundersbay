@@ -5239,6 +5239,75 @@ export async function updateOrganization(
   });
 }
 
+/** An organisation row as `GET /organizations/slug/:slug` returns it. */
+export type OrganizationRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string | null;
+  logoUrl?: string | null;
+  _count?: { memberships: number; programs: number };
+};
+
+export async function getOrganizationBySlug(slug: string): Promise<OrganizationRecord> {
+  return apiRequest(`/api/organizations/slug/${slug}`, undefined, { retryOn401: false });
+}
+
+/** A membership row from `GET /organizations/:id/members`. */
+export type OrgAdminMember = {
+  id: string;
+  userId: string;
+  role: string;
+  isActive: boolean;
+  title?: string | null;
+  department?: string | null;
+  joinedAt: string;
+  user?: {
+    id: string;
+    email: string;
+    profile?: {
+      displayName?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      avatarUrl?: string | null;
+    } | null;
+  } | null;
+};
+
+export async function listOrganizationMembers(
+  organizationId: string,
+): Promise<OrgAdminMember[]> {
+  return apiRequest(`/api/organizations/${organizationId}/members`, undefined, { retryOn401: false });
+}
+
+export async function addOrganizationMember(
+  organizationId: string,
+  body: { userId: string; role: string; title?: string; department?: string },
+): Promise<OrgAdminMember> {
+  return apiRequest(`/api/organizations/${organizationId}/members`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateOrganizationMember(
+  organizationId: string,
+  memberId: string,
+  body: { role?: string; isActive?: boolean; title?: string; department?: string },
+): Promise<OrgAdminMember> {
+  return apiRequest(`/api/organizations/${organizationId}/members/${memberId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function removeOrganizationMember(
+  organizationId: string,
+  memberId: string,
+): Promise<void> {
+  return apiRequest(`/api/organizations/${organizationId}/members/${memberId}`, { method: 'DELETE' });
+}
+
 export type OrgMentorPoolItem = {
   id: string;
   userId: string;
