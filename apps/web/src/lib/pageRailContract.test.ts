@@ -184,6 +184,40 @@ describe('page rail contract', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('binds each piece of state to a control in the column or the rail, never both', () => {
+    // The label check above misses the common way a control gets duplicated:
+    // a rail "Status" section of pressed buttons beside a column <Select> with
+    // "All Status" / "Active" items. Different words, same control, because
+    // both drive `statusFilter`. So compare state as well as words.
+    //
+    // A rail control *shows* its state (`aria-pressed={statusFilter === o}`,
+    // `aria-checked`, `checked`, `value`). The column duplicates it when it
+    // binds a control to the same state: `value={statusFilter}` or
+    // `onValueChange={setStatusFilter}`. A rail button that only *calls* a
+    // setter as a side effect (coaching jumps to the tab its filter affects)
+    // shows nothing, so it is not counted.
+    const offenders: string[] = [];
+    for (const page of pages) {
+      const { rail, page: rest } = splitRail(page.source);
+      const setters = new Map(
+        Array.from(page.source.matchAll(/const \[(\w+), (set\w+)\] = useState/g)).map((m) => [m[1], m[2]]),
+      );
+      const shown = new Set<string>();
+      for (const m of rail.matchAll(/(?:aria-pressed|aria-checked|checked|pressed|value)=\{([^}]*)\}/g)) {
+        for (const id of m[1].match(/\b\w+\b/g) ?? []) if (setters.has(id)) shown.add(id);
+      }
+      const bound = new Set<string>();
+      for (const m of rest.matchAll(/\b(?:value|checked|pressed)=\{(\w+)\}/g)) if (setters.has(m[1])) bound.add(m[1]);
+      for (const m of rest.matchAll(/on(?:ValueChange|CheckedChange|PressedChange|Change)=\{(set\w+)\}/g)) {
+        for (const [state, setter] of setters) if (setter === m[1]) bound.add(state);
+      }
+      for (const state of shown) {
+        if (bound.has(state)) offenders.push(`${page.path}: "${state}" has a control in the rail and in the page`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it('keeps the rail off pages that have nothing to put in it', () => {
     const offenders: string[] = [];
     for (const page of pages) {

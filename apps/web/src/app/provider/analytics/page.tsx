@@ -3,21 +3,18 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  TrendingUp, TrendingDown, Eye, MessageCircle, Star, Users, DollarSign, Clock, ArrowUp, ArrowDown, Minus, RefreshCw,
+  TrendingUp, TrendingDown, Eye, MessageCircle, Star, Users, DollarSign, Clock, ArrowUp, ArrowDown, Minus, RefreshCw, Download,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { downloadCsv } from '@/lib/csv';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -67,6 +64,14 @@ const MOCK_TOP_SERVICES = [
   { name: 'Fundraising Legal', inquiries: 2, revenue: 0, rating: null },
 ];
 
+/* The same four windows GET /analytics/overview accepts. */
+const PERIODS: { value: string; en: string; el: string }[] = [
+  { value: '7d', en: 'Last 7 days', el: 'Τελευταίες 7 ημέρες' },
+  { value: '30d', en: 'Last 30 days', el: 'Τελευταίες 30 ημέρες' },
+  { value: '90d', en: 'Last 90 days', el: 'Τελευταίες 90 ημέρες' },
+  { value: '1y', en: 'Last year', el: 'Τελευταίο έτος' },
+];
+const DEFAULT_PERIOD = '30d';
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
   if (trend === 'up') return <ArrowUp className="icon-sm text-status-success" />;
@@ -124,7 +129,8 @@ function MetricCard({
 export default function ProviderAnalyticsPage() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
-  const [period, setPeriod] = useState('30d');
+  const [period, setPeriod] = useState(DEFAULT_PERIOD);
+  const activePeriod = PERIODS.find((p) => p.value === period) ?? PERIODS[1];
 
   /* The analytics API serves the signed-in user's own numbers - the mock
      grid only fills in when the demo toggle is on. */
@@ -166,6 +172,146 @@ export default function ProviderAnalyticsPage() {
       ]
     : [];
 
+  /* One set of numbers for the rail's summary and the export: the live grid
+     when signed in, the authored demo tiles otherwise. */
+  const metricRows: { label: string; value: string | number; change: number | null }[] = showDemoData && overview
+    ? [
+        { label: 'Profile Views', value: overview.profileViews.value, change: overview.profileViews.change },
+        { label: 'Inquiries', value: overview.inquiries.value, change: overview.inquiries.change },
+        { label: 'Active Projects', value: overview.activeProjects.value, change: overview.activeProjects.change },
+        { label: 'Avg. Rating', value: overview.avgRating.value, change: overview.avgRating.change },
+        { label: 'Revenue', value: overview.revenue.value, change: overview.revenue.change },
+        { label: 'Response Rate', value: `${overview.responseRate.value}%`, change: overview.responseRate.change },
+      ]
+    : liveMetrics.map((m) => ({ label: m.label, value: m.value ?? '—', change: typeof m.change === 'number' ? m.change : null }));
+  const totalViews = weeklyViews.reduce((n, d) => n + d.views, 0);
+
+  /* The week's shape: what the API summarises when live, and the same three
+     readings taken from the sample week in demo mode. */
+  const busiest = weeklyViews.length ? weeklyViews.reduce((a, b) => (b.views > a.views ? b : a)) : null;
+  const glance = showDemoData
+    ? [
+        { id: 'day', en: 'Most active day', el: 'Πιο ενεργή ημέρα', value: busiest?.day ?? '—' },
+        { id: 'interactions', en: 'Interactions', el: 'Αλληλεπιδράσεις', value: String(weeklyViews.reduce((n, d) => n + d.views + d.inquiries, 0)) },
+        { id: 'response', en: 'Response rate', el: 'Ποσοστό απόκρισης', value: `${MOCK_OVERVIEW.responseRate.value}%` },
+      ]
+    : [
+        { id: 'day', en: 'Most active day', el: 'Πιο ενεργή ημέρα', value: live?.weeklySummary?.mostActiveDay ?? '—' },
+        { id: 'hour', en: 'Peak hour', el: 'Ώρα αιχμής', value: live?.weeklySummary?.peakHour ?? '—' },
+        { id: 'interactions', en: 'Interactions', el: 'Αλληλεπιδράσεις', value: live?.weeklySummary?.totalInteractions?.toString() ?? '—' },
+        { id: 'response', en: 'Avg. response', el: 'Μέσος χρόνος απόκρισης', value: live?.weeklySummary?.avgResponseTime ?? '—' },
+      ];
+
+  const exportDaily = () =>
+    downloadCsv(
+      `provider-analytics-daily-${period}`,
+      showDemoData ? ['Day', 'Profile views', 'Inquiries'] : ['Day', 'Profile views'],
+      weeklyViews.map((d) => (showDemoData ? [d.day, d.views, d.inquiries] : [d.day, d.views])),
+    );
+  const exportMetrics = () =>
+    downloadCsv(
+      `provider-analytics-metrics-${period}`,
+      ['Metric', 'Value', 'Change vs last period (%)'],
+      metricRows.map((m) => [m.label, m.value, m.change]),
+    );
+
+  /*
+   * The page rail. The column is the metric grid and the three charts - what
+   * the page is for. The window that bounds them, the refresh, a reading of
+   * the week's shape and the exports are about those numbers, so they sit one
+   * gesture away; the period's badge shows only when it is not the default.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'period',
+      glyph: 'calendar',
+      labelEn: 'Period',
+      labelEl: 'Περίοδος',
+      badge: period !== DEFAULT_PERIOD ? 1 : null,
+      content: (
+        <div className="space-y-3">
+          <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Period', 'Περίοδος')}>
+            {PERIODS.map((p) => (
+              <button
+                key={p.value}
+                type="button"
+                role="radio"
+                aria-checked={period === p.value}
+                onClick={() => setPeriod(p.value)}
+                className={cn(
+                  'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+                  period === p.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+                )}
+              >
+                <BilingualText en={p.en} el={p.el} compact wrap />
+              </button>
+            ))}
+          </div>
+          {/* Only the live numbers can be fetched again; the sample grid is fixed. */}
+          <button
+            type="button"
+            onClick={() => void overviewQuery.refetch()}
+            disabled={showDemoData || !hasSession || overviewQuery.isFetching}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={cn('icon-sm shrink-0', overviewQuery.isFetching && 'animate-spin')} aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en="Refresh analytics" el="Ανανέωση στατιστικών" compact wrap />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+    {
+      id: 'glance',
+      glyph: 'chart',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <dl className="space-y-2">
+          {glance.map((g) => (
+            <div key={g.id} className="rounded-lg border border-border/60 p-3">
+              <dt className="text-sm text-muted-foreground"><BilingualText en={g.en} el={g.el} compact wrap /></dt>
+              <dd className="mt-1 text-lg font-semibold tabular-nums">{g.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ),
+    },
+    {
+      id: 'export',
+      glyph: 'book',
+      labelEn: 'Export',
+      labelEl: 'Εξαγωγή',
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={exportMetrics}
+            disabled={!metricRows.length}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={`Export ${metricRows.length} metrics as CSV`} el={`Εξαγωγή ${metricRows.length} δεικτών σε CSV`} compact wrap />
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={exportDaily}
+            disabled={!weeklyViews.length}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={`Export ${weeklyViews.length} daily rows as CSV`} el={`Εξαγωγή ${weeklyViews.length} ημερήσιων γραμμών σε CSV`} compact wrap />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   if (!mounted) {
     return (
       <AppShell>
@@ -180,34 +326,7 @@ export default function ProviderAnalyticsPage() {
   }
 
   return (
-    <AppShell
-      actions={
-        <>
-          <div className="flex items-center gap-2">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger aria-label="Period" className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-                <SelectItem value="1y">Last year</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label="Refresh analytics"
-              onClick={() => overviewQuery.refetch()}
-              disabled={overviewQuery.isFetching}
-            >
-              <RefreshCw className={cn('icon-sm', overviewQuery.isFetching && 'animate-spin')} />
-            </Button>
-          </div>
-        </>
-      }
-    >
+    <AppShell rail={rail}>
       <div className="py-6 space-y-6">
         {showDemoData && (
           <SampleDataNotice
@@ -216,6 +335,17 @@ export default function ProviderAnalyticsPage() {
             askAiPrompt="Why does the analytics page show sample numbers?"
           />
         )}
+
+        {/* The period lives in the rail; the column still says which one is
+            on, because numbers with no stated window read as all-time. */}
+        <p className="text-sm text-muted-foreground">
+          <BilingualText
+            en={`${activePeriod.en} · ${totalViews.toLocaleString('en-GB')} profile views`}
+            el={`${activePeriod.el} · ${totalViews.toLocaleString('el-GR')} προβολές προφίλ`}
+            compact
+            wrap
+          />
+        </p>
 
         {/* Metric Grid */}
         {overview && (

@@ -16,8 +16,14 @@ import {
   MessageSquare,
   User,
   FileText,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { downloadCsv } from '@/lib/csv';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
@@ -30,13 +36,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -283,11 +282,28 @@ const SEED_REPORTS: Report[] = [
   },
 ];
 
+/* The rail's filter choices: the four page types, and the derived priority. */
+const TYPE_OPTIONS: { value: string; en: string; el: string }[] = [
+  { value: 'all', en: 'All types', el: 'Όλοι οι τύποι' },
+  { value: 'user', en: 'User', el: 'Χρήστης' },
+  { value: 'message', en: 'Message', el: 'Μήνυμα' },
+  { value: 'content', en: 'Content', el: 'Περιεχόμενο' },
+  { value: 'spam', en: 'Spam', el: 'Spam' },
+];
+const PRIORITY_OPTIONS: { value: string; en: string; el: string }[] = [
+  { value: 'all', en: 'Any priority', el: 'Οποιαδήποτε προτεραιότητα' },
+  { value: 'high', en: 'High', el: 'Υψηλή' },
+  { value: 'medium', en: 'Medium', el: 'Μεσαία' },
+  { value: 'low', en: 'Low', el: 'Χαμηλή' },
+];
+
 export default function AdminReportsPage() {
   const [search, setSearch] = useState('');
   const [viewing, setViewing] = useState<Report | null>(null);
   const [type, setType] = useState<string>('all');
+  const [priority, setPriority] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('pending');
+  const { openRailSection } = usePageRail();
 
   // Mock data
   /*
@@ -297,7 +313,7 @@ export default function AdminReportsPage() {
    */
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
-  const { data } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin', 'reports'],
     queryFn: () => listAdminReports({ limit: 100 }),
     staleTime: 30_000,
@@ -329,8 +345,9 @@ export default function AdminReportsPage() {
       r.reason.toLowerCase().includes(search.toLowerCase()) ||
       r.targetName.toLowerCase().includes(search.toLowerCase());
     const matchesType = type === 'all' || r.type === type;
+    const matchesPriority = priority === 'all' || r.priority === priority;
     const matchesTab = activeTab === 'all' || r.status === activeTab;
-    return matchesSearch && matchesType && matchesTab;
+    return matchesSearch && matchesType && matchesPriority && matchesTab;
   });
 
   const statusCounts = {
@@ -338,72 +355,175 @@ export default function AdminReportsPage() {
     pending: reports.filter((r) => r.status === 'pending').length,
     reviewing: reports.filter((r) => r.status === 'reviewing').length,
     resolved: reports.filter((r) => r.status === 'resolved').length,
+    dismissed: reports.filter((r) => r.status === 'dismissed').length,
   };
+  const openHigh = reports.filter((r) => r.priority === 'high' && (r.status === 'pending' || r.status === 'reviewing')).length;
+  const activeFilterCount = (type !== 'all' ? 1 : 0) + (priority !== 'all' ? 1 : 0);
+
+  const exportCsv = () =>
+    downloadCsv(
+      'reports',
+      ['reason', 'type', 'priority', 'status', 'reporter', 'target', 'target_type', 'filed_at'],
+      filteredReports.map((r) => [r.reason, r.type, r.priority, r.status, r.reporterName, r.targetName, r.targetType, r.createdAt]),
+    );
+
+  const totals = [
+    { id: 'total', en: 'Total reports', el: 'Σύνολο αναφορών', value: statusCounts.all, icon: Flag, tone: 'text-primary-accessible' },
+    { id: 'pending', en: 'Pending', el: 'Σε αναμονή', value: statusCounts.pending, icon: Clock, tone: 'text-status-warning' },
+    { id: 'reviewing', en: 'In review', el: 'Υπό εξέταση', value: statusCounts.reviewing, icon: AlertTriangle, tone: 'text-status-info' },
+    { id: 'resolved', en: 'Resolved', el: 'Επιλυμένες', value: statusCounts.resolved, icon: CheckCircle2, tone: 'text-status-success' },
+    { id: 'dismissed', en: 'Dismissed', el: 'Απορριφθείσες', value: statusCounts.dismissed, icon: XCircle, tone: 'text-muted-foreground' },
+    { id: 'high', en: 'Open, high priority', el: 'Ανοιχτές, υψηλής προτεραιότητας', value: openHigh, icon: AlertTriangle, tone: 'text-status-danger' },
+  ];
+
+  const filterButton = (on: boolean, onClick: () => void, en: string, el: string, key: string) => (
+    <button
+      key={key}
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={cn(
+        'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+        on ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+      )}
+    >
+      <BilingualText en={en} el={el} compact wrap />
+    </button>
+  );
+
+  /*
+   * The page rail. The column is the queue - its status tabs, its search and
+   * the report cards a moderator acts on. The four totals that opened the
+   * page (the tabs already carry the same counts) are in the rail with the
+   * two missing ones, dismissed and open high-priority; the type filter
+   * joins a priority filter the rows always had but the page could not
+   * narrow by. The totals' badge is open high-priority reports.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'Report totals',
+      labelEl: 'Σύνολα αναφορών',
+      badge: openHigh || null,
+      content: (
+        <ul className="space-y-2">
+          {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
+              <span className="min-w-0 flex-1 text-sm text-muted-foreground">
+                <BilingualText en={en} el={el} compact wrap />
+              </span>
+              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Narrow the queue',
+      labelEl: 'Φιλτράρισμα ουράς',
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-4">
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Type" el="Τύπος" compact />
+            </legend>
+            {TYPE_OPTIONS.map((o) => filterButton(type === o.value, () => setType(o.value), o.en, o.el, o.value))}
+          </fieldset>
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Priority" el="Προτεραιότητα" compact />
+            </legend>
+            {PRIORITY_OPTIONS.map((o) => filterButton(priority === o.value, () => setPriority(o.value), o.en, o.el, o.value))}
+          </fieldset>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={() => { setType('all'); setPriority('all'); }}
+              className="tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm text-primary-accessible hover:bg-muted/70"
+            >
+              <BilingualText en="Clear type and priority" el="Καθαρισμός τύπου και προτεραιότητας" compact wrap />
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'Queue tools',
+      labelEl: 'Εργαλεία ουράς',
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={cn('icon-sm shrink-0', isFetching && 'animate-spin')} aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh reports" el="Ανανέωση αναφορών" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={filteredReports.length === 0}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={`Export ${filteredReports.length} reports as CSV`} el={`Εξαγωγή ${filteredReports.length} αναφορών σε CSV`} compact wrap />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const typeLabel = TYPE_OPTIONS.find((o) => o.value === type);
+  const priorityLabel = PRIORITY_OPTIONS.find((o) => o.value === priority);
 
   return (
-    <AppShell>
+    <AppShell rail={rail}>
       <div className="py-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Reports</p>
-              <p className="text-xl font-bold">{reports.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-xl font-bold text-status-warning">{statusCounts.pending}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">In Review</p>
-              <p className="text-xl font-bold text-status-info">{statusCounts.reviewing}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Resolved</p>
-              <p className="text-xl font-bold text-status-success">{statusCounts.resolved}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabs */}
+        {/* Tabs. Dismissed reports were reachable only under All. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="pending">Pending ({statusCounts.pending})</TabsTrigger>
             <TabsTrigger value="reviewing">In Review ({statusCounts.reviewing})</TabsTrigger>
             <TabsTrigger value="resolved">Resolved ({statusCounts.resolved})</TabsTrigger>
+            <TabsTrigger value="dismissed">Dismissed ({statusCounts.dismissed})</TabsTrigger>
             <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        {/* Search stays with the queue; type and priority are in the rail,
+            and the line below says which are narrowing it. */}
+        <div className="space-y-2">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search reports..."
+              aria-label="Search reports by reason or target"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger aria-label="Report type" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="user">User</SelectItem>
-              <SelectItem value="message">Message</SelectItem>
-              <SelectItem value="content">Content</SelectItem>
-              <SelectItem value="spam">Spam</SelectItem>
-            </SelectContent>
-          </Select>
+          {activeFilterCount > 0 && (
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              <BilingualText
+                en={`${filteredReports.length} shown${type !== 'all' ? ` · ${typeLabel?.en}` : ''}${priority !== 'all' ? ` · ${priorityLabel?.en} priority` : ''}`}
+                el={`${filteredReports.length} εμφανίζονται${type !== 'all' ? ` · ${typeLabel?.el}` : ''}${priority !== 'all' ? ` · ${priorityLabel?.el} προτεραιότητα` : ''}`}
+                compact
+                wrap
+              />
+            </p>
+          )}
         </div>
 
         {/* Reports List */}
@@ -417,8 +537,13 @@ export default function AdminReportsPage() {
                 <Flag className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No reports found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  All caught up!
+                  {activeFilterCount > 0 ? 'Nothing in this tab matches the current filters.' : 'All caught up!'}
                 </p>
+                {activeFilterCount > 0 && (
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                    <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}

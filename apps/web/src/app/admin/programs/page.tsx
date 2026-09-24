@@ -23,20 +23,22 @@ import {
   Eye,
   Edit,
   Trash2,
+  RefreshCw,
+  Download,
+  CheckCircle2,
+  FileText,
+  Archive,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { downloadCsv } from '@/lib/csv';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -191,9 +193,19 @@ function ProgramCard({
   );
 }
 
+const STATUS_OPTIONS: { value: string; en: string; el: string }[] = [
+  { value: 'all', en: 'Any status', el: 'Οποιαδήποτε κατάσταση' },
+  { value: 'active', en: 'Active', el: 'Ενεργά' },
+  { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένα' },
+  { value: 'draft', en: 'Draft', el: 'Πρόχειρα' },
+  { value: 'archived', en: 'Archived', el: 'Αρχειοθετημένα' },
+];
+
 export default function AdminProgramsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const { openRailSection } = usePageRail();
 
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
@@ -202,7 +214,7 @@ export default function AdminProgramsPage() {
 
   // Programs are public reads; the list was a fixed array dated 2025 while
   // GET /programs served every organisation's programmes.
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin', 'programs'],
     queryFn: () => listPrograms({ limit: 100 }),
     staleTime: 60_000,
@@ -254,11 +266,144 @@ export default function AdminProgramsPage() {
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.organization.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesType = typeFilter === 'all' || p.type === typeFilter;
+    return matchesSearch && matchesStatus && matchesType;
   });
 
+  // Types are whatever the programmes call themselves; the filter offers the
+  // ones present rather than a list that could name a type nobody uses.
+  const types = Array.from(new Set(programs.map((p) => p.type).filter(Boolean))).sort();
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0);
+  const count = (status: Program['status']) => programs.filter((p) => p.status === status).length;
+
+  const exportCsv = () =>
+    downloadCsv(
+      'programs',
+      ['name', 'organization', 'type', 'status', 'startups', 'mentors', 'start', 'end', 'calendar_elapsed_pct'],
+      filteredPrograms.map((p) => [p.name, p.organization, p.type, p.status, p.startups, p.mentors, p.startDate, p.endDate, p.progress]),
+    );
+
+  const totals = [
+    { id: 'total', en: 'Total programs', el: 'Σύνολο προγραμμάτων', value: programs.length, icon: Award, tone: 'text-primary-accessible' },
+    { id: 'active', en: 'Active', el: 'Ενεργά', value: count('active'), icon: CheckCircle2, tone: STATUS.success.text },
+    { id: 'draft', en: 'Draft', el: 'Πρόχειρα', value: count('draft'), icon: FileText, tone: 'text-muted-foreground' },
+    { id: 'archived', en: 'Archived', el: 'Αρχειοθετημένα', value: count('archived'), icon: Archive, tone: 'text-muted-foreground' },
+    { id: 'startups', en: 'Total startups', el: 'Σύνολο startups', value: programs.reduce((acc, p) => acc + p.startups, 0), icon: Users, tone: 'text-primary-accessible' },
+    { id: 'orgs', en: 'Organizations', el: 'Οργανισμοί', value: new Set(programs.map((p) => p.organization)).size, icon: Building2, tone: 'text-primary-accessible' },
+  ];
+
+  const filterButton = (on: boolean, onClick: () => void, en: string, el: string, key: string) => (
+    <button
+      key={key}
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={cn(
+        'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+        on ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+      )}
+    >
+      <BilingualText en={en} el={el} compact wrap />
+    </button>
+  );
+
+  /*
+   * The page rail. The column is the programme list and its search. The four
+   * totals (now six: draft and archived had no count), the status filter, a
+   * type filter the rows always carried, and refresh/export sit one gesture
+   * away. The filters' badge is how many are narrowing the list.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'Program totals',
+      labelEl: 'Σύνολα προγραμμάτων',
+      content: (
+        <ul className="space-y-2">
+          {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
+              <span className="min-w-0 flex-1 text-sm text-muted-foreground">
+                <BilingualText en={en} el={el} compact wrap />
+              </span>
+              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Narrow the list',
+      labelEl: 'Φιλτράρισμα λίστας',
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-4">
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Status" el="Κατάσταση" compact />
+            </legend>
+            {STATUS_OPTIONS.map((o) => filterButton(statusFilter === o.value, () => setStatusFilter(o.value), o.en, o.el, o.value))}
+          </fieldset>
+          {types.length > 1 && (
+            <fieldset className="space-y-1.5">
+              <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <BilingualText en="Type" el="Τύπος" compact />
+              </legend>
+              {filterButton(typeFilter === 'all', () => setTypeFilter('all'), 'Any type', 'Οποιοσδήποτε τύπος', 'all')}
+              {types.map((t) => filterButton(typeFilter === t, () => setTypeFilter(t), t, t, t))}
+            </fieldset>
+          )}
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={() => { setStatusFilter('all'); setTypeFilter('all'); }}
+              className="tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm text-primary-accessible hover:bg-muted/70"
+            >
+              <BilingualText en="Clear status and type" el="Καθαρισμός κατάστασης και τύπου" compact wrap />
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'List tools',
+      labelEl: 'Εργαλεία λίστας',
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={cn('icon-sm shrink-0', isFetching && 'animate-spin')} aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh programs" el="Ανανέωση προγραμμάτων" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={filteredPrograms.length === 0}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={`Export ${filteredPrograms.length} programs as CSV`} el={`Εξαγωγή ${filteredPrograms.length} προγραμμάτων σε CSV`} compact wrap />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const statusLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter);
+
   return (
-    <AppShell>
+    <AppShell rail={rail}>
       <div className="py-6 space-y-6">
         {showingSample && (
           <SampleDataNotice
@@ -267,63 +412,27 @@ export default function AdminProgramsPage() {
             askAiPrompt="Why does the admin programs page show sample programmes?"
           />
         )}
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        {/* Search stays with the list; status and type are in the rail, and
+            the line below says which are narrowing it. */}
+        <div className="space-y-2">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search programs..."
+              aria-label="Search programs by name or organization"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Programs</p>
-              <p className="text-xl font-bold">{programs.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className={cn('text-xl font-bold', STATUS.success.text)}>
-                {programs.filter((p) => p.status === 'active').length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Startups</p>
-              <p className="text-xl font-bold">
-                {programs.reduce((acc, p) => acc + p.startups, 0)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Organizations</p>
-              <p className="text-xl font-bold">
-                {new Set(programs.map((p) => p.organization)).size}
-              </p>
-            </CardContent>
-          </Card>
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            <BilingualText
+              en={`${filteredPrograms.length} of ${programs.length} programs${statusFilter !== 'all' ? ` · ${statusLabel?.en}` : ''}${typeFilter !== 'all' ? ` · ${typeFilter}` : ''}`}
+              el={`${filteredPrograms.length} από ${programs.length} προγράμματα${statusFilter !== 'all' ? ` · ${statusLabel?.el}` : ''}${typeFilter !== 'all' ? ` · ${typeFilter}` : ''}`}
+              compact
+              wrap
+            />
+          </p>
         </div>
 
         {/* Programs List */}
@@ -339,6 +448,11 @@ export default function AdminProgramsPage() {
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters
                 </p>
+                {activeFilterCount > 0 && (
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                    <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}

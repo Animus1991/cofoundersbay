@@ -9,6 +9,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { downloadCsv } from '@/lib/csv';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,16 +107,13 @@ export default function MentorEarningsPage() {
 
   const exportCsv = () => {
     if (!transactions.length) return;
-    const header = 'Date,Mentee,Topic,Duration (min),Amount,Currency,Status\n';
-    const body = transactions
-      .map((t) => [t.date, t.mentee.name, `"${t.topic.replace(/"/g, '""')}"`, t.duration, t.amount, t.currency, t.status].join(','))
-      .join('\n');
-    const url = URL.createObjectURL(new Blob([header + body], { type: 'text/csv' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `earnings-${period}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Through the shared quoting: a mentee name with a comma used to split
+    // into two columns here (only the topic was quoted).
+    downloadCsv(
+      `earnings-${period}`,
+      ['Date', 'Mentee', 'Topic', 'Duration (min)', 'Amount', 'Currency', 'Status'],
+      transactions.map((t) => [t.date, t.mentee.name, t.topic, t.duration, t.amount, t.currency, t.status]),
+    );
   };
 
   const totalEarned = transactions.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.amount, 0);

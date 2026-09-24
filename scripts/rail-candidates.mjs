@@ -86,17 +86,35 @@ const rows = walk(APP).map((p) => {
   return { route: route === '/page.tsx' ? '/' : route, ...measure(sourceFor(p)) };
 });
 
+/*
+ * Pages the heuristic flags that were looked at and argued out. Each reason
+ * says why the families it counted are the page's content rather than
+ * controls about it. A page leaves this list when it changes shape.
+ */
+const DECLINED = {
+  '/org/settings': 'a settings form: its selects and toggles are the page, not options on it',
+  '/admin/feature-flags': 'the stat strip mirrors the tabs one-for-one, so the tabs already are the filter',
+  '/dashboard/founder': 'a dashboard: the summary cards are the content',
+  '/dashboard/incubator': 'a dashboard: the summary cards are the content',
+  '/discover': 'a search page: the filters are how it is used',
+  '/help': 'a help centre: search and categories are the content',
+  '/groups/manage': 'one three-number strip and a search; a rail would be one thin section',
+};
+
 rows.sort((a, b) => b.families.length - a.families.length || b.controls - a.controls);
-const candidates = rows.filter((r) => r.families.length >= 3 && !r.hasRail);
+const declined = rows.filter((r) => r.families.length >= 3 && !r.hasRail && DECLINED[r.route]);
+const candidates = rows.filter((r) => r.families.length >= 3 && !r.hasRail && !DECLINED[r.route]);
 const done = rows.filter((r) => r.hasRail);
 const calm = rows.filter((r) => r.families.length < 3 && !r.hasRail);
 
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ candidates, done, calm: calm.length, total: rows.length }, null, 1));
+  console.log(JSON.stringify({ candidates, declined: declined.map((r) => ({ ...r, reason: DECLINED[r.route] })), done, calm: calm.length, total: rows.length }, null, 1));
 } else {
-  console.log(`pages ${rows.length} · with rail ${done.length} · candidates (3+ families, no rail) ${candidates.length} · calm ${calm.length}\n`);
+  console.log(`pages ${rows.length} · with rail ${done.length} · candidates (3+ families, no rail) ${candidates.length} · declined ${declined.length} · calm ${calm.length}\n`);
   console.log('route'.padEnd(40), 'ctrl', 'fam', 'families');
   for (const r of candidates) console.log(r.route.padEnd(40), String(r.controls).padStart(4), String(r.families.length).padStart(3), r.families.join(','));
+  console.log('\n-- declined, with reason --');
+  for (const r of declined) console.log(r.route.padEnd(40), DECLINED[r.route]);
   console.log('\n-- already railed --');
   for (const r of done) console.log(r.route.padEnd(40), String(r.controls).padStart(4), String(r.families.length).padStart(3), r.families.join(','));
 }

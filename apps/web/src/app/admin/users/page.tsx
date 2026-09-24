@@ -13,8 +13,14 @@ import {
   CheckCircle2,
   AlertTriangle,
   UserX,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { downloadCsv } from '@/lib/csv';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -28,13 +34,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +84,27 @@ type User = {
 
 /** The schema's roles (`enum Role`), in the order an admin reaches for them. */
 const ASSIGNABLE_ROLES = ['founder', 'mentor', 'investor', 'org', 'admin'] as const;
+
+/*
+ * The rail's filter choices. Role now offers every role the schema has - the
+ * select it replaces had no "Organisation", so org accounts could be assigned
+ * from the row menu but never listed on their own.
+ */
+const ROLE_OPTIONS: { value: string; en: string; el: string }[] = [
+  { value: 'all', en: 'All roles', el: 'Όλοι οι ρόλοι' },
+  { value: 'founder', en: 'Founder', el: 'Ιδρυτής' },
+  { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
+  { value: 'investor', en: 'Investor', el: 'Επενδυτής' },
+  { value: 'org', en: 'Organisation', el: 'Οργανισμός' },
+  { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+];
+const STATUS_OPTIONS: { value: string; en: string; el: string }[] = [
+  { value: 'all', en: 'Any status', el: 'Οποιαδήποτε κατάσταση' },
+  { value: 'active', en: 'Active', el: 'Ενεργός' },
+  { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+  { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+  { value: 'banned', en: 'Banned', el: 'Αποκλεισμένος' },
+];
 
 type RowActions = {
   onModerate: (user: User, status: 'active' | 'suspended' | 'banned') => void;
@@ -253,13 +273,14 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [role, setRole] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
+  const { openRailSection } = usePageRail();
 
   // Mock data
   /*
    * The real directory. The seed below is what an empty instance shows, so
    * the screen still teaches its shape rather than opening blank.
    */
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: () => listAdminUsers({ limit: 100 }),
     staleTime: 60_000,
@@ -323,100 +344,168 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const exportCsv = () => {
-    const cell = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-    const rows = filteredUsers.map((u) => [u.name, u.email, u.role, u.status, u.createdAt, u.lastActive].map((v) => cell(v ?? '')).join(','));
-    const csv = ['name,email,role,status,created_at,last_active', ...rows].join('\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `users-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const exportCsv = () =>
+    downloadCsv(
+      'users',
+      ['name', 'email', 'role', 'status', 'created_at', 'last_active'],
+      filteredUsers.map((u) => [u.name, u.email, u.role, u.status, u.createdAt, u.lastActive]),
+    );
 
   const statusCounts = {
     all: users.length,
     active: users.filter((u) => u.status === 'active').length,
     suspended: users.filter((u) => u.status === 'suspended').length,
     pending: users.filter((u) => u.status === 'pending').length,
+    banned: users.filter((u) => u.status === 'banned').length,
   };
+  const activeFilterCount = (role !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
+  const clearFilters = () => { setRole('all'); setStatus('all'); };
+
+  const totals = [
+    { id: 'total', en: 'Total users', el: 'Σύνολο χρηστών', value: statusCounts.all, icon: Users, tone: 'text-primary-accessible' },
+    { id: 'active', en: 'Active', el: 'Ενεργοί', value: statusCounts.active, icon: CheckCircle2, tone: 'text-status-success' },
+    { id: 'pending', en: 'Pending', el: 'Σε αναμονή', value: statusCounts.pending, icon: AlertTriangle, tone: 'text-muted-foreground' },
+    { id: 'suspended', en: 'Suspended', el: 'Σε αναστολή', value: statusCounts.suspended, icon: UserX, tone: 'text-status-warning' },
+    { id: 'banned', en: 'Banned', el: 'Αποκλεισμένοι', value: statusCounts.banned, icon: Ban, tone: 'text-status-danger' },
+  ];
+
+  const filterButton = (on: boolean, onClick: () => void, en: string, el: string, key: string) => (
+    <button
+      key={key}
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={cn(
+        'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+        on ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+      )}
+    >
+      <BilingualText en={en} el={el} compact wrap />
+    </button>
+  );
+
+  /*
+   * The page rail, as on /admin/tenants and /admin/user-management. The
+   * column is the directory and its search - what an admin comes here to do.
+   * The four totals that opened the page (now five: banned accounts had no
+   * count), the role and status filters and the export are about that list,
+   * so they sit one gesture away. The totals' badge is suspended + banned
+   * accounts; the filters' badge is how many are narrowing the list.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'User totals',
+      labelEl: 'Σύνολα χρηστών',
+      badge: statusCounts.suspended + statusCounts.banned || null,
+      content: (
+        <ul className="space-y-2">
+          {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
+              <span className="min-w-0 flex-1 text-sm text-muted-foreground">
+                <BilingualText en={en} el={el} compact wrap />
+              </span>
+              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Narrow the list',
+      labelEl: 'Φιλτράρισμα λίστας',
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-4">
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Role" el="Ρόλος" compact />
+            </legend>
+            {ROLE_OPTIONS.map((o) => filterButton(role === o.value, () => setRole(o.value), o.en, o.el, o.value))}
+          </fieldset>
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Status" el="Κατάσταση" compact />
+            </legend>
+            {STATUS_OPTIONS.map((o) => filterButton(status === o.value, () => setStatus(o.value), o.en, o.el, o.value))}
+          </fieldset>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm text-primary-accessible hover:bg-muted/70"
+            >
+              <BilingualText en="Clear role and status" el="Καθαρισμός ρόλου και κατάστασης" compact wrap />
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'List tools',
+      labelEl: 'Εργαλεία λίστας',
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={cn('icon-sm shrink-0', isFetching && 'animate-spin')} aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh users" el="Ανανέωση χρηστών" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={filteredUsers.length === 0}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={`Export ${filteredUsers.length} users as CSV`} el={`Εξαγωγή ${filteredUsers.length} χρηστών σε CSV`} compact wrap />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const roleLabel = ROLE_OPTIONS.find((o) => o.value === role);
+  const statusLabel = STATUS_OPTIONS.find((o) => o.value === status);
 
   return (
-    <AppShell
-      actions={
-        <>
-          {/* Had no handler. Exports what the filters show. */}
-          <Button onClick={exportCsv} disabled={filteredUsers.length === 0}>
-            Export Users
-          </Button>
-        </>
-      }
-    >
+    <AppShell rail={rail}>
       <div className="py-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Users</p>
-              <p className="text-xl font-bold">{users.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-status-success">{statusCounts.active}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-xl font-bold text-muted-foreground">{statusCounts.pending}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Suspended</p>
-              <p className="text-xl font-bold text-status-warning">{statusCounts.suspended}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        {/* Search stays in the column: it is how the list is used, not a
+            setting on it. The filters live in the rail; the line below says
+            which are on, because a short list with no stated reason reads as
+            a short directory. */}
+        <div className="space-y-2">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search users..."
+              aria-label="Search users by name or email"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={role} onValueChange={setRole}>
-            <SelectTrigger aria-label="Role" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="founder">Founder</SelectItem>
-              <SelectItem value="mentor">Mentor</SelectItem>
-              <SelectItem value="investor">Investor</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="suspended">Suspended</SelectItem>
-              <SelectItem value="banned">Banned</SelectItem>
-            </SelectContent>
-          </Select>
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            <BilingualText
+              en={`${filteredUsers.length} of ${users.length} users${role !== 'all' ? ` · ${roleLabel?.en}` : ''}${status !== 'all' ? ` · ${statusLabel?.en}` : ''}`}
+              el={`${filteredUsers.length} από ${users.length} χρήστες${role !== 'all' ? ` · ${roleLabel?.el}` : ''}${status !== 'all' ? ` · ${statusLabel?.el}` : ''}`}
+              compact
+              wrap
+            />
+          </p>
         </div>
 
         {/* Users Table */}
@@ -440,6 +529,11 @@ export default function AdminUsersPage() {
               <p className="text-sm text-muted-foreground mt-1">
                 Try adjusting your filters
               </p>
+              {activeFilterCount > 0 && (
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                  <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                </Button>
+              )}
             </CardContent>
           )}
         </Card>
