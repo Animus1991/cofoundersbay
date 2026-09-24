@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -626,6 +627,79 @@ export default function FundraisingPage() {
     refresh();
   }
 
+  /*
+   * The page rail: the pipeline totals and the resource links are about the
+   * page, not the pipeline itself. The column keeps the round, the views and
+   * the actions that change them.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'round',
+      glyph: 'chart',
+      labelEn: 'Round totals',
+      labelEl: 'Σύνολα γύρου',
+      badge: stats.active || null,
+      content: (
+        <div className="space-y-2">
+          {[
+            { glyph: 'people' as const, label: 'stat_leads' as const, value: stats.total, count: stats.total, tone: 'accent' as const },
+            { glyph: 'messages' as const, label: 'stat_active' as const, value: stats.active, count: stats.active, tone: 'warning' as const },
+            { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, count: stats.committed, tone: 'success' as const },
+            { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', count: null, tone: 'info' as const },
+          ].map((s) => (
+            <div key={s.label} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+              <div className={cn('shrink-0 rounded-xl p-2', STATUS[s.tone].bg)}>
+                <CfbGlyph name={s.glyph} className={cn('icon-sm', STATUS[s.tone].icon)} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg font-bold tabular-nums">{s.value}</p>
+                <p className="text-2xs leading-snug text-muted-foreground">
+                  <BilingualText
+                    en={fundraisingEn(s.label)}
+                    el={fundraisingEl(s.count === 1 ? (`${s.label}_one` as typeof s.label) : s.label)}
+                    compact
+                    wrap
+                  />
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'resources',
+      glyph: 'book',
+      labelEn: 'Resources',
+      labelEl: 'Πόροι',
+      content: (
+        <div className="space-y-0.5">
+          {[
+            { title: 'res_playbook' as const, desc: 'res_playbook_desc' as const, href: '/learning', glyph: 'book' as const },
+            { title: 'res_find' as const, desc: 'res_find_desc' as const, href: '/investors', glyph: 'discover' as const },
+            { title: 'res_ready' as const, desc: 'res_ready_desc' as const, href: '/readiness', glyph: 'chart' as const },
+            { title: 'res_deck' as const, desc: 'res_deck_desc' as const, href: '/builder/pitch-deck', glyph: 'builder' as const },
+          ].map((r) => (
+            <Link key={r.href} href={r.href} className="group flex items-center justify-between rounded-lg px-2.5 py-2 transition-colors hover:bg-muted/70">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <CfbGlyph name={r.glyph} className="icon-sm shrink-0 text-muted-foreground" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium transition-colors group-hover:text-primary-accessible">
+                    <BilingualText en={fundraisingEn(r.title)} el={fundraisingEl(r.title)} compact wrap />
+                  </p>
+                  <p className="text-2xs text-muted-foreground">
+                    <BilingualText en={fundraisingEn(r.desc)} el={fundraisingEl(r.desc)} compact wrap />
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="icon-sm shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </Link>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   const emptyCta = (
     <div className="flex flex-wrap justify-center gap-2">
       <Button size="sm" className="rounded-xl" onClick={() => openAdd()}>
@@ -641,6 +715,7 @@ export default function FundraisingPage() {
   return (
     <AppShell
       showHelp
+      rail={rail}
       askAi="Fundraising is still sample data. Based on my graph, what should I do next toward a real round — profile, matches, or builder?"
       actions={
         <div className="flex flex-wrap gap-2">
@@ -698,40 +773,7 @@ export default function FundraisingPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            // `count` is the number the label has to agree with in Greek;
-            // the conversion tile has none, so it keeps one form.
-            { glyph: 'people' as const, label: 'stat_leads' as const, value: stats.total, count: stats.total, tone: 'accent' as const },
-            { glyph: 'messages' as const, label: 'stat_active' as const, value: stats.active, count: stats.active, tone: 'warning' as const },
-            { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, count: stats.committed, tone: 'success' as const },
-            { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', count: null, tone: 'info' as const },
-          ].map((s) => (
-            <Card key={s.label} className="rounded-xl">
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className={cn('shrink-0 rounded-xl p-2', STATUS[s.tone].bg)}>
-                  <CfbGlyph name={s.glyph} className={cn('icon-sm', STATUS[s.tone].icon)} />
-                </div>
-                {/* min-w-0 so the label truncates instead of widening the tile —
-                    measured 122px past the viewport at 640-1024px without it. */}
-                <div className="min-w-0">
-                  <p className="text-lg font-bold tabular-nums">{s.value}</p>
-                  {/* The note above is only half the story: `min-w-0` lets the
-                      label truncate, and truncating is not what a 104px label in
-                      a 100px box should do. `wrap` gives it the second line. */}
-                  <p className="text-2xs leading-snug text-muted-foreground">
-                    <BilingualText
-                      en={fundraisingEn(s.label)}
-                      el={fundraisingEl(s.count === 1 ? (`${s.label}_one` as typeof s.label) : s.label)}
-                      compact
-                      wrap
-                    />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* The round totals moved to the page rail ('round' section). */}
 
         <Tabs defaultValue="pipeline">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -748,18 +790,8 @@ export default function FundraisingPage() {
                 <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{docs.length}</Badge>
               </TabsTrigger>
             </TabsList>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="h-8 gap-1.5 rounded-xl text-xs" asChild>
-                <Link href="/investors">
-                  <CfbGlyph name="discover" className="icon-sm" />
-                  <BilingualText en={fundraisingEn('find_investors')} el={fundraisingEl('find_investors')} compact />
-                </Link>
-              </Button>
-              <Button size="sm" className="h-8 gap-1.5 rounded-xl text-xs" onClick={() => openAdd()}>
-                <Plus className="icon-sm" />
-                <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
-              </Button>
-            </div>
+            {/* Find investors / Add lead live in the page header actions -
+                rendering them here again was the same control twice. */}
           </div>
 
           <TabsContent value="pipeline" className="mt-4">
@@ -784,36 +816,7 @@ export default function FundraisingPage() {
           </TabsContent>
         </Tabs>
 
-        <Card className="rounded-xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">
-              <BilingualText en={fundraisingEn('resources')} el={fundraisingEl('resources')} />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[
-              { title: 'res_playbook' as const, desc: 'res_playbook_desc' as const, href: '/learning', glyph: 'book' as const },
-              { title: 'res_find' as const, desc: 'res_find_desc' as const, href: '/investors', glyph: 'discover' as const },
-              { title: 'res_ready' as const, desc: 'res_ready_desc' as const, href: '/readiness', glyph: 'chart' as const },
-              { title: 'res_deck' as const, desc: 'res_deck_desc' as const, href: '/builder/pitch-deck', glyph: 'builder' as const },
-            ].map((r) => (
-              <Link key={r.href} href={r.href} className="group flex items-center justify-between rounded-xl p-3 transition-colors hover:bg-muted">
-                <div className="flex items-center gap-3">
-                  <CfbGlyph name={r.glyph} className="icon-sm text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium transition-colors group-hover:text-primary-accessible">
-                      <BilingualText en={fundraisingEn(r.title)} el={fundraisingEl(r.title)} compact />
-                    </p>
-                    <p className="text-2xs text-muted-foreground">
-                      <BilingualText en={fundraisingEn(r.desc)} el={fundraisingEl(r.desc)} compact />
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
+        {/* Resources moved to the page rail ('resources' section). */}
       </div>
 
       {addOpen && (
