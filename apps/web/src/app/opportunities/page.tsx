@@ -639,7 +639,7 @@ export default function OpportunitiesPage() {
                   placeholder={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                  className="pl-9"
                 />
               </div>
               <div className="flex gap-2 flex-wrap items-center">
@@ -733,7 +733,7 @@ export default function OpportunitiesPage() {
                 placeholder={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="pl-9"
               />
             </div>
             {jobsError ? (

@@ -109,6 +109,14 @@ export const MATCHES_STRINGS: Record<string, BilingualPair> = {
   compatibility_with: { en: 'Compatibility with', el: 'Συμβατότητα με' },
   overall_match: { en: 'Overall Match', el: 'Συνολική αντιστοίχιση' },
   why_you_match: { en: 'Why you match', el: 'Γιατί ταιριάζετε' },
+  match_confidence: { en: 'confidence', el: 'βεβαιότητα' },
+  shared_strengths: { en: 'Shared strengths', el: 'Κοινά δυνατά σημεία' },
+  watch_outs: { en: 'Worth discussing', el: 'Αξίζει να συζητηθούν' },
+  breakdown_loading: { en: 'Scoring this pairing…', el: 'Αξιολόγηση της σύζευξης…' },
+  breakdown_unavailable: {
+    en: 'The per-dimension breakdown is not available for this profile yet.',
+    el: 'Η ανάλυση ανά διάσταση δεν είναι ακόμη διαθέσιμη για αυτό το προφίλ.',
+  },
 
   // ── Match reasons ──
   complementary_skills: { en: 'Complementary role & skills', el: 'Συμπληρωματικός ρόλος & δεξιότητες' },

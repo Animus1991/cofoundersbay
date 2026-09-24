@@ -6,8 +6,8 @@ import type { CopilotCitation } from '@/lib/copilot-types';
 
 export function CitationChip({ citation }: { citation: CopilotCitation }) {
   const className = cn(
-    'inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700',
-    'dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300',
+    'inline-flex items-center rounded-full border-0 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700',
+    'dark:bg-violet-950/40 dark:text-violet-300',
   );
 
   if (citation.href) {

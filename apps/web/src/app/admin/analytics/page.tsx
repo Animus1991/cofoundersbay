@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 import { BarChart3, Download, RefreshCw, Rocket, TrendingUp, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { getAdminStats } from '@/lib/api';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,17 +22,36 @@ const UserRoleChart = dynamic(
   { ssr: false, loading: () => <div className="h-[280px] animate-pulse rounded-lg bg-muted/40" /> },
 );
 
-const METRICS = {
-  totalUsers: 15420,
-  activeUsers: 8934,
-  totalStartups: 2841,
-  totalMentors: 1204,
-  totalInvestors: 892,
-  totalTenants: 47,
-};
-
 export default function AdminAnalyticsPage() {
   const [range, setRange] = useState('30d');
+
+  /*
+   * Six figures written into the source, over an `admin/stats` endpoint that
+   * counts every one of them. `usersByRole` is what the role tiles read, so
+   * the headline and the breakdown below it are the same arithmetic instead
+   * of two lists that happen to add up.
+   *
+   * Tenants read a dash: the platform stats count users, connections and
+   * content, not workspaces, and a tenant count is not derivable from them.
+   */
+  const { data } = useQuery({
+    queryKey: ['admin', 'stats'],
+    queryFn: getAdminStats,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const stats = data?.stats;
+  const byRole = stats?.usersByRole ?? {};
+  const METRICS = {
+    totalUsers: stats?.totalUsers ?? null,
+    activeUsers: stats?.activeUsersThisMonth ?? null,
+    totalStartups: byRole.founder ?? null,
+    totalMentors: byRole.mentor ?? null,
+    totalInvestors: byRole.investor ?? null,
+    totalTenants: null as number | null,
+  };
+  const dash = '\u2014';
 
   return (
     <AppShell
@@ -68,12 +89,12 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         {[
-          { label: 'Total users', value: METRICS.totalUsers, icon: Users },
-          { label: 'Active users', value: METRICS.activeUsers, icon: TrendingUp },
-          { label: 'Startups', value: METRICS.totalStartups, icon: Rocket },
-          { label: 'Mentors', value: METRICS.totalMentors, icon: BarChart3 },
-          { label: 'Investors', value: METRICS.totalInvestors, icon: TrendingUp },
-          { label: 'Tenants', value: METRICS.totalTenants, icon: Users },
+          { label: 'Total users', value: METRICS.totalUsers ?? dash, icon: Users },
+          { label: 'Active users', value: METRICS.activeUsers ?? dash, icon: TrendingUp },
+          { label: 'Startups', value: METRICS.totalStartups ?? dash, icon: Rocket },
+          { label: 'Mentors', value: METRICS.totalMentors ?? dash, icon: BarChart3 },
+          { label: 'Investors', value: METRICS.totalInvestors ?? dash, icon: TrendingUp },
+          { label: 'Tenants', value: METRICS.totalTenants ?? dash, icon: Users },
         ].map(({ label, value, icon: Icon }) => (
           <Card key={label}>
             <CardContent className="p-4">
@@ -94,10 +115,21 @@ export default function AdminAnalyticsPage() {
         <CardContent>
           <UserRoleChart
             data={[
-              { name: 'Founders', value: 6789 },
-              { name: 'Mentors', value: 3456 },
-              { name: 'Investors', value: 2345 },
-              { name: 'Other', value: 2830 },
+              // The same `usersByRole` the tiles above read, so the chart and
+              // the headline cannot disagree about how many mentors there are.
+              { name: 'Founders', value: byRole.founder ?? 0 },
+              { name: 'Mentors', value: byRole.mentor ?? 0 },
+              { name: 'Investors', value: byRole.investor ?? 0 },
+              {
+                name: 'Other',
+                value: Math.max(
+                  0,
+                  (stats?.totalUsers ?? 0)
+                    - (byRole.founder ?? 0)
+                    - (byRole.mentor ?? 0)
+                    - (byRole.investor ?? 0),
+                ),
+              },
             ]}
           />
         </CardContent>

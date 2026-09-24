@@ -1,25 +1,35 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
   <!--
-    CoFounderBay mark β€” "two founders, one bay".
-    Same geometry as components/brand/Logo.tsx so the favicon, PWA icon and
-    in-app logo are one shape. Colours are the light-theme primary
-    (hsl 236 72% 55%) because a favicon cannot read CSS variables.
+    CoFounderBay — surfer on the board at sunset, cofounder under the board.
+    Same scene as public/icons/logo-surf.png and components/brand/Logo.tsx.
   -->
   <defs>
-    <linearGradient id="badge" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#3a45df"/>
-      <stop offset="100%" stop-color="#3a45df" stop-opacity="0.82"/>
+    <linearGradient id="sky" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6D28D9"/>
+      <stop offset="38%" stop-color="#EA580C"/>
+      <stop offset="62%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
     </linearGradient>
-    <radialGradient id="sheen" cx="50%" cy="22%" r="65%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.16"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    <radialGradient id="sun" cx="56%" cy="40%" r="42%">
+      <stop offset="0%" stop-color="#FEF9C3"/>
+      <stop offset="40%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#EA580C"/>
     </radialGradient>
   </defs>
-  <rect width="32" height="32" rx="9" fill="#3a45df"/>
-  <rect width="32" height="32" rx="9" fill="url(#badge)"/>
-  <rect width="32" height="32" rx="9" fill="url(#sheen)"/>
-  <path d="M8.5 11.5 C8.5 20 13.5 23.5 16 24.5 C18.5 23.5 23.5 20 23.5 11.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.92"/>
-  <circle cx="8.5" cy="10.5" r="3.1" fill="#ffffff"/>
-  <circle cx="23.5" cy="10.5" r="3.1" fill="#ffffff"/>
-  <circle cx="16" cy="24.5" r="1.9" fill="#ffffff" opacity="0.9"/>
+  <rect width="48" height="48" rx="13" fill="url(#sky)"/>
+  <circle cx="27" cy="19" r="13" fill="url(#sun)"/>
+  <path fill="#1E1B4B" d="M0 29.5C8 26.5 16 29 24 28c8-1 16-3.5 24-1v21H0Z"/>
+  <path fill="#312E81" opacity=".55" d="M0 33c9-2 18 1 28-1 8-1.5 14 1 20 0v16H0Z"/>
+  <g transform="rotate(-14 22 27.4)">
+    <ellipse cx="22" cy="27.4" rx="16" ry="2.55" fill="#FFF7ED"/>
+  </g>
+  <!-- Surfer -->
+  <circle cx="18.2" cy="18.4" r="2.4" fill="#1E1B4B"/>
+  <path d="M17.1 20.6c.5 2.5 2.4 4.4 5.6 5.8" stroke="#1E1B4B" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M18.5 22.1c-2.7-1.1-4.8-2.5-6.5-4.2" stroke="#1E1B4B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20.2 24.8 18.6 27.4" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Cofounder under the board -->
+  <circle cx="25.4" cy="35.6" r="2.2" fill="#0F172A"/>
+  <path d="M24 33.9 21.6 28.6M26.9 33.9 29.6 29" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M24.4 37.2c.5 2.6 2.3 4.4 1.1 5.8" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
 </svg>

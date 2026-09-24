@@ -292,10 +292,10 @@ export default function ProjectDetailPage() {
                           <p className="text-sm text-muted-foreground">{member.role}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button aria-label="Ask AI about this member" variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => openAskAi(member.id)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => openAskAi(member.id)} aria-label={bilingualAria(`Message ${member.name}`, `Μήνυμα προς ${member.name}`)}>
                             <MessageSquare className="icon-sm" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" asChild aria-label={bilingualAria(`Schedule a call with ${member.name}`, `Προγραμματισμός κλήσης με ${member.name}`)}>
                             <Link href="/calendar">
                               <Video className="icon-sm" />
                             </Link>

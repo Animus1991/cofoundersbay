@@ -56,9 +56,14 @@ export const FUNDRAISING_SEED_ROUND: FundRound = {
 };
 
 export const FUNDRAISING_SEED_LEADS: InvestorLead[] = [
-  { id: 'l1', name: 'Sarah Chen', firm: 'Chen Ventures', type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$25K–$150K', status: 'meeting', lastContact: '2026-09-04T12:00:00.000Z', isVerified: true, notes: 'Interested in AI angle. Follow up after demo.', notesEl: 'Ενδιαφέρεται για τη γωνία AI. Επικοινωνία μετά την επίδειξη.' },
+  { id: 'l1', name: 'Sarah Chen', firm: 'Chen Ventures', type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$25K–$150K', status: 'meeting', lastContact: '2026-09-04T12:00:00.000Z', isVerified: true, notes: 'Interested in AI angle. Follow up after demo.', notesEl: 'Ενδιαφέρεται για την οπτική του AI. Επικοινωνία μετά την επίδειξη.' },
   { id: 'l2', name: 'Michael Torres', firm: 'Horizon Capital', type: 'VC', stage: 'Seed / A', checkSize: '$500K–$3M', status: 'contacted', lastContact: '2026-08-30T12:00:00.000Z', isVerified: true, notes: 'Warm intro via Nikos. Waiting for deck review.', notesEl: 'Θερμή γνωριμία μέσω Νίκου. Περιμένει ανασκόπηση του deck.' },
-  { id: 'l3', name: 'Athens Tech Angels', firm: 'Syndicate', type: 'Syndicate', stage: 'Pre-Seed / Seed', checkSize: '€50K–€200K', status: 'committed', lastContact: '2026-09-03T12:00:00.000Z', isVerified: true, notes: 'Lead investor — committed $200K of the $375K raised.', notesEl: 'Κύριος επενδυτής — δεσμεύτηκε $200K από τα $375K που έχουν συγκεντρωθεί.' },
+  // The only lead with `status: 'committed'`, so the amount it commits has to
+  // be the round's whole `raised` figure - the "Committed" tile totals exactly
+  // this - and its cheque range has to contain that figure, in the round's own
+  // currency. `firm` is omitted: "Syndicate" is the type, not a firm name, and
+  // setting both rendered "Syndicate · Κοινοπραξία".
+  { id: 'l3', name: 'Athens Tech Angels', firm: undefined, type: 'Syndicate', stage: 'Pre-Seed / Seed', checkSize: '$200K–$500K', status: 'committed', lastContact: '2026-09-03T12:00:00.000Z', isVerified: true, notes: 'Lead investor — committed the full $375K raised so far.', notesEl: 'Κύριος επενδυτής — δεσμεύτηκε και τα $375K που έχουν συγκεντρωθεί.' },
   { id: 'l4', name: 'Emma Williams', firm: undefined, type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$10K–$75K', status: 'prospect', lastContact: undefined, isVerified: true, notes: undefined },
   { id: 'l5', name: 'Sequoia Scout', firm: 'Sequoia Capital', type: 'Scout', stage: 'Pre-Seed', checkSize: '$100K–$500K', status: 'dd', lastContact: '2026-09-01T12:00:00.000Z', isVerified: true, notes: 'Requested financials and cap table.', notesEl: 'Ζήτησε οικονομικά στοιχεία και πίνακα κεφαλαίου.' },
   { id: 'l6', name: 'Klaus Weber', firm: 'Weber Family Office', type: 'Family Office', stage: 'Seed / A', checkSize: '$1M–$5M', status: 'passed', lastContact: '2026-08-23T12:00:00.000Z', isVerified: false, notes: 'Too early for their ticket size.', notesEl: 'Πολύ νωρίς για το μέγεθος επιταγής τους.' },

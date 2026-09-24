@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
@@ -27,6 +28,12 @@ import {
   X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useToast } from '@/components/ui/toast';
+import {
+  createInvestorDeal,
+  deleteInvestorDeal,
+  listInvestorDeals,
+} from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,7 +76,58 @@ type Startup = {
 };
 
 function StartupCard({ startup, compact = false }: { startup: Startup; compact?: boolean }) {
-  const [inWatchlist, setInWatchlist] = useState(false);
+  /*
+   * Watching used to be `useState(false)` on the card: the eye filled in, and
+   * nothing anywhere else knew. It writes a deal at `discovered` now, which is
+   * the same row the watchlist lists, the pipeline board groups and — once it
+   * reaches `invested` — the portfolio totals. Scouting is the front door of
+   * that loop, so this is the step that made the loop exist.
+   */
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+
+  const { data: watched } = useQuery({
+    queryKey: ['investor', 'deals', 'discovered'],
+    queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const existing = watched?.deals.find((deal) => deal.name === startup.name);
+  const inWatchlist = Boolean(existing);
+  const [pending, setPending] = useState(false);
+
+  const toggle = useMutation({
+    mutationFn: async () => {
+      if (existing) {
+        await deleteInvestorDeal(existing.id);
+        return false;
+      }
+      await createInvestorDeal({
+        name: startup.name,
+        tagline: startup.tagline,
+        industry: startup.industry,
+        location: startup.location,
+        companyStage: startup.stage,
+        teamSize: startup.teamSize,
+        tags: startup.tags,
+      });
+      return true;
+    },
+    onMutate: () => setPending(true),
+    onSettled: () => setPending(false),
+    onSuccess: (added) => {
+      void qc.invalidateQueries({ queryKey: ['investor'] });
+      success(added ? 'Added to your watchlist' : 'Removed from your watchlist');
+    },
+    onError: (err) =>
+      showError('Could not update the watchlist', err instanceof Error ? err.message : undefined),
+  });
+
+  const setInWatchlist = () => {
+    if (pending) return;
+    toggle.mutate();
+  };
 
   return (
     <Card className={cn('transition-all hover:shadow-md hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
@@ -94,12 +152,12 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist()} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
                   <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-label={`Actions for ${startup.name}`} variant="ghost" size="icon" className="h-7 w-7">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`More actions for ${startup.name}`}>
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -108,7 +166,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                       <Link href={`/startups/${startup.id}`}><Eye className="mr-2 icon-sm" />View Details</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem><GanttChart className="mr-2 icon-sm" />Add to Pipeline</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setInWatchlist(!inWatchlist)}>
+                    <DropdownMenuItem onClick={() => setInWatchlist()}>
                       <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -225,10 +283,10 @@ export default function InvestorScoutingPage() {
             <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button aria-label="List view" variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
+            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="List view" aria-pressed={viewMode === 'list'}>
               <List className="icon-sm" />
             </Button>
-            <Button aria-label="Grid view" variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
+            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Grid view" aria-pressed={viewMode === 'grid'}>
               <LayoutGrid className="icon-sm" />
             </Button>
           </div>

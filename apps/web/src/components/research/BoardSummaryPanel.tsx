@@ -153,7 +153,7 @@ export function BoardSummaryPanel({
   }, [analysis, boardTitle, success, showError]);
 
   return (
-    <div className="w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
+    <div className="w-full sm:w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
         <div className="w-6 h-6 rounded-lg bg-status-success/15 flex items-center justify-center">
@@ -359,7 +359,7 @@ export function BoardSummaryPanel({
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {analysis.suggestedTags.map((tag) => (
-                        <span key={tag} className="text-2xs px-2 py-0.5 rounded-full bg-status-accent/10 text-status-accent border border-status-accent/20">
+                        <span key={tag} className="text-2xs px-2 py-0.5 rounded-full bg-status-accent/10 text-status-accent">
                           {tag}
                         </span>
                       ))}

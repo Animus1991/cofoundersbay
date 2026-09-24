@@ -35,6 +35,9 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   startup_progress: { en: 'Startup Progress', el: 'Πρόοδος νεοφυούς' },
   overall_completion: { en: 'Overall Completion', el: 'Συνολική ολοκλήρωση' },
   quick_actions: { en: 'Quick Actions', el: 'Γρήγορες ενέργειες' },
+  // The badges beside these buttons are document completeness, not the
+  // readiness dimension of the same name in the card next to it.
+  quick_actions_hint: { en: 'How complete each document is', el: 'Πόσο συμπληρωμένο είναι κάθε έγγραφο' },
   start: { en: 'Start', el: 'Έναρξη' },
   edit: { en: 'Edit', el: 'Επεξεργασία' },
   critical_gaps: { en: 'Critical Gaps', el: 'Κρίσιμα κενά' },
@@ -392,6 +395,59 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
     en: 'Types already in the deck stay clickable — they add another copy.',
     el: 'Οι τύποι που υπάρχουν ήδη παραμένουν ενεργοί — προσθέτουν άλλο αντίγραφο.',
   },
+  pitch_filled: { en: 'filled', el: 'συμπληρωμένες' },
+  pitch_missing: { en: 'Missing slides', el: 'Κενές διαφάνειες' },
+  pitch_next_write: { en: 'Write next', el: 'Γράψτε μετά' },
+  pitch_add_remaining: { en: 'Add remaining slides', el: 'Προσθήκη υπόλοιπων' },
+  pitch_duplicate: { en: 'Duplicate', el: 'Αντίγραφο' },
+  pitch_copy: { en: 'Copy slide', el: 'Αντιγραφή διαφάνειας' },
+  pitch_copied: { en: 'Slide copied', el: 'Η διαφάνεια αντιγράφηκε' },
+  pitch_fill_core: { en: 'Fill from Idea Core', el: 'Συμπλήρωση από Πυρήνα ιδέας' },
+  pitch_filled_core: { en: 'Empty slides filled from Idea Core and BMC.', el: 'Οι κενές διαφάνειες συμπληρώθηκαν από Πυρήνα ιδέας και BMC.' },
+  pitch_unsaved: { en: 'Unsaved', el: 'Μη αποθηκευμένο' },
+  pitch_outline: { en: 'Recommended narrative', el: 'Προτεινόμενη αφήγηση' },
+  pitch_outline_hint: {
+    en: 'Twelve slides investors expect. Add one, or generate the full deck from Idea Core — filled slides are never overwritten.',
+    el: 'Δώδεκα διαφάνειες που περιμένουν οι επενδυτές. Προσθέστε μία ή δημιουργήστε το πλήρες deck από τον Πυρήνα ιδέας — οι συμπληρωμένες δεν αντικαθίστανται.',
+  },
+  pitch_words: { en: 'words', el: 'λέξεις' },
+  pitch_preview_empty: { en: 'This slide has no content yet.', el: 'Αυτή η διαφάνεια δεν έχει περιεχόμενο ακόμα.' },
+  pitch_readiness: { en: 'Funding readiness', el: 'Ετοιμότητα χρηματοδότησης' },
+  pitch_no_missing: { en: 'Every recommended type is in the deck.', el: 'Όλοι οι προτεινόμενοι τύποι είναι στο deck.' },
+  pitch_open: { en: 'Add', el: 'Προσθήκη' },
+  pitch_deck_type: { en: 'Deck type', el: 'Τύπος deck' },
+  pitch_type_hint_investor: {
+    en: 'Cover → problem → solution → market → product → traction → model → team → ask.',
+    el: 'Εξώφυλλο → πρόβλημα → λύση → αγορά → προϊόν → traction → μοντέλο → ομάδα → αίτημα.',
+  },
+  pitch_type_hint_accel: {
+    en: 'Shorter: problem, unique insight, traction, and why this programme.',
+    el: 'Συντομότερο: πρόβλημα, μοναδική ματιά, traction και γιατί αυτό το πρόγραμμα.',
+  },
+  pitch_type_hint_cofounder: {
+    en: 'Lead with the hole in the team and the work you will share.',
+    el: 'Ξεκινήστε με το κενό στην ομάδα και τη δουλειά που θα μοιραστείτε.',
+  },
+  pitch_type_hint_grant: {
+    en: 'Impact, method, budget, and who is served — then the ask.',
+    el: 'Επίδραση, μέθοδος, προϋπολογισμός και ποιοι εξυπηρετούνται — μετά το αίτημα.',
+  },
+  pitch_type_hint_competition: {
+    en: 'One problem, one demo, one metric. Judges read fast.',
+    el: 'Ένα πρόβλημα, ένα demo, μία μέτρηση. Οι κριτές διαβάζουν γρήγορα.',
+  },
+  hint_slide_cover: { en: 'Five seconds: name, line, and why now.', el: 'Πέντε δευτερόλεπτα: όνομα, γραμμή και γιατί τώρα.' },
+  hint_slide_problem: { en: 'Who hurts, how much, cost of inaction.', el: 'Ποιος πονάει, πόσο, κόστος αδράνειας.' },
+  hint_slide_solution: { en: 'What you built and the unique value.', el: 'Τι φτιάξατε και η μοναδική αξία.' },
+  hint_slide_market: { en: 'TAM / SAM / SOM with a realistic SOM.', el: 'TAM / SAM / SOM με ρεαλιστικό SOM.' },
+  hint_slide_product: { en: 'How it works — demo or three screens.', el: 'Πώς δουλεύει — demo ή τρεις οθόνες.' },
+  hint_slide_traction: { en: 'Strongest proof first. Be honest about stage.', el: 'Η ισχυρότερη απόδειξη πρώτη. Ειλικρίνεια για το στάδιο.' },
+  hint_slide_bmc: { en: 'How money comes in and unit economics.', el: 'Πώς μπαίνουν τα χρήματα και unit economics.' },
+  hint_slide_comp: { en: 'Name rivals. Show the axis you win on.', el: 'Ονομάστε ανταγωνιστές. Δείξτε τον άξονα που κερδίζετε.' },
+  hint_slide_team: { en: 'Why this team can execute this plan.', el: 'Γιατί αυτή η ομάδα μπορεί να εκτελέσει αυτό το πλάνο.' },
+  hint_slide_fin: { en: 'Conservative 18–24 month path.', el: 'Συντηρητική πορεία 18–24 μηνών.' },
+  hint_slide_ask: { en: 'Amount, use of funds, runway.', el: 'Ποσό, χρήση κεφαλαίων, runway.' },
+  hint_slide_close: { en: 'One ask and how to follow up.', el: 'Ένα αίτημα και πώς συνεχίζεται η επαφή.' },
   loading_pitch: { en: 'Loading pitch deck…', el: 'Φόρτωση pitch deck…' },
   slide_cover: { en: 'Cover', el: 'Εξώφυλλο' },
   slide_problem: { en: 'Problem', el: 'Πρόβλημα' },
@@ -457,9 +513,19 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   app_stat_avg: { en: 'Average completion', el: 'Μέση ολοκλήρωση' },
 };
 
-export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; description: BilingualPair }> = {
+/**
+ * `labelElGenitive` is required, not optional: a new document type has to
+ * declare how its Greek name declines, or it will not compile. The quick
+ * actions glue a verb to it ("Επεξεργασία …", "Έναρξη …") and both verbs
+ * govern the genitive, so a missing form is a grammar bug on a button.
+ */
+export const BUILDER_DOC_TYPES: Record<
+  string,
+  { label: BilingualPair; labelElGenitive: string; description: BilingualPair }
+> = {
   idea_core: {
     label: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
+    labelElGenitive: 'Πυρήνα ιδέας',
     description: {
       en: 'Core problem and solution definition',
       el: 'Ορισμός προβλήματος και λύσης',
@@ -467,6 +533,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   business_model_canvas: {
     label: { en: 'Business Model', el: 'Επιχειρηματικό μοντέλο' },
+    labelElGenitive: 'Επιχειρηματικού μοντέλου',
     description: {
       en: 'Value proposition and business model',
       el: 'Πρόταση αξίας και επιχειρηματικό μοντέλο',
@@ -474,6 +541,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   market_analysis: {
     label: { en: 'Market Analysis', el: 'Ανάλυση αγοράς' },
+    labelElGenitive: 'Ανάλυσης αγοράς',
     description: {
       en: 'TAM/SAM/SOM and competitive landscape',
       el: 'TAM/SAM/SOM και ανταγωνιστικό τοπίο',
@@ -481,6 +549,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   pitch_deck: {
     label: { en: 'Pitch Deck', el: 'Pitch deck' },
+    labelElGenitive: 'Pitch deck',
     description: {
       en: 'Investor and stakeholder presentations',
       el: 'Παρουσιάσεις για επενδυτές και stakeholders',
@@ -488,6 +557,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   mvp_plan: {
     label: { en: 'MVP Planner', el: 'Σχεδιασμός MVP' },
+    labelElGenitive: 'Σχεδιασμού MVP',
     description: {
       en: 'Product roadmap and technical requirements',
       el: 'Οδικός χάρτης προϊόντος και τεχνικές απαιτήσεις',
@@ -495,6 +565,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   technical_architecture: {
     label: { en: 'Tech Architecture', el: 'Τεχνική αρχιτεκτονική' },
+    labelElGenitive: 'Τεχνικής αρχιτεκτονικής',
     description: {
       en: 'Technology stack and system design',
       el: 'Τεχνολογική στοίβα και σχεδιασμός συστήματος',
@@ -502,6 +573,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   financial_plan: {
     label: { en: 'Financial Planning', el: 'Οικονομικός σχεδιασμός' },
+    labelElGenitive: 'Οικονομικού σχεδιασμού',
     description: {
       en: 'Revenue models and projections',
       el: 'Μοντέλα εσόδων και προβλέψεις',
@@ -509,6 +581,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   prd: {
     label: { en: 'PRD & User Stories', el: 'PRD και user stories' },
+    labelElGenitive: 'PRD και user stories',
     description: {
       en: 'Product requirements and features',
       el: 'Απαιτήσεις προϊόντος και λειτουργίες',
@@ -516,6 +589,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   branding_kit: {
     label: { en: 'Branding Kit', el: 'Κιτ επωνυμίας' },
+    labelElGenitive: 'Κιτ επωνυμίας',
     description: {
       en: 'Brand identity and messaging',
       el: 'Ταυτότητα επωνυμίας και μηνύματα',
@@ -523,6 +597,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   application: {
     label: { en: 'Applications', el: 'Αιτήσεις' },
+    labelElGenitive: 'Αιτήσεων',
     description: {
       en: 'Accelerator and funding applications',
       el: 'Αιτήσεις επιταχυντών και χρηματοδότησης',
@@ -530,6 +605,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   swot_analysis: {
     label: { en: 'SWOT Analysis', el: 'Ανάλυση SWOT' },
+    labelElGenitive: 'Ανάλυσης SWOT',
     description: {
       en: 'Strengths, weaknesses, opportunities, threats',
       el: 'Δυνάμεις, αδυναμίες, ευκαιρίες, απειλές',
@@ -537,6 +613,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   lean_canvas: {
     label: { en: 'Lean Canvas', el: 'Lean Canvas' },
+    labelElGenitive: 'Lean Canvas',
     description: {
       en: 'Lean startup model canvas',
       el: 'Καμβάς lean startup',
@@ -544,6 +621,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   competitive_analysis: {
     label: { en: 'Competitive Analysis', el: 'Ανταγωνιστική ανάλυση' },
+    labelElGenitive: 'Ανταγωνιστικής ανάλυσης',
     description: {
       en: 'Competitor landscape and positioning',
       el: 'Τοπίο ανταγωνιστών και τοποθέτηση',
@@ -551,6 +629,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   go_to_market: {
     label: { en: 'Go-to-Market', el: 'Go-to-Market' },
+    labelElGenitive: 'Go-to-Market',
     description: {
       en: 'Launch and growth strategy',
       el: 'Στρατηγική λανσαρίσματος και ανάπτυξης',
@@ -558,6 +637,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   fundraising_memo: {
     label: { en: 'Fundraising Memo', el: 'Υπόμνημα χρηματοδότησης' },
+    labelElGenitive: 'Υπομνήματος χρηματοδότησης',
     description: {
       en: 'Investment thesis and ask',
       el: 'Επενδυτική θέση και αίτημα',
@@ -565,6 +645,7 @@ export const BUILDER_DOC_TYPES: Record<string, { label: BilingualPair; descripti
   },
   product_roadmap: {
     label: { en: 'Product Roadmap', el: 'Οδικός χάρτης προϊόντος' },
+    labelElGenitive: 'Οδικού χάρτη προϊόντος',
     description: {
       en: 'Feature timeline and prioritization',
       el: 'Χρονοδιάγραμμα λειτουργιών και προτεραιότητες',
@@ -583,6 +664,20 @@ export const BUILDER_PREVIEW_HINT_EL: Record<string, string> = {
 
 export function builderDocLabel(type: string, lang: 'en' | 'el'): string {
   return BUILDER_DOC_TYPES[type]?.label[lang] ?? type;
+}
+
+/**
+ * The Greek document name in the genitive.
+ *
+ * "Επεξεργασία" and "Έναρξη" are nouns, and a noun governing another noun in
+ * Greek takes the genitive: "Επεξεργασία Πυρήνα ιδέας", not "…Πυρήνας ιδέας".
+ * English needs no such form, which is why the label alone was enough until
+ * these phrases existed. Names kept in Latin script (Pitch deck, Lean Canvas,
+ * Go-to-Market) do not decline and repeat the nominative.
+ */
+export function builderDocLabelGenitiveEl(type: string): string {
+  const entry = BUILDER_DOC_TYPES[type];
+  return entry?.labelElGenitive ?? entry?.label.el ?? type;
 }
 
 export function builderDocDescription(type: string, lang: 'en' | 'el'): string {

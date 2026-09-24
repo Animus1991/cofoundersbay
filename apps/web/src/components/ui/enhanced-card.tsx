@@ -244,7 +244,7 @@ export const ProfileCard = React.forwardRef<
           <Button size="sm" variant="outline" className="flex-1">
             Connect
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Message">
+          <Button variant="ghost" size="icon" aria-label={`Message ${profile.name}`}>
             <MessageCircle className="icon-sm" />
           </Button>
         </div>

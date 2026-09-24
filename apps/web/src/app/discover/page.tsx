@@ -23,7 +23,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import {
-  searchProfiles, getRecommendations, sendConnectionRequest, saveToShortlist, type SearchHit
+  searchProfiles, getRecommendations, getDashboardStats, sendConnectionRequest, saveToShortlist, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -64,26 +64,29 @@ const ROLE_FILTERS: { value: RoleFilter; labelEn: string; labelEl: string; icon:
   { value: 'service_provider',labelEn: discoverEn('service_providers'),labelEl: discoverEl('service_providers'),icon: Briefcase     },
 ];
 
-const PLATFORM_STATS = [
-  { labelEn: discoverEn('active_founders'),    labelEl: discoverEl('active_founders'),    value: '1,200+', icon: Rocket      },
-  { labelEn: discoverEn('expert_mentors'),     labelEl: discoverEl('expert_mentors'),     value: '180+',   icon: GraduationCap },
-  { labelEn: discoverEn('successful_matches'), labelEl: discoverEl('successful_matches'), value: '450+',   icon: Star        },
-  { labelEn: discoverEn('communities'),        labelEl: discoverEl('communities'),        value: '25+',    icon: Users       },
+/*
+ * The four figures here were constants in the source: "1,200+", "180+",
+ * "450+", "25+". They are counted by the platform now — founders and mentors
+ * by role, matches as accepted connections, communities as groups — and a
+ * header that cannot reach the count shows a dash rather than a round number
+ * that was never true.
+ */
+const PLATFORM_STAT_SLOTS = [
+  { key: 'founders' as const,         labelEn: discoverEn('active_founders'),    labelEl: discoverEl('active_founders'),    icon: Rocket        },
+  { key: 'mentors' as const,          labelEn: discoverEn('expert_mentors'),     labelEl: discoverEl('expert_mentors'),     icon: GraduationCap },
+  { key: 'successfulMatches' as const,labelEn: discoverEn('successful_matches'), labelEl: discoverEl('successful_matches'), icon: Star          },
+  { key: 'communities' as const,      labelEn: discoverEn('communities'),        labelEl: discoverEl('communities'),        icon: Users         },
 ];
 
 type MatchReasonType = 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
 type MatchReason = { type: MatchReasonType; text: string; score: number };
 
-/** Derive human-readable match reasons from the API score (0-100). */
-function buildMatchReasons(score: number): MatchReason[] {
-  const reasons: MatchReason[] = [];
-  if (score >= 30) reasons.push({ type: 'skills', text: 'Complementary role & skills', score: 30 });
-  if (score >= 45) reasons.push({ type: 'stage', text: 'Matching startup stage', score: Math.min(20, score - 30) });
-  if (score >= 65) reasons.push({ type: 'industry', text: 'Similar industry focus', score: 15 });
-  if (score >= 80) reasons.push({ type: 'location', text: 'Same location', score: 10 });
-  if (reasons.length === 0) reasons.push({ type: 'skills', text: 'Potential match', score: score });
-  return reasons;
-}
+/*
+ * `buildMatchReasons` used to turn one score into a list of specific claims:
+ * 80 or above printed "Same location" whether or not the two people were in
+ * the same place. The engine returns its own reasons; a card with none shows
+ * none.
+ */
 
 const defaultFilters: SearchFiltersValues = {
   q: '',
@@ -124,6 +127,13 @@ export default function DiscoverPage() {
     enabled: hasToken,
   });
   const suggestions: SearchHit[] = (recommendationsData?.suggestions ?? []) as SearchHit[];
+
+  const { data: platformStats } = useQuery({
+    queryKey: ['dashboard', 'stats', 'discover-header'],
+    queryFn: getDashboardStats,
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
   const suggestionsLoaded = !suggestionsLoading;
 
   // Search function
@@ -247,8 +257,10 @@ export default function DiscoverPage() {
 
         {/* Platform stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {PLATFORM_STATS.map((s) => {
+          {PLATFORM_STAT_SLOTS.map((s) => {
             const SIcon = s.icon;
+            const count = platformStats?.[s.key];
+            const value = count == null ? '\u2014' : count.toLocaleString('en-GB');
             return (
               <Card key={s.labelEn} className="min-w-0 shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
                 <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3">
@@ -256,7 +268,7 @@ export default function DiscoverPage() {
                     <SIcon className="icon-sm text-primary-accessible" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
+                    <p className="text-base font-bold tabular-nums text-foreground leading-none">{value}</p>
                     {/* `wrap`: "Επιτυχείς αντιστοιχίσεις" is 112px in a tile
                         that gives the label about 96px. */}
                     <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground sm:text-xs">
@@ -564,9 +576,8 @@ export default function DiscoverPage() {
               {suggestions.slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);
                 const score = hit.matchScore ?? 50;
-                const matchReasons = hit.matchReasons?.length
-                  ? hit.matchReasons.map((text) => ({ type: 'skills' as MatchReasonType, text, score: 0 }))
-                  : buildMatchReasons(score);
+                const matchReasons = (hit.matchReasons ?? [])
+                  .map((text) => ({ type: 'skills' as MatchReasonType, text, score: 0 }));
                 return (
                   <MatchCard
                     key={hit.id}

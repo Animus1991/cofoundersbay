@@ -171,6 +171,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   //    assistant surfaces that read this registry could not see them at all.
   { path: '/activity', title: 'Activity Feed', description: 'Track your network activity, notifications, and events.', section: 'Account', status: 'complete' },
   { path: '/ai', title: 'AI Assistant', description: 'Sign in to let the copilot read your graph and act on it.', section: 'Work', priority: 'critical', status: 'complete' },
+  { path: '/ai/capabilities', title: 'What the assistant can do', titleEl: 'Τι μπορεί να κάνει ο βοηθός', description: 'Every read and write the copilot can perform, generated from the shared capability contract.', descriptionEl: 'Κάθε ανάγνωση και εγγραφή που μπορεί να κάνει ο βοηθός, παραγόμενη από το κοινό συμβόλαιο δυνατοτήτων.', section: 'Work', status: 'complete' },
   { path: '/compare', title: 'Compare Profiles', description: 'Side-by-side comparison to find your best match. Tip: bookmark a /matches/compare URL with profile ids to share.', section: 'Explore', status: 'complete' },
   { path: '/expert-reviews', title: 'Expert Reviews', description: 'Structured feedback on your pitch, financials, and strategy from domain experts.', section: 'Resources', status: 'complete' },
   { path: '/invite', title: 'Invite People', description: 'Grow your network by inviting co-founders, mentors, and investors.', section: 'Community', status: 'complete' },

@@ -36,10 +36,33 @@ export type CopilotAction = {
   payload: Record<string, unknown>;
   status: CopilotActionStatus;
   href?: string;
+  /**
+   * Set from the outcome when the action runs, and handed back to the undo.
+   * It is how a "create" becomes reversible: the id exists only after the
+   * write, so nothing earlier in the chain could have carried it.
+   */
+  undoContext?: Record<string, unknown>;
 };
 
 export type CopilotCitation = {
-  type: 'person' | 'match' | 'conversation' | 'notification' | 'graph' | 'route';
+  type:
+    | 'person'
+    | 'match'
+    | 'conversation'
+    | 'notification'
+    | 'graph'
+    | 'route'
+    // The areas `copilot-reads.ts` reads. The type is part of the dedup key, so
+    // an event and a milestone that happen to share an id stay two citations.
+    | 'event'
+    | 'milestone'
+    | 'job'
+    | 'group'
+    | 'endorsement'
+    | 'opportunity'
+    | 'session'
+    | 'research'
+    | 'workspace';
   id: string;
   label: string;
   href?: string;

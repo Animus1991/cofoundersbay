@@ -385,7 +385,7 @@ interface BoardTemplatesDialogProps {
   onSelectTemplate: (template: BoardTemplate) => void;
 }
 
-const TEMPLATE_GLYPH: Record<string, CfbGlyphName> = {
+export const TEMPLATE_GLYPH: Record<string, CfbGlyphName> = {
   'startup-validation': 'spark',
   'cofounder-evaluation': 'people',
   'market-research': 'chart',
@@ -394,14 +394,62 @@ const TEMPLATE_GLYPH: Record<string, CfbGlyphName> = {
   'due-diligence': 'shield',
 };
 
+export function ResearchTemplateTile({
+  template,
+  onSelect,
+}: {
+  template: BoardTemplate;
+  onSelect: (template: BoardTemplate) => void;
+}) {
+  const copy = RESEARCH_TEMPLATE_I18N[template.id];
+  const glyph = TEMPLATE_GLYPH[template.id] ?? 'research';
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(template)}
+      className={cn(
+        'flex min-h-11 items-start gap-3 rounded-2xl border border-border/60 bg-card p-3.5 text-left',
+        'transition-colors hover:border-border hover:bg-muted/30',
+      )}
+    >
+      <div className="rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
+        <CfbGlyph name={glyph} className="icon-sm" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold leading-snug">
+          {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact /> : template.name}
+        </div>
+        <div className="mt-1 text-xs leading-snug text-muted-foreground">
+          {copy ? (
+            <BilingualText en={copy.description.en} el={copy.description.el} wrap />
+          ) : (
+            template.description
+          )}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">
+          {template.tags.map((tag) => (
+            <span key={tag}>
+              <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
+            </span>
+          ))}
+          <span>
+            {template.initialNodes.length}{' '}
+            <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function BoardTemplatesDialog({
   open,
   onClose,
   onSelectTemplate,
 }: BoardTemplatesDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto rounded-xl sm:max-w-2xl">
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="max-h-[80vh] overflow-y-auto rounded-2xl sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             <BilingualText en={researchEn('tpl_dialog_title')} el={researchEl('tpl_dialog_title')} />
@@ -411,59 +459,21 @@ export function BoardTemplatesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2">
-          {BOARD_TEMPLATES.map((template) => {
-            const copy = RESEARCH_TEMPLATE_I18N[template.id];
-            const glyph = TEMPLATE_GLYPH[template.id] ?? 'research';
-            return (
-              <button
-                key={template.id}
-                type="button"
-                onClick={() => {
-                  onSelectTemplate(template);
-                  onClose();
-                }}
-                className={cn(
-                  'group flex items-start gap-3 rounded-xl border border-border/70 p-3.5 text-left',
-                  'transition-colors hover:bg-muted/40',
-                )}
-              >
-                <div className="mt-0.5 shrink-0 text-muted-foreground">
-                  <CfbGlyph name={glyph} className="icon-md" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium leading-snug">
-                    {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact /> : template.name}
-                  </div>
-                  <div className="mt-1 text-sm leading-snug text-muted-foreground">
-                    {copy ? (
-                      <BilingualText en={copy.description.en} el={copy.description.el} wrap />
-                    ) : (
-                      template.description
-                    )}
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {template.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full px-2 py-0.5 text-2xs text-muted-foreground ring-1 ring-border/70"
-                      >
-                        <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
-                      </span>
-                    ))}
-                    <span className="rounded-full px-2 py-0.5 text-2xs text-muted-foreground">
-                      {template.initialNodes.length}{' '}
-                      <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-1 gap-3 py-2 sm:grid-cols-2">
+          {BOARD_TEMPLATES.map((template) => (
+            <ResearchTemplateTile
+              key={template.id}
+              template={template}
+              onSelect={(tpl) => {
+                onSelectTemplate(tpl);
+                onClose();
+              }}
+            />
+          ))}
         </div>
 
-        <div className="flex justify-end border-t pt-4">
-          <Button variant="outline" className="rounded-xl" onClick={onClose}>
+        <div className="flex justify-end pt-2">
+          <Button variant="outline" size="sm" className="rounded-xl" onClick={onClose}>
             <BilingualText en={researchEn('tpl_blank')} el={researchEl('tpl_blank')} compact />
           </Button>
         </div>

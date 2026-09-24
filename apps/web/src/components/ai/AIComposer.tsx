@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowRight } from 'lucide-react';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -32,7 +33,7 @@ export function AIComposer({
     <form
       onSubmit={submit}
       className={cn(
-        'flex min-w-0 w-full items-center gap-1.5 rounded-lg border border-border/60 bg-background px-2 py-1 sm:max-w-[16.5rem]',
+        'flex min-h-10 min-w-0 w-full items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-1.5',
         className,
       )}
     >
@@ -42,13 +43,17 @@ export function AIComposer({
         onChange={(event) => setValue(event.target.value)}
         placeholder={sayOne('Ask AI…', 'Ρωτήστε το AI…')}
         aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
-        className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+        className="min-w-0 flex-1 bg-transparent text-sm text-foreground shadow-none outline-none ring-0 placeholder:text-muted-foreground focus:shadow-none focus:outline-none focus:ring-0"
       />
+      {/* Icon-only submit: a visible "Ask" next to the "Ask AI…" placeholder
+          read as two competing controls, and the pair overflowed the header
+          slot, clipping the placeholder at every width. */}
       <button
         type="submit"
-        className="shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary-accessible hover:bg-primary/10"
+        aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
+        className="shrink-0 rounded-xl p-1 text-primary-accessible outline-none hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-0"
       >
-        {sayOne('Ask', 'Ρώτα')}
+        <ArrowRight className="icon-sm" aria-hidden="true" />
       </button>
     </form>
   );

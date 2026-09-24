@@ -17,7 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
 interface RevenueStream {
@@ -259,7 +259,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         completion={completionPercentage}
         extraActions={
           <>
-            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
               {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
@@ -267,7 +267,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 compact
               />
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
             </Button>
@@ -281,11 +281,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           <CardContent className="p-3">
             <div className="flex items-center gap-2 mb-2">
               <TrendingDown className="icon-sm text-status-danger" />
-              <span className="text-sm text-muted-foreground">
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
                 <BilingualText en={builderEn('fin_burn')} el={builderEl('fin_burn')} compact />
               </span>
             </div>
-            <div className="text-2xl font-bold text-status-danger">
+            <div className={cn(BUILDER_STAT, 'text-status-danger')}>
               {formatCurrency(data.burnRate > 0 ? data.burnRate : totalMonthlyOperating - totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -294,11 +294,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <CfbGlyph name="wallet" className="icon-sm text-status-info" />
-              <span className="text-sm text-muted-foreground">
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
                 <BilingualText en={builderEn('fin_runway')} el={builderEl('fin_runway')} compact />
               </span>
             </div>
-            <div className="text-2xl font-bold text-status-info">
+            <div className={cn(BUILDER_STAT, 'text-status-info')}>
               {data.runway > 0 ? (
                 <>
                   {data.runway}{' '}
@@ -312,11 +312,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="icon-sm text-status-success" />
-              <span className="text-sm text-muted-foreground">
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
                 <BilingualText en={builderEn('fin_mrev')} el={builderEl('fin_mrev')} compact />
               </span>
             </div>
-            <div className="text-2xl font-bold text-status-success">
+            <div className={cn(BUILDER_STAT, 'text-status-success')}>
               {formatCurrency(totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -325,12 +325,12 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <CfbGlyph name="chart" className="icon-sm text-status-accent" />
-              <span className="text-sm text-muted-foreground">
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
                 <BilingualText en={builderEn('fin_ltv_cac')} el={builderEl('fin_ltv_cac')} compact />
               </span>
             </div>
             <div className={cn(
-              "text-2xl font-bold",
+              BUILDER_STAT,
               data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
               data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
             )}>
@@ -342,25 +342,25 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 rounded-xl">
-          <TabsTrigger value="costs" className="gap-1">
-            <TrendingDown className="icon-sm" />
+        <TabsList className={BUILDER_SUBTAB_LIST}>
+          <TabsTrigger value="costs" className={BUILDER_SUBTAB_TRIGGER}>
+            <TrendingDown className="icon-sm shrink-0" />
             <BilingualText en={builderEn('fin_tab_costs')} el={builderEl('fin_tab_costs')} compact />
           </TabsTrigger>
-          <TabsTrigger value="revenue" className="gap-1">
-            <TrendingUp className="icon-sm" />
+          <TabsTrigger value="revenue" className={BUILDER_SUBTAB_TRIGGER}>
+            <TrendingUp className="icon-sm shrink-0" />
             <BilingualText en={builderEn('fin_tab_rev')} el={builderEl('fin_tab_rev')} compact />
           </TabsTrigger>
-          <TabsTrigger value="unit-economics" className="gap-1">
-            <CfbGlyph name="chart" className="icon-sm" />
+          <TabsTrigger value="unit-economics" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="chart" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('fin_tab_unit')} el={builderEl('fin_tab_unit')} compact />
           </TabsTrigger>
-          <TabsTrigger value="funding" className="gap-1">
-            <CfbGlyph name="wallet" className="icon-sm" />
+          <TabsTrigger value="funding" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="wallet" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('fin_tab_fund')} el={builderEl('fin_tab_fund')} compact />
           </TabsTrigger>
-          <TabsTrigger value="scenarios" className="gap-1">
-            <CfbGlyph name="compare" className="icon-sm" />
+          <TabsTrigger value="scenarios" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="compare" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('fin_tab_scen')} el={builderEl('fin_tab_scen')} compact />
           </TabsTrigger>
         </TabsList>
@@ -374,7 +374,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <CardTitle className="text-base">
                   <BilingualText en={builderEn('fin_startup')} el={builderEl('fin_startup')} compact />
                 </CardTitle>
-                <Button variant="outline" size="sm" onClick={() => addCost('startup')}>
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCost('startup')}>
                   <BilingualText en={builderEn('add')} el={builderEl('add')} compact />
                 </Button>
               </CardHeader>
@@ -441,7 +441,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <CardTitle className="text-base">
                   <BilingualText en={builderEn('fin_operating')} el={builderEl('fin_operating')} compact />
                 </CardTitle>
-                <Button variant="outline" size="sm" onClick={() => addCost('operating')}>
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCost('operating')}>
                   <BilingualText en={builderEn('add')} el={builderEl('add')} compact />
                 </Button>
               </CardHeader>
@@ -511,7 +511,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('fin_streams')} el={builderEl('fin_streams')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={addRevenueStream}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addRevenueStream}>
                 <BilingualText en={builderEn('fin_add_stream')} el={builderEl('fin_add_stream')} compact />
               </Button>
             </CardHeader>
@@ -540,7 +540,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                           newStreams[index] = { ...stream, type: e.target.value as RevenueStream['type'] };
                           setData(prev => ({ ...prev, revenueStreams: newStreams }));
                         }}
-                        className="w-full px-3 py-2 border rounded-md"
+                        className="w-full px-3 py-2 border rounded-xl"
                       >
                         <option value="subscription">Subscription</option>
                         <option value="transaction">Transaction</option>
@@ -596,7 +596,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </CardHeader>
             <CardContent>
               <textarea
-                className="w-full min-h-[100px] p-3 border rounded-md"
+                className="w-full min-h-[100px] p-3 border rounded-xl"
                 placeholder={t(builderEn('fin_pricing_ph'), builderEl('fin_pricing_ph'))}
                 value={data.pricingModel}
                 onChange={(e) => setData(prev => ({ ...prev, pricingModel: e.target.value }))}
@@ -694,7 +694,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(
-                    "text-3xl font-bold mb-2",
+                    BUILDER_STAT,
+                    "mb-2",
                     data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
                     data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
                   )}>
@@ -707,7 +708,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-status-info">
+                  <div className={cn(BUILDER_STAT, 'mb-2 text-status-info')}>
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
                   <div className="text-sm text-muted-foreground">Payback Period</div>
@@ -716,7 +717,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-status-accent">
+                  <div className={cn(BUILDER_STAT, 'mb-2 text-status-accent')}>
                     {data.unitEconomics.grossMargin}%
                   </div>
                   <div className="text-sm text-muted-foreground">Gross Margin</div>
@@ -736,7 +737,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('fin_rounds')} el={builderEl('fin_rounds')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={addFundingRound}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addFundingRound}>
                 <BilingualText en={builderEn('fin_add_round')} el={builderEl('fin_add_round')} compact />
               </Button>
             </CardHeader>
@@ -816,7 +817,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Conservative */}
             <Card className="border-status-warning-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <AlertTriangle className="icon-md text-status-warning" />
                   <BilingualText en={builderEn('fin_cons')} el={builderEl('fin_cons')} compact />
                 </CardTitle>
@@ -870,7 +871,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Realistic */}
             <Card className="border-status-info-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <CfbGlyph name="target" className="icon-md text-status-info" />
                   <BilingualText en={builderEn('fin_real')} el={builderEl('fin_real')} compact />
                 </CardTitle>
@@ -924,7 +925,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Aggressive */}
             <Card className="border-status-success-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <TrendingUp className="icon-md text-status-success" />
                   <BilingualText en={builderEn('fin_aggr')} el={builderEl('fin_aggr')} compact />
                 </CardTitle>

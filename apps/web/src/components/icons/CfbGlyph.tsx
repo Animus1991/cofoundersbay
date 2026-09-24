@@ -3,10 +3,9 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
- * CoFounderBay glyph family — the same geometry as the brand mark
- * ("two founders, one bay"): paired nodes, a single meeting stroke, quiet
- * rounded squares. Distinct from Lucide so the product is recognisable at a
- * glance, without decorative kitsch.
+ * CoFounderBay glyph family — the same scene as the brand mark
+ * (surfer on the board, cofounder in the bay), quiet rounded squares.
+ * Distinct from Lucide so the product is recognisable at a glance.
  */
 export const CFB_GLYPH_NAMES = [
   'home',
@@ -152,9 +151,12 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <rect x="3.5" y="3.5" width="7.25" height="7.25" rx="2" />
       <rect x="13.25" y="3.5" width="7.25" height="7.25" rx="2" />
       <rect x="3.5" y="13.25" width="7.25" height="7.25" rx="2" />
-      <path d="M14.2 16.2c0 2.6 1.9 4.1 2.9 4.5 1-.4 2.9-1.9 2.9-4.5" />
-      <circle cx="14.6" cy="15.5" r="1.05" fill="currentColor" stroke="none" />
-      <circle cx="19.4" cy="15.5" r="1.05" fill="currentColor" stroke="none" />
+      <circle cx="17.5" cy="16.2" r="3.3" />
+      <path d="M14.2 17.15h6.6" transform="rotate(-12 17.5 17.15)" strokeWidth="2" />
+      <circle cx="15.7" cy="14.6" r="0.85" fill="currentColor" stroke="none" />
+      <path d="M15.7 15.5v1.4M15.1 15.9 13.9 15" />
+      <circle cx="18.8" cy="19.35" r="0.8" fill="currentColor" stroke="none" />
+      <path d="M18.2 18.8 17.4 17.3M19.4 18.8 20.2 17.4" />
     </>
   ),
   builder: (
@@ -196,10 +198,12 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
   ),
   matches: (
     <>
-      <path d="M6.4 9c0 6 3.8 8.4 5.6 9.1 1.8-.7 5.6-3.1 5.6-9.1" />
-      <circle cx="6.4" cy="8.1" r="2.15" fill="currentColor" stroke="none" />
-      <circle cx="17.6" cy="8.1" r="2.15" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="18.2" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="13.2" cy="10.4" r="6.2" />
+      <path d="M5.2 14.1h14.4" transform="rotate(-14 12.4 14.1)" strokeWidth="2.15" />
+      <circle cx="10.2" cy="9.4" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M10.2 11v2.6M9.2 11.8 7.3 10.3" />
+      <circle cx="14.8" cy="17.6" r="1.35" fill="currentColor" stroke="none" />
+      <path d="M13.9 16.6 12.4 14.2M15.7 16.6 17.4 14.4" />
     </>
   ),
   discover: (
@@ -295,10 +299,13 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
   ),
   spark: (
     <>
-      <path d="M6.4 10.2c0 5.4 3.6 7.6 5.6 8.3 2-.7 5.6-2.9 5.6-8.3" />
-      <circle cx="6.4" cy="9.3" r="1.7" fill="currentColor" stroke="none" />
-      <circle cx="17.6" cy="9.3" r="1.7" fill="currentColor" stroke="none" />
-      <path d="M12 3.4v3.2M10.2 4.6 12 3.2l1.8 1.4" />
+      <circle cx="12.4" cy="11.6" r="5.8" />
+      <path d="M5.4 14.6h13.4" transform="rotate(-14 12.1 14.6)" strokeWidth="2.1" />
+      <circle cx="9.8" cy="10.6" r="1.35" fill="currentColor" stroke="none" />
+      <path d="M9.8 12v2.2M8.9 12.6 7.3 11.2" />
+      <circle cx="14.4" cy="17.8" r="1.2" fill="currentColor" stroke="none" />
+      <path d="M13.6 16.9 12.2 14.8M15.2 16.9 16.8 14.9" />
+      <path d="M12 2.6v2.6M10.4 3.8 12 2.4l1.6 1.4" />
     </>
   ),
   wallet: (
@@ -341,12 +348,15 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <circle cx="17.8" cy="12" r="1.35" fill="currentColor" stroke="none" />
     </>
   ),
+  // The fallback, and the family's bare motif: the disc and its wave, with none
+  // of the satellites the named glyphs add. It was a byte-for-byte copy of
+  // `matches`, which `CfbGlyph.test.tsx` catches as 28 names drawing 27
+  // pictures — an unknown glyph name rendered as "matches" and read as a
+  // deliberate icon rather than as a gap.
   default: (
     <>
-      <path d="M6.4 9c0 6 3.8 8.4 5.6 9.1 1.8-.7 5.6-3.1 5.6-9.1" />
-      <circle cx="6.4" cy="8.1" r="2.15" />
-      <circle cx="17.6" cy="8.1" r="2.15" />
-      <circle cx="12" cy="18.2" r="1.25" />
+      <circle cx="12" cy="11.6" r="6.4" />
+      <path d="M4.6 15.2h14.8" transform="rotate(-14 12 15.2)" strokeWidth="2.15" />
     </>
   ),
 };

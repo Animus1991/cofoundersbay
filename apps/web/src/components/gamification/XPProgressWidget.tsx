@@ -26,7 +26,7 @@ export function XPProgressWidget() {
 
   if (xpLoading || streakLoading) {
     return (
-      <Card className="rounded-xl">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <CfbGlyph name="award" className="icon-md text-primary-accessible" />
@@ -43,70 +43,79 @@ export function XPProgressWidget() {
 
   if (!xp || typeof xp.totalXp !== 'number' || typeof xp.levelProgress !== 'number') return null;
 
+  const streakDaysEn = streak
+    ? streak.currentStreak === 1
+      ? '1 day streak'
+      : `${streak.currentStreak} day streak`
+    : '';
+  const streakDaysEl = streak
+    ? streak.currentStreak === 1
+      ? '1 ημέρα σε σειρά'
+      : `${streak.currentStreak} ημέρες σε σειρά`
+    : '';
+  const bestEn = streak
+    ? streak.longestStreak === 1
+      ? 'Best: 1 day'
+      : `Best: ${streak.longestStreak} days`
+    : '';
+  const bestEl = streak
+    ? streak.longestStreak === 1
+      ? 'Καλύτερο: 1 ημέρα'
+      : `Καλύτερο: ${streak.longestStreak} ημέρες`
+    : '';
+
   return (
-    <Card className="rounded-xl">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <CfbGlyph name="award" className="icon-md text-primary-accessible" />
           <BilingualText en="Progress & XP" el="Πρόοδος & XP" compact wrap />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-5">
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center text-lg font-semibold tabular-nums text-foreground">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-lg font-semibold tabular-nums text-foreground">
                 {xp.level}
               </div>
-              <div>
-                <div className="text-lg font-semibold">{xp.levelLabel}</div>
+              <div className="min-w-0">
+                <div className="truncate text-lg font-semibold">{xp.levelLabel}</div>
                 <div className="text-sm text-muted-foreground">
                   {xp.totalXp.toLocaleString('en-GB')} XP
                 </div>
               </div>
             </div>
-            <Badge variant="outline" className="gap-1">
-              <CfbGlyph name="target" className="icon-sm" />
-              <BilingualText
-                en={`${xp.xpToNextLevel} to next`}
-                el={`${xp.xpToNextLevel} έως το επόμενο`}
-                compact
-              />
-            </Badge>
           </div>
 
           <div className="space-y-1">
-            <Progress value={xp.levelProgress} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <Progress value={xp.levelProgress} label="Level progress" className="h-2" />
+            <div className="flex justify-between gap-2 text-xs text-muted-foreground">
               <span>
                 <BilingualText en={`Level ${xp.level}`} el={`Επίπεδο ${xp.level}`} compact />
               </span>
-              <span>{xp.levelProgress.toFixed(0)}%</span>
-              <span>
-                <BilingualText en={`Level ${xp.level + 1}`} el={`Επίπεδο ${xp.level + 1}`} compact />
+              <span className="tabular-nums">{xp.levelProgress.toFixed(0)}%</span>
+              <span className="text-right">
+                <BilingualText
+                  en={`${xp.xpToNextLevel} to next`}
+                  el={`${xp.xpToNextLevel} έως το επόμενο`}
+                  compact
+                />
               </span>
             </div>
           </div>
         </div>
 
         {streak && (
-          <div className="flex items-center justify-between rounded-xl p-3">
+          <div className="flex items-center justify-between rounded-2xl bg-muted/40 p-3">
             <div className="flex items-center gap-3">
               <CfbGlyph name="spark" className="icon-lg text-muted-foreground" />
               <div>
                 <div className="text-sm font-semibold">
-                  <BilingualText
-                    en={`${streak.currentStreak} day streak`}
-                    el={`${streak.currentStreak} ημέρες σε σειρά`}
-                    compact
-                  />
+                  <BilingualText en={streakDaysEn} el={streakDaysEl} compact />
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  <BilingualText
-                    en={`Best: ${streak.longestStreak} days`}
-                    el={`Καλύτερο: ${streak.longestStreak} ημέρες`}
-                    compact
-                  />
+                  <BilingualText en={bestEn} el={bestEl} compact />
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Rocket,
@@ -13,6 +13,9 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { getOrgMembers, type OrgMember } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +38,32 @@ import {
 import { EmptyOrgStartups } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+
+/**
+ * The page's own row from the organisation's member list.
+ *
+ * There is no startup entity in the schema: an accelerator's cohort is made of
+ * people, and `/api/org/:slug/members` is the list of them with the cohort
+ * each belongs to. Four fields on the card have no source and admit it rather
+ * than being filled — progress, team size, founding date and readiness are all
+ * facts about a company the platform does not model yet.
+ */
+function toStartup(member: OrgMember): Startup {
+  return {
+    id: member.id,
+    name: member.displayName,
+    logoUrl: member.avatarUrl ?? undefined,
+    industry: member.headline ?? '\u2014',
+    stage: '\u2014',
+    program: member.cohortName || '\u2014',
+    cohort: member.cohortName || '\u2014',
+    progress: 0,
+    teamSize: 0,
+    foundedAt: member.joinedAt,
+    status: 'active',
+    readinessScore: 0,
+  };
+}
 
 type Startup = {
   id: string;
@@ -87,7 +116,7 @@ function StartupCard({ startup }: { startup: Startup }) {
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-label={`Actions for ${startup.name}`} variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${startup.name}`}>
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -140,66 +169,85 @@ function StartupCard({ startup }: { startup: Startup }) {
   );
 }
 
+/** Shown to an organisation whose cohorts are still empty. */
+const SEED_STARTUPS: Startup[] = [
+  {
+    id: '1',
+    name: 'NeuralFlow',
+    industry: 'AI/ML',
+    stage: 'Seed',
+    program: 'AI Accelerator',
+    cohort: 'Cohort 3',
+    progress: 85,
+    teamSize: 4,
+    foundedAt: '2024',
+    status: 'active',
+    readinessScore: 78,
+  },
+  {
+    id: '2',
+    name: 'GreenGrid',
+    industry: 'CleanTech',
+    stage: 'Pre-seed',
+    program: 'Climate Innovation',
+    cohort: 'Cohort 2',
+    progress: 72,
+    teamSize: 3,
+    foundedAt: '2024',
+    status: 'active',
+    readinessScore: 65,
+  },
+  {
+    id: '3',
+    name: 'PayFlow',
+    industry: 'FinTech',
+    stage: 'Seed',
+    program: 'FinTech Bootcamp',
+    cohort: 'Spring 2024',
+    progress: 100,
+    teamSize: 5,
+    foundedAt: '2023',
+    status: 'graduated',
+    readinessScore: 92,
+  },
+  {
+    id: '4',
+    name: 'HealthSync',
+    industry: 'HealthTech',
+    stage: 'Idea',
+    program: 'AI Accelerator',
+    cohort: 'Cohort 3',
+    progress: 45,
+    teamSize: 2,
+    foundedAt: '2024',
+    status: 'active',
+    readinessScore: 42,
+  },
+];
+
 export default function OrgStartupsPage() {
   const [search, setSearch] = useState('');
   const [program, setProgram] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
 
   // Mock data - replace with actual API calls
-  const startups: Startup[] = [
-    {
-      id: '1',
-      name: 'NeuralFlow',
-      industry: 'AI/ML',
-      stage: 'Seed',
-      program: 'AI Accelerator',
-      cohort: 'Cohort 3',
-      progress: 85,
-      teamSize: 4,
-      foundedAt: '2024',
-      status: 'active',
-      readinessScore: 78,
-    },
-    {
-      id: '2',
-      name: 'GreenGrid',
-      industry: 'CleanTech',
-      stage: 'Pre-seed',
-      program: 'Climate Innovation',
-      cohort: 'Cohort 2',
-      progress: 72,
-      teamSize: 3,
-      foundedAt: '2024',
-      status: 'active',
-      readinessScore: 65,
-    },
-    {
-      id: '3',
-      name: 'PayFlow',
-      industry: 'FinTech',
-      stage: 'Seed',
-      program: 'FinTech Bootcamp',
-      cohort: 'Spring 2024',
-      progress: 100,
-      teamSize: 5,
-      foundedAt: '2023',
-      status: 'graduated',
-      readinessScore: 92,
-    },
-    {
-      id: '4',
-      name: 'HealthSync',
-      industry: 'HealthTech',
-      stage: 'Idea',
-      program: 'AI Accelerator',
-      cohort: 'Cohort 3',
-      progress: 45,
-      teamSize: 2,
-      foundedAt: '2024',
-      status: 'active',
-      readinessScore: 42,
-    },
-  ];
+  /*
+   * The organisation's cohort members. The seed below is what an
+   * organisation with an empty cohort sees, so the screen still teaches its
+   * shape rather than opening blank.
+   */
+  const { slug } = useCurrentOrg();
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', 'members', slug],
+    queryFn: () => getOrgMembers(slug!, { limit: 100 }),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.members ?? []).map(toStartup), [data]);
+  const startups: Startup[] = live.length > 0 ? live : isLoading ? [] : SEED_STARTUPS;
+
 
   const filteredStartups = startups.filter((s) => {
     const matchesSearch =

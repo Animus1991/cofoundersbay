@@ -10,10 +10,12 @@ import {
   Plus, RefreshCw, ChevronDown, X, Flag, Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import Link from 'next/link';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
-import { RelativeTime } from '@/components/common/LocalTime';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -207,9 +209,11 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
                           variant={postType === type ? 'secondary' : 'ghost'}
                           size="sm"
                           onClick={() => setPostType(type)}
+                          aria-label={config.label}
+                          aria-pressed={postType === type}
                           className="gap-1"
                         >
-                          <Icon className={cn('icon-sm', config.color)} />
+                          <Icon className={cn('icon-sm', config.color)} aria-hidden="true" />
                           <span className="hidden sm:inline">{config.label}</span>
                         </Button>
                       );
@@ -326,7 +330,7 @@ function PostCard({
                   "now" is not the browser's, and the two disagreeing is
                   what made this page fail hydration on every load. */}
               <p className="text-xs text-muted-foreground mt-0.5">
-                <RelativeTime value={post.createdAt} />
+                <RelativeTime date={post.createdAt} />
               </p>
               {post.relevanceReasons && post.relevanceReasons.length > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
@@ -338,7 +342,7 @@ function PostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="Post actions" variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria('Open post actions', 'Άνοιγμα ενεργειών δημοσίευσης')}>
                 <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -404,17 +408,17 @@ function PostCard({
             <Share2 className="icon-sm mr-1" />
             Share
           </Button>
-          {/* `size="sm"` with an icon and no text: the Button guard keys on the
-              size prop, so a non-icon size carrying icon-only children slips
-              past it. That is the guard's real limit, and it is why the axe
-              gate stays — the two cover different halves of the same defect. */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onBookmark}
-            aria-pressed={post.isBookmarked}
-            aria-label={post.isBookmarked ? 'Saved' : 'Save this post'}
             className={cn(post.isBookmarked && 'text-primary-accessible')}
+            aria-label={
+              post.isBookmarked
+                ? bilingualAria('Remove bookmark', 'Αφαίρεση σελιδοδείκτη')
+                : bilingualAria('Bookmark post', 'Σελιδοδείκτης δημοσίευσης')
+            }
+            aria-pressed={post.isBookmarked}
           >
             <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
@@ -551,7 +555,7 @@ export default function FeedPage() {
   const { success } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'all' | 'following' | 'trending'>('all');
-  const [showPreferences, setShowPreferences] = useState(false);
+  const { openRailSection } = usePageRail();
 
   // Fetch personalized feed
   // `useInfiniteQuery` was imported and never used, and "Load More" sat below a
@@ -724,9 +728,85 @@ export default function FeedPage() {
     updatePrefsMutation.mutate(newPrefs);
   };
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'trending',
+      glyph: 'chart',
+      labelEn: 'Trending topics',
+      labelEl: 'Τάσεις',
+      content: <TrendingTopics topics={trendingData?.topics} />,
+    },
+    {
+      id: 'suggested',
+      glyph: 'people',
+      labelEn: 'Suggested connections',
+      labelEl: 'Προτάσεις συνδέσεων',
+      content: <SuggestedConnections />,
+    },
+    {
+      id: 'preferences',
+      glyph: 'sliders',
+      labelEn: 'Feed preferences',
+      labelEl: 'Προτιμήσεις ροής',
+      content: preferences ? (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              <BilingualText en={feedEn('content_types')} el={feedEl('content_types')} compact />
+            </label>
+            <div className="flex flex-wrap gap-1">
+              {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
+                <Badge
+                  key={type}
+                  variant={preferences.contentTypes.includes(type) ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const newTypes = preferences.contentTypes.includes(type)
+                      ? preferences.contentTypes.filter(t => t !== type)
+                      : [...preferences.contentTypes, type];
+                    handlePreferencesUpdate({ contentTypes: newTypes });
+                  }}
+                >
+                  {type}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              <BilingualText en={feedEn('topics')} el={feedEl('topics')} compact />
+            </label>
+            <div className="flex flex-wrap gap-1">
+              {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
+                <Badge
+                  key={topic}
+                  variant={preferences.topics.includes(topic) ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const newTopics = preferences.topics.includes(topic)
+                      ? preferences.topics.filter(t => t !== topic)
+                      : [...preferences.topics, topic];
+                    handlePreferencesUpdate({ topics: newTopics });
+                  }}
+                >
+                  #{topic}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en="Preferences are unavailable right now." el="Οι προτιμήσεις δεν είναι διαθέσιμες αυτή τη στιγμή." compact />
+        </p>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
+      rail={rail}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
@@ -736,17 +816,16 @@ export default function FeedPage() {
               <TabsTrigger value="trending"><BilingualText en="Trending" el="Τάσεις" compact /></TabsTrigger>
             </TabsList>
           </Tabs>
-          {/* The label is `hidden sm:inline`, so below 640px this button had no
-              accessible name at all — named on desktop, anonymous on a phone,
-              which is why it failed only the mobile project. A responsive
-              class can hide text from the screen; it must not be the only
-              thing naming the control. */}
+          {/* The label is `hidden sm:inline`, so below 640px this button had
+              no accessible name — named on desktop, anonymous on a phone,
+              which is why mobile /feed failed button-name (critical). A
+              responsive class can hide text from the screen; it must not be
+              the only thing naming the control. */}
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowPreferences(!showPreferences)}
-            aria-label="Preferences"
-            aria-expanded={showPreferences}
+            onClick={() => openRailSection('preferences')}
+            aria-label={bilingualAria('Preferences', 'Προτιμήσεις')}
             className="gap-1"
           >
             <Settings className="icon-sm" aria-hidden="true" />
@@ -764,9 +843,10 @@ export default function FeedPage() {
             askAiPrompt="The feed is showing sample posts. What should I do next on Discover, Matches, or Messages instead?"
           />
         )}
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-          {/* Main Feed */}
-          <div className="space-y-6">
+        {/* The reading column owns the feed; trending, suggested people and
+            preferences live in the right rail, so below `lg` they come back as
+            a sheet instead of a column the posts push off-screen. */}
+        <div className="space-y-6">
 
             {/* Create Post */}
             <CreatePostCard onPost={handlePost} />
@@ -829,74 +909,6 @@ export default function FeedPage() {
                 </Button>
               </div>
             )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-            <TrendingTopics topics={trendingData?.topics} />
-            <SuggestedConnections />
-            
-            {/* Feed Preferences */}
-            {showPreferences && preferences && (
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <Settings className="icon-sm" />
-                    <BilingualText en={feedEn('preferences')} el={feedEl('preferences')} compact />
-                  </h3>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        <BilingualText en={feedEn('content_types')} el={feedEl('content_types')} compact />
-                      </label>
-                      <div className="flex flex-wrap gap-1">
-                        {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
-                          <Badge
-                            key={type}
-                            variant={preferences.contentTypes.includes(type) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() => {
-                              const newTypes = preferences.contentTypes.includes(type)
-                                ? preferences.contentTypes.filter(t => t !== type)
-                                : [...preferences.contentTypes, type];
-                              handlePreferencesUpdate({ contentTypes: newTypes });
-                            }}
-                          >
-                            {type}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        <BilingualText en={feedEn('topics')} el={feedEl('topics')} compact />
-                      </label>
-                      <div className="flex flex-wrap gap-1">
-                        {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
-                          <Badge
-                            key={topic}
-                            variant={preferences.topics.includes(topic) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() => {
-                              const newTopics = preferences.topics.includes(topic)
-                                ? preferences.topics.filter(t => t !== topic)
-                                : [...preferences.topics, topic];
-                              handlePreferencesUpdate({ topics: newTopics });
-                            }}
-                          >
-                            #{topic}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </div>
       </div>
     </AppShell>

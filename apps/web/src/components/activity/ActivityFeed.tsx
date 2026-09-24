@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -143,7 +144,7 @@ export function ActivityFeed() {
                         </Badge>
                       )}
                       <span className="text-sm text-muted-foreground">
-                        • {formatTime(activity.createdAt)}
+                        • <RelativeTime date={activity.createdAt} format={formatTime} />
                       </span>
                     </div>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

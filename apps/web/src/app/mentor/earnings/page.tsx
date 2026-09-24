@@ -17,6 +17,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -111,8 +112,34 @@ export default function MentorEarningsPage() {
     enabled: hasSession && mounted,
   });
 
-  const transactions = showDemoData ? MOCK_TRANSACTIONS : [];
+  const allTransactions = showDemoData ? MOCK_TRANSACTIONS : [];
   const monthlyData = showDemoData ? MOCK_MONTHLY : [];
+
+  /* The period select used to be set dressing - it now bounds the session
+     history it sits above. */
+  const periodDays: Record<string, number> = {
+    this_month: 31,
+    last_month: 62,
+    last_3: 92,
+    last_6: 183,
+    ytd: 366,
+  };
+  const cutoff = Date.now() - (periodDays[period] ?? 31) * 86_400_000;
+  const transactions = allTransactions.filter((t) => new Date(t.date).getTime() >= cutoff);
+
+  const exportCsv = () => {
+    if (!transactions.length) return;
+    const header = 'Date,Mentee,Topic,Duration (min),Amount,Currency,Status\n';
+    const body = transactions
+      .map((t) => [t.date, t.mentee.name, `"${t.topic.replace(/"/g, '""')}"`, t.duration, t.amount, t.currency, t.status].join(','))
+      .join('\n');
+    const url = URL.createObjectURL(new Blob([header + body], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `earnings-${period}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const totalEarned = transactions.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.amount, 0);
   const pendingAmount = transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
@@ -136,6 +163,13 @@ export default function MentorEarningsPage() {
   return (
     <AppShell>
       <div className="py-6 space-y-6">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Earnings"
+            detail="Transactions and monthly totals are illustrative - there is no mentor earnings ledger yet."
+            askAiPrompt="Why does the earnings page show sample transactions?"
+          />
+        )}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -158,7 +192,7 @@ export default function MentorEarningsPage() {
                 <SelectItem value="ytd">Year to date</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={!transactions.length}>
               <Download className="mr-2 icon-sm" />
               Export
             </Button>
@@ -172,7 +206,6 @@ export default function MentorEarningsPage() {
             label="Total Earned"
             value={formatCurrency(totalEarned)}
             sub="from paid sessions"
-            trend={{ value: 58, positive: true }}
           />
           <StatCard
             icon={Clock}
@@ -186,7 +219,6 @@ export default function MentorEarningsPage() {
             label="Sessions"
             value={String(totalSessions)}
             sub="this period"
-            trend={{ value: 20, positive: true }}
           />
           <StatCard
             icon={Star}
@@ -298,7 +330,7 @@ export default function MentorEarningsPage() {
                     <p className="text-sm font-medium">No payout method connected</p>
                     <p className="text-xs text-muted-foreground">Connect Stripe or bank account to receive payouts</p>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" disabled title="Payout providers are not connected yet">
                     <ArrowUpRight className="mr-2 icon-sm" />
                     Connect
                   </Button>
@@ -307,7 +339,7 @@ export default function MentorEarningsPage() {
                   {['Stripe Connect', 'Bank Transfer (SEPA)', 'PayPal', 'Wise'].map(method => (
                     <div key={method} className="flex items-center justify-between p-3 rounded-lg border">
                       <span className="text-sm font-medium">{method}</span>
-                      <Button variant="outline" size="sm">Connect</Button>
+                      <Button variant="outline" size="sm" disabled title="Payout providers are not connected yet">Connect</Button>
                     </div>
                   ))}
                 </div>

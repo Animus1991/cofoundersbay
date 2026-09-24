@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import {
   Users,
   Flag,
@@ -76,6 +77,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatCard } from '@/components/common/StatCard';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+
 import { AdminAnalyticsDashboard } from '@/components/admin/AdminAnalyticsDashboard';
 import { ScoreInspector } from '@/components/admin/ScoreInspector';
 import { AbuseMonitorPanel } from '@/components/admin/AbuseMonitorPanel';
@@ -284,7 +288,7 @@ function ReportCard({
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter?.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
+                Reported by {report.reporter?.name || report.reporter.email} · <RelativeTime date={report.createdAt} format={formatTimeAgo} />
               </p>
             </div>
           </div>
@@ -391,13 +395,13 @@ function UserRow({
       <div className="hidden text-right sm:block">
         <p className="text-sm capitalize text-foreground">{user.role}</p>
         {user.lastSeenAt && (
-          <p className="text-xs text-muted-foreground">{formatTimeAgo(user.lastSeenAt)}</p>
+          <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} format={formatTimeAgo} /></p>
         )}
       </div>
       <div className="hidden text-right md:block">
         <p className="text-sm text-foreground">{user.reportsCount} reports</p>
         <p className="text-xs text-muted-foreground">
-          Joined {formatTimeAgo(user.createdAt)}
+          Joined <RelativeTime date={user.createdAt} format={formatTimeAgo} />
         </p>
       </div>
       <DropdownMenu>
@@ -601,59 +605,98 @@ export default function AdminPage() {
       )
     : users;
 
+  /*
+   * The six platform totals used to sit above the tabs, so the first thing an
+   * admin saw was a row of figures rather than the queue they came to work.
+   * Same six cards, same values, same trends, one gesture to the right - and
+   * the badge on the collapsed strip is the open-reports count, so the one
+   * figure that asks for action is visible without opening anything.
+   */
+  const openReports = stats?.pendingReports ?? pendingReports;
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Platform totals',
+      labelEl: 'Σύνολα πλατφόρμας',
+      badge: openReports > 0 ? openReports : null,
+      content: (
+        <div className="space-y-2">
+          <StatCard
+            label="Total Users"
+            value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+            trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
+          />
+          <StatCard
+            label="Active Today"
+            value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Pending Reports"
+            value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
+            icon={<Flag className="icon-md" aria-hidden="true" />}
+            trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
+          />
+          <StatCard
+            label="Connections"
+            value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Messages"
+            value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Events"
+            value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+        </div>
+      ),
+    },
+    {
+      // The page's utilities, moved out of the header and the audit tab's
+      // card header: one Refresh for every query the page runs, and the
+      // audit-log export. Moved, not copied - the header and the card no
+      // longer carry either button.
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'Data tools',
+      labelEl: 'Εργαλεία δεδομένων',
+      content: (
+        <div className="space-y-0.5">
+          <button
+            type="button"
+            onClick={() => { void refetchReports(); void refetchUsers(); void refetchStats(); }}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh all data" el="Ανανέωση όλων των δεδομένων" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportAuditLogCSV}
+            disabled={!auditData?.logs?.length}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Export audit log (CSV)" el="Εξαγωγή αρχείου ελέγχου (CSV)" compact wrap /></span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title="Admin Dashboard"
       description="Manage users, moderate content, and monitor platform health"
       showHelp
-      actions={
-        <Button
-          variant="secondary"
-          size="sm"
-          className="gap-2"
-          onClick={() => { void refetchReports(); void refetchUsers(); }}
-        >
-          <RefreshCw className="icon-sm" aria-hidden="true" />
-          Refresh
-        </Button>
-      }
+      rail={rail}
     >
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-        <StatCard
-          label="Total Users"
-          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-          trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
-        />
-        <StatCard
-          label="Active Today"
-          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Pending Reports"
-          value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
-          icon={<Flag className="icon-md" aria-hidden="true" />}
-          trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
-        />
-        <StatCard
-          label="Connections"
-          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Messages"
-          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Events"
-          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
-          icon={<Users className="icon-md" />}
-        />
-      </div>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -1124,16 +1167,6 @@ export default function AdminPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Admin Audit Log</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={exportAuditLogCSV}
-                  disabled={!auditData?.logs?.length}
-                  className="gap-1.5"
-                >
-                  <Download className="icon-sm" />
-                  Export CSV
-                </Button>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -1166,7 +1199,7 @@ export default function AdminPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {log.entityId && <span>ID: {log.entityId.slice(0, 8)}… · </span>}
-                        {formatTimeAgo(log.createdAt)}
+                        <RelativeTime date={log.createdAt} format={formatTimeAgo} />
                       </p>
                       {log.meta && Object.keys(log.meta).length > 0 && (
                         <pre className="mt-2 rounded bg-secondary/40 p-2 text-xs text-muted-foreground overflow-x-auto">

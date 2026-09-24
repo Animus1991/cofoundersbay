@@ -7,8 +7,6 @@ import {
   Paperclip,
   Smile,
   MoreVertical,
-  Phone,
-  Video,
   Info,
   Check,
   CheckCheck,
@@ -89,7 +87,35 @@ type ChatWindowProps = {
   className?: string;
   validationState?: ConversationValidationState;
   onValidationModeChange?: (mode: ValidationMode) => void;
+  onAskAi?: () => void;
+  initialDraft?: string;
 };
+
+function firstName(full: string): string {
+  return full.trim().split(/\s+/)[0] || full;
+}
+
+function fillName(template: string, name: string): string {
+  return template.replaceAll('{name}', firstName(name));
+}
+
+function toggleReactionList(
+  current: { emoji: string; count: number }[] | undefined,
+  emoji: string,
+): { emoji: string; count: number }[] {
+  const list = current ? [...current] : [];
+  const idx = list.findIndex((r) => r.emoji === emoji);
+  if (idx === -1) {
+    list.push({ emoji, count: 1 });
+    return list;
+  }
+  if (list[idx].count <= 1) {
+    list.splice(idx, 1);
+    return list;
+  }
+  list[idx] = { ...list[idx], count: list[idx].count - 1 };
+  return list;
+}
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -117,6 +143,7 @@ function MessageBubble({
   recipientAvatar,
   recipientName,
   onReply,
+  onReact,
 }: {
   message: Message;
   isOwn: boolean;
@@ -124,6 +151,7 @@ function MessageBubble({
   recipientAvatar?: string | null;
   recipientName: string;
   onReply?: (msg: Message) => void;
+  onReact?: (messageId: string, emoji: string) => void;
 }) {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -171,7 +199,9 @@ function MessageBubble({
                   key={emoji}
                   type="button"
                   className="rounded-full p-1 text-sm hover:bg-secondary/80 transition-colors"
-                  title={emoji}
+                  title={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
+                  aria-label={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
+                  onClick={() => onReact?.(message.id, emoji)}
                 >
                   {emoji}
                 </button>
@@ -236,9 +266,15 @@ function MessageBubble({
           {message.reactions?.length ? (
             <div className="mt-1 flex flex-wrap gap-1">
               {message.reactions.map((r) => (
-                <span key={r.emoji} className="inline-flex items-center gap-0.5 rounded-full bg-secondary/80 border border-border/50 px-1.5 py-0.5 text-xs">
+                <button
+                  key={r.emoji}
+                  type="button"
+                  onClick={() => onReact?.(message.id, r.emoji)}
+                  className="inline-flex items-center gap-0.5 rounded-full border border-border/50 bg-secondary/80 px-1.5 py-0.5 text-xs transition-colors hover:bg-secondary"
+                  aria-label={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
+                >
                   {r.emoji} {r.count > 1 && <span className="text-muted-foreground">{r.count}</span>}
-                </span>
+                </button>
               ))}
             </div>
           ) : null}
@@ -264,7 +300,7 @@ function DateDivider({ date }: { date: Date }) {
   const t = useMessagesPrimaryText();
   const { primary } = useLanguagePreference();
   return (
-    <div className="my-4 flex justify-center">
+    <div className="my-3 flex justify-center">
       <span className="px-1 text-2xs font-medium text-muted-foreground">
         {formatDate(date, t(messagesEn('today'), messagesEl('today')), t(messagesEn('yesterday'), messagesEl('yesterday')), primary)}
       </span>
@@ -289,18 +325,36 @@ export function ChatWindow({
   className,
   validationState,
   onValidationModeChange,
+  onAskAi,
+  initialDraft,
 }: ChatWindowProps) {
   const t = useMessagesPrimaryText();
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(initialDraft ?? '');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [localReactions, setLocalReactions] = useState<Record<string, { emoji: string; count: number }[]>>({});
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLocalReactions({});
+    setReplyTo(null);
+    setSearchOpen(false);
+    setSearchQuery('');
+    setPendingFiles([]);
+    setInputValue(initialDraft ?? '');
+  }, [conversation.id, initialDraft]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia('(min-width: 768px)').matches) return;
+    textareaRef.current?.focus();
+  }, [conversation.id]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -343,6 +397,22 @@ export function ChatWindow({
     textareaRef.current?.focus();
   };
 
+  const handleReact = (messageId: string, emoji: string) => {
+    setLocalReactions((prev) => {
+      const base = prev[messageId] ?? messages.find((m) => m.id === messageId)?.reactions;
+      return { ...prev, [messageId]: toggleReactionList(base, emoji) };
+    });
+  };
+
+  const applyDraft = (text: string) => {
+    setInputValue(text);
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      const el = textareaRef.current;
+      if (el) el.setSelectionRange(el.value.length, el.value.length);
+    });
+  };
+
   // Handle key press
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -356,11 +426,15 @@ export function ChatWindow({
     ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
     : messages;
 
+  const visibleMessages = filteredMessages.map((m) =>
+    localReactions[m.id] ? { ...m, reactions: localReactions[m.id] } : m,
+  );
+
   // Group messages by date
   const groupedMessages: { date: Date; messages: Message[] }[] = [];
   let currentDate: string | null = null;
 
-  filteredMessages.forEach((msg) => {
+  visibleMessages.forEach((msg) => {
     const dateStr = msg.timestamp.toDateString();
     if (dateStr !== currentDate) {
       currentDate = dateStr;
@@ -385,11 +459,11 @@ export function ChatWindow({
         <div className="flex items-center justify-between gap-2 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {onBack && (
-              <Button aria-label="Back to conversations" variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden">
+              <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden" aria-label={bilingualAria(messagesEn('back_to_conversations'), messagesEl('back_to_conversations'))}>
                 <ArrowLeft className="icon-md" />
               </Button>
             )}
-            <Link href={`/profiles/${conversation.recipientId}`} className="flex min-w-0 items-center gap-3">
+            <Link href={`/profiles/${conversation.recipientId}`} className="flex min-w-0 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <ThreadAvatar
                 name={conversation.recipientName}
                 src={conversation.recipientAvatar}
@@ -402,12 +476,14 @@ export function ChatWindow({
                   <span className="truncate text-[14.7px] font-semibold tracking-tight text-foreground">{conversation.recipientName}</span>
                   <RoleBadge role={conversation.recipientRole || 'founder'} size="sm" className="hidden sm:inline-flex" />
                 </div>
-                <p className={cn('text-xs', conversation.isOnline ? 'font-medium text-status-success' : 'text-muted-foreground')}>
+                <p className={cn('truncate text-xs', conversation.isOnline ? 'font-medium text-status-success' : 'text-muted-foreground')}>
                   {conversation.isOnline
                     ? t(messagesEn('online'), messagesEl('online'))
-                    : conversation.lastSeen
-                      ? `${t(messagesEn('last_seen'), messagesEl('last_seen'))} ${formatTime(conversation.lastSeen)}`
-                      : t(messagesEn('offline'), messagesEl('offline'))}
+                    : conversation.recipientHeadline
+                      ? conversation.recipientHeadline
+                      : conversation.lastSeen
+                        ? `${t(messagesEn('last_seen'), messagesEl('last_seen'))} ${formatTime(conversation.lastSeen)}`
+                        : t(messagesEn('offline'), messagesEl('offline'))}
                 </p>
               </div>
             </Link>
@@ -429,18 +505,28 @@ export function ChatWindow({
                 validationState={validationState}
               />
             )}
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
               <Search className="icon-sm" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" disabled aria-label={bilingualAria(messagesEn('voice_soon'), messagesEl('voice_soon'))}>
-              <Phone className="icon-md" />
+            <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))} aria-label={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))}>
+              <Link href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}>
+                <CfbGlyph name="calendar" className="icon-sm" />
+              </Link>
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" disabled aria-label={bilingualAria(messagesEn('video_soon'), messagesEl('video_soon'))}>
-              <Video className="icon-md" />
-            </Button>
+            {onAskAi ? (
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} aria-label={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} onClick={onAskAi}>
+                <CfbGlyph name="spark" className="icon-sm" />
+              </Button>
+            ) : (
+              <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))} aria-label={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))}>
+                <Link href="/ai">
+                  <CfbGlyph name="spark" className="icon-sm" />
+                </Link>
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="Conversation actions" variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" aria-label={bilingualAria(messagesEn('conversation_options'), messagesEl('conversation_options'))}>
                   <MoreVertical className="icon-md" />
                 </Button>
               </DropdownMenuTrigger>
@@ -449,6 +535,18 @@ export function ChatWindow({
                   <Link href={`/profiles/${conversation.recipientId}`}>
                     <Info className="icon-sm mr-2" />
                     <BilingualText en={messagesEn('view_profile')} el={messagesEl('view_profile')} compact />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/matches/${conversation.recipientId}`}>
+                    <CfbGlyph name="matches" className="icon-sm mr-2" />
+                    <BilingualText en={messagesEn('view_match')} el={messagesEl('view_match')} compact />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}>
+                    <CfbGlyph name="calendar" className="icon-sm mr-2" />
+                    <BilingualText en={messagesEn('schedule_meet')} el={messagesEl('schedule_meet')} compact />
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -464,6 +562,47 @@ export function ChatWindow({
             </DropdownMenu>
           </div>
         </div>
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border/30 px-4 py-1.5">
+          <Link
+            href={`/profiles/${conversation.recipientId}`}
+            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+          >
+            <CfbGlyph name="people" className="h-3 w-3" />
+            {t(messagesEn('view_profile'), messagesEl('view_profile'))}
+          </Link>
+          <Link
+            href={`/matches/${conversation.recipientId}`}
+            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+          >
+            <CfbGlyph name="matches" className="h-3 w-3" />
+            {t(messagesEn('view_match'), messagesEl('view_match'))}
+          </Link>
+          <Link
+            href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}
+            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+          >
+            <CfbGlyph name="calendar" className="h-3 w-3" />
+            {t(messagesEn('schedule_meet'), messagesEl('schedule_meet'))}
+          </Link>
+          {onAskAi ? (
+            <button
+              type="button"
+              onClick={onAskAi}
+              className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+            >
+              <CfbGlyph name="spark" className="h-3 w-3" />
+              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
+            </button>
+          ) : (
+            <Link
+              href="/ai"
+              className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+            >
+              <CfbGlyph name="spark" className="h-3 w-3" />
+              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
+            </Link>
+          )}
+        </div>
         {/* Search bar */}
         {searchOpen && (
           <div className="px-4 pb-3 flex items-center gap-2">
@@ -475,7 +614,7 @@ export function ChatWindow({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t(messagesEn('search_in_chat'), messagesEl('search_in_chat'))}
-                className="w-full rounded-xl border border-border/60 bg-secondary/50 py-1.5 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full rounded-xl border border-border/60 bg-secondary/50 py-1.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
             {searchQuery && (
@@ -486,7 +625,7 @@ export function ChatWindow({
                   : t(messagesEn('results_n'), messagesEl('results_n'))}
               </span>
             )}
-            <Button aria-label="Close search" variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} aria-label={bilingualAria(messagesEn('close_search'), messagesEl('close_search'))}>
               <X className="icon-sm" />
             </Button>
           </div>
@@ -496,7 +635,6 @@ export function ChatWindow({
       {/* Messages */}
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
         <div className="flex min-h-full flex-col justify-end px-4 py-4 sm:px-6">
-        {/* Load more button at top */}
         {hasMoreMessages && (
           <div className="flex justify-center py-2">
             <Button
@@ -508,6 +646,54 @@ export function ChatWindow({
             >
               {isLoadingMore ? t(messagesEn('loading'), messagesEl('loading')) : t(messagesEn('load_older'), messagesEl('load_older'))}
             </Button>
+          </div>
+        )}
+        {messages.length === 0 && !searchQuery && (
+          <div className="mb-6 flex flex-col items-center gap-3 px-4 py-8 text-center">
+            <ThreadAvatar
+              name={conversation.recipientName}
+              src={conversation.recipientAvatar}
+              seed={conversation.recipientId}
+              size="lg"
+            />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">
+                <BilingualText en={messagesEn('empty_thread_title')} el={messagesEl('empty_thread_title')} />
+              </p>
+              <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
+                <BilingualText en={messagesEn('empty_thread_hint')} el={messagesEl('empty_thread_hint')} />
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 rounded-full px-3 text-xs"
+                onClick={() => applyDraft(fillName(t(messagesEn('say_hello_draft'), messagesEl('say_hello_draft')), conversation.recipientName))}
+              >
+                <BilingualText en={messagesEn('say_hello')} el={messagesEl('say_hello')} compact />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 rounded-full px-3 text-xs"
+                onClick={() => applyDraft(t(messagesEn('schedule_draft'), messagesEl('schedule_draft')))}
+              >
+                <BilingualText en={messagesEn('propose_time')} el={messagesEl('propose_time')} compact />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 rounded-full px-3 text-xs"
+                onClick={onAskAi}
+              >
+                <CfbGlyph name="spark" className="icon-sm mr-1" />
+                <BilingualText en={messagesEn('draft_with_ai')} el={messagesEl('draft_with_ai')} compact />
+              </Button>
+            </div>
           </div>
         )}
         {groupedMessages.map((group, groupIndex) => (
@@ -527,6 +713,7 @@ export function ChatWindow({
                     recipientAvatar={conversation.recipientAvatar}
                     recipientName={conversation.recipientName}
                     onReply={(m) => { setReplyTo(m); textareaRef.current?.focus(); }}
+                    onReact={handleReact}
                   />
                 </div>
               );
@@ -564,7 +751,7 @@ export function ChatWindow({
               </p>
               <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
             </div>
-            <Button aria-label="Cancel the reply" variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
+            <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)} aria-label={bilingualAria(messagesEn('cancel_reply'), messagesEl('cancel_reply'))}>
               <X className="icon-sm" />
             </Button>
           </div>
@@ -660,8 +847,17 @@ export function ChatWindow({
             <Send className="icon-md" />
           </Button>
         </div>
-        <p className="mt-1.5 px-3 text-2xs text-muted-foreground">
-          {t(messagesEn('type_message_hint'), messagesEl('type_message_hint'))}
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 px-3 text-2xs text-muted-foreground">
+          <span>{t(messagesEn('type_message_hint'), messagesEl('type_message_hint'))}</span>
+          {onAskAi && (
+            <button
+              type="button"
+              onClick={onAskAi}
+              className="font-medium text-primary-accessible underline-offset-2 hover:underline"
+            >
+              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
+            </button>
+          )}
         </p>
       </div>
     </div>
@@ -669,14 +865,24 @@ export function ChatWindow({
 }
 
 // Empty state when no conversation is selected
-export function NoChatSelected({ onNewMessage }: { onNewMessage?: () => void }) {
+export function NoChatSelected({
+  onNewMessage,
+  onAskAi,
+  recent,
+  onSelectRecent,
+}: {
+  onNewMessage?: () => void;
+  onAskAi?: () => void;
+  recent?: { id: string; name: string; avatarUrl?: string | null; userId: string }[];
+  onSelectRecent?: (id: string) => void;
+}) {
   return (
     <div className="relative flex h-full flex-col items-center justify-center overflow-hidden p-8 text-center">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12),transparent_58%)]"
       />
-      <div className="relative flex max-w-sm flex-col items-center gap-5">
+      <div className="relative flex max-w-md flex-col items-center gap-5">
         <div className="relative">
           <div className="absolute -inset-6 rounded-full bg-primary/15 blur-2xl" />
           <div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-primary/20 via-background to-accent/20 shadow-[0_18px_40px_-24px_hsl(var(--primary)/0.8)] ring-1 ring-primary/20">
@@ -691,11 +897,29 @@ export function NoChatSelected({ onNewMessage }: { onNewMessage?: () => void }) 
             <BilingualText en={messagesEn('empty_inbox_hint')} el={messagesEl('empty_inbox_hint')} />
           </p>
         </div>
+        {recent && recent.length > 0 && onSelectRecent && (
+          <div className="w-full space-y-2">
+            <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <BilingualText en={messagesEn('recent_conversations')} el={messagesEl('recent_conversations')} compact />
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {recent.slice(0, 4).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onSelectRecent(item.id)}
+                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-2.5 py-1.5 text-left text-xs font-medium transition-colors hover:bg-muted/70"
+                >
+                  <ThreadAvatar name={item.name} src={item.avatarUrl} seed={item.userId} size="sm" />
+                  <span className="max-w-[9rem] truncate">{item.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {onNewMessage && (
           <Button type="button" className="h-11 rounded-full px-6 shadow-sm" onClick={onNewMessage}>
             <CfbGlyph name="messages" className="icon-sm mr-2" />
-            {/* Same as the Messages header button: the secondary line needs the
-                button's foreground, not the muted default, on a primary fill. */}
             <BilingualText
               en={messagesEn('new_message')}
               el={messagesEl('new_message')}
@@ -705,6 +929,12 @@ export function NoChatSelected({ onNewMessage }: { onNewMessage?: () => void }) 
           </Button>
         )}
         <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm">
+          <Link href="/matches" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
+            <BilingualText en={messagesEn('browse_matches')} el={messagesEl('browse_matches')} compact />
+          </Link>
+          <span className="text-muted-foreground">
+            <BilingualText en={messagesEn('empty_or')} el={messagesEl('empty_or')} compact />
+          </span>
           <Link href="/discover" className="font-medium text-primary-accessible underline-offset-4 hover:underline">
             <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
           </Link>
@@ -715,6 +945,16 @@ export function NoChatSelected({ onNewMessage }: { onNewMessage?: () => void }) 
             <BilingualText en={messagesEn('view_connections')} el={messagesEl('view_connections')} compact />
           </Link>
         </p>
+        {onAskAi && (
+          <button
+            type="button"
+            onClick={onAskAi}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-accessible underline-offset-4 hover:underline"
+          >
+            <CfbGlyph name="spark" className="icon-sm" />
+            <BilingualText en={messagesEn('open_ai_page')} el={messagesEl('open_ai_page')} compact />
+          </button>
+        )}
       </div>
     </div>
   );

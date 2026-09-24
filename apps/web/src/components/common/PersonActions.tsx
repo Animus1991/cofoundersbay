@@ -63,7 +63,10 @@ export function MessageButton({
       variant={variant}
       className={cn('gap-1.5', className)}
       disabled={opening}
+      // Always set: with text content it enriches the name ("Message Maria"
+      // instead of "Message"); icon-only it is the only name there is.
       aria-label={label}
+      title={iconOnly ? label : undefined}
       onClick={async () => {
         setOpening(true);
         try {
@@ -110,7 +113,15 @@ export function ConnectButton({
   // why the assistant declares the same action irreversible.
   if (state === 'sent') {
     return (
-      <Button type="button" size={size} variant="outline" className={cn('gap-1.5', className)} disabled aria-label={label}>
+      <Button
+        type="button"
+        size={size}
+        variant="outline"
+        className={cn('gap-1.5', className)}
+        disabled
+        // Icon-only in this state rendered a lone Check with no name at all.
+        aria-label={bilingualInline('Request sent', 'Στάλθηκε')}
+      >
         <Check className="icon-sm" aria-hidden="true" />
         {!iconOnly && <BilingualText en="Request sent" el="Στάλθηκε" compact />}
       </Button>
@@ -125,6 +136,7 @@ export function ConnectButton({
       className={cn('gap-1.5', className)}
       disabled={state === 'sending'}
       aria-label={label}
+      title={iconOnly ? label : undefined}
       onClick={async () => {
         setState('sending');
         try {

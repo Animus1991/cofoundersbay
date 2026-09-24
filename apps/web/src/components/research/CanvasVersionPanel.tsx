@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -136,22 +137,22 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success border border-status-success-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success">
           <Plus className="h-2.5 w-2.5" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger border border-status-danger-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger">
           <Minus className="h-2.5 w-2.5" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning border border-status-warning-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning">
           <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info border border-status-info-border">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info">
           <Move className="h-2.5 w-2.5" />{diff.moved.length}
         </span>
       )}
@@ -632,7 +633,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{v.changeSummary}</p>
                 )}
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-xs text-muted-foreground">{timeAgo(v.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground"><RelativeTime date={v.createdAt} format={timeAgo} /></span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs text-muted-foreground">{v.nodeCount} nodes</span>
                   {v.createdBy && (
@@ -801,7 +802,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
               </div>
               {b.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{b.description}</p>}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-muted-foreground">{timeAgo(b.updatedAt)}</span>
+                <span className="text-xs text-muted-foreground"><RelativeTime date={b.updatedAt} format={timeAgo} /></span>
                 {b.nodeCount != null && (
                   <>
                     <span className="text-xs text-muted-foreground">·</span>

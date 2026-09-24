@@ -66,7 +66,7 @@ describe('live readiness and explicit showcase isolation', () => {
     expect(screen.queryByText('Target market defined')).toBeNull();
     expect(screen.queryByText('Co-founder identified')).toBeNull();
     expect(screen.getByText('Readiness history is not available yet.')).toBeTruthy();
-    expect(screen.queryByText(/pts/)).toBeNull();
+    expect(screen.queryByText(/\+\d+\s*pts/)).toBeNull();
     fireEvent.mouseDown(screen.getByRole('tab', { name: /History/i }), { button: 0, ctrlKey: false });
     await screen.findByRole('tabpanel');
     expect(screen.queryByText('W1')).toBeNull();

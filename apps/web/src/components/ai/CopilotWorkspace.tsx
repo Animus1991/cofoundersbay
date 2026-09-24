@@ -3,8 +3,8 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Bot,
   Loader2,
+  List,
   Maximize2,
   Plus,
   RefreshCw,
@@ -15,8 +15,16 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { cn } from '@/lib/utils';
-import { getAgentIcon } from '@/lib/ai-api';
+import { getAgentGlyph } from '@/lib/ai-api';
 import { useAIChat, type AIMessage } from '@/hooks/useAIChat';
 import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
@@ -41,8 +49,15 @@ const STARTERS: { en: string; el: string; writes?: boolean }[] = [
   { en: 'What should I do next?', el: 'Τι να κάνω μετά;' },
   { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα' },
   { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
+  { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
   { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
-  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη shortlist', writes: true },
+  { en: 'Open my calendar', el: 'Άνοιξε το ημερολόγιό μου' },
+  { en: 'How is my fundraising going?', el: 'Πώς πάει η χρηματοδότηση;' },
+  // Two adjacent chips named one thing twice - "στη shortlist" here and
+  // "από τη λίστα" on the next line. The planner matches both; the reader
+  // should not have to.
+  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα', writes: true },
+  { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα', writes: true },
   { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', writes: true },
 ];
 
@@ -216,11 +231,23 @@ export function CopilotWorkspace({
               type="button"
               variant="ghost"
               size="sm"
-              className="w-full justify-start gap-2"
+              className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
+              onClick={() => router.push('/ai/capabilities')}
+            >
+              <List className="h-4 w-4 shrink-0" />
+              <BilingualText en="What I can do" el="Τι μπορώ να κάνω" stacked className="min-w-0 text-left" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              // h-auto + stacked: the inline "AI preferences · Προτιμήσεις AI"
+              // did not fit the 288px rail and clipped to "AI preferen…".
+              className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
               onClick={() => router.push('/settings/ai')}
             >
-              <Settings className="h-4 w-4" />
-              <BilingualText en="AI preferences" el="Προτιμήσεις AI" compact />
+              <Settings className="h-4 w-4 shrink-0" />
+              <BilingualText en="AI preferences" el="Προτιμήσεις AI" stacked className="min-w-0 text-left" />
             </Button>
           </div>
         </aside>
@@ -229,47 +256,55 @@ export function CopilotWorkspace({
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-2 border-b border-border/40 bg-muted/30 px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs text-muted-foreground">
-              {getAgentIcon(chat.currentAgent)}
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">
+              <p className={cn('truncate text-sm font-medium', !isPage && 'max-w-[9.5rem]')}>
                 {currentAgentConfig?.name || 'CoFounderBay Assistant'}
               </p>
+              {isPage && (
               <p className="truncate text-[11px] text-muted-foreground">
                 {chat.isAIAvailable
                   ? sayOne('Live model + platform tools', 'Ζωντανό μοντέλο + εργαλεία πλατφόρμας')
                   : sayOne('Platform copilot · tools online', 'Βοηθός πλατφόρμας · εργαλεία ενεργά')}
               </p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-1">
             {agentList.length > 1 && (
-              <select
-                value={chat.currentAgent}
-                onChange={(e) => chat.setAgent(e.target.value)}
-                className="h-8 max-w-[9rem] rounded-md border border-border bg-background px-2 text-xs"
-                aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
-              >
-                {agentList.map((agent) => (
-                  <option key={agent.id} value={agent.id}>
-                    {agent.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={chat.currentAgent} onValueChange={(v) => chat.setAgent(v)}>
+                <SelectTrigger
+                  className={cn(
+                    'h-8 min-h-8 w-auto gap-1 px-2 text-xs',
+                    isPage ? 'max-w-[11rem]' : 'max-w-[7.5rem]',
+                  )}
+                  aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {agentList.map((agent) => (
+                    <SelectItem key={agent.id} value={agent.id} className="text-xs">
+                      {agent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
             {chat.messages.length > 0 && (
               <>
-                <button type="button" onClick={chat.retryLastMessage} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Retry', 'Επανάληψη')} aria-label={bilingualAria('Retry', 'Επανάληψη')}>
+                <button type="button" onClick={chat.retryLastMessage} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Retry', 'Επανάληψη')} aria-label={bilingualAria('Retry', 'Επανάληψη')}>
                   <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
-                <button type="button" onClick={chat.clearMessages} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Clear', 'Καθαρισμός')} aria-label={bilingualAria('Clear', 'Καθαρισμός')}>
+                <button type="button" onClick={chat.clearMessages} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Clear', 'Καθαρισμός')} aria-label={bilingualAria('Clear', 'Καθαρισμός')}>
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </>
             )}
             {onExpand && (
-                <button type="button" onClick={onExpand} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
+                <button type="button" onClick={onExpand} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
                 <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             )}
@@ -288,7 +323,7 @@ export function CopilotWorkspace({
             <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center gap-5 py-6">
               <div className="flex gap-2">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <Bot className="h-4 w-4" aria-hidden="true" />
+                  <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-sm">
                   <BilingualText
@@ -332,13 +367,27 @@ export function CopilotWorkspace({
                   </div>
                 );
               })}
+              <p className="text-center text-xs text-muted-foreground">
+                <button
+                  type="button"
+                  className="underline-offset-2 hover:underline"
+                  onClick={() => router.push('/ai/capabilities')}
+                >
+                  <BilingualText
+                    en="See everything I can read and change"
+                    el="Δες όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                    compact
+                    wrap
+                  />
+                </button>
+              </p>
             </div>
           ) : (
             chat.messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2', msg.role === 'user' && 'justify-end')}>
                 {msg.role === 'assistant' && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] text-muted-foreground">
-                    {getAgentIcon(chat.currentAgent)}
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
                   </div>
                 )}
                 <div
@@ -381,10 +430,14 @@ export function CopilotWorkspace({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={sayOne(
-                'Ask AI to search, intro, message, or navigate…',
-                'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…',
+                isPage
+                  ? 'Ask AI to search, intro, message, or navigate…'
+                  : 'Ask to search, intro, or go…',
+                isPage
+                  ? 'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…'
+                  : 'Αναζήτηση, σύσταση, πλοήγηση…',
               )}
-              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1"
+              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:outline-none focus-visible:ring-0"
               disabled={chat.isStreaming}
             />
             <Button
@@ -397,6 +450,22 @@ export function CopilotWorkspace({
               {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
+          {!isPage ? (
+            <p className="mt-1.5 text-center text-2xs text-muted-foreground">
+              <button
+                type="button"
+                className="underline-offset-2 hover:underline"
+                onClick={() => router.push('/ai/capabilities')}
+              >
+                <BilingualText
+                  en="See everything I can read and change"
+                  el="Δες όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                  compact
+                  wrap
+                />
+              </button>
+            </p>
+          ) : (
           <p className="mt-2 flex items-center justify-center gap-1 text-center text-2xs text-muted-foreground">
             <Sparkles className="h-3 w-3" />
             <BilingualText
@@ -404,6 +473,7 @@ export function CopilotWorkspace({
               el="Τα εργαλεία χρησιμοποιούν τις πραγματικές συνδέσεις, αντιστοιχίσεις και μηνύματα. Οι καταστροφικές ενέργειες θέλουν επιβεβαίωση."
             />
           </p>
+          )}
         </form>
       </section>
     </div>

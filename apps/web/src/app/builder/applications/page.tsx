@@ -69,7 +69,7 @@ function ApplicationsPageContent() {
 
   return (
     <AppShell showHelp askAi="Draft YC, Techstars, university, or grant answers from Idea Core, Market, and Pitch.">
-      <div className="space-y-6">
+      <div className="builder-type space-y-6">
         {error && (
           <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
             <AlertCircle className="icon-md text-destructive-accessible" />

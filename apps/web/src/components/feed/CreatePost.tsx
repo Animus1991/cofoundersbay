@@ -199,11 +199,11 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
               <Button aria-label="Add image" variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <Image className="icon-sm" aria-hidden="true" />
               </Button>
-              <Button aria-label="Add a link" variant="ghost" size="icon" className="h-9 w-9" disabled>
-                <Link2 className="icon-sm" />
+              <Button variant="ghost" size="icon" className="h-9 w-9" disabled aria-label="Add link">
+                <Link2 className="icon-sm" aria-hidden="true" />
               </Button>
-              <Button aria-label="Mention someone" variant="ghost" size="icon" className="h-9 w-9" disabled>
-                <AtSign className="icon-sm" />
+              <Button variant="ghost" size="icon" className="h-9 w-9" disabled aria-label="Mention someone">
+                <AtSign className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
             <div className="flex items-center gap-2">

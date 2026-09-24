@@ -3,12 +3,14 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import {
   Bold, Italic, Underline, Strikethrough, List, ListOrdered,
-  AlignLeft, AlignCenter, AlignRight, Link as LinkIcon,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Link as LinkIcon,
   Undo, Redo, Quote, Code, Minus, Highlighter, RemoveFormatting,
-  CheckSquare,
+  CheckSquare, IndentIncrease, IndentDecrease, Superscript, Subscript,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { bilingualAria } from '@/lib/i18n/format';
+import { countDocWords } from '@/lib/canvas/canvas-document';
 
 interface RichTextEditorProps {
   content: string;
@@ -27,11 +29,13 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isEmpty, setIsEmpty] = useState(!content);
+  const [counts, setCounts] = useState(() => countDocWords(content));
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== content) {
       editorRef.current.innerHTML = content || '';
       setIsEmpty(!content);
+      setCounts(countDocWords(content || ''));
     }
   }, [content]);
 
@@ -40,6 +44,7 @@ export function RichTextEditor({
       const html = editorRef.current.innerHTML;
       const textContent = editorRef.current?.textContent || '';
       setIsEmpty(!textContent.trim());
+      setCounts(countDocWords(html));
       onChange(html);
     }
   }, [onChange]);
@@ -49,6 +54,13 @@ export function RichTextEditor({
     editorRef.current?.focus();
     handleInput();
   }, [handleInput]);
+
+  const insertLink = useCallback(() => {
+    const url = prompt(bilingualAria('Enter URL', 'Εισαγάγετε URL'));
+    if (url) {
+      execCommand('createLink', url);
+    }
+  }, [execCommand]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -65,24 +77,17 @@ export function RichTextEditor({
           e.preventDefault();
           execCommand('underline');
           break;
+        case 'k':
+          e.preventDefault();
+          insertLink();
+          break;
         case 'z':
           e.preventDefault();
-          if (e.shiftKey) {
-            execCommand('redo');
-          } else {
-            execCommand('undo');
-          }
+          execCommand(e.shiftKey ? 'redo' : 'undo');
           break;
       }
     }
-  }, [execCommand]);
-
-  const insertLink = useCallback(() => {
-    const url = prompt('Enter URL:');
-    if (url) {
-      execCommand('createLink', url);
-    }
-  }, [execCommand]);
+  }, [execCommand, insertLink]);
 
   const ToolBtn = ({
     onClick,
@@ -121,33 +126,39 @@ export function RichTextEditor({
     <div className={cn('border rounded-lg overflow-hidden bg-background', className)}>
       {/* Toolbar */}
       <div className="flex flex-wrap gap-0.5 px-2.5 py-2 border-b border-border bg-card sticky top-0 z-10">
-        <ToolBtn onClick={() => execCommand('undo')} icon={Undo} title="Undo (Ctrl+Z)" />
-        <ToolBtn onClick={() => execCommand('redo')} icon={Redo} title="Redo (Ctrl+Shift+Z)" />
+        <ToolBtn onClick={() => execCommand('undo')} icon={Undo} title={bilingualAria('Undo (Ctrl+Z)', 'Αναίρεση (Ctrl+Z)')} />
+        <ToolBtn onClick={() => execCommand('redo')} icon={Redo} title={bilingualAria('Redo (Ctrl+Shift+Z)', 'Επανάληψη (Ctrl+Shift+Z)')} />
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={() => execCommand('bold')} icon={Bold} title="Bold (Ctrl+B)" />
-        <ToolBtn onClick={() => execCommand('italic')} icon={Italic} title="Italic (Ctrl+I)" />
-        <ToolBtn onClick={() => execCommand('underline')} icon={Underline} title="Underline (Ctrl+U)" />
-        <ToolBtn onClick={() => execCommand('strikeThrough')} icon={Strikethrough} title="Strikethrough" />
+        <ToolBtn onClick={() => execCommand('bold')} icon={Bold} title={bilingualAria('Bold (Ctrl+B)', 'Έντονα (Ctrl+B)')} />
+        <ToolBtn onClick={() => execCommand('italic')} icon={Italic} title={bilingualAria('Italic (Ctrl+I)', 'Πλάγια (Ctrl+I)')} />
+        <ToolBtn onClick={() => execCommand('underline')} icon={Underline} title={bilingualAria('Underline (Ctrl+U)', 'Υπογράμμιση (Ctrl+U)')} />
+        <ToolBtn onClick={() => execCommand('strikeThrough')} icon={Strikethrough} title={bilingualAria('Strikethrough', 'Διαγραφή')} />
+        <ToolBtn onClick={() => execCommand('superscript')} icon={Superscript} title={bilingualAria('Superscript', 'Εκθέτης')} />
+        <ToolBtn onClick={() => execCommand('subscript')} icon={Subscript} title={bilingualAria('Subscript', 'Δείκτης')} />
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={() => execCommand('formatBlock', 'h2')} title="Heading 1"><span className="text-2xs font-bold">H1</span></ToolBtn>
-        <ToolBtn onClick={() => execCommand('formatBlock', 'h3')} title="Heading 2"><span className="text-2xs font-bold">H2</span></ToolBtn>
-        <ToolBtn onClick={() => execCommand('formatBlock', 'h4')} title="Heading 3"><span className="text-2xs font-bold">H3</span></ToolBtn>
-        <ToolBtn onClick={() => execCommand('formatBlock', 'p')} title="Paragraph"><span className="text-2xs">P</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h2')} title={bilingualAria('Heading 1', 'Επικεφαλίδα 1')}><span className="text-2xs font-bold">H1</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h3')} title={bilingualAria('Heading 2', 'Επικεφαλίδα 2')}><span className="text-2xs font-bold">H2</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h4')} title={bilingualAria('Heading 3', 'Επικεφαλίδα 3')}><span className="text-2xs font-bold">H3</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'p')} title={bilingualAria('Paragraph', 'Παράγραφος')}><span className="text-2xs">P</span></ToolBtn>
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={() => execCommand('insertUnorderedList')} icon={List} title="Bullet List" />
-        <ToolBtn onClick={() => execCommand('insertOrderedList')} icon={ListOrdered} title="Numbered List" />
+        <ToolBtn onClick={() => execCommand('insertUnorderedList')} icon={List} title={bilingualAria('Bullet list', 'Κουκκίδες')} />
+        <ToolBtn onClick={() => execCommand('insertOrderedList')} icon={ListOrdered} title={bilingualAria('Numbered list', 'Αρίθμηση')} />
+        <ToolBtn onClick={() => execCommand('insertHTML', '<ul><li>☐ </li></ul>')} icon={CheckSquare} title={bilingualAria('Checklist', 'Λίστα ελέγχου')} />
+        <ToolBtn onClick={() => execCommand('indent')} icon={IndentIncrease} title={bilingualAria('Increase indent', 'Αύξηση εσοχής')} />
+        <ToolBtn onClick={() => execCommand('outdent')} icon={IndentDecrease} title={bilingualAria('Decrease indent', 'Μείωση εσοχής')} />
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={() => execCommand('justifyLeft')} icon={AlignLeft} title="Align Left" />
-        <ToolBtn onClick={() => execCommand('justifyCenter')} icon={AlignCenter} title="Align Center" />
-        <ToolBtn onClick={() => execCommand('justifyRight')} icon={AlignRight} title="Align Right" />
+        <ToolBtn onClick={() => execCommand('justifyLeft')} icon={AlignLeft} title={bilingualAria('Align left', 'Αριστερά')} />
+        <ToolBtn onClick={() => execCommand('justifyCenter')} icon={AlignCenter} title={bilingualAria('Align center', 'Κέντρο')} />
+        <ToolBtn onClick={() => execCommand('justifyRight')} icon={AlignRight} title={bilingualAria('Align right', 'Δεξιά')} />
+        <ToolBtn onClick={() => execCommand('justifyFull')} icon={AlignJustify} title={bilingualAria('Justify', 'Πλήρης στοίχιση')} />
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={insertLink} icon={LinkIcon} title="Insert Link" />
-        <ToolBtn onClick={() => execCommand('formatBlock', 'blockquote')} icon={Quote} title="Blockquote" />
-        <ToolBtn onClick={() => execCommand('formatBlock', 'pre')} icon={Code} title="Code Block" />
-        <ToolBtn onClick={() => execCommand('insertHorizontalRule')} icon={Minus} title="Horizontal Rule" />
+        <ToolBtn onClick={insertLink} icon={LinkIcon} title={bilingualAria('Insert link (Ctrl+K)', 'Εισαγωγή συνδέσμου (Ctrl+K)')} />
+        <ToolBtn onClick={() => execCommand('formatBlock', 'blockquote')} icon={Quote} title={bilingualAria('Quote', 'Παράθεση')} />
+        <ToolBtn onClick={() => execCommand('formatBlock', 'pre')} icon={Code} title={bilingualAria('Code block', 'Κώδικας')} />
+        <ToolBtn onClick={() => execCommand('insertHorizontalRule')} icon={Minus} title={bilingualAria('Horizontal rule', 'Οριζόντια γραμμή')} />
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={() => execCommand('hiliteColor', '#fef08a')} icon={Highlighter} title="Highlight" />
-        <ToolBtn onClick={() => execCommand('removeFormat')} icon={RemoveFormatting} title="Clear Formatting" />
+        <ToolBtn onClick={() => execCommand('hiliteColor', '#fef08a')} icon={Highlighter} title={bilingualAria('Highlight', 'Επισήμανση')} />
+        <ToolBtn onClick={() => execCommand('removeFormat')} icon={RemoveFormatting} title={bilingualAria('Clear formatting', 'Καθαρισμός μορφής')} />
       </div>
 
       {/* Editor */}
@@ -171,6 +182,12 @@ export function RichTextEditor({
             '[&_pre]:bg-secondary [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:my-3 [&_pre]:overflow-x-auto',
             '[&_code]:bg-secondary [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm',
             '[&_hr]:border-border [&_hr]:my-4',
+            // One token pair rather than a light shade plus a dark override: the token
+            // already differs per theme, and the `dark:` variant only covered one
+            // of the product's several dark contexts.
+            '[&_mark]:bg-status-warning-bg [&_mark]:text-status-warning',
+            '[&_cite]:text-muted-foreground [&_cite]:not-italic',
+            '[&_time]:text-muted-foreground [&_time]:text-2xs',
           )}
           suppressContentEditableWarning
         />
@@ -179,6 +196,9 @@ export function RichTextEditor({
             {placeholder}
           </div>
         )}
+      </div>
+      <div className="flex justify-end border-t border-border/50 px-3 py-1 text-2xs tabular-nums text-muted-foreground">
+        {counts.words} · {counts.chars}
       </div>
     </div>
   );

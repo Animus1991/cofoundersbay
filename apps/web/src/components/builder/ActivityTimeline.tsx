@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +14,7 @@ import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import type { BuilderActivityLog } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
 
 // ── Activity type metadata ────────────────────────────────────────────────────
 
@@ -172,7 +172,10 @@ export function ActivityTimeline({
             const Icon = meta.icon;
             const isLast = idx === activities.length - 1;
             const phrase = meta.label(activity);
-            const ago = timeAgoPair(activity.createdAt);
+            const agoNode = (iso: string) => {
+              const pair = timeAgoPair(iso);
+              return <BilingualText en={pair.en} el={pair.el} compact />;
+            };
             const entityEl = activity.entityType ? ENTITY_EL[activity.entityType] : undefined;
 
             return (
@@ -204,21 +207,13 @@ export function ActivityTimeline({
                       )}
                       <BilingualText en={phrase.en} el={phrase.el} compact wrap />
                       <span className="text-muted-foreground/60 ml-1.5">
-                        <BilingualText en={ago.en} el={ago.el} compact />
+                        <RelativeTime date={activity.createdAt} format={agoNode} />
                       </span>
                     </p>
                   ) : (
                     <>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          {activity.user && (
-                            <Avatar className="h-5 w-5 shrink-0">
-                              <AvatarImage src={activity.user.avatarUrl} />
-                              <AvatarFallback className="text-2xs">
-                                {(activity.user?.displayName ?? 'U').charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
                           <p className="text-sm text-foreground leading-snug">
                             {activity.user && (
                               <span className="font-medium">{activity.user.displayName}&nbsp;</span>
@@ -229,7 +224,7 @@ export function ActivityTimeline({
                           </p>
                         </div>
                         <span className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">
-                          <BilingualText en={ago.en} el={ago.el} compact />
+                          <RelativeTime date={activity.createdAt} format={agoNode} />
                         </span>
                       </div>
 

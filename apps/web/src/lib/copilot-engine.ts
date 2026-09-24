@@ -4,9 +4,11 @@ import {
   listConnectionRequests,
   listMessageConversations,
   listNotifications,
+  listShortlist,
   searchProfiles,
   getRecommendations,
   type SearchHit,
+  type ShortlistItem,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
 import { executeAction, getActionSpec } from '@/lib/action-registry';
@@ -15,11 +17,13 @@ import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { planCopilotTools, detectPersonName, asksAboutThisPage } from '@/lib/copilot-planner';
+import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import type {
   CopilotAction,
   CopilotCitation,
   CopilotGraph,
   CopilotTurnResult,
+  PlannedTool,
 } from '@/lib/copilot-types';
 
 export type PageContextPacket = {
@@ -44,7 +48,7 @@ export type PageContextPacket = {
 };
 
 /**
- * Bound to the reader's locale for one turn.
+ * Bound to the reader’s locale for one turn.
  *
  * The engine is a plain async function rather than a component, so it cannot
  * read `useI18n`. It receives the locale on the page-context packet and binds
@@ -277,12 +281,44 @@ export function actionsFromToolCalls(
   return actions;
 }
 
+export type CopilotTurnOptions = {
+  /**
+   * Run these tools instead of planning from the message.
+   *
+   * This is how a read the *model* asks for gets answered. The model is offered
+   * every declared read, and until now the client dropped any it chose —
+   * `actionsFromToolCalls` rightly makes no card for a question, and nothing
+   * else ran it. Passing the model’s calls here sends them down exactly the
+   * path a keyword match takes, so a read answers the same way whichever of
+   * the two asked for it, and there is no second implementation to drift.
+   */
+  tools?: readonly PlannedTool[];
+};
+
+/**
+ * The language to answer in: the reader’s locale, unless they wrote in Greek.
+ *
+ * The product is bilingual, and its interface language and the language a
+ * founder types in are separate choices. A founder whose interface is English
+ * who asks «ποια ορόσημα έχω;» was answered in English, because the reply
+ * followed the interface. Answering in the language of the question is what a
+ * person would do. Only English is overridden — a reader who chose any other
+ * locale chose it, and Greek letters in a message are not a reason to discard
+ * that.
+ */
+export function replyLocaleFor(userMessage: string, locale?: string): string | undefined {
+  if ((!locale || locale === 'en') && /[Ͱ-Ͽἀ-῿]/.test(userMessage)) return 'el';
+  return locale;
+}
+
 export async function runCopilotTurn(
   userMessage: string,
   pageContext?: PageContextPacket,
+  options?: CopilotTurnOptions,
 ): Promise<CopilotTurnResult> {
-  const t = translatorFor(pageContext?.locale);
-  const planned = planCopilotTools(userMessage);
+  const replyLocale = replyLocaleFor(userMessage, pageContext?.locale);
+  const t = translatorFor(replyLocale);
+  const planned = options?.tools ? [...options.tools] : planCopilotTools(userMessage);
   const usedTools = planned.map((t) => t.name);
   const citations: CopilotCitation[] = [];
   const actions: CopilotAction[] = [];
@@ -320,6 +356,78 @@ export async function runCopilotTurn(
     return true;
   };
 
+  const applyShortlistRemove = async (name?: string) => {
+    let saved: ShortlistItem[] = [];
+    try {
+      const result = await listShortlist({ limit: 50 });
+      saved = Array.isArray(result?.items) ? result.items : [];
+    } catch {
+      saved = [];
+    }
+
+    const needle = (name || detectPersonName(userMessage) || '').toLowerCase();
+    let item: ShortlistItem | undefined;
+    if (needle) {
+      const exact = saved.find((entry) => (entry.profile?.displayName ?? '').toLowerCase() === needle);
+      const partial = saved.filter((entry) => (entry.profile?.displayName ?? '').toLowerCase().includes(needle));
+      item = exact ?? (partial.length === 1 ? partial[0] : undefined);
+    } else if (saved.length === 1) {
+      item = saved[0];
+    }
+
+    if (!item) {
+      const pool = people.length ? people : matches;
+      const target = findPerson(pool, name || detectPersonName(userMessage));
+      if (!target) return false;
+      sections.push(
+        t('I found **{name}**. I can take them off your shortlist if you like.', { name: target.displayName }),
+      );
+      citations.push({
+        type: 'person',
+        id: target.userId,
+        label: target.displayName,
+        href: personHref(target),
+      });
+      actions.push({
+        id: newId('unshortlist'),
+        tool: 'shortlist_remove',
+        title: t('Remove {name} from shortlist', { name: target.displayName }),
+        description: t('Remove {name} from your saved profiles. This only writes when you confirm.', {
+          name: target.displayName,
+        }),
+        confirmLabel: t('Remove from shortlist'),
+        payload: { userId: target.userId, displayName: target.displayName },
+        status: 'pending',
+        href: '/shortlist',
+      });
+      return true;
+    }
+
+    const displayName = item.profile?.displayName ?? item.userId;
+    sections.push(
+      t('I found **{name}**. I can take them off your shortlist if you like.', { name: displayName }),
+    );
+    citations.push({
+      type: 'person',
+      id: item.userId,
+      label: displayName,
+      href: `/profiles/${item.userId}`,
+    });
+    actions.push({
+      id: newId('unshortlist'),
+      tool: 'shortlist_remove',
+      title: t('Remove {name} from shortlist', { name: displayName }),
+      description: t('Remove {name} from your saved profiles. This only writes when you confirm.', {
+        name: displayName,
+      }),
+      confirmLabel: t('Remove from shortlist'),
+      payload: { userId: item.userId, displayName },
+      status: 'pending',
+      href: '/shortlist',
+    });
+    return true;
+  };
+
   // Ground the turn in what the reader is actually looking at.
   //
   // The assistant knew the route and nothing on it, so "what am I looking at"
@@ -346,6 +454,22 @@ export async function runCopilotTurn(
   }
 
   for (const tool of planned) {
+    // The product areas — events, milestones, jobs and the rest. One arm for
+    // all of them, because each reader returns the same three things a turn is
+    // made of. A failing area is named as unavailable rather than failing the
+    // whole reply: the other tools in the turn still have something to say.
+    if (isAreaRead(tool.name)) {
+      try {
+        const read = await AREA_READERS[tool.name](tool.args ?? {}, { t, locale: replyLocale });
+        sections.push(read.section);
+        citations.push(...read.citations);
+        actions.push(...read.actions);
+      } catch {
+        sections.push(t('That part of the platform did not answer just now. Try again in a moment.'));
+      }
+      continue;
+    }
+
     if (tool.name === 'get_graph') {
       graph = await fetchGraph();
       sections.push(describeGraph(graph, t));
@@ -461,6 +585,13 @@ export async function runCopilotTurn(
       const ok = await applyShortlist(tool.args.name);
       if (!ok && !planned.some((t) => t.name === 'search_people' || t.name === 'get_recommendations')) {
         sections.push(t('Name someone from Matches or Search and I will save them to your shortlist.'));
+      }
+    }
+
+    if (tool.name === 'shortlist_remove') {
+      const ok = await applyShortlistRemove(tool.args.name);
+      if (!ok && !planned.some((t) => t.name === 'get_shortlist')) {
+        sections.push(t('Name someone on your shortlist and I will take them off.'));
       }
     }
 
@@ -604,6 +735,22 @@ export async function runCopilotTurn(
         });
       }
     }
+
+    if (tool.name === 'canvas_command') {
+      actions.push(
+        ...actionsFromToolCalls(
+          [
+            {
+              name: 'canvas_command',
+              args: tool.args ?? {},
+              writes: true,
+              droppedArgs: [],
+            },
+          ],
+          replyLocale,
+        ),
+      );
+    }
   }
 
   if (people.length || matches.length) {
@@ -637,6 +784,13 @@ export async function runCopilotTurn(
     }
   }
 
+  if (planned.some((t) => t.name === 'shortlist_remove') && !actions.some((a) => a.tool === 'shortlist_remove')) {
+    const ok = await applyShortlistRemove(detectPersonName(userMessage));
+    if (!ok) {
+      sections.push(t('Name someone on your shortlist and I will take them off.'));
+    }
+  }
+
   const uniqueActions = actions.filter(
     (action, index) =>
       actions.findIndex(
@@ -649,7 +803,10 @@ export async function runCopilotTurn(
   );
 
   let message = sections.join('\n\n').trim();
-  if (!message) {
+  // A turn run for the model’s own calls reports only what those calls found;
+  // the "here is what I can do" introduction is for a person, and handing it to
+  // the model as a tool result would read to it as data.
+  if (!message && !options?.tools) {
     const network = isPreviewDemo()
       ? t(
           'I can search people, save them to your shortlist, read notifications, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.',
@@ -662,6 +819,12 @@ export async function runCopilotTurn(
     // orphan sixteen translations to announce three capabilities.
     message = `${network} ${t(
       'I can also tick your readiness criteria, change the analytics window, and create the workspace Builder needs.',
+    )} ${t(
+      'And I can read your events, milestones, open roles, communities, endorsements, opportunities, mentoring sessions and saved profiles.',
+    )} ${t(
+      'I can also read your research boards and Startup Builder workspaces.',
+    )} ${t(
+      'I can take a profile off your shortlist the same way I put it on.',
     )}`;
   }
 
@@ -676,7 +839,7 @@ export async function runCopilotTurn(
 /**
  * Delegates to `action-registry`, which now owns what each capability does.
  * The chain this replaced described the same four writes in a place nothing
- * else could read, so the model's tool catalogue could not be derived from it.
+ * else could read, so the model’s tool catalogue could not be derived from it.
  *
  * `action.href` is still folded in as the default `href`: the navigate arm used
  * to read `payload.href ?? action.href ?? '/dashboard'`, and proposals built
@@ -684,7 +847,7 @@ export async function runCopilotTurn(
  */
 export async function executeCopilotAction(
   action: CopilotAction,
-): Promise<{ ok: boolean; href?: string; error?: string }> {
+): Promise<{ ok: boolean; href?: string; error?: string; undo?: Record<string, unknown> }> {
   const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
   if (payload.href === undefined && action.href !== undefined) payload.href = action.href;
   return executeAction(action.tool, payload);

@@ -349,7 +349,7 @@ export function ImageCropperTrigger({
             setOpen(true);
           }
         }}
-        className="cursor-pointer rounded-md focus-ring"
+        className="cursor-pointer rounded-xl focus-ring"
       >
         {children}
       </div>

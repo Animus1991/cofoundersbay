@@ -10,6 +10,7 @@ import {
   Settings, UserPlus, LogOut, CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +96,7 @@ function PostCard({
           <div className="flex items-center justify-between gap-2">
             <div>
               <span className="text-sm font-semibold">{post.author.displayName}</span>
-              <span className="ml-2 text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
+              <span className="ml-2 text-xs text-muted-foreground"><RelativeTime date={post.createdAt} format={formatRelativeTime} /></span>
             </div>
             {isOwn && (
               <button
@@ -176,7 +177,7 @@ function PostCard({
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">
                 <span className="text-xs font-semibold">{c.author.displayName}</span>
-                <span className="ml-2 text-2xs text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
+                <span className="ml-2 text-2xs text-muted-foreground"><RelativeTime date={c.createdAt} format={formatRelativeTime} /></span>
                 <p className="mt-0.5 text-xs text-foreground/90">{c.content}</p>
               </div>
             </div>
@@ -188,7 +189,7 @@ function PostCard({
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
                 placeholder="Write a comment..."
-                className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+                className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none"
               />
               <Button aria-label="Send"
                 size="icon"
@@ -442,7 +443,7 @@ export default function GroupDetailPage() {
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
                     placeholder="Share something with the group..."
-                    className="w-full rounded-lg border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                    className="w-full rounded-xl border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none resize-none"
                     rows={3}
                   />
                   <div className="flex justify-end">

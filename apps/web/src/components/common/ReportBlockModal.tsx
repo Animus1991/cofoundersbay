@@ -282,7 +282,7 @@ export function ReportBlockModal({
                         value={reason.value}
                         checked={selectedReason === reason.value}
                         onChange={() => setSelectedReason(reason.value)}
-                        className="mt-1 h-4 w-4 text-primary-accessible border-border focus:ring-primary"
+                        className="mt-1 h-4 w-4 text-primary-accessible border-border"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{reason.label}</p>

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -145,7 +146,11 @@ export function PostCard({
                 </Link>
                 <RoleBadge role={author.role} size="sm" />
                 <span className="text-xs text-muted-foreground">·</span>
-                <span suppressHydrationWarning className="text-xs text-muted-foreground">{formatTimeAgo(createdAt)}</span>
+                {/* RelativeTime, not suppressHydrationWarning: suppression
+                    hides the console error but React still repaints the
+                    mismatched text; the two-pass component removes the
+                    mismatch itself. */}
+                <span className="text-xs text-muted-foreground"><RelativeTime date={createdAt} format={formatTimeAgo} /></span>
               </div>
               {author.headline && (
                 <p className="text-xs text-muted-foreground truncate">{author.headline}</p>
@@ -160,7 +165,7 @@ export function PostCard({
             </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="Post actions" variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity" aria-label="Post options">
                   <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
@@ -255,42 +260,48 @@ export function PostCard({
               variant="ghost"
               size="sm"
               onClick={handleLike}
+              aria-label={liked ? 'Unlike' : 'Like'}
+              aria-pressed={liked}
               className={cn(
                 'gap-1.5 h-8',
                 liked ? 'text-status-accent' : 'text-muted-foreground hover:text-status-accent'
               )}
             >
-              <Heart className={cn('icon-sm', liked && 'fill-current')} />
+              <Heart className={cn('icon-sm', liked && 'fill-current')} aria-hidden="true" />
               <span className="text-xs">{localLikesCount > 0 ? localLikesCount : ''}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onComment}
+              aria-label="Comment"
               className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
-              <MessageCircle className="icon-sm" />
+              <MessageCircle className="icon-sm" aria-hidden="true" />
               <span className="text-xs">{commentsCount > 0 ? commentsCount : ''}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onShare}
+              aria-label="Share"
               className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
-              <Share2 className="icon-sm" />
+              <Share2 className="icon-sm" aria-hidden="true" />
             </Button>
           </div>
-          <Button aria-label="Save"
+          <Button
             variant="ghost"
             size="icon"
             onClick={handleBookmark}
+            aria-label={bookmarked ? 'Remove bookmark' : 'Save post'}
+            aria-pressed={bookmarked}
             className={cn(
               'h-8 w-8',
               bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
             )}
           >
-            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
         </div>
       </CardContent>

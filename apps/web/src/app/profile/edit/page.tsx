@@ -30,6 +30,7 @@ import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSugg
 import { queryKeys } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -739,7 +740,7 @@ export default function ProfileEditPage() {
                             {aiSuggestions.completionScore}% Optimization Score
                           </Badge>
                         </div>
-                        <Button aria-label="Dismiss the AI suggestions" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)} aria-label={bilingualAria('Dismiss AI suggestions', 'Απόρριψη προτάσεων AI')}>
                           <X className="icon-sm" />
                         </Button>
                       </div>
@@ -969,7 +970,7 @@ export default function ProfileEditPage() {
                         <select
                           value={form.meetingPreference}
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
                         >
                           <option value="">Select...</option>
                           <option value="video">Video calls</option>

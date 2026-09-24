@@ -304,7 +304,7 @@ export function LandingHome() {
           <div className="absolute bottom-0 right-1/4 h-96 w-96 translate-x-1/2 rounded-full bg-accent/8 blur-3xl" />
           <div className="absolute inset-0 bg-hero-radial opacity-60" />
         </div>
-        <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
+        <div className="relative mx-auto w-full px-6 py-24 text-center sm:px-8 lg:px-12 xl:px-16">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible">
               <Sparkles className="icon-sm" />
@@ -328,7 +328,7 @@ export function LandingHome() {
           </h1>
 
           <p
-            className="mx-auto mt-6 max-w-2xl animate-fade-in text-lg text-muted-foreground md:text-xl"
+            className="mx-auto mt-6 max-w-3xl animate-fade-in text-lg text-muted-foreground md:text-xl"
             style={{ animationDelay: '200ms' }}
           >
             CoFounderBay connects founders, mentors, investors, and accelerators through smart
@@ -359,7 +359,7 @@ export function LandingHome() {
           </p>
 
           <div
-            className="mt-16 grid animate-fade-in grid-cols-3 gap-4"
+            className="mt-16 grid w-full animate-fade-in grid-cols-3 gap-4 sm:gap-6"
             style={{ animationDelay: '400ms' }}
           >
             {[
@@ -380,8 +380,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Trusted By ─────────────────────────────────────────────────────── */}
-      <section className="border-t border-border/40 bg-secondary/10 px-6 py-10">
-        <div className="mx-auto max-w-6xl">
+      <section className="border-t border-border/40 bg-secondary/10 px-6 py-10 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Trusted by founders from leading programs
           </p>
@@ -400,8 +400,8 @@ export function LandingHome() {
       </section>
 
       {/* ── How It Works ───────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="border-t border-border/40 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
+      <section id="how-it-works" className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="mb-14 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">How it works</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
@@ -439,8 +439,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Personas ───────────────────────────────────────────────────────── */}
-      <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
+      <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Roles</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
@@ -483,8 +483,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────────── */}
-      <section id="features" className="border-t border-border/40 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
+      <section id="features" className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Platform</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
@@ -515,8 +515,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Platform Statistics ────────────────────────────────────────────── */}
-      <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">By the numbers</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
@@ -543,8 +543,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Testimonials ───────────────────────────────────────────────────── */}
-      <section className="border-t border-border/40 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Testimonials</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
@@ -588,8 +588,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Pricing ────────────────────────────────────────────────────────── */}
-      <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
+      <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Pricing</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
@@ -647,8 +647,8 @@ export function LandingHome() {
       </section>
 
       {/* ── Final CTA ──────────────────────────────────────────────────────── */}
-      <section id="cta" className="border-t border-border/40 px-6 py-24">
-        <div className="mx-auto max-w-3xl text-center animate-fade-in">
+      <section id="cta" className="border-t border-border/40 px-6 py-24 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
               <Network className="h-7 w-7 text-primary-accessible" />
@@ -685,8 +685,8 @@ export function LandingHome() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border/40 bg-secondary/10 px-6 py-12">
-        <div className="mx-auto max-w-6xl">
+      <footer className="border-t border-border/40 bg-secondary/10 px-6 py-12 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 mb-10">
             <div className="lg:col-span-2 space-y-4">
               <Logo size="sm" />

@@ -389,7 +389,7 @@ export default function TenantBrandingPage() {
                             key={font}
                             type="button"
                             onClick={() => setField(key, font)}
-                            className={`px-3 py-1.5 rounded-md border text-sm transition-colors ${
+                            className={`px-3 py-1.5 rounded-xl border text-sm transition-colors ${
                               form[key] === font
                                 ? 'border-primary bg-primary/10 text-primary-accessible font-medium'
                                 : 'border-border hover:border-primary/50'

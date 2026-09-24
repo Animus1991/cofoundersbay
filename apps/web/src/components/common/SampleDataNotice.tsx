@@ -63,7 +63,7 @@ export function SampleDataNotice({ surface, detail, askAiPrompt, className }: Sa
           type="button"
           onClick={() => setOpen(false)}
           aria-label={bilingualAria('Dismiss sample-data notice', 'Απόρριψη ειδοποίησης δείγματος')}
-          className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="rounded-xl p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           <X className="icon-sm" aria-hidden="true" />
         </button>

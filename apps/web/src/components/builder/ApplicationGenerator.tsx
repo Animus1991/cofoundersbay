@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BUILDER_BTN, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import {
   applicationQuestionCopy,
@@ -28,7 +28,6 @@ import {
 } from '@/lib/i18n/strings-application-questions';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
-import { usePopupChat } from '@/contexts/PopupChatContext';
 
 interface ApplicationQuestion {
   id: string;
@@ -202,7 +201,6 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
 export function ApplicationGenerator({ onSave, workspaceData, initialData, hideTitle = false }: ApplicationGeneratorProps) {
   const t = useBuilderPrimaryText();
   const { success } = useToast();
-  const { open: openAskAi } = usePopupChat();
   const [applications, setApplications] = useState<ApplicationTemplate[]>(() => mergeSavedApplications(initialData));
   const [activeApp, setActiveApp] = useState<string>('yc');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -395,7 +393,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
         showAskAi={!hideTitle}
         extraActions={
           <>
-            <Button variant="outline" size="sm" className="rounded-xl" onClick={generateWithAI} disabled={isGenerating}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
               {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
@@ -403,7 +401,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
                 compact
               />
             </Button>
-            <Button size="sm" className="rounded-xl" onClick={() => void handleSave()}>
+            <Button size="sm" className={BUILDER_BTN} onClick={() => void handleSave()}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('app_save_all')} el={builderEl('app_save_all')} compact />
             </Button>
@@ -452,7 +450,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
                   <CfbGlyph name={app.glyph} className="icon-sm text-muted-foreground" />
                   {getStatusBadge(app.status)}
                 </div>
-                <h3 className="font-semibold mb-1">{app.name}</h3>
+                <h3 className="mb-1 text-base font-semibold">{app.name}</h3>
                 <p className="text-xs text-muted-foreground mb-3">
                   {app.descKey ? (
                     <BilingualText en={builderEn(app.descKey)} el={builderEl(app.descKey)} compact />
@@ -490,7 +488,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
               <div className="flex items-center gap-3">
                 <CfbGlyph name={currentApp.glyph} className="icon-lg" />
                 <div>
-                  <CardTitle>
+                  <CardTitle className="text-base">
                     {currentApp.name}{' '}
                     <BilingualText en={builderEn('app_application')} el={builderEl('app_application')} compact />
                   </CardTitle>
@@ -504,13 +502,13 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {requiredCompletion(currentApp) === 100 && currentApp.status !== 'submitted' && (
-                  <Button variant="outline" size="sm" className="rounded-xl" onClick={markSubmitted}>
+                  <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={markSubmitted}>
                     <CheckCircle2 className="icon-sm mr-2" />
                     <BilingualText en={builderEn('app_mark_submitted')} el={builderEl('app_mark_submitted')} compact />
                   </Button>
                 )}
                 {currentApp.website && (
-                  <Button asChild variant="outline" size="sm" className="rounded-xl">
+                  <Button asChild variant="outline" size="sm" className={BUILDER_BTN}>
                     {currentApp.website.startsWith('http') ? (
                       <a
                         href={currentApp.website}
@@ -553,17 +551,18 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
                     </Label>
                     <div className="flex items-center gap-2">
                       <Button
-                        type="button"
+                        asChild
                         variant="ghost"
                         size="sm"
                         className="rounded-xl"
-                        onClick={() => openAskAi()}
                         aria-label={bilingualAria(builderEn('app_ask_fill'), builderEl('app_ask_fill'))}
                       >
-                        <CfbGlyph name="spark" className="icon-sm" />
-                        <span className="sr-only">
-                          <BilingualText en={builderEn('app_ask_fill')} el={builderEl('app_ask_fill')} compact />
-                        </span>
+                        <Link href={`/ai?q=${encodeURIComponent(`Help me answer this ${currentApp?.name ?? 'program'} application question: ${prompt.en}`)}`}>
+                          <CfbGlyph name="spark" className="icon-sm" />
+                          <span className="sr-only">
+                            <BilingualText en={builderEn('app_ask_fill')} el={builderEl('app_ask_fill')} compact />
+                          </span>
+                        </Link>
                       </Button>
                       {question.answer && (
                         <Button

@@ -14,20 +14,20 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors duration-150 focus-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+          'bg-primary text-primary-foreground hover:bg-primary/90',
         secondary:
-          'bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/70 shadow-sm',
+          'bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/70',
         ghost:
           'text-foreground/70 hover:text-foreground hover:bg-secondary/50',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80 shadow-sm',
+          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80',
         destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         link:
           'text-primary-accessible underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
@@ -54,14 +54,14 @@ const buttonVariants = cva(
        * ladder applies and gets out of the way where the author asked it to.
        */
       size: {
-        xs:   'h-7 min-h-7 px-2.5 text-xs rounded lg:h-auto lg:min-h-[28px] lg:px-[10px]',
-        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[32px] lg:px-[12px]',
-        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[36px] lg:px-[16px]',
-        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[40px] lg:px-[24px]',
-        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[48px] lg:px-[32px]',
+        xs:   'h-7 min-h-7 px-2.5 text-xs rounded-xl lg:h-auto lg:min-h-[calc(28px*var(--chrome-y))] lg:px-[10px]',
+        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[calc(32px*var(--chrome-y))] lg:px-[12px]',
+        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[calc(36px*var(--chrome-y))] lg:px-[16px]',
+        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[calc(40px*var(--chrome-y))] lg:px-[24px]',
+        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[calc(48px*var(--chrome-y))] lg:px-[32px]',
         // An icon button has no text to outgrow its box, so it stays a fixed
         // square — that is the shape, not a floor.
-        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[36px] lg:w-[36px]',
+        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',
       },
     },
     defaultVariants: {
@@ -77,36 +77,39 @@ type ButtonBaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
     loading?: boolean;
   };
 
-/** The sizes that render an icon and no text, so have nothing to announce. */
+/**
+ * Icon-only sizes have no text node, so they need an explicit accessible name.
+ * The type system enforces it rather than leaving it to review: picking an
+ * icon size without `aria-label` (or `aria-labelledby`) is a compile error.
+ *
+ * This guard existed before the two branches merged and was lost in the
+ * merge; the axe run noticed immediately (`button-name` ×11 on /settings).
+ * The instances were fixed by hand, but only the type keeps the class of bug
+ * from coming back.
+ *
+ * `asChild` is exempt: a button rendering as someone else's element —
+ * almost always a Link — delegates its name to that element, and requiring
+ * one here too would put two competing accessible names on one control.
+ *
+ * `size` may be `null` because cva's VariantProps admits null for an unset
+ * variant, and a wrapper forwarding `size` from its own props carries that
+ * null through.
+ */
 type IconOnlySize = 'icon';
 
 type ButtonSize = NonNullable<ButtonBaseProps['size']>;
 
-/**
- * An icon-only button must name itself, and the type system says so.
- *
- * This is the only reliable guard for the defect. A nameless icon button looks
- * completely correct in review and in the browser — it is discoverable solely
- * by running axe against the page that happens to contain one, which is how
- * this round found `button-name (critical)` on five separate routes, one route
- * at a time. A scan finds the instances; only the compiler finds the class.
- *
- * The third member of the union covers wrapper components that forward a
- * `size` whose type merely *may* be an icon size: they are held to the same
- * requirement rather than slipping through on a widened type.
- */
 export type ButtonProps = ButtonBaseProps &
   (
     // Text buttons: any non-icon size, no extra requirement.
-    | { size?: Exclude<ButtonSize, IconOnlySize> }
+    | { size?: Exclude<ButtonSize, IconOnlySize> | null }
     // `asChild` renders someone else's element — almost always a Link — and
-    // that element carries its own name. Requiring one here as well would put
-    // two competing accessible names on one control.
+    // that element carries its own name.
     | { asChild: true }
-    // `| null` because cva's VariantProps admits null for an unset variant, and
-    // a wrapper forwarding `size` from its own props carries that null through.
-    | { size: ButtonSize | null; 'aria-label': string }
-    | { size: ButtonSize | null; 'aria-labelledby': string }
+    // Icon sizes (including a size prop whose union merely *may* be an icon
+    // size, as in wrapper components that forward `size`) must name themselves.
+    | { size: ButtonSize | null | undefined; 'aria-label': string }
+    | { size: ButtonSize | null | undefined; 'aria-labelledby': string }
   );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(

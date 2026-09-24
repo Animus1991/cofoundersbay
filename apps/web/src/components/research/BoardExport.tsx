@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { toPng } from 'html-to-image';
 import { useToast } from '@/components/ui/toast';
 import type { ResearchBoardFull } from '@/lib/api';
 
@@ -25,10 +26,26 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
   const [copied, setCopied] = useState(false);
 
   const exportAsImage = useCallback(async () => {
-    // Note: PNG export requires html2canvas library to be installed
-    // For now, show a message that this feature requires additional setup
-    showError('PNG Export', 'PNG export requires html2canvas library. Use JSON or Markdown export instead.');
-  }, [showError]);
+    if (!canvasRef.current) {
+      showError('PNG Export', 'Canvas is not ready.');
+      return;
+    }
+    setIsExporting(true);
+    setExportFormat('png');
+    try {
+      const dataUrl = await toPng(canvasRef.current, { cacheBust: true, pixelRatio: 2 });
+      const link = document.createElement('a');
+      link.download = `${board.title || 'research-board'}.png`;
+      link.href = dataUrl;
+      link.click();
+      success('Export complete', 'Board exported as PNG');
+    } catch {
+      showError('PNG Export', 'Could not export. Try fitting the view first.');
+    } finally {
+      setIsExporting(false);
+      setExportFormat(null);
+    }
+  }, [board.title, canvasRef, success, showError]);
 
   const exportAsJSON = useCallback(() => {
     setIsExporting(true);

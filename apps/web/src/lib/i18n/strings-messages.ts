@@ -25,7 +25,7 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   archived: { en: 'Archived', el: 'Αρχειοθετημένα' },
   requests: { en: 'Requests', el: 'Αιτήματα' },
   chats: { en: 'Chats', el: 'Συνομιλίες' },
-  intros: { en: 'Intros', el: 'Εισαγωγές' },
+  intros: { en: 'Intros', el: 'Γνωριμίες' },
   all_messages: { en: 'All messages', el: 'Όλα τα μηνύματα' },
 
   new_message: { en: 'New message', el: 'Νέο μήνυμα' },
@@ -142,6 +142,68 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
 
   search_conversations: { en: 'Search conversations…', el: 'Αναζήτηση συνομιλιών…' },
 
+  popup_ai: { en: 'AI', el: 'Βοηθός' },
+  popup_title: { en: 'Chat', el: 'Συνομιλία' },
+  open_full_inbox: { en: 'Open full inbox', el: 'Πλήρη εισερχόμενα' },
+  say_hello: { en: 'Say hello', el: 'Πείτε ένα γεια' },
+  start_conversation_with: {
+    en: 'Start a conversation with',
+    el: 'Ξεκινήστε συνομιλία με',
+  },
+  find_matches: { en: 'Matches', el: 'Αντιστοιχίσεις' },
+  discover_people: { en: 'Discover', el: 'Εξερεύνηση' },
+  connections: { en: 'Connections', el: 'Συνδέσεις' },
+  reconnecting: {
+    en: 'Reconnecting to live chat…',
+    el: 'Επανασύνδεση στη ζωντανή συνομιλία…',
+  },
+  drag_panel: {
+    en: 'Drag the header to move',
+    el: 'Σύρετε την κεφαλίδα για μετακίνηση',
+  },
+  no_messages_yet_short: { en: 'No messages yet', el: 'Χωρίς μηνύματα ακόμα' },
+  empty_inbox_cta: {
+    en: 'Message a match, or find someone on Discover.',
+    el: 'Στείλτε μήνυμα σε αντιστοίχιση, ή βρείτε κάποιον στην Εξερεύνηση.',
+  },
+  schedule_meet: { en: 'Schedule', el: 'Προγραμματισμός' },
+  ask_ai_about: { en: 'Ask AI', el: 'Ρωτήστε το AI' },
+  view_match: { en: 'View match', el: 'Προβολή αντιστοίχισης' },
+  open_calendar: { en: 'Calendar', el: 'Ημερολόγιο' },
+  draft_with_ai: { en: 'Draft with AI', el: 'Σύνταξη με AI' },
+  propose_time: { en: 'Propose a time', el: 'Προτείνετε ώρα' },
+  empty_thread_title: { en: 'Start the conversation', el: 'Ξεκινήστε τη συνομιλία' },
+  empty_thread_hint: {
+    en: 'Say hello, propose a time, or ask AI to draft the first message.',
+    el: 'Πείτε ένα γεια, προτείνετε ώρα, ή ζητήστε από το AI να συντάξει το πρώτο μήνυμα.',
+  },
+  say_hello_draft: {
+    en: 'Hi {name}, great to connect — would love to compare notes.',
+    el: 'Γεια σου {name}, χαίρομαι για τη σύνδεση — θα χαρώ να συγκρίνουμε σημειώσεις.',
+  },
+  schedule_draft: {
+    en: 'Would you like to find a time on the calendar this week?',
+    el: 'Θέλεις να βρούμε μια ώρα στο ημερολόγιο αυτή την εβδομάδα;',
+  },
+  intro_accept_to_chat: {
+    en: 'Accept to start a private chat.',
+    el: 'Αποδεχτείτε για να ξεκινήσετε ιδιωτική συνομιλία.',
+  },
+  connection_request: { en: 'Connection request', el: 'Αίτημα σύνδεσης' },
+  recent_conversations: { en: 'Recent threads', el: 'Πρόσφατα νήματα' },
+  browse_matches: { en: 'Browse matches', el: 'Δείτε αντιστοιχίσεις' },
+  open_ai_page: { en: 'Open full AI assistant', el: 'Πλήρης βοηθός AI' },
+  no_intro_selected: {
+    en: 'Select a request to review it here.',
+    el: 'Επιλέξτε ένα αίτημα για να το δείτε εδώ.',
+  },
+  headline_fallback: { en: 'CoFounderBay member', el: 'Μέλος του CoFounderBay' },
+  conversation_options: { en: 'Conversation options', el: 'Επιλογές συνομιλίας' },
+  back_to_conversations: { en: 'Back to conversations', el: 'Πίσω στις συνομιλίες' },
+  close_search: { en: 'Close search', el: 'Κλείσιμο αναζήτησης' },
+  cancel_reply: { en: 'Cancel reply', el: 'Ακύρωση απάντησης' },
+  add_reaction: { en: 'Add reaction', el: 'Προσθήκη αντίδρασης' },
+
   val_casual: { en: 'Casual chat', el: 'Απλή συνομιλία' },
   val_one: { en: 'One-party validation', el: 'Επικύρωση ενός μέρους' },
   val_two: { en: 'Two-party validation', el: 'Επικύρωση δύο μερών' },
@@ -168,7 +230,7 @@ export const PREVIEW_MESSAGE_EL: Record<string, string> = {
   'Want to compare notes on the research canvas this week?':
     'Θέλεις να συγκρίνουμε σημειώσεις στον πίνακα έρευνας αυτή την εβδομάδα;',
   'Loved your Harbor update — the founder OS angle is sharp.':
-    'Μου άρεσε το update του Harbor — η γωνία founder OS είναι κοφτερή.',
+    'Μου άρεσε η ενημέρωση του Harbor — η οπτική του founder OS είναι εύστοχη.',
   'I sketched a Next.js + Nest starter we can reuse.':
     'Έφτιαξα ένα starter Next.js + Nest που μπορούμε να ξαναχρησιμοποιήσουμε.',
   'Would love to swap intros in the Athens founder circle.':

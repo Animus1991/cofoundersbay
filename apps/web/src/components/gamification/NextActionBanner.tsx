@@ -117,7 +117,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
   return (
     <div
       className={cn(
-        'relative rounded-xl border px-4 py-3.5 pr-10 transition-all sm:pr-4',
+        'relative rounded-2xl border px-4 py-3.5 pr-10 transition-all sm:pr-4',
         ac.border,
         ac.bg,
         className,
@@ -126,7 +126,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
       <button
         type="button"
         onClick={handleDismiss}
-        className="absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground sm:hidden"
+        className="absolute right-2 top-2 rounded-xl p-1.5 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground sm:hidden"
         title={bilingualAria('Dismiss', 'Απόρριψη')}
         aria-label={bilingualAria('Dismiss next-action suggestion', 'Απόρριψη επόμενης ενέργειας')}
       >
@@ -176,7 +176,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
           <button
             type="button"
             onClick={handleDismiss}
-            className="rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+            className="rounded-xl p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
             title={bilingualAria('Dismiss', 'Απόρριψη')}
             aria-label={bilingualAria('Dismiss next-action suggestion', 'Απόρριψη επόμενης ενέργειας')}
           >

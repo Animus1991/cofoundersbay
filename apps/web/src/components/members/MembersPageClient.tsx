@@ -25,6 +25,7 @@ import {
   Award,
 } from 'lucide-react';
 import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, type SearchHit } from '@/lib/api';
+import { useHydrated } from '@/components/common/RelativeTime';
 import { useToast } from '@/components/ui/toast';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -73,8 +74,38 @@ function scoreColor(score: number) {
   return 'text-muted-foreground';
 }
 
-function onlineStatus() {
-  return Math.random() > 0.6;
+/**
+ * "Online" is a five-minute window on `lastSeenAt` — the only presence the
+ * schema records, and the same window the directory counts server-side. A
+ * member whose activity was never recorded has no dot rather than a guessed
+ * one.
+ */
+const ONLINE_WINDOW_SECONDS = 5 * 60;
+
+function isRecentlyActive(lastSeenAt: number | null | undefined): boolean {
+  if (lastSeenAt == null) return false;
+  return Date.now() / 1000 - lastSeenAt <= ONLINE_WINDOW_SECONDS;
+}
+
+/**
+ * How much of the profile is filled in, as a percentage of eight signals that
+ * are all present on a search hit. This replaces a "contribution score" that
+ * was `Math.random()`: it changed on every render, differed between the server
+ * and the client, and described nothing. Completeness is a smaller claim, but
+ * it is one the row in front of you can actually support.
+ */
+function profileCompleteness(member: SearchHit): number {
+  const signals = [
+    Boolean(member.headline),
+    Boolean(member.bio),
+    Boolean(member.location),
+    Boolean(member.avatarUrl),
+    (member.skillNames?.length ?? 0) > 0,
+    (member.industries?.length ?? 0) > 0,
+    Boolean(member.lookingFor),
+    Boolean(member.availability),
+  ];
+  return Math.round((signals.filter(Boolean).length / signals.length) * 100);
 }
 
 interface MemberCardProps {
@@ -86,8 +117,11 @@ interface MemberCardProps {
 
 function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps) {
   const isGridView = viewMode === 'grid';
-  const contribScore = Math.floor(30 + Math.random() * 70);
-  const isOnline = Math.random() > 0.55;
+  const completeness = profileCompleteness(member);
+  // Reading the clock during render would differ between the server pass and
+  // hydration, so the dot appears one frame after mount instead.
+  const hydrated = useHydrated();
+  const isOnline = hydrated && isRecentlyActive(member.lastSeenAt);
 
   if (isGridView) {
     return (
@@ -161,13 +195,13 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             {/* Contribution score */}
             <div className="w-full mb-3">
               <div className="flex items-center justify-between text-2xs mb-1">
-                <span className="text-muted-foreground">Contribution</span>
-                <span className={cn('font-semibold', scoreColor(contribScore))}>{contribScore}</span>
+                <span className="text-muted-foreground">Profile completeness</span>
+                <span className={cn('font-semibold', scoreColor(completeness))}>{completeness}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', contribScore >= 80 ? 'bg-emerald-500' : contribScore >= 50 ? 'bg-amber-500' : 'bg-primary/60')}
-                  style={{ width: `${contribScore}%` }}
+                  className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-emerald-500' : completeness >= 50 ? 'bg-amber-500' : 'bg-primary/60')}
+                  style={{ width: `${completeness}%` }}
                 />
               </div>
             </div>
@@ -268,7 +302,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               )}
               <div className="flex items-center gap-1">
                 <Activity className="icon-sm" />
-                <span className={scoreColor(contribScore)}>Score {contribScore}</span>
+                <span className={scoreColor(completeness)}>{completeness}% complete</span>
               </div>
             </div>
           </div>
@@ -345,6 +379,14 @@ export function MembersPageClient() {
 
   const members = data?.hits ?? [];
   const total = data?.total ?? 0;
+  /*
+   * Counted server-side over the same filter as the results. They used to be
+   * `total * 0.08`, `* 0.05` and `* 0.1` with invented fallbacks, which put
+   * three numbers that no one had counted beside one that had been. An API
+   * that does not send them yet shows a dash rather than a plausible guess.
+   */
+  const stats = data?.stats;
+  const dash = '—';
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -399,10 +441,10 @@ export function MembersPageClient() {
         {!isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-status-accent',  bg: 'bg-status-accent-bg'  },
-              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-status-success', bg: 'bg-status-success-bg' },
-              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-status-info',   bg: 'bg-status-info-bg'   },
-              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-status-warning',  bg: 'bg-status-warning-bg'  },
+              { label: 'Total Members', value: total.toLocaleString('en-GB'), icon: Users, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+              { label: 'Online Now', value: stats ? stats.onlineNow : dash, icon: Activity, color: 'text-status-success', bg: 'bg-status-success-bg' },
+              { label: 'New This Week', value: stats ? stats.newThisWeek : dash, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
+              { label: 'Mentors', value: stats ? stats.mentors : dash, icon: Award, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
             ].map((s) => {
               const SIcon = s.icon;
               return (
@@ -474,7 +516,7 @@ export function MembersPageClient() {
               placeholder="Search members by name, skills, or bio..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9"
             />
           </div>
 

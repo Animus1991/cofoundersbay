@@ -181,7 +181,7 @@ function ResultCard({ result }: { result: SearchResult }) {
   return (
     <Link
       href={result.href}
-      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="block rounded-xl focus-visible:outline-none"
     >
       <Card className="group hover:border-primary/50 transition-all duration-150">
         <CardContent className="p-4">

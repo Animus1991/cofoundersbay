@@ -137,6 +137,7 @@ export class AIController {
     let success = false;
     let isFallback = false;
     let usedModel = dto.model || this.ollama.getDefaultModel();
+    let toolCalls: unknown = null;
 
     try {
       const response = await this.ollama.chat(messages, {
@@ -144,6 +145,9 @@ export class AIController {
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
         tools: dto.enableTools ? toToolCatalog() : undefined,
+        onToolCalls: (calls) => {
+          toolCalls = calls;
+        },
       });
 
       success = true;
@@ -162,7 +166,7 @@ export class AIController {
 
       // Same contract as the streaming path: validated proposals, never
       // executed here, and the rejections are reported rather than swallowed.
-      const review = reviewToolCalls(this.ollama.takeLastToolCalls());
+      const review = reviewToolCalls(toolCalls);
 
       return {
         message: response,
@@ -239,6 +243,7 @@ export class AIController {
     const usedModel = dto.model || this.ollama.getDefaultModel();
     let success = false;
     let isFallback = false;
+    let toolCalls: unknown = null;
 
     try {
       let fullResponse = '';
@@ -248,6 +253,9 @@ export class AIController {
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
         tools: dto.enableTools ? toToolCatalog() : undefined,
+        onToolCalls: (calls) => {
+          toolCalls = calls;
+        },
       })) {
         fullResponse += chunk;
         res.write(`data: ${JSON.stringify({ chunk, done: false })}\n\n`);
@@ -276,7 +284,7 @@ export class AIController {
       // `rejected` travels too rather than being dropped silently: a model that
       // keeps inventing capabilities is something the client can surface and a
       // reader of the logs can act on.
-      const review = reviewToolCalls(this.ollama.takeLastToolCalls());
+      const review = reviewToolCalls(toolCalls);
       res.write(
         `data: ${JSON.stringify({
           done: true,

@@ -337,7 +337,7 @@ export default function AdminTaxonomyPage() {
                 )}
               </div>
               <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                className="h-9 rounded-xl border border-input bg-background px-3 text-sm"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
 interface BMCSection {
@@ -49,6 +49,20 @@ const BMC_SECTIONS: Omit<BMCSection, 'content'>[] = [
   { id: 'costStructure', titleKey: 'bmc_costs', descKey: 'bmc_costs_desc', glyph: 'wallet' },
   { id: 'revenueStreams', titleKey: 'bmc_revenue', descKey: 'bmc_revenue_desc', glyph: 'chart' },
 ];
+
+/** Classic Osterwalder canvas. Named areas — not three stretched columns
+ *  of `h-full` cards, which overlapped the insights strip below. */
+const BMC_AREA: Record<BMCSection['id'], string> = {
+  keyPartners: 'lg:[grid-area:partners]',
+  keyActivities: 'lg:[grid-area:activities]',
+  keyResources: 'lg:[grid-area:resources]',
+  valuePropositions: 'lg:[grid-area:value]',
+  customerRelationships: 'lg:[grid-area:rel]',
+  channels: 'lg:[grid-area:channels]',
+  customerSegments: 'lg:[grid-area:segments]',
+  costStructure: 'lg:[grid-area:costs]',
+  revenueStreams: 'lg:[grid-area:revenue]',
+};
 
 export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvasProps) {
   const t = useBuilderPrimaryText();
@@ -143,7 +157,10 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
   const renderSection = (section: BMCSection) => {
     const confidence = getConfidenceLevel(section.content);
     return (
-      <Card key={section.id} className="h-full">
+      <Card
+        key={section.id}
+        className={cn('flex min-h-0 min-w-0 flex-col overflow-hidden', BMC_AREA[section.id])}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
@@ -158,12 +175,12 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
             <BilingualText en={builderEn(section.descKey)} el={builderEl(section.descKey)} />
           </p>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="flex flex-1 flex-col pt-0">
           <Textarea
             placeholder={t(builderEn('bmc_describe'), builderEl('bmc_describe'))}
             value={section.content}
             onChange={(e) => handleSectionChange(section.id, e.target.value)}
-            className="min-h-[80px] resize-none rounded-xl"
+            className="min-h-[80px] flex-1 resize-none rounded-xl"
           />
         </CardContent>
       </Card>
@@ -179,9 +196,10 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
         subtitleEn={builderEn('bmc_sub')}
         subtitleEl={builderEl('bmc_sub')}
         completion={completionPercentage}
+        askPrompt="Help me fill the Business Model Canvas from my Idea Core. Start with value propositions and customer segments, then partners, channels, and revenue."
         extraActions={
           <>
-            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
               {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
@@ -189,7 +207,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
                 compact
               />
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('bmc_save')} el={builderEl('bmc_save')} compact />
             </Button>
@@ -198,19 +216,23 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
       />
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">
             <BilingualText en={builderEn('bmc_complete')} el={builderEl('bmc_complete')} compact />
           </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
-        <Progress value={completionPercentage} className="h-2" />
+        <Progress value={completionPercentage} className="h-1.5" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4">{sections.slice(0, 3).map(renderSection)}</div>
-        <div className="space-y-4">{sections.slice(3, 6).map(renderSection)}</div>
-        <div className="space-y-4">{sections.slice(6).map(renderSection)}</div>
+      <div
+        className={cn(
+          'grid grid-cols-1 gap-3',
+          'lg:grid-cols-5 lg:grid-rows-[minmax(12rem,1fr)_minmax(12rem,1fr)_minmax(10rem,auto)]',
+          "lg:[grid-template-areas:'partners_activities_value_rel_segments'_'partners_resources_value_channels_segments'_'costs_costs_costs_revenue_revenue']",
+        )}
+      >
+        {sections.map(renderSection)}
       </div>
 
       <Card>
@@ -222,26 +244,26 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="text-center">
-              <div className={cn('text-2xl font-bold', STATUS.info.text)}>
-                {sections.filter((s) => getConfidenceLevel(s.content) === 'high').length}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <BilingualText en={builderEn('bmc_well')} el={builderEl('bmc_well')} compact />
-              </div>
+            <div className={cn(BUILDER_STAT, STATUS.info.text)}>
+              {sections.filter((s) => getConfidenceLevel(s.content) === 'high').length}
             </div>
-            <div className="text-center">
-              <div className={cn('text-2xl font-bold', STATUS.warning.text)}>
-                {sections.filter((s) => getConfidenceLevel(s.content) === 'medium').length}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <BilingualText en={builderEn('bmc_refine')} el={builderEl('bmc_refine')} compact />
-              </div>
+            <div className={BUILDER_STAT_LABEL}>
+              <BilingualText en={builderEn('bmc_well')} el={builderEl('bmc_well')} compact />
             </div>
-            <div className="text-center">
-              <div className={cn('text-2xl font-bold', STATUS.danger.text)}>
-                {sections.filter((s) => getConfidenceLevel(s.content) === 'low').length}
-              </div>
-              <div className="text-xs text-muted-foreground">
+          </div>
+          <div className="text-center">
+            <div className={cn(BUILDER_STAT, STATUS.warning.text)}>
+              {sections.filter((s) => getConfidenceLevel(s.content) === 'medium').length}
+            </div>
+            <div className={BUILDER_STAT_LABEL}>
+              <BilingualText en={builderEn('bmc_refine')} el={builderEl('bmc_refine')} compact />
+            </div>
+          </div>
+          <div className="text-center">
+            <div className={cn(BUILDER_STAT, STATUS.danger.text)}>
+              {sections.filter((s) => getConfidenceLevel(s.content) === 'low').length}
+            </div>
+            <div className={BUILDER_STAT_LABEL}>
                 <BilingualText en={builderEn('bmc_missing')} el={builderEl('bmc_missing')} compact />
               </div>
             </div>

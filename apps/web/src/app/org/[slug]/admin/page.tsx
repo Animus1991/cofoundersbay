@@ -38,20 +38,61 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { useToast } from '@/components/ui/toast';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  addOrganizationMember,
+  getOrganizationBySlug,
+  listOrganizationMembers,
+  removeOrganizationMember,
+  updateOrganizationMember,
+  type OrgAdminMember,
+} from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 
 type OrgMember = {
   id: string;
+  /** The membership's user - needed by the invite/remove endpoints. */
+  userId?: string;
   name: string;
   email: string;
   avatar?: string;
-  role: 'owner' | 'admin' | 'member';
+  /** owner, admin, program_manager, mentor, reviewer or member. */
+  role: string;
+  /** The model stores `isActive`; 'pending' exists for invitations only. */
   status: 'active' | 'pending' | 'suspended';
   joinedAt: Date;
   lastActive?: Date;
 };
+
+function toViewMember(m: OrgAdminMember): OrgMember {
+  const profile = m.user?.profile;
+  const name =
+    profile?.displayName ||
+    [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') ||
+    m.user?.email ||
+    'Member';
+  return {
+    id: m.id,
+    userId: m.userId,
+    name,
+    email: m.user?.email ?? '',
+    avatar: profile?.avatarUrl ?? undefined,
+    role: m.role,
+    status: m.isActive ? 'active' : 'suspended',
+    joinedAt: new Date(m.joinedAt),
+  };
+}
 
 type OrgStats = {
   totalMembers: number;
@@ -192,16 +233,58 @@ export default function OrgAdminPage() {
   const params = useParams();
   const router = useRouter();
   const { success, error: showError } = useToast();
+  const qc = useQueryClient();
   const slug = params?.slug as string;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteUserId, setInviteUserId] = useState('');
+  const [inviteRole, setInviteRole] = useState('member');
+  const [inviting, setInviting] = useState(false);
 
-  const org = MOCK_ORG;
-  const stats = MOCK_STATS;
+  const orgQuery = useQuery({
+    queryKey: ['org-admin', slug],
+    queryFn: () => getOrganizationBySlug(slug),
+    retry: 0,
+    staleTime: 60_000,
+  });
+  const orgId = orgQuery.data?.id;
+  const membersQuery = useQuery({
+    queryKey: ['org-admin-members', orgId],
+    enabled: !!orgId,
+    queryFn: () => listOrganizationMembers(orgId as string),
+    retry: 0,
+    staleTime: 30_000,
+  });
 
-  const filteredMembers = MOCK_MEMBERS.filter((m) => {
+  /** A payload without a usable name is not a resolved organisation - demo
+   *  stubs answer truthy shapes too, so validate the fields we render. */
+  const orgData =
+    orgQuery.data && typeof orgQuery.data.name === 'string' && orgQuery.data.name
+      ? orgQuery.data
+      : null;
+  /** True once the real organisation and member list have answered; the
+   *  mock rows below are illustrative and the write paths refuse them. */
+  const isLive = !!orgData && !!membersQuery.data;
+  const org = orgData
+    ? { name: orgData.name, logo: orgData.logo ?? orgData.logoUrl ?? undefined }
+    : MOCK_ORG;
+  const members = isLive ? (membersQuery.data ?? []).map(toViewMember) : MOCK_MEMBERS;
+  const stats = {
+    totalMembers: members.length,
+    activeMembers: members.filter((m) => m.status === 'active').length,
+    suspended: members.filter((m) => m.status === 'suspended').length,
+    totalProjects: orgData?._count?.programs ?? 0,
+  };
+
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: ['org-admin-members', orgId] });
+    void qc.invalidateQueries({ queryKey: ['org-admin', slug] });
+  };
+
+  const filteredMembers = members.filter((m) => {
     if (searchQuery && !m.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !m.email.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
@@ -211,20 +294,176 @@ export default function OrgAdminPage() {
     return true;
   });
 
-  const handleRoleChange = (memberId: string, newRole: string) => {
-    success('Role updated', `Member role changed to ${newRole}`);
+  const notLive = () => {
+    showError('Nothing to update', 'These rows are illustrative until the organisation loads.');
   };
 
-  const handleRemoveMember = (memberId: string) => {
-    success('Member removed', 'The member has been removed from the organization');
+  const handleRoleChange = async (memberId: string, newRole: string) => {
+    if (!isLive || !orgId) return notLive();
+    try {
+      await updateOrganizationMember(orgId, memberId, { role: newRole });
+      success('Role updated', `Member role changed to ${newRole}`);
+    } catch (err) {
+      showError('Could not update the role', err instanceof Error ? err.message : undefined);
+    } finally {
+      refresh();
+    }
   };
 
-  const handleSuspendMember = (memberId: string) => {
-    success('Member suspended', 'The member has been suspended');
+  const handleSetActive = async (memberId: string, active: boolean) => {
+    if (!isLive || !orgId) return notLive();
+    try {
+      await updateOrganizationMember(orgId, memberId, { isActive: active });
+      success(active ? 'Member reactivated' : 'Member suspended', active ? 'The member is active again' : 'The member has been suspended');
+    } catch (err) {
+      showError('Could not update the member', err instanceof Error ? err.message : undefined);
+    } finally {
+      refresh();
+    }
   };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!isLive || !orgId) return notLive();
+    try {
+      await removeOrganizationMember(orgId, memberId);
+      success('Member removed', 'The member has been removed from the organization');
+    } catch (err) {
+      showError('Could not remove the member', err instanceof Error ? err.message : undefined);
+    } finally {
+      refresh();
+    }
+  };
+
+  const handleInvite = async () => {
+    const userId = inviteUserId.trim();
+    if (!userId) return;
+    if (!isLive || !orgId) return notLive();
+    setInviting(true);
+    try {
+      await addOrganizationMember(orgId, { userId, role: inviteRole });
+      success('Member added', 'The member now belongs to the organization');
+      setInviteOpen(false);
+      setInviteUserId('');
+      setInviteRole('member');
+    } catch (err) {
+      showError('Could not add the member', err instanceof Error ? err.message : undefined);
+    } finally {
+      setInviting(false);
+      refresh();
+    }
+  };
+
+  /** The filtered member list, as a CSV - the header button had no handler. */
+  const exportCsv = () => {
+    if (!filteredMembers.length) return;
+    const header = 'Name,Email,Role,Status,Joined\n';
+    const body = filteredMembers
+      .map((m) => [m.name, m.email, m.role, m.status, m.joinedAt.toISOString().slice(0, 10)].join(','))
+      .join('\n');
+    const blob = new Blob([header + body], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}-members-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const activeFilters =
+    (roleFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (searchQuery.trim() ? 1 : 0);
+
+  /*
+   * The page rail: totals, member filters, and the tools row that used to
+   * sit inside the members tab. The column keeps the tabs and the table.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'Organisation totals',
+      labelEl: 'Σύνολα οργανισμού',
+      badge: stats.suspended || null,
+      content: (
+        <div className="space-y-2">
+          <StatCard title="Total Members" value={stats.totalMembers} icon={Users} />
+          <StatCard title="Active Members" value={stats.activeMembers} icon={CheckCircle2} />
+          <StatCard title="Suspended" value={stats.suspended} icon={XCircle} />
+          <StatCard title="Programs" value={stats.totalProjects} icon={Building2} />
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Member filters',
+      labelEl: 'Φίλτρα μελών',
+      badge: activeFilters || null,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="All roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All roles</SelectItem>
+                <SelectItem value="owner">Owner</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="program_manager">Program manager</SelectItem>
+                <SelectItem value="mentor">Mentor</SelectItem>
+                <SelectItem value="reviewer">Reviewer</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'Member tools',
+      labelEl: 'Εργαλεία μελών',
+      content: (
+        <div className="space-y-0.5">
+          <button
+            type="button"
+            onClick={() => setInviteOpen(true)}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <UserPlus className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!filteredMembers.length}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Export members (CSV)" el="Εξαγωγή μελών (CSV)" compact wrap /></span>
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <AppShell>
+    <AppShell rail={rail}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -251,35 +490,13 @@ export default function OrgAdminPage() {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Total Members"
-            value={stats.totalMembers}
-            change={`+${stats.monthlyGrowth}% this month`}
-            icon={Users}
-            trend="up"
+        {!isLive && (
+          <SampleDataNotice
+            surface="Organization admin"
+            detail="This organisation and its members are illustrative until the directory responds; member actions are disabled on them."
+            askAiPrompt="Why does the organisation admin page show sample members?"
           />
-          <StatCard
-            title="Active Members"
-            value={stats.activeMembers}
-            change={`${Math.round((stats.activeMembers / stats.totalMembers) * 100)}% active`}
-            icon={CheckCircle2}
-            trend="neutral"
-          />
-          <StatCard
-            title="Pending Invites"
-            value={stats.pendingInvites}
-            icon={Mail}
-          />
-          <StatCard
-            title="Total Projects"
-            value={stats.totalProjects}
-            change="+5 this month"
-            icon={Building2}
-            trend="up"
-          />
-        </div>
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="members" className="space-y-4">
@@ -303,47 +520,17 @@ export default function OrgAdminPage() {
           </TabsList>
 
           <TabsContent value="members" className="space-y-4">
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
-                <Input
-                  placeholder="Search members..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="owner">Owner</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button>
-                <UserPlus className="icon-sm mr-2" aria-hidden="true" />
-                Invite Member
-              </Button>
-              <Button variant="outline">
-                <Download className="icon-sm mr-2" aria-hidden="true" />
-                Export
-              </Button>
+            {/* Search stays with the table; the role/status filters and the
+                invite/export tools moved to the page rail. */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+              <Input
+                placeholder="Search members..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                aria-label="Search members"
+              />
             </div>
 
             {/* Members Table */}
@@ -355,7 +542,6 @@ export default function OrgAdminPage() {
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead>Last Active</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -379,7 +565,7 @@ export default function OrgAdminPage() {
                       <TableCell>
                         <Badge variant="outline" className={cn('capitalize border', roleChip(member.role))}>
                           {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
-                          {member.role}
+                          {member.role.replace('_', ' ')}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -390,11 +576,6 @@ export default function OrgAdminPage() {
                       <TableCell className="text-muted-foreground">
                         {member.joinedAt.toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {member.lastActive
-                          ? member.lastActive.toLocaleDateString('en-GB', { timeZone: 'UTC' })
-                          : '—'}
-                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -403,28 +584,28 @@ export default function OrgAdminPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleRoleChange(member.id, 'admin')}>
+                            <DropdownMenuItem onClick={() => void handleRoleChange(member.id, 'admin')}>
                               <Shield className="icon-sm mr-2" aria-hidden="true" />
                               Make Admin
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(member.id, 'member')}>
+                            <DropdownMenuItem onClick={() => void handleRoleChange(member.id, 'member')}>
                               <Users className="icon-sm mr-2" aria-hidden="true" />
                               Make Member
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {member.status === 'active' ? (
-                              <DropdownMenuItem onClick={() => handleSuspendMember(member.id)}>
+                              <DropdownMenuItem onClick={() => void handleSetActive(member.id, false)}>
                                 <XCircle className="icon-sm mr-2" aria-hidden="true" />
                                 Suspend
                               </DropdownMenuItem>
                             ) : member.status === 'suspended' ? (
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => void handleSetActive(member.id, true)}>
                                 <CheckCircle2 className="icon-sm mr-2" aria-hidden="true" />
                                 Reactivate
                               </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem
-                              onClick={() => handleRemoveMember(member.id)}
+                              onClick={() => void handleRemoveMember(member.id)}
                               className="text-destructive-accessible"
                             >
                               <UserMinus className="icon-sm mr-2" aria-hidden="true" />
@@ -435,6 +616,13 @@ export default function OrgAdminPage() {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {filteredMembers.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                        No members match the current filters.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </Card>
@@ -450,7 +638,7 @@ export default function OrgAdminPage() {
                 <div className="text-center py-8 text-muted-foreground">
                   <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" aria-hidden="true" />
                   <p>No pending invitations</p>
-                  <Button className="mt-4">
+                  <Button className="mt-4" onClick={() => setInviteOpen(true)}>
                     <UserPlus className="icon-sm mr-2" aria-hidden="true" />
                     Invite Members
                   </Button>
@@ -466,8 +654,9 @@ export default function OrgAdminPage() {
                   <CardTitle className="text-base">Member Growth</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <BarChart3 className="h-12 w-12 opacity-50" aria-hidden="true" />
+                    <p className="text-sm">No growth data recorded yet.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -476,8 +665,9 @@ export default function OrgAdminPage() {
                   <CardTitle className="text-base">Activity Overview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <TrendingUp className="h-12 w-12 opacity-50" aria-hidden="true" />
+                    <p className="text-sm">No activity data recorded yet.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -488,7 +678,7 @@ export default function OrgAdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Role Permissions</CardTitle>
-                <CardDescription>Configure what each role can do</CardDescription>
+                <CardDescription>What each role can do</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {['owner', 'admin', 'member'].map((role) => (
@@ -525,6 +715,45 @@ export default function OrgAdminPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Invite member: the endpoint adds by user id - there is no
+          invite-by-email flow for organisations yet. */}
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Invite member</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">User ID</p>
+              <Input
+                value={inviteUserId}
+                onChange={(e) => setInviteUserId(e.target.value)}
+                placeholder="The member's user ID"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
+              <Select value={inviteRole} onValueChange={setInviteRole}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="program_manager">Program manager</SelectItem>
+                  <SelectItem value="mentor">Mentor</SelectItem>
+                  <SelectItem value="reviewer">Reviewer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="w-full" disabled={!inviteUserId.trim() || inviting} onClick={() => void handleInvite()}>
+              {inviting ? 'Adding…' : 'Add member'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

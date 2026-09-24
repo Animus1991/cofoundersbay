@@ -211,7 +211,7 @@ export function MilestoneFormModal({
               placeholder={t(milestoneEn('desc_ph'), milestoneEl('desc_ph'))}
               rows={2}
               maxLength={500}
-              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
 
@@ -224,7 +224,7 @@ export function MilestoneFormModal({
               <select
                 value={form.status}
                 onChange={(e) => set('status', e.target.value as MilestoneStatus)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
               >
                 {STATUSES.map((s) => (
                   /* Singular: the select sets the status of one milestone. */
@@ -239,7 +239,7 @@ export function MilestoneFormModal({
               <select
                 value={form.priority}
                 onChange={(e) => set('priority', e.target.value as MilestonePriority)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p.value} value={p.value}>{t(milestoneEn(MILESTONE_PRIORITY_KEYS[p.value]), milestoneEl(MILESTONE_PRIORITY_KEYS[p.value]))}</option>
@@ -257,7 +257,7 @@ export function MilestoneFormModal({
               <select
                 value={form.category}
                 onChange={(e) => set('category', e.target.value)}
-                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
               >
                 <option value="">{t(milestoneEn('cat_none'), milestoneEl('cat_none'))}</option>
                 {CATEGORIES.map((c) => (
@@ -333,7 +333,7 @@ export function MilestoneFormModal({
               placeholder={t(milestoneEn('notes_ph'), milestoneEl('notes_ph'))}
               rows={2}
               maxLength={1000}
-              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
 

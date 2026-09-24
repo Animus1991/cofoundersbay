@@ -158,9 +158,20 @@ describe('AI action audit over decorated HTTP routes', () => {
   });
 
   it('carries the declared irreversibility onto the entry', async () => {
-    await post({ actionId: 'send_connection', outcome: 'applied', args: { receiverId: 'u9' } });
+    // A sent message is read the moment it lands and a direct conversation
+    // cannot be deleted, so this one stays honestly irreversible.
+    await post({ actionId: 'start_or_send_message', outcome: 'applied', args: { userId: 'u9' } });
     const meta = rows[0].metadataJson as Record<string, unknown>;
     expect(meta.reversalKind).toBe('none');
+    expect(meta.writes).toBe(true);
+  });
+
+  it('records an intro as partly reversible, now that the sender can withdraw it', async () => {
+    // `DELETE /connections/:id` takes back a request nobody has answered. It
+    // is partial rather than full because the notification already fired.
+    await post({ actionId: 'send_connection', outcome: 'applied', args: { receiverId: 'u9' } });
+    const meta = rows[0].metadataJson as Record<string, unknown>;
+    expect(meta.reversalKind).toBe('partial');
     expect(meta.writes).toBe(true);
   });
 

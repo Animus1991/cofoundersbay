@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -11,6 +12,7 @@ import {
   ClipboardList, Zap, BookOpen,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +21,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import {
+  getMyMentorships,
+  getMentorshipSessions,
+  discoverMentors,
+  updateMentorshipSession,
+  type MentorshipRelationshipItem,
+  type MentorshipSessionItem,
+  type MentorProfileItem,
+} from '@/lib/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -30,7 +41,10 @@ interface CoachingSession {
   coachName: string;
   coachAvatar?: string;
   coachTitle: string;
-  sessionType: SessionType;
+  /* A MentorshipSession has no type column - these six are the showcase's own
+     taxonomy - so a real session carries one only when the relationship's
+     focus areas name it, and the chip is omitted otherwise. */
+  sessionType?: SessionType;
   status: SessionStatus;
   title: string;
   scheduledAt: string;
@@ -51,9 +65,12 @@ interface CoachProfile {
   specialties: SessionType[];
   sessionCount: number;
   rating: number;
-  responseTime: string;
+  /* Nobody records a response time, so the line is hidden rather than given a
+     plausible-looking "< 4 hrs". */
+  responseTime?: string;
   bio: string;
   pricePerHour?: number;
+  currency?: string;
   availability: string;
   isVerified: boolean;
 }
@@ -62,14 +79,22 @@ interface CoachProfile {
    constants because each is used in two places and a `title` that disagreed
    with its `aria-label` would read differently to a mouse and a screen
    reader. */
+/* Both controls work on a real session now. They stay disabled only for a
+   showcase row, which has no session on the server to open or to rate - so the
+   hint names that reason rather than claiming the feature does not exist. */
 const JOIN_HINT = bilingualAria(
-  'Meeting links arrive when coaching sessions are live',
-  'Οι σύνδεσμοι συνεδρίας θα είναι διαθέσιμοι όταν ενεργοποιηθεί το coaching',
+  'Sample session - there is no meeting to join',
+  'Δείγμα συνεδρίας - δεν υπάρχει συνάντηση για σύνδεση',
 );
 const RATE_HINT = bilingualAria(
-  'Rating opens when coaching sessions are live',
-  'Η βαθμολόγηση θα είναι διαθέσιμη όταν ενεργοποιηθεί το coaching',
+  'Sample session - there is nothing to rate',
+  'Δείγμα συνεδρίας - δεν υπάρχει τίποτα προς βαθμολόγηση',
 );
+
+/** A demo row's id, which no endpoint will accept. */
+function isDemoSessionId(id: string): boolean {
+  return !id.startsWith('preview-') && /^[0-9]+$/.test(id);
+}
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
@@ -192,30 +217,47 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
 
 // ── Configs ───────────────────────────────────────────────────────────────────
 
-const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; color: string; icon: React.ElementType }> = {
-  accountability: { label: 'Accountability', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: ListChecks },
-  clarity:        { label: 'Clarity',        color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Lightbulb },
-  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Users },
-  execution:      { label: 'Execution',      color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Zap },
-  strategy:       { label: 'Strategy',       color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Target },
-  wellbeing:      { label: 'Wellbeing',      color: 'bg-status-success-bg text-status-success border-status-success-border', icon: BrainCircuit },
+const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
+  accountability: { label: 'Accountability', labelEl: 'Λογοδοσία',         color: 'bg-status-info-bg text-status-info', icon: ListChecks },
+  clarity:        { label: 'Clarity',        labelEl: 'Διαύγεια',          color: 'bg-status-accent-bg text-status-accent', icon: Lightbulb },
+  team_dynamics:  { label: 'Team Dynamics',  labelEl: 'Δυναμική ομάδας',   color: 'bg-status-success-bg text-status-success', icon: Users },
+  execution:      { label: 'Execution',      labelEl: 'Εκτέλεση',          color: 'bg-status-warning-bg text-status-warning', icon: Zap },
+  strategy:       { label: 'Strategy',       labelEl: 'Στρατηγική',        color: 'bg-status-accent-bg text-status-accent', icon: Target },
+  wellbeing:      { label: 'Wellbeing',      labelEl: 'Ευεξία',            color: 'bg-status-success-bg text-status-success', icon: BrainCircuit },
 };
 
-const STATUS_CONFIG: Record<SessionStatus, { label: string; color: string; icon: React.ElementType }> = {
-  scheduled:   { label: 'Scheduled',   color: 'bg-status-info-bg text-status-info',    icon: Calendar },
-  in_progress: { label: 'In Progress', color: 'bg-status-warning-bg text-status-warning',  icon: Clock },
-  completed:   { label: 'Completed',   color: 'bg-status-success-bg text-status-success', icon: CheckCircle2 },
-  cancelled:   { label: 'Cancelled',   color: 'bg-muted text-muted-foreground',  icon: XCircle },
+const STATUS_CONFIG: Record<SessionStatus, { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
+  scheduled:   { label: 'Scheduled',   labelEl: 'Προγραμματισμένη', color: 'bg-status-info-bg text-status-info',    icon: Calendar },
+  in_progress: { label: 'In Progress', labelEl: 'Σε εξέλιξη',       color: 'bg-status-warning-bg text-status-warning',  icon: Clock },
+  completed:   { label: 'Completed',   labelEl: 'Ολοκληρωμένη',     color: 'bg-status-success-bg text-status-success', icon: CheckCircle2 },
+  cancelled:   { label: 'Cancelled',   labelEl: 'Ακυρωμένη',        color: 'bg-muted text-muted-foreground',  icon: XCircle },
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function SessionCard({ session }: { session: CoachingSession }) {
   const [expanded, setExpanded] = useState(false);
+  const [rating, setRating] = useState(false);
+  const queryClient = useQueryClient();
+
+  /*
+   * The founder's own rating of the session. `menteeRating` is the founder's
+   * side of the pair - `mentorRating` belongs to the coach and is not this
+   * page's to write.
+   */
+  const rate = useMutation({
+    mutationFn: (score: number) => updateMentorshipSession(session.id, { menteeRating: score }),
+    onSuccess: () => {
+      setRating(false);
+      queryClient.invalidateQueries({ queryKey: ['mentorship', 'sessions'] });
+    },
+  });
+
+  const isSample = isDemoSessionId(session.id);
   const status = STATUS_CONFIG[session.status];
-  const type = SESSION_TYPE_CONFIG[session.sessionType];
+  const type = session.sessionType ? SESSION_TYPE_CONFIG[session.sessionType] : null;
   const StatusIcon = status.icon;
-  const TypeIcon = type.icon;
+  const TypeIcon = type?.icon;
   const completedActions = session.actionItems?.filter((a) => a.done).length ?? 0;
   const totalActions = session.actionItems?.length ?? 0;
 
@@ -237,25 +279,33 @@ function SessionCard({ session }: { session: CoachingSession }) {
               </div>
               <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium shrink-0', status.color)}>
                 <StatusIcon className="icon-sm" />
-                {status.label}
+                <BilingualText en={status.label} el={status.labelEl} compact />
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium', type.color)}>
-                <TypeIcon className="icon-sm" />{type.label}
-              </span>
+              {type && TypeIcon && (
+                <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', type.color)}>
+                  <TypeIcon className="icon-sm" />
+                  <BilingualText en={type.label} el={type.labelEl} compact />
+                </span>
+              )}
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="icon-sm" />
                 <LocalWhen iso={session.scheduledAt} variant="card" />
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="icon-sm" aria-hidden="true" />
-                {session.durationMinutes} min
+                <BilingualText
+                  en={`${session.durationMinutes} min`}
+                  el={`${session.durationMinutes} λεπτά`}
+                  compact
+                />
               </span>
               {session.meetingUrl && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Video className="icon-sm" aria-hidden="true" /> Video
+                  <Video className="icon-sm" aria-hidden="true" />{' '}
+                  <BilingualText en="Video" el="Βιντεοκλήση" compact />
                 </span>
               )}
             </div>
@@ -265,7 +315,8 @@ function SessionCard({ session }: { session: CoachingSession }) {
               <div className="mt-2 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground flex items-center gap-1">
-                    <ListChecks className="icon-sm" aria-hidden="true" /> Action items
+                    <ListChecks className="icon-sm" aria-hidden="true" />{' '}
+                    <BilingualText en="Action items" el="Ενέργειες" compact />
                   </span>
                   <span className="font-medium text-foreground">{completedActions}/{totalActions}</span>
                 </div>
@@ -279,7 +330,9 @@ function SessionCard({ session }: { session: CoachingSession }) {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-amber-400' : 'text-muted-foreground/30')} />
                 ))}
-                <span className="text-xs text-muted-foreground ml-1">Your rating</span>
+                <span className="text-xs text-muted-foreground ml-1">
+                  <BilingualText en="Your rating" el="Η βαθμολογία σας" compact />
+                </span>
               </div>
             )}
           </div>
@@ -289,16 +342,56 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex gap-2">
             {session.status === 'scheduled' && session.meetingUrl && (
-              <Button size="sm" className="gap-1" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
-                <Video className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
-              </Button>
+              isSample ? (
+                <Button size="sm" className="gap-1" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
+                  <Video className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
+                </Button>
+              ) : (
+                <Button size="sm" className="gap-1" asChild>
+                  <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
+                    <Video className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
+                  </a>
+                </Button>
+              )
             )}
             {session.status === 'completed' && !session.rating && (
-              <Button size="sm" variant="outline" className="gap-1" disabled title={RATE_HINT} aria-label={RATE_HINT}>
-                <Star className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
-              </Button>
+              isSample ? (
+                <Button size="sm" variant="outline" className="gap-1" disabled title={RATE_HINT} aria-label={RATE_HINT}>
+                  <Star className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
+                </Button>
+              ) : rating ? (
+                /* Five buttons rather than a dialog: the whole interaction is
+                   one click, and a dialog would be three. */
+                <div className="flex items-center gap-0.5" role="group" aria-label={bilingualAria('Rate this session', 'Βαθμολογήστε τη συνεδρία')}>
+                  {[1, 2, 3, 4, 5].map((score) => (
+                    <button
+                      key={score}
+                      type="button"
+                      disabled={rate.isPending}
+                      onClick={() => rate.mutate(score)}
+                      className="rounded-sm p-0.5 text-muted-foreground transition-colors hover:text-status-warning focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50"
+                      aria-label={bilingualAria(`${score} of 5`, `${score} από 5`)}
+                    >
+                      <Star className="icon-sm" aria-hidden="true" />
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setRating(false)}
+                    className="ml-1 text-xs text-muted-foreground underline underline-offset-2"
+                  >
+                    <BilingualText en="Cancel" el="Ακύρωση" compact />
+                  </button>
+                </div>
+              ) : (
+                <Button size="sm" variant="outline" className="gap-1" onClick={() => setRating(true)}>
+                  <Star className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
+                </Button>
+              )
             )}
             {/* Messaging is real, and it lives with the mentors a founder can
                 actually reach today. */}
@@ -374,8 +467,17 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{coach.title}</p>
             </div>
-            {coach.pricePerHour && (
-              <p className="text-sm font-semibold text-foreground shrink-0">${coach.pricePerHour}/hr</p>
+            {coach.pricePerHour != null && (
+              <p className="text-sm font-semibold text-foreground shrink-0">
+                {/* The dollar sign used to be written in. A mentor records a
+                    currency beside the rate; bill them in it. */}
+                {new Intl.NumberFormat('en-GB', {
+                  style: 'currency',
+                  currency: coach.currency || 'USD',
+                  maximumFractionDigits: 0,
+                }).format(coach.pricePerHour)}
+                /hr
+              </p>
             )}
           </div>
 
@@ -385,8 +487,8 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
             {coach.specialties.slice(0, 3).map((s) => {
               const cfg = SESSION_TYPE_CONFIG[s];
               return (
-                <span key={s} className={cn('rounded-full border px-2 py-0.5 text-xs font-medium', cfg.color)}>
-                  {cfg.label}
+                <span key={s} className={cn('rounded-full px-2 py-0.5 text-xs font-medium', cfg.color)}>
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
                 </span>
               );
             })}
@@ -394,11 +496,19 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="icon-sm fill-status-warning text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
+              <Star className="icon-sm fill-status-warning text-amber-400" />{' '}
+              {coach.rating > 0 ? coach.rating : '—'}{' '}
+              <BilingualText
+                en={`(${coach.sessionCount} sessions)`}
+                el={`(${coach.sessionCount} ${coach.sessionCount === 1 ? 'συνεδρία' : 'συνεδρίες'})`}
+                compact
+              />
             </span>
-            <span className="flex items-center gap-1">
-              <Clock className="icon-sm" /> Responds {coach.responseTime}
-            </span>
+            {coach.responseTime && (
+              <span className="flex items-center gap-1">
+                <Clock className="icon-sm" /> Responds {coach.responseTime}
+              </span>
+            )}
           </div>
 
           {/* These coaches are constants with demo ids, so neither booking nor
@@ -426,47 +536,306 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+/**
+ * Which of the six session types a free-text list of areas names.
+ *
+ * The backend stores focus areas and skills as the words people typed; this
+ * page speaks in six fixed types with an icon and a colour each. Matching is
+ * the honest join between them, and no match means no chip rather than a
+ * default one that would put every session under the same heading.
+ */
+const SPECIALTY_KEYWORDS: Record<SessionType, string[]> = {
+  accountability: ['accountability', 'habit', 'okr', 'goal'],
+  clarity: ['clarity', 'vision', 'positioning', 'focus', 'narrative'],
+  team_dynamics: ['team', 'hiring', 'people', 'culture', 'leadership', 'coaching'],
+  execution: ['execution', 'delivery', 'product', 'operations', 'ops', 'roadmap'],
+  strategy: ['strategy', 'go-to-market', 'gtm', 'fundraising', 'growth', 'market'],
+  wellbeing: ['wellbeing', 'well-being', 'burnout', 'wellness', 'mental', 'resilience'],
+};
+
+function specialtiesFrom(words: readonly string[]): SessionType[] {
+  /*
+   * Whole words, not substrings: "ops" sits inside "develops". Every
+   * non-letter becomes a space and both sides are padded, so a keyword
+   * matches only where a word actually starts and ends, and a hyphenated
+   * keyword still matches because it is normalised the same way.
+   */
+  const normalise = (text: string) => ` ${text.toLowerCase().replace(/[^a-z]+/g, ' ').trim()} `;
+  const haystack = normalise(words.join(' '));
+  return (Object.keys(SPECIALTY_KEYWORDS) as SessionType[]).filter((type) =>
+    SPECIALTY_KEYWORDS[type].some((keyword) => haystack.includes(normalise(keyword))),
+  );
+}
+
+/** The action items a session stores, defensively - the column is free JSON. */
+function toActionItems(raw: MentorshipSessionItem['actionItems']): { task: string; done: boolean }[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry) => {
+      const task = typeof entry?.task === 'string' ? entry.task : typeof entry?.title === 'string' ? entry.title : '';
+      return { task, done: entry?.done === true || entry?.completed === true };
+    })
+    .filter((item) => item.task.length > 0);
+}
+
+/**
+ * One coaching session, from the mentorship session it already is.
+ *
+ * The coach's name lives on the relationship, not the session, which is why
+ * this takes both. `no_show` folds into `cancelled`: the page speaks in four
+ * states and the model in four different ones, and both of those end the
+ * appointment without the work happening.
+ */
+function toCoachingSession(
+  row: MentorshipSessionItem,
+  relationship: MentorshipRelationshipItem | undefined,
+): CoachingSession {
+  const focus = relationship?.focusAreas ?? [];
+  const [specialty] = specialtiesFrom(focus);
+  return {
+    id: row.id,
+    coachName: relationship?.mentor?.displayName ?? 'Your coach',
+    coachAvatar: relationship?.mentor?.avatarUrl ?? undefined,
+    coachTitle: relationship?.mentor?.headline ?? '',
+    sessionType: specialty,
+    status: row.status === 'no_show' ? 'cancelled' : row.status,
+    title: row.title?.trim() || 'Coaching session',
+    scheduledAt: row.scheduledAt,
+    durationMinutes: row.duration,
+    meetingUrl: row.meetingUrl ?? undefined,
+    meetingLocation: row.meetingLocation ?? undefined,
+    agenda: row.agenda ?? undefined,
+    actionItems: toActionItems(row.actionItems),
+    // The founder's own notes and the rating the founder gave - not the
+    // coach's, which belong to the coach's side of the same session.
+    keyInsights: row.menteeNotes ?? undefined,
+    rating: row.menteeRating ?? undefined,
+  };
+}
+
+/** A coach, from the mentor directory the mentorship module already serves. */
+function toCoachProfile(mentor: MentorProfileItem): CoachProfile {
+  const availability =
+    mentor.availabilityStatus === 'available'
+      ? 'Taking new founders'
+      : mentor.availabilityStatus === 'limited'
+        ? 'Limited availability'
+        : 'Not taking new founders';
+  return {
+    id: mentor.userId,
+    name: mentor.displayName,
+    avatar: mentor.avatarUrl ?? undefined,
+    title: mentor.headline ?? '',
+    specialties: specialtiesFrom([...mentor.skills, ...mentor.industries]),
+    sessionCount: mentor.sessionCount,
+    rating: mentor.rating ?? 0,
+    // No column records how fast a mentor replies, so the line is left off.
+    responseTime: undefined,
+    bio: mentor.bio ?? '',
+    pricePerHour: mentor.isFree ? undefined : (mentor.hourlyRate ?? undefined),
+    currency: mentor.currency ?? undefined,
+    availability,
+    // Nothing on a mentor profile carries a verification state yet; claiming
+    // one would be the same invention this page is being cured of.
+    isVerified: false,
+  };
+}
+
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState('sessions');
   const { showDemoData } = useDemoData();
   const [specialtyFilter, setSpecialtyFilter] = useState<SessionType | null>(null);
-  const sessions = showDemoData ? DEMO_SESSIONS : [];
+  /*
+   * Coaching is mentorship seen from the founder's side.
+   *
+   * The relationships carry the coach; the sessions hang off them. Sessions
+   * are listable per relationship only, which is the right shape here - a
+   * founder has a handful of coaches, and asking per relationship keeps the
+   * coach's name beside every session without a second lookup.
+   */
+  const { data: relationshipData, isLoading: relationshipsLoading } = useQuery({
+    queryKey: ['mentorship', 'relationships', 'mentee'],
+    queryFn: () => getMyMentorships('mentee'),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const relationships = useMemo(
+    () => relationshipData?.relationships ?? [],
+    [relationshipData],
+  );
+
+  const sessionQueries = useQueries({
+    queries: relationships.map((relationship) => ({
+      queryKey: ['mentorship', 'sessions', relationship.id],
+      queryFn: () => getMentorshipSessions(relationship.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+
+  const sessionsLoading = relationshipsLoading || sessionQueries.some((q) => q.isLoading);
+
+  const liveSessions = useMemo(() => {
+    const byId = new Map(relationships.map((r) => [r.id, r]));
+    return sessionQueries
+      .flatMap((query) => query.data?.sessions ?? [])
+      .map((row) => toCoachingSession(row, byId.get(row.relationshipId)))
+      .sort((a, b) => b.scheduledAt.localeCompare(a.scheduledAt));
+    // `sessionQueries` is a fresh array each render; its data is what matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relationships, sessionQueries.map((q) => q.dataUpdatedAt).join(',')]);
+
+  const sessions =
+    liveSessions.length > 0
+      ? liveSessions
+      : sessionsLoading
+        ? []
+        : showDemoData
+          ? DEMO_SESSIONS
+          : [];
+
+  /*
+   * The coach directory is the mentor directory - the same people, asked for
+   * from the founder's side. This list used to be three constants rendered
+   * unconditionally, so a real founder browsed three coaches who do not exist.
+   */
+  const { data: mentorData, isLoading: coachesLoading } = useQuery({
+    queryKey: ['mentorship', 'mentors', 'coaching'],
+    queryFn: () => discoverMentors({ limit: 24 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
+  const liveCoaches = useMemo(
+    () => (mentorData?.mentors ?? []).map(toCoachProfile),
+    [mentorData],
+  );
+
+  const coaches =
+    liveCoaches.length > 0
+      ? liveCoaches
+      : coachesLoading
+        ? []
+        : showDemoData
+          ? DEMO_COACHES
+          : [];
+
   const visibleCoaches = specialtyFilter
-    ? DEMO_COACHES.filter((c) => c.specialties.includes(specialtyFilter))
-    : DEMO_COACHES;
+    ? coaches.filter((c) => c.specialties.includes(specialtyFilter))
+    : coaches;
   const upcoming = sessions.filter((s) => s.status === 'scheduled' || s.status === 'in_progress');
   const completed = sessions.filter((s) => s.status === 'completed');
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);
   const completedActions = totalActionItems.filter((a) => a.done).length;
 
-  return (
-    <AppShell
-      title="Coaching"
-      description="Accountability, clarity, and execution coaching for founders and teams"
-    >
-      <div className="space-y-6 pb-10">
+  /*
+   * The four figures, and the six filters.
+   *
+   * They used to sit above the sessions, so the first thing a founder met on
+   * their coaching page was a row of totals. They are still exactly the same
+   * figures and the same chips - reachable from the strip on the right, and
+   * kept open by anyone who wants them there.
+   */
+  const railStats = [
+    { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
+    { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+    { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
+    { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  ];
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-            { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
-            { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-          ].map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
-            <Card key={labelEn} className="shadow-sm border-border/50">
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
-                  <Icon className="icon-sm" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
-                </div>
-              </CardContent>
-            </Card>
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Summary',
+      labelEl: 'Σύνοψη',
+      content: (
+        <div className="space-y-2">
+          {railStats.map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
+            <div
+              key={labelEn}
+              className="flex items-center gap-3 rounded-lg border border-border/50 bg-card p-2.5"
+            >
+              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
+                <Icon className="icon-sm" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-base font-bold leading-none text-foreground">{value}</p>
+                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={labelEn} el={labelEl} compact wrap />
+                </p>
+              </div>
+            </div>
           ))}
         </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Filter coaches',
+      labelEl: 'Φίλτρα coaches',
+      // The badge is what makes a collapsed rail honest: a filter that is on
+      // has to be visible without opening anything, or the list looks wrong.
+      badge: specialtyFilter ? 1 : null,
+      content: (
+        <div className="space-y-3">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            <BilingualText
+              en="Narrow the coach list by what you want help with."
+              el="Περιορίστε τη λίστα coaches με βάση το τι θέλετε να δουλέψετε."
+              stacked
+              wrap
+            />
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
+              const on = specialtyFilter === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => {
+                    setSpecialtyFilter((prev) => (prev === key ? null : key));
+                    // Filtering the coach list is only visible on that tab.
+                    setActiveTab('find');
+                  }}
+                  className={cn(
+                    'flex min-h-9 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-all hover:opacity-80',
+                    cfg.color,
+                    on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
+                  )}
+                >
+                  <cfg.icon className="icon-sm" aria-hidden="true" />
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
+                </button>
+              );
+            })}
+          </div>
+          {specialtyFilter && (
+            <button
+              type="button"
+              onClick={() => setSpecialtyFilter(null)}
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              <BilingualText en="Clear filter" el="Καθαρισμός φίλτρου" compact />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <AppShell
+      rail={rail}
+      title="Coaching"
+      description="Accountability, clarity, and execution coaching for founders and teams"
+      descriptionEl="Καθοδήγηση λογοδοσίας, διαύγειας και εκτέλεσης για ιδρυτές και ομάδες"
+    >
+      <div className="space-y-6 pb-10">
 
         {/* Upcoming session banner */}
         {upcoming.length > 0 && (
@@ -480,18 +849,29 @@ export default function CoachingPage() {
                 </p>
               </div>
               {upcoming[0].meetingUrl && (
-                <Button size="sm" className="shrink-0 gap-1.5" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
-                  <Video className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Join" el="Σύνδεση" compact wrap />
-                </Button>
+                isDemoSessionId(upcoming[0].id) ? (
+                  <Button size="sm" className="shrink-0 gap-1.5" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
+                    <Video className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Join" el="Σύνδεση" compact wrap />
+                  </Button>
+                ) : (
+                  <Button size="sm" className="shrink-0 gap-1.5" asChild>
+                    <a href={upcoming[0].meetingUrl} target="_blank" rel="noopener noreferrer">
+                      <Video className="icon-sm" aria-hidden="true" />
+                      <BilingualText en="Join" el="Σύνδεση" compact wrap />
+                    </a>
+                  </Button>
+                )
               )}
             </div>
           </div>
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex items-center justify-between gap-3">
-            <TabsList className="h-9">
+          {/* Wraps rather than clips: four tabs and a primary action do not
+              fit one row once the rail takes its width. */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <TabsList className="h-9 flex-wrap">
               <TabsTrigger value="sessions" className="text-xs"><BilingualText en="My Sessions" el="Οι συνεδρίες μου" compact /></TabsTrigger>
               <TabsTrigger value="find" className="text-xs"><BilingualText en="Find a Coach" el="Εύρεση coach" compact /></TabsTrigger>
               <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
@@ -538,29 +918,33 @@ export default function CoachingPage() {
 
           {/* Find a Coach */}
           <TabsContent value="find" className="mt-4 space-y-4">
-            {/* Session type filter chips */}
-            {/* Filtering needs no server — the list is right here. These chips
-                looked like filters and did nothing; now they are filters. */}
-            <div className="flex flex-wrap gap-2">
-              {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => {
-                const on = specialtyFilter === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setSpecialtyFilter((prev) => (prev === key ? null : key))}
-                    className={cn(
-                      'flex min-h-11 items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80 md:min-h-0',
-                      cfg.color,
-                      on && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
-                    )}
-                  >
-                    <cfg.icon className="icon-sm" aria-hidden="true" />{cfg.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* The chips live in the page rail now. What stays here is the
+                one thing a filtered list owes the reader: which filter is on,
+                and a way out of it. */}
+            {specialtyFilter && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <BilingualText en="Filtered by" el="Φιλτραρισμένο κατά" compact />
+                <span
+                  className={cn(
+                    'flex items-center gap-1 rounded-full border px-2 py-0.5',
+                    SESSION_TYPE_CONFIG[specialtyFilter].color,
+                  )}
+                >
+                  <BilingualText
+                    en={SESSION_TYPE_CONFIG[specialtyFilter].label}
+                    el={SESSION_TYPE_CONFIG[specialtyFilter].labelEl}
+                    compact
+                  />
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSpecialtyFilter(null)}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  <BilingualText en="Clear" el="Καθαρισμός" compact />
+                </button>
+              </div>
+            )}
 
             <div className="space-y-3">
               {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
@@ -629,7 +1013,7 @@ export default function CoachingPage() {
                     const cfg = SESSION_TYPE_CONFIG[type];
                     return (
                       <div key={type} className="flex items-center gap-2">
-                        <span className={cn('rounded-full border px-2 py-0.5 text-2xs w-32', cfg.color)}>{cfg.label}</span>
+                        <span className={cn('rounded-full px-2 py-0.5 text-2xs w-32', cfg.color)}><BilingualText en={cfg.label} el={cfg.labelEl} compact /></span>
                         <Progress value={(count / sessions.length) * 100} className="flex-1 h-1.5" />
                         <span className="text-xs text-muted-foreground w-4">{count}</span>
                       </div>

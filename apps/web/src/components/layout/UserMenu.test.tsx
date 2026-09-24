@@ -86,8 +86,8 @@ describe('UserMenu', () => {
       name: 'Account menu for Alex Example. Μενού λογαριασμού για Alex Example',
     });
     expect(trigger.getAttribute('aria-label')).not.toContain(user.email);
-    expect(trigger.className).toContain('focus-visible:ring-2');
-    expect(trigger.className).toContain('focus-visible:ring-ring');
+    expect(trigger.className).toContain('rounded-xl');
+    expect(trigger.className).toContain('focus-visible:outline-none');
     expect(trigger.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 
@@ -99,12 +99,15 @@ describe('UserMenu', () => {
     })).toBeTruthy();
   });
 
-  it('provides bilingual account and user fallback labels without inventing an identity', async () => {
+  it('provides account and user fallback labels without inventing an identity', async () => {
     vi.mocked(useStoredUser).mockReturnValue(null);
     render(<UserMenu />);
     const trigger = screen.getByRole('button', { name: 'Account menu. Μενού λογαριασμού' });
+    // The visible trigger label is single-language (primary first): two
+    // stacked languages in a w-fixed rail is what produced the truncated
+    // "Acc…". The bilingual pair lives in the aria-label above instead.
     expect(within(trigger).getByText('Account')).toBeTruthy();
-    expect(within(trigger).getByText('Λογαριασμός')).toBeTruthy();
+    expect(within(trigger).queryByText('Λογαριασμός')).toBeNull();
     const menu = await openMenu();
     expect(within(menu).getByText('User')).toBeTruthy();
     expect(within(menu).getByText('Χρήστης')).toBeTruthy();

@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Save, RefreshCw } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BUILDER_BTN, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
 
@@ -132,9 +132,10 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
         subtitleEn={builderEn('idea_sub')}
         subtitleEl={builderEl('idea_sub')}
         completion={completionPercentage}
+        askPrompt="Help me sharpen the Idea Core: problem, audience, solution, unique value, and why now. Draft the weakest empty field first."
         extraActions={
           <>
-            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
               {isGenerating ? (
                 <RefreshCw className="icon-sm mr-2 animate-spin" />
               ) : (
@@ -146,7 +147,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                 compact
               />
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
             </Button>
@@ -155,14 +156,14 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
       />
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">
             <BilingualText en={builderEn('tab_idea')} el={builderEl('tab_idea')} compact />{' '}
             <BilingualText en={builderEn('stage_complete')} el={builderEl('stage_complete')} compact />
           </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
-        <Progress value={completionPercentage} className="h-2" />
+        <Progress value={completionPercentage} className="h-1.5" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -288,7 +289,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                   </Button>
                 </div>
               ))}
-              <Button variant="outline" onClick={addAssumption} className="w-full rounded-xl">
+              <Button variant="outline" size="sm" onClick={addAssumption} className={`w-full ${BUILDER_BTN}`}>
                 <BilingualText en={builderEn('idea_add_assumption')} el={builderEl('idea_add_assumption')} compact />
               </Button>
             </CardContent>
@@ -319,7 +320,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                   </Button>
                 </div>
               ))}
-              <Button variant="outline" onClick={addPainPoint} className="w-full rounded-xl">
+              <Button variant="outline" size="sm" onClick={addPainPoint} className={`w-full ${BUILDER_BTN}`}>
                 <BilingualText en={builderEn('idea_add_pain')} el={builderEl('idea_add_pain')} compact />
               </Button>
             </CardContent>

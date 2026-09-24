@@ -29,6 +29,7 @@ import { CommonModule } from './common/common.module';
 import { CacheModule } from './common/cache/cache.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ServicesModule } from './services/services.module';
+import { ExpertReviewsModule } from './expert-reviews/expert-reviews.module';
 import { SecurityModule } from './security/security.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { OpportunitiesModule } from './opportunities/opportunities.module';
@@ -42,6 +43,7 @@ import { TenantModule } from './tenant/tenant.module';
 import { SSOModule } from './sso/sso.module';
 import { AutomationModule } from './automation/automation.module';
 import { MilestonesModule } from './milestones/milestones.module';
+import { InvestorModule } from './investor/investor.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { ResearchModule } from './research/research.module';
@@ -103,6 +105,7 @@ function findEnvFiles(): string[] {
     GroupsModule,
     AnalyticsModule,
     ServicesModule,
+    ExpertReviewsModule,
     SecurityModule,
     MonitoringModule,
     OpportunitiesModule,
@@ -116,6 +119,7 @@ function findEnvFiles(): string[] {
     SSOModule,
     AutomationModule,
     MilestonesModule,
+    InvestorModule,
     ShortlistModule,
     EndorsementsModule,
     ResearchModule,

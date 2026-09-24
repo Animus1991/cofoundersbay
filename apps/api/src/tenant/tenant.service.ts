@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TenantMemberRole } from '@prisma/client';
+import { TenantMemberRole, Prisma } from '@prisma/client';
 
 export type TenantCreateInput = {
   slug: string;
@@ -102,7 +102,16 @@ export class TenantService {
     });
   }
 
-  async update(id: string, data: TenantUpdateInput) {
+  /**
+   * `settings` is a free-form preferences object the settings screen owns:
+   * timezone, language, currency and the membership and notification toggles.
+   * Typed as Prisma's own JSON input so it reaches the column without a cast
+   * at the call site.
+   */
+  async update(
+    id: string,
+    data: TenantUpdateInput & { settings?: Prisma.InputJsonValue },
+  ) {
     await this.prisma.tenant.findUniqueOrThrow({ where: { id } });
     if (data.slug) {
       const existing = await this.prisma.tenant.findUnique({ where: { slug: data.slug } });

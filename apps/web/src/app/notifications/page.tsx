@@ -11,7 +11,9 @@ import {
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { notificationsEn, notificationsEl } from '@/lib/i18n/strings-notifications';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -171,7 +173,7 @@ const NotificationRow = memo(function NotificationRow({
               {typeLabel}
             </Badge>
           </div>
-          <span className="shrink-0 text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
+          <span className="shrink-0 text-2xs text-muted-foreground"><RelativeTime date={item.createdAt} format={formatTimeAgo} /></span>
         </div>
         {item.body && (
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>
@@ -401,10 +403,10 @@ export default function NotificationsPage() {
                 <CheckCheck className="icon-sm" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} aria-label="Refresh">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh" aria-label={bilingualAria(notificationsEn('refresh'), notificationsEl('refresh'))}>
               <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={bilingualAria('Open notification settings', 'Άνοιγμα ρυθμίσεων ειδοποιήσεων')}>
               <Link href="/settings" title="Notification settings">
                 <Settings className="icon-sm" />
               </Link>

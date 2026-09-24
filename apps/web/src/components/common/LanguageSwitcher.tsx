@@ -45,7 +45,7 @@ export function LanguageSwitcher({ className, iconOnly = false }: { className?: 
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon" className={cn('relative h-9 w-9 shrink-0', className)} aria-label={t('Language')}>
-        <Globe className="h-4 w-4" />
+          <Globe className="icon-sm" />
       </Button>
     );
   }
@@ -66,7 +66,7 @@ export function LanguageSwitcher({ className, iconOnly = false }: { className?: 
           aria-label={`${t('Language')}: ${current.label}`}
           title={t('Language')}
         >
-          <Globe className="h-4 w-4 shrink-0" />
+          <Globe className="icon-sm shrink-0" />
           {!iconOnly && <span className="text-2xs font-semibold tabular-nums">{current.short}</span>}
           <span className="sr-only">{t('Change language')}</span>
         </Button>

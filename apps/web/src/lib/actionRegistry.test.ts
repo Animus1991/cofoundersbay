@@ -1,7 +1,24 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  archiveWorkspace,
   assessReadiness,
+  createEvent,
+  createInvestorDeal,
+  createMilestone,
+  deleteInvestorDeal,
+  deleteMilestone,
+  getInvestorDeal,
+  getMeProfile,
+  getMilestone,
+  listEvents,
+  listMilestones,
+  respondToConnectionRequest,
+  rsvpEvent,
+  updateInvestorDeal,
+  updateMilestone,
+  updateProfile,
+  withdrawConnectionRequest,
   getOrCreateDirectConversation,
   removeFromShortlist,
   saveToShortlist,
@@ -32,6 +49,23 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   removeFromShortlist: vi.fn(),
   assessReadiness: vi.fn(),
   updateReadinessCriterion: vi.fn(),
+  archiveWorkspace: vi.fn(),
+  withdrawConnectionRequest: vi.fn(),
+  createInvestorDeal: vi.fn(),
+  deleteInvestorDeal: vi.fn(),
+  getInvestorDeal: vi.fn(),
+  updateInvestorDeal: vi.fn(),
+  getMeProfile: vi.fn(),
+  updateProfile: vi.fn(),
+  respondToConnectionRequest: vi.fn(),
+  createMilestone: vi.fn(),
+  getMilestone: vi.fn(),
+  listMilestones: vi.fn(),
+  updateMilestone: vi.fn(),
+  deleteMilestone: vi.fn(),
+  listEvents: vi.fn(),
+  createEvent: vi.fn(),
+  rsvpEvent: vi.fn(),
 }));
 // Not a showcase unless a test says so: the executors take a different path
 // in demo mode, and every case below states which one it is exercising.
@@ -52,6 +86,23 @@ const unshortlist = vi.mocked(removeFromShortlist);
 const readReadiness = vi.mocked(assessReadiness);
 const writeCriterion = vi.mocked(updateReadinessCriterion);
 const makeWorkspace = vi.mocked(createWorkspace);
+const archiveWorkspaceMock = vi.mocked(archiveWorkspace);
+const withdrawConnection = vi.mocked(withdrawConnectionRequest);
+const trackDeal = vi.mocked(createInvestorDeal);
+const untrackDeal = vi.mocked(deleteInvestorDeal);
+const readDeal = vi.mocked(getInvestorDeal);
+const patchDeal = vi.mocked(updateInvestorDeal);
+const readProfile = vi.mocked(getMeProfile);
+const patchProfile = vi.mocked(updateProfile);
+const answerRequest = vi.mocked(respondToConnectionRequest);
+const makeMilestone = vi.mocked(createMilestone);
+const readMilestone = vi.mocked(getMilestone);
+const readMilestones = vi.mocked(listMilestones);
+const patchMilestone = vi.mocked(updateMilestone);
+const removeMilestone = vi.mocked(deleteMilestone);
+const readEvents = vi.mocked(listEvents);
+const makeEvent = vi.mocked(createEvent);
+const setRsvp = vi.mocked(rsvpEvent);
 
 /** One dimension carrying a single criterion, in the state asked for. */
 function assessment(completed: boolean) {
@@ -79,6 +130,8 @@ function assessment(completed: boolean) {
 }
 
 const TYPES_SOURCE = readFileSync('src/lib/copilot-types.ts', 'utf8');
+const TOPIC_KEYS_SOURCE = readFileSync('src/hooks/useAIChat.ts', 'utf8');
+const CAPABILITIES_PAGE_SOURCE = readFileSync('src/app/ai/capabilities/page.tsx', 'utf8');
 const PLANNER_SOURCE = readFileSync('src/lib/copilot-planner.ts', 'utf8');
 
 /** The alias table as it is actually written, so the test cannot drift from it. */
@@ -97,6 +150,23 @@ beforeEach(() => {
   readReadiness.mockReset();
   writeCriterion.mockReset();
   makeWorkspace.mockReset();
+  archiveWorkspaceMock.mockReset();
+  withdrawConnection.mockReset();
+  trackDeal.mockReset();
+  untrackDeal.mockReset();
+  readDeal.mockReset();
+  patchDeal.mockReset();
+  readProfile.mockReset();
+  patchProfile.mockReset();
+  answerRequest.mockReset();
+  makeMilestone.mockReset();
+  readMilestone.mockReset();
+  readMilestones.mockReset();
+  patchMilestone.mockReset();
+  removeMilestone.mockReset();
+  readEvents.mockReset();
+  makeEvent.mockReset();
+  setRsvp.mockReset();
   localStorage.clear();
   sessionStorage.clear();
   demo.on = false;
@@ -174,9 +244,10 @@ describe('action registry coverage', () => {
       expect(canExecute(id), `${id} has no executor`).toBe(true);
     }
 
-    // Creating a workspace is honestly irreversible: `undoAction` is handed the
-    // payload, never the outcome, so it has no id to archive.
-    expect(isUndoable('workspace_create')).toBe(false);
+    // Creating a workspace is reversible now that the outcome carries the id
+    // it created: the undo archives that exact row rather than one by name.
+    expect(isUndoable('workspace_create')).toBe(true);
+    expect(isUndoable('canvas_command')).toBe(false);
     expect(isUndoable('readiness_tick_criterion')).toBe(true);
     expect(isUndoable('analytics_set_period')).toBe(true);
   });
@@ -185,12 +256,13 @@ describe('action registry coverage', () => {
     // This used to be a pair of tool ids inside CopilotWorkspace.
     const navigates = listActions().filter((spec) => spec.navigatesOnSuccess).map((s) => s.id).sort();
     expect(navigates).toEqual(
-      ['analytics_set_period', 'navigate', 'readiness_tick_criterion', 'start_or_send_message', 'workspace_create'],
+      ['analytics_set_period', 'canvas_command', 'create_event', 'create_milestone', 'navigate', 'readiness_tick_criterion', 'rsvp_event', 'start_or_send_message', 'update_profile', 'workspace_create'],
     );
 
     // Saving to a shortlist reports where the result can be seen without
     // taking the user off the page they were reading.
     expect(getActionSpec('shortlist_add')?.navigatesOnSuccess).toBeFalsy();
+    expect(getActionSpec('shortlist_remove')?.navigatesOnSuccess).toBeFalsy();
     expect(getActionSpec('send_connection')?.navigatesOnSuccess).toBeFalsy();
   });
 
@@ -286,6 +358,36 @@ describe('executing registry actions', () => {
     await expect(executeAction('navigate', {})).resolves.toEqual({ ok: true, href: '/dashboard' });
   });
 
+  it('parks a canvas command and opens Research when no board is listening', async () => {
+    await expect(executeAction('canvas_command', { op: 'not-a-step' })).resolves.toEqual({
+      ok: false,
+      error: 'Unknown canvas command',
+    });
+    await expect(executeAction('canvas_command', { op: 'add_note', title: 'Pricing' })).resolves.toEqual({
+      ok: true,
+      href: '/research',
+    });
+    await expect(
+      executeAction('canvas_command', { op: 'fit_view', boardId: 'board-gtm' }),
+    ).resolves.toEqual({ ok: true, href: '/research/board-gtm' });
+  });
+
+  it('hands a canvas command to the open board instead of only navigating', async () => {
+    const { registerCanvasCommandHandler } = await import('@/lib/canvas/canvas-command-bus');
+    const unsub = registerCanvasCommandHandler(async (req) => ({
+      ok: true,
+      href: `/research/live?op=${req.op}`,
+    }));
+    try {
+      await expect(executeAction('canvas_command', { op: 'align', align: 'left' })).resolves.toEqual({
+        ok: true,
+        href: '/research/live?op=align',
+      });
+    } finally {
+      unsub();
+    }
+  });
+
   it('saves to the shortlist and reports where it landed', async () => {
     await expect(executeAction('shortlist_add', { userId: 'u1' })).resolves.toEqual({
       ok: true,
@@ -294,11 +396,31 @@ describe('executing registry actions', () => {
     expect(shortlist).toHaveBeenCalledExactlyOnceWith('u1');
   });
 
-  it('sends a connection with the optional note preserved', async () => {
+  it('takes a profile off the shortlist the same way it put it on', async () => {
+    await expect(executeAction('shortlist_remove', { userId: 'u1' })).resolves.toEqual({
+      ok: true,
+      href: '/shortlist',
+    });
+    expect(unshortlist).toHaveBeenCalledExactlyOnceWith('u1');
+  });
+
+  it('sends a connection with the optional note preserved, and keeps the id for the undo', async () => {
+    sendConnection.mockResolvedValue({
+      connection: { id: 'conn-7' },
+    } as Awaited<ReturnType<typeof sendConnectionRequest>>);
+
     await expect(
       executeAction('send_connection', { receiverId: 'u2', message: 'hello' }),
-    ).resolves.toEqual({ ok: true });
+    ).resolves.toEqual({ ok: true, undo: { connectionId: 'conn-7' } });
     expect(sendConnection).toHaveBeenCalledExactlyOnceWith({ receiverId: 'u2', message: 'hello' });
+  });
+
+  it('still reports a sent intro when the response carries no connection', async () => {
+    // `apiRequest` casts without checking, so a thinner response must not turn
+    // a request that was actually sent into an error the user sees.
+    await expect(
+      executeAction('send_connection', { receiverId: 'u2' }),
+    ).resolves.toEqual({ ok: true });
   });
 
   it('drops a non-string note rather than sending it', async () => {
@@ -320,6 +442,10 @@ describe('executing registry actions', () => {
       ok: false,
       error: 'Missing user',
     });
+    await expect(executeAction('shortlist_remove', {})).resolves.toEqual({
+      ok: false,
+      error: 'Missing user',
+    });
     await expect(executeAction('send_connection', {})).resolves.toEqual({
       ok: false,
       error: 'Missing receiver',
@@ -330,6 +456,7 @@ describe('executing registry actions', () => {
     });
 
     expect(shortlist).not.toHaveBeenCalled();
+    expect(unshortlist).not.toHaveBeenCalled();
     expect(sendConnection).not.toHaveBeenCalled();
     expect(openThread).not.toHaveBeenCalled();
   });
@@ -404,7 +531,9 @@ describe('executing registry actions', () => {
 
     await expect(
       executeAction('workspace_create', { name: '  Helios  ', description: 'Solar ops' }),
-    ).resolves.toEqual({ ok: true, href: '/readiness' });
+      // The id comes back on the outcome so the undo can archive this exact
+      // workspace instead of guessing by name.
+    ).resolves.toEqual({ ok: true, href: '/readiness', undo: { workspaceId: 'ws-new' } });
 
     expect(makeWorkspace).toHaveBeenCalledExactlyOnceWith({
       name: 'Helios',
@@ -414,6 +543,56 @@ describe('executing registry actions', () => {
     // Creating one and leaving it unselected would leave the page showing the
     // same empty card it showed before.
     expect(localStorage.getItem('cfb_default_workspace')).toBe('ws-new');
+  });
+
+  it('tracks a startup and keeps the id it created for the undo', async () => {
+    trackDeal.mockResolvedValue({ deal: { id: 'deal-9' } } as Awaited<ReturnType<typeof createInvestorDeal>>);
+
+    await expect(
+      executeAction('investor_track_startup', { name: '  NeuralFlow  ', industry: 'AI/ML' }),
+    ).resolves.toEqual({ ok: true, href: '/investor/watchlist', undo: { dealId: 'deal-9' } });
+
+    expect(trackDeal).toHaveBeenCalledExactlyOnceWith({
+      name: 'NeuralFlow',
+      industry: 'AI/ML',
+      notes: undefined,
+    });
+  });
+
+  it('reads where a deal was before moving it, so the undo has somewhere to go', async () => {
+    readDeal.mockResolvedValue({
+      deal: { id: 'deal-9', pipelineStage: 'reviewing' },
+    } as Awaited<ReturnType<typeof getInvestorDeal>>);
+
+    await expect(
+      executeAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'due_diligence' }),
+    ).resolves.toEqual({
+      ok: true,
+      href: '/investor/pipeline',
+      undo: { dealId: 'deal-9', fromStage: 'reviewing' },
+    });
+
+    expect(patchDeal).toHaveBeenCalledExactlyOnceWith('deal-9', { pipelineStage: 'due_diligence' });
+  });
+
+  it('refuses a move to the stage the deal is already in, before writing', async () => {
+    // Without this the undo would offer to "return" the deal to where it still
+    // is, and the board would record a stage change that never happened.
+    readDeal.mockResolvedValue({
+      deal: { id: 'deal-9', pipelineStage: 'meeting' },
+    } as Awaited<ReturnType<typeof getInvestorDeal>>);
+
+    await expect(
+      executeAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'meeting' }),
+    ).resolves.toEqual({ ok: false, error: 'That deal is already at that stage' });
+    expect(patchDeal).not.toHaveBeenCalled();
+  });
+
+  it('refuses an unknown pipeline stage before reaching the API', async () => {
+    await expect(
+      executeAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'nope' }),
+    ).resolves.toEqual({ ok: false, error: 'Unknown pipeline stage' });
+    expect(readDeal).not.toHaveBeenCalled();
   });
 
   it('refuses a nameless or over-long workspace before reaching the API', async () => {
@@ -505,15 +684,32 @@ describe('undoing registry actions', () => {
     expect(unshortlist).toHaveBeenCalledExactlyOnceWith('u1');
   });
 
-  it('refuses to undo an intro, and touches no API doing so', async () => {
-    // There is no sender-side withdraw route. A "best effort" undo here would
-    // either fail loudly or, worse, reach for the receiver's PATCH and be
-    // rejected as Forbidden after the recipient was already notified.
+  it('puts a removed shortlist entry back on', async () => {
+    await expect(undoAction('shortlist_remove', { userId: 'u1' })).resolves.toEqual({
+      ok: true,
+      href: '/shortlist',
+    });
+    expect(shortlist).toHaveBeenCalledExactlyOnceWith('u1');
+  });
+
+  it('withdraws the intro it sent, by the id the send returned', async () => {
+    await expect(
+      undoAction('send_connection', { receiverId: 'u2' }, { connectionId: 'conn-7' }),
+    ).resolves.toEqual({ ok: true, href: '/connections' });
+
+    expect(withdrawConnection).toHaveBeenCalledExactlyOnceWith('conn-7');
+    // Never the receiver's PATCH, which would be rejected as Forbidden.
+    expect(sendConnection).not.toHaveBeenCalled();
+  });
+
+  it('refuses to withdraw an intro whose id it never saw', async () => {
+    // Looking the request up by the pair of people would be a guess: the two
+    // may have had an earlier request between them.
     await expect(undoAction('send_connection', { receiverId: 'u2' })).resolves.toEqual({
       ok: false,
-      error: 'Not reversible',
+      error: 'No request to withdraw',
     });
-    expect(sendConnection).not.toHaveBeenCalled();
+    expect(withdrawConnection).not.toHaveBeenCalled();
   });
 
   it('refuses to undo opening a thread rather than archiving the user’s own', async () => {
@@ -555,14 +751,61 @@ describe('undoing registry actions', () => {
     });
   });
 
-  it('refuses to undo a created workspace rather than archiving one by name', async () => {
-    // The undo receives what was asked for, not what was made, so archiving by
-    // name could archive a workspace the user already had.
+  it('removes the deal it created, by id', async () => {
+    await expect(
+      undoAction('investor_track_startup', { name: 'NeuralFlow' }, { dealId: 'deal-9' }),
+    ).resolves.toEqual({ ok: true, href: '/investor/watchlist' });
+    expect(untrackDeal).toHaveBeenCalledExactlyOnceWith('deal-9');
+  });
+
+  it('returns a moved deal to the stage it actually came from', async () => {
+    await expect(
+      undoAction(
+        'investor_move_stage',
+        { dealId: 'deal-9', pipelineStage: 'due_diligence' },
+        { dealId: 'deal-9', fromStage: 'reviewing' },
+      ),
+    ).resolves.toEqual({ ok: true, href: '/investor/pipeline' });
+    expect(patchDeal).toHaveBeenCalledExactlyOnceWith('deal-9', { pipelineStage: 'reviewing' });
+  });
+
+  it('refuses to undo a move whose previous stage it never saw', async () => {
+    await expect(
+      undoAction('investor_move_stage', { dealId: 'deal-9', pipelineStage: 'invested' }),
+    ).resolves.toEqual({ ok: false, error: 'No previous stage to return to' });
+    expect(patchDeal).not.toHaveBeenCalled();
+  });
+
+  it('archives the workspace it created, by id, and clears the selection', async () => {
+    window.localStorage.setItem('cfb_default_workspace', 'ws-new');
+
+    await expect(
+      undoAction('workspace_create', { name: 'Helios' }, { workspaceId: 'ws-new' }),
+    ).resolves.toEqual({ ok: true, href: '/builder' });
+
+    expect(archiveWorkspaceMock).toHaveBeenCalledWith('ws-new');
+    // Leaving an archived workspace selected would send /readiness to one that
+    // is no longer in the list.
+    expect(window.localStorage.getItem('cfb_default_workspace')).toBeNull();
+  });
+
+  it('leaves a different selected workspace alone when it archives', async () => {
+    window.localStorage.setItem('cfb_default_workspace', 'ws-mine');
+
+    await expect(
+      undoAction('workspace_create', { name: 'Helios' }, { workspaceId: 'ws-new' }),
+    ).resolves.toEqual({ ok: true, href: '/builder' });
+
+    expect(archiveWorkspaceMock).toHaveBeenCalledWith('ws-new');
+    expect(window.localStorage.getItem('cfb_default_workspace')).toBe('ws-mine');
+  });
+
+  it('refuses to archive when the outcome carried no id, rather than guessing by name', async () => {
     await expect(undoAction('workspace_create', { name: 'Helios' })).resolves.toEqual({
       ok: false,
-      error: 'Not reversible',
+      error: 'No workspace to archive',
     });
-    expect(makeWorkspace).not.toHaveBeenCalled();
+    expect(archiveWorkspaceMock).not.toHaveBeenCalled();
   });
 
   it('refuses an unknown id and a read tool', async () => {
@@ -590,9 +833,50 @@ describe('undoing registry actions', () => {
     });
   });
 
+  it('makes every mutation say what it makes stale', () => {
+    // The app used to decide this at the call site, in a chain of
+    // `if (tool === …)` that covered four of the nine mutations: ticking a
+    // readiness criterion or creating a workspace refreshed nothing, so a page
+    // open beside the chat kept showing the state from before.
+    // `listActions()` rather than `ACTION_DECLARATIONS`: the const assertion
+    // gives each entry its own literal type, which omits optional fields the
+    // read declarations do not carry.
+    const missing = listActions()
+      .filter((spec) => spec.kind === 'mutation')
+      .filter((spec) => !Array.isArray(spec.invalidates))
+      .map((spec) => spec.id);
+
+    expect(missing, 'mutations with no `invalidates`').toEqual([]);
+  });
+
+  it('binds every declared invalidation topic to real query keys', () => {
+    // `TOPIC_KEYS` is a Record over the topic union, so a topic with no entry
+    // fails to compile. This catches the other direction: a topic declared on
+    // a capability that nobody bound, which would refresh nothing in silence.
+    const declared = new Set(
+      listActions().flatMap((spec) => [...(spec.invalidates ?? [])]),
+    );
+    for (const topic of declared) {
+      expect(TOPIC_KEYS_SOURCE, `${topic} has no query keys bound to it`).toContain(`  ${topic}:`);
+    }
+    expect(declared.size).toBeGreaterThan(0);
+  });
+
+  it('gives every capability a sample ask on the capabilities page', () => {
+    // The page is generated from the contract, but the example beside each
+    // capability is hand-written: a new capability with no example renders as
+    // a card that cannot tell you how to use it.
+    const missing = [...listActionIds()].filter(
+      (id) => !CAPABILITIES_PAGE_SOURCE.includes(`  ${id}: {`),
+    );
+    expect(missing, 'capabilities with no sample ask').toEqual([]);
+  });
+
   it('reports exactly which tools can be taken back', () => {
     expect(isUndoable('shortlist_add')).toBe(true);
-    expect(isUndoable('send_connection')).toBe(false);
+    expect(isUndoable('shortlist_remove')).toBe(true);
+    expect(isUndoable('send_connection')).toBe(true);
+    expect(isUndoable('workspace_create')).toBe(true);
     expect(isUndoable('start_or_send_message')).toBe(false);
     expect(isUndoable('navigate')).toBe(false);
     expect(isUndoable('get_graph')).toBe(false);
@@ -674,5 +958,205 @@ describe('route resolution', () => {
   it('returns nothing rather than guessing', () => {
     expect(resolveRouteTarget('qqqq zzzz not a page at all')).toBeUndefined();
     expect(detectNavigateHref('what should I do next')).toBeUndefined();
+  });
+});
+
+describe('profile writes', () => {
+  it('patches only the declared fields and keeps the previous values for the undo', async () => {
+    readProfile.mockResolvedValue({
+      profile: {
+        id: 'p1',
+        userId: 'u1',
+        displayName: 'Alex',
+        headline: 'Old headline',
+        bio: null,
+        location: 'Athens',
+        timezone: 'Europe/Athens',
+        languages: null,
+        avatarUrl: null,
+        rolePayload: null,
+        visibilityRules: null,
+        role: 'founder',
+        skills: [],
+        createdAt: '',
+        updatedAt: '',
+      },
+      hasCompletedOnboarding: true,
+    });
+    patchProfile.mockResolvedValue({} as Awaited<ReturnType<typeof updateProfile>>);
+
+    const outcome = await executeAction('update_profile', {
+      headline: 'New headline',
+      location: 'Berlin',
+      // Not a declared field — dropped, never sent.
+      email: 'nobody@example.com',
+    });
+
+    expect(outcome.ok).toBe(true);
+    expect(patchProfile).toHaveBeenCalledWith({ headline: 'New headline', location: 'Berlin' });
+    expect(outcome.undo).toEqual({ prior: { headline: 'Old headline', location: 'Athens' } });
+  });
+
+  it('writes the read-back values back on undo, including empty fields', async () => {
+    patchProfile.mockResolvedValue({} as Awaited<ReturnType<typeof updateProfile>>);
+    const undone = await undoAction('update_profile', {}, { prior: { headline: 'Old', bio: '' } });
+    expect(undone.ok).toBe(true);
+    expect(patchProfile).toHaveBeenCalledWith({ headline: 'Old', bio: '' });
+  });
+
+  it('refuses an empty payload and a demo profile before reaching the API', async () => {
+    expect((await executeAction('update_profile', {})).ok).toBe(false);
+    demo.on = true;
+    expect((await executeAction('update_profile', { headline: 'x' })).ok).toBe(false);
+    expect(patchProfile).not.toHaveBeenCalled();
+  });
+});
+
+describe('connection writes', () => {
+  it('answers a pending request with the decision asked for', async () => {
+    answerRequest.mockResolvedValue({ connection: { id: 'c1' } } as Awaited<ReturnType<typeof respondToConnectionRequest>>);
+    const outcome = await executeAction('respond_to_connection', { connectionId: 'c1', decision: 'accepted' });
+    expect(outcome.ok).toBe(true);
+    expect(answerRequest).toHaveBeenCalledWith('c1', 'accepted');
+  });
+
+  it('refuses an unknown decision and cannot be undone', async () => {
+    expect((await executeAction('respond_to_connection', { connectionId: 'c1', decision: 'maybe' })).ok).toBe(false);
+    expect(answerRequest).not.toHaveBeenCalled();
+    expect(isUndoable('respond_to_connection')).toBe(false);
+    expect((await undoAction('respond_to_connection', { connectionId: 'c1' })).ok).toBe(false);
+  });
+});
+
+describe('milestone writes', () => {
+  it('creates a milestone and keeps the id it made for the undo', async () => {
+    makeMilestone.mockResolvedValue({ id: 'm1' } as Awaited<ReturnType<typeof createMilestone>>);
+    const outcome = await executeAction('create_milestone', {
+      title: 'Close pre-seed',
+      dueDate: '2026-06-01',
+      priority: 'high',
+      // Not a declared priority value — dropped, not sent.
+      notes: 'ignored field is fine to drop',
+    });
+    expect(outcome.ok).toBe(true);
+    expect(outcome.undo).toEqual({ milestoneId: 'm1' });
+    expect(makeMilestone).toHaveBeenCalledWith({
+      title: 'Close pre-seed',
+      dueDate: '2026-06-01',
+      priority: 'high',
+    });
+
+    removeMilestone.mockResolvedValue({ ok: true });
+    expect((await undoAction('create_milestone', {}, outcome.undo)).ok).toBe(true);
+    expect(removeMilestone).toHaveBeenCalledWith('m1');
+  });
+
+  it('refuses a titleless milestone before reaching the API', async () => {
+    expect((await executeAction('create_milestone', {})).ok).toBe(false);
+    expect(makeMilestone).not.toHaveBeenCalled();
+  });
+
+  it('reads the milestone before moving it, so the undo restores where it was', async () => {
+    readMilestone.mockResolvedValue({ id: 'm1', status: 'todo' } as Awaited<ReturnType<typeof getMilestone>>);
+    patchMilestone.mockResolvedValue({ id: 'm1', status: 'completed' } as Awaited<ReturnType<typeof updateMilestone>>);
+
+    const outcome = await executeAction('update_milestone_status', { milestoneId: 'm1', status: 'completed' });
+    expect(outcome.ok).toBe(true);
+    expect(patchMilestone).toHaveBeenCalledWith('m1', { status: 'completed' });
+    expect(outcome.undo).toEqual({ milestoneId: 'm1', fromStatus: 'todo' });
+
+    patchMilestone.mockResolvedValue({ id: 'm1', status: 'todo' } as Awaited<ReturnType<typeof updateMilestone>>);
+    expect((await undoAction('update_milestone_status', {}, outcome.undo)).ok).toBe(true);
+    expect(patchMilestone).toHaveBeenLastCalledWith('m1', { status: 'todo' });
+  });
+
+  it('resolves a milestone by exact title when the id is not known', async () => {
+    readMilestones.mockResolvedValue({
+      milestones: [{ id: 'm9', title: 'Ship MVP', status: 'in_progress' }],
+      nextCursor: null,
+      total: 1,
+    } as Awaited<ReturnType<typeof listMilestones>>);
+    readMilestone.mockResolvedValue({ id: 'm9', status: 'in_progress' } as Awaited<ReturnType<typeof getMilestone>>);
+    patchMilestone.mockResolvedValue({ id: 'm9', status: 'completed' } as Awaited<ReturnType<typeof updateMilestone>>);
+
+    const outcome = await executeAction('update_milestone_status', { title: 'Ship MVP', status: 'completed' });
+    expect(outcome.ok).toBe(true);
+    expect(patchMilestone).toHaveBeenCalledWith('m9', { status: 'completed' });
+  });
+
+  it('refuses a no-op status and an unknown milestone without writing', async () => {
+    readMilestone.mockResolvedValue({ id: 'm1', status: 'completed' } as Awaited<ReturnType<typeof getMilestone>>);
+    expect((await executeAction('update_milestone_status', { milestoneId: 'm1', status: 'completed' })).ok).toBe(false);
+
+    readMilestones.mockResolvedValue({ milestones: [], nextCursor: null, total: 0 } as Awaited<ReturnType<typeof listMilestones>>);
+    expect((await executeAction('update_milestone_status', { title: 'Nope', status: 'completed' })).ok).toBe(false);
+    expect(patchMilestone).not.toHaveBeenCalled();
+  });
+});
+
+describe('event writes', () => {
+  it('sets an RSVP by id and keeps the status it replaced for the undo', async () => {
+    readEvents.mockResolvedValue({
+      events: [{ id: 'e1', title: 'Demo Day', viewerRsvp: 'interested' }],
+    } as Awaited<ReturnType<typeof listEvents>>);
+    setRsvp.mockResolvedValue({ ok: true, status: 'going' });
+
+    const outcome = await executeAction('rsvp_event', { eventId: 'e1', status: 'going' });
+    expect(outcome.ok).toBe(true);
+    expect(setRsvp).toHaveBeenCalledWith('e1', 'going');
+    expect(outcome.undo).toEqual({ eventId: 'e1', priorStatus: 'interested' });
+
+    setRsvp.mockResolvedValue({ ok: true, status: 'interested' });
+    expect((await undoAction('rsvp_event', {}, outcome.undo)).ok).toBe(true);
+    expect(setRsvp).toHaveBeenLastCalledWith('e1', 'interested');
+  });
+
+  it('resolves an event by exact title and falls back to not_going when there was no RSVP', async () => {
+    readEvents.mockResolvedValue({
+      events: [{ id: 'e2', title: 'Founder Meetup', viewerRsvp: null }],
+    } as Awaited<ReturnType<typeof listEvents>>);
+    setRsvp.mockResolvedValue({ ok: true, status: 'going' });
+
+    const outcome = await executeAction('rsvp_event', { eventTitle: 'Founder Meetup', status: 'going' });
+    expect(outcome.ok).toBe(true);
+    expect(setRsvp).toHaveBeenCalledWith('e2', 'going');
+
+    setRsvp.mockResolvedValue({ ok: true, status: 'not_going' });
+    expect((await undoAction('rsvp_event', {}, outcome.undo)).ok).toBe(true);
+    expect(setRsvp).toHaveBeenLastCalledWith('e2', 'not_going');
+  });
+
+  it('refuses a repeated RSVP and an unknown event without writing', async () => {
+    readEvents.mockResolvedValue({
+      events: [{ id: 'e1', title: 'Demo Day', viewerRsvp: 'going' }],
+    } as Awaited<ReturnType<typeof listEvents>>);
+    expect((await executeAction('rsvp_event', { eventId: 'e1', status: 'going' })).ok).toBe(false);
+    expect((await executeAction('rsvp_event', { eventTitle: 'No such thing', status: 'going' })).ok).toBe(false);
+    expect(setRsvp).not.toHaveBeenCalled();
+  });
+
+  it('publishes an event and links to it, with no undo because none exists', async () => {
+    makeEvent.mockResolvedValue({ event: { id: 'e9' } } as Awaited<ReturnType<typeof createEvent>>);
+    const outcome = await executeAction('create_event', {
+      title: 'Pitch Night',
+      startAt: '2026-07-01T18:00:00+03:00',
+      type: 'demo_day',
+      isOnline: true,
+    });
+    expect(outcome.ok).toBe(true);
+    expect(outcome.href).toBe('/events/e9');
+    expect(makeEvent).toHaveBeenCalledWith({
+      title: 'Pitch Night',
+      startAt: '2026-07-01T18:00:00+03:00',
+      type: 'demo_day',
+      isOnline: true,
+    });
+    expect(isUndoable('create_event')).toBe(false);
+  });
+
+  it('refuses a titleless or undated event before reaching the API', async () => {
+    expect((await executeAction('create_event', { startAt: '2026-07-01T18:00:00Z' })).ok).toBe(false);
+    expect((await executeAction('create_event', { title: 'X', startAt: 'not a date' })).ok).toBe(false);
+    expect(makeEvent).not.toHaveBeenCalled();
   });
 });

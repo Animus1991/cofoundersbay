@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -40,10 +41,10 @@ export interface CanvasComment {
 // ── API helpers ────────────────────────────────────────────────────────────────
 
 async function listNodeComments(nodeId: string): Promise<CanvasComment[]> {
-  const result = await apiRequest<{ comments: CanvasComment[] }>(
+  const result = await apiRequest<{ comments?: CanvasComment[] }>(
     `/api/research/nodes/${nodeId}/comments`,
   );
-  return result.comments;
+  return result?.comments ?? [];
 }
 
 async function createComment(
@@ -51,7 +52,7 @@ async function createComment(
   body: string,
   opts?: { posX?: number; posY?: number; commentType?: string; parentId?: string },
 ): Promise<CanvasComment> {
-  const result = await apiRequest<{ comment: CanvasComment }>(
+  const result = await apiRequest<{ comment?: CanvasComment }>(
     `/api/research/nodes/${nodeId}/comments`,
     {
       method: 'POST',
@@ -64,17 +65,19 @@ async function createComment(
       }),
     },
   );
+  if (!result?.comment) throw new Error('Failed to add comment');
   return result.comment;
 }
 
 async function resolveComment(commentId: string): Promise<CanvasComment> {
-  const result = await apiRequest<{ comment: CanvasComment }>(
+  const result = await apiRequest<{ comment?: CanvasComment }>(
     `/api/research/comments/${commentId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({ resolved: true }),
     },
   );
+  if (!result?.comment) throw new Error('Failed to resolve comment');
   return result.comment;
 }
 
@@ -174,7 +177,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                   {comment.author?.displayName ?? 'Anonymous'}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-2xs text-muted-foreground">{timeAgo(comment.createdAt)}</span>
+                  <span className="text-2xs text-muted-foreground"><RelativeTime date={comment.createdAt} format={timeAgo} /></span>
                   <Button
                     variant="ghost"
                     size="sm"

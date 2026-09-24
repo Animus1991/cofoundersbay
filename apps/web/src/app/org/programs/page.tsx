@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Plus,
@@ -12,6 +12,9 @@ import {
   Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { getMyPrograms, updateProgram, type ProgramItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +28,31 @@ import {
 import { EmptyOrgPrograms } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+
+/**
+ * The page's own row from the API row.
+ *
+ * `/api/programs` and its controller have existed all along — the page simply
+ * never called them, so it showed a fixed array while real programs sat in the
+ * database. Enrolment is `participantCount`, which the API already counts.
+ */
+function toPageProgram(item: ProgramItem): Program {
+  return {
+    id: item.id,
+    name: item.title,
+    type: item.programType,
+    status: (['draft', 'active', 'completed', 'archived'] as const).includes(
+      item.status as Program['status'],
+    )
+      ? (item.status as Program['status'])
+      : 'draft',
+    startDate: item.startDate ?? undefined,
+    endDate: item.endDate ?? undefined,
+    capacity: item.capacity ?? 0,
+    enrolled: item.participantCount,
+    description: item.description ?? undefined,
+  };
+}
 
 type Program = {
   id: string;
@@ -46,6 +74,23 @@ const ORG_PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
 };
 
 function ProgramCard({ program }: { program: Program }) {
+  /*
+   * "Archive" was a menu item with no handler. It writes the status the API
+   * already accepts, and the list refreshes from the server rather than from
+   * a local guess about what happened.
+   */
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+  const archive = useMutation({
+    mutationFn: () => updateProgram(program.id, { status: 'archived' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['org', 'programs'] });
+      success('Program archived');
+    },
+    onError: (err) =>
+      showError('Could not archive the program', err instanceof Error ? err.message : undefined),
+  });
+
   const statusColors = STATUS[ORG_PROGRAM_STATUS_TONE[program.status]];
 
   return (
@@ -94,8 +139,19 @@ function ProgramCard({ program }: { program: Program }) {
               <DropdownMenuItem asChild>
                 <Link href={`/org/programs/${program.id}/participants`}>Manage Participants</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Duplicate</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible">Archive</DropdownMenuItem>
+              {/*
+                * "Duplicate" is gone rather than left inert: there is no
+                * create-from-existing route, and a menu item that does nothing
+                * is worse than one that is not offered. The page's own "New
+                * program" button is the path that works.
+                */}
+              <DropdownMenuItem
+                className="text-destructive-accessible"
+                disabled={archive.isPending || program.status === 'archived'}
+                onClick={() => archive.mutate()}
+              >
+                {program.status === 'archived' ? 'Archived' : 'Archive'}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -104,56 +160,73 @@ function ProgramCard({ program }: { program: Program }) {
   );
 }
 
+/** Shown to an organisation that has not created a program yet. */
+const SEED_PROGRAMS: Program[] = [
+  {
+    id: '1',
+    name: 'AI Accelerator 2025',
+    type: 'Accelerator',
+    status: 'active',
+    startDate: 'Jan 2025',
+    endDate: 'Apr 2025',
+    capacity: 15,
+    enrolled: 12,
+    description: 'Intensive 12-week program for AI/ML startups',
+  },
+  {
+    id: '2',
+    name: 'FinTech Bootcamp',
+    type: 'Bootcamp',
+    status: 'draft',
+    startDate: 'Apr 2025',
+    endDate: 'Jun 2025',
+    capacity: 20,
+    enrolled: 0,
+    description: '8-week fintech innovation program',
+  },
+  {
+    id: '3',
+    name: 'Climate Innovation',
+    type: 'Incubator',
+    status: 'active',
+    startDate: 'Jan 2025',
+    endDate: 'Dec 2025',
+    capacity: 10,
+    enrolled: 8,
+    description: 'Year-long program for climate-focused startups',
+  },
+  {
+    id: '4',
+    name: 'Fall 2024 Cohort',
+    type: 'Accelerator',
+    status: 'completed',
+    startDate: 'Sep 2024',
+    endDate: 'Dec 2024',
+    capacity: 12,
+    enrolled: 12,
+  },
+];
+
 export default function OrgProgramsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Mock data
-  const programs: Program[] = [
-    {
-      id: '1',
-      name: 'AI Accelerator 2025',
-      type: 'Accelerator',
-      status: 'active',
-      startDate: 'Jan 2025',
-      endDate: 'Apr 2025',
-      capacity: 15,
-      enrolled: 12,
-      description: 'Intensive 12-week program for AI/ML startups',
-    },
-    {
-      id: '2',
-      name: 'FinTech Bootcamp',
-      type: 'Bootcamp',
-      status: 'draft',
-      startDate: 'Apr 2025',
-      endDate: 'Jun 2025',
-      capacity: 20,
-      enrolled: 0,
-      description: '8-week fintech innovation program',
-    },
-    {
-      id: '3',
-      name: 'Climate Innovation',
-      type: 'Incubator',
-      status: 'active',
-      startDate: 'Jan 2025',
-      endDate: 'Dec 2025',
-      capacity: 10,
-      enrolled: 8,
-      description: 'Year-long program for climate-focused startups',
-    },
-    {
-      id: '4',
-      name: 'Fall 2024 Cohort',
-      type: 'Accelerator',
-      status: 'completed',
-      startDate: 'Sep 2024',
-      endDate: 'Dec 2024',
-      capacity: 12,
-      enrolled: 12,
-    },
-  ];
+  /*
+   * `/api/programs` and its controller existed all along; the page never
+   * called them. It reads the organisation's own programs now. The fixed
+   * array below is kept as what an organisation with none yet sees, so the
+   * screen still teaches its shape rather than opening empty.
+   */
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', 'programs'],
+    queryFn: getMyPrograms,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.programs ?? []).map(toPageProgram), [data]);
+  const programs: Program[] = live.length > 0 ? live : isLoading ? [] : SEED_PROGRAMS;
+
 
   const filteredPrograms = programs.filter((p) => {
     const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());

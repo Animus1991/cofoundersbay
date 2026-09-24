@@ -7,6 +7,16 @@ import {
   Edit, Trash2, Copy, RefreshCw, Info,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  adminListExperiments,
+  adminActivateExperiment,
+  adminDeactivateExperiment,
+  type ExperimentRecord,
+} from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,50 +65,82 @@ const CATEGORY_COLORS: Record<string, string> = {
   billing:    'bg-status-success-bg text-status-success',
 };
 
+/**
+ * The page's own row from an experiment.
+ *
+ * `/api/admin/experiments` has existed all along with list, activate and
+ * deactivate clients, and this screen kept a fixed array in `useState`.
+ *
+ * An experiment is the platform's only rollout primitive: it carries a key, a
+ * split ratio and an active flag, which is what a percentage rollout is. The
+ * page's other three categories — ui, backend, infra, billing — have no
+ * counterpart, so every real row reads `experiment` rather than being sorted
+ * into buckets the model does not have.
+ */
+function toFeatureFlag(record: ExperimentRecord): FeatureFlag {
+  return {
+    id: record.id,
+    key: record.key,
+    name: record.name,
+    description: record.description ?? '',
+    status: record.active ? (record.splitRatio < 100 ? 'rollout' : 'enabled') : 'disabled',
+    target: record.splitRatio < 100 ? 'percentage' : 'all',
+    rolloutPct: record.splitRatio,
+    affectedUsers: record.assignmentCount,
+    category: 'experiment',
+    createdAt: record.createdAt,
+    updatedAt: record.startedAt ?? record.createdAt,
+    // The API returns the creator's id, not their name; showing a raw uuid
+    // would read as noise, so the column says what it knows.
+    createdBy: record.createdById ? 'Admin' : '\u2014',
+  };
+}
+
+/** Shown while no experiment is defined. */
 const MOCK_FLAGS: FeatureFlag[] = [
   {
     id: '1', key: 'ai_match_v2', name: 'AI Matching v2', description: 'New ML-based co-founder matching algorithm with compatibility scoring.',
     status: 'rollout', target: 'percentage', rolloutPct: 30, affectedUsers: 1420, category: 'backend',
-    createdAt: 'Jan 5, 2025', updatedAt: 'Mar 15, 2025', createdBy: 'admin@cofounderbay.com',
+    createdAt: '2025-01-05T09:00:00.000Z', updatedAt: '2025-03-15T09:00:00.000Z', createdBy: 'admin@cofounderbay.com',
   },
   {
     id: '2', key: 'investor_data_room', name: 'Investor Data Room', description: 'Secure document sharing room for investor due diligence.',
     status: 'experiment', target: 'beta', affectedUsers: 248, category: 'ui',
-    createdAt: 'Feb 12, 2025', updatedAt: 'Mar 20, 2025', createdBy: 'admin@cofounderbay.com',
+    createdAt: '2025-02-12T09:00:00.000Z', updatedAt: '2025-03-20T09:00:00.000Z', createdBy: 'admin@cofounderbay.com',
   },
   {
     id: '3', key: 'blockchain_validation', name: 'Blockchain Message Validation', description: 'On-chain validation of key conversation milestones.',
     status: 'experiment', target: 'beta', affectedUsers: 112, category: 'backend',
-    createdAt: 'Feb 20, 2025', updatedAt: 'Mar 18, 2025', createdBy: 'ops@cofounderbay.com',
+    createdAt: '2025-02-20T09:00:00.000Z', updatedAt: '2025-03-18T09:00:00.000Z', createdBy: 'ops@cofounderbay.com',
   },
   {
     id: '4', key: 'new_onboarding_flow', name: 'Redesigned Onboarding', description: 'Step-by-step onboarding with role-specific path selection.',
     status: 'enabled', target: 'all', affectedUsers: 4730, category: 'ui',
-    createdAt: 'Jan 20, 2025', updatedAt: 'Feb 28, 2025', createdBy: 'admin@cofounderbay.com',
+    createdAt: '2025-01-20T09:00:00.000Z', updatedAt: '2025-02-28T09:00:00.000Z', createdBy: 'admin@cofounderbay.com',
   },
   {
     id: '5', key: 'rate_limit_v2', name: 'Enhanced Rate Limiting', description: 'Per-tenant dynamic rate limits with burst allowance.',
     status: 'rollout', target: 'percentage', rolloutPct: 75, affectedUsers: 3550, category: 'infra',
-    createdAt: 'Mar 1, 2025', updatedAt: 'Mar 22, 2025', createdBy: 'ops@cofounderbay.com',
+    createdAt: '2025-03-01T09:00:00.000Z', updatedAt: '2025-03-22T09:00:00.000Z', createdBy: 'ops@cofounderbay.com',
   },
   {
     id: '6', key: 'billing_usage_alerts', name: 'Billing Usage Alerts', description: 'Email and in-app alerts when tenant approaches plan limits.',
     status: 'enabled', target: 'all', affectedUsers: 4730, category: 'billing',
-    createdAt: 'Mar 10, 2025', updatedAt: 'Mar 10, 2025', createdBy: 'admin@cofounderbay.com',
+    createdAt: '2025-03-10T09:00:00.000Z', updatedAt: '2025-03-10T09:00:00.000Z', createdBy: 'admin@cofounderbay.com',
   },
   {
     id: '7', key: 'legacy_search', name: 'Legacy Search Engine', description: 'Old keyword-based search before semantic search rollout.',
     status: 'disabled', target: 'all', affectedUsers: 0, category: 'backend',
-    createdAt: 'Jun 1, 2024', updatedAt: 'Jan 15, 2025', createdBy: 'admin@cofounderbay.com',
+    createdAt: '2024-06-01T09:00:00.000Z', updatedAt: '2025-01-15T09:00:00.000Z', createdBy: 'admin@cofounderbay.com',
   },
   {
     id: '8', key: 'mentor_video_rooms', name: 'Mentor Video Rooms', description: 'Native video call integration for mentorship sessions.',
     status: 'experiment', target: 'beta', affectedUsers: 87, category: 'ui',
-    createdAt: 'Mar 18, 2025', updatedAt: 'Mar 20, 2025', createdBy: 'admin@cofounderbay.com',
+    createdAt: '2025-03-18T09:00:00.000Z', updatedAt: '2025-03-20T09:00:00.000Z', createdBy: 'admin@cofounderbay.com',
   },
 ];
 
-function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string, enabled: boolean) => void }) {
+function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string, enabled: boolean) => void | Promise<void> }) {
   const statusCfg = STATUS_CONFIG[flag.status];
   const StatusIcon = statusCfg.icon;
   const isEnabled = flag.status !== 'disabled';
@@ -109,7 +151,7 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
         <div className="flex items-start gap-4">
           <Switch
             checked={isEnabled}
-            onCheckedChange={(v) => onToggle(flag.id, v)}
+            onCheckedChange={(v) => void onToggle(flag.id, v)}
             className="mt-0.5"
           />
           <div className="flex-1 min-w-0">
@@ -141,7 +183,7 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
                 <Users className="icon-sm" />
                 {flag.affectedUsers?.toLocaleString('en-GB') ?? 0} affected
               </span>
-              <span>Updated {flag.updatedAt}</span>
+              <span>Updated <RelativeTime date={flag.updatedAt} format={formatRelativeTime} /></span>
               <span>By {flag.createdBy}</span>
             </div>
           </div>
@@ -166,15 +208,44 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
 
 export default function AdminFeatureFlagsPage() {
   const [search, setSearch] = useState('');
+  const qc = useQueryClient();
   const [flags, setFlags] = useState<FeatureFlag[]>(MOCK_FLAGS);
+  /** True once real experiments are in hand; the toggles refuse before that. */
+  const [isLive, setIsLive] = useState(false);
+
+  const { data: experiments } = useQuery({
+    queryKey: ['admin', 'experiments'],
+    queryFn: adminListExperiments,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  useEffect(() => {
+    const rows = Array.isArray(experiments) ? experiments : [];
+    if (rows.length === 0) return;
+    setFlags(rows.map(toFeatureFlag));
+    setIsLive(true);
+  }, [experiments]);
   const [activeTab, setActiveTab] = useState('all');
 
-  const handleToggle = (id: string, enabled: boolean) => {
+  /**
+   * Turning a flag on or off wrote to the local array and nothing else — the
+   * switch moved and the platform never heard about it. It activates or
+   * deactivates the experiment now, and the list refreshes from the server.
+   */
+  const handleToggle = async (id: string, enabled: boolean) => {
+    if (!isLive) return;
+    // Optimistic, then reconciled.
     setFlags((prev) =>
       prev.map((f) =>
         f.id === id ? { ...f, status: enabled ? 'enabled' : 'disabled' } : f
       )
     );
+    try {
+      await (enabled ? adminActivateExperiment(id) : adminDeactivateExperiment(id));
+    } finally {
+      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+    }
   };
 
   const filtered = flags.filter((f) => {

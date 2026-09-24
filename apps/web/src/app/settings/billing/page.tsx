@@ -9,6 +9,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -67,7 +68,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           rel="noreferrer"
           className="shrink-0"
         >
-          <Button aria-label="Download invoice" variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Download invoice ${invoice.invoiceNumber}`, `Λήψη τιμολογίου ${invoice.invoiceNumber}`)}>
             <Download className="icon-sm" />
           </Button>
         </a>

@@ -1,10 +1,12 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +17,6 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { usePopupChat } from '@/contexts/PopupChatContext';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys } from '@/lib/query-keys';
@@ -26,6 +27,9 @@ import {
   listConnectionRequests,
   getVentureReadiness,
   type SearchHit,
+  getAnalyticsMetrics,
+  listMilestones,
+  getDashboardActivity,
 } from '@/lib/api';
 import {
   fundraisingRoundView,
@@ -59,31 +63,35 @@ function getTimeBasedGreeting(): { en: string; el: string } {
 function AskAiButton({
   labelEn,
   labelEl,
+  prompt,
   className,
   variant = 'outline',
   size = 'sm',
 }: {
   labelEn?: string;
   labelEl?: string;
+  /** Lands on `/ai?q=` so the assistant gets the page, not an empty popup. */
+  prompt?: string;
   className?: string;
   variant?: 'outline' | 'ghost' | 'secondary';
   size?: 'sm' | 'md';
 }) {
-  const { open } = usePopupChat();
   const { primary } = useLanguagePreference();
   const visible = primary === 'el'
     ? (labelEl ?? dashboardEl('ask_ai'))
     : (labelEn ?? dashboardEn('ask_ai'));
+  const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
   return (
     <Button
-      type="button"
+      asChild
       variant={variant}
       size={size}
       className={cn('h-auto min-h-9 gap-1.5 whitespace-nowrap', className)}
-      onClick={() => open()}
     >
-      <CfbGlyph name="spark" className="icon-sm shrink-0" />
-      {visible}
+      <Link href={href}>
+        <CfbGlyph name="spark" className="icon-sm shrink-0" />
+        {visible}
+      </Link>
     </Button>
   );
 }
@@ -119,6 +127,7 @@ type DemoMilestone = {
   priority: 'high' | 'medium' | 'low';
 };
 
+/** Shown only under the demo overlay, for a founder with no milestones. */
 const DEMO_MILESTONES: DemoMilestone[] = [
   { id: '1', titleEn: 'Complete MVP v1', titleEl: 'Ολοκλήρωση MVP v1', status: 'in_progress', progress: 65, dueDate: isoInDays(24), priority: 'high' },
   { id: '2', titleEn: 'First 100 active users', titleEl: 'Πρώτοι 100 ενεργοί χρήστες', status: 'in_progress', progress: 23, dueDate: isoInDays(40), priority: 'high' },
@@ -126,11 +135,32 @@ const DEMO_MILESTONES: DemoMilestone[] = [
   { id: '4', titleEn: 'Build founding team', titleEl: 'Συγκρότηση ιδρυτικής ομάδας', status: 'pending', progress: 0, dueDate: isoInDays(39), priority: 'high' },
 ];
 
+/**
+ * Shown only under the demo overlay.
+ *
+ * Every name and figure here has to exist in the lists this card sits beside:
+ * the first row used to announce an 87% match with Nikos Papadakis while Top
+ * Matches showed 92, 88, 81 and 76 and no such person.
+ */
+/** The icon each activity type carries, mirroring EVENT_CONFIG's job. */
+const ACTIVITY_GLYPH: Record<string, 'spark' | 'people' | 'messages' | 'profile' | 'flag' | 'award' | 'briefcase'> = {
+  match: 'spark',
+  connection: 'people',
+  invite: 'people',
+  message: 'messages',
+  milestone: 'flag',
+  achievement: 'award',
+  endorsement: 'award',
+  job: 'briefcase',
+  event: 'flag',
+  system: 'profile',
+};
+
 const DEMO_ACTIVITY = [
-  { id: '1', glyph: 'spark' as const, textEn: 'New 87% match — Nikos Papadakis, CTO', textEl: 'Νέα αντιστοίχιση 87% — Νίκος Παπαδάκης, CTO', timeEn: '2h ago', timeEl: 'πριν 2 ώρες' },
-  { id: '2', glyph: 'people' as const, textEn: 'Elena Papadopoulos accepted your request', textEl: 'Η Έλενα Παπαδοπούλου αποδέχτηκε το αίτημά σας', timeEn: '5h ago', timeEl: 'πριν 5 ώρες' },
-  { id: '3', glyph: 'messages' as const, textEn: 'New message from Marcus Chen', textEl: 'Νέο μήνυμα από τον Marcus Chen', timeEn: '8h ago', timeEl: 'πριν 8 ώρες' },
-  { id: '4', glyph: 'profile' as const, textEn: 'Your profile was viewed 12 times today', textEl: 'Το προφίλ σας προβλήθηκε 12 φορές σήμερα', timeEn: '1d ago', timeEl: 'πριν 1 ημέρα' },
+  { id: '1', href: '/matches', glyph: 'spark' as const, textEn: 'New 92% match — Elena Papadopoulos, Founder', textEl: 'Νέα αντιστοίχιση 92% — Elena Papadopoulos, ιδρύτρια', timeEn: '2h ago', timeEl: 'πριν 2 ώρες' },
+  { id: '2', href: '/connections', glyph: 'people' as const, textEn: 'Elena Papadopoulos accepted your request', textEl: 'Η Έλενα Παπαδοπούλου αποδέχτηκε το αίτημά σας', timeEn: '5h ago', timeEl: 'πριν 5 ώρες' },
+  { id: '3', href: '/messages', glyph: 'messages' as const, textEn: 'New message from Marcus Chen', textEl: 'Νέο μήνυμα από τον Marcus Chen', timeEn: '8h ago', timeEl: 'πριν 8 ώρες' },
+  { id: '4', href: '/analytics', glyph: 'profile' as const, textEn: 'Your profile was viewed 12 times today', textEl: 'Το προφίλ σας προβλήθηκε 12 φορές σήμερα', timeEn: '1d ago', timeEl: 'πριν 1 ημέρα' },
 ];
 
 type EventType = 'mentorship' | 'deadline' | 'event' | 'pitch';
@@ -144,7 +174,9 @@ const EVENT_CONFIG: Record<EventType, StatusTone> = {
 // daysLeft is derived from the date so the two can never disagree.
 const DEMO_EVENTS = (
   [
-    { id: '1', titleEn: 'Mentor Session — Dr. Sarah Chen', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Chen', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
+    // Dr. Sarah Kim is the demo's mentor on every other surface; Sarah Chen is
+    // the angel on /fundraising. This row used to blend the two.
+    { id: '1', titleEn: 'Mentor Session — Dr. Sarah Kim', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Kim', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
     { id: '2', titleEn: 'Pitch Deck Deadline', titleEl: 'Προθεσμία pitch deck', type: 'deadline' as EventType, time: '23:59', daysLeft: 4 },
     { id: '3', titleEn: 'Startup Networking Mixer', titleEl: 'Networking mixer νεοφυών', type: 'event' as EventType, time: '18:00', daysLeft: 9 },
     { id: '4', titleEn: 'Investor Demo Day', titleEl: 'Demo Day επενδυτών', type: 'pitch' as EventType, time: '10:00', daysLeft: 17 },
@@ -166,53 +198,86 @@ const QUICK_ACTIONS: { href: string; glyph: CfbGlyphName; labelEn: string; label
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function StatCard({
-  glyph, label, value, trend, href,
+  glyph, label, value, trend, href, caption, captionEl,
 }: {
   glyph: CfbGlyphName; label: ReactNode; value: number | string;
   trend?: { value: number; positive: boolean }; href?: string;
+  caption?: string; captionEl?: string;
 }) {
   const content = (
-    <Card className="relative h-full min-w-0 overflow-hidden rounded-xl transition-colors hover:border-border">
-      {/* `h-full` continues onto the content, and the row centres inside it.
-          Two of these four cards carry a trend line and two do not, so the
-          row is as tall as the tallest: the card stretched to 148px while the
-          content of the trendless pair stopped at 101px, leaving a 46px band
-          of empty card under "Unread messages" and "Milestones". The band was
-          real — measured, not inferred. Centring spends it evenly above and
-          below the figure, which is how a stat tile is meant to sit in a row
-          of unequal tiles, and it invents no caption to fill the space. */}
-      <CardContent className="flex h-full items-center p-4 sm:p-5">
+    <Card className="relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-border">
+      {/* Equal anatomy: every tile has a figure and a footer band of the same
+          height. Trend cards keep their week-over-week line; the other two
+          get a real caption (inbox state, next due date) — not a fake sparkline
+          and not a centred void. `mt-auto` pins that band to the bottom so a
+          short caption still sits where the trend sits. */}
+      <CardContent className="flex h-full flex-col p-4 sm:p-5">
         <div className="flex w-full items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
             <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
             <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">{value}</p>
-            {trend && (
-              <div className="space-y-0.5">
-                <p className={cn('text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
-                  {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
-                </p>
-                <p className="text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
-                  <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} stacked wrap />
-                </p>
-              </div>
-            )}
           </div>
-          {/* Glyph only — the previous icon-in-a-box repeated four times in a
-              row and read as chrome, not as data. Cursor-quiet: the number is
-              the object. */}
           <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
+        </div>
+        <div className="mt-auto min-h-[2.75rem] pt-2">
+          {trend ? (
+            <div className="space-y-0.5">
+              <p className={cn('text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
+                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
+              </p>
+              <p className="text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
+                <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} stacked wrap />
+              </p>
+            </div>
+          ) : caption ? (
+            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
+              <BilingualText en={caption} el={captionEl ?? caption} stacked wrap />
+            </p>
+          ) : null}
         </div>
       </CardContent>
     </Card>
   );
-  return href ? <Link href={href} className="block min-w-0 w-full">{content}</Link> : content;
+  return href ? (
+    <Link
+      href={href}
+      className="group block min-w-0 w-full rounded-2xl focus-visible:outline-none"
+    >
+      {content}
+    </Link>
+  ) : content;
+}
+
+function AttentionChips({
+  items,
+}: {
+  items: { href: string; glyph: CfbGlyphName; en: string; el: string }[];
+}) {
+  if (items.length === 0) return null;
+  return (
+    <ul className="flex min-w-0 flex-wrap gap-2">
+      {items.map((item) => (
+        <li key={`${item.href}:${item.en}`} className="min-w-0">
+          <Link
+            href={item.href}
+            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50"
+          >
+            <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground" />
+            <span className="min-w-0 truncate">
+              <BilingualText en={item.en} el={item.el} compact />
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? STATUS.info.icon : STATUS.warning.icon;
   return (
-    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 transition-colors hover:border-border hover:bg-muted/30">
+    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3.5 transition-colors hover:border-border hover:bg-muted/30">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
@@ -246,7 +311,10 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
     ? bilingualAria('Overdue', 'Εκπρόθεσμο')
     : bilingualAria('In progress', 'Σε εξέλιξη');
   return (
-    <div className="flex items-center gap-3">
+    <Link
+      href="/milestones"
+      className="flex items-center gap-3 rounded-2xl p-1 -mx-1 transition-colors hover:bg-muted/40"
+    >
       <div
         className="mt-0.5 shrink-0 text-muted-foreground"
         role="img"
@@ -275,7 +343,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
           )}
         </div>
         <div className="mt-1.5 flex items-center gap-2">
-          <Progress value={milestone.progress} className="h-1.5 flex-1" />
+          <Progress value={milestone.progress} label={milestone.titleEn} className="h-1.5 flex-1" />
           <span className="text-xs text-muted-foreground shrink-0 w-9 text-right tabular-nums">{milestone.progress}%</span>
         </div>
         <p className={cn('text-xs mt-1', isOverdue ? STATUS.danger.text : 'text-muted-foreground')}>
@@ -286,7 +354,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
           />
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -306,6 +374,27 @@ export default function FounderDashboardContent() {
     queryFn: getDashboardStats,
     enabled: hasSession && mounted,
   });
+
+  /*
+   * The same metrics /analytics charts, on the same 7-day period.
+   *
+   * The profile-views tile used to read `activeProfiles` off the platform
+   * stats - how many profiles are active across CoFounderBay, not how often
+   * this one was viewed - so it read 1,840 while the page behind its own link
+   * read 248. Sharing the query key with /analytics also means the two cannot
+   * drift apart in the cache.
+   */
+  const { data: userMetrics } = useQuery({
+    queryKey: ['analytics', 'metrics', '7d'],
+    queryFn: () => getAnalyticsMetrics('7d'),
+    enabled: hasSession && mounted,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  /** A change of exactly zero is a measurement; a missing one is not an arrow. */
+  const trendOf = (change: number | null | undefined) =>
+    typeof change === 'number' ? { value: Math.abs(change), positive: change >= 0 } : undefined;
 
   const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
@@ -329,11 +418,135 @@ export default function FounderDashboardContent() {
   const displayName = profile?.profile?.displayName || 'Founder';
   const pendingRequests = connectionRequests?.connections?.filter((r: { status?: string }) => r.status === 'pending')?.length ?? 0;
   const profilePct = profile?.hasCompletedOnboarding ? 100 : 52;
-  const avgReadiness = vrs?.overall ?? 0;
+  const founderProgress = vrs?.overall ?? 0;
   const fundRound = fundraisingRoundView(FUNDRAISING_SEED_LEADS);
   const fundStats = fundraisingPipelineStats(FUNDRAISING_SEED_LEADS);
   const fundingPct = Math.round((fundRound.raised / fundRound.target) * 100);
   const greeting = getTimeBasedGreeting();
+  /*
+   * The founder's own milestones, from the endpoint /milestones reads, on its
+   * query keys - so the tile, the list under it and that page cannot disagree,
+   * and marking one done on either surface refreshes the other.
+   */
+  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
+    queryKey: ['milestones', 'all', 'all'],
+    queryFn: () => listMilestones({ limit: 100 }),
+    enabled: hasSession && mounted,
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  /*
+   * What actually happened, from the endpoint /activity pages through. The
+   * card rendered DEMO_ACTIVITY unconditionally, so a real founder's dashboard
+   * reported four events that were not theirs.
+   */
+  const { data: activityPage, isLoading: activityLoading } = useQuery({
+    queryKey: ['dashboard', 'activity', 4],
+    queryFn: () => getDashboardActivity({ limit: 4 }),
+    enabled: hasSession && mounted,
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const liveActivity = useMemo(
+    () =>
+      (activityPage?.items ?? []).map((item) => ({
+        id: item.id,
+        href: item.href,
+        glyph: ACTIVITY_GLYPH[item.type] ?? ('spark' as const),
+        // One title from the server, shown in both languages rather than
+        // invented in the second.
+        textEn: item.title,
+        textEl: item.title,
+        timeEn: item.timeAgo,
+        timeEl: item.timeAgo,
+      })),
+    [activityPage],
+  );
+
+  const activityItems =
+    liveActivity.length > 0 ? liveActivity : activityLoading ? [] : showDemoData ? DEMO_ACTIVITY : [];
+
+  const liveMilestones: DemoMilestone[] = useMemo(
+    () =>
+      (milestoneData?.milestones ?? []).map((m) => ({
+        id: m.id,
+        titleEn: m.title,
+        // The API stores one title. Showing it in both languages is honest -
+        // inventing a Greek rendering of a founder's own words would not be.
+        titleEl: m.title,
+        status:
+          m.status === 'completed' ? 'completed' : m.status === 'in_progress' ? 'in_progress' : 'pending',
+        progress: m.progress,
+        dueDate: m.dueDate ?? '',
+        priority: m.priority === 'high' || m.priority === 'low' ? m.priority : 'medium',
+      })),
+    [milestoneData],
+  );
+
+  const milestones =
+    liveMilestones.length > 0 ? liveMilestones : milestonesLoading ? [] : showDemoData ? DEMO_MILESTONES : [];
+
+  const completedMilestoneCount = milestones.filter((m) => m.status === 'completed' || m.progress >= 100).length;
+  const openMilestones = milestones.filter((m) => m.status !== 'completed' && m.progress < 100);
+  const nextOpenMilestone = [...openMilestones].sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+  const messageCaption = unreadMessages === 0
+    ? { en: dashboardEn('inbox_clear'), el: dashboardEl('inbox_clear') }
+    : unreadMessages === 1
+      ? { en: '1 waiting', el: '1 σε αναμονή' }
+      : { en: `${unreadMessages} waiting`, el: `${unreadMessages} σε αναμονή` };
+  const milestoneCaption = milestones.length === 0
+    ? { en: dashboardEn('add_first_milestone'), el: dashboardEl('add_first_milestone') }
+    : completedMilestoneCount === milestones.length
+      ? { en: dashboardEn('milestones_all_complete'), el: dashboardEl('milestones_all_complete') }
+      : // A real milestone may carry no due date, and the separator was printed
+        // before the date was: the caption read "6 ανοιχτά ·" and stopped.
+        nextOpenMilestone?.dueDate
+        ? {
+            en: `${openMilestones.length} open · ${formatShortDate(nextOpenMilestone.dueDate, 'en')}`,
+            el: `${openMilestones.length} ανοιχτά · ${formatShortDate(nextOpenMilestone.dueDate, 'el')}`,
+          }
+        : {
+            en: `${openMilestones.length} open`,
+            el: `${openMilestones.length} ανοιχτά`,
+          };
+  const attentionItems: { href: string; glyph: CfbGlyphName; en: string; el: string }[] = [];
+  if (unreadMessages > 0) {
+    attentionItems.push({
+      href: '/messages',
+      glyph: 'messages',
+      en: unreadMessages === 1 ? '1 unread message' : `${unreadMessages} unread messages`,
+      el: unreadMessages === 1 ? '1 αδιάβαστο μήνυμα' : `${unreadMessages} αδιάβαστα μηνύματα`,
+    });
+  }
+  if (pendingRequests > 0) {
+    attentionItems.push({
+      href: '/connections?tab=requests',
+      glyph: 'people',
+      en: pendingRequests === 1 ? '1 intro waiting' : `${pendingRequests} intros waiting`,
+      el: pendingRequests === 1 ? '1 γνωριμία σε αναμονή' : `${pendingRequests} γνωριμίες σε αναμονή`,
+    });
+  }
+  if (nextOpenMilestone) {
+    attentionItems.push({
+      href: '/milestones',
+      glyph: 'flag',
+      en: `Next: ${nextOpenMilestone.titleEn}`,
+      el: `Επόμενο: ${nextOpenMilestone.titleEl}`,
+    });
+  }
+  if (vrs?.lowestDimension?.href && typeof vrs.lowestDimension.score === 'number' && vrs.lowestDimension.score < 55) {
+    attentionItems.push({
+      href: vrs.lowestDimension.href,
+      glyph: 'chart',
+      // "Ανύψωση" was a literal rendering of "Lift" that means physically
+      // raising something. The colon form also matches the milestone chip
+      // beside it ("Επόμενο: …") and sidesteps declining the dimension name.
+      en: `Lift ${vrs.lowestDimension.label} (${vrs.lowestDimension.score}%)`,
+      el: `Βελτιώστε: ${ventureDimensionEl(vrs.lowestDimension.key, vrs.lowestDimension.label)} (${vrs.lowestDimension.score}%)`,
+    });
+  }
 
   /**
    * The dashboard's own figures, for the assistant.
@@ -348,9 +561,12 @@ export default function FounderDashboardContent() {
     summary: `${displayName}'s dashboard: profile, readiness, connections and the current round.`,
     figures: {
       'Profile completeness': `${profilePct}%`,
-      'Readiness': `${avgReadiness}%`,
+      'Founder progress': `${founderProgress}%`,
       'Pending intros': pendingRequests,
+      'Unread messages': unreadMessages,
       'Recommended matches': recommendations?.suggestions?.length ?? 0,
+      'Milestones complete': `${completedMilestoneCount}/${milestones.length}`,
+      'Next milestone': nextOpenMilestone?.titleEn ?? 'none',
       'Round progress': `${fundingPct}%`,
       'Committed investors': fundStats.committed,
     },
@@ -410,7 +626,7 @@ export default function FounderDashboardContent() {
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
             <Link href="/readiness">
               <CfbGlyph name="chart" className="icon-sm" />
-              <BilingualText en={`Readiness: ${avgReadiness}%`} el={`Ετοιμότητα: ${avgReadiness}%`} compact />
+              <BilingualText en={`Progress: ${founderProgress}%`} el={`Πρόοδος: ${founderProgress}%`} compact />
             </Link>
           </Button>
         </>
@@ -418,15 +634,23 @@ export default function FounderDashboardContent() {
     >
       <div className="min-w-0 space-y-6 overflow-x-clip">
 
-        <p className="text-sm text-muted-foreground">
-          <BilingualText
-            en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
-            el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
-            stacked
-            wrap
-            secondaryFrom="lg"
-          />
-        </p>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
+              el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
+              stacked
+              wrap
+              secondaryFrom="lg"
+            />
+          </p>
+          <Button asChild variant="ghost" size="sm" className="h-8 shrink-0 gap-1.5 self-start px-2.5 text-xs text-muted-foreground hover:text-foreground">
+            <Link href={`/ai?q=${encodeURIComponent('Brief me on this founder dashboard: what needs attention this week, and what should I do next?')}`}>
+              <CfbGlyph name="spark" className="icon-sm" />
+              <BilingualText en={dashboardEn('ask_ai_briefing')} el={dashboardEl('ask_ai_briefing')} compact />
+            </Link>
+          </Button>
+        </div>
 
         {/* Getting-started checklist. */}
         <OnboardingChecklist steps={onboardingSteps} />
@@ -443,11 +667,40 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
-          <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />} value={unreadMessages} href="/messages" />
-          <StatCard glyph="flag" label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked wrap />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
+          <StatCard
+            glyph="profile"
+            label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />}
+            value={userMetrics?.profileViews ?? '—'}
+            trend={trendOf(userMetrics?.profileViewsChange)}
+            href="/analytics"
+          />
+          {/* No endpoint reports a week-over-week change for matches, so this
+              tile carried a literal 3 as its arrow. It shows the count alone. */}
+          <StatCard
+            glyph="matches"
+            label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />}
+            value={stats?.matchesThisWeek ?? '—'}
+            href="/matches"
+          />
+          <StatCard
+            glyph="messages"
+            label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />}
+            value={unreadMessages}
+            href="/messages"
+            caption={messageCaption.en}
+            captionEl={messageCaption.el}
+          />
+          <StatCard
+            glyph="flag"
+            label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked wrap />}
+            value={`${completedMilestoneCount}/${milestones.length}`}
+            href="/milestones"
+            caption={milestoneCaption.en}
+            captionEl={milestoneCaption.el}
+          />
         </div>
+
+        <AttentionChips items={attentionItems} />
 
         <div className="grid min-w-0 gap-6 lg:grid-cols-3">
           {/* Main column */}
@@ -487,6 +740,7 @@ export default function FounderDashboardContent() {
                     <AskAiButton
                       variant="ghost"
                       className="w-full"
+                      prompt="What should I improve next on venture readiness, given the lowest dimension on this dashboard?"
                       labelEn={dashboardEn('ask_ai_readiness')}
                       labelEl={dashboardEl('ask_ai_readiness')}
                     />
@@ -496,19 +750,28 @@ export default function FounderDashboardContent() {
             )}
 
             {/* Fundraising widget */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/fundraising">
-                      <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
+                  <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
+                    <AskAiButton
+                      variant="ghost"
+                      className="min-h-8 px-2.5"
+                      prompt="Review this fundraising round against my readiness and tell me the next investor action."
+                      labelEn={dashboardEn('ask_ai_fundraising')}
+                      labelEl={dashboardEl('ask_ai_fundraising')}
+                    />
+                    <Button variant="ghost" size="sm" className="gap-1" asChild>
+                      <Link href="/fundraising">
+                        <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
+                        <ArrowRight className="icon-sm" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -540,7 +803,7 @@ export default function FounderDashboardContent() {
                       {fundingPct}%
                     </span>
                   </div>
-                  <Progress value={fundingPct} className="h-2.5" />
+                  <Progress value={fundingPct} label="Round progress" className="h-2.5" />
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <CfbGlyph name="people" className="icon-sm" />
@@ -572,19 +835,28 @@ export default function FounderDashboardContent() {
             </Card>
 
             {/* Top Matches */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/matches">
-                      <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
+                  <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
+                    <AskAiButton
+                      variant="ghost"
+                      className="min-h-8 px-2.5"
+                      prompt="How can I improve these matches and who should I reach out to first?"
+                      labelEn={dashboardEn('ask_ai_matches')}
+                      labelEl={dashboardEl('ask_ai_matches')}
+                    />
+                    <Button variant="ghost" size="sm" className="gap-1" asChild>
+                      <Link href="/matches">
+                        <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+                        <ArrowRight className="icon-sm" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2.5">
@@ -609,6 +881,7 @@ export default function FounderDashboardContent() {
                       </Button>
                       <AskAiButton
                         variant="ghost"
+                        prompt="How can I start receiving better matches from this profile?"
                         labelEn={dashboardEn('ask_ai_matches')}
                         labelEl={dashboardEl('ask_ai_matches')}
                       />
@@ -619,19 +892,28 @@ export default function FounderDashboardContent() {
             </Card>
 
             {/* Milestones */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/milestones">
-                      <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
+                  <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">
+                    <AskAiButton
+                      variant="ghost"
+                      className="min-h-8 px-2.5"
+                      prompt="How do I hit these milestone dates, and what should I sequence first?"
+                      labelEn={dashboardEn('ask_ai_milestones')}
+                      labelEl={dashboardEl('ask_ai_milestones')}
+                    />
+                    <Button variant="ghost" size="sm" className="gap-1" asChild>
+                      <Link href="/milestones">
+                        <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
+                        <ArrowRight className="icon-sm" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -643,7 +925,7 @@ export default function FounderDashboardContent() {
                     wrap
                   />
                 </p>
-                {DEMO_MILESTONES.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
+                {milestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
               </CardContent>
             </Card>
             {/* Profile strength — moved here from the sidebar.
@@ -654,7 +936,7 @@ export default function FounderDashboardContent() {
                 one that belongs in the main column; moving it leaves the
                 columns within ~25px of each other and keeps XP and
                 Badges together where they belong. */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <CfbGlyph name="shield" className="icon-sm text-primary-accessible" />
@@ -668,7 +950,7 @@ export default function FounderDashboardContent() {
                   </span>
                   <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
                 </div>
-                <Progress value={profilePct} className="h-2" />
+                <Progress value={profilePct} label="Profile completeness" className="h-2" />
                 {/* Two columns from `sm`: this card moved out of the 381px
                     sidebar into the 786px main column, where four checklist
                     rows stacked single-file would be four short lines with
@@ -688,13 +970,29 @@ export default function FounderDashboardContent() {
                     </div>
                   ))}
                 </div>
-                {profilePct < 100 && (
+                {profilePct < 100 ? (
                   <Button variant="secondary" size="md" className="w-full gap-1.5" asChild>
                     <Link href="/profile/edit">
                       <CfbGlyph name="profile" className="icon-sm" />
                       <BilingualText en={dashboardEn('fill_remaining_profile')} el={dashboardEl('fill_remaining_profile')} compact />
                     </Link>
                   </Button>
+                ) : (
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button variant="outline" size="sm" className="w-full gap-1.5 sm:flex-1" asChild>
+                      <Link href="/profile">
+                        <CfbGlyph name="profile" className="icon-sm" />
+                        <BilingualText en={dashboardEn('keep_current')} el={dashboardEl('keep_current')} compact />
+                      </Link>
+                    </Button>
+                    <AskAiButton
+                      variant="ghost"
+                      className="w-full sm:flex-1"
+                      prompt="Review my founder profile and suggest what would make it stronger for investors and co-founders."
+                      labelEn={dashboardEn('ask_ai_profile')}
+                      labelEl={dashboardEl('ask_ai_profile')}
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -713,7 +1011,7 @@ export default function FounderDashboardContent() {
             <BadgesWidget />
 
             {/* Quick Actions Grid */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">
                   <BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} />
@@ -721,15 +1019,22 @@ export default function FounderDashboardContent() {
               </CardHeader>
               <CardContent className="px-2 pb-2">
                 {/* List, not a 3×3 app-icon grid: the nine destinations stay,
-                    the bordered tiles were the noisiest block on the rail. */}
+                    the bordered tiles were the noisiest block on the rail.
+                    Ask AI is visually first so the control surface is obvious. */}
                 <div className="flex flex-col">
                   {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
                     <Link
                       key={href}
                       href={href}
-                      className="flex min-h-9 min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/50"
+                      className={cn(
+                        'flex min-h-9 min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/50',
+                        href === '/ai' && 'bg-primary/[0.04] font-medium',
+                      )}
                     >
-                      <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground" />
+                      <CfbGlyph
+                        name={glyph}
+                        className={cn('icon-sm shrink-0', href === '/ai' ? 'text-primary-accessible' : 'text-muted-foreground')}
+                      />
                       <span className="min-w-0 leading-snug">
                         <BilingualText en={labelEn} el={labelEl} compact wrap />
                       </span>
@@ -740,7 +1045,7 @@ export default function FounderDashboardContent() {
             </Card>
 
             {/* Recent Activity */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
@@ -754,9 +1059,13 @@ export default function FounderDashboardContent() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {DEMO_ACTIVITY.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3">
+              <CardContent className="space-y-1">
+                {activityItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="flex items-start gap-3 rounded-xl px-1 py-2 transition-colors hover:bg-muted/40"
+                  >
                     <div className="mt-0.5 shrink-0 text-muted-foreground">
                       <CfbGlyph name={item.glyph} className="icon-sm" />
                     </div>
@@ -768,13 +1077,13 @@ export default function FounderDashboardContent() {
                         <BilingualText en={item.timeEn} el={item.timeEl} compact />
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </CardContent>
             </Card>
 
             {/* Upcoming Events */}
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
@@ -795,9 +1104,10 @@ export default function FounderDashboardContent() {
                     const cfg = STATUS[tone];
                     const isUrgent = event.daysLeft <= 3;
                     return (
-                      <div
+                      <Link
                         key={event.id}
-                        className="flex items-start gap-3 py-1.5"
+                        href="/events"
+                        className="flex items-start gap-3 rounded-xl px-1 py-1.5 transition-colors hover:bg-muted/40"
                       >
                         <div className="mt-0.5 shrink-0 text-muted-foreground">
                           <CfbGlyph name="calendar" className={cn('icon-sm', isUrgent ? cfg.icon : 'text-muted-foreground')} />
@@ -826,11 +1136,11 @@ export default function FounderDashboardContent() {
                                 ? <BilingualText en={dashboardEn('today')} el={dashboardEl('today')} compact />
                                 : event.daysLeft === 1
                                 ? <BilingualText en={dashboardEn('tomorrow')} el={dashboardEl('tomorrow')} compact />
-                                : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft}η`} compact />}
+                                : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft} ημ.`} compact />}
                             </span>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })
                 ) : (

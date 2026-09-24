@@ -46,6 +46,7 @@ async function waitForStableDom(page: Page, quietMs = 700, timeoutMs = 15_000) {
   );
 }
 
+
 /** One representative route per section, plus every role dashboard. */
 const ROUTES = [
   { path: '/dashboard/founder', name: 'founder dashboard' },
@@ -94,27 +95,14 @@ test.describe('authenticated routes', () => {
     await signIn(page);
   });
 
-  /**
-   * React #418 (a text-content hydration mismatch) — fixed, and the gate is
-   * strict again.
-   *
-   * It was app-wide and intermittent: the server formatted "2 minutes ago" at
-   * render time and the client re-formatted it at hydration time, so when the
-   * clock crossed a boundary between those two instants the text differed and
-   * React regenerated the subtree. It was excluded from the "no uncaught
-   * errors" gate, with a dedicated test asserting the debt still existed so
-   * the exclusion could not outlive the bug silently.
-   *
-   * That test started failing, which is what it was built to do. Verified
-   * independently across 18 route loads of /feed, /notifications, /milestones,
-   * /achievements, /messages and /activity: zero mismatches. The fix came from
-   * integration's 0e391f8, which pins locale and time zone on every rendered
-   * date, number and calendar cell — so the two sides now format identically.
-   *
-   * Both the exclusion and the test that guarded it are gone. Uncaught errors
-   * are uncaught errors again.
+  /*
+   * React #418 (the relative-timestamp hydration mismatch) used to be excluded
+   * from the error gate here, with a sentinel test asserting the debt still
+   * existed. The debt is paid: every relative-time render now goes through
+   * `components/common/RelativeTime`, which emits a stable absolute date on
+   * the server and during hydration and upgrades to the site's own relative
+   * wording after mount. Hydration errors are ordinary uncaught errors again.
    */
-
   for (const route of ROUTES) {
     test(`${route.name} renders and has no WCAG A/AA violations`, async ({ page }) => {
       const pageErrors: string[] = [];
@@ -128,17 +116,16 @@ test.describe('authenticated routes', () => {
 
       // A page that threw during render would otherwise "pass" the axe scan by
       // virtue of showing the error boundary, which is itself accessible.
-      // Hydration mismatches are excluded here and tracked separately — see the
-      // note above.
       expect(pageErrors, `uncaught errors on ${route.path}`).toEqual([]);
       await expect(page.locator('main#main-content')).toHaveCount(1);
 
-      // Scanned through expect.poll: the hydration mismatch documented above
-      // makes React re-render a subtree after the DOM has already gone quiet,
-      // and a scan landing mid-re-render sees controls whose labels have not
-      // been reattached yet. A violation that survives a re-scan is real; one
-      // that does not was a transient render state, which is not an
-      // accessibility state any user can reach.
+      // Scanned through expect.poll: late data arrivals and post-mount
+      // upgrades (RelativeTime swaps its absolute placeholder for relative
+      // wording one frame after hydration) can re-render a subtree after the
+      // DOM has gone quiet, and a scan landing mid-re-render sees controls
+      // whose labels have not been reattached yet. A violation that survives
+      // a re-scan is real; one that does not was a transient render state,
+      // which is not an accessibility state any user can reach.
       await expect
         .poll(async () => {
           await waitForStableDom(page, 400, 5_000);
@@ -187,6 +174,33 @@ test.describe('authenticated routes', () => {
     await page.waitForTimeout(1500);
     await expect(page.locator('main#main-content')).toHaveCount(1);
     await expect(page.locator('aside')).toHaveCount(1);
+  });
+
+  /**
+   * The inverse of the sentinel that used to sit here. That test asserted the
+   * relative-timestamp hydration mismatch (React #418) still existed, so that
+   * fixing it would force the error-gate exclusion to be deleted — which has
+   * now happened. This keeps the routes it sampled explicitly clean: they are
+   * the ones that render relative times most densely, and a regression in
+   * `RelativeTime` (or a new call site bypassing it) shows up here first.
+   */
+  test('relative timestamps hydrate without a mismatch', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+
+    const hydrationErrors: string[] = [];
+    for (const path of ['/feed', '/notifications', '/milestones', '/achievements']) {
+      errors.length = 0;
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2500);
+      hydrationErrors.push(
+        ...errors
+          .filter((m) => /Minified React error #(418|423|425)/.test(m) || /hydrat/i.test(m))
+          .map((m) => `${path}: ${m}`),
+      );
+    }
+
+    expect(hydrationErrors).toEqual([]);
   });
 
   test('the shell survives client-side navigation within a section', async ({ page }) => {

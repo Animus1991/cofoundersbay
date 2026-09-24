@@ -19,11 +19,11 @@ const RICH_TEXT_TAGS = [
   'strong', 'b', 'em', 'i', 'u', 's', 'mark', 'sub', 'sup', 'code', 'pre',
   'blockquote', 'ul', 'ol', 'li',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'a', 'hr',
+  'a', 'hr', 'cite', 'time',
   'table', 'thead', 'tbody', 'tr', 'th', 'td',
 ];
 
-const RICH_TEXT_ATTRS = ['href', 'title', 'target', 'rel', 'class', 'colspan', 'rowspan'];
+const RICH_TEXT_ATTRS = ['href', 'title', 'target', 'rel', 'class', 'colspan', 'rowspan', 'datetime'];
 
 /** Escapes every HTML-significant character. Safe in any context. */
 export function escapeHtml(input: string): string {

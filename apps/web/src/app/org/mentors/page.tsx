@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   GraduationCap,
@@ -13,6 +13,9 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { getOrgMentorPool, type OrgMentorPoolItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,6 +30,30 @@ import {
 import { EmptyOrgMentors } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+
+/**
+ * The page's own row from the pool row.
+ *
+ * `/api/organizations/:id/mentors` existed but returned bare rows with no
+ * profile, so this page could not have named a mentor even if it had called
+ * it. The endpoint joins the person now; sessions and rating stay absent
+ * because the pool records neither.
+ */
+function toPageMentor(row: OrgMentorPoolItem): Mentor {
+  return {
+    id: row.id,
+    userId: row.userId,
+    name: row.displayName ?? 'Unnamed mentor',
+    avatar: row.avatarUrl ?? undefined,
+    headline: row.headline ?? undefined,
+    expertise: row.expertiseAreas,
+    activeMentees: row.currentMentees,
+    maxMentees: row.maxMentees ?? 0,
+    totalSessions: 0,
+    status: row.isActive ? 'active' : 'inactive',
+    isVerified: false,
+  };
+}
 
 type Mentor = {
   id: string;
@@ -145,63 +172,82 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
   );
 }
 
+/** Shown to an organisation whose mentor pool is empty. */
+const SEED_MENTORS: Mentor[] = [
+  {
+    id: '1',
+    userId: 'mentor1',
+    name: 'Sarah Chen',
+    headline: 'Former Google PM, AI/ML Expert',
+    expertise: ['Product Strategy', 'AI/ML', 'Go-to-Market'],
+    activeMentees: 3,
+    maxMentees: 5,
+    totalSessions: 45,
+    rating: 4.9,
+    status: 'active',
+    isVerified: true,
+  },
+  {
+    id: '2',
+    userId: 'mentor2',
+    name: 'Michael Torres',
+    headline: 'Serial Entrepreneur, 2x Exit',
+    expertise: ['Fundraising', 'Sales', 'Team Building'],
+    activeMentees: 4,
+    maxMentees: 4,
+    totalSessions: 62,
+    rating: 4.8,
+    status: 'active',
+    isVerified: true,
+  },
+  {
+    id: '3',
+    userId: 'mentor3',
+    name: 'Emma Williams',
+    headline: 'FinTech Expert, Ex-Stripe',
+    expertise: ['FinTech', 'Payments', 'Compliance'],
+    activeMentees: 2,
+    maxMentees: 3,
+    totalSessions: 28,
+    rating: 4.7,
+    status: 'active',
+    isVerified: false,
+  },
+  {
+    id: '4',
+    userId: 'mentor4',
+    name: 'David Kim',
+    headline: 'Technical Architect',
+    expertise: ['Engineering', 'Architecture', 'Scaling'],
+    activeMentees: 0,
+    maxMentees: 3,
+    totalSessions: 15,
+    status: 'inactive',
+    isVerified: true,
+  },
+];
+
 export default function OrgMentorsPage() {
   const [search, setSearch] = useState('');
 
   // Mock data
-  const mentors: Mentor[] = [
-    {
-      id: '1',
-      userId: 'mentor1',
-      name: 'Sarah Chen',
-      headline: 'Former Google PM, AI/ML Expert',
-      expertise: ['Product Strategy', 'AI/ML', 'Go-to-Market'],
-      activeMentees: 3,
-      maxMentees: 5,
-      totalSessions: 45,
-      rating: 4.9,
-      status: 'active',
-      isVerified: true,
-    },
-    {
-      id: '2',
-      userId: 'mentor2',
-      name: 'Michael Torres',
-      headline: 'Serial Entrepreneur, 2x Exit',
-      expertise: ['Fundraising', 'Sales', 'Team Building'],
-      activeMentees: 4,
-      maxMentees: 4,
-      totalSessions: 62,
-      rating: 4.8,
-      status: 'active',
-      isVerified: true,
-    },
-    {
-      id: '3',
-      userId: 'mentor3',
-      name: 'Emma Williams',
-      headline: 'FinTech Expert, Ex-Stripe',
-      expertise: ['FinTech', 'Payments', 'Compliance'],
-      activeMentees: 2,
-      maxMentees: 3,
-      totalSessions: 28,
-      rating: 4.7,
-      status: 'active',
-      isVerified: false,
-    },
-    {
-      id: '4',
-      userId: 'mentor4',
-      name: 'David Kim',
-      headline: 'Technical Architect',
-      expertise: ['Engineering', 'Architecture', 'Scaling'],
-      activeMentees: 0,
-      maxMentees: 3,
-      totalSessions: 15,
-      status: 'inactive',
-      isVerified: true,
-    },
-  ];
+  /*
+   * The organisation's real pool. The seed below is what an organisation
+   * with an empty pool sees, so the screen still teaches its shape.
+   */
+  const { membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', 'mentor-pool', organizationId],
+    queryFn: () => getOrgMentorPool(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.mentors ?? []).map(toPageMentor), [data]);
+  const mentors: Mentor[] = live.length > 0 ? live : isLoading ? [] : SEED_MENTORS;
+
 
   const filteredMentors = mentors.filter((m) => {
     return !search || 

@@ -126,6 +126,31 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
     en: 'Ask AI what to improve next',
     el: 'Ρωτήστε το AI τι να βελτιώσετε μετά',
   },
+  ask_ai_fundraising: {
+    en: 'Ask AI about this round',
+    el: 'Ρωτήστε το AI για αυτόν τον γύρο',
+  },
+  ask_ai_milestones: {
+    en: 'Ask AI how to hit these dates',
+    el: 'Ρωτήστε το AI πώς να πιάσετε τις ημερομηνίες',
+  },
+  ask_ai_profile: {
+    en: 'Ask AI to review your profile',
+    el: 'Ρωτήστε το AI να αξιολογήσει το προφίλ',
+  },
+  ask_ai_briefing: {
+    en: "Ask AI for this week's briefing",
+    el: 'Ρωτήστε το AI για την εβδομαδιαία ενημέρωση',
+  },
+  inbox_clear: { en: 'Inbox is clear', el: 'Τα εισερχόμενα είναι καθαρά' },
+  add_first_milestone: { en: 'Add your first', el: 'Προσθέστε το πρώτο' },
+  milestones_all_complete: { en: 'All complete', el: 'Όλα ολοκληρωμένα' },
+  keep_current: { en: 'Keep current', el: 'Διατήρηση' },
+  view_achievements: { en: 'All badges', el: 'Όλα τα εμβλήματα' },
+  badges_keep_going: {
+    en: 'Keep going to unlock more',
+    el: 'Συνεχίστε για να ξεκλειδώσετε περισσότερα',
+  },
   open_tracker: { en: 'Open tracker', el: 'Άνοιγμα παρακολούθησης' },
   manage_pipeline: { en: 'Manage pipeline', el: 'Διαχείριση pipeline' },
   find_investors: { en: 'Find investors', el: 'Εύρεση επενδυτών' },

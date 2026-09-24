@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -128,7 +129,7 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
             {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
           </DialogTitle>
           <DialogDescription>
-            {snapshot.nodeCount} nodes · saved {timeAgo(snapshot.createdAt)}
+            {snapshot.nodeCount} nodes · saved <RelativeTime date={snapshot.createdAt} format={timeAgo} />
             {snapshot.createdBy && ` by ${snapshot.createdBy.displayName}`}
           </DialogDescription>
         </DialogHeader>

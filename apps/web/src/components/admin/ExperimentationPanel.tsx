@@ -261,7 +261,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
                 value={(form as Record<string, string>)[key]}
                 onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
               />
             </div>
           ))}
@@ -273,7 +273,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
                   value={(form as Record<string, string>)[key]}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   rows={4}
-                  className="w-full text-xs font-mono border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                  className="w-full text-xs font-mono border border-border rounded-xl px-3 py-2 focus:outline-none resize-none"
                 />
               </div>
             ))}
@@ -292,7 +292,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
         <div className="flex gap-3 mt-5">
           <button
             onClick={onClose}
-            className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted"
+            className="flex-1 py-2 border border-border rounded-xl text-sm text-muted-foreground hover:bg-muted"
           >
             Cancel
           </button>
@@ -368,7 +368,7 @@ function ConfigEditor() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
           >
             <option value="">All categories</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -419,7 +419,7 @@ function ConfigEditor() {
                       setEditValues((v) => ({ ...v, [cfg.key]: e.target.value }))
                     }
                     rows={2}
-                    className="w-full text-xs font-mono border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                    className="w-full text-xs font-mono border border-border rounded-xl px-3 py-2 focus:outline-none resize-none"
                   />
                 </div>
                 <button
@@ -484,7 +484,7 @@ export function ExperimentationPanel() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               tab === key
                 ? 'bg-white text-indigo-700 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'

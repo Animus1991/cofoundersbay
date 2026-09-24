@@ -197,6 +197,12 @@ export default function AISettingsPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" className="gap-2">
+              <Link href="/ai/capabilities">
+                <CfbGlyph name="spark" className="h-4 w-4" />
+                What it can do
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="gap-2">
               <Link href="/ai">
                 <Bot className="h-4 w-4" />
                 Open assistant

@@ -524,7 +524,7 @@ export function SearchFilters({
             aria-label="Sort results"
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
-            className="h-8 rounded-md border border-input bg-background/60 px-2 text-xs text-foreground shadow-sm backdrop-blur"
+            className="h-8 rounded-xl border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
           >
             <option value="relevance">Most relevant</option>
             <option value="recent">Recently active</option>

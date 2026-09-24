@@ -274,3 +274,84 @@ as half-loaded.
 | 8 | One modal idiom; retire dead chrome | M | one codebase, not two |
 
 Items 1–3 are a day's work and move the two most visible numbers.
+
+---
+
+## 6. Progress, measured — item 5 and the half of item 6's loop that was missing
+
+Seventh round, on `integration/ai-platform-upgrade` after the merge. Items 1–4
+had already landed (`fbb9d43`, `69a6fc9`); this round took item 5 and found,
+while doing it, that the model could never have used a read even if it had
+more of them.
+
+### 6.1 A read the model asked for went nowhere
+
+The catalogue is offered, the server validates every call, and a proposed
+*write* becomes a card. A proposed *read* was dropped: `actionsFromToolCalls`
+correctly makes no card for a question, and nothing else ran it.
+`continueAfterToolCall` — written and tested for exactly this — had no caller.
+A model that decided it needed the user's milestones got an empty turn.
+
+Now (`copilot-loop.ts`, wired in `useAIChat`): after the stream, the reads the
+model asked for — declared reads only, never a write, at most three, skipping
+any the keyword planner already ran — go through `runCopilotTurn` with the calls
+passed in, so a read answers identically whichever side chose it. Their result
+goes back to the model in one follow-up round with **tools off** (no loops) and
+**no `conversationId`** (the server would otherwise save the instruction to the
+model as something the user said). If the model cannot continue, the read
+result itself is shown.
+
+The non-streaming route had the same hole one layer down: `ChatResponse` did
+not declare `toolCalls`, so a client that fell back to it discarded every
+proposal, writes included.
+
+### 6.2 Eight areas it can now read
+
+`get_events`, `get_milestones`, `get_jobs`, `get_groups`, `get_endorsements`,
+`get_opportunities`, `get_mentorship_sessions`, `get_shortlist` — declared in
+`packages/shared`, executed in `apps/web/src/lib/copilot-reads.ts`, each a
+facade over the client function its own page calls. The web app keys readers by
+the new `ReadActionId`, so a read declared and not implemented fails to compile.
+
+| | before | now |
+|---|---|---|
+| Declared reads | 4 | **12** |
+| Product areas the assistant can read | 4 | **12** |
+| Model-proposed reads that execute | 0 | **all declared** |
+
+Planner arms exist for all eight, in English and Greek, and the planner tests
+pin three collisions found while writing them: "prevent" is not an event,
+"mentoring session" is not a people search, "who is on my shortlist" is neither
+a save nor a search. Greek stems are compared with accents folded, because
+Greek moves the accent — «εκδήλωση» but «εκδηλώσεις» — and an accented key
+matched only one of the two.
+
+### 6.3 Replies in the language of the question, in every locale
+
+Verified in the running app: «ποια ορόσημα έχω;» asked with an English
+interface was answered in English. A message written in Greek now gets a Greek
+reply when the interface is English; any other chosen locale is kept.
+
+The locale audit behind it found that 48 of the engine's 49 older replies
+existed only in Greek — a Spanish, French, German, Italian, Portuguese, Chinese
+or Japanese reader got the greeting, the workspace summary, every search header
+and every intro card in English. `copilotStrings.test.ts` enforced Greek alone,
+which is how that stayed invisible. All 98 reply strings (49 older, 49 new)
+plus the ten single-word labels the reads pass through `t` are now in all eight
+catalogue locales, and the test holds every locale to the same bar, placeholders
+included.
+
+### 6.4 What is still open, in order
+
+1. **Reversible writes (item 6).** `shortlist_remove` now pairs with `shortlist_add`
+   — same API, same confirmation, undo puts the profile back. Still ~6 of ~140
+   mutations; next are other full-reversal list add/remove writes.
+2. **Capability index (item 7).** Shipped at `/ai/capabilities`, generated from
+   `ACTION_DECLARATIONS`. Linked from the assistant rail, the empty-state, and
+   AI settings. The activity log half of item 7 is still open.
+3. **Demo data for the showcase areas.** In preview mode `/events`, `/jobs`,
+   `/groups` and `/opportunities` fall through to the shim's generic fallback,
+   so both the pages and the assistant truthfully report them empty. The
+   assistant is consistent with the page; the showcase is thinner than it
+   should be.
+4. **One modal idiom (item 8).** Still two patterns in the tree.

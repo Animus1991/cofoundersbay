@@ -331,7 +331,7 @@ export function SmartRecommendations() {
                   <X className="icon-sm" />
                   Dismiss
                 </Button>
-                <Button aria-label="Open this recommendation" variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label={`View details for ${rec.title}`}>
                   <ChevronRight className="icon-sm" />
                 </Button>
               </div>

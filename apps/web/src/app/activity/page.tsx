@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-activity';
 
@@ -147,7 +148,7 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
         </div>
       </div>
       {item.href && (
-        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}>
           <Link
             href={item.href}
             aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}
@@ -188,7 +189,10 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         <div className="mt-1 flex items-center gap-2">
           <Clock className="icon-sm text-muted-foreground/60" />
           <span className="text-2xs text-muted-foreground">
-            <BilingualText {...formatTimeAgo(item.createdAt)} compact />
+            <RelativeTime
+              date={item.createdAt}
+              format={(iso) => <BilingualText {...formatTimeAgo(iso)} compact />}
+            />
           </span>
           {isUnread && (
             <Badge className="h-4 px-1.5 text-2xs">
@@ -198,7 +202,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         </div>
       </div>
       {item.link && (
-        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}>
           <Link
             href={item.link}
             aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}

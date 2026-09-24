@@ -109,7 +109,7 @@ export function AbuseMonitorPanel() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
         >
           <option value="">All statuses</option>
           {['pending', 'reviewed', 'actioned', 'dismissed'].map((s) => (
@@ -119,7 +119,7 @@ export function AbuseMonitorPanel() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
         >
           <option value="">All types</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -175,12 +175,12 @@ export function AbuseMonitorPanel() {
                     <div className="relative">
                       <button
                         onClick={() => setOpenAction(openAction === f.id ? null : f.id)}
-                        className="flex items-center gap-1 text-xs border border-border rounded-lg px-2.5 py-1.5 hover:bg-muted"
+                        className="flex items-center gap-1 text-xs border border-border rounded-xl px-2.5 py-1.5 hover:bg-muted"
                       >
                         Action <ChevronDown className="icon-sm" />
                       </button>
                       {openAction === f.id && (
-                        <div className="absolute right-0 top-8 z-10 bg-white border border-border rounded-lg shadow-lg min-w-[170px] py-1">
+                        <div className="absolute right-0 top-8 z-10 bg-white border border-border rounded-xl shadow-lg min-w-[170px] py-1">
                           {[
                             { action: 'warning', label: 'Send Warning', icon: AlertTriangle },
                             { action: 'reduced_xp', label: 'Reduce XP', icon: XCircle },

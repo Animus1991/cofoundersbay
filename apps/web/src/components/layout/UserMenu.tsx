@@ -17,7 +17,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 
 /**
@@ -32,9 +32,17 @@ const SECONDARY_LINE = 'whitespace-normal break-words';
 /** Identity lines are user data, not translatable — they must wrap, never truncate. */
 const IDENTITY_LINE = 'text-sm break-words whitespace-normal';
 
-export function UserMenu({ variant = 'toolbar' }: { variant?: 'toolbar' | 'sidebar' }) {
+export function UserMenu({
+  variant = 'toolbar',
+  rail = false,
+}: {
+  variant?: 'toolbar' | 'sidebar';
+  /** Icon-only square when the sidebar is a 68px rail. */
+  rail?: boolean;
+}) {
   const router = useRouter();
   const user = useStoredUser();
+  const sayOne = useBilingualString();
   const { showDemoData, toggleDemoData } = useDemoData();
   const { displayMode, setDisplayMode } = useLanguagePreference();
 
@@ -61,9 +69,11 @@ export function UserMenu({ variant = 'toolbar' }: { variant?: 'toolbar' | 'sideb
       <DropdownMenuTrigger
         aria-label={triggerLabel}
         className={cn(
-          'flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 text-sm transition-colors outline-none hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          'flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 text-sm transition-colors outline-none hover:bg-secondary/80 focus-visible:outline-none',
           variant === 'sidebar'
-            ? 'h-9 w-full justify-center px-1.5 sm:justify-start sm:px-2'
+            ? rail
+              ? 'mx-auto h-9 w-9 justify-center overflow-hidden p-0 lg:h-[36px] lg:w-[36px]'
+              : 'h-9 w-full justify-center px-1.5 lg:justify-start lg:px-2'
             : 'h-9 px-1.5 sm:h-10 sm:px-2.5',
         )}
       >
@@ -73,10 +83,33 @@ export function UserMenu({ variant = 'toolbar' }: { variant?: 'toolbar' | 'sideb
             {initials}
           </AvatarFallback>
         </Avatar>
-        <span className={cn('max-w-[140px] truncate text-sm font-medium text-foreground', variant === 'sidebar' ? 'hidden min-[1024px]:inline' : 'hidden md:inline')}>
-          {user?.displayName ?? <BilingualText en="Account" el="Λογαριασμός" compact />}
+        {/* One language on this row: the bilingual fallback clipped to
+            "Acc…·Λογαρια…" inside the rail, and the dropdown already shows the
+            full identity. The sidebar variant takes the row's whole width
+            instead of the toolbar's 140px cap. */}
+        <span
+          className={cn(
+            'truncate text-sm font-medium text-foreground',
+            variant === 'sidebar'
+              ? rail
+                ? 'hidden'
+                : 'hidden min-w-0 flex-1 text-left lg:inline'
+              : 'hidden max-w-[140px] md:inline',
+          )}
+        >
+          {user?.displayName ?? sayOne('Account', 'Λογαριασμός')}
         </span>
-        <ChevronDown className={cn('icon-sm text-muted-foreground', variant === 'sidebar' ? 'hidden min-[1024px]:block' : 'hidden md:block')} aria-hidden="true" />
+        <ChevronDown
+          className={cn(
+            'icon-sm text-muted-foreground',
+            variant === 'sidebar'
+              ? rail
+                ? 'hidden'
+                : 'hidden lg:block'
+              : 'hidden md:block',
+          )}
+          aria-hidden="true"
+        />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-64">

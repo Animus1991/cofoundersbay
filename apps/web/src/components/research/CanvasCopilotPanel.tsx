@@ -360,7 +360,7 @@ export function CanvasCopilotPanel({
       : `All ${nodes.length} nodes (nothing selected)`;
 
   return (
-    <div className="flex flex-col h-full bg-background border-l border-border">
+    <div className="flex flex-col h-full w-full sm:w-80 flex-none bg-background border-l border-border">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2 min-w-0">

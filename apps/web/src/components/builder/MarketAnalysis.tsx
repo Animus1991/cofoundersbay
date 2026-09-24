@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 
 interface MarketData {
@@ -251,7 +251,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
         completion={completionPercentage}
         extraActions={
           <>
-            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
               {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
@@ -259,7 +259,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 compact
               />
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
             </Button>
@@ -268,36 +268,36 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
       />
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">
             <BilingualText en={builderEn('mkt_complete')} el={builderEl('mkt_complete')} compact />
           </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
-        <Progress value={completionPercentage} className="h-2" />
+        <Progress value={completionPercentage} className="h-1.5" />
       </div>
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 rounded-xl">
-          <TabsTrigger value="market-size" className="gap-1">
-            <CfbGlyph name="chart" className="icon-sm" />
+        <TabsList className={BUILDER_SUBTAB_LIST}>
+          <TabsTrigger value="market-size" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="chart" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mkt_tab_size')} el={builderEl('mkt_tab_size')} compact />
           </TabsTrigger>
-          <TabsTrigger value="competitors" className="gap-1">
-            <CfbGlyph name="shield" className="icon-sm" />
+          <TabsTrigger value="competitors" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="shield" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mkt_tab_comp')} el={builderEl('mkt_tab_comp')} compact />
           </TabsTrigger>
-          <TabsTrigger value="customers" className="gap-1">
-            <CfbGlyph name="people" className="icon-sm" />
+          <TabsTrigger value="customers" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="people" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mkt_tab_cust')} el={builderEl('mkt_tab_cust')} compact />
           </TabsTrigger>
-          <TabsTrigger value="trends" className="gap-1">
-            <CfbGlyph name="flag" className="icon-sm" />
+          <TabsTrigger value="trends" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="flag" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mkt_tab_trends')} el={builderEl('mkt_tab_trends')} compact />
           </TabsTrigger>
-          <TabsTrigger value="positioning" className="gap-1">
-            <CfbGlyph name="target" className="icon-sm" />
+          <TabsTrigger value="positioning" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="target" className="icon-sm shrink-0" />
             <BilingualText en={builderEn('mkt_tab_pos')} el={builderEl('mkt_tab_pos')} compact />
           </TabsTrigger>
         </TabsList>
@@ -456,19 +456,19 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 <div className="flex items-end justify-center gap-8 h-48">
                   <div className="flex flex-col items-center">
                     <div className="flex w-32 items-end justify-center rounded-t-xl border-2 border-status-info bg-status-info-bg" style={{ height: '160px' }}>
-                      <span className="text-lg font-bold text-status-info mb-2">{data.tam?.value || '—'}</span>
+                      <span className="mb-2 text-lg font-bold text-status-info">{data.tam?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">TAM</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="flex w-32 items-end justify-center rounded-t-xl border-2 border-status-success bg-status-success-bg" style={{ height: '100px' }}>
-                      <span className="text-lg font-bold text-status-success mb-2">{data.sam?.value || '—'}</span>
+                      <span className="mb-2 text-lg font-bold text-status-success">{data.sam?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SAM</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="flex w-32 items-end justify-center rounded-t-xl border-2 border-status-warning bg-status-warning-bg" style={{ height: '40px' }}>
-                      <span className="text-lg font-bold text-status-warning mb-2">{data.som?.value || '—'}</span>
+                      <span className="mb-2 text-lg font-bold text-status-warning">{data.som?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SOM</span>
                   </div>
@@ -485,7 +485,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('mkt_direct')} el={builderEl('mkt_direct')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={() => addCompetitor('direct')}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCompetitor('direct')}>
                 <BilingualText en={builderEn('mkt_add_comp')} el={builderEl('mkt_add_comp')} compact />
               </Button>
             </CardHeader>
@@ -603,7 +603,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('mkt_personas')} el={builderEl('mkt_personas')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={addPersona}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addPersona}>
                 <BilingualText en={builderEn('mkt_add_persona')} el={builderEl('mkt_add_persona')} compact />
               </Button>
             </CardHeader>
@@ -661,7 +661,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               <CardTitle className="text-base">
                 <BilingualText en={builderEn('mkt_trends')} el={builderEl('mkt_trends')} compact />
               </CardTitle>
-              <Button variant="outline" size="sm" onClick={addTrend}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addTrend}>
                 <BilingualText en={builderEn('mkt_add_trend')} el={builderEl('mkt_add_trend')} compact />
               </Button>
             </CardHeader>
@@ -697,7 +697,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                         newTrends[index] = { ...trend, impact: e.target.value as 'positive' | 'negative' | 'neutral' };
                         setData(prev => ({ ...prev, trends: newTrends }));
                       }}
-                      className="px-3 py-2 border rounded-md text-sm"
+                      className="px-3 py-2 border rounded-xl text-sm"
                     >
                       <option value="positive">{t(builderEn('mkt_positive'), builderEl('mkt_positive'))}</option>
                       <option value="negative">{t(builderEn('mkt_negative'), builderEl('mkt_negative'))}</option>
@@ -787,7 +787,8 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 ))}
                 <Button
                   variant="outline"
-                  className="w-full"
+                  size="sm"
+                  className={`w-full ${BUILDER_BTN}`}
                   onClick={() => setData(prev => ({
                     ...prev,
                     differentiators: [...prev.differentiators, '']

@@ -46,6 +46,26 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   metric_engagement: { en: 'Engagement Rate', el: 'Ποσοστό αφοσίωσης' },
   metric_search: { en: 'Search Appearances', el: 'Εμφανίσεις αναζήτησης' },
   metric_activity: { en: 'Activity Score', el: 'Βαθμός δραστηριότητας' },
+  view_to_connect: {
+    en: 'of views became connections',
+    el: 'των προβολών έγιναν συνδέσεις',
+  },
+  spark_caption: { en: 'This window', el: 'Αυτό το διάστημα' },
+  open_profile: { en: 'Open profile', el: 'Άνοιγμα προφίλ' },
+  open_connections: { en: 'Open connections', el: 'Άνοιγμα συνδέσεων' },
+  open_messages: { en: 'Open messages', el: 'Άνοιγμα μηνυμάτων' },
+  open_discover: { en: 'Open Discover', el: 'Άνοιγμα Εξερεύνησης' },
+  view_engagement: { en: 'View engagement', el: 'Δείτε την αφοσίωση' },
+  view_growth: { en: 'View growth', el: 'Δείτε την ανάπτυξη' },
+  declining_prefix: { en: 'Down this window', el: 'Πτώση σε αυτό το διάστημα' },
+  build_profile: { en: 'Build your profile', el: 'Χτίστε το προφίλ σας' },
+  grow_network: { en: 'Grow your network', el: 'Αναπτύξτε το δίκτυό σας' },
+  reply_faster: { en: 'Reply in Messages', el: 'Απαντήστε στα Μηνύματα' },
+  window_highlights: { en: 'This window', el: 'Αυτό το διάστημα' },
+  export_csv: { en: 'CSV', el: 'CSV' },
+  series_views: { en: 'Views', el: 'Προβολές' },
+  series_unique: { en: 'Unique', el: 'Μοναδικές' },
+  open_achievements: { en: 'Open achievements', el: 'Άνοιγμα επιτευγμάτων' },
 };
 
 export function analyticsEn(key: keyof typeof ANALYTICS_STRINGS): string {

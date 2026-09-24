@@ -81,7 +81,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <Button aria-label="Change theme" variant="ghost" size="icon" className={cn('relative h-9 w-9', className)}>
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)} aria-label={t('Theme')}>
         <Moon className="icon-sm" />
       </Button>
     );

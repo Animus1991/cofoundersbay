@@ -335,7 +335,7 @@ export default function HelpPage() {
               placeholder="Search for help (e.g. matching, billing, profile...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-background border-border/60"
+              className="pl-9 h-11 bg-background border-border/60"
             />
             {searchQuery && (
               <button

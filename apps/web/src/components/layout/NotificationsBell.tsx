@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -245,7 +246,7 @@ export function NotificationsBell({ className }: { className?: string }) {
                     {notification.title}
                   </p>
                   <span className="mt-0.5 shrink-0 text-2xs text-muted-foreground">
-                    {formatRelativeTime(notification.createdAt)}
+                    <RelativeTime date={notification.createdAt} format={formatRelativeTime} />
                   </span>
                 </div>
                 {notification.body && (

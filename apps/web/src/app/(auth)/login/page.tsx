@@ -100,8 +100,8 @@ function LoginPageContent() {
   return (
     <div className="flex min-h-screen">
       {/* Left — form */}
-      <main id="main-content" className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24">
-        <div className="mx-auto w-full max-w-md animate-fade-in">
+      <main id="main-content" className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-16 xl:px-24">
+        <div className="mx-auto w-full max-w-xl animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
             {activeTenant?.logoUrl ? (
               <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
@@ -229,15 +229,15 @@ function LoginPageContent() {
       </main>
 
       {/* Right — hero panel */}
-      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 relative overflow-hidden">
+      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 xl:px-20 relative overflow-hidden">
         {/* Subtle radial overlay */}
         <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
-        <div className="relative z-10 max-w-md text-center">
+        <div className="relative z-10 w-full max-w-2xl text-center">
           <div className="mx-auto mb-8 flex items-center justify-center">
             {activeTenant?.logoUrl ? (
               <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
-              <LogoIcon size={72} />
+              <LogoIcon size={86} />
             )}
           </div>
           <h2 className="font-display text-3xl font-bold text-white">

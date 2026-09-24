@@ -112,7 +112,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
             </select>
@@ -122,7 +122,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
             </select>
@@ -133,7 +133,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
               value={actionParamsRaw}
               onChange={e => { setActionParamsRaw(e.target.value); setParamsError(''); }}
               rows={5}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none resize-none"
               placeholder='{"title": "Hello", "body": "Message"}'
             />
             {paramsError && <p className="text-xs text-destructive-accessible">{paramsError}</p>}
@@ -212,7 +212,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
             </select>
@@ -222,7 +222,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
             </select>
@@ -233,7 +233,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
               value={actionParamsRaw}
               onChange={e => setActionParamsRaw(e.target.value)}
               rows={5}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none resize-none"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -497,7 +497,8 @@ export default function AutomationsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      aria-label="Edit rule"
+                      title="Edit rule"
+                      aria-label={`Edit rule ${rule.name}`}
                       onClick={() => setEditRule(rule)}
                     >
                       <Pencil className="icon-sm" />
@@ -506,7 +507,8 @@ export default function AutomationsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      aria-label="Manual trigger"
+                      title="Manual trigger"
+                      aria-label={`Manually trigger ${rule.name}`}
                       onClick={() => triggerMutation.mutate(rule.id)}
                       disabled={triggerMutation.isPending}
                     >
@@ -517,7 +519,8 @@ export default function AutomationsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        aria-label="Pause"
+                        title="Pause"
+                        aria-label={`Pause ${rule.name}`}
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
                       >
                         <Pause className="icon-sm" />
@@ -527,7 +530,8 @@ export default function AutomationsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        aria-label="Activate"
+                        title="Activate"
+                        aria-label={`Activate ${rule.name}`}
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
                         <Zap className="icon-sm text-status-success" />
@@ -537,7 +541,8 @@ export default function AutomationsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
-                      aria-label="Delete"
+                      title="Delete"
+                      aria-label={`Delete ${rule.name}`}
                       onClick={async () => {
                         if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
                       }}

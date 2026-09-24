@@ -174,10 +174,9 @@ export function DateRangePicker({
         disabled={disabled}
         onClick={() => setOpen(!open)}
         className={cn(
-          'flex items-center gap-2 h-9 px-3 rounded-md border border-input bg-background text-sm',
+          'flex items-center gap-2 h-9 px-3 rounded-xl border border-input bg-background text-sm',
           'hover:bg-accent transition-colors w-full text-left',
           disabled && 'opacity-50 cursor-not-allowed',
-          open && 'ring-2 ring-ring',
         )}
       >
         <CalendarIcon className="icon-sm text-muted-foreground shrink-0" />
@@ -185,7 +184,7 @@ export function DateRangePicker({
           {display ?? placeholder}
         </span>
         {display && (
-          <button type="button" onClick={clear} className="ml-1 p-0.5 rounded hover:bg-muted">
+          <button type="button" onClick={clear} className="ml-1 p-0.5 rounded-lg hover:bg-muted">
             <X className="icon-sm text-muted-foreground" />
           </button>
         )}

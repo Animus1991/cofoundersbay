@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   FileText,
@@ -15,6 +15,15 @@ import {
   Eye,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/toast';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import {
+  getMyPrograms,
+  getProgramParticipants,
+  updateProgramParticipant,
+  type ProgramParticipantItem,
+} from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,6 +46,47 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+
+/**
+ * An application is a program participant whose status says so.
+ *
+ * `/api/programs/:id/participants` and its PATCH sibling have existed all
+ * along. The endpoint also returned a bare array while the client declared
+ * `{ participants }`, so even a page that had called it would have read
+ * undefined — fixed on the API side in the same change as this.
+ *
+ * `applied` and `accepted` are the schema's words; the page's vocabulary is
+ * wider than the schema's, so `under_review` and `shortlisted` have no
+ * counterpart yet and nothing is mapped onto them.
+ */
+const PARTICIPANT_TO_APPLICATION: Record<string, Application['status']> = {
+  applied: 'pending',
+  accepted: 'accepted',
+  active: 'accepted',
+  completed: 'accepted',
+  rejected: 'rejected',
+  dropped: 'rejected',
+};
+
+function toApplication(
+  row: ProgramParticipantItem,
+  programTitle: string,
+  programId: string,
+): Application & { programId: string } {
+  return {
+    id: row.id,
+    programId,
+    startupName: row.user.profile?.displayName ?? 'Unnamed applicant',
+    founderName: row.user.profile?.displayName ?? '\u2014',
+    founderAvatar: row.user.profile?.avatarUrl ?? undefined,
+    program: programTitle,
+    industry: row.user.profile?.headline ?? '\u2014',
+    stage: row.role ?? '\u2014',
+    submittedAt: row.appliedAt,
+    status: PARTICIPANT_TO_APPLICATION[row.status] ?? 'pending',
+    score: row.score ?? undefined,
+  };
+}
 
 type Application = {
   id: string;
@@ -63,7 +113,16 @@ const APPLICATION_STATUS: Record<ApplicationStatus, { tone: StatusTone; icon: Re
   rejected: { tone: 'danger', icon: XCircle },
 };
 
-function ApplicationCard({ application }: { application: Application }) {
+type DecideFn = (application: Application, status: 'accepted' | 'rejected') => void;
+
+function ApplicationCard({
+  application,
+  onDecide,
+}: {
+  application: Application;
+  /** Absent for the illustrative rows, which have nothing to write to. */
+  onDecide?: DecideFn;
+}) {
   const config = APPLICATION_STATUS[application.status];
   const statusColors = STATUS[config.tone];
   const StatusIcon = config.icon;
@@ -104,10 +163,27 @@ function ApplicationCard({ application }: { application: Application }) {
                     <DropdownMenuItem asChild>
                       <Link href={`/org/applications/${application.id}`}>Review Application</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Mark as Shortlisted</DropdownMenuItem>
-                    <DropdownMenuItem>Schedule Interview</DropdownMenuItem>
-                    <DropdownMenuItem className={STATUS.success.text}>Accept</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive-accessible">Reject</DropdownMenuItem>
+                    {/*
+                      * "Mark as Shortlisted" and "Schedule Interview" are gone
+                      * rather than left inert: the participant status enum has
+                      * no shortlisted state and there is no interview to
+                      * schedule against. Accept and Reject write the two
+                      * statuses that do exist.
+                      */}
+                    <DropdownMenuItem
+                      className={STATUS.success.text}
+                      disabled={!onDecide || application.status === 'accepted'}
+                      onClick={() => onDecide?.(application, 'accepted')}
+                    >
+                      Accept
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive-accessible"
+                      disabled={!onDecide || application.status === 'rejected'}
+                      onClick={() => onDecide?.(application, 'rejected')}
+                    >
+                      Reject
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -134,68 +210,139 @@ function ApplicationCard({ application }: { application: Application }) {
   );
 }
 
+/** Shown to an organisation with no applications yet. */
+const SEED_APPLICATIONS: Application[] = [
+  {
+    id: '1',
+    startupName: 'DataVault',
+    founderName: 'Alex Johnson',
+    program: 'AI Accelerator 2025',
+    industry: 'Enterprise SaaS',
+    stage: 'Pre-seed',
+    submittedAt: 'Mar 18, 2025',
+    status: 'pending',
+  },
+  {
+    id: '2',
+    startupName: 'EcoTrack',
+    founderName: 'Maria Garcia',
+    program: 'Climate Innovation',
+    industry: 'CleanTech',
+    stage: 'Seed',
+    submittedAt: 'Mar 17, 2025',
+    status: 'under_review',
+    score: 78,
+  },
+  {
+    id: '3',
+    startupName: 'HealthPulse',
+    founderName: 'James Chen',
+    program: 'AI Accelerator 2025',
+    industry: 'HealthTech',
+    stage: 'Pre-seed',
+    submittedAt: 'Mar 15, 2025',
+    status: 'shortlisted',
+    score: 85,
+  },
+  {
+    id: '4',
+    startupName: 'PayStream',
+    founderName: 'Sarah Williams',
+    program: 'FinTech Bootcamp',
+    industry: 'FinTech',
+    stage: 'Seed',
+    submittedAt: 'Mar 10, 2025',
+    status: 'accepted',
+    score: 92,
+  },
+  {
+    id: '5',
+    startupName: 'QuickShip',
+    founderName: 'Tom Brown',
+    program: 'AI Accelerator 2025',
+    industry: 'Logistics',
+    stage: 'Idea',
+    submittedAt: 'Mar 8, 2025',
+    status: 'rejected',
+    score: 45,
+  },
+];
+
 export default function OrgApplicationsPage() {
   const [search, setSearch] = useState('');
   const [program, setProgram] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('all');
 
   // Mock data
-  const applications: Application[] = [
-    {
-      id: '1',
-      startupName: 'DataVault',
-      founderName: 'Alex Johnson',
-      program: 'AI Accelerator 2025',
-      industry: 'Enterprise SaaS',
-      stage: 'Pre-seed',
-      submittedAt: 'Mar 18, 2025',
-      status: 'pending',
+  /*
+   * Applications are participants at `applied`, across the organisation's
+   * programs. One request per program because the endpoint is scoped to a
+   * program — `useQueries` keeps them parallel and independently cached.
+   * The illustrative rows below are what an organisation with no
+   * applications sees; they carry no decision handler, because there is
+   * nothing behind them to write to.
+   */
+  const { slug } = useCurrentOrg();
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+
+  const { data: programsData } = useQuery({
+    queryKey: ['org', 'programs'],
+    queryFn: getMyPrograms,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const programs = useMemo(() => programsData?.programs ?? [], [programsData]);
+
+  const participantQueries = useQueries({
+    queries: programs.map((program) => ({
+      queryKey: ['org', 'participants', program.id],
+      queryFn: () => getProgramParticipants(program.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+
+  const live = useMemo(
+    () =>
+      participantQueries.flatMap((query, index) => {
+        const program = programs[index];
+        if (!program) return [];
+        return (query.data?.participants ?? []).map((row) =>
+          toApplication(row, program.title, program.id),
+        );
+      }),
+    [participantQueries, programs],
+  );
+
+  const decide = useMutation({
+    mutationFn: ({
+      programId,
+      participantId,
+      status,
+    }: {
+      programId: string;
+      participantId: string;
+      status: 'accepted' | 'rejected';
+    }) => updateProgramParticipant(programId, participantId, { status }),
+    onSuccess: (_result, variables) => {
+      void qc.invalidateQueries({ queryKey: ['org', 'participants', variables.programId] });
+      success(variables.status === 'accepted' ? 'Application accepted' : 'Application rejected');
     },
-    {
-      id: '2',
-      startupName: 'EcoTrack',
-      founderName: 'Maria Garcia',
-      program: 'Climate Innovation',
-      industry: 'CleanTech',
-      stage: 'Seed',
-      submittedAt: 'Mar 17, 2025',
-      status: 'under_review',
-      score: 78,
-    },
-    {
-      id: '3',
-      startupName: 'HealthPulse',
-      founderName: 'James Chen',
-      program: 'AI Accelerator 2025',
-      industry: 'HealthTech',
-      stage: 'Pre-seed',
-      submittedAt: 'Mar 15, 2025',
-      status: 'shortlisted',
-      score: 85,
-    },
-    {
-      id: '4',
-      startupName: 'PayStream',
-      founderName: 'Sarah Williams',
-      program: 'FinTech Bootcamp',
-      industry: 'FinTech',
-      stage: 'Seed',
-      submittedAt: 'Mar 10, 2025',
-      status: 'accepted',
-      score: 92,
-    },
-    {
-      id: '5',
-      startupName: 'QuickShip',
-      founderName: 'Tom Brown',
-      program: 'AI Accelerator 2025',
-      industry: 'Logistics',
-      stage: 'Idea',
-      submittedAt: 'Mar 8, 2025',
-      status: 'rejected',
-      score: 45,
-    },
-  ];
+    onError: (err) =>
+      showError('Could not record the decision', err instanceof Error ? err.message : undefined),
+  });
+
+  const onDecide: DecideFn = (application, status) => {
+    const programId = (application as Application & { programId?: string }).programId;
+    if (!programId) return;
+    decide.mutate({ programId, participantId: application.id, status });
+  };
+
+  const isLive = live.length > 0;
+  const applications: Application[] = isLive ? live : SEED_APPLICATIONS;
+  void slug;
+
 
   const filteredApplications = applications.filter((a) => {
     const matchesSearch =
@@ -207,7 +354,8 @@ export default function OrgApplicationsPage() {
     return matchesSearch && matchesProgram && matchesTab;
   });
 
-  const programs = [...new Set(applications.map((a) => a.program))];
+  /** Program names present in the rows on screen, for the filter. */
+  const programNames = [...new Set(applications.map((a) => a.program))];
 
   const statusCounts = {
     all: applications.length,
@@ -289,7 +437,7 @@ export default function OrgApplicationsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Programs</SelectItem>
-              {programs.map((p) => (
+              {programNames.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
             </SelectContent>
@@ -299,7 +447,11 @@ export default function OrgApplicationsPage() {
         {/* Applications List */}
         <div className="space-y-3">
           {filteredApplications.map((application) => (
-            <ApplicationCard key={application.id} application={application} />
+            <ApplicationCard
+              key={application.id}
+              application={application}
+              onDecide={isLive ? onDecide : undefined}
+            />
           ))}
           {filteredApplications.length === 0 && (
             <EmptyOrgApplications filtersActive={filtersActive} onClearFilters={clearFilters} />

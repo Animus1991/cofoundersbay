@@ -1,7 +1,104 @@
 /** Static payloads so Cloudflare preview never waits on localhost:3001. */
 
+import { mergeNodeMetadata } from './canvas/canvas-geometry';
+import { DEMO_CRITERIA } from './readiness-demo';
+
 const NOW = '2026-09-04T10:00:00.000Z';
+
+function seedPreviewGtmNodes() {
+  const base = {
+    boardId: 'board-gtm',
+    url: null as string | null,
+    uploadId: null as string | null,
+    upload: null as unknown,
+    zIndex: 1,
+    collapsed: false,
+    locked: false,
+    refEntityType: null as string | null,
+    refEntityId: null as string | null,
+    builderDocumentId: null as string | null,
+    metadata: null as unknown,
+    tags: [] as string[],
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+  return [
+    { ...base, id: 'n-gtm-problem', type: 'note', title: 'Problem', content: '<p>Who experiences this, how painful is it, and how do they cope today?</p><p>Ποιος το βιώνει, πόσο πονάει, και πώς το λύνει σήμερα;</p>', posX: 80, posY: 80, width: 280, height: 200, color: '#FEF3C7' },
+    { ...base, id: 'n-gtm-customer', type: 'note', title: 'Customer', content: '<p>Segment, jobs to be done, budget, and buying path.</p><p>Τμήμα, εργασίες, προϋπολογισμός και διαδρομή αγοράς.</p>', posX: 400, posY: 80, width: 280, height: 200, color: '#DBEAFE' },
+    { ...base, id: 'n-gtm-channel', type: 'note', title: 'Channels', content: '<p>Where will the first 100 customers find you?</p><p>Πού θα σας βρουν οι πρώτοι 100 πελάτες;</p>', posX: 720, posY: 80, width: 280, height: 200, color: '#D1FAE5' },
+    { ...base, id: 'n-gtm-offer', type: 'note', title: 'Offer', content: '<p>Pricing, packaging, and the first conversion moment.</p><p>Τιμή, συσκευασία και η πρώτη στιγμή μετατροπής.</p>', posX: 80, posY: 320, width: 280, height: 200, color: '#FCE7F3' },
+    { ...base, id: 'n-gtm-comp', type: 'note', title: 'Competition', content: '<p>Direct, indirect, and the wedge you own.</p><p>Άμεσος, έμμεσος ανταγωνισμός και η δική σας διαφορά.</p>', posX: 400, posY: 320, width: 280, height: 200, color: '#FEE2E2' },
+    { ...base, id: 'n-gtm-metrics', type: 'note', title: 'Metrics', content: '<p>Activation, retention, and the weekly number that proves GTM.</p><p>Ενεργοποίηση, διατήρηση και ο εβδομαδιαίος αριθμός που αποδεικνύει το GTM.</p>', posX: 720, posY: 320, width: 280, height: 200, color: '#EDE9FE' },
+  ];
+}
+
+type PreviewGtmNode = ReturnType<typeof seedPreviewGtmNodes>[number];
+type PreviewGtmConnector = {
+  id: string;
+  boardId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  label: string | null;
+  color: string | null;
+  style: string;
+};
+
+let previewGtmBoardNodes: PreviewGtmNode[] = seedPreviewGtmNodes();
+let previewGtmConnectors: PreviewGtmConnector[] = [];
+let previewGtmCanvasState: Record<string, unknown> = {};
+
+function previewGtmBoardResponse() {
+  const board = kitchenSink().boards[0];
+  return {
+    board: {
+      ...board,
+      canvasState: Object.keys(previewGtmCanvasState).length ? previewGtmCanvasState : board.canvasState,
+      nodeCount: previewGtmBoardNodes.length,
+      nodes: previewGtmBoardNodes,
+      connectors: previewGtmConnectors,
+    },
+  };
+}
 const ME_ID = 'preview-demo-user';
+
+type PreviewResearchComment = {
+  id: string;
+  nodeId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string | null;
+  body: string;
+  commentType: string;
+  resolved: boolean;
+  posX: number | null;
+  posY: number | null;
+  parentId: string | null;
+  author: { id: string; displayName: string; avatarUrl?: string };
+  createdAt: string;
+  updatedAt: string;
+};
+
+let previewResearchComments: PreviewResearchComment[] = [];
+
+function makePreviewResearchComment(nodeId: string, body: Record<string, unknown>): PreviewResearchComment {
+  const now = new Date().toISOString();
+  return {
+    id: `preview-cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    nodeId,
+    authorId: ME_ID,
+    authorName: 'Alex Demo',
+    authorAvatar: null,
+    body: typeof body.body === 'string' ? body.body : '',
+    commentType: typeof body.commentType === 'string' ? body.commentType : 'general',
+    resolved: false,
+    posX: typeof body.posX === 'number' ? body.posX : null,
+    posY: typeof body.posY === 'number' ? body.posY : null,
+    parentId: typeof body.parentId === 'string' ? body.parentId : null,
+    author: { id: ME_ID, displayName: 'Alex Demo' },
+    createdAt: now,
+    updatedAt: now,
+  };
+}
 
 const PREVIEW_AI_CONVERSATIONS: Array<{
   id: string;
@@ -84,22 +181,71 @@ const PREVIEW_BUILDER_COLLABORATORS = [
   },
 ];
 
+/**
+ * The recommendation each dimension carries when it is not yet done. These are
+ * the Builder's own advice, keyed by dimension so they survive the scores being
+ * derived rather than written out.
+ */
+const BUILDER_READINESS_ADVICE: Record<string, string> = {
+  team: 'Complete cofounder search on Discover',
+  market: 'Run 5 customer interviews',
+  product: 'Scope an MVP in Planner',
+  business: 'Fill the Business Model Canvas',
+  funding: 'Start a 10-slide pitch deck',
+  execution: 'Set the next 30-day milestone',
+};
+
+/** The same bands /readiness colours its dimension chips with. */
+function readinessStatus(score: number): string {
+  if (score >= 80) return 'excellent';
+  if (score >= 65) return 'good';
+  if (score >= 40) return 'needs-work';
+  return 'critical';
+}
+
+/**
+ * Scored from DEMO_CRITERIA rather than written out again.
+ *
+ * This payload used to carry its own six numbers, which disagreed with the six
+ * /readiness computes from the criteria - two answers to one question, a click
+ * apart, under a link labelled "full readiness report". A dimension's score is
+ * the weight of its completed criteria, which is exactly how the real endpoint
+ * scores it, so the Builder and the report now move together.
+ */
+const PREVIEW_BUILDER_DIMENSIONS = Object.entries(DEMO_CRITERIA).map(([dimension, criteria]) => {
+  const score = criteria.reduce((sum, c) => sum + (c.completed ? c.weight : 0), 0);
+  return {
+    dimension,
+    score,
+    maxScore: 100,
+    status: readinessStatus(score),
+    criteria: criteria.map((c) => ({ id: c.id, name: c.name, completed: c.completed, weight: c.weight })),
+    recommendations: score >= 100 ? [] : [BUILDER_READINESS_ADVICE[dimension]].filter(Boolean),
+  };
+});
+
+const PREVIEW_BUILDER_OVERALL = Math.round(
+  PREVIEW_BUILDER_DIMENSIONS.reduce((sum, d) => sum + d.score, 0) /
+    (PREVIEW_BUILDER_DIMENSIONS.length || 1),
+);
+
 const PREVIEW_BUILDER_READINESS = {
   workspaceId: PREVIEW_BUILDER_WS_ID,
-  overallScore: 42,
-  overallStatus: 'needs-work',
-  readinessLevel: 'early',
-  dimensions: [
-    { dimension: 'team', score: 48, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Complete cofounder search on Discover'] },
-    { dimension: 'market', score: 36, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Run 5 customer interviews'] },
-    { dimension: 'product', score: 40, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Scope an MVP in Planner'] },
-    { dimension: 'business', score: 28, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Fill the Business Model Canvas'] },
-    { dimension: 'funding', score: 22, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Start a 10-slide pitch deck'] },
-    { dimension: 'execution', score: 50, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Set the next 30-day milestone'] },
-  ],
+  overallScore: PREVIEW_BUILDER_OVERALL,
+  overallStatus: readinessStatus(PREVIEW_BUILDER_OVERALL),
+  readinessLevel:
+    PREVIEW_BUILDER_OVERALL >= 80 ? 'ready' : PREVIEW_BUILDER_OVERALL >= 55 ? 'developing' : 'early',
+  dimensions: PREVIEW_BUILDER_DIMENSIONS,
+  // Named from criteria that are actually still open, so the blockers cannot
+  // outlive the work they describe.
   blockers: [
-    'No customer interviews logged yet',
-    'Business model still a draft',
+    ...(DEMO_CRITERIA.market ?? [])
+      .filter((c) => !c.completed && /interview/i.test(c.name))
+      .map(() => 'No customer interviews logged yet'),
+    ...(DEMO_CRITERIA.business ?? [])
+      .filter((c) => !c.completed && /pricing|unit economics/i.test(c.name))
+      .slice(0, 1)
+      .map(() => 'Business model still a draft'),
   ],
   nextMilestones: [
     'Finish Idea Core problem and unique value',
@@ -197,6 +343,8 @@ const PEOPLE = [
     matchReasons: ['Complementary skills', 'Same stage'],
     lookingFor: 'technical cofounder',
     availability: 'full-time',
+    lastSeenSecondsAgo: 120,
+    joinedAt: '2026-02-11T09:00:00.000Z',
   },
   {
     id: 'hit-marcus',
@@ -214,6 +362,8 @@ const PEOPLE = [
     matchReasons: ['Skills overlap', 'Active this week'],
     lookingFor: 'business cofounder',
     availability: 'full-time',
+    lastSeenSecondsAgo: 240,
+    joinedAt: '2026-06-03T09:00:00.000Z',
   },
   {
     id: 'hit-sarah',
@@ -231,6 +381,8 @@ const PEOPLE = [
     matchReasons: ['Mentor match'],
     lookingFor: 'mentees',
     availability: 'part-time',
+    lastSeenSecondsAgo: 9000,
+    joinedAt: '2025-11-22T09:00:00.000Z',
   },
   {
     id: 'hit-nikos',
@@ -248,6 +400,8 @@ const PEOPLE = [
     matchReasons: ['Stage fit'],
     lookingFor: 'deal flow',
     availability: 'flexible',
+    lastSeenSecondsAgo: null,
+    joinedAt: '2026-09-01T09:00:00.000Z',
   },
 ];
 
@@ -499,6 +653,307 @@ const PREVIEW_MILESTONES: PreviewMilestone[] = [
 
 previewMilestones = PREVIEW_MILESTONES;
 
+/*
+ * Showcase areas. /events, /jobs, /groups and /opportunities used to fall
+ * through to `kitchenSink()`, which answers with a truthy grab-bag: the pages
+ * rendered empty, and their stat tiles fell back to invented copy ("40+").
+ * These fixtures give each area a real, internally consistent world — the same
+ * cast as the rest of the demo — so every count on screen is counted from the
+ * rows below it.
+ */
+const PREVIEW_EVENT_HOSTS = {
+  elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, role: 'founder' },
+  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, role: 'investor' },
+  sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, role: 'mentor' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, role: 'founder' },
+} as const;
+
+type PreviewEvent = {
+  id: string;
+  title: string;
+  description: string;
+  eventType: 'meetup' | 'webinar' | 'workshop' | 'demo_day' | 'networking' | 'other';
+  mode: 'online' | 'in-person' | 'hybrid';
+  startAt: string;
+  endAt: string;
+  timezone: string | null;
+  location: string | null;
+  isOnline: boolean;
+  meetingUrl: string | null;
+  capacity: number | null;
+  coverImageUrl: string | null;
+  attendeesCount: number;
+  host: { id: string; displayName: string; avatarUrl: string | null; role: string };
+  viewerRsvp: 'going' | 'interested' | 'not_going' | null;
+  isFeatured?: boolean;
+};
+
+const PREVIEW_EVENTS: PreviewEvent[] = [
+  {
+    id: 'ev-demo-day',
+    title: 'Athens Demo Day — Seed Cohort 12',
+    description: 'Twelve teams pitch to a room of pre-seed and seed investors, eight minutes each, followed by open networking.',
+    eventType: 'demo_day', mode: 'in-person',
+    startAt: '2026-09-11T16:00:00.000Z', endAt: '2026-09-11T18:30:00.000Z',
+    timezone: 'Europe/Athens', location: 'Stegi, Athens', isOnline: false, meetingUrl: null,
+    capacity: 120, coverImageUrl: null, attendeesCount: 84,
+    host: PREVIEW_EVENT_HOSTS.elena, viewerRsvp: 'going', isFeatured: true,
+  },
+  {
+    id: 'ev-office-hours',
+    title: 'Fundraising Office Hours',
+    description: 'Bring one slide and one question. Marcus reviews narrative, traction framing and the ask, live.',
+    eventType: 'webinar', mode: 'online',
+    startAt: '2026-09-09T15:00:00.000Z', endAt: '2026-09-09T16:00:00.000Z',
+    timezone: 'Europe/Athens', location: null, isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/office-hours',
+    capacity: 100, coverImageUrl: null, attendeesCount: 47,
+    host: PREVIEW_EVENT_HOSTS.marcus, viewerRsvp: 'interested',
+  },
+  {
+    id: 'ev-discovery',
+    title: 'Product Discovery Workshop',
+    description: 'A working session on interview design, signal vs. noise in early feedback, and deciding what not to build.',
+    eventType: 'workshop', mode: 'hybrid',
+    startAt: '2026-09-17T09:00:00.000Z', endAt: '2026-09-17T12:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Impact Hub, Athens', isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/discovery',
+    capacity: 40, coverImageUrl: null, attendeesCount: 32,
+    host: PREVIEW_EVENT_HOSTS.sarah, viewerRsvp: null,
+  },
+  {
+    id: 'ev-coffee',
+    title: 'Founder Coffee — Thessaloniki',
+    description: 'An informal morning meetup. No pitches, no agenda: whoever shows up sets the table.',
+    eventType: 'networking', mode: 'in-person',
+    startAt: '2026-09-24T07:30:00.000Z', endAt: '2026-09-24T09:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Aristotelous Square, Thessaloniki', isOnline: false, meetingUrl: null,
+    capacity: 25, coverImageUrl: null, attendeesCount: 18,
+    host: PREVIEW_EVENT_HOSTS.nikos, viewerRsvp: null,
+  },
+  {
+    id: 'ev-ai-features',
+    title: 'Shipping AI Features Without a Data Team',
+    description: 'What a two-person team can actually put in production: evaluation, cost control and the failure modes users forgive.',
+    eventType: 'webinar', mode: 'online',
+    startAt: '2026-10-01T17:00:00.000Z', endAt: '2026-10-01T18:00:00.000Z',
+    timezone: 'Europe/Athens', location: null, isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/ai-features',
+    capacity: null, coverImageUrl: null, attendeesCount: 156,
+    host: PREVIEW_EVENT_HOSTS.marcus, viewerRsvp: 'going',
+  },
+  {
+    id: 'ev-saas-metrics',
+    title: 'SaaS Metrics Meetup #14',
+    description: 'Three founders open their dashboards and explain the number that changed their roadmap this quarter.',
+    eventType: 'meetup', mode: 'in-person',
+    startAt: '2026-10-08T17:30:00.000Z', endAt: '2026-10-08T20:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Found.ation, Athens', isOnline: false, meetingUrl: null,
+    capacity: 80, coverImageUrl: null, attendeesCount: 63,
+    host: PREVIEW_EVENT_HOSTS.elena, viewerRsvp: null,
+  },
+  {
+    id: 'ev-pitch-clinic',
+    title: 'Pitch Clinic — Seed Narrative',
+    description: 'Recorded session: rebuilding a deck around one claim, with two teams workshopped end to end.',
+    eventType: 'workshop', mode: 'online',
+    startAt: '2026-08-21T16:00:00.000Z', endAt: '2026-08-21T17:30:00.000Z',
+    timezone: 'Europe/Athens', location: null, isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/pitch-clinic',
+    capacity: 60, coverImageUrl: null, attendeesCount: 54,
+    host: PREVIEW_EVENT_HOSTS.sarah, viewerRsvp: 'going',
+  },
+  {
+    id: 'ev-summer-mixer',
+    title: 'Summer Founders Mixer',
+    description: 'The July rooftop mixer — 91 founders, operators and angels from the Athens ecosystem.',
+    eventType: 'networking', mode: 'in-person',
+    startAt: '2026-07-10T18:00:00.000Z', endAt: '2026-07-10T21:00:00.000Z',
+    timezone: 'Europe/Athens', location: 'Six d.o.g.s, Athens', isOnline: false, meetingUrl: null,
+    capacity: 120, coverImageUrl: null, attendeesCount: 91,
+    host: PREVIEW_EVENT_HOSTS.nikos, viewerRsvp: null,
+  },
+];
+
+const PREVIEW_JOBS = [
+  { id: 'job-founding-eng', title: 'Founding Engineer', role: 'engineering', location: 'Athens, Greece', isRemote: false, type: 'full-time', isFeatured: true, creator: { displayName: 'Elena Papadopoulos', avatarUrl: null } },
+  { id: 'job-growth-lead', title: 'Growth Lead', role: 'marketing', location: 'Remote — EU time zones', isRemote: true, type: 'full-time', creator: { displayName: 'Marcus Chen', avatarUrl: null } },
+  { id: 'job-product-designer', title: 'Product Designer (Founding)', role: 'design', location: 'Athens, Greece', isRemote: false, type: 'full-time', creator: { displayName: 'Elena Papadopoulos', avatarUrl: null } },
+  { id: 'job-data-contract', title: 'Data Scientist — 3-month contract', role: 'data', location: 'Remote', isRemote: true, type: 'contract', creator: { displayName: 'Dr. Sarah Kim', avatarUrl: null } },
+  { id: 'job-bizdev-see', title: 'Business Development, Southeast Europe', role: 'sales', location: 'Thessaloniki, Greece', isRemote: false, type: 'full-time', creator: { displayName: 'Nikos Andreou', avatarUrl: null } },
+  { id: 'job-backend-intern', title: 'Backend Engineering Intern', role: 'engineering', location: 'Remote', isRemote: true, type: 'internship', creator: { displayName: 'Marcus Chen', avatarUrl: null } },
+];
+
+type PreviewGroup = {
+  id: string; name: string; slug: string; description: string | null;
+  privacy: 'public' | 'private' | 'secret'; category: string | null; tags: string[];
+  coverImageUrl: string | null; avatarUrl: string | null;
+  rules: { title: string; description: string }[];
+  memberCount: number; postCount: number; eventCount: number;
+  createdAt: string; updatedAt: string;
+  createdBy: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; role: string } | null;
+  isMember: boolean; memberRole: 'owner' | 'admin' | 'moderator' | 'member' | null;
+};
+
+const PREVIEW_GROUP_RULES = [
+  { title: 'Keep it specific', description: 'Ask about a real decision you are facing, not a hypothetical.' },
+  { title: 'No cold pitching', description: 'Introductions are welcome in the monthly thread, not in every post.' },
+];
+
+const PREVIEW_GROUP_FOUNDERS = {
+  elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor', role: 'founder' },
+  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, headline: 'Partner at Northbound', role: 'investor' },
+  sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'ML lead and advisor', role: 'mentor' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Founder at Meltemi', role: 'founder' },
+};
+
+const PREVIEW_GROUPS: PreviewGroup[] = [
+  { id: 'grp-athens-founders', name: 'Athens Founders', slug: 'athens-founders', description: 'The local room: hiring, landlords, accountants, and who is actually raising.', privacy: 'public', category: 'Local', tags: ['athens', 'community'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 428, postCount: 76, eventCount: 6, createdAt: '2025-03-14T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.elena, isMember: true, memberRole: 'member' },
+  { id: 'grp-saas-metrics', name: 'SaaS Metrics Circle', slug: 'saas-metrics-circle', description: 'Monthly benchmark swaps. Bring your numbers, leave with context.', privacy: 'public', category: 'Industry', tags: ['saas', 'metrics'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 312, postCount: 54, eventCount: 3, createdAt: '2025-06-02T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.marcus, isMember: true, memberRole: 'moderator' },
+  { id: 'grp-ai-builders', name: 'AI Builders EU', slug: 'ai-builders-eu', description: 'Practitioners shipping AI features in European products — evaluation, cost, and regulation.', privacy: 'public', category: 'Technology', tags: ['ai', 'engineering'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 1204, postCount: 180, eventCount: 9, createdAt: '2024-11-20T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.sarah, isMember: false, memberRole: null },
+  { id: 'grp-preseed-fundraising', name: 'Pre-Seed Fundraising', slug: 'pre-seed-fundraising', description: 'Term sheets, SAFEs and cap tables, read by people who have signed them.', privacy: 'private', category: 'Fundraising', tags: ['fundraising', 'legal'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 186, postCount: 41, eventCount: 2, createdAt: '2025-01-09T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.marcus, isMember: false, memberRole: null },
+  { id: 'grp-product-craft', name: 'Product & Design Craft', slug: 'product-design-craft', description: 'Critique threads for real screens, with the constraint that made them that way.', privacy: 'public', category: 'Product', tags: ['product', 'design'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 254, postCount: 33, eventCount: 1, createdAt: '2025-04-18T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.elena, isMember: false, memberRole: null },
+  { id: 'grp-women-founders-gr', name: 'Women Founders Greece', slug: 'women-founders-greece', description: 'Peer support and introductions for women building companies in Greece.', privacy: 'public', category: 'Community', tags: ['community', 'greece'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 97, postCount: 12, eventCount: 4, createdAt: '2025-08-01T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.elena, isMember: false, memberRole: null },
+  { id: 'grp-b2b-sales', name: 'B2B Sales for Technical Founders', slug: 'b2b-sales-technical-founders', description: 'Just opened. The first discussion thread goes up after the kickoff call.', privacy: 'public', category: 'Sales', tags: ['sales', 'b2b'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 143, postCount: 0, eventCount: 0, createdAt: '2026-08-30T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.nikos, isMember: false, memberRole: null },
+];
+
+const PREVIEW_OPPORTUNITIES = [
+  { id: 'opp-technical-cofounder', title: 'Technical co-founder — vertical SaaS for logistics', description: 'Design partner signed, 14 interviews done, no engineer. Equity, not salary, until the pre-seed closes.', type: 'cofounder', company: 'Meltemi', location: 'Athens, Greece', isRemote: false, url: null, tags: ['cofounder', 'logistics', 'saas'], deadline: '2026-10-15T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-08-26T09:00:00.000Z' },
+  { id: 'opp-fractional-cto', title: 'Fractional CTO — two days a week', description: 'Six-month engagement to take an existing prototype to production and hire the first two engineers.', type: 'job', company: 'Harbor', location: 'Remote — EU time zones', isRemote: true, url: null, tags: ['engineering', 'leadership'], deadline: '2026-09-30T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-29T09:00:00.000Z' },
+  { id: 'opp-angel-syndicate', title: 'Angel syndicate — pre-seed allocation', description: 'Open allocation alongside a lead. Greek and Cypriot SaaS teams with a paying design partner.', type: 'investment', company: 'Northbound', location: 'Remote', isRemote: true, url: null, tags: ['fundraising', 'pre-seed'], deadline: '2026-11-01T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Marcus Chen', avatarUrl: null }, createdAt: '2026-09-01T09:00:00.000Z' },
+  { id: 'opp-design-partner', title: 'Design partner wanted — ops teams of 20 to 200', description: 'Free for six months in exchange for weekly feedback sessions and a public case study.', type: 'partnership', company: 'Harbor', location: 'Remote', isRemote: true, url: null, tags: ['partnership', 'b2b'], deadline: null, isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-18T09:00:00.000Z' },
+  { id: 'opp-mentor-ml', title: 'Mentorship — ML evaluation and cost control', description: 'Four sessions with a practitioner, for teams putting their first model in front of customers.', type: 'mentorship', company: null, location: 'Remote', isRemote: true, url: null, tags: ['ai', 'mentorship'], deadline: '2026-10-05T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Dr. Sarah Kim', avatarUrl: null }, createdAt: '2026-09-02T09:00:00.000Z' },
+  { id: 'opp-gtm-advisor', title: 'GTM advisor — Southeast Europe expansion', description: 'Advisory shares for someone who has sold B2B software into Greece, Romania and Bulgaria.', type: 'other', company: 'Meltemi', location: 'Thessaloniki, Greece', isRemote: false, url: null, tags: ['gtm', 'advisory'], deadline: null, isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-07-22T09:00:00.000Z' },
+];
+
+/*
+ * The investor's board. One row per startup, at whatever stage — the watchlist,
+ * the pipeline and the portfolio read the same rows through different filters,
+ * so the demo cannot show a company as invested on one screen and missing on
+ * another.
+ */
+type PreviewDeal = {
+  id: string;
+  name: string;
+  tagline: string | null;
+  industry: string | null;
+  location: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  companyStage: string | null;
+  teamSize: number | null;
+  pipelineStage: string;
+  starred: boolean;
+  alertsEnabled: boolean;
+  notes: string | null;
+  tags: string[];
+  currency: string;
+  askAmountCents: number | null;
+  investedCents: number | null;
+  currentValueCents: number | null;
+  investedAt: string | null;
+  status: string;
+  lastActivityAt: string;
+  createdAt: string;
+  founder: { id: string; displayName: string; avatarUrl: string | null; headline: string | null } | null;
+  recentEvents: Array<{ id: string; type: string; title: string; body: string | null; createdAt: string }>;
+};
+
+const PREVIEW_DEALS: PreviewDeal[] = [
+  {
+    id: 'deal-harbor', name: 'Harbor', tagline: 'The operating system for early-stage founders.',
+    industry: 'SaaS', location: 'Athens, Greece', website: null, logoUrl: null,
+    companyStage: 'seed', teamSize: 4, pipelineStage: 'negotiating', starred: true, alertsEnabled: true,
+    notes: 'Term sheet out. Waiting on the traction slide.', tags: ['saas', 'b2b'],
+    currency: 'EUR', askAmountCents: 75_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-09-03T14:00:00.000Z', createdAt: '2026-05-02T09:00:00.000Z',
+    founder: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor' },
+    recentEvents: [
+      { id: 'ev-h1', type: 'stage_change', title: 'Moved to negotiating', body: null, createdAt: '2026-09-03T14:00:00.000Z' },
+      { id: 'ev-h2', type: 'deck', title: 'Sent an updated deck', body: null, createdAt: '2026-08-27T10:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-meltemi', name: 'Meltemi', tagline: 'Vertical SaaS for logistics operators.',
+    industry: 'Logistics', location: 'Thessaloniki, Greece', website: null, logoUrl: null,
+    companyStage: 'pre_seed', teamSize: 2, pipelineStage: 'due_diligence', starred: true, alertsEnabled: true,
+    notes: 'Design partner signed. No engineer yet.', tags: ['logistics', 'saas'],
+    currency: 'EUR', askAmountCents: 25_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-09-01T09:00:00.000Z', createdAt: '2026-06-14T09:00:00.000Z',
+    founder: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Founder at Meltemi' },
+    recentEvents: [
+      { id: 'ev-m1', type: 'milestone', title: 'First paying design partner', body: null, createdAt: '2026-09-01T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-aegis', name: 'Aegis Health', tagline: 'Triage support for community clinics.',
+    industry: 'HealthTech', location: 'Patras, Greece', website: null, logoUrl: null,
+    companyStage: 'seed', teamSize: 6, pipelineStage: 'invested', starred: false, alertsEnabled: true,
+    notes: null, tags: ['health', 'ai'],
+    currency: 'EUR', askAmountCents: 60_000_000, investedCents: 10_000_000, currentValueCents: 14_500_000,
+    investedAt: '2026-02-11T09:00:00.000Z', status: 'active',
+    lastActivityAt: '2026-08-20T09:00:00.000Z', createdAt: '2025-11-03T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-a1', type: 'update', title: 'Q2 update: 3 clinics live', body: null, createdAt: '2026-08-20T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-orion', name: 'Orion Grid', tagline: 'Demand response for small utilities.',
+    industry: 'CleanTech', location: 'Remote', website: null, logoUrl: null,
+    companyStage: 'series_a', teamSize: 14, pipelineStage: 'invested', starred: true, alertsEnabled: false,
+    notes: null, tags: ['energy'],
+    currency: 'EUR', askAmountCents: null, investedCents: 25_000_000, currentValueCents: 41_000_000,
+    investedAt: '2025-09-30T09:00:00.000Z', status: 'active',
+    lastActivityAt: '2026-07-18T09:00:00.000Z', createdAt: '2025-04-08T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-o1', type: 'fundraise', title: 'Closed a Series A extension', body: null, createdAt: '2026-07-18T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-kolo', name: 'Kolo Labs', tagline: 'Developer tooling for embedded teams.',
+    industry: 'DevTools', location: 'Remote', website: null, logoUrl: null,
+    companyStage: 'pre_seed', teamSize: 3, pipelineStage: 'discovered', starred: false, alertsEnabled: true,
+    notes: 'Saw the demo day pitch. Worth a first call.', tags: ['devtools'],
+    currency: 'EUR', askAmountCents: 20_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-09-04T07:00:00.000Z', createdAt: '2026-09-02T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-k1', type: 'update', title: 'Added to the board', body: null, createdAt: '2026-09-02T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-thalia', name: 'Thalia', tagline: 'Booking and payments for independent studios.',
+    industry: 'FinTech', location: 'Athens, Greece', website: null, logoUrl: null,
+    companyStage: 'seed', teamSize: 5, pipelineStage: 'reviewing', starred: false, alertsEnabled: true,
+    notes: null, tags: ['fintech', 'smb'],
+    currency: 'EUR', askAmountCents: 45_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-08-29T09:00:00.000Z', createdAt: '2026-07-21T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-t1', type: 'team', title: 'Hired a second engineer', body: null, createdAt: '2026-08-29T09:00:00.000Z' },
+    ],
+  },
+  {
+    id: 'deal-vela', name: 'Vela', tagline: 'Marketplace for refurbished lab equipment.',
+    industry: 'Marketplace', location: 'Heraklion, Greece', website: null, logoUrl: null,
+    companyStage: 'pre_seed', teamSize: 2, pipelineStage: 'passed', starred: false, alertsEnabled: false,
+    notes: 'Passed — market too thin for the model as pitched.', tags: ['marketplace'],
+    currency: 'EUR', askAmountCents: 15_000_000, investedCents: null, currentValueCents: null,
+    investedAt: null, status: 'active',
+    lastActivityAt: '2026-06-12T09:00:00.000Z', createdAt: '2026-04-30T09:00:00.000Z',
+    founder: null,
+    recentEvents: [
+      { id: 'ev-v1', type: 'stage_change', title: 'Moved to passed', body: null, createdAt: '2026-06-12T09:00:00.000Z' },
+    ],
+  },
+];
+
+const PREVIEW_PIPELINE_STAGES = [
+  'discovered', 'reviewing', 'meeting', 'due_diligence', 'negotiating', 'invested', 'passed',
+] as const;
+
 function pathnameOf(path: string) {
   return path.split('?')[0] ?? path;
 }
@@ -552,6 +1007,303 @@ const PREVIEW_ANALYTICS_OVERVIEW = {
     totalInteractions: 261,
   },
 };
+
+/**
+ * A date relative to now, so "upcoming" stays upcoming whenever the showcase
+ * is opened. Evaluated when a request is answered, never during render, so it
+ * cannot disagree between the server pass and hydration.
+ */
+function previewIsoInDays(days: number, hour = 14): string {
+  const d = new Date(Date.now() + days * 86_400_000);
+  d.setUTCHours(hour, 0, 0, 0);
+  return d.toISOString();
+}
+
+const PREVIEW_COACHING_REL_ID = 'preview-rel-sarah';
+
+/**
+ * The founder's one coaching relationship.
+ *
+ * Dr. Sarah Kim is the demo's mentor on /matches, /jobs, /opportunities and
+ * the dashboard's upcoming panel; she is the coach here too, rather than a
+ * fourth person invented for this page.
+ */
+const PREVIEW_MENTORSHIP_RELATIONSHIPS = [
+  {
+    id: PREVIEW_COACHING_REL_ID,
+    mentorId: 'user-sarah',
+    menteeId: ME_ID,
+    status: 'active' as const,
+    goals: { primary: 'Reach product-market fit' },
+    focusAreas: ['Execution', 'Product roadmap', 'Go-to-market'],
+    startedAt: '2026-07-15T09:00:00.000Z',
+    completedAt: null,
+    nextSessionAt: previewIsoInDays(2),
+    totalSessions: 3,
+    mentor: {
+      id: 'user-sarah',
+      displayName: 'Dr. Sarah Kim',
+      headline: 'Startup mentor - Ex-Google - 3x founder',
+      avatarUrl: null,
+    },
+    mentee: {
+      id: ME_ID,
+      displayName: 'Alex Demo',
+      headline: 'Founder at Harbor',
+      avatarUrl: null,
+      role: 'founder',
+    },
+  },
+];
+
+/** Three sessions: the one the dashboard announces, and the two behind it. */
+function previewMentorshipSessions() {
+  return [
+    {
+      id: 'preview-msess-3',
+      relationshipId: PREVIEW_COACHING_REL_ID,
+      title: 'Roadmap review before the seed round',
+      description: null,
+      scheduledAt: previewIsoInDays(2),
+      duration: 45,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: 'https://meet.example.com/harbor-roadmap',
+      meetingLocation: null,
+      status: 'scheduled' as const,
+      agenda: 'Walk the 12-slide narrative, then cut the roadmap to what closes the round.',
+      mentorNotes: null,
+      menteeNotes: null,
+      actionItems: [] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: null,
+      createdAt: '2026-09-10T09:00:00.000Z',
+    },
+    {
+      id: 'preview-msess-2',
+      relationshipId: PREVIEW_COACHING_REL_ID,
+      title: 'Pricing and unit economics',
+      description: null,
+      scheduledAt: previewIsoInDays(-9),
+      duration: 60,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: null,
+      meetingLocation: null,
+      status: 'completed' as const,
+      agenda: 'Test the pricing story against five real conversations.',
+      mentorNotes: null,
+      menteeNotes:
+        'Charge per seat, not per workspace - the value scales with the team, and the objection we kept hearing was about seats we were not charging for.',
+      actionItems: [
+        { task: 'Rewrite the pricing page around seats', done: true },
+        { task: 'Run five pricing conversations', done: true },
+        { task: 'Recompute unit economics at the new price', done: false },
+      ] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: 5,
+      createdAt: '2026-09-01T09:00:00.000Z',
+    },
+    {
+      id: 'preview-msess-1',
+      relationshipId: PREVIEW_COACHING_REL_ID,
+      title: 'First 20 beta users',
+      description: null,
+      scheduledAt: previewIsoInDays(-23),
+      duration: 45,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: null,
+      meetingLocation: null,
+      status: 'completed' as const,
+      agenda: 'Who to invite first, and what to measure once they are in.',
+      mentorNotes: null,
+      menteeNotes:
+        'Invite in cohorts of five so onboarding friction is visible, and measure the second session rather than the first.',
+      actionItems: [
+        { task: 'Invite the first cohort of five', done: true },
+        { task: 'Instrument second-session return', done: false },
+      ] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: 4,
+      createdAt: '2026-08-18T09:00:00.000Z',
+    },
+  ];
+}
+
+/**
+ * The mentor directory, from the people the showcase already knows.
+ *
+ * Built from PEOPLE rather than written out, so a coach on this page is
+ * someone a visitor can also meet on /matches and /discover.
+ */
+function previewMentors() {
+  const mentors = PEOPLE.filter((p) => p.role === 'mentor' || p.role === 'investor');
+  return mentors.map((p, i) => ({
+    id: `preview-mentor-${p.userId}`,
+    userId: p.userId,
+    displayName: p.displayName,
+    headline: p.headline ?? null,
+    bio: p.bio ?? null,
+    avatarUrl: p.avatarUrl ?? null,
+    location: p.location ?? null,
+    industries: p.industries ?? [],
+    skills: p.skillNames ?? [],
+    startupStages: ['pre_seed', 'seed'],
+    yearsExperience: null,
+    availabilityStatus: (i === 0 ? 'available' : 'limited') as 'available' | 'limited',
+    isFree: i !== 0,
+    hourlyRate: i === 0 ? 150 : null,
+    currency: i === 0 ? 'EUR' : null,
+    sessionCount: i === 0 ? 3 : 0,
+    rating: i === 0 ? 4.5 : null,
+    reviewCount: i === 0 ? 2 : 0,
+  }));
+}
+
+/**
+ * Expert reviews of the Harbor deliverables.
+ *
+ * The Builder banner offers a review of the founder's artifacts; these are
+ * what that offer leads to. The experts are the showcase's own mentors, so a
+ * visitor meets the same people here, on /coaching and in /matches.
+ */
+function previewExpertReviews() {
+  const sarah = {
+    id: 'user-sarah',
+    displayName: 'Dr. Sarah Kim',
+    headline: 'Startup mentor - Ex-Google - 3x founder',
+    avatarUrl: null,
+  };
+  const nikos = {
+    id: 'user-nikos',
+    displayName: 'Nikos Andreou',
+    headline: 'Angel investor - Seed',
+    avatarUrl: null,
+  };
+  const me = {
+    id: ME_ID,
+    displayName: 'Alex Demo',
+    headline: 'Founder at Harbor',
+    avatarUrl: null,
+  };
+
+  return [
+    {
+      id: 'preview-exrev-1',
+      requester: me,
+      expert: sarah,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      reviewType: 'pitch_deck',
+      status: 'submitted',
+      requestMessage: 'Twelve slides for the seed round. Is the traction slide honest enough?',
+      documents: [] as Record<string, unknown>[],
+      summaryFeedback:
+        'The narrative holds until slide six, where the traction claim outruns the evidence behind it. Lead with the retention curve you already have rather than the pipeline you hope for - it is the stronger number and it is the one you can defend.',
+      strengths: [
+        { area: 'Problem', comment: 'Named in one sentence, with a cost attached to it.' },
+        { area: 'Team', comment: 'The complementary-skills story lands without being laboured.' },
+      ] as Record<string, unknown>[],
+      improvements: [
+        { area: 'Traction', recommendation: 'Replace the pipeline figure with second-week retention.' },
+        { area: 'Ask', recommendation: 'State the use of funds in three lines, not eight.' },
+      ] as Record<string, unknown>[],
+      scoreOverall: 7,
+      scoresByArea: { problem: 8, team: 8, traction: 5, market: 7, ask: 6 },
+      isPaid: false,
+      agreedFee: null,
+      currency: 'EUR',
+      requestedAt: previewIsoInDays(-18, 9),
+      acceptedAt: previewIsoInDays(-17, 9),
+      dueDate: previewIsoInDays(-10, 9),
+      submittedAt: previewIsoInDays(-11, 9),
+      rating: 5,
+      ratingComment: 'Changed what we led with. Worth the week of waiting.',
+    },
+    {
+      id: 'preview-exrev-2',
+      requester: me,
+      expert: nikos,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      reviewType: 'business_model',
+      status: 'in_progress',
+      requestMessage: 'The BMC is still a draft - mainly want a read on the pricing block.',
+      documents: [] as Record<string, unknown>[],
+      summaryFeedback: null,
+      strengths: [] as Record<string, unknown>[],
+      improvements: [] as Record<string, unknown>[],
+      scoreOverall: null,
+      scoresByArea: {} as Record<string, number>,
+      isPaid: false,
+      agreedFee: null,
+      currency: 'EUR',
+      requestedAt: previewIsoInDays(-6, 9),
+      acceptedAt: previewIsoInDays(-5, 9),
+      dueDate: previewIsoInDays(4, 9),
+      submittedAt: null,
+      rating: null,
+      ratingComment: null,
+    },
+    {
+      id: 'preview-exrev-3',
+      requester: me,
+      expert: sarah,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      reviewType: 'financial_model',
+      status: 'requested',
+      requestMessage: 'Three-year model, first pass. Mostly checking the assumptions are not silly.',
+      documents: [] as Record<string, unknown>[],
+      summaryFeedback: null,
+      strengths: [] as Record<string, unknown>[],
+      improvements: [] as Record<string, unknown>[],
+      scoreOverall: null,
+      scoresByArea: {} as Record<string, number>,
+      isPaid: true,
+      agreedFee: 250,
+      currency: 'EUR',
+      requestedAt: previewIsoInDays(-2, 9),
+      acceptedAt: null,
+      dueDate: previewIsoInDays(9, 9),
+      submittedAt: null,
+      rating: null,
+      ratingComment: null,
+    },
+  ];
+}
+
+/**
+ * The expert directory, from the same mentors /coaching lists.
+ *
+ * Their standing is counted from the reviews above rather than written out, so
+ * the directory and the review list cannot disagree about how many reviews an
+ * expert has delivered.
+ */
+function previewExperts() {
+  const reviews = previewExpertReviews();
+  return previewMentors().map((m) => {
+    const delivered = reviews.filter((r) => r.expert.id === m.userId && r.status === 'submitted');
+    const ratings = delivered.map((r) => r.rating).filter((r): r is number => r != null);
+    return {
+      id: m.userId,
+      userId: m.userId,
+      displayName: m.displayName,
+      headline: m.headline,
+      bio: m.bio,
+      avatarUrl: m.avatarUrl,
+      skills: m.skills,
+      specializations: m.skills,
+      industries: m.industries,
+      isVerified: m.availabilityStatus === 'available',
+      isFree: m.isFree,
+      feeFrom: m.isFree ? null : m.hourlyRate,
+      currency: m.currency ?? 'EUR',
+      completedReviews: delivered.length,
+      rating: ratings.length
+        ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+        : null,
+    };
+  });
+}
 
 function kitchenSink() {
   return {
@@ -734,10 +1486,30 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
                   ? opportunities
                   : peopleHits;
 
+    /*
+     * Presence is a five-minute window on `lastSeenAt`, the same rule the API
+     * and the directory header use. The fixtures carry an age rather than a
+     * timestamp so the demo has someone online whenever it is opened, and the
+     * header counts are derived from the very rows below them — the directory
+     * cannot show "2 online" over a list where nobody has a dot.
+     */
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const directoryHits = people.map((p) => ({
+      ...p,
+      createdAt: Math.floor(new Date(p.joinedAt).getTime() / 1000),
+      lastSeenAt: p.lastSeenSecondsAgo == null ? null : nowSeconds - p.lastSeenSecondsAgo,
+    }));
+
     return {
-      hits: people,
+      hits: directoryHits,
       results,
       total: results.length,
+      stats: {
+        onlineNow: directoryHits.filter((p) => p.lastSeenAt != null && nowSeconds - p.lastSeenAt <= 300).length,
+        newThisWeek: people.filter((p) => p.joinedAt >= weekAgo).length,
+        mentors: people.filter((p) => p.role === 'mentor').length,
+      },
       categories: {
         people: peopleHits.length,
         jobs: jobs.length,
@@ -802,6 +1574,48 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       },
     };
   }
+  /*
+   * The compatibility modal reads the engine's per-dimension breakdown. In the
+   * demo there is no engine, so the axes are computed here from the very
+   * fields the two profiles show — skills held in common, industry, city — and
+   * never from the overall score. A breakdown derived from its own summary is
+   * the thing this endpoint exists to replace.
+   */
+  const vsMatch = pathname.match(/^\/api\/recommendations\/vs\/([^/]+)$/);
+  if (vsMatch) {
+    const target = PEOPLE.find((p) => p.userId === vsMatch[1] || p.id === vsMatch[1]);
+    if (!target) return { error: 'Not found' };
+    const mySkills = ME_PROFILE.profile.skills.map((sk) => sk.skillName.toLowerCase());
+    const theirSkills = target.skillNames.map((n) => n.toLowerCase());
+    const shared = theirSkills.filter((n) => mySkills.includes(n));
+    const pct = (part: number, whole: number) => (whole === 0 ? 0 : Math.round((part / whole) * 100));
+    const sameCity = target.location.split(',')[0]?.trim() === ME_PROFILE.profile.location.split(',')[0]?.trim();
+    const sameCountry = target.location.split(',').pop()?.trim() === ME_PROFILE.profile.location.split(',').pop()?.trim();
+    // A co-founder search rewards complement, not similarity: the skills axis
+    // reads what they bring that the viewer does not.
+    const complement = pct(theirSkills.length - shared.length, Math.max(theirSkills.length, 1));
+    const axes = [
+      { key: 'role', label: 'Role Complementarity', score: target.role === ME_PROFILE.profile.role ? 45 : 88, color: '#4ADE80' },
+      { key: 'skills', label: 'Skills & Expertise', score: complement, color: '#22D3EE' },
+      { key: 'semantic', label: 'Vision & Goals', score: target.matchScore ?? 50, color: '#F472B6' },
+      { key: 'industry', label: 'Industry Alignment', score: target.industries.includes('SaaS') ? 82 : 40, color: '#FB923C' },
+      { key: 'location', label: 'Location Fit', score: sameCity ? 100 : sameCountry ? 70 : 35, color: '#A78BFA' },
+      { key: 'behavioral', label: 'Platform Activity', score: target.lastSeenSecondsAgo == null ? 30 : 85, color: '#34D399' },
+    ];
+    return {
+      overall: {
+        score: Math.round(axes.reduce((sum, ax) => sum + ax.score, 0) / axes.length),
+        confidence: Math.min(95, 40 + theirSkills.length * 10),
+      },
+      breakdown: axes,
+      badges: axes.filter((ax) => ax.score >= 80).map((ax) => ax.label).slice(0, 3),
+      sharedStrengths: shared.length
+        ? [`Both of you work on ${shared.join(' and ')}.`]
+        : [],
+      frictionPoints: sameCity ? [] : [`Different cities — ${target.location} and ${ME_PROFILE.profile.location}.`],
+      reasons: target.matchReasons,
+    };
+  }
   if (pathname.startsWith('/api/recommendations') || pathname.startsWith('/api/matching/recommendations')) {
     return { suggestions: PEOPLE };
   }
@@ -841,6 +1655,11 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname.startsWith('/api/connections')) {
+    // Withdrawing a request the demo user sent. The showcase keeps no server
+    // state, so it answers the shape the caller reads and nothing more.
+    if (method === 'DELETE') {
+      return { ok: true, connectionId: pathname.split('/')[3] ?? '' };
+    }
     if (pathname.includes('/status/')) {
       return { status: 'pending', connectionId: 'conn-elena', direction: 'received' };
     }
@@ -900,6 +1719,12 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         { label: 'Thu', value: 9 },
         { label: 'Fri', value: 12 },
       ],
+      // Counted from the demo world rather than stated, so the /discover
+      // header agrees with the directory and the groups list below it.
+      founders: PEOPLE.filter((p) => p.role === 'founder').length,
+      mentors: PEOPLE.filter((p) => p.role === 'mentor').length,
+      successfulMatches: CONNECTIONS.length,
+      communities: PREVIEW_GROUPS.length,
     };
   }
   if (pathname === '/api/dashboard/me') {
@@ -940,15 +1765,69 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
   if (pathname === '/api/dashboard/venture-readiness') {
+    /*
+     * Platform engagement, not startup readiness - two different questions that
+     * used to wear the same name here.
+     *
+     * This endpoint asks how much of the platform the founder has actually
+     * used; /readiness asks how close the venture is to raising. This payload
+     * once answered with three dimensions called Team, Product and Market -
+     * three of the six names /readiness uses for the other question - so the
+     * two screens looked like they disagreed about one number when they were
+     * never measuring the same thing. The six below are the dimensions
+     * `computeVentureReadiness` really returns, with its real weights.
+     *
+     * Every score is derived from `signals` with that method's own thresholds,
+     * so the demo agrees with what the other demo screens show: one research
+     * board holding six items (/research), two documents in one workspace
+     * (/builder), eight connections and one mentoring session.
+     */
+    const signals = {
+      boardCount: 1,
+      totalNodes: 6,
+      docCount: 2,
+      connectionCount: 8,
+      sessionCount: 1,
+      recentConnectionCount: 2,
+      eventRsvpCount: 2,
+      groupCount: 2,
+    };
+
+    // 9 of the 10 profile checks - everything but "7+ skills", which is why the
+    // profile-strength card says "Skills (5+)".
+    const profileScore = 90;
+    // 20 for having a board + 20 for five or more nodes.
+    const researchScore = 40;
+    // 20 for having a workspace + 20 for at least one document.
+    const artifactScore = 40;
+    // 15 + 15 for eight connections, + 20 for one session.
+    const collaborationScore = 50;
+    // 50 for at least one connection accepted in the last 14 days.
+    const momentumScore = 50;
+    // 25 for an event RSVP + 25 for a group membership.
+    const ecosystemScore = 50;
+
+    const dimensions = [
+      { key: 'profile', label: 'Profile Depth', score: profileScore, weight: 15, href: '/profile' },
+      { key: 'research', label: 'Research Depth', score: researchScore, weight: 20, href: '/research' },
+      { key: 'artifacts', label: 'Artifact Quality', score: artifactScore, weight: 25, href: '/builder' },
+      { key: 'collaboration', label: 'Collaboration', score: collaborationScore, weight: 20, href: '/connections' },
+      { key: 'momentum', label: 'Momentum (14d)', score: momentumScore, weight: 10, href: '/activity' },
+      { key: 'ecosystem', label: 'Ecosystem Engagement', score: ecosystemScore, weight: 10, href: '/events' },
+    ];
+
     return {
-      overall: 42,
-      dimensions: [
-        { key: 'team', label: 'Team', score: 50, weight: 1, href: '/profile' },
-        { key: 'product', label: 'Product', score: 35, weight: 1, href: '/builder' },
-        { key: 'market', label: 'Market', score: 40, weight: 1, href: '/research' },
-      ],
-      lowestDimension: { key: 'product', label: 'Product', score: 35, weight: 1, href: '/builder' },
-      signals: { boardCount: 1, totalNodes: 6, docCount: 2, connectionCount: 8, sessionCount: 1 },
+      overall: Math.round(
+        profileScore * 0.15 +
+          researchScore * 0.2 +
+          artifactScore * 0.25 +
+          collaborationScore * 0.2 +
+          momentumScore * 0.1 +
+          ecosystemScore * 0.1,
+      ),
+      dimensions,
+      lowestDimension: [...dimensions].sort((a, b) => a.score - b.score)[0],
+      signals,
     };
   }
 
@@ -975,11 +1854,175 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname === '/api/research/boards') {
+    if (path.includes('archived=1') || path.includes('archived=true')) {
+      return { boards: [] };
+    }
     return kitchenSink().boards ? { boards: kitchenSink().boards } : { boards: [] };
   }
   if (pathname.startsWith('/api/research/boards/')) {
-    const board = kitchenSink().boards[0];
-    return { board: { ...board, nodes: [], connectors: [] } };
+    const rest = pathname.replace(/^\/api\/research\/boards\//, '');
+    const segments = rest.split('/').filter(Boolean);
+    if (segments[1] === 'nodes' && segments[2] === 'batch' && method === 'PATCH') {
+      const updates = Array.isArray(body.updates) ? body.updates : [];
+      previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
+        const patch = updates.find((row) => row && typeof row === 'object' && (row as { id?: string }).id === node.id) as Record<string, unknown> | undefined;
+        if (!patch) return node;
+        return {
+          ...node,
+          posX: typeof patch.posX === 'number' ? patch.posX : node.posX,
+          posY: typeof patch.posY === 'number' ? patch.posY : node.posY,
+          width: typeof patch.width === 'number' ? patch.width : node.width,
+          height: typeof patch.height === 'number' ? patch.height : node.height,
+          zIndex: typeof patch.zIndex === 'number' ? patch.zIndex : node.zIndex,
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      return { ok: true };
+    }
+    if (segments[1] === 'nodes' && method === 'POST') {
+      const node: PreviewGtmNode = {
+        ...seedPreviewGtmNodes()[0],
+        id: `n-preview-${Date.now()}`,
+        type: typeof body.type === 'string' ? body.type : 'note',
+        title: typeof body.title === 'string' ? body.title : 'Note',
+        content: typeof body.content === 'string' ? body.content : '',
+        posX: typeof body.posX === 'number' ? body.posX : 80,
+        posY: typeof body.posY === 'number' ? body.posY : 80,
+        width: typeof body.width === 'number' ? body.width : 280,
+        height: typeof body.height === 'number' ? body.height : 200,
+        color: typeof body.color === 'string' ? body.color : null as unknown as string,
+        metadata: body.metadata ?? null,
+        locked: body.locked === true,
+        collapsed: body.collapsed === true,
+        zIndex: typeof body.zIndex === 'number' ? body.zIndex : 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      previewGtmBoardNodes = [...previewGtmBoardNodes, node];
+      return { node };
+    }
+    if (segments[1] === 'connectors' && method === 'POST') {
+      const connector: PreviewGtmConnector = {
+        id: `c-preview-${Date.now()}`,
+        boardId: 'board-gtm',
+        fromNodeId: typeof body.fromNodeId === 'string' ? body.fromNodeId : '',
+        toNodeId: typeof body.toNodeId === 'string' ? body.toNodeId : '',
+        label: typeof body.label === 'string' ? body.label : null,
+        color: typeof body.color === 'string' ? body.color : null,
+        style: typeof body.style === 'string' ? body.style : 'solid',
+      };
+      previewGtmConnectors = [...previewGtmConnectors, connector];
+      return { connector };
+    }
+    if (method === 'PATCH' || method === 'PUT') {
+      if (body.canvasState && typeof body.canvasState === 'object') {
+        previewGtmCanvasState = { ...previewGtmCanvasState, ...(body.canvasState as Record<string, unknown>) };
+      }
+      return previewGtmBoardResponse();
+    }
+    return previewGtmBoardResponse();
+  }
+
+  const nodeItemMatch = pathname.match(/^\/api\/research\/nodes\/([^/]+)$/);
+  if (nodeItemMatch) {
+    const nodeId = nodeItemMatch[1];
+    if (method === 'DELETE') {
+      previewGtmBoardNodes = previewGtmBoardNodes.filter((n) => n.id !== nodeId);
+      previewGtmConnectors = previewGtmConnectors.filter((c) => c.fromNodeId !== nodeId && c.toNodeId !== nodeId);
+      return { ok: true };
+    }
+    if (method === 'PATCH' || method === 'PUT') {
+      let updated = previewGtmBoardNodes.find((n) => n.id === nodeId);
+      previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
+        if (node.id !== nodeId) return node;
+        updated = {
+          ...node,
+          ...(typeof body.title === 'string' ? { title: body.title } : {}),
+          ...(typeof body.content === 'string' ? { content: body.content } : {}),
+          ...(typeof body.url === 'string' || body.url === null ? { url: body.url as string | null } : {}),
+          ...(typeof body.posX === 'number' ? { posX: body.posX } : {}),
+          ...(typeof body.posY === 'number' ? { posY: body.posY } : {}),
+          ...(typeof body.width === 'number' ? { width: body.width } : {}),
+          ...(typeof body.height === 'number' ? { height: body.height } : {}),
+          ...(typeof body.zIndex === 'number' ? { zIndex: body.zIndex } : {}),
+          ...(typeof body.color === 'string' || body.color === null ? { color: body.color as string } : {}),
+          ...(typeof body.collapsed === 'boolean' ? { collapsed: body.collapsed } : {}),
+          ...(typeof body.locked === 'boolean' ? { locked: body.locked } : {}),
+          ...(body.metadata !== undefined ? { metadata: mergeNodeMetadata(node.metadata, body.metadata) } : {}),
+          ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
+          ...(typeof body.builderDocumentId === 'string' || body.builderDocumentId === null
+            ? { builderDocumentId: body.builderDocumentId as string | null }
+            : {}),
+          updatedAt: new Date().toISOString(),
+        };
+        return updated;
+      });
+      return { node: updated ?? previewGtmBoardNodes[0] };
+    }
+  }
+
+  const connectorItemMatch = pathname.match(/^\/api\/research\/connectors\/([^/]+)$/);
+  if (connectorItemMatch) {
+    const connectorId = connectorItemMatch[1];
+    if (method === 'DELETE') {
+      previewGtmConnectors = previewGtmConnectors.filter((c) => c.id !== connectorId);
+      return { ok: true };
+    }
+    if (method === 'PATCH') {
+      previewGtmConnectors = previewGtmConnectors.map((c) =>
+        c.id === connectorId
+          ? {
+              ...c,
+              label: typeof body.label === 'string' ? body.label : c.label,
+              color: typeof body.color === 'string' ? body.color : c.color,
+              style: typeof body.style === 'string' ? body.style : c.style,
+            }
+          : c,
+      );
+      return { connector: previewGtmConnectors.find((c) => c.id === connectorId) };
+    }
+  }
+
+  const nodeCommentsMatch = pathname.match(/^\/api\/research\/nodes\/([^/]+)\/comments$/);
+  if (nodeCommentsMatch) {
+    const nodeId = nodeCommentsMatch[1];
+    if (method === 'GET') {
+      const comments = previewResearchComments.filter((c) => c.nodeId === nodeId && !c.parentId);
+      return {
+        comments: comments.map((c) => ({
+          ...c,
+          replies: previewResearchComments.filter((r) => r.parentId === c.id),
+        })),
+      };
+    }
+    if (method === 'POST') {
+      const comment = makePreviewResearchComment(nodeId, body);
+      previewResearchComments = [...previewResearchComments, comment];
+      return { comment };
+    }
+  }
+
+  const commentItemMatch = pathname.match(/^\/api\/research\/comments\/([^/]+)$/);
+  if (commentItemMatch) {
+    const commentId = commentItemMatch[1];
+    if (method === 'PATCH') {
+      previewResearchComments = previewResearchComments.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              body: typeof body.body === 'string' ? body.body : c.body,
+              resolved: typeof body.resolved === 'boolean' ? body.resolved : c.resolved,
+              updatedAt: new Date().toISOString(),
+            }
+          : c,
+      );
+      const comment = previewResearchComments.find((c) => c.id === commentId);
+      return { comment: comment ?? makePreviewResearchComment('preview-node', body) };
+    }
+    if (method === 'DELETE') {
+      previewResearchComments = previewResearchComments.filter((c) => c.id !== commentId && c.parentId !== commentId);
+      return { ok: true };
+    }
   }
 
   if (pathname === '/api/skills' || pathname.startsWith('/api/skills?')) {
@@ -1147,6 +2190,27 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
   if (pathname === '/api/ai/chat' || pathname === '/api/ai/chat/stream') {
     const text = String(body.message ?? '');
+    // The server does two things with a `conversationId` that this layer
+    // ignored: it appends both turns to the thread, and — if the thread is
+    // still called "New Conversation" — it renames it after the first user
+    // message (ai-conversation.service.ts:151, 50 chars + ellipsis). Without
+    // either, every demo thread stayed "Νέα συνομιλία" forever and reopened
+    // empty; the visitor's /ai sidebar was four identical rows. Same rule,
+    // same truncation, so the two modes read alike.
+    const convId = typeof body.conversationId === 'string' ? body.conversationId : null;
+    const conv = convId ? PREVIEW_AI_CONVERSATIONS.find((c) => c.id === convId) : undefined;
+    if (conv && text) {
+      const reply = `Preview copilot received: “${text}”. Use the in-app assistant tools for live graph actions.`;
+      const at = new Date().toISOString();
+      conv.messages.push(
+        { id: `ai-msg-${Date.now()}-u`, role: 'user', content: text, createdAt: at },
+        { id: `ai-msg-${Date.now()}-a`, role: 'assistant', content: reply, model: 'copilot', createdAt: at },
+      );
+      conv.updatedAt = at;
+      if (conv.title === 'New Conversation' || conv.title === 'New conversation' || !conv.title) {
+        conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+      }
+    }
     return {
       message: text
         ? `Preview copilot received: “${text}”. Use the in-app assistant tools for live graph actions.`
@@ -1343,7 +2407,23 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       levelLabel: 'Builder',
       xpToNextLevel: 80,
       levelProgress: 84,
-      recentEvents: [],
+      // The showcase's last week, in the event vocabulary EVENT_CONFIG uses on
+      // the server (apps/api gamification.types.ts). Used to be `[]`, which left
+      // /reputation's Overview and History empty for the one account every
+      // visitor sees. These are the actions the rest of the demo already
+      // implies: two Builder artifacts, a closed milestone, a mentor review
+      // acted on, a collaborator invited. Amounts are the config's base XP
+      // (25/40/50/60/80/100), so a reader cross-checking against the ladder
+      // finds them exact. No STREAK_BONUS row: its base is 0 and the server
+      // computes it, so a literal here would be an invented number.
+      recentEvents: [
+        { id: 'xp-1', eventType: 'IMPROVE_ARTIFACT', xpAmount: 40, entityType: 'artifact', metadata: null, createdAt: NOW },
+        { id: 'xp-2', eventType: 'APPLY_FEEDBACK', xpAmount: 80, entityType: 'review', metadata: null, createdAt: '2026-09-03T09:05:00.000Z' },
+        { id: 'xp-3', eventType: 'RECEIVE_MENTOR_FEEDBACK', xpAmount: 60, entityType: 'review', metadata: null, createdAt: '2026-09-02T18:40:00.000Z' },
+        { id: 'xp-4', eventType: 'COMPLETE_MILESTONE', xpAmount: 100, entityType: 'milestone', metadata: null, createdAt: '2026-09-01T11:00:00.000Z' },
+        { id: 'xp-5', eventType: 'CREATE_ARTIFACT', xpAmount: 25, entityType: 'artifact', metadata: null, createdAt: '2026-08-30T14:30:00.000Z' },
+        { id: 'xp-6', eventType: 'INVITE_COLLABORATOR', xpAmount: 50, entityType: 'workspace', metadata: null, createdAt: '2026-08-29T10:10:00.000Z' },
+      ],
       streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW },
     };
   }
@@ -1461,6 +2541,54 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return found ?? previewBuilderDocs[0];
   }
 
+  // -- Mentorship, which /coaching reads from the founder's side --------------
+  if (pathname === '/api/mentorship/relationships') {
+    return { relationships: PREVIEW_MENTORSHIP_RELATIONSHIPS };
+  }
+  const mentorshipSessionsMatch = pathname.match(
+    /^\/api\/mentorship\/relationships\/([^/]+)\/sessions$/,
+  );
+  if (mentorshipSessionsMatch) {
+    return {
+      sessions:
+        mentorshipSessionsMatch[1] === PREVIEW_COACHING_REL_ID ? previewMentorshipSessions() : [],
+    };
+  }
+  if (pathname === '/api/mentorship/sessions/upcoming') {
+    return { sessions: previewMentorshipSessions().filter((x) => x.status === 'scheduled') };
+  }
+  if (pathname === '/api/mentorship/mentors') {
+    const mentors = previewMentors();
+    return { mentors, total: mentors.length, page: 1, totalPages: 1 };
+  }
+
+  // -- Expert reviews, over the model that had no controller until now -------
+  if (pathname === '/api/expert-reviews/experts') {
+    const experts = previewExperts();
+    return { experts, total: experts.length };
+  }
+  if (pathname === '/api/expert-reviews/summary') {
+    const reviews = previewExpertReviews();
+    const rated = reviews.filter((r) => r.rating != null);
+    const scored = reviews.filter((r) => r.scoreOverall != null);
+    return {
+      total: reviews.length,
+      open: reviews.filter((r) => ['requested', 'accepted', 'in_progress'].includes(r.status))
+        .length,
+      submitted: reviews.filter((r) => r.status === 'submitted').length,
+      avgRating: rated.length
+        ? Number((rated.reduce((a, r) => a + (r.rating ?? 0), 0) / rated.length).toFixed(1))
+        : null,
+      avgScore: scored.length
+        ? Number((scored.reduce((a, r) => a + (r.scoreOverall ?? 0), 0) / scored.length).toFixed(1))
+        : null,
+    };
+  }
+  if (pathname === '/api/expert-reviews') {
+    const reviews = previewExpertReviews();
+    return { reviews, total: reviews.length };
+  }
+
   if (pathname === '/api/milestones/summary') {
     return previewMilestoneSummary();
   }
@@ -1542,6 +2670,196 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
   if (pathname === '/api/analytics/weekly-summary') {
     return PREVIEW_ANALYTICS_OVERVIEW.weeklySummary;
+  }
+
+  /*
+   * Showcase areas. Each of these filters the fixtures the way the real
+   * endpoint filters rows, so the tabs, search boxes and chips on those pages
+   * do something — a control that always returns the same list reads as broken
+   * long before anyone checks whether a backend is attached.
+   */
+  if (pathname === '/api/events' || pathname.startsWith('/api/events?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const scope = params.get('scope') ?? 'upcoming';
+    const q = params.get('q')?.toLowerCase() ?? '';
+    const mode = params.get('mode');
+    const limit = Number(params.get('limit') ?? 48);
+    const startsAfterNow = (e: PreviewEvent) => e.startAt >= NOW;
+    const events = PREVIEW_EVENTS
+      .filter((e) => (
+        scope === 'past' ? !startsAfterNow(e)
+          : scope === 'mine' ? e.viewerRsvp != null
+            : startsAfterNow(e)
+      ))
+      .filter((e) => !mode || e.mode === mode)
+      .filter((e) => !q || `${e.title} ${e.description} ${e.location ?? ''} ${e.host.displayName}`.toLowerCase().includes(q))
+      // Upcoming reads forwards; past reads backwards, most recent first.
+      .sort((a, b) => (scope === 'past' ? b.startAt.localeCompare(a.startAt) : a.startAt.localeCompare(b.startAt)))
+      .slice(0, limit);
+    return { events };
+  }
+  if (pathname.startsWith('/api/events/') && pathname.endsWith('/rsvp')) {
+    const id = pathname.split('/')[3];
+    const status = typeof body.status === 'string' ? body.status : 'going';
+    return { ok: true, eventId: id, viewerRsvp: status === 'not_going' ? null : status };
+  }
+  if (pathname.startsWith('/api/events/')) {
+    const id = pathname.split('/')[3];
+    const event = PREVIEW_EVENTS.find((e) => e.id === id);
+    return event ? { event } : { event: PREVIEW_EVENTS[0] };
+  }
+
+  if (pathname === '/api/jobs' || pathname.startsWith('/api/jobs?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const limit = Number(params.get('limit') ?? 50);
+    return { jobs: PREVIEW_JOBS.slice(0, limit) };
+  }
+
+  if (pathname === '/api/groups/my') {
+    return {
+      groups: PREVIEW_GROUPS
+        .filter((g) => g.isMember)
+        .map((g) => ({ ...g, memberRole: g.memberRole ?? 'member', joinedAt: '2026-05-12T09:00:00.000Z' })),
+    };
+  }
+  if (pathname === '/api/groups' || pathname.startsWith('/api/groups?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const category = params.get('category');
+    const privacy = params.get('privacy');
+    const search = params.get('search')?.toLowerCase() ?? '';
+    const sort = params.get('sort') ?? 'popular';
+    const onlyMine = params.get('myGroups') === 'true';
+    const limit = Number(params.get('limit') ?? 30);
+    const offset = Number(params.get('offset') ?? 0);
+    const matched = PREVIEW_GROUPS
+      .filter((g) => !onlyMine || g.isMember)
+      .filter((g) => !category || g.category === category)
+      .filter((g) => !privacy || g.privacy === privacy)
+      .filter((g) => !search || `${g.name} ${g.description ?? ''} ${g.tags.join(' ')} ${g.category ?? ''}`.toLowerCase().includes(search))
+      .sort((a, b) => (
+        sort === 'recent' ? b.createdAt.localeCompare(a.createdAt)
+          // "Trending" is conversation per member, so a small, busy room can
+          // outrank a large quiet one — which is the whole point of the sort.
+          : sort === 'trending' ? (b.postCount / b.memberCount) - (a.postCount / a.memberCount)
+            : b.memberCount - a.memberCount
+      ));
+    const groups = matched.slice(offset, offset + limit);
+    return { groups, total: matched.length, hasMore: offset + groups.length < matched.length };
+  }
+  if (pathname.startsWith('/api/groups/') && (pathname.endsWith('/join') || pathname.endsWith('/leave'))) {
+    return { ok: true, groupId: pathname.split('/')[3], isMember: pathname.endsWith('/join') };
+  }
+  if (pathname.startsWith('/api/groups/')) {
+    const id = pathname.split('/')[3];
+    const group = PREVIEW_GROUPS.find((g) => g.id === id || g.slug === id) ?? PREVIEW_GROUPS[0];
+    return { group: { ...group, members: [] } };
+  }
+
+  if (pathname === '/api/opportunities' || pathname.startsWith('/api/opportunities?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const type = params.get('type');
+    const isRemote = params.get('isRemote');
+    const search = params.get('search')?.toLowerCase() ?? '';
+    const limit = Number(params.get('limit') ?? 20);
+    const offset = Number(params.get('offset') ?? 0);
+    const matched = PREVIEW_OPPORTUNITIES
+      .filter((o) => !type || o.type === type)
+      .filter((o) => isRemote == null || o.isRemote === (isRemote === 'true'))
+      .filter((o) => !search || `${o.title} ${o.description ?? ''} ${o.company ?? ''} ${o.tags.join(' ')}`.toLowerCase().includes(search));
+    const opportunities = matched.slice(offset, offset + limit);
+    return { opportunities, total: matched.length, hasMore: offset + opportunities.length < matched.length };
+  }
+
+  /*
+   * The demo founder belongs to no organisation, so the tenant switcher should
+   * be absent rather than populated with an invented company. An empty list is
+   * the honest answer and the one the page already renders correctly; the
+   * generic fallback answered with a truthy object instead.
+   */
+  if (pathname === '/api/sso/memberships') {
+    return { memberships: [] };
+  }
+
+  if (pathname === '/api/investor/summary') {
+    const invested = PREVIEW_DEALS.filter((d) => d.pipelineStage === 'invested');
+    const deployedCents = invested.reduce((sum, d) => sum + (d.investedCents ?? 0), 0);
+    const currentValueCents = invested.reduce((sum, d) => sum + (d.currentValueCents ?? d.investedCents ?? 0), 0);
+    return {
+      stageCounts: Object.fromEntries(
+        PREVIEW_PIPELINE_STAGES.map((stage) => [
+          stage,
+          PREVIEW_DEALS.filter((d) => d.pipelineStage === stage).length,
+        ]),
+      ),
+      totalDeals: PREVIEW_DEALS.length,
+      investments: invested.length,
+      deployedCents,
+      currentValueCents,
+      returnPct:
+        deployedCents > 0
+          ? Math.round(((currentValueCents - deployedCents) / deployedCents) * 100)
+          : null,
+    };
+  }
+  if (pathname === '/api/investor/activity' || pathname.startsWith('/api/investor/activity?')) {
+    const limit = Number(new URLSearchParams(path.split('?')[1] ?? '').get('limit') ?? 20);
+    const activity = PREVIEW_DEALS
+      .flatMap((deal) =>
+        deal.recentEvents.map((event) => ({
+          id: event.id,
+          dealId: deal.id,
+          dealName: deal.name,
+          logoUrl: deal.logoUrl,
+          type: event.type,
+          title: event.title,
+          body: event.body,
+          createdAt: event.createdAt,
+        })),
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit);
+    return { activity };
+  }
+  if (pathname === '/api/investor/deals' && method === 'POST') {
+    // Watching a startup from Scouting. The showcase keeps no server state, so
+    // it answers the shape the caller reads rather than pretending to persist.
+    const name = typeof body.name === 'string' ? body.name : 'New deal';
+    return {
+      deal: {
+        ...PREVIEW_DEALS[0],
+        id: `deal-preview-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        name,
+        pipelineStage: 'discovered',
+        starred: false,
+        investedCents: null,
+        currentValueCents: null,
+        investedAt: null,
+        recentEvents: [],
+      },
+    };
+  }
+  if (pathname === '/api/investor/deals' || pathname.startsWith('/api/investor/deals?')) {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const stage = params.get('pipelineStage');
+    const starred = params.get('starred');
+    const status = params.get('status');
+    const search = params.get('search')?.toLowerCase() ?? '';
+    const limit = Number(params.get('limit') ?? 50);
+    const offset = Number(params.get('offset') ?? 0);
+    const matched = PREVIEW_DEALS
+      .filter((d) => !stage || d.pipelineStage === stage)
+      .filter((d) => starred == null || d.starred === (starred === 'true'))
+      .filter((d) => !status || d.status === status)
+      .filter((d) => !search || `${d.name} ${d.tagline ?? ''} ${d.industry ?? ''}`.toLowerCase().includes(search))
+      .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt));
+    const deals = matched.slice(offset, offset + limit);
+    return { deals, total: matched.length, hasMore: offset + deals.length < matched.length };
+  }
+  if (pathname.startsWith('/api/investor/deals/')) {
+    const id = pathname.split('/')[4];
+    const deal = PREVIEW_DEALS.find((d) => d.id === id);
+    if (method !== 'GET') return { ok: true, deal: deal ?? PREVIEW_DEALS[0] };
+    return deal ? { deal } : { deal: PREVIEW_DEALS[0] };
   }
 
   if (method !== 'GET') {

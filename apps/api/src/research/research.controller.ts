@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ResearchService } from './research.service';
@@ -184,8 +184,14 @@ export class ResearchController {
   // ─── Boards ────────────────────────────────────────────────────────────────
 
   @Get('boards')
-  async listBoards(@CurrentUser() user: { id: string }) {
-    const boards = await this.research.listBoards(user.id);
+  async listBoards(
+    @CurrentUser() user: { id: string },
+    @Query('archived') archived?: string,
+  ) {
+    const boards = await this.research.listBoards(
+      user.id,
+      archived === '1' || archived === 'true',
+    );
     return { boards };
   }
 

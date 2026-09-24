@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   Briefcase, TrendingUp, TrendingDown, DollarSign,
@@ -9,6 +10,13 @@ import {
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/layout/AppShell';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import {
+  listInvestorDeals,
+  getInvestorSummary,
+  type InvestorDeal,
+} from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,14 +67,59 @@ type Investment = {
   stage: string;
   status: 'active' | 'exited' | 'written_off';
   teamSize: number;
+  /** ISO instant. Rendered through `RelativeTime`, so a phrase like
+   *  "1 week ago" written here would reach `new Date()` as an invalid date. */
   lastUpdate: string;
 };
 
+/** Compact money in the deal's own currency, not a hard-coded dollar. */
+function money(cents: number | null | undefined, currency = 'EUR'): string {
+  if (cents == null) return '\u2014';
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+}
+
+/**
+ * The portfolio row from the deal row.
+ *
+ * A portfolio entry is not a separate thing from a pipeline deal — it is a
+ * deal that reached `invested`. Reading it off the same row is what stops the
+ * board and this page disagreeing about who has been backed.
+ */
+function toInvestment(deal: InvestorDeal): Investment {
+  const invested = deal.investedCents ?? 0;
+  const current = deal.currentValueCents ?? invested;
+  return {
+    id: deal.id,
+    name: deal.name,
+    logoUrl: deal.logoUrl ?? undefined,
+    industry: deal.industry ?? '\u2014',
+    investedAt: deal.investedAt
+      ? new Date(deal.investedAt).toLocaleDateString('en-GB', {
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
+      : '\u2014',
+    amount: money(deal.investedCents, deal.currency),
+    currentValue: money(deal.currentValueCents, deal.currency),
+    returnPct: invested > 0 ? Math.round(((current - invested) / invested) * 100) : 0,
+    stage: deal.companyStage ?? '\u2014',
+    status: deal.status,
+    teamSize: deal.teamSize ?? 0,
+    lastUpdate: deal.lastActivityAt,
+  };
+}
+
 const MOCK_INVESTMENTS: Investment[] = [
-  { id: '1', name: 'FoodTech Pro', industry: 'FoodTech', investedAt: 'Feb 2025', amount: '$50K', currentValue: '$75K', returnPct: 50, stage: 'Seed', status: 'active', teamSize: 5, lastUpdate: '1 week ago' },
-  { id: '2', name: 'CloudSecure', industry: 'Cybersecurity', investedAt: 'Jan 2025', amount: '$100K', currentValue: '$120K', returnPct: 20, stage: 'Series A', status: 'active', teamSize: 12, lastUpdate: '3 days ago' },
-  { id: '3', name: 'DataVault', industry: 'Enterprise', investedAt: 'Dec 2024', amount: '$75K', currentValue: '$90K', returnPct: 20, stage: 'Seed', status: 'active', teamSize: 8, lastUpdate: '2 weeks ago' },
-  { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: 'Oct 2024', amount: '$50K', currentValue: '$250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: 'Exited Mar 2025' },
+  { id: '1', name: 'FoodTech Pro', industry: 'FoodTech', investedAt: 'Feb 2025', amount: '$50K', currentValue: '$75K', returnPct: 50, stage: 'Seed', status: 'active', teamSize: 5, lastUpdate: '2026-08-28T09:00:00.000Z' },
+  { id: '2', name: 'CloudSecure', industry: 'Cybersecurity', investedAt: 'Jan 2025', amount: '$100K', currentValue: '$120K', returnPct: 20, stage: 'Series A', status: 'active', teamSize: 12, lastUpdate: '2026-09-01T09:00:00.000Z' },
+  { id: '3', name: 'DataVault', industry: 'Enterprise', investedAt: 'Dec 2024', amount: '$75K', currentValue: '$90K', returnPct: 20, stage: 'Seed', status: 'active', teamSize: 8, lastUpdate: '2026-08-21T09:00:00.000Z' },
+  { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: 'Oct 2024', amount: '$50K', currentValue: '$250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: '2026-03-18T09:00:00.000Z' },
 ];
 
 function InvestmentCard({ investment }: { investment: Investment }) {
@@ -103,7 +156,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label={`Actions for ${investment.name}`} variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${investment.name}`}>
                     <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -145,7 +198,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
                 <Users className="icon-sm" />
                 {investment.teamSize} team members
               </span>
-              <span>Last update: {investment.lastUpdate}</span>
+              <span>Last update: <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>
             </div>
           </div>
         </div>
@@ -156,7 +209,29 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
 export default function InvestorPortfolioPage() {
   const { showDemoData } = useDemoData();
-  const investments = showDemoData ? MOCK_INVESTMENTS : [];
+  /*
+   * The portfolio is the `invested` slice of the investor's own board. The
+   * demo fixtures stay as what an empty portfolio shows while the "demo data"
+   * switch is on; a real investment always wins.
+   */
+  const { data: investedPage, isLoading } = useQuery({
+    queryKey: ['investor', 'deals', 'invested'],
+    queryFn: () => listInvestorDeals({ pipelineStage: 'invested', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: summary } = useQuery({
+    queryKey: ['investor', 'summary'],
+    queryFn: getInvestorSummary,
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const liveInvestments = (investedPage?.deals ?? []).map(toInvestment);
+  const investments = liveInvestments.length > 0
+    ? liveInvestments
+    : showDemoData ? MOCK_INVESTMENTS : [];
+  const isLive = liveInvestments.length > 0;
   const valueHistory = showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
   const sectorData = showDemoData ? SECTOR_DISTRIBUTION : [];
 
@@ -164,7 +239,7 @@ export default function InvestorPortfolioPage() {
   const totalValue = 535000;
   const totalReturn = ((totalValue - totalInvested) / totalInvested) * 100;
 
-  if (!showDemoData && investments.length === 0) {
+  if (!isLoading && !showDemoData && investments.length === 0) {
     return (
       <AppShell title="Portfolio" description="Track your investments and returns">
         <EmptyState
@@ -192,9 +267,16 @@ export default function InvestorPortfolioPage() {
         {/* Summary Stats */}
         <div className="grid gap-3 sm:grid-cols-4">
           {[
-            { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
-            { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-accessible' },
-            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-status-success' },
+            /*
+             * "$275K" and "$535K" were string constants sitting beside a real
+             * company count. Summed by the API over the same rows the table
+             * below lists, so the four tiles are one statement.
+             */
+            { label: 'Total Invested', value: isLive ? money(summary?.deployedCents, 'EUR') : '$275K', icon: DollarSign, color: 'text-foreground' },
+            { label: 'Current Value', value: isLive ? money(summary?.currentValueCents, 'EUR') : '$535K', icon: TrendingUp, color: 'text-primary-accessible' },
+            { label: 'Total Return', value: isLive
+                ? (summary?.returnPct == null ? '\u2014' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`)
+                : `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-status-success' },
             { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-status-info' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>

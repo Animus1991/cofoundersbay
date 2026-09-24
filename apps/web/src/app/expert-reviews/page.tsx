@@ -1,6 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  listExpertReviews,
+  listExperts,
+  type ExpertReviewItem,
+  type ExpertDirectoryItem,
+} from '@/lib/api';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Star, Clock, CheckCircle2, XCircle, AlertTriangle, FileText,
@@ -62,10 +69,14 @@ interface ExpertProfile {
   avatar?: string;
   domains: ReviewType[];
   completedReviews: number;
-  rating: number;
+  /* Null until somebody has rated a review this expert delivered. Zero would
+     read as a bad expert rather than a new one. */
+  rating: number | null;
   bio: string;
   feeFrom?: number;
-  responseTime: string;
+  currency?: string;
+  /* Nothing records how fast an expert replies. */
+  responseTime?: string;
   isVerified: boolean;
   badges?: string[];
 }
@@ -84,16 +95,16 @@ const REVIEW_TYPE_TONE: Record<ReviewType, StatusTone> = {
   general: 'neutral',
 };
 
-const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; tone: StatusTone }> = {
-  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    tone: 'info' },
-  business_model:         { label: 'Business Model',        icon: Target,      tone: 'accent' },
-  financial_model:        { label: 'Financial Model',       icon: DollarSign,  tone: 'success' },
-  legal_structure:        { label: 'Legal Structure',       icon: Scale,       tone: 'warning' },
-  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   tone: 'info' },
-  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  tone: 'warning' },
-  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       tone: 'accent' },
-  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   tone: 'accent' },
-  general:                { label: 'General Review',        icon: Eye,         tone: 'neutral' },
+const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; labelEl: string; icon: React.ElementType; tone: StatusTone }> = {
+  pitch_deck:             { label: 'Pitch Deck',        labelEl: 'Pitch deck',                icon: FileText,    tone: 'info' },
+  business_model:         { label: 'Business Model',    labelEl: 'Επιχειρηματικό μοντέλο',    icon: Target,      tone: 'accent' },
+  financial_model:        { label: 'Financial Model',   labelEl: 'Οικονομικό μοντέλο',        icon: DollarSign,  tone: 'success' },
+  legal_structure:        { label: 'Legal Structure',   labelEl: 'Νομική δομή',               icon: Scale,       tone: 'warning' },
+  market_analysis:        { label: 'Market Analysis',   labelEl: 'Ανάλυση αγοράς',            icon: BarChart3,   tone: 'info' },
+  go_to_market:           { label: 'Go-to-Market',      labelEl: 'Είσοδος στην αγορά',        icon: TrendingUp,  tone: 'warning' },
+  technical_architecture: { label: 'Tech Architecture', labelEl: 'Τεχνική αρχιτεκτονική',     icon: Code2,       tone: 'accent' },
+  product_strategy:       { label: 'Product Strategy',  labelEl: 'Στρατηγική προϊόντος',      icon: Lightbulb,   tone: 'accent' },
+  general:                { label: 'General Review',    labelEl: 'Γενική αξιολόγηση',         icon: Eye,         tone: 'neutral' },
 };
 
 const REVIEW_STATUS_TONE: Record<ReviewStatus, StatusTone> = {
@@ -105,13 +116,13 @@ const REVIEW_STATUS_TONE: Record<ReviewStatus, StatusTone> = {
   expired: 'neutral',
 };
 
-const STATUS_CONFIG: Record<ReviewStatus, { label: string; tone: StatusTone; icon: React.ElementType }> = {
-  requested:   { label: 'Requested',   tone: 'info',    icon: Clock },
-  accepted:    { label: 'Accepted',    tone: 'success', icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', tone: 'warning', icon: RefreshCw },
-  submitted:   { label: 'Submitted',   tone: 'success', icon: CheckCircle2 },
-  declined:    { label: 'Declined',    tone: 'danger',  icon: XCircle },
-  expired:     { label: 'Expired',     tone: 'neutral', icon: AlertTriangle },
+const STATUS_CONFIG: Record<ReviewStatus, { label: string; labelEl: string; tone: StatusTone; icon: React.ElementType }> = {
+  requested:   { label: 'Requested', labelEl: 'Ζητήθηκε',   tone: 'info',    icon: Clock },
+  accepted:    { label: 'Accepted', labelEl: 'Αποδεκτή',    tone: 'success', icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', labelEl: 'Σε εξέλιξη', tone: 'warning', icon: RefreshCw },
+  submitted:   { label: 'Submitted', labelEl: 'Υποβλήθηκε',   tone: 'success', icon: CheckCircle2 },
+  declined:    { label: 'Declined', labelEl: 'Απορρίφθηκε',    tone: 'danger',  icon: XCircle },
+  expired:     { label: 'Expired', labelEl: 'Έληξε',     tone: 'neutral', icon: AlertTriangle },
 };
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -242,15 +253,16 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
                 <StatusIcon className="icon-sm" />
-                {status.label}
+                <BilingualText en={status.label} el={status.labelEl} compact />
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
-                <TypeIcon className="icon-sm" />{type.label}
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
+                <TypeIcon className="icon-sm" />
+                <BilingualText en={type.label} el={type.labelEl} compact />
               </span>
               {review.isPaid && review.agreedFee && (
                 <span className="text-2xs text-muted-foreground flex items-center gap-1">
@@ -258,12 +270,20 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 </span>
               )}
               {!review.isPaid && (
-                <Badge variant="outline" className="text-2xs h-4 px-1.5">Free</Badge>
+                <Badge variant="outline" className="text-2xs h-4 px-1.5">
+                  <BilingualText en="Free" el="Δωρεάν" compact />
+                </Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
                 <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
                   <Clock className="icon-sm" />
-                  Due {new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
+                  {/* Pinned to UTC on both sides so the server pass and
+                      hydration agree on the day. */}
+                  <BilingualText
+                    en={`Due ${new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                    el={`Προθεσμία ${new Date(review.dueDate).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                    compact
+                  />
                 </span>
               )}
             </div>
@@ -272,7 +292,9 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             {review.scoreOverall && (
               <div className="mt-2 flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground">Overall score:</span>
+                  <span className="text-xs text-muted-foreground">
+                    <BilingualText en="Overall score:" el="Συνολική βαθμολογία:" compact />
+                  </span>
                   <span className={cn('text-sm font-bold', scoreTenPointClass(review.scoreOverall))}>
                     {review.scoreOverall}/10
                   </span>
@@ -319,7 +341,11 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   onClick={() => setExpanded((v) => !v)}
                   className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
                 >
-                  {expanded ? 'Collapse' : 'See feedback'}
+                  <BilingualText
+                    en={expanded ? 'Collapse' : 'See feedback'}
+                    el={expanded ? 'Σύμπτυξη' : 'Δείτε την ανατροφοδότηση'}
+                    compact
+                  />
                   <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
                 </button>
               ) : null}
@@ -407,8 +433,17 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{expert.title}</p>
             </div>
-            {expert.feeFrom && (
-              <p className="text-sm font-semibold text-foreground shrink-0">From €{expert.feeFrom}</p>
+            {expert.feeFrom != null && (
+              <p className="text-sm font-semibold text-foreground shrink-0">
+                {/* The euro sign used to be written in, whatever the expert
+                    charges in. */}
+                <BilingualText en="From" el="Από" compact />{' '}
+                {new Intl.NumberFormat('en-GB', {
+                  style: 'currency',
+                  currency: expert.currency || 'USD',
+                  maximumFractionDigits: 0,
+                }).format(expert.feeFrom)}
+              </p>
             )}
           </div>
 
@@ -418,8 +453,8 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
-                  {cfg.label}
+                <span key={d} className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
                 </span>
               );
             })}
@@ -427,11 +462,20 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} /> {expert.rating} ({expert.completedReviews} reviews)
+              <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} />{' '}
+              {expert.rating ?? '\u2014'}{' '}
+              <BilingualText
+                en={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'review' : 'reviews'})`}
+                el={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'})`}
+                compact
+              />
             </span>
-            <span className="flex items-center gap-1">
-              <Clock className="icon-sm" /> Turnaround: {expert.responseTime}
-            </span>
+            {expert.responseTime && (
+              <span className="flex items-center gap-1">
+                <Clock className="icon-sm" />{' '}
+                <BilingualText en="Turnaround:" el="Χρόνος παράδοσης:" compact /> {expert.responseTime}
+              </span>
+            )}
           </div>
 
           {/* These experts are constants. Mentors are real, bookable and
@@ -459,17 +503,162 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+/**
+ * Which review domains a free-text list of skills names.
+ *
+ * An expert records the words they typed; this page files them under nine
+ * review types. Matching is the honest join, and no match means no chip rather
+ * than filing everyone under "general".
+ */
+const DOMAIN_KEYWORDS: Record<ReviewType, string[]> = {
+  pitch_deck: ['pitch', 'deck', 'storytelling', 'narrative'],
+  business_model: ['business model', 'bmc', 'monetisation', 'monetization', 'pricing'],
+  financial_model: ['financial', 'finance', 'unit economics', 'cfo', 'accounting'],
+  legal_structure: ['legal', 'counsel', 'incorporation', 'contract', 'compliance'],
+  market_analysis: ['market', 'research', 'tam', 'competitive', 'analysis'],
+  go_to_market: ['go-to-market', 'gtm', 'growth', 'sales', 'marketing', 'demand'],
+  technical_architecture: ['architecture', 'engineering', 'infrastructure', 'cto', 'platform'],
+  product_strategy: ['product', 'roadmap', 'discovery', 'ux', 'design'],
+  general: [],
+};
+
+function domainsFrom(words: readonly string[]): ReviewType[] {
+  /*
+   * Whole words, not substrings.
+   *
+   * Plain `includes` filed a mentor under Legal Structure because the
+   * keyword "ip" sits inside "Leadership". Every non-letter becomes a
+   * space and both sides are padded, so a keyword matches only where a word
+   * actually starts and ends - and a multi-word keyword like
+   * "go-to-market" still matches, because it is normalised the same way.
+   */
+  const normalise = (text: string) => ` ${text.toLowerCase().replace(/[^a-z]+/g, ' ').trim()} `;
+  const haystack = normalise(words.join(' '));
+  return (Object.keys(DOMAIN_KEYWORDS) as ReviewType[]).filter(
+    (type) =>
+      DOMAIN_KEYWORDS[type].length > 0 &&
+      DOMAIN_KEYWORDS[type].some((keyword) => haystack.includes(normalise(keyword))),
+  );
+}
+
+/** `[{ area, comment }]` out of a free JSON column, defensively. */
+function notes(raw: Record<string, unknown>[], key: 'comment' | 'recommendation') {
+  return raw
+    .map((entry) => ({
+      area: typeof entry?.area === 'string' ? entry.area : '',
+      [key]: typeof entry?.[key] === 'string' ? (entry[key] as string) : '',
+    }))
+    .filter((entry) => entry.area.length > 0) as never;
+}
+
+/**
+ * One review, from the ExpertReview row it already is.
+ *
+ * This page is the requester's side, so the person named on every card is the
+ * expert - the requester is whoever is reading.
+ */
+function toPageReview(row: ExpertReviewItem): ExpertReview {
+  return {
+    id: row.id,
+    expertName: row.expert?.displayName ?? 'An expert',
+    expertTitle: row.expert?.headline ?? '',
+    expertAvatar: row.expert?.avatarUrl ?? undefined,
+    reviewType: row.reviewType,
+    status: row.status,
+    requestMessage: row.requestMessage ?? undefined,
+    dueDate: row.dueDate ?? undefined,
+    submittedAt: row.submittedAt ?? undefined,
+    scoreOverall: row.scoreOverall ?? undefined,
+    summaryFeedback: row.summaryFeedback ?? undefined,
+    strengthsJson: notes(row.strengths, 'comment'),
+    improvementsJson: notes(row.improvements, 'recommendation'),
+    scoresByArea: Object.keys(row.scoresByArea).length > 0 ? row.scoresByArea : undefined,
+    isPaid: row.isPaid,
+    agreedFee: row.agreedFee ?? undefined,
+    rating: row.rating ?? undefined,
+  };
+}
+
+/** One expert, from the directory the module serves. */
+function toPageExpert(row: ExpertDirectoryItem): ExpertProfile {
+  return {
+    id: row.userId,
+    name: row.displayName ?? 'An expert',
+    title: row.headline ?? '',
+    avatar: row.avatarUrl ?? undefined,
+    domains: domainsFrom([...row.specializations, ...row.skills, ...row.industries]),
+    completedReviews: row.completedReviews,
+    rating: row.rating,
+    bio: row.bio ?? '',
+    feeFrom: row.isFree ? undefined : (row.feeFrom ?? undefined),
+    currency: row.currency,
+    // No column records a turnaround, and none records a verification badge
+    // beyond the one the mentor profile already carries.
+    responseTime: undefined,
+    isVerified: row.isVerified,
+  };
+}
+
 export default function ExpertReviewsPage() {
   const [activeTab, setActiveTab] = useState('my-reviews');
   const [searchExperts, setSearchExperts] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<ReviewType | 'all'>('all');
   const { showDemoData } = useDemoData();
 
-  const myReviews = showDemoData ? DEMO_REVIEWS : [];
+  /*
+   * The founder's own reviews, from the module that now reads ExpertReview.
+   * `side: 'requester'` is what keeps an expert's own requests out of the
+   * queue of requests made of them.
+   */
+  const { data: reviewData, isLoading: reviewsLoading } = useQuery({
+    queryKey: ['expert-reviews', 'requester'],
+    queryFn: () => listExpertReviews({ side: 'requester', limit: 50 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const liveReviews = useMemo(
+    () => (reviewData?.reviews ?? []).map(toPageReview),
+    [reviewData],
+  );
+
+  const myReviews =
+    liveReviews.length > 0
+      ? liveReviews
+      : reviewsLoading
+        ? []
+        : showDemoData
+          ? DEMO_REVIEWS
+          : [];
+
+  /*
+   * The expert directory. This list used to render unconditionally, so a real
+   * founder browsed four experts who do not exist.
+   */
+  const { data: expertData, isLoading: expertsLoading } = useQuery({
+    queryKey: ['expert-reviews', 'experts'],
+    queryFn: () => listExperts({ limit: 24 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
+  const liveExperts = useMemo(
+    () => (expertData?.experts ?? []).map(toPageExpert),
+    [expertData],
+  );
+
+  const experts =
+    liveExperts.length > 0
+      ? liveExperts
+      : expertsLoading
+        ? []
+        : showDemoData
+          ? DEMO_EXPERTS
+          : [];
   const submitted = myReviews.filter((r) => r.status === 'submitted');
   const pending = myReviews.filter((r) => r.status !== 'submitted' && r.status !== 'declined');
 
-  const filteredExperts = DEMO_EXPERTS.filter((e) => {
+  const filteredExperts = experts.filter((e) => {
     const q = searchExperts.toLowerCase();
     const matchesSearch = !q || e.name.toLowerCase().includes(q) || e.title.toLowerCase().includes(q) || e.bio.toLowerCase().includes(q);
     const matchesDomain = selectedDomain === 'all' || e.domains.includes(selectedDomain);
@@ -487,11 +676,11 @@ export default function ExpertReviewsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total reviews', value: myReviews.length, icon: FileText, tone: 'accent' as StatusTone },
-            { label: 'In progress', value: pending.length, icon: Clock, tone: 'warning' as StatusTone },
-            { label: 'Completed', value: submitted.length, icon: CheckCircle2, tone: 'success' as StatusTone },
-            { label: 'Avg score', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'info' as StatusTone },
-          ].map(({ label, value, icon: Icon, tone }) => (
+            { label: 'Total reviews', labelEl: 'Συνολικές αξιολογήσεις', value: myReviews.length, icon: FileText, tone: 'accent' as StatusTone },
+            { label: 'In progress', labelEl: 'Σε εξέλιξη', value: pending.length, icon: Clock, tone: 'warning' as StatusTone },
+            { label: 'Completed', labelEl: 'Ολοκληρωμένες', value: submitted.length, icon: CheckCircle2, tone: 'success' as StatusTone },
+            { label: 'Avg score', labelEl: 'Μέση βαθμολογία', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'info' as StatusTone },
+          ].map(({ label, labelEl, value, icon: Icon, tone }) => (
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', STATUS[tone].bg, STATUS[tone].icon)}>
@@ -499,7 +688,9 @@ export default function ExpertReviewsPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">
+                    <BilingualText en={label} el={labelEl} compact wrap />
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -509,12 +700,19 @@ export default function ExpertReviewsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between gap-3">
             <TabsList className="h-9">
-              <TabsTrigger value="my-reviews" className="text-xs">My Reviews</TabsTrigger>
-              <TabsTrigger value="find-experts" className="text-xs">Find Experts</TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
+              <TabsTrigger value="my-reviews" className="text-xs">
+                <BilingualText en="My Reviews" el="Οι αξιολογήσεις μου" compact />
+              </TabsTrigger>
+              <TabsTrigger value="find-experts" className="text-xs">
+                <BilingualText en="Find Experts" el="Εύρεση ειδικών" compact />
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs">
+                <BilingualText en="Insights" el="Αναλύσεις" compact />
+              </TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-              <Plus className="icon-sm" /> Request review
+              <Plus className="icon-sm" />{' '}
+              <BilingualText en="Request review" el="Αίτημα αξιολόγησης" compact wrap />
             </Button>
           </div>
 
@@ -522,13 +720,17 @@ export default function ExpertReviewsPage() {
           <TabsContent value="my-reviews" className="mt-4 space-y-3">
             {pending.length > 0 && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Active Requests</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  <BilingualText en="Active Requests" el="Ενεργά αιτήματα" compact />
+                </p>
                 <div className="space-y-3">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {submitted.length > 0 && (
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Completed Reviews</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  <BilingualText en="Completed Reviews" el="Ολοκληρωμένες αξιολογήσεις" compact />
+                </p>
                 <div className="space-y-3">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
@@ -552,7 +754,7 @@ export default function ExpertReviewsPage() {
             <div className="flex gap-2 flex-wrap">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-                <Input placeholder="Search experts…" value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-8 h-9 text-sm" />
+                <Input placeholder="Search experts…" value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
               </div>
             </div>
 
@@ -573,7 +775,8 @@ export default function ExpertReviewsPage() {
                     selectedDomain === key ? cn(STATUS[cfg.tone].chip, 'border-current') : 'border-border/60 text-muted-foreground hover:border-border',
                   )}
                 >
-                  <cfg.icon className="h-3 w-3" />{cfg.label}
+                  <cfg.icon className="h-3 w-3" />
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
                 </button>
               ))}
             </div>
@@ -622,7 +825,11 @@ export default function ExpertReviewsPage() {
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <BarChart3 className="icon-sm text-primary-accessible" />
-                        {REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores
+                        <BilingualText
+                          en={`${REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores`}
+                          el={`${REVIEW_TYPE_CONFIG[r.reviewType].labelEl} — Αναλυτικές βαθμολογίες`}
+                          compact
+                        />
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">

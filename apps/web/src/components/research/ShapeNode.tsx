@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Trash2, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fillContrastText } from '@/lib/canvas/canvas-geometry';
 
 export type ShapeVariant =
   | 'shape_rect'
@@ -67,7 +68,7 @@ export function ShapeNode({
   const strokeWidth = meta.strokeWidth ?? 2;
   const opacity     = meta.opacity     ?? 1;
   const fontSize    = meta.fontSize    ?? 14;
-  const textColor   = meta.textColor   ?? (variant === 'shape_text' ? '#1E293B' : '#FFFFFF');
+  const textColor   = meta.textColor   ?? (variant === 'shape_text' ? '#1E293B' : fillContrastText(fill === 'none' ? undefined : fill));
   const cornerRadius = meta.cornerRadius ?? (variant === 'shape_rect' ? 8 : 0);
 
   const [editingLabel, setEditingLabel] = useState(false);

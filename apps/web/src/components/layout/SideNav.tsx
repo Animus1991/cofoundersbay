@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PanelLeftClose, PanelLeftOpen, Bot, Keyboard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bot, Keyboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
@@ -95,6 +95,11 @@ export function SideNav() {
 
   if (isAuthPage) return null;
 
+  const rail = !showLabels;
+  const railSlot =
+    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg lg:h-[36px] lg:w-[36px]';
+  const chromeIcon = rail ? 'icon-md' : 'icon-sm';
+
   const badgeFor = (href: string, badgeType?: 'messages' | 'connections' | 'notifications'): number => {
     if (badgeType === 'messages' || href === '/messages') return unreadMessages;
     if (badgeType === 'connections' || href === '/connections') return pendingIntros;
@@ -106,7 +111,7 @@ export function SideNav() {
     <TooltipProvider delayDuration={400}>
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-hidden border-r border-border/60 bg-card/98 backdrop-blur-sm',
+          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-visible border-r border-border/60 bg-card/98 backdrop-blur-sm',
           'transition-[width] duration-200 ease-out will-change-[width]',
           // Rail from `sm`, drawer from `lg`. Width is pure CSS so the shell is
           // correct on first paint; only the contents wait for `isRail`.
@@ -115,13 +120,14 @@ export function SideNav() {
           'w-[4.25rem]',
           expanded ? 'lg:w-[15rem]' : 'lg:w-[4.25rem]',
         )}
+        data-rail={rail ? 'true' : undefined}
         aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
       >
         {/* ── Logo header ── */}
         <div
           className={cn(
-            'flex h-12 flex-shrink-0 items-center border-b border-border/60',
-            showLabels ? 'justify-between px-4' : 'justify-center px-0',
+            'flex h-14 flex-shrink-0 items-center overflow-x-hidden border-b border-border/60',
+            showLabels ? 'justify-start pl-2 pr-3' : 'justify-center px-0',
           )}
         >
           {showLabels ? (
@@ -129,18 +135,9 @@ export function SideNav() {
               <Logo size="sm" />
             </OptimizedLink>
           ) : (
-            <OptimizedLink href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
-              <LogoIcon size={28} />
+            <OptimizedLink href="/" className="flex h-11 w-11 items-center justify-center hover:opacity-80 transition-opacity">
+              <LogoIcon size={35} />
             </OptimizedLink>
-          )}
-          {showLabels && mounted && !isRail && (
-            <button
-              onClick={toggle}
-              className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-              aria-label={bilingualAria(commonEn('collapse_sidebar'), commonEl('collapse_sidebar'))}
-            >
-              <PanelLeftClose className="icon-sm" />
-            </button>
           )}
         </div>
 
@@ -148,9 +145,9 @@ export function SideNav() {
         <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={showLabels} />
 
         {/* ── Navigation ── */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide">
+        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
           {sections.map(({ section, links }) => (
-            <div key={section} className="mb-0.5">
+            <div key={section} className={cn('mb-0.5', rail && 'flex w-full flex-col items-center')}>
               {/* nav-section-label, not plain text-xs: these uppercase headings
                   take the display steps' -2% per pass while the links under them
                   take the +2% of the body scale (see globals.css). */}
@@ -165,9 +162,9 @@ export function SideNav() {
                   />
                 </p>
               ) : (
-                <div className="mx-3 my-2 h-px bg-border/50" />
+                <div className="mx-auto my-1.5 h-px w-6 bg-border/50" />
               )}
-              <ul className="space-y-0.5 px-2">
+              <ul className={cn('space-y-0.5', showLabels ? 'px-2' : 'flex w-full flex-col items-center px-0')}>
                 {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
                   const active =
                     pathname === href || (href !== '/' && pathname?.startsWith(href));
@@ -195,7 +192,7 @@ export function SideNav() {
                       }
                       className={cn(
                         'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
-                        showLabels ? 'gap-2 px-2 py-1.5' : 'justify-center p-2',
+                        showLabels ? 'gap-2 px-2 py-1.5' : cn(railSlot, 'justify-center p-0'),
                         active
                           ? 'bg-primary/8 text-primary-accessible font-medium'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
@@ -215,7 +212,7 @@ export function SideNav() {
                           href={href}
                           fallback={FallbackIcon}
                           className={cn(
-                            'icon-sm',
+                            chromeIcon,
                             active ? 'text-primary-accessible' : 'text-muted-foreground/70 group-hover:text-foreground',
                           )}
                         />
@@ -244,7 +241,7 @@ export function SideNav() {
                   );
 
                   return (
-                    <li key={`${section}-${href}`}>
+                    <li key={`${section}-${href}`} className={rail ? 'flex w-full justify-center' : undefined}>
                       {showLabels && navHint ? (
                         <Tooltip>
                           <TooltipTrigger asChild>{link}</TooltipTrigger>
@@ -271,29 +268,29 @@ export function SideNav() {
         </nav>
 
         {/* ── Tools + user. Relocated TopBar controls; none are dropped. ── */}
-        <div className={cn('flex-shrink-0 border-t border-border/60', showLabels ? 'space-y-1 p-2' : 'space-y-0.5 p-1.5')}>
+        <div className={cn('flex-shrink-0 border-t border-border/60', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
           <div className={cn(showLabels ? 'grid grid-cols-4 gap-0.5' : 'flex flex-col items-center gap-0.5')}>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0 text-muted-foreground"
+              className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
               onClick={() => router.push('/search')}
               aria-label={bilingualAria('Search', 'Αναζήτηση')}
             >
-              <CfbGlyph name="discover" className="icon-sm" />
+              <CfbGlyph name="discover" className={chromeIcon} />
             </Button>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0 text-muted-foreground"
+              className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
               onClick={() => setCommandOpen(true)}
               aria-label={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
             >
-              <Keyboard className="icon-sm" />
+              <Keyboard className={chromeIcon} />
             </Button>
-            <NotificationsBell className="h-8 w-8" />
+            <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
             {showLabels ? (
               <>
                 <DemoDataToggle iconOnly className="h-8 w-8 min-w-8 px-0" />
@@ -305,29 +302,39 @@ export function SideNav() {
           </div>
           {showLabels && <PreviewDemoBadge className="max-w-full justify-start" />}
           {mounted ? (
-            <UserMenu variant="sidebar" />
+            <UserMenu variant="sidebar" rail={rail} />
           ) : (
-            <div className={cn('rounded-lg bg-secondary/40', showLabels ? 'h-10' : 'h-9 w-9 mx-auto')} />
+            <div className={cn('rounded-lg bg-secondary/40', showLabels ? 'h-10' : 'mx-auto h-9 w-9')} />
           )}
           {!showLabels && (
             <div className="flex flex-col items-center gap-0.5">
-              <DemoDataToggle iconOnly className="h-8 w-8 min-w-8 px-0" />
-              <LanguagePreferenceToggle className="h-8 w-8" />
-              <LanguageSwitcher iconOnly className="h-8 w-8" />
-              <ThemeSwitcher className="h-8 w-8" />
+              <DemoDataToggle iconOnly className={cn(railSlot, 'min-w-9 px-0')} />
+              <LanguagePreferenceToggle className={railSlot} />
+              <LanguageSwitcher iconOnly className={railSlot} />
+              <ThemeSwitcher className={railSlot} />
             </div>
           )}
-
-          {!showLabels && mounted && !isRail && (
-            <button
-              onClick={toggle}
-              className="mt-0.5 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-              aria-label={bilingualAria(commonEn('expand_sidebar'), commonEl('expand_sidebar'))}
-            >
-              <PanelLeftOpen className="icon-sm" />
-            </button>
-          )}
         </div>
+
+        {mounted && !isRail && (
+          <button
+            type="button"
+            data-sidebar-edge-toggle=""
+            onClick={toggle}
+            aria-expanded={showLabels}
+            aria-label={bilingualAria(
+              showLabels ? commonEn('collapse_sidebar') : commonEn('expand_sidebar'),
+              showLabels ? commonEl('collapse_sidebar') : commonEl('expand_sidebar'),
+            )}
+            className="absolute right-0 top-1/2 z-50 flex h-6 w-6 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
+          >
+            {showLabels ? (
+              <ChevronLeft className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+            )}
+          </button>
+        )}
       </aside>
     </TooltipProvider>
   );

@@ -1,6 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useHydrated } from '@/components/common/RelativeTime';
+import {
+  getOrgCohortDetail,
+  type CohortParticipant,
+  type CohortMatch,
+  type CohortSession,
+} from '@/lib/api';
 import { useParams } from 'next/navigation';
 import {
   Users,
@@ -120,7 +130,10 @@ const DEMO_COHORT = {
   id: '1',
   name: 'Spring 2026 Accelerator',
   program: 'CoFounderBay Accelerator',
-  status: 'active',
+  // A spring cohort is not still running in the autumn. The live path derives
+  // this from `isActive`; the sample derives it from its own end date so the
+  // badge cannot outlive the programme.
+  status: new Date('2026-06-01T00:00:00Z') < new Date() ? 'completed' : 'active',
   startDate: '2026-03-01',
   endDate: '2026-06-01',
   description: 'A 12-week intensive program for early-stage startups focusing on product-market fit, growth strategies, and fundraising.',
@@ -247,27 +260,188 @@ const DEMO_MENTORING_SESSIONS: MentoringSession[] = [
   },
 ];
 
-const DEMO_STATS: CohortStats = {
-  totalParticipants: 24,
-  activeStartups: 12,
-  totalMentors: 8,
-  completedSessions: 45,
-  upcomingSessions: 12,
-  totalMatches: 18,
-  successfulMatches: 15,
-  averageMatchScore: 87,
+/**
+ * Counted from the three arrays above, not written beside them.
+ *
+ * These tiles used to claim 24 participants over a list of four and 45
+ * sessions over two, sitting a few pixels from tab labels that counted the
+ * same arrays correctly.
+ */
+const DEMO_STATS: CohortStats = (() => {
+  const accepted = DEMO_MATCHES.filter((m) => m.status === 'accepted');
+  const scores = DEMO_MATCHES.map((m) => m.matchScore);
+  return {
+    totalParticipants: DEMO_PARTICIPANTS.length,
+    activeStartups: DEMO_PARTICIPANTS.filter((p) => p.role === 'founder').length,
+    totalMentors: DEMO_PARTICIPANTS.filter((p) => p.role === 'mentor').length,
+    completedSessions: DEMO_MENTORING_SESSIONS.filter((x) => x.status === 'completed').length,
+    upcomingSessions: DEMO_MENTORING_SESSIONS.filter((x) => x.status === 'scheduled').length,
+    totalMatches: DEMO_MATCHES.length,
+    successfulMatches: accepted.length,
+    averageMatchScore: scores.length
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      : 0,
+  };
+})();
+
+/** The cohort's own people, in the shape this page has always rendered. */
+function toParticipant(row: CohortParticipant): Participant {
+  return {
+    id: row.userId,
+    name: row.name ?? 'A participant',
+    email: row.email,
+    role: row.role,
+    // No column names a startup; a founder's headline is the line they write
+    // about what they are building.
+    startup: row.headline ?? undefined,
+    status: row.status,
+    avatarUrl: row.avatarUrl ?? undefined,
+    joinDate: row.joinedAt,
+    location: row.location ?? undefined,
+  };
+}
+
+/**
+ * A match inside the cohort.
+ *
+ * The page speaks in pending / accepted / rejected; a suggestion has five
+ * states. "Connected" is the one that actually became a relationship, and
+ * "dismissed" is the one somebody turned down - the three in between are all
+ * still open.
+ */
+const MATCH_STATE: Record<CohortMatch['status'], Match['status']> = {
+  pending: 'pending',
+  viewed: 'pending',
+  saved: 'pending',
+  connected: 'accepted',
+  dismissed: 'rejected',
 };
+
+function toMatch(row: CohortMatch): Match {
+  return {
+    id: row.id,
+    participant1: {
+      id: row.a?.id ?? '',
+      name: row.a?.name ?? 'A participant',
+      role: row.a?.role ?? '',
+      avatarUrl: row.a?.avatarUrl ?? undefined,
+    },
+    participant2: {
+      id: row.b?.id ?? '',
+      name: row.b?.name ?? 'A participant',
+      role: row.b?.role ?? '',
+      avatarUrl: row.b?.avatarUrl ?? undefined,
+    },
+    matchScore: row.score,
+    status: MATCH_STATE[row.status] ?? 'pending',
+    matchedDate: row.generatedAt,
+    // Nothing counts interactions per pair, so the card shows none rather than
+    // a number nobody measured.
+    interactions: 0,
+  };
+}
+
+function toSession(row: CohortSession): MentoringSession {
+  return {
+    id: row.id,
+    mentor: {
+      id: row.mentor?.id ?? '',
+      name: row.mentor?.name ?? 'A mentor',
+      avatarUrl: row.mentor?.avatarUrl ?? undefined,
+    },
+    mentee: {
+      id: row.mentee?.id ?? '',
+      name: row.mentee?.name ?? 'A participant',
+      avatarUrl: row.mentee?.avatarUrl ?? undefined,
+    },
+    topic: row.title?.trim() || 'Mentoring session',
+    scheduledDate: row.scheduledAt,
+    duration: row.duration,
+    // The page has no "no show"; it ends the appointment the same way.
+    status: row.status === 'no_show' ? 'cancelled' : row.status,
+    rating: row.rating ?? undefined,
+  };
+}
 
 export default function CohortDetailPage() {
   const params = useParams();
   const cohortId = params?.id as string;
   const [activeTab, setActiveTab] = useState('overview');
 
-  const cohort = DEMO_COHORT;
-  const participants = DEMO_PARTICIPANTS;
-  const matches = DEMO_MATCHES;
-  const sessions = DEMO_MENTORING_SESSIONS;
-  const stats = DEMO_STATS;
+  const { slug } = useCurrentOrg();
+
+  /*
+   * One request for the whole dashboard. The id in the URL used to be read and
+   * then ignored, so every cohort an organiser opened was the same one.
+   */
+  const { data, isLoading } = useQuery({
+    queryKey: ['org', slug, 'cohort', cohortId],
+    queryFn: () => getOrgCohortDetail(slug!, cohortId),
+    enabled: Boolean(slug && cohortId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = data ?? null;
+
+  const cohort = live
+    ? {
+        id: live.cohort.id,
+        name: live.cohort.name,
+        // The organiser is the programme; the cohort is one run of it.
+        program: live.cohort?.tags?.[0] ?? '',
+        status: live.cohort.isActive ? 'active' : 'completed',
+        startDate: live.cohort?.startDate ?? '',
+        endDate: live.cohort?.endDate ?? '',
+        description: live.cohort?.description ?? '',
+        // No column records where a cohort meets.
+        location: '',
+      }
+    : DEMO_COHORT;
+
+  const participants = useMemo(
+    () => (live ? live.participants.map(toParticipant) : isLoading ? [] : DEMO_PARTICIPANTS),
+    [live, isLoading],
+  );
+  const matches = useMemo(
+    () => (live ? live.matches.map(toMatch) : isLoading ? [] : DEMO_MATCHES),
+    [live, isLoading],
+  );
+  const sessions = useMemo(
+    () => (live ? live.sessions.map(toSession) : isLoading ? [] : DEMO_MENTORING_SESSIONS),
+    [live, isLoading],
+  );
+
+  const stats: CohortStats = live
+    ? {
+        totalParticipants: live.stats.participants,
+        activeStartups: live.stats.founders,
+        totalMentors: live.stats.mentors,
+        completedSessions: live.stats.completedSessions,
+        upcomingSessions: live.stats.upcomingSessions,
+        totalMatches: live.stats.matches,
+        successfulMatches: live.stats.connectedMatches,
+        averageMatchScore: live.stats?.avgMatchScore ?? 0,
+      }
+    : DEMO_STATS;
+
+  /*
+   * How far through the programme this cohort is.
+   *
+   * The tile used to read 67% for every cohort on every day. `useHydrated`
+   * keeps the clock out of the server pass - the server and the browser would
+   * otherwise disagree on "now" and React would discard the tree - and a
+   * cohort with no dates has no progress to report rather than a default one.
+   */
+  const hydrated = useHydrated();
+  const programProgress = useMemo(() => {
+    if (!hydrated || !cohort.startDate || !cohort.endDate) return null;
+    const start = new Date(cohort.startDate).getTime();
+    const end = new Date(cohort.endDate).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+    const ratio = (Date.now() - start) / (end - start);
+    return Math.max(0, Math.min(100, Math.round(ratio * 100)));
+  }, [hydrated, cohort.startDate, cohort.endDate]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
@@ -315,30 +489,44 @@ export default function CohortDetailPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm">
             <Share2 className="icon-sm mr-2" aria-hidden="true" />
-            Share
+            <BilingualText en="Share" el="Κοινοποίηση" compact />
           </Button>
           <Button variant="outline" size="sm">
             <Download className="icon-sm mr-2" aria-hidden="true" />
-            Export
+            <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
           <Button size="sm">
             <Mail className="icon-sm mr-2" aria-hidden="true" />
-            Message All
+            <BilingualText en="Message All" el="Μήνυμα σε όλους" compact />
           </Button>
         </div>
       }
     >
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="overview">
+            <BilingualText en="Overview" el="Επισκόπηση" compact />
+          </TabsTrigger>
           <TabsTrigger value="participants">
-            Participants ({participants.length})
+            <BilingualText
+              en={`Participants (${participants.length})`}
+              el={`Συμμετέχοντες (${participants.length})`}
+              compact
+            />
           </TabsTrigger>
           <TabsTrigger value="matches">
-            Matches ({matches.length})
+            <BilingualText
+              en={`Matches (${matches.length})`}
+              el={`Αντιστοιχίσεις (${matches.length})`}
+              compact
+            />
           </TabsTrigger>
           <TabsTrigger value="mentoring">
-            Mentoring ({sessions.length})
+            <BilingualText
+              en={`Mentoring (${sessions.length})`}
+              el={`Καθοδήγηση (${sessions.length})`}
+              compact
+            />
           </TabsTrigger>
         </TabsList>
 
@@ -348,7 +536,7 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Participants
+                  <BilingualText en="Total Participants" el="Σύνολο συμμετεχόντων" compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -357,7 +545,12 @@ export default function CohortDetailPage() {
                   <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {stats.activeStartups} active startups • {stats.totalMentors} mentors
+                  <BilingualText
+                    en={`${stats.activeStartups} active startups • ${stats.totalMentors} mentors`}
+                    el={`${stats.activeStartups} νεοφυείς • ${stats.totalMentors} μέντορες`}
+                    compact
+                    wrap
+                  />
                 </p>
               </CardContent>
             </Card>
@@ -365,7 +558,7 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Mentoring Sessions
+                  <BilingualText en="Mentoring Sessions" el="Συνεδρίες καθοδήγησης" compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -374,7 +567,12 @@ export default function CohortDetailPage() {
                   <GraduationCap className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {stats.upcomingSessions} upcoming sessions
+                  <BilingualText
+                    en={`${stats.upcomingSessions} upcoming sessions`}
+                    el={`${stats.upcomingSessions} επερχόμενες συνεδρίες`}
+                    compact
+                    wrap
+                  />
                 </p>
               </CardContent>
             </Card>
@@ -382,7 +580,7 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Successful Matches
+                  <BilingualText en="Successful Matches" el="Επιτυχείς αντιστοιχίσεις" compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -393,7 +591,12 @@ export default function CohortDetailPage() {
                   <Target className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Avg. score: {stats.averageMatchScore}%
+                  <BilingualText
+                    en={`Avg. score: ${stats.averageMatchScore}%`}
+                    el={`Μέση βαθμολογία: ${stats.averageMatchScore}%`}
+                    compact
+                    wrap
+                  />
                 </p>
               </CardContent>
             </Card>
@@ -401,15 +604,17 @@ export default function CohortDetailPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Program Progress
+                  <BilingualText en="Program Progress" el="Πρόοδος προγράμματος" compact wrap />
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold">67%</div>
+                  <div className="text-2xl font-bold">
+                    {programProgress == null ? '\u2014' : `${programProgress}%`}
+                  </div>
                   <TrendingUp className="icon-sm text-status-success" />
                 </div>
-                <Progress value={67} className="mt-2" />
+                <Progress value={programProgress ?? 0} className="mt-2" />
               </CardContent>
             </Card>
           </div>
@@ -417,7 +622,9 @@ export default function CohortDetailPage() {
           {/* Cohort Info */}
           <Card>
             <CardHeader>
-              <CardTitle>About This Cohort</CardTitle>
+              <CardTitle>
+                <BilingualText en="About This Cohort" el="Σχετικά με τον κύκλο" />
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">{cohort.description}</p>
@@ -445,7 +652,9 @@ export default function CohortDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Matches</CardTitle>
+                <CardTitle>
+                  <BilingualText en="Recent Matches" el="Πρόσφατες αντιστοιχίσεις" />
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -468,7 +677,8 @@ export default function CohortDetailPage() {
                           {match.participant1.name} ↔ {match.participant2.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Match score: {match.matchScore}% • {match.interactions} interactions
+                          Match score: {match.matchScore}%
+                          {match.interactions > 0 && ` • ${match.interactions} interactions`}
                         </p>
                       </div>
                       {getStatusBadge(match.status)}
@@ -480,7 +690,9 @@ export default function CohortDetailPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Upcoming Sessions</CardTitle>
+                <CardTitle>
+                  <BilingualText en="Upcoming Sessions" el="Επερχόμενες συνεδρίες" />
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -626,7 +838,7 @@ export default function CohortDetailPage() {
                       <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                         <span>Matched: {formatDate(match.matchedDate)}</span>
                         <span>•</span>
-                        <span>{match.interactions} interactions</span>
+                        {match.interactions > 0 && <span>{match.interactions} interactions</span>}
                         {match.lastInteraction && (
                           <>
                             <span>•</span>

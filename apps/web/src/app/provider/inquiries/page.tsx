@@ -16,6 +16,11 @@ import {
   Inbox,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -78,10 +83,12 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{inquiry.receivedAt}</span>
+                <span className="text-xs text-muted-foreground">
+                  <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
+                </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button aria-label="Inquiry actions" variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open inquiry actions for ${inquiry.clientName}`}>
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -111,6 +118,47 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   );
 }
 
+/**
+ * The page's own row from a service inquiry.
+ *
+ * `ServiceInquiry` has been in the schema all along with no controller over
+ * it, so this screen listed a fixed array while the marketplace sent people
+ * off-platform through a `contactUrl`.
+ *
+ * The page speaks in four states and the model in six; `in_discussion` is
+ * what "replied" means, and `cancelled` sits with `declined` because both end
+ * the conversation without work.
+ */
+const INQUIRY_STATE: Record<string, Inquiry['status']> = {
+  open: 'new',
+  in_discussion: 'replied',
+  accepted: 'converted',
+  completed: 'converted',
+  declined: 'declined',
+  cancelled: 'declined',
+};
+
+function toPageInquiry(row: ServiceInquiryItem): Inquiry {
+  return {
+    id: row.id,
+    clientName: row.client?.displayName ?? 'Someone',
+    clientAvatar: row.client?.avatarUrl ?? undefined,
+    service: row.offer.title,
+    message: row.message,
+    receivedAt: row.createdAt,
+    status: INQUIRY_STATE[row.status] ?? 'new',
+    budget:
+      row.budgetEstimate != null
+        ? new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: row.currency,
+            maximumFractionDigits: 0,
+          }).format(row.budgetEstimate)
+        : undefined,
+  };
+}
+
+/** Shown to a provider with no inquiries yet. */
 const MOCK_INQUIRIES: Inquiry[] = [
     {
       id: '1',
@@ -118,7 +166,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'TechStart Inc',
       service: 'Startup Legal Package',
       message: 'Hi, I need help with my startup incorporation documents. We are a team of 3 co-founders and need founder agreements as well.',
-      receivedAt: '2 hours ago',
+      receivedAt: '2026-09-04T08:00:00.000Z',
       status: 'new',
       budget: '$2,000-3,000',
     },
@@ -128,7 +176,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'GreenTech Co',
       service: 'Financial Model Creation',
       message: 'Looking for help with our Series A financial model. We need 5-year projections with multiple scenarios.',
-      receivedAt: '1 day ago',
+      receivedAt: '2026-09-03T10:00:00.000Z',
       status: 'replied',
       budget: '$3,500-5,000',
     },
@@ -138,7 +186,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'DataFlow',
       service: 'Contract Review',
       message: 'Need to review our terms of service and privacy policy before launch.',
-      receivedAt: '2 days ago',
+      receivedAt: '2026-09-02T10:00:00.000Z',
       status: 'converted',
       budget: '$1,500',
     },
@@ -148,7 +196,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'HealthPulse',
       service: 'Startup Legal Package',
       message: 'Interested in your legal package. Can you provide more details on what is included?',
-      receivedAt: '3 days ago',
+      receivedAt: '2026-09-01T10:00:00.000Z',
       status: 'new',
       budget: '$2,500',
     },
@@ -157,7 +205,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientName: 'Tom Brown',
       service: 'Pitch Deck Design',
       message: 'Looking for a pitch deck redesign for our upcoming fundraise.',
-      receivedAt: '1 week ago',
+      receivedAt: '2026-08-28T10:00:00.000Z',
       status: 'declined',
       budget: '$800',
     },
@@ -168,7 +216,16 @@ export default function ProviderInquiriesPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const inquiries = showDemoData ? MOCK_INQUIRIES : [];
+  const { data, isLoading } = useQuery({
+    queryKey: ['provider', 'inquiries'],
+    queryFn: () => listServiceInquiries({ side: 'provider', limit: 100 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.inquiries ?? []).map(toPageInquiry), [data]);
+  const inquiries =
+    live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_INQUIRIES : [];
 
   const conversionRate = Math.round((inquiries.filter((i) => i.status === 'converted').length / Math.max(inquiries.length, 1)) * 100);
   const responseRate = Math.round(((inquiries.filter((i) => i.status === 'replied' || i.status === 'converted').length) / Math.max(inquiries.length, 1)) * 100);

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { getAnalyticsOverview, type AnalyticsOverview } from '@/lib/api';
+import { getAnalyticsOverview, getAnalyticsAchievements, type AnalyticsOverview } from '@/lib/api';
 import AnalyticsPage from './page';
 
-vi.mock('@/lib/api', () => ({ getAnalyticsOverview: vi.fn() }));
+vi.mock('@/lib/api', () => ({ getAnalyticsOverview: vi.fn(), getAnalyticsAchievements: vi.fn() }));
 vi.mock('@/lib/preview-demo', () => ({ isPreviewDemo: () => false }));
 vi.mock('@/components/layout/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <>{en}</> }));
@@ -16,6 +16,9 @@ vi.mock('@/contexts/PopupChatContext', () => ({
   }),
 }));
 vi.mock('next/dynamic', () => ({ default: () => () => <div /> }));
+vi.mock('@/hooks/useGamification', () => ({
+  useMyBadges: () => ({ data: [], isLoading: false }),
+}));
 
 /**
  * A stand-in address bar. The window is readable from the URL so that a link,
@@ -46,7 +49,7 @@ function mount() {
   clients.push(client);
   return render(<QueryClientProvider client={client}><AnalyticsPage /></QueryClientProvider>);
 }
-beforeEach(() => { vi.clearAllMocks(); url.search = ''; url.replaced = []; vi.mocked(getAnalyticsOverview).mockResolvedValue(overview); });
+beforeEach(() => { vi.clearAllMocks(); url.search = ''; url.replaced = []; vi.mocked(getAnalyticsOverview).mockResolvedValue(overview); vi.mocked(getAnalyticsAchievements).mockResolvedValue([]); });
 afterEach(() => { cleanup(); clients.splice(0).forEach(client => client.clear()); });
 
 describe('analytics clarity and controls', () => {

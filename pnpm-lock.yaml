@@ -19,28 +19,28 @@ importers:
         specifier: ^3.8.1
         version: 3.8.1
       turbo:
-        specifier: ^2.3.0
+        specifier: ^2.8.19
         version: 2.8.19
       typescript:
-        specifier: ~5.9.2
+        specifier: ~5.9.3
         version: 5.9.3
 
   apps/api:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: ^3.758.0
+        specifier: ^3.1012.0
         version: 3.1012.0
       '@cofounderbay/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@nestjs/common':
-        specifier: ^10.4.15
+        specifier: ^10.4.22
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/config':
         specifier: ^3.3.0
         version: 3.3.0(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: ^10.4.15
+        specifier: ^10.4.22
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(@nestjs/websockets@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/jwt':
         specifier: ^10.2.0
@@ -49,7 +49,7 @@ importers:
         specifier: ^10.0.3
         version: 10.0.3(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(passport@0.7.0)
       '@nestjs/platform-express':
-        specifier: ^10.4.15
+        specifier: ^10.4.22
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)
       '@nestjs/platform-socket.io':
         specifier: ^10.4.22
@@ -61,10 +61,10 @@ importers:
         specifier: ^10.4.22
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(@nestjs/platform-socket.io@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@prisma/client':
-        specifier: ^6.1.0
+        specifier: ^6.19.2
         version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
       '@sentry/node':
-        specifier: ^8.45.0
+        specifier: ^8.55.0
         version: 8.55.0
       '@types/qrcode':
         specifier: ^1.5.6
@@ -76,7 +76,7 @@ importers:
         specifier: ^0.41.1
         version: 0.41.1
       bullmq:
-        specifier: ^5.69.3
+        specifier: ^5.71.0
         version: 5.71.0
       class-transformer:
         specifier: ^0.5.1
@@ -91,7 +91,7 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       ioredis:
-        specifier: ^5.9.3
+        specifier: ^5.10.1
         version: 5.10.1
       meilisearch:
         specifier: ^0.55.0
@@ -103,10 +103,10 @@ importers:
         specifier: ^4.6.1
         version: 4.6.1(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.3.1)(rxjs@7.8.2)
       nodemailer:
-        specifier: ^8.0.1
+        specifier: ^8.0.3
         version: 8.0.3
       otplib:
-        specifier: ^13.3.0
+        specifier: ^13.4.0
         version: 13.4.0
       passport:
         specifier: ^0.7.0
@@ -136,7 +136,7 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       rxjs:
-        specifier: ^7.8.1
+        specifier: ^7.8.2
         version: 7.8.2
       socket.io:
         specifier: ^4.8.3
@@ -145,10 +145,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       stripe:
-        specifier: ^20.3.1
+        specifier: ^20.4.1
         version: 20.4.1(@types/node@22.19.15)
       zod:
-        specifier: ^3.24.1
+        specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
       '@nestjs/cli':
@@ -164,16 +164,16 @@ importers:
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
       '@types/express':
-        specifier: ^5.0.0
+        specifier: ^5.0.6
         version: 5.0.6
       '@types/multer':
         specifier: ^2.1.0
         version: 2.1.0
       '@types/node':
-        specifier: ^22.10.2
+        specifier: ^22.19.15
         version: 22.19.15
       '@types/nodemailer':
-        specifier: ^7.0.10
+        specifier: ^7.0.11
         version: 7.0.11
       '@types/passport':
         specifier: ^1.0.17
@@ -191,13 +191,13 @@ importers:
         specifier: ^1.0.38
         version: 1.0.38
       prisma:
-        specifier: ^6.1.0
+        specifier: ^6.19.2
         version: 6.19.2(typescript@5.9.3)
       tsx:
-        specifier: ^4.19.2
+        specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.9.3
         version: 5.9.3
       vitest:
         specifier: 4.0.18
@@ -260,7 +260,7 @@ importers:
         specifier: ^12.10.2
         version: 12.10.2(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: ^10.4.27
         version: 10.4.27(postcss@8.5.8)
       class-variance-authority:
         specifier: ^0.7.1
@@ -272,10 +272,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       dompurify:
-        specifier: ^3.2.7
+        specifier: ^3.3.3
         version: 3.3.3
       framer-motion:
-        specifier: ^12.34.3
+        specifier: ^12.35.1
         version: 12.35.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       html-to-image:
         specifier: ^1.11.13
@@ -290,28 +290,28 @@ importers:
         specifier: ^15.5.25
         version: 15.5.25(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       postcss:
-        specifier: ^8.4.47
+        specifier: ^8.5.8
         version: 8.5.8
       posthog-js:
-        specifier: ^1.240.6
+        specifier: ^1.364.1
         version: 1.364.1
       react:
-        specifier: ^19.0.0
+        specifier: ^19.1.0
         version: 19.1.0
       react-dom:
-        specifier: ^19.0.0
+        specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
       recharts:
-        specifier: ^2.15.0
+        specifier: ^2.15.4
         version: 2.15.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
       tailwind-merge:
-        specifier: ^3.4.1
+        specifier: ^3.5.0
         version: 3.5.0
       tailwindcss:
-        specifier: ^3.4.14
+        specifier: ^3.4.19
         version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
       tailwindcss-animate:
         specifier: ^1.0.7
@@ -336,22 +336,22 @@ importers:
         specifier: 16.3.0
         version: 16.3.0(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@types/node':
-        specifier: ^22.10.2
+        specifier: ^22.19.15
         version: 22.19.15
       '@types/react':
-        specifier: ^19.0.1
+        specifier: ^19.2.14
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.0.2
+        specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
       '@types/webpack':
         specifier: ^5.28.5
         version: 5.28.5(postcss@8.5.8)
       eslint:
-        specifier: ^9
+        specifier: ^9.39.5
         version: 9.39.5(jiti@2.6.1)
       eslint-config-next:
-        specifier: ^15.1.0
+        specifier: ^15.5.25
         version: 15.5.25(eslint@9.39.5(jiti@2.6.1))(typescript@5.9.3)
       jsdom:
         specifier: 26.1.0
@@ -363,7 +363,7 @@ importers:
         specifier: 4.0.18
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.0)
       webpack:
-        specifier: ^5.107.2
+        specifier: ^5.111.0
         version: 5.111.0(postcss@8.5.8)
       wrangler:
         specifier: ^4.130.0
@@ -372,29 +372,29 @@ importers:
   packages/shared:
     dependencies:
       zod:
-        specifier: ^3.24.1
+        specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/ui:
     dependencies:
       '@radix-ui/react-avatar':
-        specifier: ^1.1.2
+        specifier: ^1.1.11
         version: 1.1.11(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-dialog':
-        specifier: ^1.1.4
+        specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-select':
-        specifier: ^2.1.4
+        specifier: ^2.2.6
         version: 2.2.6(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-slot':
-        specifier: ^1.1.1
+        specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.14)(react@19.1.0)
       '@radix-ui/react-tabs':
-        specifier: ^1.1.2
+        specifier: ^1.1.13
         version: 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       class-variance-authority:
         specifier: ^0.7.1
@@ -406,17 +406,17 @@ importers:
         specifier: ^0.468.0
         version: 0.468.0(react@19.1.0)
       tailwind-merge:
-        specifier: ^2.6.0
+        specifier: ^2.6.1
         version: 2.6.1
     devDependencies:
       '@types/react':
-        specifier: ^19.0.1
+        specifier: ^19.2.14
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.0.1
+        specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
@@ -3370,6 +3370,7 @@ packages:
   '@smithy/config-resolver@4.4.12':
     resolution: {integrity: sha512-XXzYyCQmyv2bISMFxu9WbB0XvUQGU0XytjXR8KBthEAWMXtVo4wxRLwZDwMtdSPq9oDWx+LpiHQbtKoLvl/szA==}
     engines: {node: '>=18.0.0'}
+    deprecated: Please upgrade to @smithy/config-resolver v4.4.13 or higher. v4.4.12 may cause a compilation TypeScript error.
 
   '@smithy/core@3.23.12':
     resolution: {integrity: sha512-o9VycsYNtgC+Dy3I0yrwCqv9CWicDnke0L7EVOrZtJpjb2t0EjaEofmMrYc0T1Kn3yk32zm6cspxF9u9Bj7e5w==}
@@ -4968,6 +4969,7 @@ packages:
   cron-parser@4.9.0:
     resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
+    deprecated: v4 is no longer maintained, upgrade to v5
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -7444,6 +7446,7 @@ packages:
   recharts@2.15.4:
     resolution: {integrity: sha512-UT/q6fwS3c1dHbXv2uFgYJ9BMFHu3fwnd7AYZaEQhXuYQ4hgsxLvsUXzGdKeZrW5xopzDCvuA2N41WJ88I7zIw==}
     engines: {node: '>=14'}
+    deprecated: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0

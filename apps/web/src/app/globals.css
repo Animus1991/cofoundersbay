@@ -13,8 +13,11 @@
 html {
   --font-inter: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display-brand: var(--font-inter);
+  --font-co-mark: var(--font-inter);
   --banner-network: 0px;
   --banner-demo: 0px;
+  /* −1% component height. font-size / line-height never read this. */
+  --chrome-y: 0.99;
 }
 
 @layer base {
@@ -604,9 +607,9 @@ html {
     color: hsl(var(--foreground));
   }
 
-  /* Better focus-visible defaults */
+  /* Keyboard focus: a whisper outside the control, never a second inner frame. */
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 1px solid hsl(var(--foreground) / 0.22);
     outline-offset: 2px;
   }
 
@@ -643,12 +646,14 @@ html {
     }
   }
 
-  /* Better input focus ring */
+  /* Fields already carry a border. A second ring on focus draws a frame
+     inside a frame — it reads as kitsch and shrinks the field. The caret
+     (and a quieter existing-border, never `--ring`) is the indicator. */
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.5);
+    box-shadow: none;
   }
 
   /* Smooth transitions on interactive elements — only on hover/focus to reduce idle layout cost */
@@ -1071,9 +1076,13 @@ html {
 
 /* ── Enhanced component utilities ── */
 @layer utilities {
-  /* Better focus styles */
+  /* Keyboard focus: a whisper outside the control, never a second inner frame. */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-1;
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 1px solid hsl(var(--foreground) / 0.22);
+    outline-offset: 2px;
   }
   
   /* Smooth transitions */
@@ -1093,7 +1102,7 @@ html {
   
   /* Input improvements */
   .input-clean {
-    @apply border-border/60 hover:border-ring/40 focus:border-ring;
+    @apply border-border/60 hover:border-border;
   }
   
   /* Text improvements */
@@ -1122,6 +1131,21 @@ html {
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
   .icon-xl { @apply h-8 w-8; }  /* 32px - hero sections, large CTAs */
+
+  /* Collapsed sidebar rail: every chrome glyph shares the larger 20px size. */
+  aside[data-rail] .icon-sm,
+  aside[data-rail] .icon-md,
+  aside[data-rail] svg.h-4,
+  aside[data-rail] svg.w-4,
+  aside[data-rail] svg.lucide {
+    height: 20px;
+    width: 20px;
+  }
+
+  aside[data-rail] [data-sidebar-edge-toggle] svg.lucide {
+    height: 14px;
+    width: 14px;
+  }
 
   /* Quiet wells for original glyphs — identity without decoration. */
   .icon-well {
@@ -1642,6 +1666,87 @@ html {
     aside .icon-lg,
     header .icon-lg { height: 24px; width: 24px; }
 
+    /* Collapsed 68px rail: one glyph size, matching the larger bottom chrome
+       (bell / language / theme sit on `icon-md`). Higher specificity than
+       `aside .icon-sm` so the 16px page restore does not shrink the stack. */
+    aside[data-rail] .icon-sm,
+    aside[data-rail] .icon-md,
+    aside[data-rail] svg.h-4,
+    aside[data-rail] svg.w-4,
+    aside[data-rail] svg.lucide {
+      height: 20px;
+      width: 20px;
+    }
+
+    aside[data-rail] [data-sidebar-edge-toggle] svg.lucide {
+      height: 14px;
+      width: 14px;
+    }
+
+    /* Startup Builder: card/stage titles (h2, h3) and Overview stat chips, −1%
+       from the already-scaled tokens. Body, labels, tabs, and controls stay. */
+    .builder-type :is(h2, h3, .builder-title).text-base {
+      font-size: 1.14685630rem; /* 15.20 → 15.05 */
+    }
+    .builder-type :is(h2, h3, .builder-title).text-lg,
+    .builder-type :is(h2, h3).sm\:text-lg {
+      font-size: 1.18850816rem; /* 15.75 → 15.59 */
+      line-height: 1.88652088rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-xl,
+    .builder-type :is(h2, h3).sm\:text-xl {
+      font-size: 1.25680892rem;
+      line-height: 1.79544132rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-2xl,
+    .builder-type :is(h2, h3).sm\:text-2xl {
+      font-size: 1.32903476rem;
+      line-height: 1.80821056rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-3xl,
+    .builder-type :is(h2, h3).sm\:text-3xl {
+      font-size: 1.42871237rem;
+      line-height: 1.74976325rem;
+    }
+    /* Overview named copy (stats, Ask AI / Invite / New document, progress
+       rows, quick actions, gaps, next steps): another −1% from current. */
+    .builder-type .builder-overview-type .text-2xs {
+      font-size: max(0.82893189rem, 13.26291097px);
+      line-height: max(1.23032570rem, 19.68521111px);
+    }
+    .builder-type .builder-overview-type .text-xs {
+      font-size: max(0.90428939rem, 13.26291097px);
+      line-height: max(1.23032570rem, 19.68521111px);
+    }
+    .builder-type .builder-overview-type .text-sm {
+      font-size: 1.05500428rem;
+      line-height: 1.53790712rem;
+    }
+    .builder-type .builder-overview-type :is(h2, h3).text-base {
+      font-size: 1.13538774rem;
+    }
+    .builder-type .builder-overview-type :is(h2, h3).text-lg,
+    .builder-type .builder-overview-type :is(h2, h3).sm\:text-lg {
+      font-size: 1.17662308rem;
+      line-height: 1.86765567rem;
+    }
+    .builder-type .builder-overview-stats .text-lg {
+      font-size: 1.17662308rem;
+      line-height: 1.86765567rem;
+    }
+    .builder-type .builder-overview-stats .text-2xs {
+      font-size: max(0.81243614rem, 12.99897904px);
+      line-height: max(1.20584222rem, 19.29347541px);
+    }
+    .builder-type .builder-overview-stats .text-xs {
+      font-size: max(0.88629404rem, 12.99897904px);
+      line-height: max(1.20584222rem, 19.29347541px);
+    }
+    .builder-type [role='tab'][data-state='active'] {
+      box-shadow: none;
+      border-width: 0;
+    }
+
   }
 
   /* WCAG 2.5.8 is a CSS-pixel floor, not a rem one, so a `h-6`/`min-h-6` target
@@ -1777,9 +1882,9 @@ html {
      `sm:` variant lands late enough in the sheet to beat a single-class rule.
      (0,2,0) settles it for good. A card that genuinely needs a different seam
      asks with `!pb-…`, which is the honest way to say "this one is special". */
-  .card-comfortable.card-header { padding-bottom: 12px; }
+  .card-comfortable.card-header { padding-bottom: calc(12px * var(--chrome-y)); }
   @media (min-width: 640px) {
-    .card-comfortable.card-header { padding-bottom: 16px; }
+    .card-comfortable.card-header { padding-bottom: calc(16px * var(--chrome-y)); }
   }
 
   /* ── The same padding, in the pixels it claims ──
@@ -1791,9 +1896,9 @@ html {
      Vertical rhythm goes with it: a card whose padding grows while the space
      around it stays put reads as more crowded, not less. */
   @media (min-width: 1024px) {
-    .card-comfortable { padding: 24px; }
-    .card-compact { padding: 16px; }
-    .card-comfortable.card-header { padding-bottom: 16px; }
+    .card-comfortable { padding: calc(24px * var(--chrome-y)) 24px; }
+    .card-compact { padding: calc(16px * var(--chrome-y)) 16px; }
+    .card-comfortable.card-header { padding-bottom: calc(16px * var(--chrome-y)); }
 
     .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px; }
     .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px; }
@@ -1810,13 +1915,13 @@ html {
        down to 9.84px — which is where the crowding that survived the
        card-level fix above was coming from. Only the steps the product
        actually uses are restated; anything else keeps its rem. */
-    .p-2   { padding: 8px; }
-    .p-2\.5 { padding: 10px; }
-    .p-3   { padding: 12px; }
-    .p-3\.5 { padding: 14px; }
-    .p-4   { padding: 16px; }
-    .p-5   { padding: 20px; }
-    .p-6   { padding: 24px; }
+    .p-2   { padding: calc(8px * var(--chrome-y)) 8px; }
+    .p-2\.5 { padding: calc(10px * var(--chrome-y)) 10px; }
+    .p-3   { padding: calc(12px * var(--chrome-y)) 12px; }
+    .p-3\.5 { padding: calc(14px * var(--chrome-y)) 14px; }
+    .p-4   { padding: calc(16px * var(--chrome-y)) 16px; }
+    .p-5   { padding: calc(20px * var(--chrome-y)) 20px; }
+    .p-6   { padding: calc(24px * var(--chrome-y)) 24px; }
 
     .px-2   { padding-left: 8px; padding-right: 8px; }
     .px-2\.5 { padding-left: 10px; padding-right: 10px; }
@@ -1826,15 +1931,89 @@ html {
     .px-5   { padding-left: 20px; padding-right: 20px; }
     .px-6   { padding-left: 24px; padding-right: 24px; }
 
-    .py-1   { padding-top: 4px; padding-bottom: 4px; }
-    .py-1\.5 { padding-top: 6px; padding-bottom: 6px; }
-    .py-2   { padding-top: 8px; padding-bottom: 8px; }
-    .py-2\.5 { padding-top: 10px; padding-bottom: 10px; }
-    .py-3   { padding-top: 12px; padding-bottom: 12px; }
-    .py-3\.5 { padding-top: 14px; padding-bottom: 14px; }
-    .py-4   { padding-top: 16px; padding-bottom: 16px; }
-    .py-5   { padding-top: 20px; padding-bottom: 20px; }
-    .py-6   { padding-top: 24px; padding-bottom: 24px; }
+    .py-1   { padding-top: calc(4px * var(--chrome-y)); padding-bottom: calc(4px * var(--chrome-y)); }
+    .py-1\.5 { padding-top: calc(6px * var(--chrome-y)); padding-bottom: calc(6px * var(--chrome-y)); }
+    .py-2   { padding-top: calc(8px * var(--chrome-y)); padding-bottom: calc(8px * var(--chrome-y)); }
+    .py-2\.5 { padding-top: calc(10px * var(--chrome-y)); padding-bottom: calc(10px * var(--chrome-y)); }
+    .py-3   { padding-top: calc(12px * var(--chrome-y)); padding-bottom: calc(12px * var(--chrome-y)); }
+    .py-3\.5 { padding-top: calc(14px * var(--chrome-y)); padding-bottom: calc(14px * var(--chrome-y)); }
+    .py-4   { padding-top: calc(16px * var(--chrome-y)); padding-bottom: calc(16px * var(--chrome-y)); }
+    .py-5   { padding-top: calc(20px * var(--chrome-y)); padding-bottom: calc(20px * var(--chrome-y)); }
+    .py-6   { padding-top: calc(24px * var(--chrome-y)); padding-bottom: calc(24px * var(--chrome-y)); }
+
+    /* The side utilities, restated after the shorthands above — and why that
+       order is the whole fix. Tailwind emits `p-*`, then `px-*`/`py-*`, then
+       `pt-*`/`pr-*`/`pb-*`/`pl-*`, so a side class beats the shorthand it
+       refines: `px-3 pl-9` means 12px on the right and 36px on the left. The
+       px anchors above restated only the shorthands, and they sit later in the
+       sheet than Tailwind's side classes, so on desktop the shorthand won
+       instead. Measured: 13 search fields across /events, /jobs, /groups,
+       /members, /mentoring, /marketplace, /opportunities, /messages, /shortlist,
+       /investors, /learning, /research — each an `Input` carrying `px-3` with a
+       call-site `pl-9` or `pl-10` — started their placeholder 12.8px *under*
+       the magnifier icon. The same inversion undid every `p-4 pt-0` and
+       `p-4 pb-2` written on a desktop card. Restating the side steps the
+       product uses, here, after the shorthands, puts the precedence back where
+       Tailwind has it. */
+    .pt-0 { padding-top: 0; }
+    .pt-0\.5 { padding-top: calc(2px * var(--chrome-y)); }
+    .pt-1 { padding-top: calc(4px * var(--chrome-y)); }
+    .pt-1\.5 { padding-top: calc(6px * var(--chrome-y)); }
+    .pt-2 { padding-top: calc(8px * var(--chrome-y)); }
+    .pt-2\.5 { padding-top: calc(10px * var(--chrome-y)); }
+    .pt-3 { padding-top: calc(12px * var(--chrome-y)); }
+    .pt-4 { padding-top: calc(16px * var(--chrome-y)); }
+    .pt-5 { padding-top: calc(20px * var(--chrome-y)); }
+    .pt-6 { padding-top: calc(24px * var(--chrome-y)); }
+    .pt-8 { padding-top: calc(32px * var(--chrome-y)); }
+
+    .pr-0 { padding-right: 0; }
+    .pr-0\.5 { padding-right: 2px; }
+    .pr-1 { padding-right: 4px; }
+    .pr-2 { padding-right: 8px; }
+    .pr-3 { padding-right: 12px; }
+    .pr-4 { padding-right: 16px; }
+    .pr-6 { padding-right: 24px; }
+    .pr-7 { padding-right: 28px; }
+    .pr-8 { padding-right: 32px; }
+    .pr-10 { padding-right: 40px; }
+    .pr-12 { padding-right: 48px; }
+    .pr-14 { padding-right: 56px; }
+    .pr-16 { padding-right: 64px; }
+    .pr-20 { padding-right: 80px; }
+    .pr-40 { padding-right: 160px; }
+    .pr-44 { padding-right: 176px; }
+
+    .pb-0 { padding-bottom: 0; }
+    .pb-0\.5 { padding-bottom: calc(2px * var(--chrome-y)); }
+    .pb-1 { padding-bottom: calc(4px * var(--chrome-y)); }
+    .pb-1\.5 { padding-bottom: calc(6px * var(--chrome-y)); }
+    .pb-2 { padding-bottom: calc(8px * var(--chrome-y)); }
+    .pb-2\.5 { padding-bottom: calc(10px * var(--chrome-y)); }
+    .pb-3 { padding-bottom: calc(12px * var(--chrome-y)); }
+    .pb-4 { padding-bottom: calc(16px * var(--chrome-y)); }
+    .pb-5 { padding-bottom: calc(20px * var(--chrome-y)); }
+    .pb-6 { padding-bottom: calc(24px * var(--chrome-y)); }
+    .pb-8 { padding-bottom: calc(32px * var(--chrome-y)); }
+    .pb-10 { padding-bottom: calc(40px * var(--chrome-y)); }
+    .pb-16 { padding-bottom: calc(64px * var(--chrome-y)); }
+    .pb-20 { padding-bottom: 80px; }
+    .pb-24 { padding-bottom: 96px; }
+    .pb-28 { padding-bottom: 112px; }
+
+    .pl-0 { padding-left: 0; }
+    .pl-0\.5 { padding-left: 2px; }
+    .pl-1 { padding-left: 4px; }
+    .pl-1\.5 { padding-left: 6px; }
+    .pl-2 { padding-left: 8px; }
+    .pl-3 { padding-left: 12px; }
+    .pl-4 { padding-left: 16px; }
+    .pl-5 { padding-left: 20px; }
+    .pl-6 { padding-left: 24px; }
+    .pl-7 { padding-left: 28px; }
+    .pl-8 { padding-left: 32px; }
+    .pl-9 { padding-left: 36px; }
+    .pl-10 { padding-left: 40px; }
   }
 
   /* ── Spacing rhythm ── */
@@ -1916,29 +2095,27 @@ html {
     padding-bottom: 1rem;
   }
 
-  /* ── 3. One filled button per view ───────────────────────────────────── */
-  .bg-secondary:not(.bg-secondary\/40):not(.bg-secondary\/60) {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px hsl(var(--border));
-  }
-
-  /* ── 4. Badges outline, not filled ───────────────────────────────────── */
-  [class*='rounded-full'][class*='bg-primary'],
-  [class*='rounded-full'][class*='bg-secondary'],
-  [class*='rounded-md'][class*='bg-primary\/'],
-  [class*='bg-primary\/10'],
-  [class*='bg-primary\/15'],
-  [class*='bg-primary\/20'] {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.35);
-    color: hsl(var(--primary-accessible));
-  }
-
-  /* ── 5. Focus you cannot miss ────────────────────────────────────────── */
+  /* ── 3. Focus you cannot miss ────────────────────────────────────────── */
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 1px solid hsl(var(--foreground) / 0.22);
     outline-offset: 2px;
-    border-radius: 4px;
+  }
+
+  /* …except fields that already have a border: a second stroke sits inside
+     the first (Ask AI, selects, every search bar) and looks smaller/kitsch. */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible,
+  [role='combobox']:focus,
+  [role='combobox']:focus-visible,
+  [data-radix-select-trigger]:focus,
+  [data-radix-select-trigger]:focus-visible {
+    outline: none;
+    outline-offset: 0;
+    box-shadow: none;
   }
 
   /* ── 6. Fewer weights ────────────────────────────────────────────────── */
@@ -1985,11 +2162,11 @@ html {
      two-column stat card spent 56 of its ~160px on padding, which is what
      squeezed the labels. 20px below sm, the intended 28px from sm up. */
   .card-comfortable {
-    padding: 1.25rem;
+    padding: calc(1.25rem * var(--chrome-y)) 1.25rem;
   }
   @media (min-width: 640px) {
     .card-comfortable {
-      padding: 1.75rem;
+      padding: calc(1.75rem * var(--chrome-y)) 1.75rem;
     }
   }
   /* Stated in pixels from `lg`, where the 82% root turns the 28px intended
@@ -1999,18 +2176,18 @@ html {
      to the other themes; it cannot simply fall through to it. */
   @media (min-width: 1024px) {
     .card-comfortable {
-      padding: 28px;
+      padding: calc(28px * var(--chrome-y)) 28px;
     }
   }
   /* The seam, restated for this theme for the same reason the padding is: these
      rules are unlayered and carry (0,2,0), so the `.card-header` rule in the
      utilities layer cannot reach a card inside it. Two thirds again. */
   .card-comfortable.card-header {
-    padding-bottom: 14px;
+    padding-bottom: calc(14px * var(--chrome-y));
   }
   @media (min-width: 640px) {
     .card-comfortable.card-header {
-      padding-bottom: 18px;
+      padding-bottom: calc(18px * var(--chrome-y));
     }
   }
 
@@ -2029,6 +2206,51 @@ html {
 .card-comfortable ~ .card-comfortable {
   padding-top: 0;
 }
+
+/* ── −1% component height ───────────────────────────────────────────────
+   Boxes only: min-height, height, and (above) padding-block. font-size and
+   line-height are not listed. `lg:h-auto` is restated after so stacked CTAs
+   are not clipped. The 24px WCAG 2.5.8 floor is not scaled. */
+.h-7 { height: calc(1.75rem * var(--chrome-y)); }
+.h-8 { height: calc(2rem * var(--chrome-y)); }
+.h-9 { height: calc(2.25rem * var(--chrome-y)); }
+.h-10 { height: calc(2.5rem * var(--chrome-y)); }
+.h-11 { height: calc(2.75rem * var(--chrome-y)); }
+.h-12 { height: calc(3rem * var(--chrome-y)); }
+.h-14 { height: calc(3.5rem * var(--chrome-y)); }
+.h-16 { height: calc(4rem * var(--chrome-y)); }
+
+.min-h-7 { min-height: calc(1.75rem * var(--chrome-y)); }
+.min-h-8 { min-height: calc(2rem * var(--chrome-y)); }
+.min-h-9 { min-height: calc(2.25rem * var(--chrome-y)); }
+.min-h-10 { min-height: calc(2.5rem * var(--chrome-y)); }
+.min-h-11 { min-height: calc(2.75rem * var(--chrome-y)); }
+.min-h-12 { min-height: calc(3rem * var(--chrome-y)); }
+.min-h-14 { min-height: calc(3.5rem * var(--chrome-y)); }
+.min-h-16 { min-height: calc(4rem * var(--chrome-y)); }
+
+@media (min-width: 768px) {
+  .md\:h-8 { height: calc(2rem * var(--chrome-y)); }
+  .md\:h-9 { height: calc(2.25rem * var(--chrome-y)); }
+  .md\:h-10 { height: calc(2.5rem * var(--chrome-y)); }
+  .md\:min-h-8 { min-height: calc(2rem * var(--chrome-y)); }
+  .md\:min-h-9 { min-height: calc(2.25rem * var(--chrome-y)); }
+  .md\:min-h-10 { min-height: calc(2.5rem * var(--chrome-y)); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:h-auto { height: auto; }
+}
+
+[data-radix-select-trigger],
+[role='combobox'] {
+  min-height: calc(2.5rem * var(--chrome-y));
+}
+[role='tablist'],
+[role='tab'] {
+  min-height: calc(2.75rem * var(--chrome-y));
+}
+
 
 
 

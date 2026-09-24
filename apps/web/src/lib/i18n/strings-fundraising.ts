@@ -26,7 +26,7 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   round_planning: { en: 'Planning', el: 'Σχεδιασμός' },
   round_closing: { en: 'Closing', el: 'Κλείσιμο' },
   round_closed: { en: 'Closed', el: 'Κλειστός' },
-  pre_money: { en: 'pre-money valuation', el: 'προ-χρηματικής αποτίμησης' },
+  pre_money: { en: 'pre-money valuation', el: 'προ-επενδυτικής αποτίμησης' },
   valuation_tbd: { en: 'Valuation TBD', el: 'Αποτίμηση εκκρεμεί' },
   raised: { en: 'raised', el: 'αντλήθηκαν' },
   target: { en: 'target', el: 'στόχος' },
@@ -41,9 +41,15 @@ export const FUNDRAISING_STRINGS: Record<string, BilingualPair> = {
   lead_investor: { en: 'Lead investor', el: 'Επικεφαλής επενδυτής' },
   none_yet: { en: 'None yet', el: 'Κανένας ακόμα' },
 
+  // Counted labels. Greek inflects the noun with the number, so each carries a
+  // singular form the tile picks when the count is exactly one; English repeats
+  // itself because "Total contacts" and "Committed" do not decline.
   stat_leads: { en: 'Total contacts', el: 'Συνολικές επαφές' },
+  stat_leads_one: { en: 'Total contacts', el: 'Συνολική επαφή' },
   stat_active: { en: 'Active discussions', el: 'Ενεργές συζητήσεις' },
+  stat_active_one: { en: 'Active discussions', el: 'Ενεργή συζήτηση' },
   stat_committed: { en: 'Committed', el: 'Δεσμευμένοι' },
+  stat_committed_one: { en: 'Committed', el: 'Δεσμευμένος' },
   stat_conversion: { en: 'Conversion rate', el: 'Ποσοστό μετατροπής' },
 
   st_prospect: { en: 'Prospect', el: 'Υποψήφιος' },

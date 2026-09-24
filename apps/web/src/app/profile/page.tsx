@@ -40,7 +40,7 @@ import {
   Link as LinkIcon,
   User,
 } from 'lucide-react';
-import { getMeProfile } from '@/lib/api';
+import { getMeProfile, getDashboardActivity } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
@@ -300,6 +300,27 @@ export default function ProfilePage() {
     retry: 1,
   });
 
+  /*
+   * The activity grid plots the account's own recorded activity, bucketed by
+   * day. Before this it rendered `generateDemoData`, so the profile showed a
+   * year of invented contributions that changed on every render.
+   */
+  const { data: activityPage } = useQuery({
+    queryKey: ['dashboard', 'activity', 'profile-graph'],
+    queryFn: () => getDashboardActivity({ limit: 200 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
+  const activityByDay = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of activityPage?.items ?? []) {
+      const day = item.createdAt.slice(0, 10);
+      counts.set(day, (counts.get(day) ?? 0) + 1);
+    }
+    return Array.from(counts, ([date, count]) => ({ date, count }));
+  }, [activityPage]);
+
   React.useEffect(() => {
     if (isPreviewDemo()) return;
     if (error) { router.replace('/login'); return; }
@@ -372,7 +393,7 @@ export default function ProfilePage() {
             <Share2 className="icon-sm" />
             <BilingualText en={profileEn('share_profile')} el={profileEl('share_profile')} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" aria-label={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
+          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))} aria-label={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
             <Share2 className="icon-sm" />
           </Button>
           <Button size="sm" className="gap-2" asChild>
@@ -761,11 +782,12 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="pt-4 overflow-hidden">
               <div className="-mx-2 scale-95 transform origin-left">
-                <ContributionGraph 
-                  weeks={18} 
-                  colorScheme="primary" 
+                <ContributionGraph
+                  weeks={18}
+                  colorScheme="primary"
                   size="sm"
                   showDays={false}
+                  data={activityByDay}
                 />
               </div>
             </CardContent>

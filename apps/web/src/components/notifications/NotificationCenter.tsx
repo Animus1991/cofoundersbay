@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { getNativeWebSocketOrigin } from '@/lib/api-origin';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -28,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { listNotifications, markNotificationRead, markAllNotificationsRead, type NotificationItem } from '@/lib/api';
@@ -67,7 +69,6 @@ function NotificationRow({
   onDelete: (id: string) => void;
 }) {
   const Icon = NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || NOTIFICATION_ICONS.system;
-  const timeAgo = getTimeAgo(notification.createdAt);
 
   return (
     <div
@@ -99,7 +100,7 @@ function NotificationRow({
           {notification.body}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{timeAgo}</span>
+          <span className="text-xs text-muted-foreground"><RelativeTime date={notification.createdAt} format={getTimeAgo} /></span>
           <div className="flex items-center gap-1">
             {!notification.readAt && (
               <Button
@@ -241,7 +242,12 @@ export function NotificationCenter() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Notifications" variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        >
           <Bell className="icon-md" />
           {unreadCount > 0 && (
             <Badge
@@ -268,8 +274,10 @@ export function NotificationCenter() {
                 <CheckCheck className="icon-sm mr-1" />
                 Mark all read
               </Button>
-              <Button aria-label="Notification settings" variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="icon-sm" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Notification settings" asChild>
+                <Link href="/settings/notifications">
+                  <Settings className="icon-sm" />
+                </Link>
               </Button>
             </div>
           </div>

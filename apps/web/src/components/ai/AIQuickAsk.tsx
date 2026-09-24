@@ -120,7 +120,7 @@ export function AIQuickAsk({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 h-8 text-sm border-0 bg-muted/50 focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex-1 h-8 text-sm border-0 bg-muted/50 focus-visible:outline-none focus-visible:ring-0"
               disabled={isLoading}
             />
             <Button aria-label="Send"

@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { getPublicProfile, sendConnectionRequest } from '@/lib/api';
+import { getPublicProfile, getMatchBreakdown, sendConnectionRequest } from '@/lib/api';
 
 const ComparisonChart = dynamic(
   () => import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
@@ -261,7 +261,18 @@ export default function ComparePage() {
       const results = await Promise.all(
         profileIds.map(async (id) => {
           try {
-            const profile = await getPublicProfile(id);
+            /*
+             * The engine's own score for this pairing. It used to be
+             * `Math.random() * 40 + 60`, which meant the comparison table —
+             * the one screen whose entire job is putting people side by side
+             * on the same measure — ranked them by dice. A profile the engine
+             * cannot score keeps `matchScore` undefined and the column shows
+             * a dash.
+             */
+            const [profile, breakdown] = await Promise.all([
+              getPublicProfile(id),
+              getMatchBreakdown(id).catch(() => null),
+            ]);
             const rolePayload = (profile.rolePayload ?? {}) as Record<string, unknown>;
             return {
               id,
@@ -275,7 +286,7 @@ export default function ComparePage() {
               stage: typeof rolePayload.stage === 'string' ? rolePayload.stage : undefined,
               availability: typeof rolePayload.availability === 'string' ? rolePayload.availability : undefined,
               languages: profile.languages ?? undefined,
-              matchScore: Math.floor(Math.random() * 40 + 60),
+              matchScore: breakdown?.overall.score,
               connectionStatus: 'none' as const,
             } as CompareProfile;
           } catch {

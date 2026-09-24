@@ -11,8 +11,9 @@ import {
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2, CheckSquare,
 } from 'lucide-react';
-import { getRecommendations, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,24 +43,38 @@ const MatchCompatibilityChart = dynamic(
 
 type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
 
-function buildDimensions(score: number) {
-  const clamp = (v: number) => Math.max(0, Math.min(100, v));
-  return [
-    { subject: 'Skills',   value: clamp(score + Math.round(score * 0.08)),  fullMark: 100 },
-    { subject: 'Stage',    value: clamp(score - Math.round(score * 0.05)),  fullMark: 100 },
-    { subject: 'Industry', value: clamp(score + Math.round(score * 0.12)),  fullMark: 100 },
-    { subject: 'Location', value: clamp(score - Math.round(score * 0.15)),  fullMark: 100 },
-    { subject: 'Values',   value: clamp(score + Math.round(score * 0.04)),  fullMark: 100 },
-  ];
-}
+/*
+ * The five axes on this radar used to be one score nudged by fixed percentages
+ * — +8% became "Skills", -15% became "Location" — which drew a shape that
+ * looked measured and was arithmetic on a single number. The matching engine
+ * already scores six real dimensions (`GET /api/recommendations/vs/:id`, the
+ * same computation that ranks these very cards), so the chart reads those. If
+ * the breakdown cannot be fetched the chart is absent, not invented.
+ */
 
 function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; open: boolean; onClose: () => void }) {
+  const { data: detail, isLoading: detailLoading } = useQuery({
+    queryKey: ['match-breakdown', hit?.userId],
+    queryFn: () => getMatchBreakdown(hit!.userId),
+    enabled: open && Boolean(hit?.userId),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
   if (!hit) return null;
-  const score = hit.matchScore ?? 50;
-  const dims = buildDimensions(score);
-  const reasons: MatchReason[] = hit.matchReasons?.length
-    ? hit.matchReasons.map((t) => ({ type: 'skills' as const, text: t, score: 0 }))
-    : buildMatchReasonsFromScore(score);
+
+  // The engine's own overall score when it answered; the list score otherwise.
+  const score = detail?.overall.score ?? hit.matchScore ?? 50;
+  const confidence = detail?.overall.confidence ?? null;
+  const dims = detail?.breakdown.map((axis) => ({
+    subject: axis.label,
+    value: axis.score,
+    fullMark: 100,
+  })) ?? null;
+  const reasonTexts = detail?.reasons?.length ? detail.reasons : (hit.matchReasons ?? []);
+  const reasons: MatchReason[] = reasonTexts.map((t) => ({ type: 'skills' as const, text: t, score: 0 }));
+  const strengths = detail?.sharedStrengths ?? [];
+  const frictions = detail?.frictionPoints ?? [];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -77,10 +92,47 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <p className="text-xs text-muted-foreground mt-0.5">
               <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
             </p>
+            {confidence != null && (
+              <p className="mt-1 text-2xs tabular-nums text-muted-foreground/80">
+                {confidence}%{' '}
+                <BilingualText en={matchesEn('match_confidence')} el={matchesEl('match_confidence')} compact />
+              </p>
+            )}
           </div>
         </div>
 
-        <MatchCompatibilityChart dims={dims} />
+        {dims ? (
+          <MatchCompatibilityChart dims={dims} />
+        ) : (
+          <p className="rounded-lg border border-dashed border-border/50 p-3 text-center text-xs text-muted-foreground">
+            <BilingualText
+              en={detailLoading ? matchesEn('breakdown_loading') : matchesEn('breakdown_unavailable')}
+              el={detailLoading ? matchesEl('breakdown_loading') : matchesEl('breakdown_unavailable')}
+            />
+          </p>
+        )}
+
+        {strengths.length > 0 && (
+          <div className="rounded-lg border border-border/40 bg-status-success-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
+            </p>
+            {strengths.map((t) => (
+              <p key={t} className="text-sm text-foreground">{t}</p>
+            ))}
+          </div>
+        )}
+
+        {frictions.length > 0 && (
+          <div className="rounded-lg border border-border/40 bg-status-warning-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
+            </p>
+            {frictions.map((t) => (
+              <p key={t} className="text-sm text-foreground">{t}</p>
+            ))}
+          </div>
+        )}
 
         {reasons.length > 0 && (
           <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
@@ -98,16 +150,6 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       </DialogContent>
     </Dialog>
   );
-}
-
-function buildMatchReasonsFromScore(score: number): MatchReason[] {
-  const reasons: MatchReason[] = [];
-  if (score >= 30) reasons.push({ type: 'skills', text: 'Complementary role & skills', score: 30 });
-  if (score >= 45) reasons.push({ type: 'stage', text: 'Matching startup stage', score: Math.min(20, score - 30) });
-  if (score >= 65) reasons.push({ type: 'industry', text: 'Similar industry focus', score: 15 });
-  if (score >= 80) reasons.push({ type: 'location', text: 'Same location', score: 10 });
-  if (reasons.length === 0) reasons.push({ type: 'skills', text: 'Potential match', score });
-  return reasons;
 }
 
 function hitToProfile(hit: SearchHit): ProfileCardData {
@@ -253,7 +295,7 @@ function MatchListRow({
             {/* Skills + reasons */}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {(hit.skillNames ?? []).slice(0, 5).map(s => (
-                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
+                <span key={s} className="rounded-md bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {s}
                 </span>
               ))}
@@ -293,7 +335,7 @@ function MatchListRow({
           </div>
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <button onClick={onBreakdown}
-              className="flex min-h-10 items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
+              className="flex min-h-10 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
               <BarChart3 className="icon-sm" /> Breakdown
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-10 gap-1.5 px-3 text-xs">
@@ -338,7 +380,7 @@ function MatchPreviewPanel({
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
-          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
             <X className="icon-sm" />
           </button>
         </div>
@@ -460,7 +502,6 @@ export default function MatchesPage() {
   const [lastPassed, setLastPassed] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState('');
   const [availFilter, setAvailFilter] = useState<Set<AvailFilter>>(new Set());
   const [previewTarget, setPreviewTarget] = useState<SearchHit | null>(null);
@@ -620,13 +661,152 @@ export default function MatchesPage() {
   ];
 
   const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
+  /* How many, for the rail's badge - availability is one filter however many
+     values it holds, because that is how the reader thinks of it. */
+  const activeFilterCount =
+    (activeFilter !== 'all' ? 1 : 0) +
+    (roleFilter !== 'all' ? 1 : 0) +
+    (nameSearch ? 1 : 0) +
+    (locationFilter ? 1 : 0) +
+    (availFilter.size > 0 ? 1 : 0);
 
   const askAi = hasToken && visible.length > 0
     ? `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`
     : 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.';
 
+  /*
+   * The filter column, as a rail.
+   *
+   * These are the same four filters and the same sort the page has always
+   * had, in the same order, with the same behaviour. What changes is that
+   * they stop costing 220px of the results on every visit that is not a
+   * filtering visit.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      // The count is what keeps a collapsed rail honest: a narrowed list
+      // with no visible reason reads as a broken list.
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-2.5">
+
+          {/* Role filter */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+          <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
+          </p>
+          {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
+          const isActive = roleFilter === key;
+          return (
+          <button key={key} onClick={() => setRoleFilter(key)}
+          className={cn(
+          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+          isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+          )}>
+          <Icon className="icon-sm shrink-0" />
+          <BilingualText en={labelEn} el={labelEl} compact />
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Location */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-1.5">
+          <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
+          <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
+          </p>
+          <div className="relative">
+          <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
+          <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+          placeholder="City or country..."
+          className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
+          {locationFilter && (
+          <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <X className="icon-sm" />
+          </button>
+          )}
+          </div>
+          </CardContent>
+          </Card>
+
+          {/* Availability */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
+          </p>
+          {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
+          const isOn = availFilter.has(key);
+          return (
+          <button key={key} onClick={() => setAvailFilter(prev => {
+          const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
+          })}
+          className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
+          isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <span className={cn('mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
+          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
+          </span>
+          <BilingualText en={labelEn} el={labelEl} compact wrap />
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Clear all */}
+          {hasActiveFilters && (
+          <button
+          onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
+          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
+          <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
+          </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'sort',
+      glyph: 'compare',
+      labelEn: 'Sort',
+      labelEl: 'Ταξινόμηση',
+      content: (
+        <div className="space-y-2.5">
+          {/* Sort */}
+          <Card className="shadow-sm border-border/50">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
+          </p>
+          {([
+          { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
+          { key: 'name'   as SortKey, labelEn: matchesEn('sort_name_az'),    labelEl: matchesEl('sort_name_az'),    icon: ArrowUpDown },
+          { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
+          ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
+          <button key={key} onClick={() => setSortBy(key)}
+          className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
+          sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <Icon className="mt-0.5 icon-sm shrink-0" />
+          <BilingualText en={labelEn} el={labelEl} compact wrap />
+          </button>
+          ))}
+          </CardContent>
+          </Card>
+
+        </div>
+      ),
+    },
+  ];
   return (
     <AppShell
+      rail={rail}
       title={matchesEn('page_title')}
       description={matchesEn('page_description')}
       showHelp
@@ -775,199 +955,31 @@ export default function MatchesPage() {
           <div className="flex gap-4 items-start">
 
             {/* ── Sticky filter sidebar (desktop md+) ── */}
-            <aside className="hidden md:flex flex-col w-[220px] shrink-0 sticky top-[calc(3.5rem+1.25rem)] space-y-2.5 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-hide pb-4">
-
-              {/* Tier filter */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact wrap />
-                  </p>
-                  {TIER_TABS.map(tab => {
-                    const isActive = activeFilter === tab.key;
-                    return (
-                      <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
-                        className={cn(
-                          'flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        <span className="flex items-center gap-1.5">
-                          {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
-                          <BilingualText
-                            en={tab.labelEn}
-                            el={tab.labelEl}
-                            compact
-                            secondaryClassName={isActive ? 'text-primary-foreground' : undefined}
-                          />
-                        </span>
-                        <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
-                          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                          {counts[tab.key]}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Role filter */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
-                    <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
-                  </p>
-                  {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
-                    const isActive = roleFilter === key;
-                    return (
-                      <button key={key} onClick={() => setRoleFilter(key)}
-                        className={cn(
-                          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        <Icon className="icon-sm shrink-0" />
-                        <BilingualText en={labelEn} el={labelEl} compact />
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Location */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-1.5">
-                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
-                    <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
-                  </p>
-                  <div className="relative">
-                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
-                    <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                      placeholder="City or country..."
-                      className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
-                    {locationFilter && (
-                      <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        <X className="icon-sm" />
-                      </button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Availability */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
-                  </p>
-                  {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
-                    const isOn = availFilter.has(key);
-                    return (
-                      <button key={key} onClick={() => setAvailFilter(prev => {
-                        const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
-                      })}
-                        className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
-                          isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                        <span className={cn('mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border-2 transition-colors',
-                          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
-                          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
-                        </span>
-                        <BilingualText en={labelEn} el={labelEl} compact wrap />
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Sort */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
-                  </p>
-                  {([
-                    { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
-                    { key: 'name'   as SortKey, labelEn: matchesEn('sort_name_az'),    labelEl: matchesEl('sort_name_az'),    icon: ArrowUpDown },
-                    { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
-                  ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
-                    <button key={key} onClick={() => setSortBy(key)}
-                      className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
-                        sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                      <Icon className="mt-0.5 icon-sm shrink-0" />
-                      <BilingualText en={labelEn} el={labelEl} compact wrap />
-                    </button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Clear all */}
-              {hasActiveFilters && (
-                <button
-                  onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
-                  className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
-                  <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
-                </button>
-              )}
-            </aside>
 
             {/* ── Results column ── */}
             <div className="flex-1 min-w-0 space-y-4">
 
-              {/* Mobile: scrollable tier chips + filters toggle */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
-                <button onClick={() => setShowAdvancedFilters(s => !s)}
-                  className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
-                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border/60 text-muted-foreground')}>
-                  <SlidersHorizontal className="icon-sm" /> Filters
-                  {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
-                </button>
-                {TIER_TABS.filter(t => t.key !== 'all').map(tab => {
+              {/* Tier chips: the page's primary filter, at every width.
+                  Secondary filters (role, location, availability) and sort
+                  live in the page rail - the expanded panel that used to sit
+                  here duplicated them, so it is gone rather than doubled. */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
+                {TIER_TABS.map(tab => {
                   const isActive = activeFilter === tab.key;
                   return (
-                    <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
-                      className={cn('flex min-h-10 shrink-0 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
+                    <button key={tab.key} onClick={() => setActiveFilter(isActive && tab.key !== 'all' ? 'all' : tab.key)}
+                      className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
                         isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
                       {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
                       <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
+                      <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
+                        isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+                        {counts[tab.key]}
+                      </span>
                     </button>
                   );
                 })}
               </div>
-
-              {/* Mobile: expanded filter panel */}
-              {showAdvancedFilters && (
-                <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
-                  <div className="grid gap-3 grid-cols-2">
-                    <div>
-                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
-                        <BilingualText en={matchesEn('tier')} el={matchesEl('tier')} compact />
-                      </label>
-                      <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
-                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {TIER_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
-                        <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
-                      </label>
-                      <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
-                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {ROLE_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
-                      <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                        placeholder="City or country..." className="h-10 w-full rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
-                    </div>
-                  </div>
-                  {hasActiveFilters && (
-                    <button onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setLocationFilter(''); setAvailFilter(new Set()); }}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      Clear all
-                    </button>
-                  )}
-                </div>
-              )}
 
               {/* Results toolbar */}
               <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
@@ -1004,7 +1016,7 @@ export default function MatchesPage() {
                       { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
                     ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
                       <button key={mode} onClick={() => setViewMode(mode)} title={title}
-                        className={cn('h-9 items-center justify-center rounded-md px-2 transition-all',
+                        className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
                           mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
                         <Icon className={cn('icon-sm', small && 'scale-90')} />
@@ -1068,7 +1080,7 @@ export default function MatchesPage() {
                     const score = hit.matchScore ?? 50;
                     const matchReasons: MatchReason[] = hit.matchReasons?.length
                       ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : buildMatchReasonsFromScore(score);
+                      : [];
                     return (
                       <MatchCard
                         key={hit.id}
@@ -1109,7 +1121,7 @@ export default function MatchesPage() {
                     const score = hit.matchScore ?? 50;
                     const matchReasons: MatchReason[] = hit.matchReasons?.length
                       ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : buildMatchReasonsFromScore(score);
+                      : [];
                     return (
                       <MatchListRow
                         key={hit.id}
@@ -1146,7 +1158,7 @@ export default function MatchesPage() {
         const score = previewTarget.matchScore ?? 50;
         const previewReasons: MatchReason[] = previewTarget.matchReasons?.length
           ? previewTarget.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-          : buildMatchReasonsFromScore(score);
+          : [];
         const previewProfile = hitToProfile(previewTarget);
         return (
           <MatchPreviewPanel

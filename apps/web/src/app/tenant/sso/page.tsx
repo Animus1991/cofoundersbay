@@ -196,7 +196,7 @@ function RoleMappingEditor({
               <Input value={r.claim} onChange={e => update(i, 'claim', e.target.value)} placeholder="Claim (e.g. groups)" className="text-xs h-8" />
               <Input value={r.value} onChange={e => update(i, 'value', e.target.value)} placeholder="Value (e.g. admins)" className="text-xs h-8" />
               <select value={r.role} onChange={e => update(i, 'role', e.target.value)}
-                className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs">
+                className="h-8 w-full rounded-xl border border-input bg-background px-2 text-xs">
                 {['founder', 'investor', 'mentor', 'member', 'admin'].map(role =>
                   <option key={role} value={role}>{role}</option>
                 )}
@@ -483,7 +483,7 @@ export default function TenantSSOPage() {
                         <label className="text-xs font-medium">Public Certificate (PEM)</label>
                         <textarea value={newProvider.samlCert} onChange={e => setNewProvider(p => ({ ...p, samlCert: e.target.value }))}
                           placeholder="-----BEGIN CERTIFICATE-----&#10;..." rows={3}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
+                          className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
                       </div>
                     </>
                   )}
@@ -551,7 +551,7 @@ export default function TenantSSOPage() {
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Identity Provider</label>
                       <select value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         <option value="">— None selected —</option>
                         {providers?.map(p => <option key={p.id} value={p.id}>{p.providerName} ({p.providerType.toUpperCase()})</option>)}
                       </select>
@@ -585,7 +585,7 @@ export default function TenantSSOPage() {
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Default Role for new SSO users</label>
                         <select value={defaultRole} onChange={e => setDefaultRole(e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                          className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                           {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
                         </select>
                       </div>

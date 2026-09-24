@@ -52,7 +52,45 @@ export type ActionOutcome = {
   ok: boolean;
   href?: string;
   error?: string;
+  /**
+   * What the undo will need, produced by the action itself.
+   *
+   * An undo used to be handed only the original payload, which is why every
+   * "create" declared `reversal: none`: asked to make a workspace called
+   * Helios, the undo knew the name and nothing else, and archiving by name
+   * could archive a workspace the user already had. The executor knows the id
+   * it just created, so it hands it over here and the undo acts on that exact
+   * row. Actions with nothing to hand over leave it undefined.
+   */
+  undo?: Record<string, unknown>;
 };
+
+/**
+ * What a capability can make stale, named in terms of the product rather than
+ * of any cache.
+ *
+ * The app used to decide this at the call site, in a chain of `if (tool ===
+ * ...)` that covered four of the nine mutations: ticking a readiness criterion
+ * or creating a workspace refreshed nothing, so an open page kept showing the
+ * state from before the assistant changed it. Declaring it here puts the
+ * answer next to the capability it belongs to, and a new capability that
+ * forgets is caught by a test rather than by a stale screen.
+ *
+ * The web app maps each topic to its own query keys, exhaustively, so a topic
+ * added here without a binding does not compile.
+ */
+export type InvalidationTopic =
+  | 'connections'
+  | 'messages'
+  | 'shortlist'
+  | 'readiness'
+  | 'workspaces'
+  | 'investor'
+  | 'graph'
+  | 'research'
+  | 'profile'
+  | 'milestones'
+  | 'events';
 
 export type ActionDeclaration = {
   id: string;
@@ -60,6 +98,11 @@ export type ActionDeclaration = {
   label: BilingualCopy;
   description: BilingualCopy;
   params: readonly ActionParam[];
+  /**
+   * The topics this capability makes stale. Present on every mutation, empty
+   * where nothing is written — `navigate` moves the user and changes no data.
+   */
+  invalidates?: readonly InvalidationTopic[];
   /**
    * True when a confirmed run reaches a write endpoint. Navigation moves the
    * user rather than their data, so it is false there — that distinction is

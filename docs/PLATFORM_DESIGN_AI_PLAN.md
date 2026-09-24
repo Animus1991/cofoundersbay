@@ -619,3 +619,134 @@ Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έ�
 Το `{ provide: JwtAuthGuard, useValue: … }` **δεν** παρεμβάλλεται: ο πραγματικός guard επεκτείνει το `AuthGuard('jwt')` του passport και χωρίς registered strategy απαντά **500 αντί 401**. Και τα 14 tests μου απέτυχαν έτσι. Η υπάρχουσα σουίτα jobs κάνει `vi.spyOn(JwtAuthGuard.prototype, 'canActivate')` για τον ίδιο λόγο. Καταγράφηκε στο `AGENTS.md`.
 
 **Κατάσταση:** api 158 → **172/172** (7 files), web **279/279** (32 files), `tsc --noEmit` καθαρό σε web + api.
+
+## 20. Έλεγχος 2026-09-17 — η γραμμή προϊόντος έχει φύγει 60 commits μπροστά
+
+`git fetch origin --prune`. Remote heads:
+
+| branch | SHA | ahead of `main` `91d6ea3` |
+|---|---|---|
+| `integration/ai-platform-upgrade` | `1fb4bc4` | **193** |
+| `claude/project-audit-upgrade-y2ebnr` | `4b897c9` | 191 |
+| `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe3` | 133 |
+| `main` | `91d6ea3` | 0 |
+
+**Πιο ανεπτυγμένο προϊόν:** `integration/ai-platform-upgrade` `1fb4bc4`. Περιέχει ολόκληρο το `cursor/ai-os-fullpage-chat-53e0` (`7ce1fe3` είναι πρόγονος) συν 60 commits: type/layout, i18n, AI reads/loop, a11y/hydration, Tailwind padding, reversible shortlist, capability index.
+
+Ο Claude **δεν είναι πια το April fork.** `f54098c` έκανε merge την AI platform line μέσα στη design line· κοινός πρόγονος με integration είναι `06024ae`, όχι το `main`. Unique του Claude μετά από εκεί: 2 commits (`bd5e720`, `4b897c9`). Unique του integration: 4 (`69a6fc9`, `5178e45`, `d016495`, `1fb4bc4`).
+
+Τραβήχτηκαν **χωρίς παράλειψη**:
+
+- Fast-forward στο `1fb4bc4` (και τα 60, συμπεριλαμβανομένων των 4 unique του integration: RelativeTime, 12 reads, copilot-loop, padding `pl-9`, shortlist remove, `/ai/capabilities`).
+- Cherry-pick `bd5e720` πάνω σε αυτό: ConversationList χωρίς nested-interactive, `a11y.spec.ts` «every control keeps its name at phone width», MatchCard/SearchFilters/matches raw `<button>` names, Button `asChild` exemption. Στα overlapping call sites κρατήθηκαν τα **integration** labels (διγλωσσικά, με το όνομα της γραμμής, `aria-pressed`) — τα Claude labels ήταν γενικότερα και σε μία περίπτωση έσβηναν `onClick` στο attach image.
+- `4b897c9` (hydration gate green) ήταν ήδη στο `69a6fc9` ως θετικός έλεγχος `relative timestamps hydrate without a mismatch`. Cherry-pick κενό· skip.
+
+**Σκόπιμα όχι:** full merge του Claude HEAD — θα πετούσε τα 4 unique του integration (3.630 γραμμές: `copilot-reads`, loop, catalogue, capability index). OpenNext, squircle, April axe mock: ακόμα έξω, όπως στα §13.
+
+### 20.1 Έλεγχος 2026-09-18 — κανένα νέο remote commit
+
+`git fetch origin --prune`. Heads **αμετάβλητα** από §20: `main` `91d6ea3`, `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3`, `integration/ai-platform-upgrade` `1fb4bc4`, `claude/project-audit-upgrade-y2ebnr` `4b897c9`.
+
+**Πιο ανεπτυγμένο προϊόν:** αυτή η γραμμή `cursor/ui-upgrade-cloudflare-preview-53e0` `6582dcb` — **199** μπροστά από `main`, 6 μπροστά από integration (docs + CI/a11y fixes: shared `prebuild`, AIInsightButton, feed Preferences). Integration 0 unique. Claude unique SHAs ακόμα `bd5e720`/`4b897c9` (ήδη cherry-picked / skip).
+
+Διαφορά αρχείων προς Claude: σχόλια στο Button, αγγλικά labels στο `/feed`, import `LocalTime` αντί `RelativeTime`. Υιοθέτηση θα **αφαιρούσε** bilingual names και hydration-stable timestamps. Καμία παράλειψη αναβάθμισης.
+
+## 21. Έλεγχος 2026-09-22 — σύγκλιση branches, και η πρώτη μέτρηση όλων των 142 routes
+
+### 21.1 Branches
+
+`git fetch --all --prune`. Τοπικό `integration/ai-platform-upgrade` == remote (0 ahead / 0 behind) στο `6ff0dbc`, +90 commits από τον προηγούμενο έλεγχο. Σε κάθε άλλο remote branch, commits **που δεν υπάρχουν στο HEAD**:
+
+| branch | μη-συγχωνευμένα | κρίση |
+|---|---|---|
+| `cursor/ui-upgrade-cloudflare-preview-53e0` `5d630f3` | 0 | πρόγονος (merge `47e1660`) |
+| `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3` | 0 | πρόγονος |
+| `main` `91d6ea3` | 0 | πρόγονος |
+| `claude/project-audit-upgrade-y2ebnr` `4b897c9` | 2 (`bd5e720`, `4b897c9`) | **ουσία ήδη μέσα** — βλ. κάτω |
+
+Ο έλεγχος του Claude δεν έμεινε στους τίτλους. `bd5e720` (53 αρχεία, «nameless icon button = compile error»): ο φρουρός τύπων υπάρχει στο `button.tsx` (γρ. 83, 109–112, ίδιο τρίτο μέλος union για widened `size`), και το typecheck περνά — άρα κάθε icon button του HEAD **έχει** όνομα, αλλιώς δεν θα μεταγλωττιζόταν. 43/53 αρχεία θα συγκρούονταν σε cherry-pick γιατί η integration τα ξαναδούλεψε από τότε. `4b897c9`: αφαιρεί την εξαίρεση hydration #418 από το gate — το HEAD την αφαίρεσε ήδη (`RelativeTime`) **και** κράτησε θετικό regression test (`relative timestamps hydrate without a mismatch`, 5 tests έναντι 4 του Claude). Το commit message του Claude υπόσχεται test «every control keeps its name at phone width» — **το diff του δεν το περιέχει**. Τίποτα να τραβηχτεί.
+
+Τρία αρχεία σε εξέλιξη από την προηγούμενη συνεδρία (readiness bars διπλά ξεθωριασμένες, banner που αντέφασκε στο demo, γένος στο `strings-research`) — typecheck καθαρό, committed `de5a74d`.
+
+### 21.2 Επαλήθευση HEAD
+
+API: 187/187, typecheck καθαρό. Web: typecheck καθαρό· **455/456** — το ένα `MobileNavigation › closes when the already-current destination is selected` είναι `Test timed out in 60000ms`, όχι assertion. Σε απομόνωση 18/21 με τρία timeouts· τα ίδια tests που πέρναγαν σε 845ms στις 09-16 τώρα 8–130s, ενώ ο dev server μεταγλώττιζε 142 routes για το sweep (846 CPU-s, 1.5GB). Περιβαλλοντικό· δεν το δηλώνω πράσινο, δεν το δηλώνω regression.
+
+### 21.3 Sweep 142 static routes @1440 (Playwright, demo mode, platform_admin)
+
+Πρώτη φορά που μετριέται **ολόκληρη** η πλατφόρμα σε μία σάρωση, όχι τρεις σελίδες.
+
+| μέτρηση | αποτέλεσμα |
+|---|---|
+| non-200 | **1** — `/investor/dashboard` **500**: Server Component με 270 γραμμές νεκρού «legacy» κώδικα κάτω από το `redirect()`, που εισήγαγαν `useState` → Turbopack αρνείται. Διορθώθηκε στο πρότυπο των 7 γραμμών του `/mentor/dashboard`. Τίποτα δεν χάθηκε: το `/dashboard/investor` αποδίδει watchlist/pipeline/portfolio από το API. |
+| page errors | 2 — το παραπάνω, και `Maximum update depth exceeded` στο `/auth/sso-complete` **μία φορά**, αμέσως μετά το `/auth/oauth-callback` στο ίδιο tab. 3 απομονωμένες επαναλήψεις (με/χωρίς demo): 0 errors. Καταγράφεται ως παρατηρηθέν-μία-φορά, όχι ως διορθωμένο. |
+| οριζόντια κύλιση | 1 — `/profile/edit` 68px |
+| ανώνυμα controls | **17 routes, 94 controls**: `/calendar` 30, `/learning` 10, `/admin/feature-flags` 9, `/settings/ai` 9, `/investors` 6, `/members` 6, … Ο compile-time φρουρός πιάνει μόνο `<Button size="icon">`· αυτά είναι raw `<button>`/`<a>` και role-surface σελίδες. |
+| Greek <15% (>30 λέξεις) | **74/142** — admin ×17, org ×10, provider ×8, tenant ×6, investor ×5, mentor ×5, settings ×4, και `/reputation`, `/members`, `/investors`, `/endorsements`, `/marketplace`, `/mentoring`, `/help`. Ο ισχυρισμός «18 σελίδες» δεν επιβεβαιώνεται· είναι το μισό προϊόν. |
+| χωρίς Ask AI seam | 13 |
+| dead bands >60px | 9 routes ×1–2 |
+
+### 21.4 Ο ισχυρισμός «nothing on screen is invented» (`3983a79`) — ελέγχθηκε
+
+Σελίδες χωρίς κανένα fetch, με hardcoded αριθμητικά, **χωρίς** `SampleDataNotice`, και `status: 'complete'` στο registry: `/reputation` (12 figures — «Profile Completeness 85/100», badges, ιστορικό, **ίδια για κάθε χρήστη**, ενώ υπάρχουν `gamification` + `endorsements` API), `/coaching` (5), `/expert-reviews` (5), `/tenant/programs` (5), `/org/cohorts/[id]` (3). Επιπλέον `mentor/earnings`, `provider/analytics` με `const MOCK_*` arrays. Ο ισχυρισμός ισχύει για τις σελίδες που άγγιξε το commit· δεν ισχύει για την πλατφόρμα.
+
+### 21.5 AI seam, μετρημένο
+
+26 δηλώσεις (16 reads, 9 writes, 1 navigate) σε ~22 domains, έναντι **47 API modules**. Χωρίς καμία ενέργεια: `profile` (ο assistant δεν διαβάζει/γράφει το προφίλ του χρήστη), `gamification`, `messaging` read (μόνο send), `connections` read (μόνο send), `events`/`groups`/`milestones` write (μόνο read), `billing`, `org`/`tenant`/`admin` σύνολο, `marketplace`, `learning`, `polls`. Ο tool-call loop σε streaming που το §17.5 δήλωνε ανοιχτό **είναι πλέον συνδεδεμένος** (`ollama.service.ts:209` συναρμολογεί, `ai.controller.ts:169/287` επιθεωρεί, `useAIChat.ts:327` προτείνει). Snapshots σελίδας: 4/156.
+
+### 21.6 Σειρά (από τη μέτρηση, όχι από γούστο)
+
+1. **Ειλικρίνεια πρώτα**: 7 σελίδες που δείχνουν εφευρεμένα δεδομένα ως πραγματικά — είτε API, είτε `SampleDataNotice`, είτε `status: 'partial'`. Ένα βράδυ, μηδέν ρίσκο.
+2. **94 ανώνυμα controls / 17 routes** — αντικειμενικό WCAG failure· `/calendar` μόνο του είναι το ένα τρίτο.
+3. **`/profile/edit` 68px overflow**.
+4. **AI reach**: `get_profile`/`update_profile`, `get_messages`, `get_connections`, writes για milestones/events — ο πυρήνας ενός AI-first προϊόντος είναι να ξέρει τον χρήστη του.
+5. **74 English-only routes** — κατά ρόλο (settings → member-facing → investor/mentor/provider → org/tenant → admin), με τη σύμβαση `strings-*.ts` + `catalogGuard.test.ts` ανά σελίδα.
+6. 13 routes χωρίς Ask AI, 9 dead bands.
+
+### 21.7 Οπτικός έλεγχος 32 στιγμιοτύπων (founder surfaces, demo) — 2026-09-22
+
+Τα στιγμιότυπα του χρήστη δείχνουν `/dashboard/founder` με «42/100 · 3 διαστάσεις (Team/Product/Market)» και «Ορόσημα 0/4». **Το HEAD δεν αποδίδει αυτά**: μέτρηση σε καθαρό browser δίνει 52/100 · 6 διαστάσεις (profile/research/artifacts/collaboration/momentum/ecosystem) και 6/12 ορόσημα — το mock των τριών διαστάσεων αντικαταστάθηκε στο `6ff0dbc`, και το σχόλιο στο `preview-api.ts:1470` το λέει ρητά. Ο browser του χρήστη σέρβιρε παλιό bundle· χρειάζεται hard reload. Δεν είναι εύρημα κώδικα.
+
+Επαληθευμένα στο HEAD και διορθωμένα:
+
+| εύρημα | αιτία | διόρθωση |
+|---|---|---|
+| `/builder/pitch-deck` «Αίτημα χρηματοδότησης: —» ενώ `/fundraising` και dashboard λένε $750K στόχος | το deck δεν διάβαζε τον γύρο | prefill από `fundraisingRoundView()` — **μόνο demo**, ποτέ πάνω από πληκτρολογημένη τιμή, ίδιο πρότυπο με το `companyName ← workspaceName` |
+| `/ai` τέσσερα νήματα «Νέα συνομιλία», ανοίγουν κενά | το demo `/api/ai/chat` αγνοούσε το `conversationId`· ο server (`ai-conversation.service.ts:151`) προσαρτά και μετονομάζει από το πρώτο μήνυμα | το preview layer κάνει το ίδιο, ίδια περικοπή 50 χαρακτήρων |
+| `/builder` «Τα παραδοτέα σας είναι έτοιμα για αξιολόγηση» δίπλα σε «0 ολοκληρωμένα» | trigger = `documents.length >= 2`, όχι ολοκλήρωση | το κείμενο λέει τι ισχύει: «N έγγραφα σε εξέλιξη — ένας ειδικός μπορεί να αξιολογήσει τα προσχέδια» |
+| `/readiness` 61 vs `/builder` 42 | στο HEAD και τα δύο 61 (ίδιο endpoint, ίδιο `DEMO_CRITERIA`, seed = 61) | καμία — stale bundle |
+
+Δύο βαθμολογίες «ετοιμότητας» παραμένουν σκόπιμα (52 πρόοδος ιδρυτή / 61 αξιολόγηση επενδυτή-επιταχυντή), ονοματισμένες και διασυνδεδεμένες από το `5e701fa`. Η συγχώνευσή τους είναι απόφαση προϊόντος, όχι bug.
+
+`/reputation` (§21.4 #1) έγινε: διαβάζει gamification XP/badges/streak, ίδια hooks με το dashboard, δίγλωσσο, `SampleDataNotice` στο demo. Μένουν από το #1: `/coaching`, `/expert-reviews`, `/tenant/programs`, `/org/cohorts/[id]`, `mentor/earnings`, `provider/analytics`.
+
+## 22. Page rail — κύματα, με μέτρηση (2026-09-24)
+
+### 22.1 Το εργαλείο
+
+`node scripts/rail-candidates.mjs` — για κάθε `page.tsx` (ακολουθώντας ένα επίπεδο delegation) μετρά controls και ανιχνεύει **οικογένειες** βοηθητικών controls: filters, views, export, settings, summary, help. Υποψήφια = ≥3 οικογένειες χωρίς rail. Το `acc83e8` ανέφερε 45 με χαλαρότερο κριτήριο· αυτό δίνει **17** με αυστηρό — και συμφωνούν στην κορυφή. Η λίστα είναι αναπαραγώγιμη· μια σελίδα μπαίνει ή βγαίνει με λόγο, όχι με γούστο.
+
+| route | ctrl | fam | οικογένειες |
+|---|---|---|---|
+| `/research/[boardId]` | 76 | 5 | filters, views, export, settings, help |
+| `/admin/user-management` | 39 | 4 | filters, views, export, help |
+| `/org/[slug]/admin` | 26 | 4 | filters, export, settings, summary |
+| `/org/settings` | 42 | 3 | filters, views, settings |
+| `/data-room/[id]` | 41 | 3 | filters, views, export |
+| `/admin/billing` | 31 | 3 | filters, export, settings |
+| `/fundraising` | 31 | 3 | filters, export, help |
+| `/feed` · `/projects` · `/admin/communities` · `/dashboard/founder` · `/admin/feature-flags` · `/discover` · `/dashboard/incubator` · `/marketplace` · `/help` · `/calendar` | 9–21 | 3 | |
+
+Με rail: `/coaching`, `/matches` (Claude), `/admin` (§22.2), `/research/[boardId]` (§22.3).
+
+### 22.2 `/admin` — 2ο κύμα
+
+Έξι σύνολα → rail «Σύνολα πλατφόρμας» (badge = ανοιχτές αναφορές)· 12 tabs → και ως λίστα στο rail (τα tabs μένουν). Δύο ελαττώματα σε κοινό κώδικα: React key warning (το admin layout δίνει στο frame δύο αδέλφια, το δεύτερο το RSC `children` χωρίς key — keyed Fragments) και ο τίτλος του ανοιχτού rail που κόβονταν (stacked+wrap στο `PageRail.tsx`).
+
+### 22.3 `/research/[boardId]` — 3ο κύμα, ο καμβάς
+
+Η σελίδα στήνει δικό της chrome (SideNav/TopBar, όχι AppShellFrame), άρα κρατά μόνη της το πλάτος της λωρίδας (ίδιες τιμές με το frame). Το μενού «More» με 30 στοιχεία έγινε **έξι οικογένειες** — Προβολή, Εισαγωγή, Βοηθός & ανάλυση, Φίλτρα κόμβων (ο ίδιος `NodeFilterBar`, ίδιο state, badge = ενεργά φίλτρα), Εξαγωγή & κοινοποίηση, Ρυθμίσεις & διάταξη — κάθε γραμμή καλεί τον handler που καλεί το menu item. Toolbar και More **μένουν όπως είναι**: ο καμβάς είναι εργαλείο, η γρήγορη διαδρομή του είναι η γραμμή εργαλείων.
+
+Δύο ελαττώματα που βρήκε το probe: (α) το peeked panel βρισκόταν **κάτω** από τη γραμμή εργαλείων του καμβά (`z-50` σε μη-απομονωμένη στήλη έναντι rail `z-30`) — κλικ στο rail πέφταν στο toolbar. Rail → `z-40` (ίδιο layer με το SideNav, συμμετρικό chrome) και η στήλη του καμβά `isolate`. (β) **Προϋπάρχον, μετρημένο, όχι διορθωμένο εδώ**: η γραμμή εργαλείων είναι **1.734px** πλατιά σε κάθε viewport — υπερχειλίζει στα 1280 (−552) και 1440 (−392) με ή χωρίς rail (ο rail κοστίζει 52). Ο τίτλος «Research canvas» πέφτει πάνω στο «Add node». Επόμενο: η δευτερεύουσα ομάδα (snap/AI/summary/branch/history), που έχει πλέον σπίτι στο rail και στο More, να συμπτύσσεται και κάτω από `2xl`, όπως ήδη κάνει κάτω από `sm`.
+
+Επαλήθευση: typecheck καθαρό, rail contract 5/5, ο καμβάς παραχωρεί 43px, 6 sections στη λωρίδα, εναλλαγή πλέγματος μέσα από το rail αλλάζει το state που διαβάζει το toolbar, 0 errors.
