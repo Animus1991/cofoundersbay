@@ -37,6 +37,7 @@ import {
   Minus, Edit2, Move,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
 import {
   listCanvasVersions,
@@ -401,7 +402,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             className="text-sm h-8"
           />
-          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
+          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating} aria-label={bilingualAria('Save snapshot', 'Αποθήκευση στιγμιότυπου')}>
             {creating ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
           </Button>
         </div>
@@ -590,7 +591,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             className="text-sm h-8"
           />
-          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
+          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating} aria-label={bilingualAria('Commit version', 'Καταχώριση έκδοσης')}>
             {creating ? <Loader2 className="icon-sm animate-spin" /> : <GitCommit className="icon-sm" />}
           </Button>
         </div>

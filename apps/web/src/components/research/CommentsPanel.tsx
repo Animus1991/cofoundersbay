@@ -14,6 +14,7 @@ import {
 } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { bilingualAria } from '@/lib/i18n/format';
 
 interface CommentsPanelProps {
   nodeId: string;
@@ -177,7 +178,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <MessageCircle className="icon-xl text-muted-foreground/40 mb-2" />
             <p className="text-sm text-muted-foreground">No comments yet</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Start the conversation below</p>
+            <p className="text-xs text-muted-foreground mt-1">Start the conversation below</p>
           </div>
         ) : (
           displayed.map((comment) => (
@@ -214,6 +215,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
             onClick={handleSubmit}
             disabled={!draft.trim() || createMutation.isPending}
             className="h-9 w-9 p-0 shrink-0"
+            aria-label={bilingualAria('Post comment', 'Δημοσίευση σχολίου')}
           >
             {createMutation.isPending
               ? <Loader2 className="icon-sm animate-spin" />

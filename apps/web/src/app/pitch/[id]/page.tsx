@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type PublicPitchDeck } from '@/lib/api';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -733,8 +734,12 @@ export default function PitchDeckPage() {
               <Label>Link</Label>
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
-                <Button variant="outline" onClick={copyLink}>
-                  {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
+                <Button
+                  variant="outline"
+                  onClick={copyLink}
+                  aria-label={copied ? bilingualAria('Link copied', 'Ο σύνδεσμος αντιγράφηκε') : bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+                >
+                  {copied ? <CheckCircle2 className="icon-sm text-status-success" aria-hidden="true" /> : <Link2 className="icon-sm" aria-hidden="true" />}
                 </Button>
               </div>
             </div>

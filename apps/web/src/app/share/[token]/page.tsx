@@ -291,7 +291,7 @@ export default function SharePage() {
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
             <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-accessible" />
-            <h2 className="font-semibold mb-2">Link Unavailable</h2>
+            <h1 className="font-semibold mb-2">Link Unavailable</h1>
             <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
             <Button variant="outline" onClick={() => window.location.href = '/'}>
               Go to CoFounderBay

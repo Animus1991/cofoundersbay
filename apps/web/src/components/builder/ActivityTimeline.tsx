@@ -206,7 +206,7 @@ export function ActivityTimeline({
                         </span>
                       )}
                       <BilingualText en={phrase.en} el={phrase.el} compact wrap />
-                      <span className="text-muted-foreground/60 ml-1.5">
+                      <span className="text-muted-foreground ml-1.5">
                         <RelativeTime date={activity.createdAt} format={agoNode} />
                       </span>
                     </p>
@@ -223,7 +223,7 @@ export function ActivityTimeline({
                             </span>
                           </p>
                         </div>
-                        <span className="text-xs text-muted-foreground/60 shrink-0 mt-0.5">
+                        <span className="text-xs text-muted-foreground shrink-0 mt-0.5">
                           <RelativeTime date={activity.createdAt} format={agoNode} />
                         </span>
                       </div>

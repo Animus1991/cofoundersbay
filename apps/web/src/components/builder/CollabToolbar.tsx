@@ -349,8 +349,10 @@ export function CollabToolbar({
               size="sm"
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowShareDialog(true)}
+              // The label hides below `sm`; the name must not hide with it.
+              aria-label="Share"
             >
-              <Share2 className="icon-sm mr-1.5" />
+              <Share2 className="icon-sm mr-1.5" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">Share</span>
             </Button>
           </TooltipTrigger>

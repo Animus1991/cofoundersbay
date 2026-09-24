@@ -224,7 +224,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                     <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
                       <BilingualText en={dim.label} el={ventureDimensionEl(dim.key, dim.label)} compact />
                       {weightShare(dim.weight) !== null && (
-                        <span className="ml-1 hidden text-muted-foreground/60 sm:inline">
+                        <span className="ml-1 hidden text-muted-foreground sm:inline">
                           ·{' '}
                           <BilingualText
                             en={`weight ${weightShare(dim.weight)}%`}

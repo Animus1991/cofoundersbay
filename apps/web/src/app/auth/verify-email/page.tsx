@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, XCircle, Loader2, Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
@@ -110,7 +110,7 @@ export default function VerifyEmailPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                   <Loader2 className="icon-xl text-primary-accessible animate-spin" />
                 </div>
-                <CardTitle>Verifying your email</CardTitle>
+                <h1 className="text-base font-semibold leading-tight sm:text-lg">Verifying your email</h1>
                 <CardDescription>Please wait while we verify your email address...</CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
@@ -127,7 +127,7 @@ export default function VerifyEmailPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-success-bg">
                   <CheckCircle2 className="icon-xl text-status-success" />
                 </div>
-                <CardTitle className="text-status-success ">Email Verified!</CardTitle>
+                <h1 className="text-base font-semibold leading-tight text-status-success sm:text-lg">Email Verified!</h1>
                 <CardDescription>
                   {verifiedEmail ? (
                     <>Your email <strong className="text-foreground">{verifiedEmail}</strong> has been verified.</>
@@ -159,7 +159,7 @@ export default function VerifyEmailPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
                   <XCircle className="icon-xl text-destructive-accessible" />
                 </div>
-                <CardTitle className="text-destructive-accessible">Verification Failed</CardTitle>
+                <h1 className="text-base font-semibold leading-tight text-destructive-accessible sm:text-lg">Verification Failed</h1>
                 <CardDescription>
                   {errorMessage || 'The verification link is invalid or has expired.'}
                 </CardDescription>
@@ -217,7 +217,7 @@ export default function VerifyEmailPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-warning-bg">
                   <Mail className="icon-xl text-status-warning" />
                 </div>
-                <CardTitle>Verify Your Email</CardTitle>
+                <h1 className="text-base font-semibold leading-tight sm:text-lg">Verify Your Email</h1>
                 <CardDescription>
                   Enter your email to receive a verification link
                 </CardDescription>

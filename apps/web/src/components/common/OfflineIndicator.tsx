@@ -153,6 +153,8 @@ export function OfflineBanner() {
                 variant="ghost"
                 className={cn('h-7 shrink-0', variant.action.text, variant.action.hover)}
                 onClick={() => window.location.reload()}
+                // The label hides below `sm`; the name must not hide with it.
+                aria-label={variant.action.label}
               >
                 <RefreshCw className="icon-sm sm:mr-1" aria-hidden="true" />
                 <span className="hidden sm:inline">{variant.action.label}</span>

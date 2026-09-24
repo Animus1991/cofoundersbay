@@ -115,7 +115,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
               {/* Error ID for support */}
               {this.state.errorId && (
-                <p className="mb-6 text-xs text-muted-foreground/60">
+                <p className="mb-6 text-xs text-muted-foreground">
                   Error ID: <code className="bg-secondary/40 px-1.5 py-0.5 rounded">{this.state.errorId}</code>
                 </p>
               )}

@@ -287,7 +287,7 @@ function statusBadge(status: string) {
     active: 'bg-status-success-bg text-status-success ',
     paused: 'bg-status-warning-bg text-status-warning ',
     draft: 'bg-muted text-muted-foreground',
-    archived: 'bg-muted text-muted-foreground/60 line-through',
+    archived: 'bg-muted text-muted-foreground line-through',
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? 'bg-muted text-muted-foreground'}`}>

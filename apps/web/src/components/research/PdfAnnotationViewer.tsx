@@ -315,7 +315,7 @@ export function PdfAnnotationViewer({
               <div className="p-4 text-center">
                 <Highlighter className="icon-xl text-muted-foreground/20 mx-auto mb-2" />
                 <p className="text-2xs text-muted-foreground">No annotations yet.</p>
-                <p className="text-2xs text-muted-foreground/60 mt-1">
+                <p className="text-2xs text-muted-foreground mt-1">
                   Use the highlight or note tool to annotate the PDF.
                 </p>
               </div>

@@ -169,8 +169,9 @@ export function CanvasInspectorPanel({
                   className="rounded-lg p-1 text-muted-foreground hover:bg-muted/40"
                   onClick={() => onToggleLayer(layer.id)}
                   aria-pressed={layer.visible}
+                  aria-label={bilingualAria(`Show ${layer.name}`, `Εμφάνιση ${layer.name}`)}
                 >
-                  {layer.visible ? <Eye className="icon-sm" /> : <EyeOff className="icon-sm" />}
+                  {layer.visible ? <Eye className="icon-sm" aria-hidden="true" /> : <EyeOff className="icon-sm" aria-hidden="true" />}
                 </button>
               </span>
             </li>

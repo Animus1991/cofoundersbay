@@ -2138,7 +2138,7 @@ export default function ResearchBoardPage() {
             aria-pressed={pressed}
             className={cn(
               'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70',
-              pressed && 'bg-primary/10 text-primary',
+              pressed && 'bg-primary/10 text-primary-accessible',
             )}
           >
             <Icon className={cn('icon-sm shrink-0', tone)} aria-hidden="true" />
@@ -2302,6 +2302,10 @@ export default function ResearchBoardPage() {
         {/* Board content */}
         {!showLoading && board && (
         <div className="flex min-h-0 flex-1 flex-col pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
+        {/* The canvas has no visible page title - the toolbar names the tool,
+            not the board - so the board's name is the page's heading for
+            screen readers and the outline. */}
+        <h1 className="sr-only">{board.title}</h1>
         {/* Toolbar — compact on phones; secondary actions live in More */}
         <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-2 sm:px-4 shrink-0 z-50 gap-1.5 sm:gap-3 overflow-x-auto scrollbar-hide">
           {/* Left: Brand + node count */}
@@ -2437,8 +2441,8 @@ export default function ResearchBoardPage() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs">
-                <FlaskConical className="icon-sm" />
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs" aria-label={bilingualAria(researchEn('capture'), researchEl('capture'))}>
+                <FlaskConical className="icon-sm" aria-hidden="true" />
                 <span className="hidden 2xl:inline">
                   <BilingualText en={researchEn('capture')} el={researchEl('capture')} compact />
                 </span>
@@ -2467,8 +2471,8 @@ export default function ResearchBoardPage() {
           {selectedNodeIds.size >= 2 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs">
-                  <Layers className="icon-sm" />
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs" aria-label={bilingualAria(researchEn('align'), researchEl('align'))}>
+                  <Layers className="icon-sm" aria-hidden="true" />
                   <span className="hidden 2xl:inline">
                     <BilingualText en={researchEn('align')} el={researchEl('align')} compact />
                   </span>

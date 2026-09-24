@@ -134,7 +134,7 @@ function NotificationItem({
         <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mt-0.5">
           {notification.body}
         </p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           <RelativeTime date={notification.timestamp} format={formatTimestamp} />
         </p>
       </div>

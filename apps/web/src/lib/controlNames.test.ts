@@ -46,6 +46,13 @@ const ICON_ONLY = new RegExp(
   String.raw`<(Button|button)\b(${ATTRS})>\s*(?:\{/\*[\s\S]*?\*/\}\s*)?<([A-Z][A-Za-z0-9.]*)\b${ATTRS}/>\s*</\1>`,
   'g',
 );
+// The same, when the icon swaps with state: `{visible ? <Eye /> : <EyeOff />}`.
+// The research canvas's layer visibility toggle was one, and the pattern above
+// could not see it because its child is an expression, not an element.
+const ICON_TERNARY = new RegExp(
+  String.raw`<(Button|button)\b(${ATTRS})>\s*\{[^{}?]*\?\s*<([A-Z][A-Za-z0-9.]*)\b(?:[^>{}]|\{[^{}]*\})*/>\s*:\s*<([A-Z][A-Za-z0-9.]*)\b(?:[^>{}]|\{[^{}]*\})*/>\s*\}\s*</\1>`,
+  'g',
+);
 const TOGGLE = new RegExp(String.raw`<(Switch|Checkbox)\b(${ATTRS})/?>`, 'g');
 
 const NAMED = /aria-label|aria-labelledby|\btitle=|asChild|\.\.\./;
@@ -64,6 +71,8 @@ describe('control names', () => {
     expect(files.length).toBeGreaterThan(300);
     const sample = '<button onClick={x} className="p-1"><X className="icon-sm" /></button>';
     expect(Array.from(sample.matchAll(ICON_ONLY)).length).toBe(1);
+    const swap = '<button onClick={x} aria-pressed={on}>{on ? <Eye className="icon-sm" /> : <EyeOff className="icon-sm" />}</button>';
+    expect(Array.from(swap.matchAll(ICON_TERNARY)).length).toBe(1);
   });
 
   it('names every button whose only child is an icon', () => {
@@ -73,6 +82,36 @@ describe('control names', () => {
         const [, tag, attrs, child] = m;
         if (TEXT_CHILD.test(child) || NAMED.test(attrs)) continue;
         offenders.push(`${path}:${lineOf(source, m.index ?? 0)} <${tag}> with only <${child} />`);
+      }
+      for (const m of source.matchAll(ICON_TERNARY)) {
+        const [, tag, attrs, a, b] = m;
+        if (TEXT_CHILD.test(a) || TEXT_CHILD.test(b) || NAMED.test(attrs)) continue;
+        offenders.push(`${path}:${lineOf(source, m.index ?? 0)} <${tag}> with only <${a} /> or <${b} />`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('names every button whose only text hides at a breakpoint', () => {
+    // `<Icon /><span className="hidden 2xl:inline">Capture</span>` is named on
+    // a wide screen and anonymous everywhere else. axe found the research
+    // canvas's Capture and Align menus this way at 1440px; the same shape was
+    // on the builder's Share and the offline banner's Reload below 640px.
+    const BUTTON_BODY = new RegExp(String.raw`<(Button|button)\b(${ATTRS})>([\s\S]*?)</\1>`, 'g');
+    const HIDDEN_SPAN = /<span className="[^"]*\bhidden [a-z0-9]+:[a-z-]+[^"]*">[\s\S]*?<\/span>/g;
+    const offenders: string[] = [];
+    for (const { path, source } of files) {
+      for (const m of source.matchAll(BUTTON_BODY)) {
+        const [, tag, attrs, body] = m;
+        if (NAMED.test(attrs)) continue;
+        if (!/className="[^"]*\bhidden (?:xs|sm|md|lg|xl|2xl):(?:inline|block|flex|inline-flex)/.test(body)) continue;
+        const visibleText = body
+          .replace(HIDDEN_SPAN, '')
+          .replace(/<[^>]+>/g, '')
+          .replace(/\{[^}]*\}/g, '')
+          .trim();
+        if (visibleText) continue;
+        offenders.push(`${path}:${lineOf(source, m.index ?? 0)} <${tag}> whose label hides at a breakpoint`);
       }
     }
     expect(offenders).toEqual([]);

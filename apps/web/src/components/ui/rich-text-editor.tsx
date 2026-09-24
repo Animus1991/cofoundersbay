@@ -190,7 +190,7 @@ export function RichTextEditor({
       {/* Editable area */}
       <div className="relative">
         {isEmpty && !isFocused && (
-          <div className="absolute top-3 left-3 text-muted-foreground/60 text-sm pointer-events-none select-none">
+          <div className="absolute top-3 left-3 text-muted-foreground text-sm pointer-events-none select-none">
             {placeholder}
           </div>
         )}

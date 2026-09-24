@@ -987,7 +987,7 @@ export default function MatchesPage() {
                   {filtered.length > 0 && (
                     <span>
                       <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
-                      {passedIds.size > 0 && <span className="text-muted-foreground/60"> · {passedIds.size} passed</span>}
+                      {passedIds.size > 0 && <span className="text-muted-foreground"> · {passedIds.size} passed</span>}
                     </span>
                   )}
                 </p>

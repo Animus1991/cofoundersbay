@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -257,6 +258,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 className="h-7 w-7 p-0 shrink-0"
                 onClick={handleReply}
                 disabled={submittingReply || !replyBody.trim()}
+                aria-label={bilingualAria('Send reply', 'Αποστολή απάντησης')}
               >
                 {submittingReply
                   ? <Loader2 className="icon-sm animate-spin" />

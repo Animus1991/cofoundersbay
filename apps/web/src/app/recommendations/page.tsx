@@ -51,6 +51,7 @@ import {
   type MatchExplanationItem,
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 const ROLE_ICON: Record<string, typeof Users> = {
   founder: Briefcase,
@@ -67,11 +68,13 @@ const ROLE_COLOR: Record<string, string> = {
 };
 
 function MatchScoreBadge({ score }: { score: number }) {
+  // Semantic chips, not white on a mid-tone fill: white on emerald-500 is
+  // 2.5:1, under the 4.5:1 small text needs (axe color-contrast on every card).
   const color =
-    score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-muted-foreground';
+    score >= 80 ? STATUS.success.chip : score >= 60 ? STATUS.info.chip : STATUS.neutral.chip;
   return (
-    <div className={cn('flex items-center gap-1 text-white text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
-      <Star className="icon-sm fill-current" />
+    <div className={cn('flex items-center gap-1 border text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
+      <Star className="icon-sm fill-current" aria-hidden="true" />
       {score}%
     </div>
   );
@@ -508,7 +511,7 @@ export default function RecommendationsPage() {
             { labelEn: 'New Matches', labelEl: 'Νέες αντιστοιχίσεις', value: recommendations.length, icon: Target },
             { labelEn: 'This Week', labelEl: 'Αυτή την εβδομάδα', value: weeklyRecs.length, icon: Sparkles },
             { labelEn: 'Connections', labelEl: 'Συνδέσεις', value: stats?.totalConnections ?? 0, icon: Users },
-            { labelEn: 'Acceptance Rate', labelEl: 'Ποσοστό αποδοχής', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
+            { labelEn: 'Acceptance Rate', labelEl: 'Ποσοστό αποδοχής', value: typeof stats?.acceptanceRate === 'number' ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
           ].map(({ labelEn, labelEl, value, icon: Icon }) => (
             <Card key={labelEn}>
               <CardContent className="p-4 flex items-center gap-3">

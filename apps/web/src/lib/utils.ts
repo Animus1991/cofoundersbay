@@ -7,6 +7,9 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatRelativeTime(dateStr: string | Date): string {
   const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  // A value that is not a date ("Never", or a sample row's "2 hours ago")
+  // used to come out as "NaNy ago". Show what was given instead.
+  if (Number.isNaN(date.getTime())) return typeof dateStr === 'string' && dateStr.trim() ? dateStr : '—';
   const now = Date.now();
   const diff = now - date.getTime();
   const seconds = Math.floor(diff / 1000);

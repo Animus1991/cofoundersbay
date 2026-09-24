@@ -225,7 +225,7 @@ export default function OrgSettingsPage() {
                     <Label htmlFor="orgType">Organization Type</Label>
                     <Select value={orgType} onValueChange={setOrgType}>
                       <SelectTrigger id="orgType">
-                        <SelectValue />
+                        <SelectValue placeholder="Choose a type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="incubator">Incubator</SelectItem>
@@ -242,7 +242,7 @@ export default function OrgSettingsPage() {
                     <Label htmlFor="country">Country</Label>
                     <Select value={country} onValueChange={setCountry}>
                       <SelectTrigger id="country">
-                        <SelectValue />
+                        <SelectValue placeholder="Choose a country" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="gr">Greece</SelectItem>
@@ -256,7 +256,7 @@ export default function OrgSettingsPage() {
                     <Label htmlFor="timezone">Timezone</Label>
                     <Select value={timezone} onValueChange={setTimezone}>
                       <SelectTrigger id="timezone">
-                        <SelectValue />
+                        <SelectValue placeholder="Choose a timezone" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="europe_athens">Europe/Athens (GMT+2)</SelectItem>

@@ -22,6 +22,7 @@ import {
   type ImportableDocument,
   type ResearchNode,
 } from '@/lib/api';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // ── Agent metadata ────────────────────────────────────────────────────────────
 
@@ -503,8 +504,10 @@ export function CanvasCopilotPanel({
                 className="flex-1 resize-none text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50 leading-relaxed"
               />
               <button
+                type="button"
                 onClick={sendMessage}
                 disabled={!input.trim() || chatMutation.isPending}
+                aria-label={bilingualAria('Send message', 'Αποστολή μηνύματος')}
                 className="p-2 rounded-lg bg-status-accent hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
               >
                 {chatMutation.isPending

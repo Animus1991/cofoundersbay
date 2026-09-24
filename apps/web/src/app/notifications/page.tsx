@@ -141,8 +141,15 @@ const NotificationRow = memo(function NotificationRow({
       )}
     >
       {selectable && (
-        <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground hover:text-primary-accessible transition-colors">
-          {selected ? <SquareCheck className="icon-sm text-primary-accessible" /> : <Square className="icon-sm" />}
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={!!selected}
+          aria-label={bilingualAria(`Select: ${item.title}`, `Επιλογή: ${item.title}`)}
+          onClick={() => onSelect?.(item.id)}
+          className="mt-1 shrink-0 text-muted-foreground hover:text-primary-accessible transition-colors"
+        >
+          {selected ? <SquareCheck className="icon-sm text-primary-accessible" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
         </button>
       )}
 

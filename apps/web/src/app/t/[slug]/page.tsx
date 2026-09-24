@@ -45,8 +45,12 @@ function hexToHsl(hex: string): string | null {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
-function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryResult | null }) {
+function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODiscoveryResult | null; slug: string }) {
   const b = tenant.branding;
+  // One name for the page. A tenant row missing both fields rendered an empty
+  // hero heading and "Ready to join undefined?"; the slug is the name the
+  // visitor typed to get here.
+  const tenantName = tenant.displayName || tenant.name || tenant.slug || slug;
 
   const cssVars: React.CSSProperties & Record<`--${string}`, string> = {} as React.CSSProperties &
     Record<`--${string}`, string>;
@@ -95,7 +99,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <img src={tenant.logoUrl} alt={tenant.name} className="mx-auto mb-6 h-16 w-auto rounded-xl shadow-lg" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           )}
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-4 drop-shadow">
-            {b?.heroTitle || tenant.displayName || tenant.name}
+            {b?.heroTitle || tenantName}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-white/80 mb-8 drop-shadow-sm">
             {b?.heroSubtitle || tenant.shortDescription || tenant.description || 'Join our startup ecosystem'}
@@ -144,7 +148,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
                 <Building2 className="icon-md text-primary-accessible" />
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-3">About {tenant.displayName || tenant.name}</h2>
+                <h2 className="text-xl font-bold mb-3">About {tenantName}</h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                   {b?.aboutText || tenant.aboutText}
                 </p>
@@ -181,7 +185,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <CardContent className="pt-8 pb-8">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
             <h2 className="text-2xl font-bold mb-2">
-              {b?.dashboardWelcomeText || `Ready to join ${tenant.displayName || tenant.name}?`}
+              {b?.dashboardWelcomeText || `Ready to join ${tenantName}?`}
             </h2>
             <p className="text-muted-foreground mb-6">
               Connect with the right people and build something great.
@@ -211,7 +215,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             {tenant.logoUrl
               ? <img src={tenant.logoUrl} alt="" className="h-6 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <Badge variant="secondary" className="text-xs">{tenant.status}</Badge>}
-            <span className="text-sm font-medium">{tenant.displayName || tenant.name}</span>
+            <span className="text-sm font-medium">{tenantName}</span>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {b?.supportEmail && (
@@ -314,5 +318,5 @@ export default function TenantPage() {
     );
   }
 
-  return <TenantLanding tenant={tenant} sso={sso ?? null} />;
+  return <TenantLanding tenant={tenant} sso={sso ?? null} slug={slug} />;
 }

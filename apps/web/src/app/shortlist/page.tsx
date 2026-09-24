@@ -138,7 +138,14 @@ function ShortlistCard({
       <div className="flex items-start gap-3">
         {/* Checkbox (compare mode) */}
         {compareMode && (
-          <button onClick={() => onToggleSelect(item.userId)} className="mt-1 shrink-0">
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={isSelected}
+            aria-label={bilingualAria(`Compare ${profile?.displayName ?? 'this profile'}`, `Σύγκριση: ${profile?.displayName ?? 'αυτό το προφίλ'}`)}
+            onClick={() => onToggleSelect(item.userId)}
+            className="mt-1 shrink-0"
+          >
             {isSelected
               ? <CheckSquare className="icon-sm text-primary-accessible" />
               : <Square className="icon-sm text-muted-foreground" />}

@@ -54,7 +54,7 @@ export default function OAuthCallbackPage() {
                 aria-hidden="true"
                 className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
               />
-              <h2 className="text-lg font-semibold">Verifying…</h2>
+              <h1 className="text-lg font-semibold">Verifying…</h1>
               <p className="text-sm text-muted-foreground">{message}</p>
             </>
           )}
@@ -64,7 +64,7 @@ export default function OAuthCallbackPage() {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg text-xs font-semibold uppercase tracking-wide text-status-success">
                 OK
               </div>
-              <h2 className="text-lg font-semibold">Welcome!</h2>
+              <h1 className="text-lg font-semibold">Welcome!</h1>
               <p className="text-sm text-muted-foreground">{message}</p>
               <p className="text-xs text-muted-foreground">Redirecting…</p>
             </>
@@ -75,7 +75,7 @@ export default function OAuthCallbackPage() {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive-accessible">
                 !
               </div>
-              <h2 className="text-lg font-semibold">Authentication Failed</h2>
+              <h1 className="text-lg font-semibold">Authentication Failed</h1>
               <p className="text-sm text-muted-foreground">{message}</p>
               <div className="flex gap-3 justify-center pt-2">
                 <Button variant="outline" onClick={() => router.push('/login')}>Back to Login</Button>

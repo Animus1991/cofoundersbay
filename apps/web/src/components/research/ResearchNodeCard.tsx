@@ -1093,7 +1093,7 @@ export function ResearchNodeCard({
                   {node.upload?.mimeType ?? 'Document'}
                 </p>
                 {node.upload?.sizeBytes && (
-                  <p className="text-2xs text-muted-foreground/60">{fmtSize(node.upload.sizeBytes)}</p>
+                  <p className="text-2xs text-muted-foreground">{fmtSize(node.upload.sizeBytes)}</p>
                 )}
               </div>
             </div>

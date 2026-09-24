@@ -33,6 +33,7 @@ import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { LocalTime } from '@/components/common/LocalTime';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -272,6 +273,7 @@ export function BoardHistoryDrawer({
                 className="h-8 shrink-0"
                 onClick={handleCreateSnapshot}
                 disabled={creatingSnapshot}
+                aria-label={bilingualAria('Save snapshot', 'Αποθήκευση στιγμιότυπου')}
               >
                 {creatingSnapshot
                   ? <Loader2 className="icon-sm animate-spin" />

@@ -23,6 +23,7 @@ import {
   type AIResearchQuestion,
   type AIChatMessage,
 } from '@/lib/api';
+import { bilingualAria } from '@/lib/i18n/format';
 
 /* ─── Types ─── */
 type Tab = 'extract' | 'connect' | 'synthesize' | 'questions' | 'chat';
@@ -655,8 +656,10 @@ export function AIAnalysisPanel({
                   className="flex-1 bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors disabled:opacity-50"
                 />
                 <button
+                  type="button"
                   onClick={handleChat}
                   disabled={loading || !chatInput.trim()}
+                  aria-label={bilingualAria('Send question', 'Αποστολή ερώτησης')}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-status-accent/15 text-status-accent hover:bg-status-accent/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="icon-sm animate-spin" /> : <ChevronRight className="icon-sm" />}
