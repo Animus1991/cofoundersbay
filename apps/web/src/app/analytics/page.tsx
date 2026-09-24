@@ -13,6 +13,7 @@ import {
 import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -643,6 +644,14 @@ export default function AnalyticsPage() {
    * chart down. Achievements answer a different question on the same screen.
    * The four links are links out. Same controls, same handlers.
    */
+  // Offered to the assistant: the rail's window and refresh and the tabs,
+  // through the same URL-writing setters (so Back still works).
+  usePageControls([
+    choiceControl('period', 'Analytics window', 'Περίοδος στατιστικών', PERIODS.map((p) => ({ value: p, en: `${p.replace('d', '')} days`, el: `${p.replace('d', '')} ημέρες` })), period, (v) => setPeriod(v as Period)),
+    choiceControl('tab', 'Analytics tab', 'Καρτέλα στατιστικών', (['overview', 'engagement', 'growth'] as const).map((t) => ({ value: t, en: analyticsEn(`tab_${t}`), el: analyticsEl(`tab_${t}`) })), activeTab, (v) => setTab(v as AnalyticsTab)),
+    { id: 'refresh', labelEn: 'Refresh analytics', labelEl: 'Ανανέωση στατιστικών', writes: false, run: () => void refetch() },
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'period',

@@ -25,6 +25,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
 import { analytics } from '@/lib/analytics';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 
@@ -181,6 +182,24 @@ export default function TenantsAdminPage() {
    * icons - and the badge is the suspended count, the one total that asks for
    * someone to look.
    */
+  // Offered to the assistant: the rail's two filters, refresh, export, and
+  // opening the create form or a tenant's settings - the same handlers.
+  usePageControls([
+    choiceControl('status_filter', 'Tenant status filter', 'Φίλτρο κατάστασης tenant', STATUS_OPTIONS, statusFilter, (v) => { setStatusFilter(v as StatusFilter); clear(); }),
+    choiceControl('branding_filter', 'Branding filter', 'Φίλτρο επωνυμίας', BRANDING_OPTIONS, brandingFilter, (v) => { setBrandingFilter(v as BrandingFilter); clear(); }),
+    { id: 'refresh', labelEn: 'Refresh tenants', labelEl: 'Ανανέωση tenants', writes: false, run: () => void refetch() },
+    { id: 'export_csv', labelEn: 'Export tenants as CSV', labelEl: 'Εξαγωγή tenants σε CSV', writes: false, unavailableEn: visibleTenants.length ? undefined : 'No tenant matches the current filters.', run: exportCsv },
+    { id: 'create_tenant', labelEn: 'Open the create tenant form', labelEl: 'Άνοιγμα φόρμας νέου tenant', writes: false, run: () => setIsCreating(true) },
+    {
+      id: 'tenant_settings',
+      labelEn: 'Open tenant settings',
+      labelEl: 'Άνοιγμα ρυθμίσεων tenant',
+      writes: false,
+      options: (tenants ?? []).map((t) => ({ value: t.id, labelEn: t.displayName || t.name, labelEl: t.displayName || t.name })),
+      run: (value) => setSelectedTenant((tenants ?? []).find((t) => t.id === value) ?? null),
+    },
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'totals',

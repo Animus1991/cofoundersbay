@@ -10,6 +10,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -150,6 +151,20 @@ export default function MentorEarningsPage() {
    * history, so they sit one gesture away; the badge on the totals is the
    * number of sessions still awaiting payout.
    */
+  // Offered to the assistant: the rail's period and export.
+  usePageControls([
+    choiceControl('period', 'Earnings period', 'Περίοδος εσόδων', PERIODS, period, setPeriod),
+    {
+      id: 'export_csv',
+      labelEn: 'Export sessions as CSV',
+      labelEl: 'Εξαγωγή συνεδριών σε CSV',
+      writes: false,
+      unavailableEn: transactions.length ? undefined : 'There are no sessions in this period to export.',
+      unavailableEl: transactions.length ? undefined : 'Δεν υπάρχουν συνεδρίες σε αυτή την περίοδο για εξαγωγή.',
+      run: exportCsv,
+    },
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'figures',

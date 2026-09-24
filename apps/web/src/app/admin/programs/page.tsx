@@ -34,6 +34,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -399,6 +400,39 @@ export default function AdminProgramsPage() {
       ),
     },
   ];
+
+  // Offered to the assistant: the same filters, refresh, export, opening a
+  // programme, and the card's Archive (which still asks first, and still
+  // refuses sample rows).
+  const programRows = programs.map((p) => ({ value: p.id, labelEn: p.name, labelEl: p.name }));
+  usePageControls([
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', STATUS_OPTIONS, statusFilter, setStatusFilter),
+    choiceControl('type_filter', 'Type filter', 'Φίλτρο τύπου', [{ value: 'all', en: 'Any type', el: 'Οποιοσδήποτε τύπος' }, ...types.map((t) => ({ value: t, en: t, el: t }))], typeFilter, setTypeFilter),
+    { id: 'refresh', labelEn: 'Refresh programs', labelEl: 'Ανανέωση προγραμμάτων', writes: false, run: () => void refetch() },
+    {
+      id: 'export_csv',
+      labelEn: 'Export programs as CSV',
+      labelEl: 'Εξαγωγή προγραμμάτων σε CSV',
+      writes: false,
+      unavailableEn: filteredPrograms.length === 0 ? 'No programme matches the current filters.' : undefined,
+      unavailableEl: filteredPrograms.length === 0 ? 'Κανένα πρόγραμμα δεν ταιριάζει στα τρέχοντα φίλτρα.' : undefined,
+      run: exportCsv,
+    },
+    { id: 'open_program', labelEn: 'Open program details', labelEl: 'Άνοιγμα λεπτομερειών προγράμματος', writes: false, options: programRows, run: (value) => setViewing(programs.find((p) => p.id === value) ?? null) },
+    {
+      id: 'archive_program',
+      labelEn: 'Archive program',
+      labelEl: 'Αρχειοθέτηση προγράμματος',
+      writes: true,
+      options: programs.filter((p) => p.status !== 'archived').map((p) => ({ value: p.id, labelEn: p.name, labelEl: p.name })),
+      unavailableEn: showingSample ? 'These are sample programmes until the programs API returns some.' : undefined,
+      unavailableEl: showingSample ? 'Είναι δείγματα μέχρι το API προγραμμάτων να επιστρέψει προγράμματα.' : undefined,
+      run: (value) => {
+        const program = programs.find((p) => p.id === value);
+        if (program) void archive(program);
+      },
+    },
+  ]);
 
   const statusLabel = STATUS_OPTIONS.find((o) => o.value === statusFilter);
 

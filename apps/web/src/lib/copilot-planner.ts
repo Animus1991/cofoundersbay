@@ -294,6 +294,10 @@ export function pageControlFor<T extends ControlLike>(
         // Every word of the option must be there: "Mike" alone should not
         // pick "Mike Johnson" over "Mike Chen".
         if (optionScore === 0 || optionScore < optionWords.length) continue;
+        // A command that writes needs its own words ("suspend", "ban"): a
+        // message that only names a row - "show Mike Johnson" - must never
+        // pick something that changes stored data.
+        if (control.writes && labelScore === 0) continue;
         if (labelScore === 0 && !verb) continue;
         const score = optionScore * 2 + labelScore;
         if (!best || score > best.score) best = { control, option, score };

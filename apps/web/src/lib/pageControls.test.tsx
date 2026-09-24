@@ -1,4 +1,6 @@
 import { act, cleanup, render } from '@testing-library/react';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import {
@@ -153,6 +155,12 @@ describe('matching a request to a page control', () => {
     expect(pageControlFor('δείξε μόνο όσους είναι σε αναστολη', greek)).toMatchObject({ option: { value: 'suspended' } });
   });
 
+  it('never picks a command that writes from a row name alone', () => {
+    // "show" is a verb of looking, and Mike Johnson is a row of the Suspend
+    // command - but nothing in the message says suspend.
+    expect(pageControlFor('show Mike Johnson', LISTED)).toBeUndefined();
+  });
+
   it('does not press anything on a passing mention', () => {
     expect(pageControlFor('what does suspended mean?', LISTED)).toBeUndefined();
     expect(pageControlFor('users', LISTED)).toBeUndefined();
@@ -185,5 +193,41 @@ describe('an assistant turn on a page with controls', () => {
   it('names what it can use when asked about the page', async () => {
     const turn = await runCopilotTurn('what can I do on this page?', context, { tools: [] });
     expect(turn.message).toContain('You can ask me to use: Status filter, Export users as CSV, Suspend user.');
+  });
+});
+
+describe('pages that offer controls', () => {
+  function walk(dir: string): string[] {
+    const out: string[] = [];
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) out.push(...walk(full));
+      else if (entry.endsWith('.tsx') && !entry.includes('.test.')) out.push(full);
+    }
+    return out;
+  }
+  const users = walk('src').filter((f) => readFileSync(f, 'utf8').includes('usePageControls(['));
+
+  it('finds the pages it is meant to check', () => {
+    expect(users.length).toBeGreaterThan(10);
+  });
+
+  it('calls usePageControls before any early return, so hook order is stable', () => {
+    // A component-level `return` before the hook changes how many hooks run
+    // between renders (loading → loaded), which React rejects at runtime.
+    // Lint would catch it; lint does not run here (AGENTS.md), so this does.
+    const offenders: string[] = [];
+    for (const file of users) {
+      const s = readFileSync(file, 'utf8');
+      let from = 0;
+      for (;;) {
+        const i = s.indexOf('usePageControls([', from);
+        if (i === -1) break;
+        from = i + 1;
+        const start = Math.max(s.lastIndexOf('export default function', i), s.lastIndexOf('\nfunction ', i), s.lastIndexOf('\nexport function ', i));
+        if (/\n {2}(?:if \([^\n]*\)\s*)?return\b/.test(s.slice(start, i))) offenders.push(file);
+      }
+    }
+    expect(offenders).toEqual([]);
   });
 });

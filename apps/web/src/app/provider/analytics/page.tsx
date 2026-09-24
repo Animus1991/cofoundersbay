@@ -10,6 +10,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -311,6 +312,22 @@ export default function ProviderAnalyticsPage() {
       ),
     },
   ];
+
+  // Offered to the assistant: the rail's period, refresh and both exports.
+  usePageControls([
+    choiceControl('period', 'Analytics period', 'Περίοδος στατιστικών', PERIODS, period, setPeriod),
+    {
+      id: 'refresh',
+      labelEn: 'Refresh analytics',
+      labelEl: 'Ανανέωση στατιστικών',
+      writes: false,
+      unavailableEn: showDemoData ? 'Sample figures are fixed; turn off sample data to load your own.' : undefined,
+      unavailableEl: showDemoData ? 'Τα δείγματα είναι σταθερά· απενεργοποιήστε τα δείγματα για να φορτώσετε τα δικά σας.' : undefined,
+      run: () => void overviewQuery.refetch(),
+    },
+    { id: 'export_metrics', labelEn: 'Export metrics as CSV', labelEl: 'Εξαγωγή δεικτών σε CSV', writes: false, unavailableEn: metricRows.length ? undefined : 'There are no metrics to export yet.', run: exportMetrics },
+    { id: 'export_daily', labelEn: 'Export daily views as CSV', labelEl: 'Εξαγωγή ημερήσιων προβολών σε CSV', writes: false, unavailableEn: weeklyViews.length ? undefined : 'There are no daily rows to export yet.', run: exportDaily },
+  ]);
 
   if (!mounted) {
     return (

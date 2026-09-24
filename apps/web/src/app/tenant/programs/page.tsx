@@ -53,6 +53,7 @@ import {
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
@@ -344,6 +345,22 @@ export default function TenantProgramsPage() {
    * and the status filter the archive action always needed. The column is the
    * search and the programs.
    */
+  // Offered to the assistant: the rail's status filter and the Create
+  // Program form, which stays unavailable without an organisation exactly as
+  // the header button is.
+  usePageControls([
+    choiceControl('status_filter', 'Program status filter', 'Φίλτρο κατάστασης προγράμματος', PROGRAM_STATUS_FILTERS, statusFilter, (v) => setStatusFilter(v as typeof statusFilter)),
+    {
+      id: 'create_program',
+      labelEn: 'Open the create program form',
+      labelEl: 'Άνοιγμα φόρμας νέου προγράμματος',
+      writes: false,
+      unavailableEn: organizationId ? undefined : 'Join an organisation to create programs.',
+      unavailableEl: organizationId ? undefined : 'Γίνετε μέλος οργανισμού για να δημιουργήσετε προγράμματα.',
+      run: () => { setForm(EMPTY_FORM); setFormOpen(true); },
+    },
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'totals',

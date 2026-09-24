@@ -14,6 +14,7 @@ import {
 import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -682,6 +683,41 @@ export default function MatchesPage() {
    * they stop costing 220px of the results on every visit that is not a
    * filtering visit.
    */
+  // Offered to the assistant: the rail's filters and sort and the column's
+  // view switch, through the same setters. Availability is a set, so its
+  // control toggles one value the way its chips do.
+  const VIEWS = [
+    { value: 'grid2', en: 'Two-column grid', el: 'Πλέγμα δύο στηλών' },
+    { value: 'grid3', en: 'Three-column grid', el: 'Πλέγμα τριών στηλών' },
+    { value: 'list', en: 'List', el: 'Λίστα' },
+  ];
+  usePageControls([
+    choiceControl('match_tier', 'Match strength filter', 'Φίλτρο ισχύος αντιστοίχισης', TIER_TABS, activeFilter, (v) => setActiveFilter(v as FilterKey)),
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_TABS, roleFilter, (v) => setRoleFilter(v as RoleFilter)),
+    choiceControl('sort', 'Sort matches', 'Ταξινόμηση αντιστοιχίσεων', [
+      { key: 'score', labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match') },
+      { key: 'name', labelEn: matchesEn('sort_name_az'), labelEl: matchesEl('sort_name_az') },
+      { key: 'recent', labelEn: matchesEn('sort_newest'), labelEl: matchesEl('sort_newest') },
+    ], sortBy, (v) => setSortBy(v as SortKey)),
+    choiceControl('view', 'Match layout', 'Διάταξη αντιστοιχίσεων', VIEWS, viewMode, (v) => setViewMode(v as ViewMode)),
+    {
+      id: 'availability',
+      labelEn: 'Toggle availability filter',
+      labelEl: 'Εναλλαγή φίλτρου διαθεσιμότητας',
+      writes: false,
+      options: AVAIL_OPTIONS.map((o) => ({ value: o.key, labelEn: o.labelEn, labelEl: o.labelEl })),
+      run: (value) => {
+        if (!value) return;
+        setAvailFilter((prev) => {
+          const next = new Set(prev);
+          if (next.has(value as AvailFilter)) next.delete(value as AvailFilter);
+          else next.add(value as AvailFilter);
+          return next;
+        });
+      },
+    },
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'filters',

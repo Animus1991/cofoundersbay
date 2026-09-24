@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
@@ -433,6 +434,17 @@ export default function ProjectsPage() {
       </Link>
     </Button>
   );
+
+  // Offered to the assistant: stage, industry and layout, through the same
+  // setters as the pills, the rail and the view switch.
+  usePageControls([
+    choiceControl('stage_filter', 'Project stage filter', 'Φίλτρο σταδίου έργου', STAGE_PILLS.map((p) => ({ value: p.value, en: projectEn(PROJECT_STAGE_KEYS[p.labelKey]), el: projectEl(PROJECT_STAGE_KEYS[p.labelKey]) })), statusFilter, setStatusFilter),
+    choiceControl('industry_filter', 'Industry filter', 'Φίλτρο κλάδου', [{ value: 'all', en: 'All industries', el: 'Όλοι οι κλάδοι' }, ...industries.map((i) => ({ value: i, en: i, el: i }))], industryFilter, setIndustryFilter),
+    choiceControl('view', 'Project layout', 'Διάταξη έργων', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
+  ]);
 
   const rail: PageRailSection[] = [
     {

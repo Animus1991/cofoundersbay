@@ -18,6 +18,7 @@ import {
 import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { readinessEn, readinessEl } from '@/lib/i18n/strings-readiness';
@@ -849,6 +850,26 @@ export default function ReadinessPage() {
             : ['readiness_tick_criterion', 'navigate'],
         },
   );
+
+  // Offered to the assistant: reassess (a computed read - the assess
+  // endpoint stores nothing) and the live/showcase switch, through the same
+  // handlers and the same conditions as the header buttons. Ticking a
+  // criterion is `readiness_tick_criterion`, a capability of its own.
+  usePageControls([
+    {
+      id: 'reassess',
+      labelEn: 'Reassess readiness',
+      labelEl: 'Επανεκτίμηση ετοιμότητας',
+      writes: false,
+      unavailableEn: !workspaceId || mode !== 'live' ? 'Reassessing needs a live workspace.' : undefined,
+      unavailableEl: !workspaceId || mode !== 'live' ? 'Η επανεκτίμηση χρειάζεται ζωντανό χώρο εργασίας.' : undefined,
+      run: () => { if (workspaceId && mode === 'live') void refetch(); },
+    },
+    choiceControl('view_mode', 'Readiness view', 'Προβολή ετοιμότητας', [
+      { value: 'live', en: 'Live readiness', el: 'Ζωντανή ετοιμότητα' },
+      { value: 'demo', en: 'Demo showcase', el: 'Επίδειξη' },
+    ], mode ?? 'live', (v) => setMode(v as 'live' | 'demo')),
+  ]);
 
   const reassessAction = (
     <div className="flex flex-wrap gap-2.5">

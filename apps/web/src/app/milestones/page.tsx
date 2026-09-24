@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -466,6 +467,19 @@ export default function MilestonesPage() {
    * same list, a search box with a category filter, and a priority select
    * that shared a row with the tabs and made it wrap - those are not.
    */
+  // Offered to the assistant: status, priority, category and layout, through
+  // the same setters as the tabs, the rail's select and chips, and the view
+  // switch. Creating one is `create_milestone`, a capability of its own.
+  usePageControls([
+    choiceControl('status_filter', 'Milestone status filter', 'Φίλτρο κατάστασης ορόσημου', statusTabs.map((t) => ({ value: t.value, en: milestoneEn(t.labelKey), el: milestoneEl(t.labelKey) })), statusFilter, (v) => setStatusFilter(v as typeof statusFilter)),
+    choiceControl('priority_filter', 'Priority filter', 'Φίλτρο προτεραιότητας', ([['all', 'pri_all'], ['high', 'pri_high'], ['medium', 'pri_medium'], ['low', 'pri_low']] as const).map(([value, key]) => ({ value, en: milestoneEn(key), el: milestoneEl(key) })), priorityFilter, (v) => setPriorityFilter(v as typeof priorityFilter)),
+    choiceControl('category_filter', 'Category filter', 'Φίλτρο κατηγορίας', CATEGORY_ORDER.map((cat) => ({ value: cat, en: cat === 'all' ? milestoneEn('all') : milestoneEn(MILESTONE_CATEGORY_KEYS[cat]), el: cat === 'all' ? milestoneEl('all') : milestoneEl(MILESTONE_CATEGORY_KEYS[cat]) })), categoryFilter, setCategoryFilter),
+    choiceControl('view', 'Milestone layout', 'Διάταξη ορόσημων', [
+      { value: 'list', en: 'List', el: 'Λίστα' },
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+    ], viewMode, (v) => setViewMode(v as 'list' | 'grid')),
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'summary',

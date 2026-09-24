@@ -24,6 +24,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls, type PageControl } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
@@ -483,6 +484,59 @@ export default function AdminReportsPage() {
       ),
     },
   ];
+
+  /*
+   * Offered to the assistant: the queue tab, both filters, refresh, export,
+   * opening a report, and the card's Resolve / Dismiss - the same handler,
+   * live reports only (sample rows carry no resolve, here or on the card).
+   */
+  const TAB_OPTIONS = [
+    { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+    { value: 'reviewing', en: 'In review', el: 'Υπό εξέταση' },
+    { value: 'resolved', en: 'Resolved', el: 'Επιλυμένες' },
+    { value: 'dismissed', en: 'Dismissed', el: 'Απορριφθείσες' },
+    { value: 'all', en: 'All reports', el: 'Όλες οι αναφορές' },
+  ];
+  const openReports = reports.filter((r) => r.status === 'pending' || r.status === 'reviewing');
+  const reportRows = (list: Report[]) => list.map((r) => ({ value: r.id, labelEn: `${r.reason} — ${r.targetName}`, labelEl: `${r.reason} — ${r.targetName}` }));
+  const resolution = (id: string, en: string, el: string, next: 'resolved' | 'dismissed'): PageControl => ({
+    id,
+    labelEn: en,
+    labelEl: el,
+    writes: true,
+    options: reportRows(openReports),
+    unavailableEn: !isLive ? 'These reports are illustrative; there is nothing behind them to resolve.' : openReports.length === 0 ? 'No report is open.' : undefined,
+    unavailableEl: !isLive ? 'Οι αναφορές είναι ενδεικτικές· δεν υπάρχει κάτι πίσω τους για επίλυση.' : openReports.length === 0 ? 'Καμία ανοιχτή αναφορά.' : undefined,
+    run: (value) => {
+      const report = reports.find((r) => r.id === value);
+      if (report) onResolve(report, next);
+    },
+  });
+  usePageControls([
+    choiceControl('queue_tab', 'Queue tab', 'Καρτέλα ουράς', TAB_OPTIONS, activeTab, setActiveTab),
+    choiceControl('type_filter', 'Report type filter', 'Φίλτρο τύπου αναφοράς', TYPE_OPTIONS, type, setType),
+    choiceControl('priority_filter', 'Priority filter', 'Φίλτρο προτεραιότητας', PRIORITY_OPTIONS, priority, setPriority),
+    { id: 'refresh', labelEn: 'Refresh reports', labelEl: 'Ανανέωση αναφορών', writes: false, run: () => void refetch() },
+    {
+      id: 'export_csv',
+      labelEn: 'Export reports as CSV',
+      labelEl: 'Εξαγωγή αναφορών σε CSV',
+      writes: false,
+      unavailableEn: filteredReports.length === 0 ? 'No report matches the current filters.' : undefined,
+      unavailableEl: filteredReports.length === 0 ? 'Καμία αναφορά δεν ταιριάζει στα τρέχοντα φίλτρα.' : undefined,
+      run: exportCsv,
+    },
+    {
+      id: 'open_report',
+      labelEn: 'Open report details',
+      labelEl: 'Άνοιγμα λεπτομερειών αναφοράς',
+      writes: false,
+      options: reportRows(reports),
+      run: (value) => setViewing(reports.find((r) => r.id === value) ?? null),
+    },
+    resolution('resolve_report', 'Resolve report', 'Επίλυση αναφοράς', 'resolved'),
+    resolution('dismiss_report', 'Dismiss report', 'Απόρριψη αναφοράς', 'dismissed'),
+  ]);
 
   const typeLabel = TYPE_OPTIONS.find((o) => o.value === type);
   const priorityLabel = PRIORITY_OPTIONS.find((o) => o.value === priority);

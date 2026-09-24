@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -319,6 +320,25 @@ export default function MarketplacePage() {
 
   const featured = filtered.filter(p => p.isFeatured);
   const regular = filtered.filter(p => !p.isFeatured);
+
+  // Offered to the assistant: category, sort and the available-only switch,
+  // through the same setters the rail and chips use.
+  const CATEGORY_EL: Record<string, string> = {
+    All: 'Όλες οι υπηρεσίες', legal: 'Νομικά', finance: 'Οικονομικά', marketing: 'Μάρκετινγκ', development: 'Ανάπτυξη',
+    design: 'Σχεδιασμός', consulting: 'Συμβουλευτική', coaching: 'Coaching', other: 'Άλλο',
+  };
+  usePageControls([
+    choiceControl('category', 'Service category', 'Κατηγορία υπηρεσίας', CATEGORIES.map((c) => ({ value: c, en: CAT_CONFIG[c].label, el: CATEGORY_EL[c] ?? CAT_CONFIG[c].label })), selectedCategory, setSelectedCategory),
+    choiceControl('sort', 'Sort services', 'Ταξινόμηση υπηρεσιών', [
+      { value: 'rating', en: 'Top rated', el: 'Κορυφαία βαθμολογία' },
+      { value: 'reviews', en: 'Most reviewed', el: 'Περισσότερες κριτικές' },
+      { value: 'clients', en: 'Most clients', el: 'Περισσότεροι πελάτες' },
+    ], sortBy, setSortBy),
+    choiceControl('availability', 'Availability', 'Διαθεσιμότητα', [
+      { value: 'any', en: 'Any availability', el: 'Οποιαδήποτε διαθεσιμότητα' },
+      { value: 'available', en: 'Available now only', el: 'Μόνο διαθέσιμοι τώρα' },
+    ], availableOnly ? 'available' : 'any', (v) => setAvailableOnly(v === 'available')),
+  ]);
 
   const rail: PageRailSection[] = [
     {

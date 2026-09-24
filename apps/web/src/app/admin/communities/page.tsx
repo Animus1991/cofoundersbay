@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createGroup, updateGroup, deleteGroup, listGroups, type GroupPrivacy, type GroupView } from '@/lib/api';
@@ -352,6 +353,22 @@ export default function AdminCommunitiesPage() {
   });
 
   const activeFilterCount = (visibility !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
+
+  // Offered to the assistant: the rail's two filters, same setters.
+  usePageControls([
+    choiceControl('visibility_filter', 'Visibility filter', 'Φίλτρο ορατότητας', [
+      { value: 'all', en: 'Any visibility', el: 'Οποιαδήποτε ορατότητα' },
+      { value: 'public', en: 'Public', el: 'Δημόσια' },
+      { value: 'private', en: 'Private', el: 'Ιδιωτική' },
+      { value: 'tenant', en: 'Tenant', el: 'Tenant' },
+    ], visibility, setVisibility),
+    choiceControl('status_filter', 'Community status filter', 'Φίλτρο κατάστασης κοινότητας', [
+      { value: 'all', en: 'Any status', el: 'Οποιαδήποτε κατάσταση' },
+      { value: 'active', en: 'Active', el: 'Ενεργή' },
+      { value: 'archived', en: 'Archived', el: 'Αρχειοθετημένη' },
+      { value: 'flagged', en: 'Flagged', el: 'Σημασμένη' },
+    ], status, setStatus),
+  ]);
 
   const rail: PageRailSection[] = [
     {

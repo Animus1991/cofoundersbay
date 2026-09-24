@@ -197,3 +197,36 @@ export function resetPageControlsForTests(): void {
   owners.clear();
   publish();
 }
+
+/**
+ * The common case: a filter, period or sort the page already keeps as
+ * `{ value, en, el }` options and a state setter. Returns a view control that
+ * reports the choice in effect.
+ */
+type OptionShape =
+  | { value: string; en: string; el: string }
+  | { key: string; labelEn: string; labelEl: string };
+
+export function choiceControl(
+  id: string,
+  labelEn: string,
+  labelEl: string,
+  // Both shapes the pages already keep their options in.
+  options: readonly OptionShape[],
+  current: string,
+  set: (value: string) => void,
+): PageControl {
+  return {
+    id,
+    labelEn,
+    labelEl,
+    writes: false,
+    options: options.map((o) =>
+      'key' in o ? { value: o.key, labelEn: o.labelEn, labelEl: o.labelEl } : { value: o.value, labelEn: o.en, labelEl: o.el },
+    ),
+    current,
+    run: (value) => {
+      if (value !== undefined) set(value);
+    },
+  };
+}

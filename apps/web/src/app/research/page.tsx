@@ -12,6 +12,7 @@ import { formatDistanceToNow, type Locale } from 'date-fns';
 import { el as elLocale, enUS } from 'date-fns/locale';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -343,6 +344,17 @@ export default function ResearchBoardsPage() {
    * boards are the way in. These two are not: three tiles counting what the
    * list already shows, and twelve controls in a row above it.
    */
+  // Offered to the assistant: the rail's filter and sort and the layout
+  // switch, through the same setters. Board-level work is canvas_command.
+  usePageControls([
+    choiceControl('board_filter', 'Board filter', 'Φίλτρο πινάκων', filters.map((f) => ({ key: f.id, labelEn: f.labelEn, labelEl: f.labelEl })), filter, (v) => setFilter(v as BoardFilter)),
+    choiceControl('sort', 'Sort boards', 'Ταξινόμηση πινάκων', sorts.map((o) => ({ key: o.id, labelEn: o.labelEn, labelEl: o.labelEl })), sort, (v) => setSort(v as BoardSort)),
+    choiceControl('view', 'Board layout', 'Διάταξη πινάκων', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'summary',

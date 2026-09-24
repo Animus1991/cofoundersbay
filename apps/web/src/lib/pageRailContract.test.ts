@@ -86,6 +86,24 @@ function splitRail(source: string): { rail: string; page: string } {
   return { rail, page: source.slice(0, start) + source.slice(end === -1 ? source.length : end + endMarker.length) };
 }
 
+/**
+ * `usePageControls([...])` describes the page's controls to the assistant -
+ * the same labels, deliberately, because it is the same control. It renders
+ * nothing, so it is neither "the column" nor "the rail" and is left out of
+ * both before labels are compared.
+ */
+function withoutControlRegistrations(source: string): string {
+  let out = source;
+  for (;;) {
+    const start = out.indexOf('usePageControls([');
+    if (start === -1) return out;
+    // The call sits at component level, so it closes at two-space indent.
+    const end = out.indexOf('\n  ]);', start);
+    if (end === -1) return out;
+    out = out.slice(0, start) + out.slice(end + 6);
+  }
+}
+
 function controlLabels(source: string): Set<string> {
   const out = new Set<string>();
   for (const m of source.matchAll(/[a-zA-Z]+En\('([a-z0-9_]+)'\)/g)) out.add(`key:${m[1]}`);
@@ -214,7 +232,7 @@ describe('page rail contract', () => {
     for (const page of pages) {
       const { rail, page: rest } = splitRail(page.source);
       const inRail = controlLabels(rail);
-      const inPage = controlLabels(rest);
+      const inPage = controlLabels(withoutControlRegistrations(rest));
       for (const label of inRail) {
         if (inPage.has(label) && !SHARED_TEXT_ALLOWLIST.has(label)) {
           offenders.push(`${page.path}: "${label.slice(label.indexOf(':') + 1)}" is in the rail and in the page`);

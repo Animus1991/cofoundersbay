@@ -21,6 +21,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls, type PageControl } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -476,6 +477,63 @@ export default function AdminUsersPage() {
       ),
     },
   ];
+
+  /*
+   * The same controls, offered to the assistant: the two filters, refresh,
+   * export, and the row menu's moderation and role commands. Each runs the
+   * handler the page's own control calls - banning still asks first, and
+   * sample rows still refuse - so "suspend Mike Johnson" from the chat is
+   * the row menu's Suspend, confirmed twice.
+   */
+  const userRows = users.map((u) => ({ value: u.id, labelEn: u.name, labelEl: u.name }));
+  const onRows = isLive ? undefined : 'These rows are illustrative until the user directory loads.';
+  const onRowsEl = isLive ? undefined : 'Οι γραμμές είναι ενδεικτικές μέχρι να φορτώσει ο κατάλογος χρηστών.';
+  const moderationCommand = (id: string, en: string, el: string, next: 'active' | 'suspended' | 'banned'): PageControl => ({
+    id,
+    labelEn: en,
+    labelEl: el,
+    writes: true,
+    options: userRows,
+    unavailableEn: onRows,
+    unavailableEl: onRowsEl,
+    run: (value) => {
+      const user = users.find((u) => u.id === value);
+      if (user) void moderate(user, next);
+    },
+  });
+  const ROLE_EL: Record<(typeof ASSIGNABLE_ROLES)[number], string> = {
+    founder: 'Ιδρυτής', mentor: 'Μέντορας', investor: 'Επενδυτής', org: 'Οργανισμός', admin: 'Διαχειριστής',
+  };
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_OPTIONS, role, setRole),
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', STATUS_OPTIONS, status, setStatus),
+    { id: 'refresh', labelEn: 'Refresh users', labelEl: 'Ανανέωση χρηστών', writes: false, run: () => void refetch() },
+    {
+      id: 'export_csv',
+      labelEn: 'Export users as CSV',
+      labelEl: 'Εξαγωγή χρηστών σε CSV',
+      writes: false,
+      unavailableEn: filteredUsers.length === 0 ? 'No users match the current filters.' : undefined,
+      unavailableEl: filteredUsers.length === 0 ? 'Κανένας χρήστης δεν ταιριάζει στα τρέχοντα φίλτρα.' : undefined,
+      run: exportCsv,
+    },
+    moderationCommand('suspend_user', 'Suspend user', 'Αναστολή χρήστη', 'suspended'),
+    moderationCommand('ban_user', 'Ban user', 'Αποκλεισμός χρήστη', 'banned'),
+    moderationCommand('reinstate_user', 'Reinstate user', 'Επαναφορά χρήστη', 'active'),
+    ...ASSIGNABLE_ROLES.map((r): PageControl => ({
+      id: `role_${r}`,
+      labelEn: `Change role to ${ROLE_OPTIONS.find((o) => o.value === r)?.en ?? r}`,
+      labelEl: `Αλλαγή ρόλου σε ${ROLE_EL[r]}`,
+      writes: true,
+      options: userRows,
+      unavailableEn: onRows,
+      unavailableEl: onRowsEl,
+      run: (value) => {
+        const user = users.find((u) => u.id === value);
+        if (user) void assignRole(user, r);
+      },
+    })),
+  ]);
 
   const roleLabel = ROLE_OPTIONS.find((o) => o.value === role);
   const statusLabel = STATUS_OPTIONS.find((o) => o.value === status);

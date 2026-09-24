@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -743,6 +744,24 @@ export default function CoachingPage() {
     { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
     { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
   ];
+
+  // Offered to the assistant: the tab and the rail's specialty filter, same
+  // setters (the filter also jumps to the coach list, as the rail's does).
+  usePageControls([
+    choiceControl('tab', 'Coaching tab', 'Καρτέλα coaching', [
+      { value: 'sessions', en: 'My Sessions', el: 'Οι συνεδρίες μου' },
+      { value: 'find', en: 'Find a Coach', el: 'Εύρεση coach' },
+      { value: 'actions', en: 'Action Items', el: 'Ενέργειες' },
+      { value: 'insights', en: 'Insights', el: 'Αναλύσεις' },
+    ], activeTab, setActiveTab),
+    choiceControl('specialty', 'Coach specialty filter', 'Φίλτρο ειδίκευσης coach', [
+      { value: 'any', en: 'Any specialty', el: 'Οποιαδήποτε ειδίκευση' },
+      ...(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, (typeof SESSION_TYPE_CONFIG)[SessionType]][]).map(([key, cfg]) => ({ value: key, en: cfg.label, el: cfg.labelEl })),
+    ], specialtyFilter ?? 'any', (v) => {
+      setSpecialtyFilter(v === 'any' ? null : (v as SessionType));
+      if (v !== 'any') setActiveTab('find');
+    }),
+  ]);
 
   const rail: PageRailSection[] = [
     {
