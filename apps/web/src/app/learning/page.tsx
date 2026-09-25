@@ -2,8 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target } from 'lucide-react';
+import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
@@ -361,6 +364,7 @@ export default function LearningPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [typeFilter, setTypeFilter] = useState<TypeFilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { openRailSection } = usePageRail();
 
   const { data: meData } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -437,36 +441,62 @@ export default function LearningPage() {
     return acc + (match ? parseFloat(match[1]) : 0);
   }, 0));
 
-  return (
-    <AppShell showHelp askAi="Which readiness gap should I study first, and which learning path or resource matches it?">
-      <div className="space-y-6 pb-10">
-      {/* Stats bar */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { labelKey: 'stat_resources' as const, value: totalResourceCount, icon: BookOpen, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          { labelKey: 'stat_courses' as const, value: courseCount, icon: Play, color: 'text-status-success', bg: 'bg-status-success-bg' },
-          { labelKey: 'stat_hours' as const, value: `${totalHours}h`, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
-          { labelKey: 'stat_progress' as const, value: inProgressPaths.length, icon: Flame, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-        ].map((s) => {
-          const SIcon = s.icon;
-          return (
-            <Card key={s.labelKey} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-2.5 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="icon-sm" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">
-                    <BilingualText en={learningEn(s.labelKey)} el={learningEl(s.labelKey)} compact />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+  /*
+   * The column leads with the paths, what is recommended, and the library.
+   * The four counts and the two chip rows (type, category) moved to the rail;
+   * the search stays with the list it searches.
+   */
+  const activeFilters = (typeFilter !== 'all' ? 1 : 0) + (selectedCategory !== 'All' ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'book',
+      labelEn: 'Library at a glance',
+      labelEl: 'Βιβλιοθήκη με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'resources', label: learningEn('stat_resources'), labelEl: learningEl('stat_resources'), value: totalResourceCount, icon: BookOpen, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'courses', label: learningEn('stat_courses'), labelEl: learningEl('stat_courses'), value: courseCount, icon: Play, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'hours', label: learningEn('stat_hours'), labelEl: learningEl('stat_hours'), value: `${totalHours}h`, icon: Clock, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'progress', label: learningEn('stat_progress'), labelEl: learningEl('stat_progress'), value: inProgressPaths.length, icon: Flame, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: activeFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Format"
+            titleEl="Μορφή"
+            options={TYPE_FILTERS.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) }))}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
+          <RailOptions
+            title="Topic"
+            titleEl="Θέμα"
+            options={allCategories.map((c) => ({ value: c, en: c === 'All' ? 'All topics' : c, el: c === 'All' ? 'Όλα τα θέματα' : c }))}
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+          />
+          {activeFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setTypeFilter('all'); setSelectedCategory('All'); }} />
+          )}
+        </div>
+      ),
+    },
+  ];
 
+  return (
+    <AppShell showHelp rail={rail} askAi="Which readiness gap should I study first, and which learning path or resource matches it?">
+      <div className="space-y-6 pb-10">
       {/* Learning Paths */}
       {activeTab === 'all' && (
         <div className="space-y-3">
@@ -548,39 +578,6 @@ export default function LearningPage() {
               />
             </div>
 
-            {/* Type filter chips */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {TYPE_FILTERS.map((tf) => (
-                <button
-                  key={tf.key}
-                  onClick={() => setTypeFilter(tf.key)}
-                  className={cn(
-                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
-                    typeFilter === tf.key
-                      ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >{<BilingualText en={learningEn(tf.labelKey)} el={learningEl(tf.labelKey)} compact />}</button>
-              ))}
-            </div>
-
-            {/* Category filters */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {allCategories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={cn(
-                    'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
-                    selectedCategory === category
-                      ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Loading skeleton */}
@@ -658,6 +655,22 @@ export default function LearningPage() {
                   <p className="text-sm text-muted-foreground mt-1">
                     <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
                   </p>
+                  {(searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All') && (
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSelectedCategory('All'); }}
+                      >
+                        <BilingualText en="Show all resources" el="Εμφάνιση όλων των πόρων" compact />
+                      </Button>
+                      {(typeFilter !== 'all' || selectedCategory !== 'All') && (
+                        <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
+                          <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </div>

@@ -1,0 +1,137 @@
+'use client';
+
+import type { ElementType, ReactNode } from 'react';
+import { BilingualText } from '@/components/common/BilingualText';
+import { cn } from '@/lib/utils';
+
+/**
+ * The pieces a page rail is built from.
+ *
+ * Every railed page drew its own stat rows, option buttons and action rows,
+ * with the same classes copied from page to page and drifting (a 32px icon box
+ * here, 36px there; a filled active state on one page, a tinted one on the
+ * next). These keep one anatomy across rails, which is what lets the right
+ * edge of the product read as one tool rather than twenty-six.
+ */
+
+export type RailStat = {
+  key: string;
+  label: string;
+  labelEl?: string;
+  value: ReactNode;
+  icon?: ElementType;
+  /** A semantic tone class pair for the icon tile, e.g. 'bg-status-info-bg text-status-info'. */
+  tone?: string;
+};
+
+/** Figures that describe the page's list: counts, not controls. */
+export function RailStats({ items }: { items: RailStat[] }) {
+  return (
+    <dl className="space-y-2">
+      {items.map(({ key, label, labelEl, value, icon: Icon, tone }) => (
+        <div key={key} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+          {Icon ? (
+            <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', tone ?? 'bg-muted text-muted-foreground')} aria-hidden="true">
+              <Icon className="icon-sm" />
+            </span>
+          ) : null}
+          <div className="min-w-0">
+            <dd className="text-base font-semibold leading-none tabular-nums text-foreground">{value}</dd>
+            <dt className="mt-1 text-xs leading-snug text-muted-foreground">
+              <BilingualText en={label} el={labelEl} compact wrap />
+            </dt>
+          </div>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export type RailOption<V extends string> = {
+  value: V;
+  en: string;
+  el?: string;
+  icon?: ElementType;
+  /** A count shown at the end of the row, when the page knows it. */
+  count?: number;
+};
+
+/**
+ * One choice among several: a filter or a view. Each row is a button with
+ * `aria-pressed`, so a screen reader hears which one is on, and the group is
+ * named by its heading.
+ */
+export function RailOptions<V extends string>({
+  title,
+  titleEl,
+  options,
+  value,
+  onChange,
+}: {
+  title: string;
+  titleEl?: string;
+  options: ReadonlyArray<RailOption<V>>;
+  value: V;
+  onChange: (value: V) => void;
+}) {
+  return (
+    <div role="group" aria-label={title} className="space-y-1">
+      <p className="px-2.5 pb-0.5 text-xs font-medium text-muted-foreground">
+        <BilingualText en={title} el={titleEl} compact />
+      </p>
+      {options.map(({ value: v, en, el, icon: Icon, count }) => {
+        const on = v === value;
+        return (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onChange(v)}
+            className={cn(
+              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
+              on ? 'bg-primary/10 font-medium text-primary-accessible' : 'text-foreground hover:bg-muted/70',
+            )}
+          >
+            {Icon ? <Icon className={cn('icon-sm shrink-0', on ? '' : 'text-muted-foreground')} aria-hidden="true" /> : null}
+            <span className="min-w-0 flex-1">
+              <BilingualText en={en} el={el} compact wrap />
+            </span>
+            {count != null ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{count}</span> : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A one-off action in the rail: clear filters, export, open a help page. */
+export function RailAction({
+  icon: Icon,
+  en,
+  el,
+  onClick,
+  disabled,
+  title,
+}: {
+  icon: ElementType;
+  en: string;
+  el?: string;
+  onClick: () => void;
+  disabled?: boolean;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <Icon className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+      <span className="min-w-0 flex-1">
+        <BilingualText en={en} el={el} compact wrap />
+      </span>
+    </button>
+  );
+}

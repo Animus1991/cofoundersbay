@@ -23,9 +23,13 @@ import {
   Users,
   Sparkles,
   Zap,
+  X,
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -244,6 +248,7 @@ export default function JobsPage() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [employmentType, setEmploymentType] = useState<(typeof EMPLOYMENT_TYPES)[number]['value']>('all');
   const [showPostForm, setShowPostForm] = useState(false);
+  const { openRailSection } = usePageRail();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qk('jobs'),
@@ -311,6 +316,59 @@ export default function JobsPage() {
     { id: 'post_job', labelEn: 'Open the post a job form', labelEl: 'Άνοιγμα φόρμας νέας αγγελίας', writes: false, run: () => setShowPostForm(true) },
   ]);
 
+  /*
+   * The column leads with the search and the roles. The three counts and the
+   * two filter tiers (role, then employment type) sat above them, four rows
+   * of chrome before the first posting; they live in the rail now, with the
+   * active filter count on its collapsed strip.
+   */
+  const activeFilters = (roleFilter !== 'all' ? 1 : 0) + (employmentType !== 'all' ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Hiring at a glance',
+      labelEl: 'Προσλήψεις με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'open', label: jobsEn('stat_open'), labelEl: jobsEl('stat_open'), value: jobs.length || '\u2014', icon: Briefcase, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'remote', label: jobsEn('stat_remote'), labelEl: jobsEl('stat_remote'), value: remoteJobs.length || '\u2014', icon: Wifi, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'hiring', label: jobsEn('stat_hiring'), labelEl: jobsEl('stat_hiring'), value: new Set(jobs.map((j) => j.creator.displayName)).size || '\u2014', icon: Zap, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: activeFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Role"
+            titleEl="Ρόλος"
+            options={ROLE_FILTERS.map((rf) => ({ value: rf.value, en: jobsEn(rf.labelKey), el: jobsEl(rf.labelKey), icon: rf.icon }))}
+            value={roleFilter}
+            onChange={setRoleFilter}
+          />
+          <RailOptions
+            title="Employment type"
+            titleEl="Τύπος απασχόλησης"
+            options={EMPLOYMENT_TYPES.map((t) => ({ value: t.value, en: jobsEn(t.labelKey), el: jobsEl(t.labelKey) }))}
+            value={employmentType}
+            onChange={setEmploymentType}
+          />
+          {activeFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setRoleFilter('all'); setEmploymentType('all'); }} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <>
     {showPostForm && (
@@ -321,6 +379,7 @@ export default function JobsPage() {
     )}
     <AppShell
       showHelp
+      rail={rail}
       actions={
         <Button className="gap-2" onClick={() => setShowPostForm(true)}>
           <Plus className="icon-sm" />
@@ -329,32 +388,6 @@ export default function JobsPage() {
       }
     >
       <div className="space-y-5 pb-10">
-      {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { labelEn: jobsEn('stat_open'), labelEl: jobsEl('stat_open'), value: jobs.length || '—', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          { labelEn: jobsEn('stat_remote'), labelEl: jobsEl('stat_remote'), value: remoteJobs.length || '—', icon: Wifi, color: 'text-status-success', bg: 'bg-status-success-bg' },
-          { labelEn: jobsEn('stat_hiring'), labelEl: jobsEl('stat_hiring'), value: new Set(jobs.map((j) => j.creator.displayName)).size || '—', icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-        ].map((s) => {
-          const SIcon = s.icon;
-          return (
-            <Card key={s.labelEn} className="shadow-sm border-border/50">
-              <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="icon-sm" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">
-                    <BilingualText en={s.labelEn} el={s.labelEl} compact />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
       {/* Search + filters */}
       <div className="space-y-3">
         <div className="relative">
@@ -365,46 +398,6 @@ export default function JobsPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
-        </div>
-        {/* Role filter chips */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Filter className="icon-sm text-muted-foreground shrink-0" />
-          {ROLE_FILTERS.map((rf) => {
-            const RIcon = rf.icon;
-            const isActive = roleFilter === rf.value;
-            return (
-              <button
-                key={rf.value}
-                onClick={() => setRoleFilter(rf.value)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
-                  isActive
-                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                    : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
-                )}
-              >
-                <RIcon className="icon-sm" />
-                <BilingualText en={jobsEn(rf.labelKey)} el={jobsEl(rf.labelKey)} compact />
-              </button>
-            );
-          })}
-        </div>
-        {/* Employment type tabs */}
-        <div className="flex flex-wrap gap-2">
-          {EMPLOYMENT_TYPES.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setEmploymentType(t.value)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                employmentType === t.value
-                  ? 'border-primary bg-primary/15 text-primary-accessible'
-                  : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
-              )}
-            >
-              <BilingualText en={jobsEn(t.labelKey)} el={jobsEl(t.labelKey)} compact />
-            </button>
-          ))}
         </div>
       </div>
 
@@ -425,24 +418,38 @@ export default function JobsPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
+        // A role or type narrowed in the rail empties the list as surely as a
+        // search does; "post a job" would misread that as an empty board.
         <EmptyState
           illustration="rocket"
-          title={<BilingualText en={jobsEn(search ? 'empty_search' : 'empty')} el={jobsEl(search ? 'empty_search' : 'empty')} />}
-          description={<BilingualText en={jobsEn(search ? 'empty_search_hint' : 'empty_hint')} el={jobsEl(search ? 'empty_search_hint' : 'empty_hint')} />}
+          title={
+            search ? <BilingualText en={jobsEn('empty_search')} el={jobsEl('empty_search')} />
+            : activeFilters > 0 ? <BilingualText en="No jobs match these filters" el="Καμία θέση δεν ταιριάζει με αυτά τα φίλτρα" />
+            : <BilingualText en={jobsEn('empty')} el={jobsEl('empty')} />
+          }
+          description={
+            search ? <BilingualText en={jobsEn('empty_search_hint')} el={jobsEl('empty_search_hint')} />
+            : activeFilters > 0 ? <BilingualText en="The role and type filters are set in the side panel." el="Τα φίλτρα ρόλου και τύπου βρίσκονται στο πλευρικό πάνελ." />
+            : <BilingualText en={jobsEn('empty_hint')} el={jobsEl('empty_hint')} />
+          }
           askAiPrompt={
             search
               ? `No jobs matched "${search}". Suggest better keywords or people I should reach instead of a job post.`
               : 'Help me write a cofounder or early-hire job post based on my profile gaps.'
           }
           action={
-            !search ? (
+            search ? (
+              <Button variant="secondary" onClick={() => setSearch('')}>
+                <BilingualText en={jobsEn('clear_search')} el={jobsEl('clear_search')} compact />
+              </Button>
+            ) : activeFilters > 0 ? (
+              <Button variant="secondary" onClick={() => openRailSection('filters')}>
+                <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+              </Button>
+            ) : (
               <Button className="gap-2" onClick={() => setShowPostForm(true)}>
                 <Plus className="icon-sm" />
                 <BilingualText en={jobsEn('post_job')} el={jobsEl('post_job')} compact />
-              </Button>
-            ) : (
-              <Button variant="secondary" onClick={() => setSearch('')}>
-                <BilingualText en={jobsEn('clear_search')} el={jobsEl('clear_search')} compact />
               </Button>
             )
           }

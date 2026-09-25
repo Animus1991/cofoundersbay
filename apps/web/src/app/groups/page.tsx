@@ -24,8 +24,13 @@ import {
   UserPlus,
   Users,
   Zap,
+  X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { STATUS, categoryChip } from '@/lib/semantic-colors';
-import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
+import { ListEmptyState } from '@/components/common/EmptyStates';
 import {
   listGroups,
   getMyGroups,
@@ -218,6 +223,7 @@ export default function GroupsPage() {
   const [activeTab, setActiveTab] = useState<'discover' | 'my-groups'>('discover');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const { openRailSection } = usePageRail();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sort, setSort] = useState<'popular' | 'recent' | 'trending'>('popular');
@@ -347,9 +353,103 @@ export default function GroupsPage() {
     },
   ]);
 
+  /*
+   * The column is the tabs, the search and the communities. Above them sat a
+   * stat strip, a sort row, a type row, a category row and an amber trending
+   * banner - five tiers before the first card - and the banner's "View" did
+   * nothing. They are rail sections now; the banner's group is a real link.
+   */
+  const activeFilters = (typeFilter !== 'all' ? 1 : 0) + (selectedCategory !== 'All' ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'community',
+      labelEn: 'Communities at a glance',
+      labelEl: 'Κοινότητες με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total communities', labelEl: 'Συνολικές κοινότητες', value: totalGroups, icon: Users, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'joined', label: 'Joined', labelEl: 'Συμμετοχές', value: myGroupsCount, icon: CheckCircle2, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'active', label: 'Active now', labelEl: 'Ενεργές τώρα', value: discoverGroups.filter((g) => g.postCount > 0).length, icon: Zap, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Sort and filter',
+      labelEl: 'Ταξινόμηση και φίλτρα',
+      badge: activeFilters || null,
+      content:
+        activeTab === 'discover' ? (
+          <div className="space-y-4">
+            <RailOptions
+              title="Sort by"
+              titleEl="Ταξινόμηση"
+              options={[
+                { value: 'popular' as const, en: 'Popular', el: 'Δημοφιλείς' },
+                { value: 'recent' as const, en: 'Recent', el: 'Πρόσφατες' },
+                { value: 'trending' as const, en: 'Trending', el: 'Ανερχόμενες', icon: TrendingUp },
+              ]}
+              value={sort}
+              onChange={setSort}
+            />
+            <RailOptions
+              title="Type"
+              titleEl="Τύπος"
+              options={TYPE_FILTERS.map((tf) => ({ value: tf.value, en: tf.value === 'all' ? 'Any type' : tf.label, el: tf.value === 'all' ? 'Οποιοσδήποτε τύπος' : tf.label, icon: tf.icon }))}
+              value={typeFilter}
+              onChange={setTypeFilter}
+            />
+            <RailOptions
+              title="Category"
+              titleEl="Κατηγορία"
+              options={CATEGORIES.map((c) => ({ value: c, en: c === 'All' ? 'All categories' : c, el: c === 'All' ? 'Όλες οι κατηγορίες' : c }))}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+            />
+            {activeFilters > 0 && (
+              <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setTypeFilter('all'); setSelectedCategory('All'); }} />
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2 px-2.5 text-sm text-muted-foreground">
+            <p><BilingualText en="Sorting and filters apply to Discover." el="Η ταξινόμηση και τα φίλτρα ισχύουν στην Ανακάλυψη." wrap /></p>
+            <RailAction icon={Search} en="Open Discover" el="Άνοιγμα Ανακάλυψης" onClick={() => setActiveTab('discover')} />
+          </div>
+        ),
+    },
+    {
+      id: 'trending',
+      glyph: 'spark',
+      labelEn: 'Trending now',
+      labelEl: 'Τάσεις τώρα',
+      content: trendingGroup ? (
+        <Link
+          href={`/groups/${trendingGroup.id}`}
+          className="group flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/40 focus-ring"
+        >
+          <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', STATUS.warning.bg)} aria-hidden="true">
+            <Star className={cn('icon-sm', STATUS.warning.icon)} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">{trendingGroup.name}</span>
+            <span className="block text-xs text-muted-foreground">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</span>
+          </span>
+          <ArrowRight className="icon-sm shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+        </Link>
+      ) : (
+        <p className="px-2.5 text-sm text-muted-foreground"><BilingualText en="Nothing is trending yet." el="Τίποτα δεν είναι σε τάση ακόμα." wrap /></p>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
+      rail={rail}
       actions={
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
           <Plus className="icon-sm" />
@@ -368,30 +468,6 @@ export default function GroupsPage() {
         />
       )}
 
-      {/* Stats strip */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        {[
-          { labelEn: 'Total Communities', labelEl: 'Συνολικές κοινότητες', value: totalGroups, Icon: Users, tone: STATUS.accent },
-          { labelEn: 'Joined', labelEl: 'Συμμετοχές', value: myGroupsCount, Icon: CheckCircle2, tone: STATUS.success },
-          { labelEn: 'Active Now', labelEl: 'Ενεργές τώρα', value: discoverGroups.filter((g) => g.postCount > 0).length, Icon: Zap, tone: STATUS.warning },
-        ].map((s) => {
-          const Icon = s.Icon;
-          return (
-            <Card key={s.labelEn} className="shadow-sm border-border/50">
-              <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.tone.bg, s.tone.icon)}>
-                  <Icon className="icon-sm" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} compact wrap /></p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <TabsList>
@@ -406,24 +482,6 @@ export default function GroupsPage() {
             </TabsTrigger>
           </TabsList>
 
-          {activeTab === 'discover' && (
-            <div className="flex items-center gap-2">
-              {(['popular', 'recent', 'trending'] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSort(s)}
-                  className={cn(
-                    'rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors',
-                    sort === s
-                      ? 'bg-primary/15 text-primary-accessible'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
-                  )}
-                >
-                  {s === 'trending' ? <span className="flex items-center gap-1"><TrendingUp className="icon-sm" />{s}</span> : s}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         <TabsContent value={activeTab} className="space-y-5 mt-0">
@@ -438,45 +496,6 @@ export default function GroupsPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
                 />
-              </div>
-              {/* Type filter tabs — Figma-inspired */}
-              <div className="flex flex-wrap gap-2">
-                {TYPE_FILTERS.map((tf) => {
-                  const TIcon = tf.icon;
-                  const isActive = typeFilter === tf.value;
-                  return (
-                    <button
-                      key={tf.value}
-                      onClick={() => setTypeFilter(tf.value)}
-                      className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap',
-                        isActive
-                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                          : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
-                      )}
-                    >
-                      <TIcon className="icon-sm" />
-                      {tf.label}
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Category chips */}
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={cn(
-                      'rounded-full border px-3.5 py-1 text-xs font-medium transition-colors whitespace-nowrap',
-                      selectedCategory === cat
-                        ? 'border-primary bg-primary/15 text-primary-accessible'
-                        : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                    )}
-                  >
-                    {cat}
-                  </button>
-                ))}
               </div>
             </div>
           )}
@@ -505,27 +524,6 @@ export default function GroupsPage() {
                 <RefreshCw className="icon-sm" />
                 Retry
               </Button>
-            </div>
-          )}
-
-          {/* Trending banner */}
-          {activeTab === 'discover' && !discoverQuery.isLoading && trendingGroup && (
-            <div className="flex items-center gap-3 rounded-xl border border-status-warning-border/30 bg-status-warning-bg px-4 py-3">
-              <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', STATUS.warning.bg)}>
-                <Star className={cn('icon-sm', STATUS.warning.icon)} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground">
-                  Trending: <span className={STATUS.warning.text}>{trendingGroup.name}</span>
-                </p>
-                <p className="text-2xs text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
-              </div>
-              <button
-                onClick={() => {/* navigate */}}
-                className={cn('shrink-0 text-xs hover:underline flex items-center gap-1', STATUS.warning.text)}
-              >
-                View <ArrowRight className="icon-sm" />
-              </button>
             </div>
           )}
 
@@ -577,10 +575,26 @@ export default function GroupsPage() {
                 )}
               />
             ) : discoverFiltersActive ? (
-              <NoFilterResults
-                entity="communities"
-                onClear={clearDiscoverFilters}
-                description="No communities match your search and filters. Clear them to see everything, or start the community you're looking for."
+              // "Show all" resets the search as well as the rail's filters, so
+              // it is its own action rather than a copy of the rail's Clear.
+              <ListEmptyState
+                icon={Search}
+                title={<BilingualText en="No communities match" el="Καμία κοινότητα δεν ταιριάζει" />}
+                description={<BilingualText en="Nothing matches your search and the filters in the side panel. Show everything, or start the community you're looking for." el="Τίποτα δεν ταιριάζει με την αναζήτηση και τα φίλτρα του πλευρικού πάνελ. Εμφανίστε τα πάντα ή ξεκινήστε την κοινότητα που ψάχνετε." />}
+                action={(
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Button variant="secondary" size="sm" className="gap-1.5" onClick={clearDiscoverFilters}>
+                      <X className="icon-sm" />
+                      <BilingualText en="Show all communities" el="Εμφάνιση όλων των κοινοτήτων" compact />
+                    </Button>
+                    {(typeFilter !== 'all' || selectedCategory !== 'All') && (
+                      <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
+                        <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                      </Button>
+                    )}
+                  </div>
+                )}
+                size="compact"
               />
             ) : (
               <ListEmptyState

@@ -4120,7 +4120,10 @@ export async function getSSOAuthEvents(params?: { tenantId?: string; eventType?:
 
 /** List identity providers for a tenant (admin) */
 export async function listSSOProviders(tenantId: string): Promise<IdentityProviderItem[]> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/providers`);
+  // An envelope or an error body is not a list: /tenant/sso called
+  // `providers.filter` on one and fell into its error boundary.
+  const res = await apiRequest<IdentityProviderItem[] | { providers?: IdentityProviderItem[] }>(`/api/sso/tenants/${tenantId}/providers`);
+  return Array.isArray(res) ? res : Array.isArray(res?.providers) ? res.providers : [];
 }
 
 /** Create identity provider for a tenant (admin) */
@@ -4155,7 +4158,10 @@ export async function deleteSSOProvider(providerId: string): Promise<void> {
 
 /** Get SSO config for a tenant (admin) */
 export async function getTenantSSOConfig(tenantId: string): Promise<TenantSSOConfig | null> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/config`);
+  const res = await apiRequest<TenantSSOConfig | { config?: TenantSSOConfig } | null>(`/api/sso/tenants/${tenantId}/config`);
+  const cfg = res && 'ssoMode' in res ? res : res && 'config' in res ? res.config ?? null : null;
+  // No mode means no configuration row, not a configuration with empty fields.
+  return cfg && typeof cfg.ssoMode === 'string' ? { ...cfg, allowedDomains: Array.isArray(cfg.allowedDomains) ? cfg.allowedDomains : [] } : null;
 }
 
 /** Upsert SSO config for a tenant (admin) */
@@ -4186,7 +4192,8 @@ export type SSODomainMapping = {
 };
 
 export async function listSSODomainMappings(tenantId: string): Promise<SSODomainMapping[]> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/domains`);
+  const res = await apiRequest<SSODomainMapping[] | { domains?: SSODomainMapping[] }>(`/api/sso/tenants/${tenantId}/domains`);
+  return Array.isArray(res) ? res : Array.isArray(res?.domains) ? res.domains : [];
 }
 
 export async function createSSODomainMapping(tenantId: string, domain: string, autoRedirectToSSO = false): Promise<SSODomainMapping> {
