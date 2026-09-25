@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type ScheduleCallModalProps = {
   open: boolean;
@@ -227,14 +228,14 @@ export function ScheduleCallModal({
               <CardContent className="p-3 flex items-center gap-3">
                 <Calendar className="icon-md text-muted-foreground shrink-0" />
                 <div className="text-sm">
-                  <p className="font-medium text-foreground">Connect your calendar</p>
+                  <p className="font-medium text-foreground"><BilingualText en="Connect your calendar" el="Συνδέστε το ημερολόγιό σας" compact /></p>
                   <p className="text-muted-foreground text-xs">
-                    Sync with Google Calendar or Outlook for automatic availability
+                    <BilingualText en="Sync with Google Calendar or Outlook for automatic availability" el="Συγχρονισμός με Google Calendar ή Outlook για αυτόματη διαθεσιμότητα" wrap />
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0" disabled title="Calendar sync is not available yet">
                   <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
-                  Connect
+                  <BilingualText en="Connect" el="Σύνδεση" compact />
                 </Button>
               </CardContent>
             </Card>
@@ -282,7 +283,7 @@ export function ScheduleCallModal({
 
             {/* Call Type */}
             <div className="space-y-2">
-              <Label>Call Type</Label>
+              <Label><BilingualText en="Call Type" el="Τύπος κλήσης" compact /></Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -294,8 +295,8 @@ export function ScheduleCallModal({
                 >
                   <Video className={cn('icon-md', callType === 'video' ? 'text-primary-accessible' : 'text-muted-foreground')} />
                   <div className="text-left">
-                    <p className="font-medium text-sm">Video Call</p>
-                    <p className="text-xs text-muted-foreground">Face-to-face meeting</p>
+                    <p className="font-medium text-sm"><BilingualText en="Video Call" el="Βιντεοκλήση" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Face-to-face meeting" el="Συνάντηση πρόσωπο με πρόσωπο" compact /></p>
                   </div>
                 </button>
                 <button
@@ -308,8 +309,8 @@ export function ScheduleCallModal({
                 >
                   <Phone className={cn('icon-md', callType === 'phone' ? 'text-primary-accessible' : 'text-muted-foreground')} />
                   <div className="text-left">
-                    <p className="font-medium text-sm">Phone Call</p>
-                    <p className="text-xs text-muted-foreground">Audio only</p>
+                    <p className="font-medium text-sm"><BilingualText en="Phone Call" el="Τηλεφωνική κλήση" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Audio only" el="Μόνο ήχος" compact /></p>
                   </div>
                 </button>
               </div>
@@ -317,7 +318,7 @@ export function ScheduleCallModal({
 
             {/* Duration */}
             <div className="space-y-2">
-              <Label>Duration</Label>
+              <Label><BilingualText en="Duration" el="Διάρκεια" compact /></Label>
               <Select value={duration} onValueChange={setDuration}>
                 <SelectTrigger aria-label="Duration">
                   <SelectValue />
@@ -332,7 +333,7 @@ export function ScheduleCallModal({
 
             {/* Message */}
             <div className="space-y-2">
-              <Label>Message (optional)</Label>
+              <Label><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
               <Textarea
                 placeholder="Add a note about what you'd like to discuss..."
                 value={message}
@@ -345,12 +346,12 @@ export function ScheduleCallModal({
               {isSubmitting ? (
                 <>
                   <Loader2 className="icon-sm mr-2 animate-spin" />
-                  Scheduling...
+                  <BilingualText en="Scheduling..." el="Προγραμματισμός…" compact />
                 </>
               ) : (
                 <>
                   <Calendar className="icon-sm mr-2" />
-                  Schedule Call
+                  <BilingualText en="Schedule Call" el="Προγραμματισμός κλήσης" compact />
                 </>
               )}
             </Button>
@@ -363,7 +364,7 @@ export function ScheduleCallModal({
               <Check className="icon-xl text-status-success" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Call Scheduled!</h3>
+              <h3 className="text-lg font-semibold text-foreground"><BilingualText en="Call Scheduled!" el="Η κλήση προγραμματίστηκε!" compact /></h3>
               <p className="text-muted-foreground mt-1">
                 {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
               </p>
@@ -385,7 +386,7 @@ export function ScheduleCallModal({
             </p>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={resetAndClose}>
-                Done
+                <BilingualText en="Done" el="Τέλος" compact />
               </Button>
               {/* Had no handler: a .ics of the call just scheduled. */}
               <Button
@@ -415,7 +416,7 @@ export function ScheduleCallModal({
                   URL.revokeObjectURL(url);
                 }}
               >
-                Add to Calendar
+                <BilingualText en="Add to Calendar" el="Προσθήκη στο ημερολόγιο" compact />
               </Button>
             </div>
           </div>

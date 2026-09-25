@@ -43,6 +43,7 @@ import { createProfile, uploadAvatar, listSkills,
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const STEPS = [
   { id: 'welcome', title: 'Welcome to CoFounderBay', icon: Sparkles },
@@ -404,8 +405,8 @@ export default function EnhancedOnboardingPage() {
                 <Sparkles className="icon-lg text-primary-accessible" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">CoFounderBay Onboarding</h1>
-                <p className="text-muted-foreground">Let's build your profile together</p>
+                <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold"><BilingualText en="CoFounderBay Onboarding" el="Ένταξη στο CoFounderBay" compact /></h1>
+                <p className="text-muted-foreground"><BilingualText en="Let's build your profile together" el="Ας φτιάξουμε μαζί το προφίλ σας" wrap /></p>
               </div>
             </div>
             <Badge variant="outline" className="gap-1">
@@ -468,7 +469,7 @@ export default function EnhancedOnboardingPage() {
             className="gap-2"
           >
             <ArrowLeft className="icon-sm" />
-            Previous
+            <BilingualText en="Previous" el="Προηγούμενο" compact />
           </Button>
           
           {currentStep < STEPS.length - 1 ? (
@@ -481,7 +482,7 @@ export default function EnhancedOnboardingPage() {
                 (STEPS[currentStep].id === 'values' && (data.values.workStyle.length === 0 || !data.values.availability))
               }
             >
-              Next
+              <BilingualText en="Next" el="Επόμενο" compact />
               <ArrowRight className="icon-sm" />
             </Button>
           ) : (
@@ -493,12 +494,12 @@ export default function EnhancedOnboardingPage() {
               {loading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Creating Profile...
+                  <BilingualText en="Creating Profile..." el="Δημιουργία προφίλ…" compact />
                 </>
               ) : (
                 <>
                   <Rocket className="icon-sm" />
-                  Launch Profile
+                  <BilingualText en="Launch Profile" el="Δημοσίευση προφίλ" compact />
                 </>
               )}
             </Button>
@@ -516,34 +517,34 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       <CardHeader>
         <CardTitle className="flex items-center justify-center gap-3 text-2xl">
           <Sparkles className="icon-xl text-primary-accessible" />
-          Welcome to CoFounderBay
+          <BilingualText en="Welcome to CoFounderBay" el="Καλώς ήρθατε στο CoFounderBay" compact />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <p className="text-lg text-muted-foreground">
-          The premier platform connecting founders, mentors, and investors
+          <BilingualText en="The premier platform connecting founders, mentors, and investors" el="Η πλατφόρμα που συνδέει ιδρυτές, μέντορες και επενδυτές" wrap />
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg bg-status-info-bg dark:bg-blue-950">
             <Users className="icon-xl text-status-info mb-2 mx-auto" />
-            <h3 className="font-semibold mb-1">Smart Matching</h3>
+            <h3 className="font-semibold mb-1"><BilingualText en="Smart Matching" el="Έξυπνες αντιστοιχίσεις" compact /></h3>
             <p className="text-sm text-muted-foreground">
-              AI-powered connections based on skills and goals
+              <BilingualText en="AI-powered connections based on skills and goals" el="Συνδέσεις με AI βάσει δεξιοτήτων και στόχων" wrap />
             </p>
           </div>
           <div className="p-4 rounded-lg bg-status-success-bg dark:bg-green-950">
             <Shield className="icon-xl text-status-success mb-2 mx-auto" />
-            <h3 className="font-semibold mb-1">Verified Profiles</h3>
+            <h3 className="font-semibold mb-1"><BilingualText en="Verified Profiles" el="Επαληθευμένα προφίλ" compact /></h3>
             <p className="text-sm text-muted-foreground">
-              Trust and quality through verification system
+              <BilingualText en="Trust and quality through verification system" el="Εμπιστοσύνη και ποιότητα μέσω επαλήθευσης" wrap />
             </p>
           </div>
           <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-purple-950">
             <Zap className="icon-xl text-status-accent mb-2 mx-auto" />
-            <h3 className="font-semibold mb-1">Real-time Chat</h3>
+            <h3 className="font-semibold mb-1"><BilingualText en="Real-time Chat" el="Συνομιλία σε πραγματικό χρόνο" compact /></h3>
             <p className="text-sm text-muted-foreground">
-              Instant communication with potential partners
+              <BilingualText en="Instant communication with potential partners" el="Άμεση επικοινωνία με πιθανούς συνεργάτες" wrap />
             </p>
           </div>
         </div>
@@ -553,25 +554,25 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
             <div className="flex items-center gap-2">
               <CheckCircle className="icon-sm text-status-success" />
-              <span className="text-sm">Personalized match recommendations</span>
+              <span className="text-sm"><BilingualText en="Personalized match recommendations" el="Εξατομικευμένες προτάσεις αντιστοιχίσεων" wrap /></span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="icon-sm text-status-success" />
-              <span className="text-sm">Access to exclusive events</span>
+              <span className="text-sm"><BilingualText en="Access to exclusive events" el="Πρόσβαση σε αποκλειστικές εκδηλώσεις" compact /></span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="icon-sm text-status-success" />
-              <span className="text-sm">Mentorship opportunities</span>
+              <span className="text-sm"><BilingualText en="Mentorship opportunities" el="Ευκαιρίες καθοδήγησης" compact /></span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="icon-sm text-status-success" />
-              <span className="text-sm">Investor connections</span>
+              <span className="text-sm"><BilingualText en="Investor connections" el="Επαφές με επενδυτές" compact /></span>
             </div>
           </div>
         </div>
 
         <Button onClick={onNext} size="lg" className="w-full gap-2">
-          Let's Get Started
+          <BilingualText en="Let's Get Started" el="Ας ξεκινήσουμε" compact />
           <ArrowRight className="icon-sm" />
         </Button>
       </CardContent>
@@ -583,9 +584,9 @@ function RoleStep({ selectedRole, onSelect }: { selectedRole: string; onSelect: 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>What's your role in the startup ecosystem?</CardTitle>
+        <CardTitle><BilingualText en="What's your role in the startup ecosystem?" el="Ποιος είναι ο ρόλος σας στο οικοσύστημα;" wrap /></CardTitle>
         <p className="text-muted-foreground">
-          Select the role that best describes you
+          <BilingualText en="Select the role that best describes you" el="Επιλέξτε τον ρόλο που σας περιγράφει καλύτερα" wrap />
         </p>
       </CardHeader>
       <CardContent>
@@ -635,9 +636,9 @@ function ProfileStep({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Build your profile</CardTitle>
+        <CardTitle><BilingualText en="Build your profile" el="Φτιάξτε το προφίλ σας" compact /></CardTitle>
         <p className="text-muted-foreground">
-          Tell us about yourself
+          <BilingualText en="Tell us about yourself" el="Πείτε μας για εσάς" compact />
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -663,9 +664,9 @@ function ProfileStep({
             </label>
           </div>
           <div>
-            <h3 className="font-semibold">Profile Photo</h3>
+            <h3 className="font-semibold"><BilingualText en="Profile Photo" el="Φωτογραφία προφίλ" compact /></h3>
             <p className="text-sm text-muted-foreground">
-              Add a photo to build trust
+              <BilingualText en="Add a photo to build trust" el="Προσθέστε φωτογραφία για να χτίσετε εμπιστοσύνη" compact />
             </p>
           </div>
         </div>
@@ -683,7 +684,7 @@ function ProfileStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Headline</label>
+            <label className="block text-sm font-medium mb-2"><BilingualText en="Headline" el="Τίτλος" compact /></label>
             <Input
               value={data.headline}
               onChange={(e) => setData({ ...data, headline: e.target.value })}
@@ -708,7 +709,7 @@ function ProfileStep({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Location</label>
+              <label className="block text-sm font-medium mb-2"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
               <Input
                 value={data.location}
                 onChange={(e) => setData({ ...data, location: e.target.value })}
@@ -717,20 +718,20 @@ function ProfileStep({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Timezone</label>
+              <label className="block text-sm font-medium mb-2"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
               <Select value={data.timezone} onValueChange={(value) => setData({ ...data, timezone: value })}>
                 <SelectTrigger aria-label="Timezone">
                   <SelectValue placeholder="Select timezone" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="UTC">UTC</SelectItem>
-                  <SelectItem value="America/New_York">Eastern Time</SelectItem>
-                  <SelectItem value="America/Chicago">Central Time</SelectItem>
-                  <SelectItem value="America/Denver">Mountain Time</SelectItem>
-                  <SelectItem value="America/Los_Angeles">Pacific Time</SelectItem>
-                  <SelectItem value="Europe/London">London</SelectItem>
-                  <SelectItem value="Europe/Paris">Paris</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo</SelectItem>
+                  <SelectItem value="America/New_York"><BilingualText en="Eastern Time" el="Ώρα ανατολικών ΗΠΑ" compact /></SelectItem>
+                  <SelectItem value="America/Chicago"><BilingualText en="Central Time" el="Ώρα κεντρικών ΗΠΑ" compact /></SelectItem>
+                  <SelectItem value="America/Denver"><BilingualText en="Mountain Time" el="Ώρα ορεινών ΗΠΑ" compact /></SelectItem>
+                  <SelectItem value="America/Los_Angeles"><BilingualText en="Pacific Time" el="Ώρα Ειρηνικού" compact /></SelectItem>
+                  <SelectItem value="Europe/London"><BilingualText en="London" el="Λονδίνο" compact /></SelectItem>
+                  <SelectItem value="Europe/Paris"><BilingualText en="Paris" el="Παρίσι" compact /></SelectItem>
+                  <SelectItem value="Asia/Tokyo"><BilingualText en="Tokyo" el="Τόκιο" compact /></SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -762,9 +763,9 @@ function SkillsStep({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your expertise</CardTitle>
+        <CardTitle><BilingualText en="Your expertise" el="Η εξειδίκευσή σας" compact /></CardTitle>
         <p className="text-muted-foreground">
-          Select your skills and expertise areas
+          <BilingualText en="Select your skills and expertise areas" el="Επιλέξτε δεξιότητες και πεδία εξειδίκευσης" wrap />
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -786,7 +787,7 @@ function SkillsStep({
                   : 'bg-secondary text-secondary-foreground'
               )}
             >
-              All
+              <BilingualText en="All" el="Όλα" compact />
             </button>
             {SKILL_CATEGORIES.map(category => (
               <button
@@ -830,7 +831,7 @@ function SkillsStep({
 
         {/* Available Skills */}
         <div>
-          <h3 className="font-semibold mb-2">Available Skills</h3>
+          <h3 className="font-semibold mb-2"><BilingualText en="Available Skills" el="Διαθέσιμες δεξιότητες" compact /></h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
             {filteredSkills.map((skill: any) => (
               <button
@@ -858,18 +859,18 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Preferences</CardTitle>
+        <CardTitle><BilingualText en="Preferences" el="Προτιμήσεις" compact /></CardTitle>
         <p className="text-muted-foreground">
-          Set your collaboration preferences
+          <BilingualText en="Set your collaboration preferences" el="Ορίστε τις προτιμήσεις συνεργασίας" wrap />
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Remote Work */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold">Open to Remote Work</h3>
+            <h3 className="font-semibold"><BilingualText en="Open to Remote Work" el="Ανοιχτός/ή σε εξ αποστάσεως" compact /></h3>
             <p className="text-sm text-muted-foreground">
-              Work with people from anywhere
+              <BilingualText en="Work with people from anywhere" el="Συνεργασία με ανθρώπους από παντού" compact />
             </p>
           </div>
           <Checkbox
@@ -885,7 +886,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
 
         {/* Commitment Level */}
         <div>
-          <label className="block text-sm font-medium mb-2">Commitment Level</label>
+          <label className="block text-sm font-medium mb-2"><BilingualText en="Commitment Level" el="Επίπεδο δέσμευσης" compact /></label>
           <Select
             value={data.preferences.commitment}
             onValueChange={(value) =>
@@ -899,17 +900,17 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
               <SelectValue placeholder="Select commitment level" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="part-time">Part-time</SelectItem>
-              <SelectItem value="full-time">Full-time</SelectItem>
-              <SelectItem value="flexible">Flexible</SelectItem>
-              <SelectItem value="advisor">Advisor only</SelectItem>
+              <SelectItem value="part-time"><BilingualText en="Part-time" el="Μερική απασχόληση" compact /></SelectItem>
+              <SelectItem value="full-time"><BilingualText en="Full-time" el="Πλήρης απασχόληση" compact /></SelectItem>
+              <SelectItem value="flexible"><BilingualText en="Flexible" el="Ευέλικτο" compact /></SelectItem>
+              <SelectItem value="advisor"><BilingualText en="Advisor only" el="Μόνο σύμβουλος" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Notification Frequency */}
         <div>
-          <label className="block text-sm font-medium mb-2">Notification Frequency</label>
+          <label className="block text-sm font-medium mb-2"><BilingualText en="Notification Frequency" el="Συχνότητα ειδοποιήσεων" compact /></label>
           <Select
             value={data.preferences.notificationFrequency}
             onValueChange={(value) =>
@@ -923,10 +924,10 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
               <SelectValue placeholder="Select notification frequency" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="real-time">Real-time</SelectItem>
-              <SelectItem value="daily">Daily digest</SelectItem>
-              <SelectItem value="weekly">Weekly digest</SelectItem>
-              <SelectItem value="important">Important only</SelectItem>
+              <SelectItem value="real-time"><BilingualText en="Real-time" el="Σε πραγματικό χρόνο" compact /></SelectItem>
+              <SelectItem value="daily"><BilingualText en="Daily digest" el="Ημερήσια σύνοψη" compact /></SelectItem>
+              <SelectItem value="weekly"><BilingualText en="Weekly digest" el="Εβδομαδιαία σύνοψη" compact /></SelectItem>
+              <SelectItem value="important"><BilingualText en="Important only" el="Μόνο τα σημαντικά" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -952,10 +953,10 @@ function ReviewStep({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Star className="icon-lg text-status-warning" />
-          Review & Launch
+          <BilingualText en="Review & Launch" el="Έλεγχος & δημοσίευση" compact />
         </CardTitle>
         <p className="text-muted-foreground">
-          Review your profile before going live
+          <BilingualText en="Review your profile before going live" el="Ελέγξτε το προφίλ σας πριν δημοσιευτεί" wrap />
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -973,13 +974,13 @@ function ReviewStep({
 
           {data.headline && (
             <div>
-              <h4 className="font-medium mb-1">Headline</h4>
+              <h4 className="font-medium mb-1"><BilingualText en="Headline" el="Τίτλος" compact /></h4>
               <p className="text-sm text-muted-foreground">{data.headline}</p>
             </div>
           )}
 
           <div>
-            <h4 className="font-medium mb-1">Bio</h4>
+            <h4 className="font-medium mb-1"><BilingualText en="Bio" el="Βιογραφικό" compact /></h4>
             <p className="text-sm text-muted-foreground">{data.bio}</p>
           </div>
 
@@ -987,13 +988,13 @@ function ReviewStep({
             <div className="grid grid-cols-2 gap-4">
               {data.location && (
                 <div>
-                  <h4 className="font-medium mb-1">Location</h4>
+                  <h4 className="font-medium mb-1"><BilingualText en="Location" el="Τοποθεσία" compact /></h4>
                   <p className="text-sm text-muted-foreground">{data.location}</p>
                 </div>
               )}
               {data.timezone && (
                 <div>
-                  <h4 className="font-medium mb-1">Timezone</h4>
+                  <h4 className="font-medium mb-1"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></h4>
                   <p className="text-sm text-muted-foreground">{data.timezone}</p>
                 </div>
               )}
@@ -1022,7 +1023,7 @@ function ReviewStep({
         {/* Values & Work Style Summary */}
         {(data.values.workStyle.length > 0 || data.values.coreValues.length > 0) && (
           <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-            <h4 className="font-medium">Values & Work Style</h4>
+            <h4 className="font-medium"><BilingualText en="Values & Work Style" el="Αξίες & τρόπος δουλειάς" compact /></h4>
             {data.values.availability && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Availability:</span>
@@ -1031,7 +1032,7 @@ function ReviewStep({
             )}
             {data.values.workStyle.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Work style</p>
+                <p className="text-xs text-muted-foreground mb-1"><BilingualText en="Work style" el="Τρόπος δουλειάς" compact /></p>
                 <div className="flex flex-wrap gap-1">
                   {data.values.workStyle.map(id => {
                     const ws = WORK_STYLES.find(w => w.id === id);
@@ -1042,7 +1043,7 @@ function ReviewStep({
             )}
             {data.values.coreValues.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Core values</p>
+                <p className="text-xs text-muted-foreground mb-1"><BilingualText en="Core values" el="Βασικές αξίες" compact /></p>
                 <div className="flex flex-wrap gap-1">
                   {data.values.coreValues.map(v => <Badge key={v} variant="outline" className="text-xs">{v}</Badge>)}
                 </div>
@@ -1054,10 +1055,10 @@ function ReviewStep({
         {/* Match Preferences Summary */}
         {(data.matchPrefs.lookingFor.length > 0 || data.matchPrefs.industries.length > 0 || data.matchPrefs.stages.length > 0) && (
           <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-            <h4 className="font-medium">Match Preferences</h4>
+            <h4 className="font-medium"><BilingualText en="Match Preferences" el="Προτιμήσεις αντιστοίχισης" compact /></h4>
             {data.matchPrefs.lookingFor.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Looking for</p>
+                <p className="text-xs text-muted-foreground mb-1"><BilingualText en="Looking for" el="Αναζητά" compact /></p>
                 <div className="flex flex-wrap gap-1">
                   {data.matchPrefs.lookingFor.map(r => <Badge key={r} variant="secondary" className="text-xs">{r}</Badge>)}
                 </div>
@@ -1065,7 +1066,7 @@ function ReviewStep({
             )}
             {data.matchPrefs.industries.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Industries</p>
+                <p className="text-xs text-muted-foreground mb-1"><BilingualText en="Industries" el="Κλάδοι" compact /></p>
                 <div className="flex flex-wrap gap-1">
                   {data.matchPrefs.industries.map(i => <Badge key={i} variant="outline" className="text-xs">{i}</Badge>)}
                 </div>
@@ -1073,7 +1074,7 @@ function ReviewStep({
             )}
             {data.matchPrefs.stages.length > 0 && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Startup stages</p>
+                <p className="text-xs text-muted-foreground mb-1"><BilingualText en="Startup stages" el="Στάδια startup" compact /></p>
                 <div className="flex flex-wrap gap-1">
                   {data.matchPrefs.stages.map(s => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
                 </div>
@@ -1084,7 +1085,7 @@ function ReviewStep({
 
         {/* Preferences Summary */}
         <div className="p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-medium mb-2">Preferences</h4>
+          <h4 className="font-medium mb-2"><BilingualText en="Preferences" el="Προτιμήσεις" compact /></h4>
           <div className="space-y-1 text-sm">
             <div className="flex justify-between">
               <span>Remote work:</span>
@@ -1106,18 +1107,18 @@ function ReviewStep({
           {loading ? (
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Creating Profile...
+              <BilingualText en="Creating Profile..." el="Δημιουργία προφίλ…" compact />
             </>
           ) : (
             <>
               <Rocket className="icon-sm" />
-              Launch Profile
+              <BilingualText en="Launch Profile" el="Δημοσίευση προφίλ" compact />
             </>
           )}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          By launching your profile, you agree to our Terms of Service and Privacy Policy
+          <BilingualText en="By launching your profile, you agree to our Terms of Service and Privacy Policy" el="Με τη δημοσίευση αποδέχεστε τους Όρους χρήσης και την Πολιτική απορρήτου" wrap />
         </p>
       </CardContent>
     </Card>
@@ -1144,14 +1145,14 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Heart className="icon-md text-status-danger" />
-          Values & Work Style
+          <BilingualText en="Values & Work Style" el="Αξίες & τρόπος δουλειάς" compact />
         </CardTitle>
-        <p className="text-muted-foreground">Help us find people who match your working rhythm and values</p>
+        <p className="text-muted-foreground"><BilingualText en="Help us find people who match your working rhythm and values" el="Βοηθήστε μας να βρούμε ανθρώπους με τον ρυθμό και τις αξίες σας" wrap /></p>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Availability */}
         <div>
-          <label className="block text-sm font-medium mb-3">Availability <span className="text-status-danger">*</span></label>
+          <label className="block text-sm font-medium mb-3"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /> <span className="text-status-danger">*</span></label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {AVAILABILITY_OPTIONS.map(opt => (
               <button
@@ -1173,8 +1174,8 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
 
         {/* Work Style */}
         <div>
-          <label className="block text-sm font-medium mb-1">Work Style <span className="text-status-danger">*</span></label>
-          <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+          <label className="block text-sm font-medium mb-1"><BilingualText en="Work Style" el="Τρόπος δουλειάς" compact /> <span className="text-status-danger">*</span></label>
+          <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Select all that apply" el="Επιλέξτε όσα ισχύουν" compact /></p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {WORK_STYLES.map(ws => (
               <button
@@ -1200,8 +1201,8 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
 
         {/* Core Values */}
         <div>
-          <label className="block text-sm font-medium mb-1">Core Values</label>
-          <p className="text-xs text-muted-foreground mb-3">Choose up to 5 that resonate most with you</p>
+          <label className="block text-sm font-medium mb-1"><BilingualText en="Core Values" el="Βασικές αξίες" compact /></label>
+          <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Choose up to 5 that resonate most with you" el="Επιλέξτε έως 5 που σας εκφράζουν" wrap /></p>
           <div className="flex flex-wrap gap-2">
             {CORE_VALUES.map(val => {
               const selected = data.values.coreValues.includes(val);
@@ -1227,7 +1228,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
             })}
           </div>
           {data.values.coreValues.length >= 5 && (
-            <p className="text-xs text-status-warning mt-2">Maximum 5 values selected</p>
+            <p className="text-xs text-status-warning mt-2"><BilingualText en="Maximum 5 values selected" el="Επιλέχθηκαν οι 5 αξίες (μέγιστο)" compact /></p>
           )}
         </div>
       </CardContent>
@@ -1247,15 +1248,15 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Search className="icon-md text-primary-accessible" />
-          Match Preferences
+          <BilingualText en="Match Preferences" el="Προτιμήσεις αντιστοίχισης" compact />
         </CardTitle>
-        <p className="text-muted-foreground">Tell us what you're looking for so we can find your best matches</p>
+        <p className="text-muted-foreground"><BilingualText en="Tell us what you're looking for so we can find your best matches" el="Πείτε μας τι ψάχνετε για να βρούμε τις καλύτερες αντιστοιχίσεις" wrap /></p>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Looking For */}
         <div>
-          <label className="block text-sm font-medium mb-1">Who are you looking for?</label>
-          <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+          <label className="block text-sm font-medium mb-1"><BilingualText en="Who are you looking for?" el="Ποιον ψάχνετε;" compact /></label>
+          <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Select all that apply" el="Επιλέξτε όσα ισχύουν" compact /></p>
           <div className="flex flex-wrap gap-2">
             {LOOKING_FOR_ROLES.map(role => (
               <button
@@ -1280,8 +1281,8 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
 
         {/* Industries */}
         <div>
-          <label className="block text-sm font-medium mb-1">Industry Focus</label>
-          <p className="text-xs text-muted-foreground mb-3">Which industries interest you most?</p>
+          <label className="block text-sm font-medium mb-1"><BilingualText en="Industry Focus" el="Κλάδοι ενδιαφέροντος" compact /></label>
+          <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Which industries interest you most?" el="Ποιοι κλάδοι σας ενδιαφέρουν περισσότερο;" wrap /></p>
           <div className="flex flex-wrap gap-2">
             {INDUSTRIES.map(ind => (
               <button
@@ -1303,8 +1304,8 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
 
         {/* Startup Stages */}
         <div>
-          <label className="block text-sm font-medium mb-1">Preferred Startup Stage</label>
-          <p className="text-xs text-muted-foreground mb-3">What stages are you most interested in working with?</p>
+          <label className="block text-sm font-medium mb-1"><BilingualText en="Preferred Startup Stage" el="Προτιμώμενο στάδιο startup" compact /></label>
+          <p className="text-xs text-muted-foreground mb-3"><BilingualText en="What stages are you most interested in working with?" el="Με ποια στάδια σας ενδιαφέρει να δουλέψετε;" wrap /></p>
           <div className="flex flex-wrap gap-2">
             {STAGES.map(stage => (
               <button
@@ -1326,7 +1327,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
 
         {data.matchPrefs.lookingFor.length === 0 && data.matchPrefs.industries.length === 0 && (
           <p className="text-sm text-center text-muted-foreground py-2 italic">
-            You can skip this step — we'll refine your preferences later from your profile settings.
+            <BilingualText en="You can skip this step — we'll refine your preferences later from your profile settings." el="Μπορείτε να παραλείψετε αυτό το βήμα — θα βελτιώσουμε τις προτιμήσεις σας αργότερα από τις ρυθμίσεις προφίλ." wrap />
           </p>
         )}
       </CardContent>

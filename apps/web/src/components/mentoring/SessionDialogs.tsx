@@ -20,6 +20,7 @@ import {
   updateMentorshipSession,
   type MentorshipSessionItem,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /** `<input type="datetime-local">` wants local wall-clock time without a zone. */
 function toLocalInput(iso: string | Date): string {
@@ -111,19 +112,19 @@ export function ScheduleSessionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Schedule a session</DialogTitle>
-          <DialogDescription>With one of your active mentees. They see it in their sessions straight away.</DialogDescription>
+          <DialogTitle><BilingualText en="Schedule a session" el="Προγραμματισμός συνεδρίας" compact /></DialogTitle>
+          <DialogDescription><BilingualText en="With one of your active mentees. They see it in their sessions straight away." el="Με έναν από τους ενεργούς μαθητευόμενούς σας. Τη βλέπουν αμέσως στις συνεδρίες τους." wrap /></DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="icon-lg animate-spin text-muted-foreground" aria-hidden="true" /></div>
         ) : relationships.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">
-            You have no active mentees yet. Accept a request on the Requests page and they appear here.
+            <BilingualText en="You have no active mentees yet. Accept a request on the Requests page and they appear here." el="Δεν έχετε ακόμα ενεργούς μαθητευόμενους. Αποδεχτείτε ένα αίτημα στη σελίδα Αιτήματα και θα εμφανιστούν εδώ." wrap />
           </p>
         ) : (
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
             <div className="space-y-1.5">
-              <Label htmlFor="session-mentee">Mentee</Label>
+              <Label htmlFor="session-mentee"><BilingualText en="Mentee" el="Μαθητευόμενος" compact /></Label>
               <Select value={relationshipId} onValueChange={setRelationshipId}>
                 <SelectTrigger id="session-mentee"><SelectValue placeholder="Choose a mentee" /></SelectTrigger>
                 <SelectContent>
@@ -134,16 +135,16 @@ export function ScheduleSessionDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="session-title">Title <span className="text-muted-foreground">(optional)</span></Label>
+              <Label htmlFor="session-title"><BilingualText en="Title" el="Τίτλος" compact /> <span className="text-muted-foreground"><BilingualText en="(optional)" el="(προαιρετικό)" compact /></span></Label>
               <Input id="session-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Pitch review" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="session-start">Starts</Label>
+                <Label htmlFor="session-start"><BilingualText en="Starts" el="Έναρξη" compact /></Label>
                 <Input id="session-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="session-duration">Duration</Label>
+                <Label htmlFor="session-duration"><BilingualText en="Duration" el="Διάρκεια" compact /></Label>
                 <Select value={duration} onValueChange={setDuration}>
                   <SelectTrigger id="session-duration"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -154,30 +155,30 @@ export function ScheduleSessionDialog({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="session-type">Format</Label>
+                <Label htmlFor="session-type"><BilingualText en="Format" el="Μορφή" compact /></Label>
                 <Select value={meetingType} onValueChange={(v) => setMeetingType(v as typeof meetingType)}>
                   <SelectTrigger id="session-type"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="video">Video call</SelectItem>
-                    <SelectItem value="in_person">In person</SelectItem>
-                    <SelectItem value="chat">Chat</SelectItem>
+                    <SelectItem value="video"><BilingualText en="Video call" el="Βιντεοκλήση" compact /></SelectItem>
+                    <SelectItem value="in_person"><BilingualText en="In person" el="Δια ζώσης" compact /></SelectItem>
+                    <SelectItem value="chat"><BilingualText en="Chat" el="Συνομιλία" compact /></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {meetingType === 'video' && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="session-url">Meeting link</Label>
+                  <Label htmlFor="session-url"><BilingualText en="Meeting link" el="Σύνδεσμος συνάντησης" compact /></Label>
                   <Input id="session-url" type="url" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://" />
                 </div>
               )}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="session-agenda">Agenda <span className="text-muted-foreground">(optional)</span></Label>
+              <Label htmlFor="session-agenda"><BilingualText en="Agenda" el="Ατζέντα" compact /> <span className="text-muted-foreground"><BilingualText en="(optional)" el="(προαιρετικό)" compact /></span></Label>
               <Textarea id="session-agenda" rows={3} value={agenda} onChange={(e) => setAgenda(e.target.value)} />
             </div>
             {error && <p className="text-sm text-destructive-accessible" role="alert">{error}</p>}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
               <Button type="submit" disabled={saving || !relationshipId}>
                 {saving ? 'Scheduling…' : 'Schedule'}
               </Button>
@@ -225,17 +226,17 @@ export function RescheduleSessionDialog({
     <Dialog open={session !== null} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Reschedule</DialogTitle>
+          <DialogTitle><BilingualText en="Reschedule" el="Αλλαγή ώρας" compact /></DialogTitle>
           <DialogDescription>{session?.title ?? 'Mentorship session'}</DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
           <div className="space-y-1.5">
-            <Label htmlFor="reschedule-start">New time</Label>
+            <Label htmlFor="reschedule-start"><BilingualText en="New time" el="Νέα ώρα" compact /></Label>
             <Input id="reschedule-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
           </div>
           {error && <p className="text-sm text-destructive-accessible" role="alert">{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Keep current time</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><BilingualText en="Keep current time" el="Διατήρηση τρέχουσας ώρας" compact /></Button>
             <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Reschedule'}</Button>
           </DialogFooter>
         </form>
@@ -286,23 +287,23 @@ export function SessionNotesDialog({
     <Dialog open={session !== null} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Session notes</DialogTitle>
+          <DialogTitle><BilingualText en="Session notes" el="Σημειώσεις συνεδρίας" compact /></DialogTitle>
           <DialogDescription>{session?.title ?? 'Mentorship session'}</DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
           <div className="space-y-1.5">
-            <Label htmlFor="notes-mentor">Your notes</Label>
+            <Label htmlFor="notes-mentor"><BilingualText en="Your notes" el="Οι σημειώσεις σας" compact /></Label>
             <Textarea id="notes-mentor" rows={6} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
           {session?.menteeNotes && (
             <div className="space-y-1.5">
-              <p className="text-sm font-medium">Mentee&apos;s notes</p>
+              <p className="text-sm font-medium"><BilingualText en="Mentee&apos;s notes" el="Σημειώσεις μαθητευόμενου" compact /></p>
               <p className="whitespace-pre-line rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">{session.menteeNotes}</p>
             </div>
           )}
           {error && <p className="text-sm text-destructive-accessible" role="alert">{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><BilingualText en="Close" el="Κλείσιμο" compact /></Button>
             <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save notes'}</Button>
           </DialogFooter>
         </form>
