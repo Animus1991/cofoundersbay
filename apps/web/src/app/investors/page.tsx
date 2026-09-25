@@ -244,7 +244,9 @@ function InvestorCard({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <h3 className="truncate font-semibold">{investor.displayName}</h3>
+                  {/* Wraps on a phone, where the type badge and bookmark leave
+                      the name ~120px; truncates from `sm` up. */}
+                  <h3 className="break-words font-semibold sm:truncate">{investor.displayName}</h3>
                   {investor.isVerified && (
                     <BadgeCheck
                       className={cn('icon-sm shrink-0', STATUS.info.icon)}
@@ -259,11 +261,11 @@ function InvestorCard({
                   )}
                 </div>
                 {investor.firmName || investor.firmRole ? (
-                  <p className="mt-0.5 flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
-                    <Building2 className="icon-sm shrink-0" aria-hidden="true" />
+                  <p className="mt-0.5 flex min-w-0 items-start gap-1 text-sm text-muted-foreground sm:items-center">
+                    <Building2 className="mt-0.5 icon-sm shrink-0 sm:mt-0" aria-hidden="true" />
                     {/* One text run: firm and role as separate flex items broke
                         into ragged columns ("Horizon / Capital · Principal"). */}
-                    <span className="truncate">
+                    <span className="min-w-0 sm:truncate">
                       {[investor.firmName, investor.firmRole].filter(Boolean).join(' · ')}
                     </span>
                   </p>

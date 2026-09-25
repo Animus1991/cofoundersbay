@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /*
  * The selects offered `gr` and `europe_athens` while the organisation stores
@@ -206,11 +207,11 @@ export default function OrgSettingsPage() {
 
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="w-full lg:grid lg:grid-cols-5">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="branding">Branding</TabsTrigger>
-            <TabsTrigger value="team">Team</TabsTrigger>
-            <TabsTrigger value="permissions">Permissions</TabsTrigger>
-            <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="general"><BilingualText en="General" el="Γενικά" compact /></TabsTrigger>
+            <TabsTrigger value="branding"><BilingualText en="Branding" el="Εμφάνιση" compact /></TabsTrigger>
+            <TabsTrigger value="team"><BilingualText en="Team" el="Ομάδα" compact /></TabsTrigger>
+            <TabsTrigger value="permissions"><BilingualText en="Permissions" el="Δικαιώματα" compact /></TabsTrigger>
+            <TabsTrigger value="billing"><BilingualText en="Billing" el="Χρεώσεις" compact /></TabsTrigger>
           </TabsList>
 
           {/* General Settings */}
@@ -219,15 +220,15 @@ export default function OrgSettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="icon-md" aria-hidden="true" />
-                  Organization Profile
+                  <BilingualText en="Organization Profile" el="Προφίλ οργανισμού" compact />
                 </CardTitle>
                 <CardDescription>
-                  Basic information about your organization
+                  <BilingualText en="Basic information about your organization" el="Βασικές πληροφορίες για τον οργανισμό σας" wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="orgName">Organization Name</Label>
+                  <Label htmlFor="orgName"><BilingualText en="Organization Name" el="Όνομα οργανισμού" compact /></Label>
                   <Input
                     id="orgName"
                     value={orgName}
@@ -235,7 +236,7 @@ export default function OrgSettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="orgDescription">Description</Label>
+                  <Label htmlFor="orgDescription"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
                   <Textarea
                     id="orgDescription"
                     value={orgDescription}
@@ -245,7 +246,7 @@ export default function OrgSettingsPage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
+                    <Label htmlFor="website"><BilingualText en="Website" el="Ιστότοπος" compact /></Label>
                     <Input
                       id="website"
                       value={website}
@@ -253,24 +254,24 @@ export default function OrgSettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="orgType">Organization Type</Label>
+                    <Label htmlFor="orgType"><BilingualText en="Organization Type" el="Τύπος οργανισμού" compact /></Label>
                     <Select value={orgType} onValueChange={setOrgType}>
                       <SelectTrigger id="orgType">
                         <SelectValue placeholder="Choose a type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="incubator">Incubator</SelectItem>
-                        <SelectItem value="accelerator">Accelerator</SelectItem>
-                        <SelectItem value="venture_studio">Venture Studio</SelectItem>
-                        <SelectItem value="university">University</SelectItem>
-                        <SelectItem value="innovation_hub">Innovation Hub</SelectItem>
+                        <SelectItem value="incubator"><BilingualText en="Incubator" el="Θερμοκοιτίδα" compact /></SelectItem>
+                        <SelectItem value="accelerator"><BilingualText en="Accelerator" el="Επιταχυντής" compact /></SelectItem>
+                        <SelectItem value="venture_studio"><BilingualText en="Venture Studio" el="Venture studio" compact /></SelectItem>
+                        <SelectItem value="university"><BilingualText en="University" el="Πανεπιστήμιο" compact /></SelectItem>
+                        <SelectItem value="innovation_hub"><BilingualText en="Innovation Hub" el="Κόμβος καινοτομίας" compact /></SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
+                    <Label htmlFor="country"><BilingualText en="Country" el="Χώρα" compact /></Label>
                     <Select value={country} onValueChange={setCountry}>
                       <SelectTrigger id="country">
                         <SelectValue placeholder="Choose a country" />
@@ -283,7 +284,7 @@ export default function OrgSettingsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
+                    <Label htmlFor="timezone"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></Label>
                     <Select value={timezone} onValueChange={setTimezone}>
                       <SelectTrigger id="timezone">
                         <SelectValue placeholder="Choose a timezone" />
@@ -313,24 +314,24 @@ export default function OrgSettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="icon-md" aria-hidden="true" />
-                  Branding
+                  <BilingualText en="Branding" el="Εμφάνιση" compact />
                 </CardTitle>
                 <CardDescription>
-                  Customize your organization's appearance
+                  <BilingualText en="Customize your organization's appearance" el="Προσαρμόστε την εμφάνιση του οργανισμού σας" wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Logo</Label>
+                  <Label><BilingualText en="Logo" el="Λογότυπο" compact /></Label>
                   <div className="flex items-center gap-4">
                     <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
                       <Building2 className="icon-xl text-muted-foreground" />
                     </div>
-                    <Button variant="outline" disabled title="Logo storage is not connected yet">Upload Logo</Button>
+                    <Button variant="outline" disabled title="Logo storage is not connected yet"><BilingualText en="Upload Logo" el="Μεταφόρτωση λογοτύπου" compact /></Button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="primaryColor">Primary Color</Label>
+                  <Label htmlFor="primaryColor"><BilingualText en="Primary Color" el="Κύριο χρώμα" compact /></Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="primaryColor"
@@ -347,13 +348,13 @@ export default function OrgSettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Custom Domain</Label>
+                  <Label><BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact /></Label>
                   <div className="flex items-center gap-2">
                     <Input placeholder="accelerator.yourdomain.com" />
-                    <Button variant="outline" disabled title="Custom domains are not connected yet">Verify</Button>
+                    <Button variant="outline" disabled title="Custom domains are not connected yet"><BilingualText en="Verify" el="Επαλήθευση" compact /></Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Set up a custom domain for your organization's portal
+                    <BilingualText en="Set up a custom domain for your organization's portal" el="Ορίστε προσαρμοσμένο τομέα για την πύλη του οργανισμού σας" wrap />
                   </p>
                 </div>
                 {/* primaryColor is a real column; the logo and custom domain
@@ -368,7 +369,7 @@ export default function OrgSettingsPage() {
                     {saveBranding.isPending ? 'Saving…' : 'Save Branding'}
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    Saves the primary colour. Logo and domain are not stored yet.
+                    <BilingualText en="Saves the primary colour. Logo and domain are not stored yet." el="Αποθηκεύεται το κύριο χρώμα. Λογότυπο και τομέας δεν αποθηκεύονται ακόμα." wrap />
                   </p>
                 </div>
               </CardContent>
@@ -381,10 +382,10 @@ export default function OrgSettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="icon-md" aria-hidden="true" />
-                  Team Members
+                  <BilingualText en="Team Members" el="Μέλη ομάδας" compact />
                 </CardTitle>
                 <CardDescription>
-                  Manage your organization's team
+                  <BilingualText en="Manage your organization's team" el="Διαχείριση της ομάδας του οργανισμού σας" compact />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -395,7 +396,7 @@ export default function OrgSettingsPage() {
                       : 'Members could not be loaded'}
                   </p>
                   <Button asChild>
-                    <Link href={slug ? `/org/${slug}/admin` : '/org/dashboard'}>Invite Member</Link>
+                    <Link href={slug ? `/org/${slug}/admin` : '/org/dashboard'}><BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact /></Link>
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -416,11 +417,11 @@ export default function OrgSettingsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="program_manager">Program Manager</SelectItem>
-                          <SelectItem value="mentor">Mentor</SelectItem>
-                          <SelectItem value="reviewer">Reviewer</SelectItem>
-                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
+                          <SelectItem value="program_manager"><BilingualText en="Program Manager" el="Υπεύθυνος προγράμματος" compact /></SelectItem>
+                          <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
+                          <SelectItem value="reviewer"><BilingualText en="Reviewer" el="Αξιολογητής" compact /></SelectItem>
+                          <SelectItem value="member"><BilingualText en="Member" el="Μέλος" compact /></SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -442,10 +443,10 @@ export default function OrgSettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="icon-md" aria-hidden="true" />
-                  Permissions & Access
+                  <BilingualText en="Permissions & Access" el="Δικαιώματα & πρόσβαση" compact />
                 </CardTitle>
                 <CardDescription>
-                  Configure access controls for your organization
+                  <BilingualText en="Configure access controls for your organization" el="Ρυθμίστε τον έλεγχο πρόσβασης του οργανισμού σας" wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -478,10 +479,10 @@ export default function OrgSettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="icon-md" aria-hidden="true" />
-                  Subscription & Billing
+                  <BilingualText en="Subscription & Billing" el="Συνδρομή & χρεώσεις" compact />
                 </CardTitle>
                 <CardDescription>
-                  Manage your subscription and payment methods
+                  <BilingualText en="Manage your subscription and payment methods" el="Διαχείριση συνδρομής και τρόπων πληρωμής" wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -495,34 +496,34 @@ export default function OrgSettingsPage() {
                       <p className="font-semibold">Organization Pro</p>
                       <p className="text-sm text-muted-foreground">$299/month · Billed annually</p>
                     </div>
-                    <Button variant="outline" disabled title="Billing is not connected yet">Change Plan</Button>
+                    <Button variant="outline" disabled title="Billing is not connected yet"><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium">Usage</p>
+                  <p className="font-medium"><BilingualText en="Usage" el="Χρήση" compact /></p>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="p-3 rounded-lg border">
-                      <p className="text-sm text-muted-foreground">Startups</p>
+                      <p className="text-sm text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></p>
                       <p className="text-xl font-bold">32 / 50</p>
                     </div>
                     <div className="p-3 rounded-lg border">
-                      <p className="text-sm text-muted-foreground">Team Members</p>
+                      <p className="text-sm text-muted-foreground"><BilingualText en="Team Members" el="Μέλη ομάδας" compact /></p>
                       <p className="text-xl font-bold">5 / 10</p>
                     </div>
                     <div className="p-3 rounded-lg border">
-                      <p className="text-sm text-muted-foreground">Programs</p>
+                      <p className="text-sm text-muted-foreground"><BilingualText en="Programs" el="Προγράμματα" compact /></p>
                       <p className="text-xl font-bold">4 / Unlimited</p>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium">Payment Method</p>
+                  <p className="font-medium"><BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact /></p>
                   <div className="flex items-center justify-between p-3 rounded-lg border">
                     <div className="flex items-center gap-3">
                       <CreditCard className="icon-md" aria-hidden="true" />
                       <span>•••• •••• •••• 4242</span>
                     </div>
-                    <Button variant="ghost" size="sm" disabled title="Billing is not connected yet">Update</Button>
+                    <Button variant="ghost" size="sm" disabled title="Billing is not connected yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
                   </div>
                 </div>
               </CardContent>

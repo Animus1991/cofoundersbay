@@ -104,6 +104,22 @@ function withoutControlRegistrations(source: string): string {
   }
 }
 
+/**
+ * Text that names something rather than being a control: headings, table
+ * column headers, and dialogs. A dialog is its own surface - neither the
+ * column nor the rail - and its fields set what the dialog is for (the role
+ * of the person being invited), not the list the rail filters. A heading
+ * names the group under it. Labels in these are words, and once the pages
+ * became bilingual they arrive as `en=` props like every control's, so they
+ * are dropped before labels are compared. The state check below does not
+ * read labels, so a real second binding is still caught there.
+ */
+function withoutNonControlText(source: string): string {
+  return source
+    .replace(/<Dialog[\s>][\s\S]*?<\/Dialog>/g, '')
+    .replace(/<(h[1-6]|CardTitle|TableHead|DialogTitle)\b[^>]*>[\s\S]*?<\/\1>/g, '');
+}
+
 function controlLabels(source: string): Set<string> {
   const out = new Set<string>();
   for (const m of source.matchAll(/[a-zA-Z]+En\('([a-z0-9_]+)'\)/g)) out.add(`key:${m[1]}`);
@@ -232,7 +248,7 @@ describe('page rail contract', () => {
     for (const page of pages) {
       const { rail, page: rest } = splitRail(page.source);
       const inRail = controlLabels(rail);
-      const inPage = controlLabels(withoutControlRegistrations(rest));
+      const inPage = controlLabels(withoutNonControlText(withoutControlRegistrations(rest)));
       for (const label of inRail) {
         if (inPage.has(label) && !SHARED_TEXT_ALLOWLIST.has(label)) {
           offenders.push(`${page.path}: "${label.slice(label.indexOf(':') + 1)}" is in the rail and in the page`);

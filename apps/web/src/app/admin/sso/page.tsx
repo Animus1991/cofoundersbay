@@ -40,9 +40,9 @@ import {
 } from '@/lib/api';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
-  if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border">SSO Required</Badge>;
-  if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border">SSO Optional</Badge>;
-  return <Badge variant="secondary">SSO Disabled</Badge>;
+  if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border"><BilingualText en="SSO Required" el="SSO υποχρεωτικό" compact /></Badge>;
+  if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border"><BilingualText en="SSO Optional" el="SSO προαιρετικό" compact /></Badge>;
+  return <Badge variant="secondary"><BilingualText en="SSO Disabled" el="SSO ανενεργό" compact /></Badge>;
 }
 
 export default function SSOAdminPage() {
@@ -94,8 +94,8 @@ export default function SSOAdminPage() {
       {/* Tenant list */}
       <Card>
         <CardHeader>
-          <CardTitle>Organization Tenants</CardTitle>
-          <CardDescription>Click a tenant to configure its SSO settings</CardDescription>
+          <CardTitle><BilingualText en="Organization Tenants" el="Οργανισμοί" compact /></CardTitle>
+          <CardDescription><BilingualText en="Click a tenant to configure its SSO settings" el="Επιλέξτε οργανισμό για να ρυθμίσετε το SSO του" wrap /></CardDescription>
         </CardHeader>
         <CardContent>
           {tenantsLoading ? (
@@ -105,12 +105,12 @@ export default function SSOAdminPage() {
           ) : tenantsError ? (
             <div className="text-center py-8 text-muted-foreground">
               <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" />
-              <p>Failed to load tenants</p>
+              <p><BilingualText en="Failed to load tenants" el="Δεν ήταν δυνατή η φόρτωση των οργανισμών" compact /></p>
             </div>
           ) : !tenants?.length ? (
             <div className="text-center py-8 text-muted-foreground">
               <Building2 className="icon-xl mx-auto mb-2" />
-              <p className="text-sm">No tenants yet — create one in the Tenants admin page.</p>
+              <p className="text-sm"><BilingualText en="No tenants yet — create one in the Tenants admin page." el="Δεν υπάρχουν οργανισμοί ακόμα — δημιουργήστε έναν στη διαχείριση οργανισμών." wrap /></p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -141,13 +141,13 @@ export default function SSOAdminPage() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Activity className="icon-md" />
-              Recent SSO Auth Events
+              <BilingualText en="Recent SSO Auth Events" el="Πρόσφατες συνδέσεις SSO" compact />
             </CardTitle>
-            <CardDescription>Authentication activity across all tenants (last 20)</CardDescription>
+            <CardDescription><BilingualText en="Authentication activity across all tenants (last 20)" el="Δραστηριότητα αυθεντικοποίησης σε όλους τους οργανισμούς (τελευταίες 20)" wrap /></CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={() => refetchEvents()} className="gap-2">
             <RefreshCw className="icon-sm" />
-            Refresh
+            <BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
         </CardHeader>
         <CardContent>
@@ -156,7 +156,7 @@ export default function SSOAdminPage() {
           ) : !events?.length ? (
             <div className="text-center py-8 text-muted-foreground">
               <Activity className="icon-xl mx-auto mb-2" />
-              <p className="text-sm">No SSO events yet</p>
+              <p className="text-sm"><BilingualText en="No SSO events yet" el="Δεν υπάρχουν συμβάντα SSO ακόμα" compact /></p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -391,7 +391,7 @@ function SSOConfigPanel({
         <CardHeader className="flex flex-row items-center justify-between border-b sticky top-0 bg-card z-10">
           <div>
             <CardTitle>SSO — {tenantName}</CardTitle>
-            <CardDescription>Configure providers and authentication policy</CardDescription>
+            <CardDescription><BilingualText en="Configure providers and authentication policy" el="Ρύθμιση παρόχων και πολιτικής αυθεντικοποίησης" wrap /></CardDescription>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close SSO configuration"><X className="icon-sm" /></Button>
         </CardHeader>
@@ -418,7 +418,7 @@ function SSOConfigPanel({
           {/* Identity Providers */}
           <div className={`space-y-3 ${activeTab !== 'providers' ? 'hidden' : ''}`}>
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Identity Providers</label>
+              <label className="text-sm font-medium"><BilingualText en="Identity Providers" el="Πάροχοι ταυτότητας" compact /></label>
               <Button variant="outline" size="sm" onClick={() => setShowNewProvider(v => !v)} className="gap-2">
                 <Plus className="icon-sm" />
                 {showNewProvider ? 'Cancel' : 'Add Provider'}
@@ -429,7 +429,7 @@ function SSOConfigPanel({
               <div className="h-12 rounded-lg bg-muted/50 animate-pulse" />
             ) : !providers?.length && !showNewProvider ? (
               <div className="p-4 rounded-lg border border-dashed text-center text-sm text-muted-foreground">
-                No identity providers yet. Add one to enable SSO.
+                <BilingualText en="No identity providers yet. Add one to enable SSO." el="Δεν υπάρχουν πάροχοι ταυτότητας. Προσθέστε έναν για να ενεργοποιήσετε το SSO." wrap />
               </div>
             ) : (
               <div className="space-y-2">
@@ -458,7 +458,7 @@ function SSOConfigPanel({
             {/* New Provider Form */}
             {showNewProvider && (
               <div className="p-4 rounded-lg border space-y-4 bg-muted/20">
-                <h4 className="text-sm font-semibold">New Identity Provider</h4>
+                <h4 className="text-sm font-semibold"><BilingualText en="New Identity Provider" el="Νέος πάροχος ταυτότητας" compact /></h4>
                 <div className="grid grid-cols-2 gap-2">
                   {(['oidc', 'saml', 'oauth2'] as const).map(t => (
                     <button key={t} type="button" onClick={() => setProviderType(t)}
@@ -483,7 +483,7 @@ function SSOConfigPanel({
                         <Input value={newProvider.oidcClientId} onChange={e => setNewProvider(p => ({ ...p, oidcClientId: e.target.value }))} placeholder="client-id" />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-medium">Client Secret</label>
+                        <label className="text-xs font-medium"><BilingualText en="Client Secret" el="Client secret" compact /></label>
                         <Input type="password" value={newProvider.oidcClientSecret} onChange={e => setNewProvider(p => ({ ...p, oidcClientSecret: e.target.value }))} placeholder="••••••••" />
                       </div>
                     </div>
@@ -496,27 +496,27 @@ function SSOConfigPanel({
                 {providerType === 'saml' && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-xs font-medium">Metadata URL (optional)</label>
+                      <label className="text-xs font-medium"><BilingualText en="Metadata URL (optional)" el="URL metadata (προαιρετικό)" compact /></label>
                       <Input value={newProvider.samlMetadataUrl} onChange={e => setNewProvider(p => ({ ...p, samlMetadataUrl: e.target.value }))} placeholder="https://idp.example.com/metadata.xml" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <label className="text-xs font-medium">SSO Entry Point</label>
+                        <label className="text-xs font-medium"><BilingualText en="SSO Entry Point" el="Σημείο εισόδου SSO" compact /></label>
                         <Input value={newProvider.samlEntryPoint} onChange={e => setNewProvider(p => ({ ...p, samlEntryPoint: e.target.value }))} placeholder="https://idp.example.com/sso" />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-xs font-medium">Issuer / Entity ID</label>
+                        <label className="text-xs font-medium"><BilingualText en="Issuer / Entity ID" el="Εκδότης / Entity ID" compact /></label>
                         <Input value={newProvider.samlIssuer} onChange={e => setNewProvider(p => ({ ...p, samlIssuer: e.target.value }))} placeholder="urn:example:idp" />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-medium">Public Certificate (PEM)</label>
+                      <label className="text-xs font-medium"><BilingualText en="Public Certificate (PEM)" el="Δημόσιο πιστοποιητικό (PEM)" compact /></label>
                       <textarea value={newProvider.samlCert} onChange={e => setNewProvider(p => ({ ...p, samlCert: e.target.value }))} placeholder="-----BEGIN CERTIFICATE-----\n..." className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
                     </div>
                   </>
                 )}
                 <div className="space-y-2">
-                  <label className="text-xs font-medium">Login Button Text</label>
+                  <label className="text-xs font-medium"><BilingualText en="Login Button Text" el="Κείμενο κουμπιού σύνδεσης" compact /></label>
                   <Input value={newProvider.loginButtonText} onChange={e => setNewProvider(p => ({ ...p, loginButtonText: e.target.value }))} placeholder="Continue with SSO" />
                 </div>
                 <div className="flex justify-end">
@@ -531,10 +531,10 @@ function SSOConfigPanel({
 
           {/* SSO Policy */}
           <div className={`space-y-4 pt-2 ${activeTab !== 'policy' ? 'hidden' : ''}`}>
-            <h4 className="text-sm font-semibold">Authentication Policy</h4>
+            <h4 className="text-sm font-semibold"><BilingualText en="Authentication Policy" el="Πολιτική αυθεντικοποίησης" compact /></h4>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium">SSO Mode</label>
+              <label className="text-xs font-medium"><BilingualText en="SSO Mode" el="Λειτουργία SSO" compact /></label>
               <div className="grid grid-cols-3 gap-2">
                 {([['disabled', 'Disabled', ShieldOff], ['optional', 'Optional', Shield], ['required', 'Required', Lock]] as const).map(([mode, label, Icon]) => (
                   <button key={mode} type="button" onClick={() => setSsoMode(mode)}
@@ -553,7 +553,7 @@ function SSOConfigPanel({
             {ssoMode !== 'disabled' && (
               <>
                 <div className="space-y-2">
-                  <label className="text-xs font-medium">Identity Provider</label>
+                  <label className="text-xs font-medium"><BilingualText en="Identity Provider" el="Πάροχος ταυτότητας" compact /></label>
                   <select value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                     <option value="">— None selected —</option>
@@ -562,21 +562,21 @@ function SSOConfigPanel({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-medium">Allowed Email Domains</label>
+                  <label className="text-xs font-medium"><BilingualText en="Allowed Email Domains" el="Επιτρεπόμενοι τομείς email" compact /></label>
                   <Input value={allowedDomains} onChange={e => setAllowedDomains(e.target.value)} placeholder="uoa.gr, di.uoa.gr (comma-separated)" />
-                  <p className="text-xs text-muted-foreground">Leave empty to allow all domains</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Leave empty to allow all domains" el="Αφήστε κενό για όλους τους τομείς" compact /></p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-medium">Default Role for new users</label>
+                    <label className="text-xs font-medium"><BilingualText en="Default Role for new users" el="Προεπιλεγμένος ρόλος νέων χρηστών" compact /></label>
                     <select value={defaultRole} onChange={e => setDefaultRole(e.target.value)}
                       className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                       {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-medium">Session Duration (hours)</label>
+                    <label className="text-xs font-medium"><BilingualText en="Session Duration (hours)" el="Διάρκεια συνεδρίας (ώρες)" compact /></label>
                     <Input type="number" min={1} max={720} value={sessionDurationHours} onChange={e => setSessionDurationHours(Number(e.target.value))} />
                   </div>
                 </div>
@@ -604,8 +604,8 @@ function SSOConfigPanel({
           {/* Domain Mappings */}
           {activeTab === 'domains' && (
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold">Email Domain Mappings</h4>
-              <p className="text-xs text-muted-foreground">Users entering emails at these domains will be offered this tenant&apos;s SSO on the login page.</p>
+              <h4 className="text-sm font-semibold"><BilingualText en="Email Domain Mappings" el="Τομείς email" compact /></h4>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Users entering emails at these domains will be offered this tenant&apos;s SSO on the login page." el="Όσοι εισάγουν email σε αυτούς τους τομείς βλέπουν το SSO αυτού του οργανισμού στη σύνδεση." wrap /></p>
 
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground text-sm shrink-0">@</span>
@@ -617,10 +617,10 @@ function SSOConfigPanel({
                 />
                 <label className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 cursor-pointer">
                   <input type="checkbox" checked={newDomainAutoRedirect} onChange={e => setNewDomainAutoRedirect(e.target.checked)} className="rounded" />
-                  Auto-redirect
+                  <BilingualText en="Auto-redirect" el="Αυτόματη ανακατεύθυνση" compact />
                 </label>
                 <Button size="sm" onClick={() => addDomainMut.mutate()} disabled={!newDomain.trim() || addDomainMut.isPending} className="gap-1 shrink-0">
-                  <Plus className="icon-sm" />Add
+                  <Plus className="icon-sm" /><BilingualText en="Add" el="Προσθήκη" compact />
                 </Button>
               </div>
 
@@ -629,7 +629,7 @@ function SSOConfigPanel({
               ) : !domainMappings?.length ? (
                 <div className="p-4 rounded-lg border border-dashed text-center text-sm text-muted-foreground">
                   <Globe className="icon-lg mx-auto mb-1" />
-                  No email domains mapped for this tenant
+                  <BilingualText en="No email domains mapped for this tenant" el="Δεν υπάρχουν τομείς email για αυτόν τον οργανισμό" wrap />
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -640,7 +640,7 @@ function SSOConfigPanel({
                         <span className="text-sm font-medium">@{m.domain}</span>
                         {m.isVerified
                           ? <span className="text-xs text-status-success">✓ Verified</span>
-                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-accessible hover:underline">Mark verified</button>}
+                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-accessible hover:underline"><BilingualText en="Mark verified" el="Σήμανση ως επαληθευμένο" compact /></button>}
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>
                       <button aria-label="Remove domain mapping" onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-accessible">
@@ -651,8 +651,8 @@ function SSOConfigPanel({
                 </div>
               )}
 
-              <h4 className="text-sm font-semibold pt-2">Role Mapping Rules</h4>
-              <p className="text-xs text-muted-foreground">Map IdP claim values to platform roles on first SSO login.</p>
+              <h4 className="text-sm font-semibold pt-2"><BilingualText en="Role Mapping Rules" el="Κανόνες αντιστοίχισης ρόλων" compact /></h4>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Map IdP claim values to platform roles on first SSO login." el="Αντιστοιχίστε τιμές claims του παρόχου σε ρόλους στην πρώτη σύνδεση SSO." wrap /></p>
               <div className="space-y-2">
                 {roleMappingRules.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
@@ -671,14 +671,14 @@ function SSOConfigPanel({
                 ))}
                 <button type="button" onClick={() => setRoleMappingRules(r => [...r, {claim:'',value:'',role:'member'}])}
                   className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
-                  <Plus className="icon-sm" />Add rule
+                  <Plus className="icon-sm" /><BilingualText en="Add rule" el="Προσθήκη κανόνα" compact />
                 </button>
               </div>
             </div>
           )}
 
           <div className="flex justify-end gap-3 pt-2 border-t">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button onClick={() => configMut.mutate()} disabled={configMut.isPending} className="gap-2">
               <Check className="icon-sm" />
               {configMut.isPending ? 'Saving…' : 'Save SSO Config'}

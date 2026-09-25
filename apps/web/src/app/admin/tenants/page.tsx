@@ -154,14 +154,14 @@ export default function TenantsAdminPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-status-success-bg text-status-success border-status-success-border">Active</Badge>;
+        return <Badge className="bg-status-success-bg text-status-success border-status-success-border"><BilingualText en="Active" el="Ενεργός" compact /></Badge>;
       // `TenantItem['status']` is draft | active | suspended. This used to
       // match 'pending', which the API never sends, so a draft tenant fell
       // through to the raw string "draft" in a grey badge.
       case 'draft':
-        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border">Draft</Badge>;
+        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border"><BilingualText en="Draft" el="Πρόχειρο" compact /></Badge>;
       case 'suspended':
-        return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border">Suspended</Badge>;
+        return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border"><BilingualText en="Suspended" el="Σε αναστολή" compact /></Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -630,7 +630,7 @@ function TenantEditor({
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription>Configure organization settings and branding</CardDescription>
+            <CardDescription><BilingualText en="Configure organization settings and branding" el="Ρυθμίσεις και εμφάνιση του οργανισμού" wrap /></CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {!isNew && (
@@ -651,12 +651,12 @@ function TenantEditor({
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
               <TabsList className="mb-6 flex-wrap h-auto gap-1">
-                <TabsTrigger value="general" className="gap-1.5"><Settings className="icon-sm" />General</TabsTrigger>
-                <TabsTrigger value="branding" className="gap-1.5"><Palette className="icon-sm" />Colors & Fonts</TabsTrigger>
-                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="icon-sm" />Media</TabsTrigger>
-                <TabsTrigger value="content" className="gap-1.5"><FileText className="icon-sm" />Content</TabsTrigger>
-                <TabsTrigger value="links" className="gap-1.5"><Globe className="icon-sm" />Links & Legal</TabsTrigger>
-                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="icon-sm" />Email</TabsTrigger>}
+                <TabsTrigger value="general" className="gap-1.5"><Settings className="icon-sm" /><BilingualText en="General" el="Γενικά" compact /></TabsTrigger>
+                <TabsTrigger value="branding" className="gap-1.5"><Palette className="icon-sm" /><BilingualText en="Colors & Fonts" el="Χρώματα & γραμματοσειρές" compact /></TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="icon-sm" /><BilingualText en="Media" el="Πολυμέσα" compact /></TabsTrigger>
+                <TabsTrigger value="content" className="gap-1.5"><FileText className="icon-sm" /><BilingualText en="Content" el="Περιεχόμενο" compact /></TabsTrigger>
+                <TabsTrigger value="links" className="gap-1.5"><Globe className="icon-sm" /><BilingualText en="Links & Legal" el="Σύνδεσμοι & νομικά" compact /></TabsTrigger>
+                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="icon-sm" /><BilingualText en="Email" el="Email" compact /></TabsTrigger>}
               </TabsList>
 
               {saveError && (
@@ -681,39 +681,39 @@ function TenantEditor({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name</label>
+                    <label className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /></label>
                     <Input value={general.displayName} onChange={e => setGeneral(p => ({ ...p, displayName: e.target.value }))} placeholder="Acme Corporation" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Website</label>
+                    <label className="text-sm font-medium"><BilingualText en="Website" el="Ιστότοπος" compact /></label>
                     <Input value={general.website} onChange={e => setGeneral(p => ({ ...p, website: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Short Description</label>
+                  <label className="text-sm font-medium"><BilingualText en="Short Description" el="Σύντομη περιγραφή" compact /></label>
                   <Input value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder="One-line description shown in listings" maxLength={160} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Full Description</label>
+                  <label className="text-sm font-medium"><BilingualText en="Full Description" el="Πλήρης περιγραφή" compact /></label>
                   <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder="Detailed description of the organization..." className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">About Text (long-form landing page)</label>
+                  <label className="text-sm font-medium"><BilingualText en="About Text (long-form landing page)" el="Κείμενο «Σχετικά» (σελίδα προορισμού)" wrap /></label>
                   <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder="Full about section displayed on the tenant landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Logo URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Logo URL" el="URL λογοτύπου" compact /></label>
                     <Input value={general.logoUrl} onChange={e => setGeneral(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://cdn.acme.com/logo.png" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Favicon URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Favicon URL" el="URL favicon" compact /></label>
                     <Input value={general.faviconUrl} onChange={e => setGeneral(p => ({ ...p, faviconUrl: e.target.value }))} placeholder="https://cdn.acme.com/favicon.ico" />
                   </div>
                 </div>
                 {!isNew && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Status</label>
+                    <label className="text-sm font-medium"><BilingualText en="Organisation status" el="Κατάσταση οργανισμού" compact /></label>
                     <div className="flex gap-2">
                       {(['draft', 'active', 'suspended'] as const).map(s => (
                         <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
@@ -735,7 +735,7 @@ function TenantEditor({
               {/* Colors & Fonts tab */}
               <TabsContent value="branding" className="space-y-6 mt-0">
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm">Color Palette</h4>
+                  <h4 className="font-medium text-sm"><BilingualText en="Color Palette" el="Παλέτα χρωμάτων" compact /></h4>
                   <div className="grid grid-cols-3 gap-4">
                     {([['primaryColor', 'Primary'], ['secondaryColor', 'Secondary'], ['accentColor', 'Accent']] as const).map(([key, label]) => (
                       <div key={key} className="space-y-2">
@@ -755,7 +755,7 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm">Background Style</h4>
+                  <h4 className="font-medium text-sm"><BilingualText en="Background Style" el="Στυλ φόντου" compact /></h4>
                   <div className="flex gap-2 flex-wrap">
                     {BG_STYLES.map(s => (
                       <button key={s} type="button" onClick={() => setBranding(p => ({ ...p, backgroundStyle: s }))}
@@ -767,17 +767,17 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" />Typography</h4>
+                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" /><BilingualText en="Typography" el="Τυπογραφία" compact /></h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Heading Font</label>
+                      <label className="text-sm font-medium"><BilingualText en="Heading Font" el="Γραμματοσειρά τίτλων" compact /></label>
                       <select value={branding.headingFont} onChange={e => setBranding(p => ({ ...p, headingFont: e.target.value }))}
                         className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Body Font</label>
+                      <label className="text-sm font-medium"><BilingualText en="Body Font" el="Γραμματοσειρά κειμένου" compact /></label>
                       <select value={branding.bodyFont} onChange={e => setBranding(p => ({ ...p, bodyFont: e.target.value }))}
                         className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
@@ -798,7 +798,7 @@ function TenantEditor({
               {/* Media tab */}
               <TabsContent value="media" className="space-y-4 mt-0">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Hero Image URL</label>
+                  <label className="text-sm font-medium"><BilingualText en="Hero Image URL" el="URL κεντρικής εικόνας" compact /></label>
                   <Input value={branding.heroImageUrl} onChange={e => setBranding(p => ({ ...p, heroImageUrl: e.target.value }))} placeholder="https://cdn.acme.com/hero-banner.jpg" />
                   <p className="text-xs text-muted-foreground">Displayed as hero background on /t/{general.slug || 'slug'}</p>
                 </div>
@@ -821,40 +821,40 @@ function TenantEditor({
               <TabsContent value="content" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Hero Title</label>
+                    <label className="text-sm font-medium"><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></label>
                     <Input value={branding.heroTitle} onChange={e => setBranding(p => ({ ...p, heroTitle: e.target.value }))} placeholder="Welcome to Our Innovation Hub" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">CTA Button Label</label>
+                    <label className="text-sm font-medium"><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></label>
                     <Input value={branding.ctaLabel} onChange={e => setBranding(p => ({ ...p, ctaLabel: e.target.value }))} placeholder="Get Started" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Hero Subtitle</label>
+                  <label className="text-sm font-medium"><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></label>
                   <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">CTA URL</label>
+                  <label className="text-sm font-medium"><BilingualText en="CTA URL" el="URL δράσης" compact /></label>
                   <Input value={branding.ctaUrl} onChange={e => setBranding(p => ({ ...p, ctaUrl: e.target.value }))} placeholder="/register or https://..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">About / Long-form Content</label>
+                  <label className="text-sm font-medium"><BilingualText en="About / Long-form Content" el="Σχετικά / εκτενές περιεχόμενο" compact /></label>
                   <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Onboarding Intro Text</label>
+                    <label className="text-sm font-medium"><BilingualText en="Onboarding Intro Text" el="Εισαγωγικό κείμενο ένταξης" compact /></label>
                     <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Dashboard Welcome Message</label>
+                    <label className="text-sm font-medium"><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></label>
                     <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder="Here's what's happening..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Community Naming</label>
+                  <label className="text-sm font-medium"><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></label>
                   <Input value={branding.communityNaming} onChange={e => setBranding(p => ({ ...p, communityNaming: e.target.value }))} placeholder='Custom label e.g. "Program", "Cohort", "Network"' />
-                  <p className="text-xs text-muted-foreground">Replaces the word "community" in the UI for this tenant</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={"Replaces the word \"community\" in the UI for this tenant"} el="Αντικαθιστά τη λέξη «κοινότητα» στο περιβάλλον αυτού του οργανισμού" wrap /></p>
                 </div>
                 {!isNew && (
                   <div className="flex justify-end pt-2">
@@ -870,27 +870,27 @@ function TenantEditor({
               <TabsContent value="links" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Support Email</label>
+                    <label className="text-sm font-medium"><BilingualText en="Support Email" el="Email υποστήριξης" compact /></label>
                     <Input type="email" value={branding.supportEmail} onChange={e => setBranding(p => ({ ...p, supportEmail: e.target.value }))} placeholder="support@acme.com" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Branding Website URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Branding Website URL" el="URL ιστότοπου" compact /></label>
                     <Input value={branding.websiteUrl} onChange={e => setBranding(p => ({ ...p, websiteUrl: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Privacy Policy URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Privacy Policy URL" el="URL πολιτικής απορρήτου" compact /></label>
                     <Input value={branding.privacyPolicyUrl} onChange={e => setBranding(p => ({ ...p, privacyPolicyUrl: e.target.value }))} placeholder="https://acme.com/privacy" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Terms of Service URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Terms of Service URL" el="URL όρων χρήσης" compact /></label>
                     <Input value={branding.termsUrl} onChange={e => setBranding(p => ({ ...p, termsUrl: e.target.value }))} placeholder="https://acme.com/terms" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Cookie Policy URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Cookie Policy URL" el="URL πολιτικής cookies" compact /></label>
                     <Input value={branding.cookiePolicyUrl} onChange={e => setBranding(p => ({ ...p, cookiePolicyUrl: e.target.value }))} placeholder="https://acme.com/cookies" />
                   </div>
                   <div className="space-y-2">
@@ -923,12 +923,12 @@ function TenantEditor({
                 <TabsContent value="email" className="space-y-4 mt-0">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Email Sender Name</label>
+                      <label className="text-sm font-medium"><BilingualText en="Email Sender Name" el="Όνομα αποστολέα email" compact /></label>
                       <Input value={branding.emailFromName} onChange={e => setBranding(p => ({ ...p, emailFromName: e.target.value }))} placeholder="Acme Startup Network" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Email Footer Text</label>
+                    <label className="text-sm font-medium"><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></label>
                     <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="flex justify-end pt-2">
@@ -950,17 +950,17 @@ function TenantEditor({
                 <Button variant="outline" size="sm" className="gap-2" asChild>
                   <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="icon-sm" />
-                    View Public Page
+                    <BilingualText en="View Public Page" el="Προβολή δημόσιας σελίδας" compact />
                   </a>
                 </Button>
                 {b?.isBrandingActive ? (
                   <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-status-warning border-status-warning-border hover:bg-status-warning-bg">
-                    Unpublish Branding
+                    <BilingualText en="Unpublish Branding" el="Απόσυρση εμφάνισης" compact />
                   </Button>
                 ) : (
                   <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-status-success border-status-success-border hover:bg-status-success-bg">
                     <Check className="icon-sm" />
-                    Publish Branding
+                    <BilingualText en="Publish Branding" el="Δημοσίευση εμφάνισης" compact />
                   </Button>
                 )}
               </>
@@ -976,10 +976,10 @@ function TenantEditor({
                 })) deleteMut.mutate();
               }}>
                 <Trash2 className="icon-sm" />
-                Delete
+                <BilingualText en="Delete" el="Διαγραφή" compact />
               </Button>
             )}
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             {isNew && (
               <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
                 <Plus className="icon-sm" />
@@ -1029,7 +1029,7 @@ function TenantPreview({
               {branding.ctaLabel || 'Get Started'}
             </button>
             <button className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: branding.primaryColor, color: branding.primaryColor }}>
-              Learn More
+              <BilingualText en="Learn More" el="Μάθετε περισσότερα" compact />
             </button>
           </div>
         </div>
@@ -1037,7 +1037,7 @@ function TenantPreview({
         {/* About section */}
         {branding.aboutText && (
           <div className="p-6 bg-muted/20">
-            <h2 className="text-lg font-semibold mb-2">About</h2>
+            <h2 className="text-lg font-semibold mb-2"><BilingualText en="About" el="Σχετικά" compact /></h2>
             <p className="text-sm text-muted-foreground">{branding.aboutText}</p>
           </div>
         )}

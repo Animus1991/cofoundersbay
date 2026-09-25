@@ -407,12 +407,12 @@ export default function SettingsPage() {
       {!hasToken && (
         <Card className="max-w-2xl">
           <CardHeader>
-            <CardTitle className="text-lg">Sign in required</CardTitle>
+            <CardTitle className="text-lg"><BilingualText en="Sign in required" el="Απαιτείται σύνδεση" compact /></CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
-            <p>To manage billing and preferences, please sign in.</p>
+            <p><BilingualText en="To manage billing and preferences, please sign in." el="Συνδεθείτε για να διαχειριστείτε χρεώσεις και προτιμήσεις." wrap /></p>
             <Button asChild>
-              <Link href="/login">Go to login</Link>
+              <Link href="/login"><BilingualText en="Go to login" el="Μετάβαση στη σύνδεση" compact /></Link>
             </Button>
           </CardContent>
         </Card>
@@ -470,7 +470,7 @@ export default function SettingsPage() {
                         {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
                       </p>
                       <p className="mt-1 text-muted-foreground">
-                        Mentor booking payments, file attachments, and advanced discovery filters.
+                        <BilingualText en="Mentor booking payments, file attachments, and advanced discovery filters." el="Πληρωμές κρατήσεων μεντόρων, συνημμένα αρχεία και προχωρημένα φίλτρα ανακάλυψης." wrap />
                       </p>
                     </div>
                   )}
@@ -505,9 +505,9 @@ export default function SettingsPage() {
                 <CardHeader className="border-b border-border/50">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <KeyRound className="icon-md text-primary-accessible" />
-                    Change password
+                    <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
                   </CardTitle>
-                  <CardDescription>Leave blank to keep your current password.</CardDescription>
+                  <CardDescription><BilingualText en="Leave blank to keep your current password." el="Αφήστε κενό για να κρατήσετε τον τρέχοντα κωδικό." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
@@ -567,10 +567,10 @@ export default function SettingsPage() {
                 <CardHeader className="border-b border-border/50">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Link2 className="icon-md text-primary-accessible" />
-                    Connected accounts
+                    <BilingualText en="Connected accounts" el="Συνδεδεμένοι λογαριασμοί" compact />
                   </CardTitle>
                   <CardDescription>
-                    Link Google or LinkedIn to sign in without a password.
+                    <BilingualText en="Link Google or LinkedIn to sign in without a password." el="Συνδέστε Google ή LinkedIn για σύνδεση χωρίς κωδικό." wrap />
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -614,14 +614,14 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       {connected ? (
-                        <Badge variant="secondary" className="text-xs">Connected</Badge>
+                        <Badge variant="secondary" className="text-xs"><BilingualText en="Connected" el="Συνδεδεμένος" compact /></Badge>
                       ) : (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => { window.location.href = connectUrl; }}
                         >
-                          Connect
+                          <BilingualText en="Connect" el="Σύνδεση" compact />
                         </Button>
                       )}
                     </div>
@@ -635,7 +635,7 @@ export default function SettingsPage() {
                 <CardHeader className="border-b border-border/50">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <User className="icon-md text-primary-accessible" />
-                    Account
+                    <BilingualText en="Account" el="Λογαριασμός" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -643,13 +643,13 @@ export default function SettingsPage() {
                     <Button variant="secondary" className="gap-2" asChild>
                       <Link href="/profile/edit">
                         <User className="icon-sm" />
-                        Edit profile
+                        <BilingualText en="Edit profile" el="Επεξεργασία προφίλ" compact />
                       </Link>
                     </Button>
                     <Button variant="outline" className="gap-2" asChild>
                       <Link href="/profile">
                         <Shield className="icon-sm" />
-                        View public profile
+                        <BilingualText en="View public profile" el="Προβολή δημόσιου προφίλ" compact />
                       </Link>
                     </Button>
                     <Button
@@ -658,7 +658,7 @@ export default function SettingsPage() {
                       onClick={handleLogout}
                     >
                       <LogOut className="icon-sm" />
-                      Sign out
+                      <BilingualText en="Sign out" el="Αποσύνδεση" compact />
                     </Button>
                   </div>
                   {/* Export is self-service (/settings/data-export); only
@@ -759,9 +759,9 @@ export default function SettingsPage() {
                 <CardHeader className="border-b border-border/50">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Shield className="icon-md text-primary-accessible" />
-                    Security
+                    <BilingualText en="Security" el="Ασφάλεια" compact />
                   </CardTitle>
-                  <CardDescription>Two-factor authentication and account security.</CardDescription>
+                  <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <TwoFactorManagement
@@ -783,15 +783,15 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-destructive-accessible">
                 <AlertTriangle className="icon-md" />
-                Danger Zone
+                <BilingualText en="Danger Zone" el="Επικίνδυνη ζώνη" compact />
               </CardTitle>
-              <CardDescription>Irreversible actions that affect your account permanently.</CardDescription>
+              <CardDescription><BilingualText en="Irreversible actions that affect your account permanently." el="Μη αναστρέψιμες ενέργειες που επηρεάζουν μόνιμα τον λογαριασμό σας." wrap /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-xl border border-border/60 p-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Export your data</p>
-                  <p className="text-xs text-muted-foreground">Download all your profile, connections, and activity data as a ZIP archive.</p>
+                  <p className="text-sm font-medium text-foreground"><BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Download all your profile, connections, and activity data as a ZIP archive." el="Κατεβάστε όλα τα δεδομένα προφίλ, συνδέσεων και δραστηριότητας σε αρχείο ZIP." wrap /></p>
                 </div>
                 {/* /settings/data-export has existed all along; this button
                     simply never pointed at it. */}
@@ -804,12 +804,12 @@ export default function SettingsPage() {
               </div>
               <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-destructive-accessible">Delete account</p>
-                  <p className="text-xs text-muted-foreground">Permanently remove your account and all associated data. This cannot be undone.</p>
+                  <p className="text-sm font-medium text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and all associated data. This cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και όλων των δεδομένων του. Δεν αναιρείται." wrap /></p>
                 </div>
                 <Button variant="destructive" size="sm" className="shrink-0 gap-2" onClick={() => success('Contact support', 'Email support@cofounderbay.com to request account deletion.')}
                 >
-                  <Trash2 className="icon-sm" />Delete
+                  <Trash2 className="icon-sm" /><BilingualText en="Delete" el="Διαγραφή" compact />
                 </Button>
               </div>
             </CardContent>

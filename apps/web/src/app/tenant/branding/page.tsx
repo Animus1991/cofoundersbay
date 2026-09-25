@@ -28,6 +28,7 @@ import {
 import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Color swatch + input ───────────────────────────────────────────────────────
 
@@ -221,8 +222,8 @@ export default function TenantBrandingPage() {
         <div className="flex items-center justify-center py-24">
           <div className="text-center space-y-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto" aria-hidden="true" />
-            <p className="text-lg font-medium">No organization context</p>
-            <p className="text-sm text-muted-foreground">You must be a member of an organization to manage branding.</p>
+            <p className="text-lg font-medium"><BilingualText en="No organization context" el="Δεν έχει επιλεγεί οργανισμός" compact /></p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="You must be a member of an organization to manage branding." el="Πρέπει να είστε μέλος οργανισμού για να διαχειριστείτε την εμφάνιση." wrap /></p>
           </div>
         </div>
       </AppShell>
@@ -239,18 +240,18 @@ export default function TenantBrandingPage() {
           {branding?.isBrandingActive ? (
             <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
               <CheckCircle2 className="icon-sm" />
-              Published
+              <BilingualText en="Published" el="Δημοσιευμένο" compact />
             </Badge>
           ) : (
             <Badge variant="secondary" className="gap-1.5">
               <AlertCircle className="icon-sm" />
-              Draft
+              <BilingualText en="Draft" el="Πρόχειρο" compact />
             </Badge>
           )}
           {tenantSlug && (
             <Button variant="outline" size="sm" onClick={handlePreview}>
               <Eye className="mr-1.5 icon-sm" />
-              Preview
+              <BilingualText en="Preview" el="Προεπισκόπηση" compact />
               <ExternalLink className="ml-1.5 icon-sm opacity-60" />
             </Button>
           )}
@@ -276,7 +277,7 @@ export default function TenantBrandingPage() {
         {saveMutation.isError && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
             <AlertCircle className="icon-sm shrink-0" />
-            Failed to save changes. Please try again.
+            <BilingualText en="Failed to save changes. Please try again." el="Οι αλλαγές δεν αποθηκεύτηκαν. Δοκιμάστε ξανά." wrap />
           </div>
         )}
 
@@ -287,22 +288,22 @@ export default function TenantBrandingPage() {
         ) : (
           <Tabs defaultValue="colors" className="space-y-6">
             <TabsList className="flex-wrap h-auto gap-1">
-              <TabsTrigger value="colors"><Palette className="mr-1.5 icon-sm" />Colors</TabsTrigger>
-              <TabsTrigger value="typography"><Type className="mr-1.5 icon-sm" />Typography</TabsTrigger>
-              <TabsTrigger value="assets"><Image className="mr-1.5 h-3.5 w-3.5" />Assets</TabsTrigger>
-              <TabsTrigger value="content"><FileText className="mr-1.5 icon-sm" />Content</TabsTrigger>
-              <TabsTrigger value="labels"><Tag className="mr-1.5 icon-sm" />Labels</TabsTrigger>
-              <TabsTrigger value="legal"><Globe className="mr-1.5 icon-sm" />Legal & Social</TabsTrigger>
-              <TabsTrigger value="email"><Mail className="mr-1.5 icon-sm" />Email</TabsTrigger>
-              <TabsTrigger value="publish"><Settings className="mr-1.5 icon-sm" />Publish</TabsTrigger>
+              <TabsTrigger value="colors"><Palette className="mr-1.5 icon-sm" /><BilingualText en="Colors" el="Χρώματα" compact /></TabsTrigger>
+              <TabsTrigger value="typography"><Type className="mr-1.5 icon-sm" /><BilingualText en="Typography" el="Τυπογραφία" compact /></TabsTrigger>
+              <TabsTrigger value="assets"><Image className="mr-1.5 h-3.5 w-3.5" /><BilingualText en="Assets" el="Αρχεία" compact /></TabsTrigger>
+              <TabsTrigger value="content"><FileText className="mr-1.5 icon-sm" /><BilingualText en="Content" el="Περιεχόμενο" compact /></TabsTrigger>
+              <TabsTrigger value="labels"><Tag className="mr-1.5 icon-sm" /><BilingualText en="Labels" el="Ετικέτες" compact /></TabsTrigger>
+              <TabsTrigger value="legal"><Globe className="mr-1.5 icon-sm" /><BilingualText en="Legal & Social" el="Νομικά & κοινωνικά" compact /></TabsTrigger>
+              <TabsTrigger value="email"><Mail className="mr-1.5 icon-sm" /><BilingualText en="Email" el="Email" compact /></TabsTrigger>
+              <TabsTrigger value="publish"><Settings className="mr-1.5 icon-sm" /><BilingualText en="Publish" el="Δημοσίευση" compact /></TabsTrigger>
             </TabsList>
 
             {/* ── Colors ── */}
             <TabsContent value="colors" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Brand Colors</CardTitle>
-                  <CardDescription>Define your organization's color palette. These are applied as CSS variables throughout the platform.</CardDescription>
+                  <CardTitle><BilingualText en="Brand Colors" el="Χρώματα ταυτότητας" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Define your organization's color palette. These are applied as CSS variables throughout the platform." el="Ορίστε την παλέτα του οργανισμού σας. Εφαρμόζεται ως μεταβλητές CSS σε όλη την πλατφόρμα." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -327,7 +328,7 @@ export default function TenantBrandingPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Background Style</Label>
+                    <Label><BilingualText en="Background Style" el="Στυλ φόντου" compact /></Label>
                     <div className="flex flex-wrap gap-2">
                       {BG_STYLES.map((s) => (
                         <button
@@ -347,12 +348,12 @@ export default function TenantBrandingPage() {
                   </div>
 
                   <div className="rounded-lg border p-5 space-y-3">
-                    <p className="text-sm font-medium text-muted-foreground">Live Preview</p>
+                    <p className="text-sm font-medium text-muted-foreground"><BilingualText en="Live Preview" el="Ζωντανή προεπισκόπηση" compact /></p>
                     {/* A picture of three buttons, not three controls: inert
                         takes them out of the tab order and the a11y tree, and
                         tabIndex -1 says the same to the dead-control guard. */}
                     <div className="flex flex-wrap gap-2" inert>
-                      <Button tabIndex={-1} style={{ backgroundColor: form.primaryColor ?? undefined }}>Primary</Button>
+                      <Button tabIndex={-1} style={{ backgroundColor: form.primaryColor ?? undefined }}><BilingualText en="Primary" el="Κύριο" compact /></Button>
                       <Button
                         tabIndex={-1}
                         variant="outline"
@@ -361,10 +362,10 @@ export default function TenantBrandingPage() {
                           color: form.secondaryColor ?? undefined,
                         }}
                       >
-                        Secondary
+                        <BilingualText en="Secondary" el="Δευτερεύον" compact />
                       </Button>
                       <Button tabIndex={-1} variant="ghost" style={{ color: form.accentColor ?? undefined }}>
-                        Accent
+                        <BilingualText en="Accent" el="Έμφαση" compact />
                       </Button>
                     </div>
                     <div className="flex gap-2 mt-2">
@@ -381,8 +382,8 @@ export default function TenantBrandingPage() {
             <TabsContent value="typography" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Typography</CardTitle>
-                  <CardDescription>Choose Google Fonts for headings and body text. They are loaded dynamically per tenant.</CardDescription>
+                  <CardTitle><BilingualText en="Typography" el="Τυπογραφία" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Choose Google Fonts for headings and body text. They are loaded dynamically per tenant." el="Επιλέξτε Google Fonts για τίτλους και κείμενο. Φορτώνονται δυναμικά ανά οργανισμό." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {(['headingFont', 'bodyFont'] as const).map((key) => (
@@ -413,7 +414,7 @@ export default function TenantBrandingPage() {
                     </div>
                   ))}
                   <div className="rounded-lg border p-5">
-                    <p className="text-xs text-muted-foreground mb-3">Preview</p>
+                    <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Preview" el="Προεπισκόπηση" compact /></p>
                     <p className="text-2xl font-bold mb-1" style={{ fontFamily: form.headingFont ?? 'Inter' }}>
                       {activeTenant?.displayName ?? activeTenant?.name ?? 'Organization Name'}
                     </p>
@@ -429,13 +430,13 @@ export default function TenantBrandingPage() {
             <TabsContent value="assets" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Media Assets</CardTitle>
-                  <CardDescription>Provide URLs for your logo, favicon, and hero image. Use a CDN or image hosting service.</CardDescription>
+                  <CardTitle><BilingualText en="Media Assets" el="Αρχεία πολυμέσων" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Provide URLs for your logo, favicon, and hero image. Use a CDN or image hosting service." el="Δώστε URL για το λογότυπο, το favicon και την κεντρική εικόνα. Χρησιμοποιήστε CDN ή υπηρεσία φιλοξενίας εικόνων." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   {/* Logo Upload */}
                   <div className="space-y-3">
-                    <Label>Organization Logo</Label>
+                    <Label><BilingualText en="Organization Logo" el="Λογότυπο οργανισμού" compact /></Label>
                     <div className="flex items-start gap-4">
                       <ImageCropperTrigger
                         cropShape="rect"
@@ -476,14 +477,14 @@ export default function TenantBrandingPage() {
                           placeholder="https://..."
                           className="mb-1"
                         />
-                        <p className="text-xs text-muted-foreground">Click to crop & upload, or paste URL. Recommended: 400×200px, transparent PNG.</p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en="Click to crop & upload, or paste URL. Recommended: 400×200px, transparent PNG." el="Πατήστε για περικοπή & μεταφόρτωση ή επικολλήστε URL. Προτείνεται: 400×200px, διαφανές PNG." wrap /></p>
                       </div>
                     </div>
                   </div>
 
                   {/* Favicon Upload */}
                   <div className="space-y-3">
-                    <Label>Favicon</Label>
+                    <Label><BilingualText en="Favicon" el="Favicon" compact /></Label>
                     <div className="flex items-start gap-4">
                       <ImageCropperTrigger
                         cropShape="circle"
@@ -524,7 +525,7 @@ export default function TenantBrandingPage() {
                           placeholder="https://..."
                           className="mb-1"
                         />
-                        <p className="text-xs text-muted-foreground">Click to crop & upload, or paste URL. 64×64px, square format.</p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en="Click to crop & upload, or paste URL. 64×64px, square format." el="Πατήστε για περικοπή & μεταφόρτωση ή επικολλήστε URL. 64×64px, τετράγωνο." wrap /></p>
                       </div>
                     </div>
                   </div>
@@ -559,13 +560,13 @@ export default function TenantBrandingPage() {
             <TabsContent value="content" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Landing Page Content</CardTitle>
+                  <CardTitle><BilingualText en="Landing Page Content" el="Περιεχόμενο αρχικής σελίδας" compact /></CardTitle>
                   <CardDescription>Text shown on the public tenant landing page at /t/{'{slug}'}.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Hero Title</Label>
+                      <Label><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></Label>
                       <Input
                         value={form.heroTitle ?? ''}
                         onChange={(e) => setField('heroTitle', e.target.value)}
@@ -573,7 +574,7 @@ export default function TenantBrandingPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Hero Subtitle</Label>
+                      <Label><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></Label>
                       <Input
                         value={form.heroSubtitle ?? ''}
                         onChange={(e) => setField('heroSubtitle', e.target.value)}
@@ -581,7 +582,7 @@ export default function TenantBrandingPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>CTA Button Label</Label>
+                      <Label><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></Label>
                       <Input
                         value={form.ctaLabel ?? ''}
                         onChange={(e) => setField('ctaLabel', e.target.value)}
@@ -589,7 +590,7 @@ export default function TenantBrandingPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>CTA Button URL</Label>
+                      <Label><BilingualText en="CTA Button URL" el="URL κουμπιού δράσης" compact /></Label>
                       <Input
                         value={form.ctaUrl ?? ''}
                         onChange={(e) => setField('ctaUrl', e.target.value)}
@@ -598,7 +599,7 @@ export default function TenantBrandingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>About Text</Label>
+                    <Label><BilingualText en="About Text" el="Κείμενο «Σχετικά»" compact /></Label>
                     <Textarea
                       rows={4}
                       value={form.aboutText ?? ''}
@@ -610,28 +611,28 @@ export default function TenantBrandingPage() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Platform Copy</CardTitle>
-                  <CardDescription>Customized text inside the platform for your members.</CardDescription>
+                  <CardTitle><BilingualText en="Platform Copy" el="Κείμενα πλατφόρμας" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Customized text inside the platform for your members." el="Προσαρμοσμένα κείμενα μέσα στην πλατφόρμα για τα μέλη σας." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Dashboard Welcome Message</Label>
+                    <Label><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></Label>
                     <Input
                       value={form.dashboardWelcomeText ?? ''}
                       onChange={(e) => setField('dashboardWelcomeText', e.target.value)}
                       placeholder="Welcome back! Continue building your network."
                     />
-                    <p className="text-xs text-muted-foreground">Shown on login page and dashboard header.</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Shown on login page and dashboard header." el="Εμφανίζεται στη σύνδεση και στην κεφαλίδα του πίνακα." wrap /></p>
                   </div>
                   <div className="space-y-2">
-                    <Label>Onboarding Introduction</Label>
+                    <Label><BilingualText en="Onboarding Introduction" el="Εισαγωγή ένταξης" compact /></Label>
                     <Textarea
                       rows={3}
                       value={form.onboardingIntroText ?? ''}
                       onChange={(e) => setField('onboardingIntroText', e.target.value)}
                       placeholder="Welcome to [Organization]! Let's set up your profile..."
                     />
-                    <p className="text-xs text-muted-foreground">Displayed at the start of the onboarding flow.</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Displayed at the start of the onboarding flow." el="Εμφανίζεται στην αρχή της ένταξης." wrap /></p>
                   </div>
                 </CardContent>
               </Card>
@@ -641,12 +642,12 @@ export default function TenantBrandingPage() {
             <TabsContent value="labels" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Custom Naming</CardTitle>
-                  <CardDescription>Override default platform terminology with organization-specific language.</CardDescription>
+                  <CardTitle><BilingualText en="Custom Naming" el="Προσαρμοσμένη ονοματολογία" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Override default platform terminology with organization-specific language." el="Αντικαταστήστε την ορολογία της πλατφόρμας με τη δική σας." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Community Naming</Label>
+                    <Label><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></Label>
                     <Input
                       value={form.communityNaming ?? ''}
                       onChange={(e) => setField('communityNaming', e.target.value)}
@@ -658,8 +659,8 @@ export default function TenantBrandingPage() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Role Labels</CardTitle>
-                  <CardDescription>Customize how user roles are displayed to your members.</CardDescription>
+                  <CardTitle><BilingualText en="Role Labels" el="Ετικέτες ρόλων" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Customize how user roles are displayed to your members." el="Προσαρμόστε πώς εμφανίζονται οι ρόλοι στα μέλη σας." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
@@ -687,7 +688,7 @@ export default function TenantBrandingPage() {
             <TabsContent value="legal" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact & Legal</CardTitle>
+                  <CardTitle><BilingualText en="Contact & Legal" el="Επικοινωνία & νομικά" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -712,7 +713,7 @@ export default function TenantBrandingPage() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Social Links</CardTitle>
+                  <CardTitle><BilingualText en="Social Links" el="Κοινωνικά δίκτυα" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -743,13 +744,13 @@ export default function TenantBrandingPage() {
             <TabsContent value="email" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Email Branding</CardTitle>
-                  <CardDescription>Customize how your organization appears in outgoing emails.</CardDescription>
+                  <CardTitle><BilingualText en="Email Branding" el="Εμφάνιση email" compact /></CardTitle>
+                  <CardDescription><BilingualText en="Customize how your organization appears in outgoing emails." el="Προσαρμόστε πώς εμφανίζεται ο οργανισμός σας στα εξερχόμενα email." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Sender Name</Label>
+                      <Label><BilingualText en="Sender Name" el="Όνομα αποστολέα" compact /></Label>
                       <Input
                         value={form.emailFromName ?? ''}
                         onChange={(e) => setField('emailFromName', e.target.value)}
@@ -758,7 +759,7 @@ export default function TenantBrandingPage() {
                       <p className="text-xs text-muted-foreground">Shown as "From" in emails.</p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Email Logo URL</Label>
+                      <Label><BilingualText en="Email Logo URL" el="URL λογοτύπου email" compact /></Label>
                       <Input
                         value={form.emailLogoUrl ?? ''}
                         onChange={(e) => setField('emailLogoUrl', e.target.value)}
@@ -767,7 +768,7 @@ export default function TenantBrandingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Email Footer Text</Label>
+                    <Label><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></Label>
                     <Textarea
                       rows={2}
                       value={form.emailFooterText ?? ''}
@@ -776,7 +777,7 @@ export default function TenantBrandingPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Email Signature</Label>
+                    <Label><BilingualText en="Email Signature" el="Υπογραφή email" compact /></Label>
                     <Textarea
                       rows={3}
                       value={form.emailSignature ?? ''}
@@ -792,15 +793,15 @@ export default function TenantBrandingPage() {
             <TabsContent value="publish" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Publish Branding</CardTitle>
+                  <CardTitle><BilingualText en="Publish Branding" el="Δημοσίευση εμφάνισης" compact /></CardTitle>
                   <CardDescription>
-                    When active, your branding is applied to all members who access the platform through your organization.
+                    <BilingualText en="When active, your branding is applied to all members who access the platform through your organization." el="Όταν είναι ενεργή, η εμφάνισή σας εφαρμόζεται σε όλα τα μέλη που μπαίνουν μέσω του οργανισμού σας." wrap />
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
-                      <p className="font-medium">Branding Status</p>
+                      <p className="font-medium"><BilingualText en="Branding Status" el="Κατάσταση εμφάνισης" compact /></p>
                       <p className="text-sm text-muted-foreground">
                         {branding?.isBrandingActive
                           ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}`
@@ -819,23 +820,23 @@ export default function TenantBrandingPage() {
                   </div>
 
                   <div className="rounded-lg border p-4 space-y-3">
-                    <p className="text-sm font-medium">Safeguards</p>
+                    <p className="text-sm font-medium"><BilingualText en="Safeguards" el="Δικλίδες" compact /></p>
                     <ul className="space-y-1.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <CheckCircle2 className={`icon-sm ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} />
-                        Primary color defined
+                        <BilingualText en="Primary color defined" el="Ορίστηκε κύριο χρώμα" compact />
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle2 className={`icon-sm ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} />
-                        Hero title set
+                        <BilingualText en="Hero title set" el="Ορίστηκε κεντρικός τίτλος" compact />
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle2 className={`icon-sm ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} />
-                        Support email configured
+                        <BilingualText en="Support email configured" el="Ορίστηκε email υποστήριξης" compact />
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle2 className={`icon-sm ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} />
-                        Legal links provided
+                        <BilingualText en="Legal links provided" el="Δόθηκαν νομικοί σύνδεσμοι" compact />
                       </li>
                     </ul>
                   </div>
@@ -843,7 +844,7 @@ export default function TenantBrandingPage() {
                   {tenantSlug && (
                     <Button variant="outline" className="w-full" onClick={handlePreview}>
                       <Eye className="mr-2 icon-sm" />
-                      Preview Public Landing Page
+                      <BilingualText en="Preview Public Landing Page" el="Προεπισκόπηση δημόσιας σελίδας" compact />
                       <ExternalLink className="ml-2 icon-sm opacity-60" />
                     </Button>
                   )}
@@ -865,7 +866,7 @@ export default function TenantBrandingPage() {
                         disabled={saveMutation.isPending || publishMutation.isPending}
                       >
                         <CheckCircle2 className="mr-2 icon-sm" />
-                        Save & Publish
+                        <BilingualText en="Save & Publish" el="Αποθήκευση & δημοσίευση" compact />
                       </Button>
                     )}
                   </div>

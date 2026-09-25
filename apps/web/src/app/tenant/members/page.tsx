@@ -55,6 +55,7 @@ import {
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * The page's own row from the tenant membership row.
@@ -112,7 +113,7 @@ function EngagementBar({ score }: { score: number }) {
   return (
     <div className="space-y-0.5">
       <div className="flex justify-between text-2xs text-muted-foreground">
-        <span>Engagement</span>
+        <span><BilingualText en="Engagement" el="Συμμετοχή" compact /></span>
         <span className="tabular-nums">{score}%</span>
       </div>
       <div className="h-1 rounded-full bg-secondary overflow-hidden">
@@ -166,14 +167,14 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
                       /tenants/:id/members/:userId exist. */}
                   {member.userId ? (
                     <DropdownMenuItem asChild>
-                      <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</Link>
+                      <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
+                    <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <p className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground">
-                    <Shield className="icon-sm" aria-hidden="true" />Change Role
+                    <Shield className="icon-sm" aria-hidden="true" /><BilingualText en="Change Role" el="Αλλαγή ρόλου" compact />
                   </p>
                   {TENANT_ROLES.map((r) => (
                     <DropdownMenuItem
@@ -187,7 +188,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive-accessible" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
-                    <UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member
+                    <UserX className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -225,12 +226,12 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-primary-accessible" /> Invite Members
+            <Send className="icon-md text-primary-accessible" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Email addresses</label>
+            <label className="text-sm font-medium"><BilingualText en="Email addresses" el="Διευθύνσεις email" compact /></label>
             <Textarea
               placeholder="john@startup.com, jane@venture.com (one per line or comma-separated)"
               value={emails}
@@ -240,19 +241,19 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Assign role</label>
+            <label className="text-sm font-medium"><BilingualText en="Assign role" el="Ανάθεση ρόλου" compact /></label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger aria-label="Assign role"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="founder">Founder</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
-                <SelectItem value="investor">Investor</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="founder"><BilingualText en="Founder" el="Ιδρυτής" compact /></SelectItem>
+                <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
+                <SelectItem value="investor"><BilingualText en="Investor" el="Επενδυτής" compact /></SelectItem>
+                <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Or share invite link</p>
+            <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Or share invite link" el="Ή μοιραστείτε σύνδεσμο πρόσκλησης" compact /></p>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
@@ -263,9 +264,9 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button className="gap-1.5" disabled={!emails.trim()}>
-            <Send className="icon-sm" /> Send Invites
+            <Send className="icon-sm" /> <BilingualText en="Send Invites" el="Αποστολή προσκλήσεων" compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -421,7 +422,7 @@ export default function TenantMembersPage() {
       description="Manage and track your organization's member engagement"
       actions={
         <Button onClick={() => setShowInvite(true)} className="gap-1.5">
-          <Plus className="icon-sm" /> Invite Member
+          <Plus className="icon-sm" /> <BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact />
         </Button>
       }
     >
@@ -460,10 +461,10 @@ export default function TenantMembersPage() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="suspended">Suspended</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+              <SelectItem value="active"><BilingualText en="Active" el="Ενεργό" compact /></SelectItem>
+              <SelectItem value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /></SelectItem>
+              <SelectItem value="suspended"><BilingualText en="Suspended" el="Σε αναστολή" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>

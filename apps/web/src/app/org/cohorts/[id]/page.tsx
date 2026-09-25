@@ -762,22 +762,22 @@ export default function CohortDetailPage() {
         <TabsContent value="participants">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>All Participants</CardTitle>
+              <CardTitle><BilingualText en="All Participants" el="Όλοι οι συμμετέχοντες" compact /></CardTitle>
               <Button size="sm" disabled title="Cohort membership is managed by platform administrators for now">
                 <Users className="icon-sm mr-2" aria-hidden="true" />
-                Add Participant
+                <BilingualText en="Add Participant" el="Προσθήκη συμμετέχοντα" compact />
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Join Date</TableHead>
-                    <TableHead>Progress</TableHead>
+                    <TableHead><BilingualText en="Name" el="Όνομα" compact /></TableHead>
+                    <TableHead><BilingualText en="Role" el="Ρόλος" compact /></TableHead>
+                    <TableHead><BilingualText en="Status" el="Κατάσταση" compact /></TableHead>
+                    <TableHead><BilingualText en="Location" el="Τοποθεσία" compact /></TableHead>
+                    <TableHead><BilingualText en="Join Date" el="Ημερομηνία ένταξης" compact /></TableHead>
+                    <TableHead><BilingualText en="Progress" el="Πρόοδος" compact /></TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -813,7 +813,7 @@ export default function CohortDetailPage() {
                             <span className="text-xs">{participant.progress}%</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">N/A</span>
+                          <span className="text-xs text-muted-foreground"><BilingualText en="N/A" el="—" compact /></span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -828,10 +828,10 @@ export default function CohortDetailPage() {
                                 user id (toParticipant), so profile and thread
                                 are addressable; progress is the row itself. */}
                             <DropdownMenuItem asChild>
-                              <Link href={`/profiles/${participant.id}`}>View Profile</Link>
+                              <Link href={`/profiles/${participant.id}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/messages?to=${participant.id}`}>Send Message</Link>
+                              <Link href={`/messages?to=${participant.id}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
                             </DropdownMenuItem>
                             <UnavailableMenuItem
                               en="View Progress"
@@ -853,11 +853,11 @@ export default function CohortDetailPage() {
         <TabsContent value="matches">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Matches</CardTitle>
+              <CardTitle><BilingualText en="Matches" el="Αντιστοιχίσεις" compact /></CardTitle>
               <Button size="sm" asChild>
                 <Link href="/matches">
                   <Target className="icon-sm mr-2" aria-hidden="true" />
-                  Generate Matches
+                  <BilingualText en="Generate Matches" el="Δημιουργία αντιστοιχίσεων" compact />
                 </Link>
               </Button>
             </CardHeader>
@@ -899,7 +899,7 @@ export default function CohortDetailPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary-accessible">{match.matchScore}%</div>
-                        <div className="text-xs text-muted-foreground">Match Score</div>
+                        <div className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></div>
                       </div>
                       {getStatusBadge(match.status)}
                     </div>
@@ -917,7 +917,7 @@ export default function CohortDetailPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Sessions
+                    <BilingualText en="Total Sessions" el="Συνολικές συνεδρίες" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -927,7 +927,7 @@ export default function CohortDetailPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Upcoming
+                    <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -937,7 +937,7 @@ export default function CohortDetailPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Completion Rate
+                    <BilingualText en="Completion Rate" el="Ποσοστό ολοκλήρωσης" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -947,7 +947,7 @@ export default function CohortDetailPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Avg. Rating
+                    <BilingualText en="Avg. Rating" el="Μέση βαθμολογία" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -962,11 +962,11 @@ export default function CohortDetailPage() {
             {/* Sessions List */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>All Sessions</CardTitle>
+                <CardTitle><BilingualText en="All Sessions" el="Όλες οι συνεδρίες" compact /></CardTitle>
                 <Button size="sm" asChild>
                   <Link href="/mentor/sessions?new=1">
                     <Calendar className="icon-sm mr-2" aria-hidden="true" />
-                    Schedule Session
+                    <BilingualText en="Schedule Session" el="Προγραμματισμός συνεδρίας" compact />
                   </Link>
                 </Button>
               </CardHeader>
@@ -974,13 +974,13 @@ export default function CohortDetailPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Mentor</TableHead>
-                      <TableHead>Mentee</TableHead>
-                      <TableHead>Topic</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Rating</TableHead>
+                      <TableHead><BilingualText en="Mentor" el="Μέντορας" compact /></TableHead>
+                      <TableHead><BilingualText en="Mentee" el="Μαθητευόμενος" compact /></TableHead>
+                      <TableHead><BilingualText en="Topic" el="Θέμα" compact /></TableHead>
+                      <TableHead><BilingualText en="Date" el="Ημερομηνία" compact /></TableHead>
+                      <TableHead><BilingualText en="Duration" el="Διάρκεια" compact /></TableHead>
+                      <TableHead><BilingualText en="Status" el="Κατάσταση" compact /></TableHead>
+                      <TableHead><BilingualText en="Rating" el="Βαθμολογία" compact /></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

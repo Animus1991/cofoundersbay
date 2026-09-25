@@ -338,13 +338,13 @@ function MatchListRow({
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <button onClick={onBreakdown}
               className="flex min-h-10 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
-              <BarChart3 className="icon-sm" /> Breakdown
+              <BarChart3 className="icon-sm" /> <BilingualText en="Breakdown" el="Ανάλυση" compact />
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-10 gap-1.5 px-3 text-xs">
-              <MessageCircle className="icon-sm" /> Message
+              <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
             <Button size="sm" onClick={onConnect} className="h-10 gap-1.5 px-3 text-xs">
-              <Heart className="icon-sm" /> Connect
+              <Heart className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
             </Button>
           </div>
         </div>
@@ -381,7 +381,7 @@ function MatchPreviewPanel({
       <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border/60 bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
-          <p className="text-sm font-semibold">Profile Preview</p>
+          <p className="text-sm font-semibold"><BilingualText en="Profile Preview" el="Προεπισκόπηση προφίλ" compact /></p>
           <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
             <X className="icon-sm" />
           </button>
@@ -430,7 +430,7 @@ function MatchPreviewPanel({
           {/* Skills */}
           {(hit.skillNames ?? []).length > 0 && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Skills" el="Δεξιότητες" compact /></p>
               <div className="flex flex-wrap gap-1.5">
                 {(hit.skillNames ?? []).map(s => <SkillChip key={s} label={s} size="sm" />)}
               </div>
@@ -440,7 +440,7 @@ function MatchPreviewPanel({
           {/* Match reasons */}
           {matchReasons.length > 0 && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Why you match" el="Γιατί ταιριάζετε" compact /></p>
               <div className="space-y-1.5">
                 {matchReasons.map((r, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
@@ -456,10 +456,10 @@ function MatchPreviewPanel({
           <div className="space-y-2 pt-2 border-t border-border/40">
             <div className="flex gap-2">
               <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
-                <UserPlus className="icon-sm" /> Connect
+                <UserPlus className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
               </Button>
               <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
-                <MessageCircle className="icon-sm" /> Message
+                <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
               </Button>
             </div>
             <div className="flex gap-2">
@@ -468,15 +468,15 @@ function MatchPreviewPanel({
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
               <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive-accessible" onClick={onPass}>
-                <X className="icon-sm" /> Pass
+                <X className="icon-sm" /> <BilingualText en="Pass" el="Παράλειψη" compact />
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
-              <BarChart3 className="icon-sm" /> View breakdown
+              <BarChart3 className="icon-sm" /> <BilingualText en="View breakdown" el="Προβολή ανάλυσης" compact />
             </Button>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" asChild>
               <Link href={`/profiles/${hit.userId}`}>
-                <ArrowRight className="icon-sm" /> Full profile
+                <ArrowRight className="icon-sm" /> <BilingualText en="Full profile" el="Πλήρες προφίλ" compact />
               </Link>
             </Button>
           </div>
@@ -1018,11 +1018,11 @@ export default function MatchesPage() {
             <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               {lastPassed && (
                 <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground">
-                  <RotateCcw className="icon-sm" /> Undo
+                  <RotateCcw className="icon-sm" /> <BilingualText en="Undo" el="Αναίρεση" compact />
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => setActiveFilter('excellent')} className="gap-1.5 h-8 text-xs">
-                View <ChevronRight className="icon-sm" />
+                <BilingualText en="View" el="Προβολή" compact /> <ChevronRight className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -1094,7 +1094,7 @@ export default function MatchesPage() {
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     title="Select mode">
                     <CheckSquare className="icon-sm" />
-                    <span className="hidden sm:inline">Select</span>
+                    <span className="hidden sm:inline"><BilingualText en="Select" el="Επιλογή" compact /></span>
                     {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
                   </button>
 
@@ -1124,7 +1124,7 @@ export default function MatchesPage() {
                   {lastPassed && (
                     <Button size="sm" variant="ghost" onClick={handleUndoPass} aria-label="Undo the last pass" className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
                       <RotateCcw className="icon-sm" aria-hidden="true" />
-                      <span className="hidden sm:inline">Undo</span>
+                      <span className="hidden sm:inline"><BilingualText en="Undo" el="Αναίρεση" compact /></span>
                     </Button>
                   )}
                 </div>
@@ -1139,7 +1139,7 @@ export default function MatchesPage() {
                   {nameSearch && (
                     <button onClick={() => setNameSearch('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">
-                      Clear
+                      <BilingualText en="Clear" el="Καθαρισμός" compact />
                     </button>
                   )}
                 </div>
@@ -1148,7 +1148,11 @@ export default function MatchesPage() {
               {/* Active filter summary */}
               {hasActiveFilters && filtered.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {visible.length} matches
+                  <BilingualText
+                    en={`Showing ${filtered.length} of ${visible.length} matches`}
+                    el={`Εμφανίζονται ${filtered.length} από ${visible.length} αντιστοιχίσεις`}
+                    compact
+                  />
                   {nameSearch && ` · "${nameSearch}"`}
                 </p>
               )}
@@ -1158,10 +1162,10 @@ export default function MatchesPage() {
                 <Card className="shadow-sm border-border/50">
                   <CardContent className="py-12 text-center">
                     <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" aria-hidden="true" />
-                    <p className="font-medium text-foreground mb-1">No matches for these filters</p>
-                    <p className="text-sm text-muted-foreground mb-4">Try adjusting your tier, role, or location filter</p>
+                    <p className="font-medium text-foreground mb-1"><BilingualText en="No matches for these filters" el="Καμία αντιστοίχιση για αυτά τα φίλτρα" compact /></p>
+                    <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Try adjusting your tier, role, or location filter" el="Αλλάξτε το φίλτρο βαθμίδας, ρόλου ή τοποθεσίας" wrap /></p>
                     <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}>
-                      Clear all filters
+                      <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
                     </Button>
                   </CardContent>
                 </Card>
@@ -1240,7 +1244,7 @@ export default function MatchesPage() {
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
                   <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
                   <Link href="/discover" className="flex tap-target-y items-center gap-1 transition-colors hover:text-foreground">
-                    Explore more <ArrowRight className="icon-sm" />
+                    <BilingualText en="Explore more" el="Εξερευνήστε περισσότερα" compact /> <ArrowRight className="icon-sm" />
                   </Link>
                 </div>
               )}
@@ -1281,7 +1285,7 @@ export default function MatchesPage() {
               const ids = [...selectedIds].slice(0, 4).join(',');
               router.push(`/compare?ids=${ids}`);
             }}>
-            <BarChart3 className="icon-sm" /> Compare
+            <BarChart3 className="icon-sm" /> <BilingualText en="Compare" el="Σύγκριση" compact />
           </Button>
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive-accessible"
             onClick={() => {
@@ -1291,7 +1295,7 @@ export default function MatchesPage() {
               setSelectedIds(new Set());
               setSelectMode(false);
             }}>
-            <X className="icon-sm" /> Pass All
+            <X className="icon-sm" /> <BilingualText en="Pass All" el="Παράλειψη όλων" compact />
           </Button>
           <button aria-label="Exit selection" onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
             className="text-muted-foreground hover:text-foreground transition-colors ml-1">

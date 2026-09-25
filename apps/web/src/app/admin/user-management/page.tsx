@@ -416,13 +416,13 @@ export default function AdminUserManagementPage() {
       content: (
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
                 <SelectValue placeholder="All roles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All roles</SelectItem>
+                <SelectItem value="all"><BilingualText en="All roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
                 {ROLE_OPTIONS.map((r) => (
                   <SelectItem key={r.value} value={r.value}>{r.en}</SelectItem>
                 ))}
@@ -430,31 +430,31 @@ export default function AdminUserManagementPage() {
             </Select>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-                <SelectItem value="banned">Banned</SelectItem>
+                <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
+                <SelectItem value="active"><BilingualText en="Active" el="Ενεργός" compact /></SelectItem>
+                <SelectItem value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /></SelectItem>
+                <SelectItem value="suspended"><BilingualText en="Suspended" el="Σε αναστολή" compact /></SelectItem>
+                <SelectItem value="banned"><BilingualText en="Banned" el="Αποκλεισμένος" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sort by</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
               <SelectTrigger aria-label="Sort by" className="mt-2">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="createdAt">Created date</SelectItem>
-                <SelectItem value="lastActive">Last active</SelectItem>
+                <SelectItem value="name"><BilingualText en="Name" el="Όνομα" compact /></SelectItem>
+                <SelectItem value="email"><BilingualText en="Email" el="Email" compact /></SelectItem>
+                <SelectItem value="createdAt"><BilingualText en="Created date" el="Ημερομηνία δημιουργίας" compact /></SelectItem>
+                <SelectItem value="lastActive"><BilingualText en="Last active" el="Τελευταία δραστηριότητα" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -473,10 +473,10 @@ export default function AdminUserManagementPage() {
             <BilingualText en="Apply to the rows ticked in the table." el="Εφαρμογή στις επιλεγμένες γραμμές του πίνακα." compact wrap />
           </p>
           <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => void bulkAction('activate')}>
-            <CheckCircle2 className="icon-sm mr-2" /> Activate selected
+            <CheckCircle2 className="icon-sm mr-2" /> <BilingualText en="Activate selected" el="Ενεργοποίηση επιλεγμένων" compact />
           </Button>
           <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => void bulkAction('suspend')}>
-            <Ban className="icon-sm mr-2" /> Suspend selected
+            <Ban className="icon-sm mr-2" /> <BilingualText en="Suspend selected" el="Αναστολή επιλεγμένων" compact />
           </Button>
           {/*
             * "Delete selected" removed rows from a local array and said so
@@ -485,7 +485,7 @@ export default function AdminUserManagementPage() {
             * action the platform actually records.
             */}
           <Button variant="destructive" size="sm" className="w-full justify-start" onClick={() => void bulkAction('ban')}>
-            <Ban className="icon-sm mr-2" /> Ban selected
+            <Ban className="icon-sm mr-2" /> <BilingualText en="Ban selected" el="Αποκλεισμός επιλεγμένων" compact />
           </Button>
         </div>
       ),
@@ -709,7 +709,7 @@ export default function AdminUserManagementPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/admin/user-detail/${user.id}`}>Open full profile</Link>
+                          <Link href={`/admin/user-detail/${user.id}`}><BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact /></Link>
                         </DropdownMenuItem>
                         {/*
                           * Verification has no field on the model and no
@@ -720,20 +720,20 @@ export default function AdminUserManagementPage() {
                           {user.verified ? 'Remove verification' : 'Mark verified'}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => void updateStatus(user.id, 'active')}>
-                          <CheckCircle2 className="mr-2 icon-sm" /> Set active
+                          <CheckCircle2 className="mr-2 icon-sm" /> <BilingualText en="Set active" el="Ενεργοποίηση" compact />
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => void updateStatus(user.id, 'suspended')}>
-                          <Ban className="mr-2 icon-sm" /> Suspend
+                          <Ban className="mr-2 icon-sm" /> <BilingualText en="Suspend" el="Αναστολή" compact />
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => void updateRole(user.id, 'admin')}>
-                          <Shield className="mr-2 icon-sm" /> Make admin
+                          <Shield className="mr-2 icon-sm" /> <BilingualText en="Make admin" el="Ορισμός ως διαχειριστή" compact />
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive-accessible"
                           onClick={() => void updateStatus(user.id, 'banned')}
                         >
-                          <UserX className="mr-2 icon-sm" /> Ban user
+                          <UserX className="mr-2 icon-sm" /> <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -745,8 +745,8 @@ export default function AdminUserManagementPage() {
             {paginated.length === 0 && (
               <CardContent className="py-12 text-center">
                 <Users className="mx-auto icon-xl text-muted-foreground/40" />
-                <p className="mt-3 font-medium">No users match your filters</p>
-                <p className="text-sm text-muted-foreground">Clear search or change role/status filters.</p>
+                <p className="mt-3 font-medium"><BilingualText en="No users match your filters" el="Κανένας χρήστης δεν ταιριάζει με τα φίλτρα" compact /></p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Clear search or change role/status filters." el="Καθαρίστε την αναζήτηση ή αλλάξτε τα φίλτρα ρόλου/κατάστασης." wrap /></p>
               </CardContent>
             )}
           </Card>
@@ -779,24 +779,24 @@ export default function AdminUserManagementPage() {
                 <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[detailUser.status])}>
                   {detailUser.status}
                 </Badge>
-                {detailUser.verified && <Badge>Verified</Badge>}
+                {detailUser.verified && <Badge><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>}
               </div>
               <dl className="grid grid-cols-2 gap-2">
-                <dt className="text-muted-foreground">Created</dt>
+                <dt className="text-muted-foreground"><BilingualText en="Created" el="Δημιουργήθηκε" compact /></dt>
                 <dd>{detailUser.createdAt}</dd>
-                <dt className="text-muted-foreground">Last active</dt>
+                <dt className="text-muted-foreground"><BilingualText en="Last active" el="Τελευταία δραστηριότητα" compact /></dt>
                 <dd>{detailUser.lastActive}</dd>
-                <dt className="text-muted-foreground">Location</dt>
+                <dt className="text-muted-foreground"><BilingualText en="Location" el="Τοποθεσία" compact /></dt>
                 <dd>{detailUser.location ?? '—'}</dd>
-                <dt className="text-muted-foreground">Tenant</dt>
+                <dt className="text-muted-foreground"><BilingualText en="Tenant" el="Οργανισμός" compact /></dt>
                 <dd>{detailUser.tenant ?? 'Public'}</dd>
               </dl>
               <div className="flex gap-2 pt-2">
                 <Button asChild size="sm">
-                  <Link href={`/admin/user-detail/${detailUser.id}`}>Full admin view</Link>
+                  <Link href={`/admin/user-detail/${detailUser.id}`}><BilingualText en="Full admin view" el="Πλήρης προβολή διαχείρισης" compact /></Link>
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setDetailUser(null)}>
-                  Close
+                  <BilingualText en="Close" el="Κλείσιμο" compact />
                 </Button>
               </div>
             </div>

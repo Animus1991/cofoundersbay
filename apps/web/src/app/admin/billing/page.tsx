@@ -81,7 +81,7 @@ function SubRow({
       </div>
       <div className="flex gap-1 shrink-0">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onOverride(sub)}>
-          <Settings className="icon-sm mr-1" aria-hidden="true" />Override
+          <Settings className="icon-sm mr-1" aria-hidden="true" /><BilingualText en="Override" el="Παράκαμψη" compact />
         </Button>
         {sub.status === 'trialing' && (
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onExtendTrial(sub.id)}>
@@ -90,7 +90,7 @@ function SubRow({
         )}
         {sub.status !== 'canceled' && (
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={() => onCancel(sub.id, false)}>
-            <XCircle className="icon-sm mr-1" />Cancel
+            <XCircle className="icon-sm mr-1" /><BilingualText en="Cancel" el="Ακύρωση" compact />
           </Button>
         )}
       </div>
@@ -353,11 +353,11 @@ export default function AdminBillingPage() {
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_STATUSES}>All statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="trialing">Trialing</SelectItem>
-            <SelectItem value="past_due">Past due</SelectItem>
-            <SelectItem value="canceled">Canceled</SelectItem>
+            <SelectItem value={ALL_STATUSES}><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
+            <SelectItem value="active"><BilingualText en="Active" el="Ενεργή" compact /></SelectItem>
+            <SelectItem value="trialing"><BilingualText en="Trialing" el="Σε δοκιμή" compact /></SelectItem>
+            <SelectItem value="past_due"><BilingualText en="Past due" el="Ληξιπρόθεσμη" compact /></SelectItem>
+            <SelectItem value="canceled"><BilingualText en="Canceled" el="Ακυρωμένη" compact /></SelectItem>
           </SelectContent>
         </Select>
       ),
@@ -387,10 +387,10 @@ export default function AdminBillingPage() {
         <Tabs value={tab} onValueChange={setTab}>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <TabsList>
-              <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
-              <TabsTrigger value="plans">Plans</TabsTrigger>
-              <TabsTrigger value="coupons">Coupons</TabsTrigger>
+              <TabsTrigger value="subscriptions"><BilingualText en="Subscriptions" el="Συνδρομές" compact /></TabsTrigger>
+              <TabsTrigger value="invoices"><BilingualText en="Invoices" el="Τιμολόγια" compact /></TabsTrigger>
+              <TabsTrigger value="plans"><BilingualText en="Plans" el="Πλάνα" compact /></TabsTrigger>
+              <TabsTrigger value="coupons"><BilingualText en="Coupons" el="Κουπόνια" compact /></TabsTrigger>
             </TabsList>
             <div className="flex gap-2 sm:ml-auto">
               <div className="relative">
@@ -412,7 +412,7 @@ export default function AdminBillingPage() {
                 {subsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : subs.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No subscriptions found</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {subs.map(sub => (
@@ -438,7 +438,7 @@ export default function AdminBillingPage() {
                 {invoicesLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : invoices.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No invoices found</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No invoices found" el="Δεν βρέθηκαν τιμολόγια" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {invoices.map(inv => <InvRow key={inv.id} inv={inv} />)}
@@ -453,15 +453,15 @@ export default function AdminBillingPage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Billing Plans</CardTitle>
-                  <p className="text-xs text-muted-foreground">Edit plan details via the API or admin actions.</p>
+                  <CardTitle className="text-base"><BilingualText en="Billing Plans" el="Πλάνα χρέωσης" compact /></CardTitle>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Edit plan details via the API or admin actions." el="Επεξεργαστείτε τα πλάνα μέσω API ή ενεργειών διαχείρισης." wrap /></p>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {statsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : plans.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No plans configured</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No plans configured" el="Δεν έχουν οριστεί πλάνα" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {plans.map(plan => (
@@ -473,8 +473,8 @@ export default function AdminBillingPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{plan.displayName}</span>
                             <Badge variant="outline" className="text-xs capitalize">{plan.planType.replace('_', ' ')}</Badge>
-                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground">Inactive</Badge>}
-                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-muted-foreground">Private</Badge>}
+                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
+                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {formatCents(plan.priceMonthly)}/mo · {formatCents(plan.priceAnnual)}/yr
@@ -499,14 +499,14 @@ export default function AdminBillingPage() {
             <div className="flex justify-end">
               <Button size="sm" className="gap-2" onClick={() => setShowCouponForm(!showCouponForm)}>
                 <Plus className="icon-sm" />
-                New coupon
+                <BilingualText en="New coupon" el="Νέο κουπόνι" compact />
               </Button>
             </div>
 
             {showCouponForm && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Create coupon</CardTitle>
+                  <CardTitle className="text-sm"><BilingualText en="Create coupon" el="Δημιουργία κουπονιού" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
@@ -519,14 +519,14 @@ export default function AdminBillingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Discount type</Label>
+                      <Label className="text-xs"><BilingualText en="Discount type" el="Τύπος έκπτωσης" compact /></Label>
                       <Select value={couponForm.discountType} onValueChange={v => setCouponForm(p => ({ ...p, discountType: v }))}>
                         <SelectTrigger aria-label="Discount type" className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="percent">Percent</SelectItem>
-                          <SelectItem value="fixed">Fixed amount</SelectItem>
+                          <SelectItem value="percent"><BilingualText en="Percent" el="Ποσοστό" compact /></SelectItem>
+                          <SelectItem value="fixed"><BilingualText en="Fixed amount" el="Σταθερό ποσό" compact /></SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -539,7 +539,7 @@ export default function AdminBillingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Max redemptions (optional)</Label>
+                      <Label className="text-xs"><BilingualText en="Max redemptions (optional)" el="Μέγιστες χρήσεις (προαιρετικά)" compact /></Label>
                       <Input
                         type="number"
                         placeholder="Unlimited"
@@ -553,7 +553,7 @@ export default function AdminBillingPage() {
                       {savingCoupon && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                       Create
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}>Cancel</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                   </div>
                 </CardContent>
               </Card>
@@ -564,7 +564,7 @@ export default function AdminBillingPage() {
                 {couponsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : coupons.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No coupons yet</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No coupons yet" el="Δεν υπάρχουν κουπόνια ακόμα" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {coupons.map(coupon => (
@@ -575,7 +575,7 @@ export default function AdminBillingPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-mono font-semibold">{coupon.code}</span>
-                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground">Inactive</Badge>}
+                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·
@@ -607,12 +607,12 @@ export default function AdminBillingPage() {
       <Dialog open={Boolean(overrideTarget)} onOpenChange={open => !open && setOverrideTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Override Subscription Plan</DialogTitle>
+            <DialogTitle><BilingualText en="Override Subscription Plan" el="Παράκαμψη πλάνου συνδρομής" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">Select a new plan to apply immediately. This bypasses payment.</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="Select a new plan to apply immediately. This bypasses payment." el="Επιλέξτε νέο πλάνο που εφαρμόζεται αμέσως, χωρίς πληρωμή." wrap /></p>
             <div className="space-y-1.5">
-              <Label className="text-xs">New plan</Label>
+              <Label className="text-xs"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>
                 <SelectTrigger aria-label="New plan">
                   <SelectValue placeholder="Select plan" />
@@ -626,7 +626,7 @@ export default function AdminBillingPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOverrideTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setOverrideTarget(null)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button onClick={() => applyOverride()} disabled={overriding || !overridePlanId}>
               {overriding && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
               Apply override

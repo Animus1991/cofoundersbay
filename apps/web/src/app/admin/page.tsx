@@ -156,7 +156,7 @@ function EmailTemplatesTab() {
         {/* Template list */}
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Templates</CardTitle>
+            <CardTitle className="text-sm font-semibold"><BilingualText en="Templates" el="Πρότυπα" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {listLoading ? (
@@ -224,7 +224,7 @@ function EmailTemplatesTab() {
             {!selectedId && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Mail className="icon-lg text-muted-foreground mb-3" aria-hidden="true" />
-                <p className="text-sm text-muted-foreground">Select a template to preview it</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Select a template to preview it" el="Επιλέξτε πρότυπο για προεπισκόπηση" compact /></p>
               </div>
             )}
             {selectedId && previewLoading && (
@@ -310,22 +310,22 @@ function ReportCard({
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${report.reported.id}`}>
                     <Eye className="icon-sm mr-2" aria-hidden="true" />
-                    View profile
+                    <BilingualText en="View profile" el="Προβολή προφίλ" compact />
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onResolve} className="text-emerald-400">
                   <CheckCircle className="icon-sm mr-2" aria-hidden="true" />
-                  Resolve
+                  <BilingualText en="Resolve" el="Επίλυση" compact />
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDismiss}>
                   <XCircle className="icon-sm mr-2" aria-hidden="true" />
-                  Dismiss
+                  <BilingualText en="Dismiss" el="Απόρριψη" compact />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onBanUser} className="text-destructive-accessible">
                   <Ban className="icon-sm mr-2" />
-                  Ban user
+                  <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -339,10 +339,10 @@ function ReportCard({
         {report.status === 'pending' && (
           <div className="mt-4 flex items-center gap-2">
             <Button size="sm" variant="secondary" onClick={onDismiss} disabled={isActing}>
-              Dismiss
+              <BilingualText en="Dismiss" el="Απόρριψη" compact />
             </Button>
             <Button size="sm" onClick={onResolve} disabled={isActing}>
-              Resolve
+              <BilingualText en="Resolve" el="Επίλυση" compact />
             </Button>
           </div>
         )}
@@ -404,7 +404,7 @@ function UserRow({
       <div className="hidden text-right md:block">
         <p className="text-sm text-foreground">{user.reportsCount} reports</p>
         <p className="text-xs text-muted-foreground">
-          Joined <RelativeTime date={user.createdAt} format={formatTimeAgo} />
+          <BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={user.createdAt} format={formatTimeAgo} />
         </p>
       </div>
       <DropdownMenu>
@@ -417,32 +417,32 @@ function UserRow({
           <DropdownMenuItem asChild>
             <Link href={`/profiles/${user.id}`}>
               <Eye className="mr-2 icon-sm" aria-hidden="true" />
-              View profile
+              <BilingualText en="View profile" el="Προβολή προφίλ" compact />
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
             <DropdownMenuItem onClick={onSuspend} className="text-status-warning ">
               <AlertTriangle className="mr-2 icon-sm" />
-              Suspend
+              <BilingualText en="Suspend" el="Αναστολή" compact />
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
             <DropdownMenuItem onClick={onActivate} className="text-status-success ">
               <CheckCircle className="mr-2 icon-sm" />
-              Reactivate
+              <BilingualText en="Reactivate" el="Επανενεργοποίηση" compact />
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
             <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
               <Ban className="mr-2 icon-sm" />
-              Ban permanently
+              <BilingualText en="Ban permanently" el="Οριστικός αποκλεισμός" compact />
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
             <DropdownMenuItem onClick={onActivate} className="text-status-success ">
               <CheckCircle className="mr-2 icon-sm" />
-              Unban
+              <BilingualText en="Unban" el="Άρση αποκλεισμού" compact />
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -904,8 +904,8 @@ export default function AdminPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Shield className="mx-auto mb-4 h-12 w-12 text-emerald-400" aria-hidden="true" />
-                <h3 className="text-lg font-semibold text-foreground">All clear!</h3>
-                <p className="text-sm text-muted-foreground">No pending reports to review</p>
+                <h3 className="text-lg font-semibold text-foreground"><BilingualText en="All clear!" el="Όλα καθαρά!" compact /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="No pending reports to review" el="Δεν υπάρχουν αναφορές για έλεγχο" compact /></p>
               </CardContent>
             </Card>
           ) : (
@@ -939,7 +939,7 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-base">User Management</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="User Management" el="Διαχείριση χρηστών" compact /></CardTitle>
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
@@ -963,7 +963,7 @@ export default function AdminPage() {
                   </div>
                 ))
               ) : filteredUsers.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">No users found</div>
+                <div className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact /></div>
               ) : (
                 filteredUsers.map((user) => (
                   <UserRow
@@ -987,10 +987,10 @@ export default function AdminPage() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="icon-sm text-muted-foreground" />
-                Events
+                <BilingualText en="Events" el="Εκδηλώσεις" compact />
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchEvents()}>
-                <RefreshCw className="icon-sm mr-1.5" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> <BilingualText en="Refresh" el="Ανανέωση" compact />
               </Button>
             </div>
             {eventsLoading ? (
@@ -1001,9 +1001,9 @@ export default function AdminPage() {
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load events." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." compact /> <button className="underline" onClick={() => void refetchEvents()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No events found</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No events found" el="Δεν βρέθηκαν εκδηλώσεις" compact /></CardContent></Card>
             ) : (
               <Card>
                 <CardContent className="p-0">
@@ -1028,7 +1028,7 @@ export default function AdminPage() {
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="icon-sm mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> <BilingualText en="Remove" el="Αφαίρεση" compact />
                         </Button>
                       </div>
                     </div>
@@ -1043,10 +1043,10 @@ export default function AdminPage() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <Briefcase className="icon-sm text-muted-foreground" />
-                Job Postings
+                <BilingualText en="Job Postings" el="Αγγελίες θέσεων" compact />
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchJobs()}>
-                <RefreshCw className="icon-sm mr-1.5" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> <BilingualText en="Refresh" el="Ανανέωση" compact />
               </Button>
             </div>
             {jobsLoading ? (
@@ -1057,9 +1057,9 @@ export default function AdminPage() {
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load jobs." el="Δεν ήταν δυνατή η φόρτωση των θέσεων." compact /> <button className="underline" onClick={() => void refetchJobs()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No job postings found</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No job postings found" el="Δεν βρέθηκαν αγγελίες" compact /></CardContent></Card>
             ) : (
               <Card>
                 <CardContent className="p-0">
@@ -1084,7 +1084,7 @@ export default function AdminPage() {
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="icon-sm mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> <BilingualText en="Remove" el="Αφαίρεση" compact />
                         </Button>
                       </div>
                     </div>
@@ -1109,14 +1109,14 @@ export default function AdminPage() {
             </div>
             <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
               <Plus className="icon-sm" />
-              New Cohort
+              <BilingualText en="New Cohort" el="Νέα κοορτή" compact />
             </Button>
           </div>
 
           {showNewCohort && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Create New Cohort / Program</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Create New Cohort / Program" el="Δημιουργία νέας κοορτής / προγράμματος" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1130,19 +1130,19 @@ export default function AdminPage() {
                     <Input placeholder="spring-2025" value={newCohort.slug} onChange={(e) => setNewCohort(p => ({ ...p, slug: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Start Date</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Start Date" el="Ημερομηνία έναρξης" compact /></label>
                     <Input type="date" value={newCohort.startDate} onChange={(e) => setNewCohort(p => ({ ...p, startDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">End Date</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="End Date" el="Ημερομηνία λήξης" compact /></label>
                     <Input type="date" value={newCohort.endDate} onChange={(e) => setNewCohort(p => ({ ...p, endDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Capacity</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></label>
                     <Input type="number" placeholder="50" value={newCohort.capacity} onChange={(e) => setNewCohort(p => ({ ...p, capacity: e.target.value }))} />
                   </div>
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-medium text-muted-foreground">Description</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
                     <Input placeholder="Short description…" value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
                   </div>
                 </div>
@@ -1158,7 +1158,7 @@ export default function AdminPage() {
                     })}>
                     {createCohortMutation.isPending ? 'Creating…' : 'Create'}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowNewCohort(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowNewCohort(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
               </CardContent>
             </Card>
@@ -1172,8 +1172,8 @@ export default function AdminPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-                <h3 className="font-semibold text-foreground">No cohorts yet</h3>
-                <p className="text-sm text-muted-foreground">Create your first cohort or program above</p>
+                <h3 className="font-semibold text-foreground"><BilingualText en="No cohorts yet" el="Δεν υπάρχουν κοορτές ακόμα" compact /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Create your first cohort or program above" el="Δημιουργήστε την πρώτη σας κοορτή ή πρόγραμμα παραπάνω" wrap /></p>
               </CardContent>
             </Card>
           ) : (
@@ -1226,7 +1226,7 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Users by Role</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="Users by Role" el="Χρήστες ανά ρόλο" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {stats?.usersByRole && Object.entries(stats.usersByRole).map(([role, count]) => (
@@ -1239,26 +1239,26 @@ export default function AdminPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">New Users</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="New Users" el="Νέοι χρήστες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">Today</span>
+                  <span className="text-sm text-foreground"><BilingualText en="Today" el="Σήμερα" compact /></span>
                   <Badge variant="secondary">{stats?.newUsersToday ?? 0}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">This Week</span>
+                  <span className="text-sm text-foreground"><BilingualText en="This Week" el="Αυτή την εβδομάδα" compact /></span>
                   <Badge variant="secondary">{stats?.newUsersThisWeek ?? 0}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">This Month</span>
+                  <span className="text-sm text-foreground"><BilingualText en="This Month" el="Αυτόν τον μήνα" compact /></span>
                   <Badge variant="secondary">{stats?.newUsersThisMonth ?? 0}</Badge>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="Active Users" el="Ενεργοί χρήστες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -1286,7 +1286,7 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Admin Audit Log</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Admin Audit Log" el="Αρχείο ενεργειών διαχείρισης" compact /></CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -1303,7 +1303,7 @@ export default function AdminPage() {
               ) : (auditData?.logs ?? []).length === 0 ? (
                 <div className="py-12 text-center">
                   <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-                  <p className="text-sm text-muted-foreground">No audit logs yet</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="No audit logs yet" el="Δεν υπάρχουν εγγραφές ακόμα" compact /></p>
                 </div>
               ) : (
                 (auditData?.logs ?? []).map((log) => (
