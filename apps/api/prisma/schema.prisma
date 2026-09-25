@@ -5565,6 +5565,7 @@ model UserFollow {
 enum DigestFrequency {
   daily
   weekly
+  monthly
   never
 }
 
