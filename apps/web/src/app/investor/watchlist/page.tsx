@@ -52,6 +52,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -303,19 +304,19 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link href={`/startups/${startup.id}`}>
-                        <Eye className="mr-2 icon-sm" /> View Details
+                        <Eye className="mr-2 icon-sm" /> <BilingualText en="View Details" el="Λεπτομέρειες" compact />
                       </Link>
                     </DropdownMenuItem>
                     {/* These four had no handler. A watched startup is a
                         deal at "discovered", so adding it to the pipeline
                         moves it to "reviewing" and removing it deletes it. */}
                     <DropdownMenuItem disabled={!live} onSelect={() => onPromote(startup)}>
-                      <ArrowUpRight className="mr-2 icon-sm" aria-hidden="true" /> Add to Pipeline
+                      <ArrowUpRight className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
                     </DropdownMenuItem>
                     {startup.founderId ? (
                       <DropdownMenuItem asChild>
                         <Link href={`/messages?to=${startup.founderId}`}>
-                          <MessageCircle className="mr-2 icon-sm" aria-hidden="true" /> Request Intro
+                          <MessageCircle className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Request Intro" el="Αίτημα γνωριμίας" compact />
                         </Link>
                       </DropdownMenuItem>
                     ) : (
@@ -335,7 +336,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
                       reasonEl="Η σύγκριση συμφωνιών δεν υπάρχει ακόμη."
                     />
                     <DropdownMenuItem className="text-destructive-accessible" disabled={!live} onSelect={() => onRemove(startup)}>
-                      <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> Remove from Watchlist
+                      <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Remove from Watchlist" el="Αφαίρεση από τη λίστα παρακολούθησης" compact />
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -355,7 +356,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
               {startup.readinessScore != null && (
               <div className="flex-1">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Readiness</span>
+                  <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
                   <div className="flex items-center gap-1">
                     <span className="font-medium">{startup.readinessScore}%</span>
                     {startup.progressChange !== 0 && (
@@ -374,7 +375,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
               )}
               {startup.matchScore != null && (
               <div className="text-right shrink-0">
-                <p className="text-xs text-muted-foreground">Match</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Match" el="Ταίριασμα" compact /></p>
                 <p className="text-sm font-bold text-primary-accessible">{startup.matchScore}%</p>
               </div>
               )}
@@ -394,7 +395,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
                 <RelativeTime date={startup.lastActivity} format={formatRelativeTime} />
               </span>
               <span className="text-xs text-muted-foreground">
-                Watching since <RelativeTime date={startup.watchedSince} format={formatRelativeTime} />
+                <BilingualText en="Watching since" el="Παρακολουθείται από" compact /> <RelativeTime date={startup.watchedSince} format={formatRelativeTime} />
               </span>
             </div>
           </div>
@@ -530,7 +531,7 @@ export default function InvestorWatchlistPage() {
             <Button variant="outline" size="sm" asChild>
               <Link href="/investor/scouting">
                 <Search className="mr-1.5 icon-sm" />
-                Scout More
+                <BilingualText en="Scout More" el="Αναζήτηση περισσότερων" compact />
               </Link>
             </Button>
           </div>
@@ -589,7 +590,7 @@ export default function InvestorWatchlistPage() {
               {/* "Filter" had no handler; alerts are the watchlist's own facet. */}
               <Button variant={alertsOnly ? 'default' : 'outline'} size="sm" aria-pressed={alertsOnly} onClick={() => setAlertsOnly((v) => !v)}>
                 <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
-                Alerts on only
+                <BilingualText en="Alerts on only" el="Μόνο με ειδοποιήσεις" compact />
               </Button>
               {selectedIds.size > 0 && (
                 <Button variant="outline" size="sm" asChild>
@@ -609,12 +610,12 @@ export default function InvestorWatchlistPage() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Eye className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                    <h3 className="font-medium">No results</h3>
+                    <h3 className="font-medium"><BilingualText en="No results" el="Κανένα αποτέλεσμα" compact /></h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       {search ? 'No startups match your search' : 'Add startups from the scouting feed'}
                     </p>
                     <Button size="sm" className="mt-4" asChild>
-                      <Link href="/investor/scouting">Scout Startups</Link>
+                      <Link href="/investor/scouting"><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link>
                     </Button>
                   </CardContent>
                 </Card>

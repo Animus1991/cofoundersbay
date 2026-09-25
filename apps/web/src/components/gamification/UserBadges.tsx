@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface BadgeItem {
   id: string;
@@ -233,22 +234,22 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="icon-md text-primary-accessible" />
-                Achievements & Badges
+                <BilingualText en="Achievements & Badges" el="Επιτεύγματα & διακρίσεις" compact />
               </CardTitle>
               <CardDescription>
-                Unlock badges by engaging with the community
+                <BilingualText en="Unlock badges by engaging with the community" el="Κερδίστε διακρίσεις συμμετέχοντας στην κοινότητα" wrap />
               </CardDescription>
             </div>
             <div className="text-right">
               <div className="text-xl font-bold">{earnedCount}/{totalCount}</div>
-              <div className="text-sm text-muted-foreground">Badges Earned</div>
+              <div className="text-sm text-muted-foreground"><BilingualText en="Badges Earned" el="Διακρίσεις" compact /></div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Overall Progress</span>
+              <span className="text-muted-foreground"><BilingualText en="Overall Progress" el="Συνολική πρόοδος" compact /></span>
               <span className="font-medium">{completionPercentage.toFixed(0)}%</span>
             </div>
             <Progress value={completionPercentage} className="h-2" />
@@ -259,22 +260,22 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
       {/* Badges Grid */}
       <Tabs defaultValue="all" onValueChange={setSelectedCategory}>
         <TabsList className="w-full lg:grid lg:grid-cols-5">
-          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /></TabsTrigger>
           <TabsTrigger value="engagement">
             <MessageCircle className="icon-sm mr-1" />
-            Engage
+            <BilingualText en="Engage" el="Συμμετοχή" compact />
           </TabsTrigger>
           <TabsTrigger value="achievement">
             <Trophy className="icon-sm mr-1" />
-            Achieve
+            <BilingualText en="Achieve" el="Επίτευξη" compact />
           </TabsTrigger>
           <TabsTrigger value="social">
             <Users className="icon-sm mr-1" />
-            Social
+            <BilingualText en="Social" el="Κοινωνικά" compact />
           </TabsTrigger>
           <TabsTrigger value="professional">
             <Briefcase className="icon-sm mr-1" />
-            Pro
+            <BilingualText en="Pro" el="Pro" compact />
           </TabsTrigger>
         </TabsList>
 
@@ -300,7 +301,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                     <div className="absolute top-2 right-2">
                       <Badge variant="default" className="gap-1">
                         <Award className="icon-sm" />
-                        Earned
+                        <BilingualText en="Earned" el="Κερδήθηκε" compact />
                       </Badge>
                     </div>
                   )}
@@ -329,7 +330,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                     ) : hasProgress ? (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Progress</span>
+                          <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                           <span className="font-medium">
                             {badge.progress}/{badge.requirement}
                           </span>
@@ -338,7 +339,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                       </div>
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        Not yet earned
+                        <BilingualText en="Not yet earned" el="Δεν έχει κερδηθεί" compact />
                       </div>
                     )}
 

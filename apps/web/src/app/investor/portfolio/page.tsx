@@ -32,6 +32,7 @@ import { downloadCsv } from '@/lib/csv';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -224,7 +225,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/startups/${investment.id}`}>View Startup</Link>
+                    <Link href={`/startups/${investment.id}`}><BilingualText en="View Startup" el="Προβολή startup" compact /></Link>
                   </DropdownMenuItem>
                   {/* These three had no handler. Updates are events on the
                       deal, added from its page; the report is this row. */}
@@ -235,31 +236,31 @@ function InvestmentCard({ investment }: { investment: Investment }) {
                     reasonEl="Τα έγγραφα χαρτοφυλακίου δεν έχουν ακόμη αποθήκευση."
                   />
                   <DropdownMenuItem asChild>
-                    <Link href={`/startups/${investment.id}`}>Add Update</Link>
+                    <Link href={`/startups/${investment.id}`}><BilingualText en="Add Update" el="Προσθήκη ενημέρωσης" compact /></Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => exportInvestment(investment)}>Export Report</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => exportInvestment(investment)}><BilingualText en="Export Report" el="Εξαγωγή αναφοράς" compact /></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
               <div>
-                <p className="text-xs text-muted-foreground">Invested</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επενδύθηκαν" compact /></p>
                 <p className="text-sm font-medium">{investment.amount}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Current Value</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Current Value" el="Τρέχουσα αξία" compact /></p>
                 <p className="text-sm font-medium">{investment.currentValue}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Return</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Return" el="Απόδοση" compact /></p>
                 <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-status-success' : 'text-status-danger')}>
                   {isPositive ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
                   {isPositive ? '+' : ''}{investment.returnPct}%
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Invested</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επενδύθηκαν" compact /></p>
                 <p className="text-sm font-medium">{investment.investedAt}</p>
               </div>
             </div>
@@ -370,7 +371,7 @@ export default function InvestorPortfolioPage() {
           title="No portfolio companies yet"
           description="Start investing through your deal pipeline to build your portfolio."
           askAiPrompt="My investor portfolio is empty. What should I review in the pipeline before marking a company as invested?"
-          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" />View Pipeline</Link></Button>}
+          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact /></Link></Button>}
         />
       </AppShell>
     );
@@ -388,7 +389,7 @@ export default function InvestorPortfolioPage() {
           disabled={investments.length === 0}
           onClick={exportPortfolio}
         >
-          <Download className="mr-2 icon-sm" aria-hidden="true" />Export Report
+          <Download className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Export Report" el="Εξαγωγή αναφοράς" compact />
         </Button>
       }
     >
@@ -423,13 +424,13 @@ export default function InvestorPortfolioPage() {
         {/* Charts */}
         <Tabs value={chartTab} onValueChange={setChartTab}>
           <TabsList>
-            <TabsTrigger value="performance">Value Over Time</TabsTrigger>
-            <TabsTrigger value="sectors">Sector Mix</TabsTrigger>
+            <TabsTrigger value="performance"><BilingualText en="Value Over Time" el="Αξία στον χρόνο" compact /></TabsTrigger>
+            <TabsTrigger value="sectors"><BilingualText en="Sector Mix" el="Κατανομή κλάδων" compact /></TabsTrigger>
           </TabsList>
           <TabsContent value="performance">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Portfolio value (€K)</CardTitle>
+                <CardTitle className="text-sm"><BilingualText en="Portfolio value (€K)" el="Αξία portfolio (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <PortfolioValueChart data={valueHistory} />
@@ -439,7 +440,7 @@ export default function InvestorPortfolioPage() {
           <TabsContent value="sectors">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Invested by sector (€K)</CardTitle>
+                <CardTitle className="text-sm"><BilingualText en="Invested by sector (€K)" el="Επενδύσεις ανά κλάδο (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <SectorMixChart data={sectorData} />

@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface TwoFactorManagementProps {
   isEnabled: boolean;
@@ -60,10 +61,10 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
             </div>
             <div className="min-w-0 flex-1">
               <h4 className="font-medium text-status-success ">
-                Two-factor authentication is enabled
+                <BilingualText en="Two-factor authentication is enabled" el="Ο έλεγχος δύο παραγόντων είναι ενεργός" wrap />
               </h4>
               <p className="mt-1 text-sm text-status-success ">
-                Your account is protected with an additional layer of security.
+                <BilingualText en="Your account is protected with an additional layer of security." el="Ο λογαριασμός σας έχει ένα επιπλέον επίπεδο ασφάλειας." wrap />
               </p>
             </div>
           </div>
@@ -73,16 +74,16 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
             className="shrink-0 self-start"
           >
             <ShieldOff className="mr-2 icon-sm" />
-            Disable
+            <BilingualText en="Disable" el="Απενεργοποίηση" compact />
           </Button>
         </div>
 
         <Dialog open={showDisable} onOpenChange={setShowDisable}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Disable Two-Factor Authentication</DialogTitle>
+              <DialogTitle><BilingualText en="Disable Two-Factor Authentication" el="Απενεργοποίηση ελέγχου δύο παραγόντων" wrap /></DialogTitle>
               <DialogDescription>
-                Enter a verification code from your authenticator app to confirm.
+                <BilingualText en="Enter a verification code from your authenticator app to confirm." el="Εισάγετε κωδικό από την εφαρμογή ελέγχου ταυτότητας για επιβεβαίωση." wrap />
               </DialogDescription>
             </DialogHeader>
 
@@ -96,7 +97,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Verification Code</label>
+                <label className="text-sm font-medium"><BilingualText en="Verification Code" el="Κωδικός επαλήθευσης" compact /></label>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -111,7 +112,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowDisable(false)}>
-                Cancel
+                <BilingualText en="Cancel" el="Ακύρωση" compact />
               </Button>
               <Button
                 variant="destructive"
@@ -135,7 +136,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
             <Shield className="icon-md text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="font-medium">Two-factor authentication is disabled</h4>
+            <h4 className="font-medium"><BilingualText en="Two-factor authentication is disabled" el="Ο έλεγχος δύο παραγόντων είναι ανενεργός" wrap /></h4>
             <p className="mt-1 text-sm text-muted-foreground">
               Add an extra layer of security by requiring a verification code from your phone
               when signing in.
@@ -144,16 +145,16 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
         </div>
         <Button onClick={() => setShowSetup(true)} className="shrink-0 self-start">
           <Shield className="mr-2 icon-sm" />
-          Enable
+          <BilingualText en="Enable" el="Ενεργοποίηση" compact />
         </Button>
       </div>
 
       <Dialog open={showSetup} onOpenChange={setShowSetup}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+            <DialogTitle><BilingualText en="Set Up Two-Factor Authentication" el="Ρύθμιση ελέγχου δύο παραγόντων" compact /></DialogTitle>
             <DialogDescription>
-              Secure your account with an authenticator app like Google Authenticator or Authy.
+              <BilingualText en="Secure your account with an authenticator app like Google Authenticator or Authy." el="Ασφαλίστε τον λογαριασμό σας με εφαρμογή όπως Google Authenticator ή Authy." wrap />
             </DialogDescription>
           </DialogHeader>
 

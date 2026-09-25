@@ -15,6 +15,7 @@ import {
   BadgeUnlockRate,
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * Badge rarity is an ordinal domain ramp, not a chart series: the tiers carry
@@ -123,7 +124,7 @@ export function AdminAnalyticsDashboard() {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="icon-lg text-status-accent animate-spin" />
-        <span className="ml-2 text-muted-foreground">Loading analytics…</span>
+        <span className="ml-2 text-muted-foreground"><BilingualText en="Loading analytics…" el="Φόρτωση αναλυτικών…" compact /></span>
       </div>
     );
   }
@@ -132,7 +133,7 @@ export function AdminAnalyticsDashboard() {
     return (
       <div className="rounded-xl border border-status-danger-border bg-status-danger-bg p-6 text-status-danger">
         Failed to load analytics: {error}
-        <button onClick={load} className="ml-4 underline text-sm">Retry</button>
+        <button onClick={load} className="ml-4 underline text-sm"><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button>
       </div>
     );
   }
@@ -142,15 +143,15 @@ export function AdminAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Gamification Analytics</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Platform-wide scoring health and engagement metrics</p>
+          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Gamification Analytics" el="Αναλυτικά gamification" compact /></h2>
+          <p className="text-sm text-muted-foreground mt-0.5"><BilingualText en="Platform-wide scoring health and engagement metrics" el="Υγεία βαθμολόγησης και μετρήσεις συμμετοχής σε όλη την πλατφόρμα" wrap /></p>
         </div>
         <button
           onClick={load}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent transition-colors"
         >
           <RefreshCw className="icon-sm" />
-          Refresh
+          <BilingualText en="Refresh" el="Ανανέωση" compact />
         </button>
       </div>
 
@@ -182,7 +183,7 @@ export function AdminAnalyticsDashboard() {
 
       {/* XP Distribution Histogram */}
       <div className="bg-white rounded-xl border border-border p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4">XP Distribution Histogram</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4"><BilingualText en="XP Distribution Histogram" el="Κατανομή XP" compact /></h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={xpDist} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
             <XAxis dataKey="bucket" tick={{ fontSize: 11 }} />
@@ -203,9 +204,9 @@ export function AdminAnalyticsDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Badge Unlock Rates */}
         <div className="bg-white rounded-xl border border-border p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">Badge Unlock Rates (Top 6)</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-4"><BilingualText en="Badge Unlock Rates (Top 6)" el="Ποσοστά απόκτησης διακρίσεων (κορυφαίες 6)" compact /></h3>
           {topBadges.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No badges defined yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-8"><BilingualText en="No badges defined yet." el="Δεν έχουν οριστεί διακρίσεις ακόμα." compact /></p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -243,21 +244,21 @@ export function AdminAnalyticsDashboard() {
 
         {/* Badge Rate Table */}
         <div className="bg-white rounded-xl border border-border p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-3">All Badge Rates</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3"><BilingualText en="All Badge Rates" el="Όλα τα ποσοστά διακρίσεων" compact /></h3>
           <div className="overflow-auto max-h-[220px]">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                  <th className="pb-2 font-medium">Badge</th>
-                  <th className="pb-2 font-medium">Rarity</th>
-                  <th className="pb-2 font-medium text-right">Unlocks</th>
-                  <th className="pb-2 font-medium text-right">Rate</th>
+                  <th className="pb-2 font-medium"><BilingualText en="Badge" el="Διάκριση" compact /></th>
+                  <th className="pb-2 font-medium"><BilingualText en="Rarity" el="Σπανιότητα" compact /></th>
+                  <th className="pb-2 font-medium text-right"><BilingualText en="Unlocks" el="Αποκτήσεις" compact /></th>
+                  <th className="pb-2 font-medium text-right"><BilingualText en="Rate" el="Ποσοστό" compact /></th>
                 </tr>
               </thead>
               <tbody>
                 {badgeRates.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-muted-foreground">No badges yet</td>
+                    <td colSpan={4} className="py-6 text-center text-muted-foreground"><BilingualText en="No badges yet" el="Δεν υπάρχουν διακρίσεις ακόμα" compact /></td>
                   </tr>
                 ) : (
                   badgeRates.map((b) => (

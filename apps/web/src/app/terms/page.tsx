@@ -5,6 +5,7 @@ import { FileText, ArrowLeft, Shield, Users, MessageCircle, Scale, AlertTriangle
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LegalText } from '@/components/common/LegalText';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const LAST_UPDATED = 'March 20, 2026';
 
@@ -146,10 +147,10 @@ export default function TermsPage() {
           </Link>
           <div className="flex items-center gap-1 sm:gap-3">
             <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
-              <Link href="/privacy">Privacy Policy</Link>
+              <Link href="/privacy"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></Link>
             </Button>
             <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
-              <Link href="/help">Help Center</Link>
+              <Link href="/help"><BilingualText en="Help Center" el="Κέντρο βοήθειας" compact /></Link>
             </Button>
           </div>
         </div>
@@ -161,7 +162,7 @@ export default function TermsPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <FileText className="h-7 w-7 text-primary-accessible" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">Terms of Service</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
           <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
         </div>
       </section>
@@ -169,7 +170,7 @@ export default function TermsPage() {
       {/* Table of Contents */}
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Table of Contents</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sections.map((section) => (
               <a
@@ -206,14 +207,14 @@ export default function TermsPage() {
         {/* Footer CTA */}
         <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service.
+            <BilingualText en="By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service." el="Χρησιμοποιώντας το CoFounderBay, δηλώνετε ότι διαβάσατε και αποδέχεστε αυτούς τους όρους χρήσης." wrap />
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button variant="outline" size="sm" asChild>
-              <Link href="/privacy">Read Privacy Policy</Link>
+              <Link href="/privacy"><BilingualText en="Read Privacy Policy" el="Διαβάστε την πολιτική απορρήτου" compact /></Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/register">Create Account</Link>
+              <Link href="/register"><BilingualText en="Create Account" el="Δημιουργία λογαριασμού" compact /></Link>
             </Button>
           </div>
         </div>

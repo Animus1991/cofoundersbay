@@ -61,6 +61,7 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { ReviewPanel } from './ReviewPanel';
 import { BranchPanel } from './BranchPanel';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -134,9 +135,9 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
-          <DialogTitle>Share Document</DialogTitle>
+          <DialogTitle><BilingualText en="Share Document" el="Κοινοποίηση εγγράφου" compact /></DialogTitle>
           <DialogDescription>
-            Create a shareable link for external stakeholders, mentors, or investors.
+            <BilingualText en="Create a shareable link for external stakeholders, mentors, or investors." el="Δημιουργήστε σύνδεσμο για εξωτερικούς συνεργάτες, μέντορες ή επενδυτές." wrap />
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +158,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
         ) : (
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Label (optional)</Label>
+              <Label><BilingualText en="Label (optional)" el="Ετικέτα (προαιρετικά)" compact /></Label>
               <Input
                 placeholder="e.g. Investor preview, Mentor review..."
                 value={label}
@@ -165,7 +166,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Permission level</Label>
+              <Label><BilingualText en="Permission level" el="Επίπεδο δικαιωμάτων" compact /></Label>
               <div className="flex gap-2">
                 {(['view', 'comment', 'suggest'] as const).map(p => (
                   <Button
@@ -181,7 +182,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Expires in</Label>
+              <Label><BilingualText en="Expires in" el="Λήγει σε" compact /></Label>
               <div className="flex gap-2 flex-wrap">
                 {[['1', '1 day'], ['7', '7 days'], ['30', '30 days'], ['never', 'Never']].map(([v, l]) => (
                   <Button
@@ -290,10 +291,10 @@ export function CollabToolbar({
                 aria-label="History"
               >
                 <History className="icon-sm mr-1.5" aria-hidden="true" />
-                <span className="text-xs hidden sm:inline">History</span>
+                <span className="text-xs hidden sm:inline"><BilingualText en="History" el="Ιστορικό" compact /></span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>View version history</TooltipContent>
+            <TooltipContent><BilingualText en="View version history" el="Προβολή ιστορικού εκδόσεων" compact /></TooltipContent>
           </Tooltip>
         )}
 
@@ -307,7 +308,7 @@ export function CollabToolbar({
               onClick={() => setShowBranchPanel(true)}
             >
               <GitBranch className="icon-sm mr-1.5" />
-              <span className="text-xs hidden sm:inline">Variants</span>
+              <span className="text-xs hidden sm:inline"><BilingualText en="Variants" el="Εκδοχές" compact /></span>
               {openBranches.length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-2xs text-primary-foreground flex items-center justify-center font-medium">
                   {openBranches.length}
@@ -328,7 +329,7 @@ export function CollabToolbar({
               onClick={() => setShowReviewPanel(true)}
             >
               <ClipboardCheck className="icon-sm mr-1.5" />
-              <span className="text-xs hidden sm:inline">Proposals</span>
+              <span className="text-xs hidden sm:inline"><BilingualText en="Proposals" el="Προτάσεις" compact /></span>
               {openProposals.length > 0 && (
                 <Badge
                   variant="secondary"
@@ -354,10 +355,10 @@ export function CollabToolbar({
               aria-label="Share"
             >
               <Share2 className="icon-sm mr-1.5" aria-hidden="true" />
-              <span className="text-xs hidden sm:inline">Share</span>
+              <span className="text-xs hidden sm:inline"><BilingualText en="Share" el="Κοινοποίηση" compact /></span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Share document externally</TooltipContent>
+          <TooltipContent><BilingualText en="Share document externally" el="Κοινοποίηση εγγράφου εκτός πλατφόρμας" compact /></TooltipContent>
         </Tooltip>
 
         {/* ── Dialogs / Panels ──────────────────────────────────────────── */}

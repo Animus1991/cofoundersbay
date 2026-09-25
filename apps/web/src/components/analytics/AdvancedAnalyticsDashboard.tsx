@@ -19,6 +19,7 @@ import {
   LineChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface AnalyticsMetric {
   label: string;
@@ -155,9 +156,9 @@ export function AdvancedAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight"><BilingualText en="Analytics Dashboard" el="Πίνακας αναλυτικών" compact /></h2>
           <p className="text-muted-foreground">
-            Track your performance and engagement metrics
+            <BilingualText en="Track your performance and engagement metrics" el="Παρακολουθήστε απόδοση και συμμετοχή" wrap />
           </p>
         </div>
         <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
@@ -206,10 +207,10 @@ export function AdvancedAnalyticsDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <LineChart className="icon-md" />
-              Weekly Engagement
+              <BilingualText en="Weekly Engagement" el="Εβδομαδιαία συμμετοχή" compact />
             </CardTitle>
             <CardDescription>
-              Profile views and interactions over the past week
+              <BilingualText en="Profile views and interactions over the past week" el="Προβολές προφίλ και αλληλεπιδράσεις την τελευταία εβδομάδα" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -251,10 +252,10 @@ export function AdvancedAnalyticsDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="icon-md" />
-              Connection Growth
+              <BilingualText en="Connection Growth" el="Αύξηση συνδέσεων" compact />
             </CardTitle>
             <CardDescription>
-              Your network expansion over time
+              <BilingualText en="Your network expansion over time" el="Η ανάπτυξη του δικτύου σας στον χρόνο" compact />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -285,10 +286,10 @@ export function AdvancedAnalyticsDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="icon-md" />
-              Top Skills
+              <BilingualText en="Top Skills" el="Κορυφαίες δεξιότητες" compact />
             </CardTitle>
             <CardDescription>
-              Most endorsed skills on your profile
+              <BilingualText en="Most endorsed skills on your profile" el="Οι δεξιότητες με τις περισσότερες συστάσεις" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -316,10 +317,10 @@ export function AdvancedAnalyticsDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PieChart className="icon-md" />
-              Activity Breakdown
+              <BilingualText en="Activity Breakdown" el="Ανάλυση δραστηριότητας" compact />
             </CardTitle>
             <CardDescription>
-              How you spend your time on the platform
+              <BilingualText en="How you spend your time on the platform" el="Πώς περνάτε τον χρόνο σας στην πλατφόρμα" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -350,10 +351,10 @@ export function AdvancedAnalyticsDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="icon-md" />
-            Recent Achievements
+            <BilingualText en="Recent Achievements" el="Πρόσφατα επιτεύγματα" compact />
           </CardTitle>
           <CardDescription>
-            Your latest milestones and accomplishments
+            <BilingualText en="Your latest milestones and accomplishments" el="Τα πιο πρόσφατα ορόσημα και επιτεύγματά σας" wrap />
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -393,9 +393,9 @@ export default function ProviderAnalyticsPage() {
 
         <Tabs defaultValue="overview">
           <TabsList>
-            <TabsTrigger value="overview">Traffic</TabsTrigger>
-            <TabsTrigger value="funnel">Conversion Funnel</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
+            <TabsTrigger value="overview"><BilingualText en="Traffic" el="Κίνηση" compact /></TabsTrigger>
+            <TabsTrigger value="funnel"><BilingualText en="Conversion Funnel" el="Χωνί μετατροπής" compact /></TabsTrigger>
+            <TabsTrigger value="services"><BilingualText en="Services" el="Υπηρεσίες" compact /></TabsTrigger>
           </TabsList>
 
           {/* Traffic */}
@@ -403,11 +403,11 @@ export default function ProviderAnalyticsPage() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Card className="lg:col-span-2">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Daily Views & Inquiries</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Daily Views & Inquiries" el="Ημερήσιες προβολές & ερωτήματα" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
                   {weeklyViews.length === 0 && (
-                    <p className="py-16 text-center text-sm text-muted-foreground">No profile views recorded in this period.</p>
+                    <p className="py-16 text-center text-sm text-muted-foreground"><BilingualText en="No profile views recorded in this period." el="Δεν καταγράφηκαν προβολές προφίλ σε αυτή την περίοδο." wrap /></p>
                   )}
                   <div className="flex items-end gap-2 h-44">
                     {weeklyViews.map(d => (
@@ -427,9 +427,9 @@ export default function ProviderAnalyticsPage() {
                     ))}
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/80 inline-block" />Profile Views</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/80 inline-block" /><BilingualText en="Profile Views" el="Προβολές προφίλ" compact /></span>
                     {showDemoData && (
-                      <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" />Inquiries</span>
+                      <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" /><BilingualText en="Inquiries" el="Ερωτήματα" compact /></span>
                     )}
                   </div>
                 </CardContent>
@@ -437,11 +437,11 @@ export default function ProviderAnalyticsPage() {
 
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Traffic Sources</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Traffic Sources" el="Πηγές κίνησης" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {trafficSources.length === 0 && (
-                    <p className="py-8 text-center text-sm text-muted-foreground">Traffic sources are not tracked yet.</p>
+                    <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="Traffic sources are not tracked yet." el="Οι πηγές κίνησης δεν καταγράφονται ακόμα." wrap /></p>
                   )}
                   {trafficSources.map(src => (
                     <div key={src.source}>
@@ -466,11 +466,11 @@ export default function ProviderAnalyticsPage() {
           <TabsContent value="funnel">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Client Acquisition Funnel</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Client Acquisition Funnel" el="Χωνί απόκτησης πελατών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {conversions.length === 0 && (
-                  <p className="py-8 text-center text-sm text-muted-foreground">The acquisition funnel is not tracked yet.</p>
+                  <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="The acquisition funnel is not tracked yet." el="Το χωνί απόκτησης δεν καταγράφεται ακόμα." wrap /></p>
                 )}
                 {conversions.map((stage, i) => (
                   <div key={stage.stage} className="space-y-1">
@@ -505,12 +505,12 @@ export default function ProviderAnalyticsPage() {
           <TabsContent value="services">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Service Performance</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Service Performance" el="Απόδοση υπηρεσιών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
                   {topServices.length === 0 && (
-                    <p className="py-8 text-center text-sm text-muted-foreground">Per-service performance is not tracked yet.</p>
+                    <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="Per-service performance is not tracked yet." el="Η απόδοση ανά υπηρεσία δεν καταγράφεται ακόμα." wrap /></p>
                   )}
                   {topServices.map(svc => (
                     <div key={svc.name} className="flex items-center gap-4 px-4 py-3">
@@ -528,7 +528,7 @@ export default function ProviderAnalyticsPage() {
                           <span className="text-sm font-medium">{svc.rating}</span>
                         </div>
                       ) : (
-                        <Badge variant="outline" className="text-xs shrink-0">No reviews</Badge>
+                        <Badge variant="outline" className="text-xs shrink-0"><BilingualText en="No reviews" el="Χωρίς κριτικές" compact /></Badge>
                       )}
                     </div>
                   ))}

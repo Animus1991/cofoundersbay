@@ -18,6 +18,7 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { AppShell } from '@/components/layout/AppShell';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface OrgContentProps {
   org: OrgProfile;
@@ -95,7 +96,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 )}
                 <div className="flex items-center gap-1.5">
                   <Calendar className="icon-sm shrink-0" aria-hidden="true" />
-                  <span>Joined <RelativeTime date={org.createdAt} format={formatRelativeTime} /></span>
+                  <span><BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={org.createdAt} format={formatRelativeTime} /></span>
                 </div>
               </div>
 
@@ -110,19 +111,19 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     uses the organisation's own address when it lists one. */}
                 <Button size="sm" className="h-8 px-4 text-xs font-medium gap-1.5" disabled title="Following organisations is not supported yet">
                   <Users className="icon-sm" aria-hidden="true" />
-                  Follow
+                  <BilingualText en="Follow" el="Ακολούθηση" compact />
                 </Button>
                 {org.email || org.website ? (
                   <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5" asChild>
                     <a href={org.email ? `mailto:${org.email}` : org.website!} target={org.email ? undefined : '_blank'} rel="noopener noreferrer">
                       <Mail className="icon-sm" aria-hidden="true" />
-                      Contact
+                      <BilingualText en="Contact" el="Επικοινωνία" compact />
                     </a>
                   </Button>
                 ) : (
                   <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5" disabled title="This organisation has not listed a contact">
                     <Mail className="icon-sm" aria-hidden="true" />
-                    Contact
+                    <BilingualText en="Contact" el="Επικοινωνία" compact />
                   </Button>
                 )}
               </div>
@@ -173,7 +174,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
             </TabsTrigger>
             <TabsTrigger value="about" className="text-sm gap-1.5">
               <Building2 className="icon-sm" aria-hidden="true" />
-              About
+              <BilingualText en="About" el="Σχετικά" compact />
             </TabsTrigger>
           </TabsList>
 
@@ -228,7 +229,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                             <RelativeTime date={opp.createdAt} format={formatRelativeTime} />
                           </span>
                           <Button size="sm" variant="ghost" className="h-7 text-xs px-3" asChild>
-                            <Link href="/opportunities">View</Link>
+                            <Link href="/opportunities"><BilingualText en="View" el="Προβολή" compact /></Link>
                           </Button>
                         </div>
                       </div>
@@ -377,13 +378,13 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               <CardContent className="space-y-5">
                 {org.mission && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Mission</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Mission" el="Αποστολή" compact /></h3>
                     <p className="text-sm text-foreground/80 leading-relaxed">{org.mission}</p>
                   </div>
                 )}
                 {org.industry && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Industry</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Industry" el="Κλάδος" compact /></h3>
                     <div className="flex flex-wrap gap-1.5">
                       {org.industry.split(',').map((ind: string) => (
                         <Badge key={ind.trim()} variant="secondary" className="text-xs">{ind.trim()}</Badge>
@@ -393,7 +394,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 )}
                 {org.focus && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Focus Areas</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Focus Areas" el="Πεδία εστίασης" compact /></h3>
                     <div className="flex flex-wrap gap-1.5">
                       {org.focus.split(',').map((f: string) => (
                         <Badge key={f.trim()} variant="outline" className="text-xs">{f.trim()}</Badge>
@@ -403,7 +404,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 )}
                 {org.size && (
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Size</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Size" el="Μέγεθος" compact /></h3>
                     <p className="text-sm text-foreground/80">{org.size}</p>
                   </div>
                 )}

@@ -39,6 +39,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type Inquiry = {
   id: string;
@@ -116,27 +117,27 @@ function InquiryCard({
                         window.location.assign(`/messages?to=${inquiry.clientId}`);
                       }}
                     >
-                      Reply
+                      <BilingualText en="Reply" el="Απάντηση" compact />
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={!onStatus || inquiry.status === 'converted'}
                       onSelect={() => onStatus?.(inquiry, 'accepted')}
                     >
-                      Mark as Converted
+                      <BilingualText en="Mark as Converted" el="Σήμανση ως πελάτη" compact />
                     </DropdownMenuItem>
                     {inquiry.clientId ? (
                       <DropdownMenuItem asChild>
-                        <Link href={`/profiles/${inquiry.clientId}`}>View Profile</Link>
+                        <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem disabled>View Profile</DropdownMenuItem>
+                      <DropdownMenuItem disabled><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></DropdownMenuItem>
                     )}
                     <DropdownMenuItem
                       className="text-destructive-accessible"
                       disabled={!onStatus || inquiry.status === 'declined'}
                       onSelect={() => onStatus?.(inquiry, 'declined')}
                     >
-                      Decline
+                      <BilingualText en="Decline" el="Απόρριψη" compact />
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -159,14 +160,14 @@ function InquiryCard({
                     window.location.assign(`/messages?to=${inquiry.clientId}`);
                   }}
                 >
-                  Reply
+                  <BilingualText en="Reply" el="Απάντηση" compact />
                 </Button>
                 {inquiry.clientId ? (
                   <Button size="sm" variant="outline" asChild>
-                    <Link href={`/profiles/${inquiry.clientId}`}>View Details</Link>
+                    <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline" disabled>View Details</Button>
+                  <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
                 )}
               </div>
             )}
@@ -403,16 +404,16 @@ export default function ProviderInquiriesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">
-              All <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
+              <BilingualText en="All" el="Όλα" compact /> <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
             </TabsTrigger>
             <TabsTrigger value="new">
-              New <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
+              <BilingualText en="New" el="Νέο" compact /> <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
             </TabsTrigger>
             <TabsTrigger value="replied">
-              Replied <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
+              <BilingualText en="Replied" el="Απαντήθηκε" compact /> <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
             </TabsTrigger>
             <TabsTrigger value="converted">
-              Converted <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
+              <BilingualText en="Converted" el="Έγινε πελάτης" compact /> <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -424,7 +425,7 @@ export default function ProviderInquiriesPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No inquiries found</h3>
+                  <h3 className="font-medium"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTab === 'all'
                       ? 'You have no inquiries yet'

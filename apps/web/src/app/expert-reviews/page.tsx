@@ -379,7 +379,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Scores by area */}
           {review.scoresByArea && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Scores by Area</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Scores by Area" el="Βαθμοί ανά τομέα" compact /></p>
               <div className="space-y-1.5">
                 {Object.entries(review.scoresByArea).map(([area, score]) => (
                   <div key={area} className="flex items-center gap-2">
@@ -397,7 +397,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className={cn('mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider', STATUS.success.icon)}><CheckCircle2 className="h-3 w-3" aria-hidden="true" />Strengths</p>
+              <p className={cn('mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider', STATUS.success.icon)}><CheckCircle2 className="h-3 w-3" aria-hidden="true" /><BilingualText en="Strengths" el="Δυνατά σημεία" compact /></p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -444,7 +444,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold text-foreground">{expert.name}</p>
                 {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-accessible border-primary/20">Verified</Badge>
+                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-accessible border-primary/20"><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>
                 )}
                 {expert.badges?.map((b) => (
                   <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-2xs">{b}</Badge>
@@ -777,10 +777,10 @@ export default function ExpertReviewsPage() {
                   <Award className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">No reviews yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Request expert feedback on your pitch, financials, or strategy.</p>
+                  <p className="font-medium text-foreground"><BilingualText en="No reviews yet" el="Δεν υπάρχουν κριτικές ακόμα" compact /></p>
+                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Request expert feedback on your pitch, financials, or strategy." el="Ζητήστε γνώμη ειδικού για το pitch, τα οικονομικά ή τη στρατηγική σας." wrap /></p>
                 </div>
-                <Button size="sm" onClick={() => setActiveTab('find-experts')}>Find an expert</Button>
+                <Button size="sm" onClick={() => setActiveTab('find-experts')}><BilingualText en="Find an expert" el="Βρείτε ειδικό" compact /></Button>
               </div>
             )}
           </TabsContent>
@@ -801,7 +801,7 @@ export default function ExpertReviewsPage() {
                 onClick={() => setSelectedDomain('all')}
                 className={cn('rounded-full border px-3 py-1 text-xs transition-all', selectedDomain === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:border-border')}
               >
-                All domains
+                <BilingualText en="All domains" el="Όλοι οι τομείς" compact />
               </button>
               {(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, typeof REVIEW_TYPE_CONFIG[ReviewType]][]).map(([key, cfg]) => (
                 <button
@@ -822,7 +822,7 @@ export default function ExpertReviewsPage() {
               {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
               {filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  No experts match your search. <button className="text-primary-accessible hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}>Clear filters</button>
+                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact /> <button className="text-primary-accessible hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}><BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact /></button>
                 </div>
               )}
             </div>
@@ -852,7 +852,7 @@ export default function ExpertReviewsPage() {
           <TabsContent value="insights" className="mt-4 space-y-4">
             {submitted.length === 0 ? (
               <div className="text-center py-12 text-sm text-muted-foreground">
-                Complete your first review to see insights.
+                <BilingualText en="Complete your first review to see insights." el="Ολοκληρώστε την πρώτη σας αξιολόγηση για να δείτε στοιχεία." wrap />
               </div>
             ) : (
               <>
@@ -891,7 +891,7 @@ export default function ExpertReviewsPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} /> Top Recommendations
+                        <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} /> <BilingualText en="Top Recommendations" el="Κορυφαίες προτάσεις" compact />
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">

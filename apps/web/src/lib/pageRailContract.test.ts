@@ -106,7 +106,8 @@ function withoutControlRegistrations(source: string): string {
 
 /**
  * Text that names something rather than being a control: headings, table
- * column headers, and dialogs. A dialog is its own surface - neither the
+ * column headers (<TableHead>, or a div row marked `data-column-headers`),
+ * and dialogs. A dialog is its own surface - neither the
  * column nor the rail - and its fields set what the dialog is for (the role
  * of the person being invited), not the list the rail filters. A heading
  * names the group under it. Labels in these are words, and once the pages
@@ -117,7 +118,10 @@ function withoutControlRegistrations(source: string): string {
 function withoutNonControlText(source: string): string {
   return source
     .replace(/<Dialog[\s>][\s\S]*?<\/Dialog>/g, '')
-    .replace(/<(h[1-6]|CardTitle|TableHead|DialogTitle)\b[^>]*>[\s\S]*?<\/\1>/g, '');
+    .replace(/<(h[1-6]|CardTitle|TableHead|DialogTitle)\b[^>]*>[\s\S]*?<\/\1>/g, '')
+    // A list laid out with divs marks its header row `data-column-headers`:
+    // the cells name columns, like <TableHead>, and hold no control.
+    .replace(/<div data-column-headers[^>]*>[\s\S]*?\n(\s*)<\/div>/g, '');
 }
 
 function controlLabels(source: string): Set<string> {

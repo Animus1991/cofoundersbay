@@ -183,34 +183,34 @@ function ReportCard({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {/* These three had no handler. */}
-                    <DropdownMenuItem onSelect={() => onView(report)}>View Details</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onView(report)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
                     {report.targetId ? (
                       <DropdownMenuItem asChild>
-                        <Link href={`/admin/user-detail/${report.targetId}`}>View Target</Link>
+                        <Link href={`/admin/user-detail/${report.targetId}`}><BilingualText en="View Target" el="Προβολή στόχου" compact /></Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem disabled>View Target</DropdownMenuItem>
+                      <DropdownMenuItem disabled><BilingualText en="View Target" el="Προβολή στόχου" compact /></DropdownMenuItem>
                     )}
                     {report.reporterEmail ? (
                       <DropdownMenuItem asChild>
-                        <a href={`mailto:${report.reporterEmail}?subject=${encodeURIComponent(`Your report: ${report.reason}`)}`}>Contact Reporter</a>
+                        <a href={`mailto:${report.reporterEmail}?subject=${encodeURIComponent(`Your report: ${report.reason}`)}`}><BilingualText en="Contact Reporter" el="Επικοινωνία με τον αναφέροντα" compact /></a>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem disabled>Contact Reporter</DropdownMenuItem>
+                      <DropdownMenuItem disabled><BilingualText en="Contact Reporter" el="Επικοινωνία με τον αναφέροντα" compact /></DropdownMenuItem>
                     )}
                     <DropdownMenuItem
                       className="text-status-success"
                       disabled={!onResolve || report.status === 'resolved'}
                       onClick={() => onResolve?.(report, 'resolved')}
                     >
-                      Mark Resolved
+                      <BilingualText en="Mark Resolved" el="Σήμανση ως επιλυμένο" compact />
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-muted-foreground"
                       disabled={!onResolve || report.status === 'dismissed'}
                       onClick={() => onResolve?.(report, 'dismissed')}
                     >
-                      Dismiss
+                      <BilingualText en="Dismiss" el="Απόρριψη" compact />
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -606,7 +606,7 @@ export default function AdminReportsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Flag className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No reports found</h3>
+                <h3 className="font-medium"><BilingualText en="No reports found" el="Δεν βρέθηκαν αναφορές" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {activeFilterCount > 0 ? 'Nothing in this tab matches the current filters.' : 'All caught up!'}
                 </p>
@@ -630,23 +630,23 @@ export default function AdminReportsPage() {
           </DialogHeader>
           {viewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">Type</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></dt>
               <dd className="capitalize">{viewing.type}</dd>
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
               <dd className="capitalize">{viewing.status}</dd>
-              <dt className="text-muted-foreground">Priority</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Priority" el="Προτεραιότητα" compact /></dt>
               <dd className="capitalize">{viewing.priority}</dd>
-              <dt className="text-muted-foreground">Filed</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Filed" el="Υποβλήθηκε" compact /></dt>
               <dd>{new Date(viewing.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })} UTC</dd>
               {viewing.description && (
                 <>
-                  <dt className="col-span-2 text-muted-foreground">Description</dt>
+                  <dt className="col-span-2 text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></dt>
                   <dd className="col-span-2 whitespace-pre-line">{viewing.description}</dd>
                 </>
               )}
               {viewing.context != null && (
                 <>
-                  <dt className="col-span-2 text-muted-foreground">Context</dt>
+                  <dt className="col-span-2 text-muted-foreground"><BilingualText en="Context" el="Πλαίσιο" compact /></dt>
                   <dd className="col-span-2">
                     <pre tabIndex={0} className="max-h-48 overflow-auto rounded-lg bg-muted/40 p-2 text-xs">{JSON.stringify(viewing.context, null, 2)}</pre>
                   </dd>

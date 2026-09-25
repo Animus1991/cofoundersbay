@@ -6,6 +6,8 @@ import {
   adminListAbuseFlags, adminGetAbuseStats,
   adminResolveAbuseFlag, AbuseFlagRecord, AbuseStats,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-status-warning-bg text-status-warning',
@@ -79,11 +81,11 @@ export function AbuseMonitorPanel() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Abuse Monitor</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Review and action detected anti-gaming signals.</p>
+          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Abuse Monitor" el="Παρακολούθηση κατάχρησης" compact /></h2>
+          <p className="text-sm text-muted-foreground mt-0.5"><BilingualText en="Review and action detected anti-gaming signals." el="Ελέγξτε και χειριστείτε τα σήματα κατάχρησης που εντοπίστηκαν." wrap /></p>
         </div>
         <button onClick={load} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent">
-          <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} /> Refresh
+          <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} /> <BilingualText en="Refresh" el="Ανανέωση" compact />
         </button>
       </div>
 
@@ -111,7 +113,7 @@ export function AbuseMonitorPanel() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
         >
-          <option value="">All statuses</option>
+          <option value="">{bilingualInline("All statuses", "Όλες οι καταστάσεις")}</option>
           {['pending', 'reviewed', 'actioned', 'dismissed'].map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -121,7 +123,7 @@ export function AbuseMonitorPanel() {
           onChange={(e) => setTypeFilter(e.target.value)}
           className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
         >
-          <option value="">All types</option>
+          <option value="">{bilingualInline("All types", "Όλοι οι τύποι")}</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </div>
@@ -135,12 +137,12 @@ export function AbuseMonitorPanel() {
         </div>
         {loading ? (
           <div className="flex items-center justify-center h-32 text-muted-foreground">
-            <RefreshCw className="icon-md animate-spin mr-2" /> Loading…
+            <RefreshCw className="icon-md animate-spin mr-2" /> <BilingualText en="Loading…" el="Φόρτωση…" compact />
           </div>
         ) : flags.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
             <Shield className="icon-xl mb-2 opacity-30" />
-            <p className="text-sm">No flags found.</p>
+            <p className="text-sm"><BilingualText en="No flags found." el="Δεν βρέθηκαν επισημάνσεις." compact /></p>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
@@ -177,7 +179,7 @@ export function AbuseMonitorPanel() {
                         onClick={() => setOpenAction(openAction === f.id ? null : f.id)}
                         className="flex items-center gap-1 text-xs border border-border rounded-xl px-2.5 py-1.5 hover:bg-muted"
                       >
-                        Action <ChevronDown className="icon-sm" />
+                        <BilingualText en="Action" el="Ενέργεια" compact /> <ChevronDown className="icon-sm" />
                       </button>
                       {openAction === f.id && (
                         <div className="absolute right-0 top-8 z-10 bg-white border border-border rounded-xl shadow-lg min-w-[170px] py-1">
@@ -202,7 +204,7 @@ export function AbuseMonitorPanel() {
                               onClick={() => void resolve(f.id, 'safe', 'dismissed')}
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-muted-foreground text-left"
                             >
-                              <XCircle className="icon-sm" /> Dismiss
+                              <XCircle className="icon-sm" /> <BilingualText en="Dismiss" el="Απόρριψη" compact />
                             </button>
                           </div>
                         </div>
@@ -218,7 +220,7 @@ export function AbuseMonitorPanel() {
 
       {stats && stats.topOffenders.length > 0 && (
         <div className="bg-white border border-border rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Top Offenders</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3"><BilingualText en="Top Offenders" el="Συχνότεροι παραβάτες" compact /></h3>
           <div className="space-y-2">
             {stats.topOffenders.slice(0, 10).map((o) => (
               <div key={o.userId} className="flex items-center justify-between text-sm">

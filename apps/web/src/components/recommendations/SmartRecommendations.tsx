@@ -22,6 +22,7 @@ import {
   Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface Recommendation {
   id: string;
@@ -179,10 +180,10 @@ export function SmartRecommendations() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <Sparkles className="icon-xl text-primary-accessible" />
-            Smart Recommendations
+            <BilingualText en="Smart Recommendations" el="Έξυπνες προτάσεις" compact />
           </h2>
           <p className="text-muted-foreground">
-            Personalized suggestions based on your profile and activity
+            <BilingualText en="Personalized suggestions based on your profile and activity" el="Εξατομικευμένες προτάσεις βάσει προφίλ και δραστηριότητας" wrap />
           </p>
         </div>
       </div>
@@ -195,7 +196,7 @@ export function SmartRecommendations() {
           className="gap-2"
         >
           <Target className="icon-sm" />
-          All Recommendations
+          <BilingualText en="All Recommendations" el="Όλες οι προτάσεις" compact />
         </Button>
         <Button
           variant={activeCategory === 'people' ? 'default' : 'outline'}
@@ -203,7 +204,7 @@ export function SmartRecommendations() {
           className="gap-2"
         >
           <Users className="icon-sm" />
-          People
+          <BilingualText en="People" el="Άτομα" compact />
         </Button>
         <Button
           variant={activeCategory === 'opportunities' ? 'default' : 'outline'}
@@ -211,7 +212,7 @@ export function SmartRecommendations() {
           className="gap-2"
         >
           <Briefcase className="icon-sm" />
-          Opportunities
+          <BilingualText en="Opportunities" el="Ευκαιρίες" compact />
         </Button>
         <Button
           variant={activeCategory === 'events' ? 'default' : 'outline'}
@@ -219,7 +220,7 @@ export function SmartRecommendations() {
           className="gap-2"
         >
           <Calendar className="icon-sm" />
-          Events
+          <BilingualText en="Events" el="Εκδηλώσεις" compact />
         </Button>
       </div>
 
@@ -330,7 +331,7 @@ export function SmartRecommendations() {
                   className="gap-2"
                 >
                   <X className="icon-sm" />
-                  Dismiss
+                  <BilingualText en="Dismiss" el="Απόρριψη" compact />
                 </Button>
                 <Button variant="ghost" size="icon" aria-label={`View details for ${rec.title}`} disabled title="Recommendation details are not available yet">
                   <ChevronRight className="icon-sm" aria-hidden="true" />
@@ -349,12 +350,12 @@ export function SmartRecommendations() {
               <Sparkles className="icon-xl text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">No recommendations yet</h3>
+              <h3 className="text-lg font-semibold"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν προτάσεις ακόμα" compact /></h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Complete your profile to get personalized recommendations
+                <BilingualText en="Complete your profile to get personalized recommendations" el="Ολοκληρώστε το προφίλ σας για εξατομικευμένες προτάσεις" wrap />
               </p>
             </div>
-            <Button asChild><Link href="/profile/edit">Complete Profile</Link></Button>
+            <Button asChild><Link href="/profile/edit"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Link></Button>
           </div>
         </Card>
       )}
@@ -364,24 +365,24 @@ export function SmartRecommendations() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="icon-md" />
-            Recommendation Insights
+            <BilingualText en="Recommendation Insights" el="Στοιχεία προτάσεων" compact />
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-1">
               <p className="text-xl font-bold">{recommendations.length}</p>
-              <p className="text-sm text-muted-foreground">Active Recommendations</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active Recommendations" el="Ενεργές προτάσεις" compact /></p>
             </div>
             <div className="space-y-1">
               <p className="text-xl font-bold">
                 {Math.round(recommendations.reduce((acc, r) => acc + r.matchScore, 0) / recommendations.length)}%
               </p>
-              <p className="text-sm text-muted-foreground">Average Match Score</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Average Match Score" el="Μέσος βαθμός ταιριάσματος" compact /></p>
             </div>
             <div className="space-y-1">
               <p className="text-xl font-bold">{dismissedIds.size}</p>
-              <p className="text-sm text-muted-foreground">Dismissed Today</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Dismissed Today" el="Απορρίφθηκαν σήμερα" compact /></p>
             </div>
           </div>
         </CardContent>

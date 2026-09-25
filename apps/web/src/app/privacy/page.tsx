@@ -5,6 +5,7 @@ import { Shield, ArrowLeft, Eye, Database, Lock, Globe, UserCheck, Mail, Setting
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LegalText } from '@/components/common/LegalText';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const LAST_UPDATED = 'March 20, 2026';
 
@@ -224,10 +225,10 @@ export default function PrivacyPage() {
           </Link>
           <div className="flex items-center gap-1 sm:gap-3">
             <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
-              <Link href="/terms">Terms of Service</Link>
+              <Link href="/terms"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></Link>
             </Button>
             <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
-              <Link href="/help">Help Center</Link>
+              <Link href="/help"><BilingualText en="Help Center" el="Κέντρο βοήθειας" compact /></Link>
             </Button>
           </div>
         </div>
@@ -239,7 +240,7 @@ export default function PrivacyPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <Shield className="h-7 w-7 text-primary-accessible" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">Privacy Policy</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
           <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
         </div>
       </section>
@@ -247,7 +248,7 @@ export default function PrivacyPage() {
       {/* Quick Summary */}
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Privacy at a Glance</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Privacy at a Glance" el="Το απόρρητο με μια ματιά" compact /></h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: Database, label: 'Data Collection', desc: 'We collect only what we need' },
@@ -272,7 +273,7 @@ export default function PrivacyPage() {
       {/* Table of Contents */}
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Table of Contents</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sections.map((section) => (
               <a
@@ -309,14 +310,14 @@ export default function PrivacyPage() {
         {/* Footer CTA */}
         <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Your privacy matters to us. If you have any questions, please don't hesitate to reach out.
+            <BilingualText en="Your privacy matters to us. If you have any questions, please don't hesitate to reach out." el="Το απόρρητό σας μας ενδιαφέρει. Για οποιαδήποτε ερώτηση, επικοινωνήστε μαζί μας." wrap />
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button variant="outline" size="sm" asChild>
-              <Link href="/terms">Read Terms of Service</Link>
+              <Link href="/terms"><BilingualText en="Read Terms of Service" el="Διαβάστε τους όρους χρήσης" compact /></Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/settings">Manage Privacy Settings</Link>
+              <Link href="/settings"><BilingualText en="Manage Privacy Settings" el="Διαχείριση ρυθμίσεων απορρήτου" compact /></Link>
             </Button>
           </div>
         </div>

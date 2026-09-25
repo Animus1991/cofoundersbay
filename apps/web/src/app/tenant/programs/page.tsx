@@ -187,7 +187,7 @@ function ProgramCard({
             {program.status === 'active' && (
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Progress</span>
+                  <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                   <span className="font-medium">{program.progress}%</span>
                 </div>
                 <Progress value={program.progress} className="h-2" />
@@ -204,7 +204,7 @@ function ProgramCard({
               <DropdownMenuItem asChild>
                 <Link href={`/programs/${program.id}`}>
                   <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                  View Details
+                  <BilingualText en="View Details" el="Λεπτομέρειες" compact />
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -213,7 +213,7 @@ function ProgramCard({
                 onClick={() => onEdit(program)}
               >
                 <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                Edit Program
+                <BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact />
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!live}
@@ -222,7 +222,7 @@ function ProgramCard({
                 onClick={() => onArchive(program)}
               >
                 <Trash2 className="mr-2 icon-sm" />
-                Archive
+                <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -462,7 +462,7 @@ export default function TenantProgramsPage() {
           }}
         >
           <Plus className="mr-2 icon-sm" />
-          Create Program
+          <BilingualText en="Create Program" el="Δημιουργία προγράμματος" compact />
         </Button>
       )}
     >
@@ -528,7 +528,7 @@ export default function TenantProgramsPage() {
           </DialogHeader>
           <div className="grid grid-cols-1 gap-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="program-name">Name</Label>
+              <Label htmlFor="program-name"><BilingualText en="Name" el="Όνομα" compact /></Label>
               <Input
                 id="program-name"
                 value={form.name}
@@ -537,7 +537,7 @@ export default function TenantProgramsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="program-desc">Description</Label>
+              <Label htmlFor="program-desc"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
               <Input
                 id="program-desc"
                 value={form.description}
@@ -545,7 +545,7 @@ export default function TenantProgramsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Type</Label>
+              <Label><BilingualText en="Type" el="Τύπος" compact /></Label>
               <Select
                 value={form.programType}
                 onValueChange={(v) => setForm((f) => ({ ...f, programType: v }))}
@@ -564,7 +564,7 @@ export default function TenantProgramsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="program-start">Start date</Label>
+                <Label htmlFor="program-start"><BilingualText en="Start date" el="Ημερομηνία έναρξης" compact /></Label>
                 <Input
                   id="program-start"
                   type="date"
@@ -573,7 +573,7 @@ export default function TenantProgramsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="program-end">End date</Label>
+                <Label htmlFor="program-end"><BilingualText en="End date" el="Ημερομηνία λήξης" compact /></Label>
                 <Input
                   id="program-end"
                   type="date"
@@ -585,7 +585,7 @@ export default function TenantProgramsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setFormOpen(false)}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button
               disabled={!form.name.trim() || saveMutation.isPending}

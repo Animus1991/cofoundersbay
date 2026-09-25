@@ -33,6 +33,7 @@ import {
   restoreDocumentVersion,
   type BuilderDocumentVersion,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +79,7 @@ function VersionCard({
           </span>
           {current && (
             <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-accessible">
-              Current
+              <BilingualText en="Current" el="Τρέχουσα" compact />
             </Badge>
           )}
         </div>
@@ -105,7 +106,7 @@ function VersionCard({
           ) : (
             <span className="flex items-center gap-1">
               <User className="icon-sm" />
-              System
+              <BilingualText en="System" el="Σύστημα" compact />
             </span>
           )}
         </div>
@@ -186,7 +187,7 @@ export function VersionHistoryDrawer({
           <SheetHeader className="shrink-0">
             <SheetTitle className="flex items-center gap-2">
               <History className="icon-sm" />
-              Version History
+              <BilingualText en="Version History" el="Ιστορικό εκδόσεων" compact />
             </SheetTitle>
             {documentTitle && (
               <SheetDescription className="truncate">
@@ -209,15 +210,15 @@ export function VersionHistoryDrawer({
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
                 <AlertCircle className="icon-xl text-destructive/50" />
-                <p className="text-sm text-muted-foreground">Failed to load version history</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load version history" el="Δεν ήταν δυνατή η φόρτωση του ιστορικού" compact /></p>
               </div>
             ) : versions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
                 <GitCommitHorizontal className="h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">No saved versions yet</p>
+                  <p className="text-sm font-medium text-muted-foreground"><BilingualText en="No saved versions yet" el="Δεν υπάρχουν αποθηκευμένες εκδόσεις ακόμα" compact /></p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Versions are saved automatically when you create draft variants or request reviews.
+                    <BilingualText en="Versions are saved automatically when you create draft variants or request reviews." el="Οι εκδόσεις αποθηκεύονται αυτόματα όταν δημιουργείτε εκδοχές ή ζητάτε αξιολόγηση." wrap />
                   </p>
                 </div>
               </div>
@@ -248,7 +249,7 @@ export function VersionHistoryDrawer({
       <Dialog open={!!confirmVersion} onOpenChange={() => setConfirmVersion(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Restore this version?</DialogTitle>
+            <DialogTitle><BilingualText en="Restore this version?" el="Επαναφορά αυτής της έκδοσης;" compact /></DialogTitle>
             <DialogDescription>
               Restoring to <strong>{confirmVersion?.versionLabel ?? `v${confirmVersion?.version}`}</strong> will
               create a backup of the current version first, then apply the selected content. This action is reversible.
@@ -256,7 +257,7 @@ export function VersionHistoryDrawer({
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmVersion(null)}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button
               onClick={handleConfirmRestore}
@@ -265,7 +266,7 @@ export function VersionHistoryDrawer({
             >
               {restoreMutation.isPending && <Loader2 className="icon-sm animate-spin" />}
               <RotateCcw className="icon-sm" />
-              Restore Version
+              <BilingualText en="Restore Version" el="Επαναφορά έκδοσης" compact />
             </Button>
           </DialogFooter>
         </DialogContent>
