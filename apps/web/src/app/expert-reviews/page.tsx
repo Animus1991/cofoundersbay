@@ -28,6 +28,7 @@ import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colo
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -611,7 +612,7 @@ export default function ExpertReviewsPage() {
    * queue of requests made of them.
    */
   const { data: reviewData, isLoading: reviewsLoading } = useQuery({
-    queryKey: ['expert-reviews', 'requester'],
+    queryKey: qk('expert-reviews', 'requester'),
     queryFn: () => listExpertReviews({ side: 'requester', limit: 50 }),
     staleTime: 60_000,
     retry: 0,
@@ -636,7 +637,7 @@ export default function ExpertReviewsPage() {
    * founder browsed four experts who do not exist.
    */
   const { data: expertData, isLoading: expertsLoading } = useQuery({
-    queryKey: ['expert-reviews', 'experts'],
+    queryKey: qk('expert-reviews', 'experts'),
     queryFn: () => listExperts({ limit: 24 }),
     staleTime: 5 * 60_000,
     retry: 0,

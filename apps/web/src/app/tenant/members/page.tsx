@@ -53,6 +53,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the tenant membership row.
@@ -295,7 +296,7 @@ export default function TenantMembersPage() {
   const { activeTenant } = useTenant();
   const tenantId = activeTenant?.id ?? null;
   const { data, isLoading } = useQuery({
-    queryKey: ['tenant', 'members', tenantId],
+    queryKey: qk('tenant', 'members', tenantId),
     queryFn: () => getTenantMembers(tenantId!, { limit: 100 }),
     enabled: Boolean(tenantId),
     staleTime: 60_000,
@@ -310,7 +311,7 @@ export default function TenantMembersPage() {
   const queryClient = useQueryClient();
   const { success: toastOk, error: toastFail } = useToast();
   const confirm = useConfirm();
-  const refreshMembers = () => void queryClient.invalidateQueries({ queryKey: ['tenant', 'members', tenantId] });
+  const refreshMembers = () => void queryClient.invalidateQueries({ queryKey: qk('tenant', 'members', tenantId) });
   const memberActions: MemberActions = live.length > 0 && tenantId ? {
     onRole: async (m, role) => {
       if (!m.userId) return;

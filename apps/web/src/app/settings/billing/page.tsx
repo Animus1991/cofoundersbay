@@ -24,6 +24,7 @@ import { formatCents } from '@/lib/billing';
 import { HairlineMeter } from '@/components/ui/hairline-meter';
 import { SettingsRow } from '@/components/ui/settings-row';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -87,17 +88,17 @@ export default function UserBillingPage() {
   });
 
   const { data: subData, isLoading: subLoading } = useQuery({
-    queryKey: ['billing', 'subscription'],
+    queryKey: qk('billing', 'subscription'),
     queryFn: getBillingSubscription,
   });
 
   const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['billing', 'invoices'],
+    queryKey: qk('billing', 'invoices'),
     queryFn: getUserInvoices,
   });
 
   const { data: contactData } = useQuery({
-    queryKey: ['billing', 'contact'],
+    queryKey: qk('billing', 'contact'),
     queryFn: getBillingContact,
   });
 
@@ -126,7 +127,7 @@ export default function UserBillingPage() {
   const { mutate: saveContact, isPending: savingContact } = useMutation({
     mutationFn: () => upsertBillingContact(contactForm),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['billing', 'contact'] });
+      qc.invalidateQueries({ queryKey: qk('billing', 'contact') });
       setShowContactForm(false);
       toastSuccess('Billing contact saved');
     },

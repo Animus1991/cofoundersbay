@@ -15,6 +15,7 @@ import {
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 interface CommentsPanelProps {
   nodeId: string;
@@ -101,7 +102,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['node-comments', nodeId],
+    queryKey: qk('research-boards', 'node-comments', nodeId),
     queryFn: () => listNodeComments(nodeId),
     enabled: apiAvailable && !!nodeId,
     refetchInterval: pollInterval(15_000),
@@ -112,19 +113,19 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
   const createMutation = useMutation({
     mutationFn: (body: string) => createNodeComment(nodeId, { body }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       setDraft('');
     },
   });
 
   const resolveMutation = useMutation({
     mutationFn: (commentId: string) => updateNodeComment(commentId, { resolved: true }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (commentId: string) => deleteNodeComment(commentId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) }),
   });
 
   const handleSubmit = useCallback(() => {

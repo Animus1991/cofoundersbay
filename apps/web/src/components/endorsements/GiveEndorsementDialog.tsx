@@ -22,6 +22,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { createEndorsement, searchProfiles, type SearchHit } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 /**
  * Writing an endorsement for someone.
@@ -100,7 +101,7 @@ export function GiveEndorsementDialog({
   // recipient is still unchosen.
   const trimmedQuery = query.trim();
   const { data: results, isFetching } = useQuery({
-    queryKey: ['endorsement-recipient-search', trimmedQuery],
+    queryKey: qk('endorsement-recipient-search', trimmedQuery),
     queryFn: () => searchProfiles({ q: trimmedQuery, limit: 6 }),
     enabled: open && !picked && trimmedQuery.length >= 2,
     staleTime: 60_000,
@@ -126,7 +127,7 @@ export function GiveEndorsementDialog({
     onSuccess: () => {
       // Everything keyed under 'endorsements' — the received list, the given
       // list and the stats header all move when one is written.
-      void qc.invalidateQueries({ queryKey: ['endorsements'] });
+      void qc.invalidateQueries({ queryKey: qk('endorsements') });
       success(
         bilingualInline('Endorsement sent', 'Η σύσταση στάλθηκε'),
         bilingualInline(

@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn, initialsOf } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 import {
   getMyMentorships,
   getMentorshipSessions,
@@ -250,7 +251,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
     mutationFn: (score: number) => updateMentorshipSession(session.id, { menteeRating: score }),
     onSuccess: () => {
       setRating(false);
-      queryClient.invalidateQueries({ queryKey: ['mentorship', 'sessions'] });
+      queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions') });
     },
   });
 
@@ -655,7 +656,7 @@ export default function CoachingPage() {
    * coach's name beside every session without a second lookup.
    */
   const { data: relationshipData, isLoading: relationshipsLoading } = useQuery({
-    queryKey: ['mentorships', 'mentee'],
+    queryKey: qk('mentorships', 'mentee'),
     queryFn: () => getMyMentorships('mentee'),
     staleTime: 60_000,
     retry: 0,
@@ -668,7 +669,7 @@ export default function CoachingPage() {
 
   const sessionQueries = useQueries({
     queries: relationships.map((relationship) => ({
-      queryKey: ['mentorship', 'sessions', relationship.id],
+      queryKey: qk('mentorships', 'sessions', relationship.id),
       queryFn: () => getMentorshipSessions(relationship.id),
       staleTime: 60_000,
       retry: 0,
@@ -702,7 +703,7 @@ export default function CoachingPage() {
    * unconditionally, so a real founder browsed three coaches who do not exist.
    */
   const { data: mentorData, isLoading: coachesLoading } = useQuery({
-    queryKey: ['mentors', 'coaching'],
+    queryKey: qk('mentors', 'coaching'),
     queryFn: () => discoverMentors({ limit: 24 }),
     staleTime: 5 * 60_000,
     retry: 0,

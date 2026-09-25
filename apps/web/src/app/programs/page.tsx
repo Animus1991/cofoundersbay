@@ -51,6 +51,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 import {
   listPrograms,
   getMyPrograms,
@@ -382,7 +383,7 @@ export default function ProgramsPage() {
   const [applyTarget, setApplyTarget] = useState<ProgramItem | null>(null);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ['programs', programType, status],
+    queryKey: qk('programs', programType, status),
     queryFn: () => listPrograms({
       programType: programType !== 'all' ? programType : undefined,
       status: status !== 'all' ? status : undefined,
@@ -392,7 +393,7 @@ export default function ProgramsPage() {
   });
 
   const { data: myData } = useQuery({
-    queryKey: ['programs', 'mine'],
+    queryKey: qk('programs', 'mine'),
     queryFn: getMyPrograms,
     staleTime: 2 * 60 * 1000,
   });
@@ -408,7 +409,7 @@ export default function ProgramsPage() {
     onSuccess: () => {
       success('Application submitted!');
       setApplyTarget(null);
-      qc.invalidateQueries({ queryKey: ['programs'] });
+      qc.invalidateQueries({ queryKey: qk('programs') });
     },
     onError: () => toastError('Failed to submit application'),
   });

@@ -27,6 +27,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { INVITE_STRINGS, inviteEn, inviteEl } from '@/lib/i18n/strings-invite';
+import { qk } from '@/lib/query-keys';
 
 type InviteKey = keyof typeof INVITE_STRINGS;
 
@@ -135,13 +136,13 @@ export default function InvitePage() {
   const [copied, setCopied] = useState(false);
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['invite-stats'],
+    queryKey: qk('invites', 'stats'),
     queryFn: getInviteStats,
     staleTime: 30_000,
   });
 
   const { data: invitesData, isLoading: invitesLoading } = useQuery({
-    queryKey: ['invites'],
+    queryKey: qk('invites'),
     queryFn: () => listInvites({ limit: 50 }),
     staleTime: 30_000,
   });
@@ -149,8 +150,8 @@ export default function InvitePage() {
   const createMutation = useMutation({
     mutationFn: () => createInvite({ email: email.trim(), message: message.trim() || undefined }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invites'] });
-      queryClient.invalidateQueries({ queryKey: ['invite-stats'] });
+      queryClient.invalidateQueries({ queryKey: qk('invites') });
+      queryClient.invalidateQueries({ queryKey: qk('invites', 'stats') });
       success(t('sent_title'), t('sent_body').replace('{email}', email.trim()));
       setEmail('');
       setMessage('');
@@ -163,8 +164,8 @@ export default function InvitePage() {
   const cancelMutation = useMutation({
     mutationFn: (id: string) => cancelInvite(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invites'] });
-      queryClient.invalidateQueries({ queryKey: ['invite-stats'] });
+      queryClient.invalidateQueries({ queryKey: qk('invites') });
+      queryClient.invalidateQueries({ queryKey: qk('invites', 'stats') });
       setCancellingId(null);
       success(t('cancelled_title'), t('cancelled_body'));
     },

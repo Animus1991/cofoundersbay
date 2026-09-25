@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
@@ -364,7 +365,7 @@ export function MembersPageClient() {
   const [activeSkill, setActiveSkill] = useState('All Skills');
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy],
+    queryKey: qk('members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy),
     queryFn: () => searchProfiles({
       q: searchQuery.trim() || undefined,
       roles: selectedRole !== 'all' ? [selectedRole] : undefined,

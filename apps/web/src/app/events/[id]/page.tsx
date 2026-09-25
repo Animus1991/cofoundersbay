@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { getEvent, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -76,7 +77,7 @@ export default function EventDetailPage() {
   const { success, error: showError } = useToast();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['events', 'detail', id],
+    queryKey: qk('events', 'detail', id),
     queryFn: () => getEvent(id),
     enabled: Boolean(id),
     staleTime: 60_000,
@@ -88,7 +89,7 @@ export default function EventDetailPage() {
     if (!event) return;
     try {
       await rsvpEvent(event.id, status);
-      queryClient.setQueryData(['events', 'detail', id], (old: { event: EventItem } | undefined) =>
+      queryClient.setQueryData(qk('events', 'detail', id), (old: { event: EventItem } | undefined) =>
         old
           ? {
               event: {
@@ -102,7 +103,7 @@ export default function EventDetailPage() {
             }
           : old,
       );
-      void queryClient.invalidateQueries({ queryKey: ['events'] });
+      void queryClient.invalidateQueries({ queryKey: qk('events') });
       success('RSVP updated');
     } catch (e) {
       showError('RSVP failed', e instanceof Error ? e.message : 'Sign in and try again.');

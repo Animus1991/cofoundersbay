@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   updateResearchBoard,
   listResearchCollaborators,
@@ -169,7 +170,7 @@ function OrgOwnershipSection({
   onUpdate: (data: { visibility?: ResearchBoardVisibility }) => void;
 }) {
   const { data: orgData, isLoading } = useQuery({
-    queryKey: ['org', 'my-memberships'],
+    queryKey: qk('org', 'my-memberships'),
     queryFn: () => getUserOrganizations(),
   });
 
@@ -263,13 +264,13 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
   const isOwner = board.ownerId === currentUserId;
 
   const { data: collabData, refetch: refetchCollabs } = useQuery({
-    queryKey: ['board-collaborators', board.id],
+    queryKey: qk('research-boards', 'collaborators', board.id),
     queryFn: () => listResearchCollaborators(board.id),
     enabled: open,
   });
 
   const { data: searchData } = useQuery<{ hits: SearchHit[]; total: number }>({
-    queryKey: ['user-search-invite', inviteQuery],
+    queryKey: qk('user-search-invite', inviteQuery),
     queryFn: () => searchProfiles({ q: inviteQuery, limit: 5 }),
     enabled: inviteQuery.length >= 2,
   });
@@ -277,8 +278,8 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateResearchBoard>[1]) => updateResearchBoard(board.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', board.id] });
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', board.id) });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success('Board updated', '');
     },
     onError: () => showError('Failed', 'Could not update board settings'),

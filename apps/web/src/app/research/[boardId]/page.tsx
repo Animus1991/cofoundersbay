@@ -231,6 +231,7 @@ function getDefaultContent(type: string): string {
 /* ─── Categorised node types for the "Add Node" mega-menu ───────────── */
 import type { ResearchNodeType } from '@/lib/api';
 import type { LucideIcon } from 'lucide-react';
+import { qk } from '@/lib/query-keys';
 
 interface NodeTypeItem { type: ResearchNodeType; label: string; icon: LucideIcon; color: string }
 interface NodeCategory { category: string; items: NodeTypeItem[] }
@@ -504,7 +505,7 @@ export default function ResearchBoardPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['research-board', boardId],
+    queryKey: qk('research-boards', 'board', boardId),
     queryFn: () => getResearchBoard(boardId),
   });
 
@@ -529,7 +530,7 @@ export default function ResearchBoardPage() {
   const updateBoardMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateResearchBoard>[1]) => updateResearchBoard(boardId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
     },
   });
 
@@ -544,7 +545,7 @@ export default function ResearchBoardPage() {
       return createResearchNode(boardId, { ...data, metadata: meta });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
     },
   });
 
@@ -552,9 +553,9 @@ export default function ResearchBoardPage() {
     mutationFn: ({ nodeId, data }: { nodeId: string; data: NodeUpdateData }) =>
       updateResearchNode(nodeId, data),
     onMutate: async ({ nodeId, data }) => {
-      await queryClient.cancelQueries({ queryKey: ['research-board', boardId] });
+      await queryClient.cancelQueries({ queryKey: qk('research-boards', 'board', boardId) });
       const previous = queryClient.getQueryData<{ board: ResearchBoardFull }>(['research-board', boardId]);
-      queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+      queryClient.setQueryData(qk('research-boards', 'board', boardId), (old: { board: ResearchBoardFull } | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -576,17 +577,17 @@ export default function ResearchBoardPage() {
       return { previous };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.previous) queryClient.setQueryData(['research-board', boardId], ctx.previous);
+      if (ctx?.previous) queryClient.setQueryData(qk('research-boards', 'board', boardId), ctx.previous);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
     },
   });
 
   const deleteNodeMutation = useMutation({
     mutationFn: deleteResearchNode,
     onSuccess: (_, deletedId) => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       setSelectedNodeIds((prev) => { const next = new Set(prev); next.delete(deletedId); return next; });
     },
   });
@@ -594,14 +595,14 @@ export default function ResearchBoardPage() {
   const createConnectorMutation = useMutation({
     mutationFn: (data: Parameters<typeof createResearchConnector>[1]) => createResearchConnector(boardId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
     },
   });
 
   const deleteConnectorMutation = useMutation({
     mutationFn: deleteResearchConnector,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       success('Connection deleted');
     },
   });
@@ -728,7 +729,7 @@ export default function ResearchBoardPage() {
     const updates = prev.nodes.map((s) => ({ id: s.id, posX: s.posX, posY: s.posY }));
     batchUpdateMutation.mutate(updates);
     setHistoryIndex((i) => i - 1);
-    queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+    queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
   }, [historyIndex, history, board, batchUpdateMutation, boardId, queryClient]);
 
   const redo = useCallback(() => {
@@ -737,7 +738,7 @@ export default function ResearchBoardPage() {
     const updates = next.nodes.map((s) => ({ id: s.id, posX: s.posX, posY: s.posY }));
     batchUpdateMutation.mutate(updates);
     setHistoryIndex((i) => i + 1);
-    queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+    queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
   }, [historyIndex, history, board, batchUpdateMutation, boardId, queryClient]);
 
   // --- Connection drawing ---
@@ -1004,7 +1005,7 @@ export default function ResearchBoardPage() {
     const updates = board.nodes
       .filter((n) => selectedNodeIds.has(n.id))
       .map((n) => ({ id: n.id, posX: n.posX + dx, posY: n.posY + dy }));
-    queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+    queryClient.setQueryData(qk('research-boards', 'board', boardId), (old: { board: ResearchBoardFull } | undefined) => {
       if (!old) return old;
       return {
         ...old,
@@ -1357,7 +1358,7 @@ export default function ResearchBoardPage() {
       let newH = resizeStart.origH;
       if (resizeDir === 'right' || resizeDir === 'corner') newW = Math.max(MIN_W, resizeStart.origW + dx);
       if (resizeDir === 'bottom' || resizeDir === 'corner') newH = Math.max(MIN_H, resizeStart.origH + dy);
-      queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+      queryClient.setQueryData(qk('research-boards', 'board', boardId), (old: { board: ResearchBoardFull } | undefined) => {
         if (!old) return old;
         return { ...old, board: { ...old.board, nodes: old.board.nodes.map((n) =>
           n.id === resizingNodeId ? { ...n, width: newW, height: newH } : n
@@ -1387,7 +1388,7 @@ export default function ResearchBoardPage() {
         if (draggedNode) {
           const dx = x - draggedNode.posX;
           const dy = y - draggedNode.posY;
-          queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+          queryClient.setQueryData(qk('research-boards', 'board', boardId), (old: { board: ResearchBoardFull } | undefined) => {
             if (!old) return old;
             return {
               ...old,
@@ -1401,7 +1402,7 @@ export default function ResearchBoardPage() {
           });
         }
       } else {
-        queryClient.setQueryData(['research-board', boardId], (old: { board: ResearchBoardFull } | undefined) => {
+        queryClient.setQueryData(qk('research-boards', 'board', boardId), (old: { board: ResearchBoardFull } | undefined) => {
           if (!old) return old;
           return {
             ...old,
@@ -1745,7 +1746,7 @@ export default function ResearchBoardPage() {
       }
     }
     
-    queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+    queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
     success('Files uploaded', `${files.length} file(s) added to board`);
   };
 
@@ -1985,7 +1986,7 @@ export default function ResearchBoardPage() {
         boardId,
         results.map((r) => ({ id: r.id, posX: r.posX, posY: r.posY }))
       );
-      queryClient.invalidateQueries({ queryKey: ['research-board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       success(`Auto-layout applied (${algorithm.replace('dagre-', '').toUpperCase()})`);
     } catch {
       showError('Layout failed — please try again');

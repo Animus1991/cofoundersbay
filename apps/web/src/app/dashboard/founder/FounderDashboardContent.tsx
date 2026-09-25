@@ -20,7 +20,7 @@ import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import {
   getDashboardStats,
   getMeProfile,
@@ -371,7 +371,7 @@ export default function FounderDashboardContent() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ['dashboard', 'stats', 'founder'],
+    queryKey: qk('dashboard', 'stats', 'founder'),
     queryFn: getDashboardStats,
     enabled: hasSession && mounted,
   });
@@ -386,7 +386,7 @@ export default function FounderDashboardContent() {
    * drift apart in the cache.
    */
   const { data: userMetrics } = useQuery({
-    queryKey: ['analytics', 'metrics', '7d'],
+    queryKey: qk('analytics', 'metrics', '7d'),
     queryFn: () => getAnalyticsMetrics('7d'),
     enabled: hasSession && mounted,
     staleTime: 60_000,
@@ -410,7 +410,7 @@ export default function FounderDashboardContent() {
   });
 
   const { data: vrs } = useQuery({
-    queryKey: ['venture-readiness'],
+    queryKey: qk('readiness', 'venture'),
     queryFn: getVentureReadiness,
     enabled: hasSession && mounted,
     staleTime: 5 * 60 * 1000,
@@ -430,7 +430,7 @@ export default function FounderDashboardContent() {
    * and marking one done on either surface refreshes the other.
    */
   const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
-    queryKey: ['milestones', 'all', 'all'],
+    queryKey: qk('milestones', 'all', 'all'),
     queryFn: () => listMilestones({ limit: 100 }),
     enabled: hasSession && mounted,
     staleTime: 30_000,
@@ -443,7 +443,7 @@ export default function FounderDashboardContent() {
    * reported four events that were not theirs.
    */
   const { data: activityPage, isLoading: activityLoading } = useQuery({
-    queryKey: ['dashboard', 'activity', 4],
+    queryKey: qk('dashboard', 'activity', 4),
     queryFn: () => getDashboardActivity({ limit: 4 }),
     enabled: hasSession && mounted,
     staleTime: 30_000,

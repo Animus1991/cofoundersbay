@@ -29,6 +29,7 @@ import {
   Shield, Info,
 } from 'lucide-react';
 import { EmptyTenantDomains } from '@/components/common/EmptyStates';
+import { qk } from '@/lib/query-keys';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -317,7 +318,7 @@ export default function TenantDomainsPage() {
   const [customDomainInput, setCustomDomainInput] = useState('');
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['tenant', tenantId, 'domains'],
+    queryKey: qk('tenant', tenantId, 'domains'),
     queryFn: () => listTenantDomains(tenantId),
     enabled: Boolean(tenantId),
     staleTime: 30_000,

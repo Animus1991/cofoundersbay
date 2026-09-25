@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 interface Invite {
   id: string;
@@ -38,7 +39,7 @@ export function InviteSystem() {
     : '';
 
   const { data: invites = [], isLoading } = useQuery({
-    queryKey: ['invites'],
+    queryKey: qk('invites'),
     queryFn: async () => {
       const response = await fetch('/api/v1/invites', {
         headers: {
@@ -51,7 +52,7 @@ export function InviteSystem() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ['invite-stats'],
+    queryKey: qk('invites', 'stats'),
     queryFn: async () => {
       const response = await fetch('/api/v1/invites/stats', {
         headers: {
@@ -77,8 +78,8 @@ export function InviteSystem() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invites'] });
-      queryClient.invalidateQueries({ queryKey: ['invite-stats'] });
+      queryClient.invalidateQueries({ queryKey: qk('invites') });
+      queryClient.invalidateQueries({ queryKey: qk('invites', 'stats') });
       setEmail('');
     },
   });

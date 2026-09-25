@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   listDocumentVersions,
   restoreDocumentVersion,
@@ -151,7 +152,7 @@ export function VersionHistoryDrawer({
   const [confirmVersion, setConfirmVersion] = useState<BuilderDocumentVersion | null>(null);
 
   const { data: versions = [], isLoading, error } = useQuery({
-    queryKey: ['documentVersions', documentId],
+    queryKey: qk('builder', 'document-versions', documentId),
     queryFn: () => listDocumentVersions(documentId),
     enabled: open && !!documentId,
     staleTime: 10_000,
@@ -162,8 +163,8 @@ export function VersionHistoryDrawer({
       restoreDocumentVersion({ documentId, targetVersion: v.version }),
     onSuccess: (result) => {
       success(`Restored to v${result.restoredFromVersion} — now at v${result.newVersion}`);
-      queryClient.invalidateQueries({ queryKey: ['documentVersions', documentId] });
-      queryClient.invalidateQueries({ queryKey: ['builder'] });
+      queryClient.invalidateQueries({ queryKey: qk('builder', 'document-versions', documentId) });
+      queryClient.invalidateQueries({ queryKey: qk('builder') });
       setConfirmVersion(null);
       onRestored?.();
     },

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState } from 'react';
+import { qk } from '@/lib/query-keys';
 
 const UserRoleChart = dynamic(
   () => import('../dashboard/Charts').then((m) => ({ default: m.UserRoleChart })),
@@ -37,7 +38,7 @@ export default function AdminAnalyticsPage() {
    * content, not workspaces, and a tenant count is not derivable from them.
    */
   const { data, refetch, isFetching } = useQuery({
-    queryKey: ['admin', 'stats'],
+    queryKey: qk('admin', 'stats'),
     queryFn: getAdminStats,
     staleTime: 60_000,
     retry: 0,

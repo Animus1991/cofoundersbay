@@ -59,6 +59,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
+import { qk } from '@/lib/query-keys';
 
 const STATUS_COLORS: Record<string, string> = {
   requested: 'bg-status-warning-bg text-status-warning border-status-warning-border',
@@ -639,7 +640,7 @@ export default function MentoringPage() {
 
   // Load real mentors from search API
   const { isLoading: mentorsQueryLoading, isError: mentorsError } = useQuery({
-    queryKey: ['mentors', searchQuery, selectedExpertise],
+    queryKey: qk('mentors', searchQuery, selectedExpertise),
     queryFn: async () => {
       const expertise = selectedExpertise !== 'All' ? [selectedExpertise] : undefined;
       const res = await searchProfiles({
@@ -656,7 +657,7 @@ export default function MentoringPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['mentoring-bookings'],
+    queryKey: qk('mentorships', 'bookings'),
     queryFn: () => listMentorBookings('all'),
     enabled: mainTab === 'sessions',
     staleTime: 30_000,
@@ -666,7 +667,7 @@ export default function MentoringPage() {
     mutationFn: ({ bookingId, status }: { bookingId: string; status: MentorBookingItem['status'] }) =>
       updateMentorBooking(bookingId, { status }),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['mentoring-bookings'] });
+      queryClient.invalidateQueries({ queryKey: qk('mentorships', 'bookings') });
       const label = vars.status === 'confirmed' ? 'confirmed' : 'cancelled';
       success(`Session ${label}`, `The booking has been ${label}.`);
     },
@@ -711,7 +712,7 @@ export default function MentoringPage() {
 
   const handleCreateBooking = async (mentorId: string, startAt: string, endAt: string, meetingType: 'video' | 'in_person' | 'chat', notes: string) => {
     await createMentorBooking({ mentorId, startAt, endAt, meetingType, notes: notes || undefined });
-    queryClient.invalidateQueries({ queryKey: ['mentoring-bookings'] });
+    queryClient.invalidateQueries({ queryKey: qk('mentorships', 'bookings') });
     success('Booking requested!', 'Your session request has been sent to the mentor.');
   };
 

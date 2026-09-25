@@ -28,6 +28,7 @@ import {
 import { EmptyTenantAutomations } from '@/components/common/EmptyStates';
 import { EmptyState } from '@/components/common/EmptyState';
 import Link from 'next/link';
+import { qk } from '@/lib/query-keys';
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -93,7 +94,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
   const { success, error: toastError } = useToast();
 
   const { data: config, isLoading } = useQuery({
-    queryKey: ['tenant-automation-config', tenantId],
+    queryKey: qk('tenant', 'automation-config', tenantId),
     queryFn: () => getTenantAutomationConfig(tenantId),
     enabled: !!tenantId,
   });
@@ -101,7 +102,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
   const update = useMutation({
     mutationFn: (data: Partial<TenantAutomationConfigItem>) => upsertTenantAutomationConfig(tenantId, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-automation-config', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('tenant', 'automation-config', tenantId) });
       success('Automation settings saved');
     },
     onError: () => toastError('Failed to save settings'),
@@ -251,7 +252,7 @@ export default function TenantAutomationPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const { data: rulesData, isLoading, refetch } = useQuery({
-    queryKey: ['automation-rules', 'tenant', tenantId, filter],
+    queryKey: qk('automation', 'rules', 'tenant', tenantId, filter),
     queryFn: () => listAutomationRules({ status: filter === 'all' ? undefined : filter, limit: 100 }),
     enabled: !!tenantId,
     staleTime: 30_000,

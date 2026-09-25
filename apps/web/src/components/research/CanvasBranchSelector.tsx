@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { GitBranch, ChevronDown, Check, Plus, Loader2, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { listCanvasBranches, type CanvasBranch } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 interface CanvasBranchSelectorProps {
   boardId: string;
@@ -34,7 +35,7 @@ export function CanvasBranchSelector({
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['canvas-branches', boardId],
+    queryKey: qk('research-boards', 'branches', boardId),
     queryFn: () => listCanvasBranches(boardId),
     enabled: open || !!activeBranchId,
     staleTime: 30_000,

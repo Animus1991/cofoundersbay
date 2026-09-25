@@ -35,6 +35,7 @@ import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { qk } from '@/lib/query-keys';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
 const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
@@ -166,20 +167,20 @@ export default function OrgAnalyticsPage() {
 
   const queryClient = useQueryClient();
   const { data: programsData } = useQuery({
-    queryKey: ['programs', 'mine'],
+    queryKey: qk('programs', 'mine'),
     queryFn: getMyPrograms,
     staleTime: 60_000,
     retry: 0,
   });
   const { data: membersData } = useQuery({
-    queryKey: ['org', 'members', slug],
+    queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug!, { limit: 100 }),
     enabled: Boolean(slug),
     staleTime: 60_000,
     retry: 0,
   });
   const { data: mentorsData } = useQuery({
-    queryKey: ['org', 'mentor-pool', organizationId],
+    queryKey: qk('org', 'mentor-pool', organizationId),
     queryFn: () => getOrgMentorPool(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 60_000,
@@ -251,7 +252,7 @@ export default function OrgAnalyticsPage() {
             size="icon"
             title="Refresh"
             aria-label="Refresh"
-            onClick={() => void queryClient.invalidateQueries({ queryKey: ['org'] })}
+            onClick={() => void queryClient.invalidateQueries({ queryKey: qk('org') })}
           >
             <RefreshCw className="icon-sm" aria-hidden="true" />
           </Button>

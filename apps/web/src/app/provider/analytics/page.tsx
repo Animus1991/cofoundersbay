@@ -21,6 +21,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { getAnalyticsOverview } from '@/lib/api';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { qk } from '@/lib/query-keys';
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ export default function ProviderAnalyticsPage() {
   /* The analytics API serves the signed-in user's own numbers - the mock
      grid only fills in when the demo toggle is on. */
   const overviewQuery = useQuery({
-    queryKey: ['analytics', 'overview', period],
+    queryKey: qk('analytics', 'overview', period),
     queryFn: () => getAnalyticsOverview(period),
     enabled: hasSession && mounted && !showDemoData,
     staleTime: 60_000,

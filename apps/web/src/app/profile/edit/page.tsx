@@ -27,7 +27,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -351,7 +351,7 @@ export default function ProfileEditPage() {
   });
 
   const { data: skillsData } = useQuery({
-    queryKey: ['skills'],
+    queryKey: qk('skills'),
     queryFn: () => listSkills(),
     staleTime: 10 * 60_000,
   });

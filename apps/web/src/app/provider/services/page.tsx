@@ -39,6 +39,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type Service = {
   id: string;
@@ -244,7 +245,7 @@ export default function ProviderServicesPage() {
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['provider', 'services'],
+    queryKey: qk('provider', 'services'),
     queryFn: () => listMyMarketplaceServices({ limit: 50 }),
     staleTime: 60_000,
     retry: 0,
@@ -265,7 +266,7 @@ export default function ProviderServicesPage() {
     setCreating(true);
   };
   const [saving, setSaving] = useState(false);
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['provider', 'services'] });
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: qk('provider', 'services') });
 
   const serviceActions: ServiceActions = live.length > 0 ? {
     onActive: async (svc, active) => {

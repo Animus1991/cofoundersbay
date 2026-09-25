@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { MessageComposer } from './MessageComposer';
+import { qk } from '@/lib/query-keys';
 
 interface Message {
   id: string;
@@ -41,7 +42,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['messages', conversationId],
+    queryKey: qk('messages', conversationId),
     queryFn: async () => {
       const response = await fetch(`/api/v1/messages/${conversationId}`, {
         headers: {
@@ -80,8 +81,8 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: qk('messages', conversationId) });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       setReplyingTo(null);
     },
   });
@@ -99,7 +100,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('messages', conversationId) });
     },
   });
 

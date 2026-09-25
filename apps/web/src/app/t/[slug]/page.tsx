@@ -23,6 +23,7 @@ import {
   LogIn,
 } from 'lucide-react';
 import Link from 'next/link';
+import { qk } from '@/lib/query-keys';
 
 function hexToHsl(hex: string): string | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -277,13 +278,13 @@ export default function TenantPage() {
   const slug = (params?.slug as string) ?? '';
 
   const { data: tenant, isLoading, isError } = useQuery({
-    queryKey: ['tenant', slug],
+    queryKey: qk('tenant', slug),
     queryFn: () => getTenantBySlug(slug),
     staleTime: 5 * 60_000,
   });
 
   const { data: sso } = useQuery({
-    queryKey: ['tenant', slug, 'sso'],
+    queryKey: qk('tenant', slug, 'sso'),
     queryFn: () => discoverSSOByTenant(slug),
     enabled: !!tenant,
     staleTime: 5 * 60_000,

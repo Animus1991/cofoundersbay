@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the admin row.
@@ -282,7 +283,7 @@ export default function AdminUsersPage() {
    * the screen still teaches its shape rather than opening blank.
    */
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['admin', 'users'],
+    queryKey: qk('admin', 'users'),
     queryFn: () => listAdminUsers({ limit: 100 }),
     staleTime: 60_000,
     retry: 0,
@@ -318,7 +319,7 @@ export default function AdminUsersPage() {
     } catch (err) {
       error('Could not update the status', err instanceof Error ? err.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      void queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
     }
   };
 
@@ -330,7 +331,7 @@ export default function AdminUsersPage() {
     } catch (err) {
       error('Could not change the role', err instanceof Error ? err.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      void queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
     }
   };
 

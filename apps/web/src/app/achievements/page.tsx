@@ -33,6 +33,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 interface Achievement {
   id: string;
@@ -456,20 +457,20 @@ export default function AchievementsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const { data: rawAchievements, isLoading, isError, refetch } = useQuery({
-    queryKey: ['achievements'],
+    queryKey: qk('achievements'),
     queryFn: () => getAnalyticsAchievements(),
     staleTime: 120_000,
     retry: 1,
   });
 
   const { data: xpData } = useQuery<GamificationXPSummary>({
-    queryKey: ['gamification-xp-me'],
+    queryKey: qk('gamification', 'xp-me'),
     queryFn: getMyXP,
     staleTime: 60_000,
   });
 
   const { data: badgesData } = useQuery<GamificationBadge[]>({
-    queryKey: ['gamification-badges-me'],
+    queryKey: qk('gamification', 'badges-me'),
     queryFn: getMyBadges,
     staleTime: 60_000,
   });

@@ -27,6 +27,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { qk } from '@/lib/query-keys';
 import {
   listShortlist,
   removeFromShortlist,
@@ -310,7 +311,7 @@ export default function ShortlistPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['shortlist'],
+    queryKey: qk('shortlist'),
     queryFn: () => listShortlist({ limit: 100 }),
     staleTime: 30_000,
   });
@@ -325,7 +326,7 @@ export default function ShortlistPage() {
    * the same person. People the engine has not scored simply get no badge.
    */
   const { data: recommended } = useQuery({
-    queryKey: ['recommendations', 'for-shortlist'],
+    queryKey: qk('recommendations', 'for-shortlist'),
     queryFn: () => getRecommendations({ limit: 100 }),
     staleTime: 5 * 60_000,
     retry: 0,
@@ -388,17 +389,17 @@ export default function ShortlistPage() {
   const removeMut = useMutation({
     mutationFn: removeFromShortlist,
     onMutate: async (userId) => {
-      await qc.cancelQueries({ queryKey: ['shortlist'] });
-      qc.setQueryData(['shortlist'], (old: typeof data) => ({
+      await qc.cancelQueries({ queryKey: qk('shortlist') });
+      qc.setQueryData(qk('shortlist'), (old: typeof data) => ({
         ...old, items: (old?.items ?? []).filter((i) => i.userId !== userId),
       }));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['shortlist'] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('shortlist') }),
   });
 
   const handleUpdateNote = useCallback(async (userId: string, note: string) => {
     await updateShortlistNote(userId, note);
-    qc.setQueryData(['shortlist'], (old: typeof data) => ({
+    qc.setQueryData(qk('shortlist'), (old: typeof data) => ({
       ...old, items: (old?.items ?? []).map((i) => i.userId === userId ? { ...i, note } : i),
     }));
   }, [qc]);

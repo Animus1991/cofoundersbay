@@ -55,6 +55,7 @@ import { cn } from '@/lib/utils';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { qk } from '@/lib/query-keys';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -261,7 +262,7 @@ export default function TenantProgramsPage() {
   const { organizationId } = useCurrentOrgMembership();
 
   const programsQuery = useQuery({
-    queryKey: ['tenant', 'programs', organizationId],
+    queryKey: qk('tenant', 'programs', organizationId),
     queryFn: () => listOrganizationPrograms(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 30_000,
@@ -291,7 +292,7 @@ export default function TenantProgramsPage() {
       return createProgram(organizationId!, { ...body, slug: slugify(form.name) });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['tenant', 'programs', organizationId] });
+      void qc.invalidateQueries({ queryKey: qk('tenant', 'programs', organizationId) });
       success(form.id ? 'Program updated' : 'Program created');
       setFormOpen(false);
       setForm(EMPTY_FORM);
@@ -303,7 +304,7 @@ export default function TenantProgramsPage() {
   const archiveMutation = useMutation({
     mutationFn: (id: string) => updateProgram(id, { status: 'archived' }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['tenant', 'programs', organizationId] });
+      void qc.invalidateQueries({ queryKey: qk('tenant', 'programs', organizationId) });
       success('Program archived');
     },
     onError: (err) =>

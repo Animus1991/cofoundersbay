@@ -40,6 +40,7 @@ import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
+import { qk, queryKeys } from '@/lib/query-keys';
 
 type AIPreferences = {
   preferredModel: string;
@@ -100,21 +101,21 @@ export default function AISettingsPage() {
 
   // Fetch AI health status
   const { data: health } = useQuery({
-    queryKey: ['ai-health'],
+    queryKey: qk('ai', 'health'),
     queryFn: () => getAIHealth().catch(() => ({ available: false, models: [] })),
     staleTime: 30000,
   });
 
   // Fetch available models
   const { data: modelsData } = useQuery({
-    queryKey: ['ai-models'],
+    queryKey: qk('ai', 'models'),
     queryFn: () => getAIModels().catch(() => ({ models: [] })),
     staleTime: 60000,
   });
 
   // Fetch available agents
   const { data: agentsData } = useQuery({
-    queryKey: ['ai-agents'],
+    queryKey: qk('ai', 'agents'),
     queryFn: () => getAIAgents().catch(() => ({ agents: [] })),
     staleTime: 60000,
   });
@@ -132,7 +133,7 @@ export default function AISettingsPage() {
     try {
       await updateAIPreferences(prefs);
       localStorage.setItem('ai-preferences', JSON.stringify(prefs));
-      void queryClient.invalidateQueries({ queryKey: ['ai', 'preferences'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.aiPreferences });
       success('AI preferences saved');
       setHasChanges(false);
     } catch {
@@ -144,7 +145,13 @@ export default function AISettingsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const remote = await getAIPreferences();
+        // Through the cache under queryKeys.aiPreferences, so the
+        // invalidation after a save means the next visit reads it fresh.
+        const remote = await queryClient.fetchQuery({
+          queryKey: queryKeys.aiPreferences,
+          queryFn: getAIPreferences,
+          staleTime: 60_000,
+        });
         if (cancelled) return;
         if (remote?.preferences) {
           setPrefs({

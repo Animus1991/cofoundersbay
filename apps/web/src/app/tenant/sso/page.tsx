@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { qk } from '@/lib/query-keys';
 import {
   listSSOProviders,
   createSSOProvider,
@@ -244,19 +245,19 @@ export default function TenantSSOPage() {
   const [roleMappingRules, setRoleMappingRules] = useState<RoleMappingRule[]>([]);
 
   const { data: providers, isLoading: providersLoading } = useQuery({
-    queryKey: ['sso', 'providers', tenantId],
+    queryKey: qk('sso', 'providers', tenantId),
     queryFn: () => listSSOProviders(tenantId),
     enabled: !!tenantId,
   });
 
   const { data: config, isLoading: configLoading } = useQuery({
-    queryKey: ['sso', 'config', tenantId],
+    queryKey: qk('sso', 'config', tenantId),
     queryFn: () => getTenantSSOConfig(tenantId),
     enabled: !!tenantId,
   });
 
   const { data: domainMappings, isLoading: domainsLoading } = useQuery({
-    queryKey: ['sso', 'domains', tenantId],
+    queryKey: qk('sso', 'domains', tenantId),
     queryFn: () => listSSODomainMappings(tenantId),
     enabled: !!tenantId,
   });
@@ -288,7 +289,7 @@ export default function TenantSSOPage() {
       postLoginRedirect: postLoginRedirect || undefined,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sso', 'config', tenantId] });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'config', tenantId) });
       setSaveError('');
       setSaveOk(true);
       setTimeout(() => setSaveOk(false), 2000);
@@ -311,7 +312,7 @@ export default function TenantSSOPage() {
       isActive: true,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sso', 'providers', tenantId] });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'providers', tenantId) });
       setShowNewProvider(false);
       setNewProvider({ providerName: '', oidcIssuerUrl: '', oidcClientId: '', oidcClientSecret: '', oidcScopes: 'openid profile email', samlEntryPoint: '', samlIssuer: '', samlCert: '', samlMetadataUrl: '', loginButtonText: 'Continue with SSO' });
     },
@@ -320,18 +321,18 @@ export default function TenantSSOPage() {
 
   const toggleProviderMut = useMutation({
     mutationFn: (p: IdentityProviderItem) => updateSSOProvider(p.id, { isActive: !p.isActive }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'providers', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'providers', tenantId) }),
   });
 
   const deleteProviderMut = useMutation({
     mutationFn: (id: string) => deleteSSOProvider(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'providers', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'providers', tenantId) }),
   });
 
   const addDomainMut = useMutation({
     mutationFn: () => createSSODomainMapping(tenantId, newDomain, newDomainAutoRedirect),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sso', 'domains', tenantId] });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'domains', tenantId) });
       setNewDomain('');
       setNewDomainAutoRedirect(false);
     },
@@ -340,12 +341,12 @@ export default function TenantSSOPage() {
 
   const deleteDomainMut = useMutation({
     mutationFn: (id: string) => deleteSSODomainMapping(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'domains', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'domains', tenantId) }),
   });
 
   const verifyDomainMut = useMutation({
     mutationFn: (id: string) => verifySSODomainMapping(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'domains', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'domains', tenantId) }),
   });
 
   if (!tenantId) {

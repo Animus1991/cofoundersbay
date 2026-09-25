@@ -23,6 +23,7 @@ import {
   type PipelineStage,
 } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -56,7 +57,7 @@ export default function StartupDealPage() {
   const [note, setNote] = useState('');
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['investor', 'deal', id],
+    queryKey: qk('investor', 'deal', id),
     queryFn: () => getInvestorDeal(id),
     enabled: Boolean(id),
     retry: 0,
@@ -64,7 +65,7 @@ export default function StartupDealPage() {
   const deal = data?.deal ?? null;
 
   const refresh = () => {
-    void queryClient.invalidateQueries({ queryKey: ['investor'] });
+    void queryClient.invalidateQueries({ queryKey: qk('investor') });
   };
 
   const moveTo = useMutation({

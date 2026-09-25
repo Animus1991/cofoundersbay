@@ -30,6 +30,7 @@ import { listBillingPlans, createBillingCheckout, type BillingPlanItem } from '@
 import { formatCents, annualSavingsPct } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
 import { LandingNav } from '@/components/layout/LandingNav';
+import { qk } from '@/lib/query-keys';
 
 type PlanFeature = {
   name: string;
@@ -163,7 +164,7 @@ export default function PricingPage() {
   const { hasSession } = useSession();
 
   const { data: plansData } = useQuery({
-    queryKey: ['billing', 'plans'],
+    queryKey: qk('billing', 'plans'),
     queryFn: listBillingPlans,
     staleTime: 10 * 60_000,
   });

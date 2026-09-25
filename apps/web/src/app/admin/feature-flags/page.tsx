@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -233,7 +234,7 @@ export default function AdminFeatureFlagsPage() {
   const [isLive, setIsLive] = useState(false);
 
   const { data: experiments } = useQuery({
-    queryKey: ['admin', 'experiments'],
+    queryKey: qk('admin', 'experiments'),
     queryFn: adminListExperiments,
     staleTime: 60_000,
     retry: 0,
@@ -281,7 +282,7 @@ export default function AdminFeatureFlagsPage() {
       toastError('Could not create the flag', err instanceof Error ? err.message : undefined);
     } finally {
       setSaving(false);
-      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+      void qc.invalidateQueries({ queryKey: qk('admin', 'experiments') });
     }
   };
   const [saving, setSaving] = useState(false);
@@ -311,7 +312,7 @@ export default function AdminFeatureFlagsPage() {
       toastError('Could not save the flag', err instanceof Error ? err.message : undefined);
     } finally {
       setSaving(false);
-      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+      void qc.invalidateQueries({ queryKey: qk('admin', 'experiments') });
     }
   };
 
@@ -338,7 +339,7 @@ export default function AdminFeatureFlagsPage() {
     } catch (err) {
       toastError('Could not delete the flag', err instanceof Error ? err.message : undefined);
     } finally {
-      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+      void qc.invalidateQueries({ queryKey: qk('admin', 'experiments') });
     }
   };
 
@@ -353,7 +354,7 @@ export default function AdminFeatureFlagsPage() {
     try {
       await (enabled ? adminActivateExperiment(id) : adminDeactivateExperiment(id));
     } finally {
-      void qc.invalidateQueries({ queryKey: ['admin', 'experiments'] });
+      void qc.invalidateQueries({ queryKey: qk('admin', 'experiments') });
     }
   };
 

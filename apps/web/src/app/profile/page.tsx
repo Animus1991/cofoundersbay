@@ -41,7 +41,7 @@ import {
   Settings as SettingsIcon,
 } from 'lucide-react';
 import { getMeProfile, getDashboardActivity } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -306,7 +306,7 @@ export default function ProfilePage() {
    * year of invented contributions that changed on every render.
    */
   const { data: activityPage } = useQuery({
-    queryKey: ['dashboard', 'activity', 'profile-graph'],
+    queryKey: qk('dashboard', 'activity', 'profile-graph'),
     queryFn: () => getDashboardActivity({ limit: 200 }),
     staleTime: 5 * 60_000,
     retry: 0,

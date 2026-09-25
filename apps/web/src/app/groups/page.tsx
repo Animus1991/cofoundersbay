@@ -28,6 +28,7 @@ import {
   type GroupView,
 } from '@/lib/api';
 import { CreateGroupModal } from './components/CreateGroupModal';
+import { qk } from '@/lib/query-keys';
 
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
@@ -223,7 +224,7 @@ export default function GroupsPage() {
   ]);
 
   const discoverQuery = useQuery({
-    queryKey: ['groups', 'discover', selectedCategory, searchQuery, sort],
+    queryKey: qk('groups', 'discover', selectedCategory, searchQuery, sort),
     queryFn: () =>
       listGroups({
         category: selectedCategory !== 'All' ? selectedCategory : undefined,
@@ -235,7 +236,7 @@ export default function GroupsPage() {
   });
 
   const myGroupsQuery = useQuery({
-    queryKey: ['groups', 'my'],
+    queryKey: qk('groups', 'my'),
     queryFn: getMyGroups,
     staleTime: 30_000,
     enabled: activeTab === 'my-groups',
@@ -252,7 +253,7 @@ export default function GroupsPage() {
           await joinGroup(groupId);
           success('Joined group', 'Welcome to the community!');
         }
-        queryClient.invalidateQueries({ queryKey: ['groups'] });
+        queryClient.invalidateQueries({ queryKey: qk('groups') });
       } catch (e: any) {
         toastError('Error', e?.message ?? 'Something went wrong.');
       } finally {
@@ -305,7 +306,7 @@ export default function GroupsPage() {
           onClose={() => setShowCreateModal(false)}
           onCreated={() => {
             setShowCreateModal(false);
-            queryClient.invalidateQueries({ queryKey: ['groups'] });
+            queryClient.invalidateQueries({ queryKey: qk('groups') });
             setActiveTab('my-groups');
           }}
         />

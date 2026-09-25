@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type Inquiry = {
   id: string;
@@ -257,7 +258,7 @@ export default function ProviderDashboardPage() {
    * tile is null until somebody rates the work.
    */
   const { data: summary } = useQuery({
-    queryKey: ['provider', 'summary'],
+    queryKey: qk('provider', 'summary'),
     queryFn: getProviderSummary,
     staleTime: 60_000,
     retry: 0,
@@ -271,19 +272,19 @@ export default function ProviderDashboardPage() {
    * rated ones - so a row cannot be a project here and an open inquiry there.
    */
   const { data: inquiryPage, isLoading: inquiriesLoading } = useQuery({
-    queryKey: ['provider', 'inquiries', 'dashboard'],
+    queryKey: qk('provider', 'inquiries', 'dashboard'),
     queryFn: () => listServiceInquiries({ side: 'provider', limit: 5 }),
     staleTime: 30_000,
     retry: 0,
   });
   const { data: projectPage, isLoading: projectsLoading } = useQuery({
-    queryKey: ['provider', 'projects', 'dashboard'],
+    queryKey: qk('provider', 'projects', 'dashboard'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 5 }),
     staleTime: 30_000,
     retry: 0,
   });
   const { data: reviewPage, isLoading: reviewsLoading } = useQuery({
-    queryKey: ['provider', 'reviews', 'dashboard'],
+    queryKey: qk('provider', 'reviews', 'dashboard'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 3 }),
     staleTime: 60_000,
     retry: 0,

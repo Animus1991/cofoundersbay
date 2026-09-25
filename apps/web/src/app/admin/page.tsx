@@ -88,6 +88,7 @@ import { BehaviorAdminPanel } from '@/components/behavioral/BehaviorAdminPanel';
 import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
   spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -121,12 +122,12 @@ function EmailTemplatesTab() {
   const [sending, setSending] = useState(false);
 
   const { data: listData, isLoading: listLoading } = useQuery({
-    queryKey: ['admin-email-templates'],
+    queryKey: qk('admin', 'email-templates'),
     queryFn: listAdminEmailTemplates,
   });
 
   const { data: preview, isLoading: previewLoading } = useQuery({
-    queryKey: ['admin-email-preview', selectedId],
+    queryKey: qk('admin', 'email-preview', selectedId),
     queryFn: () => getAdminEmailTemplatePreview(selectedId!),
     enabled: !!selectedId,
   });
@@ -458,29 +459,29 @@ export default function AdminPage() {
   const [newCohort, setNewCohort] = useState({ name: '', slug: '', description: '', startDate: '', endDate: '', capacity: '' });
 
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
-    queryKey: ['admin', 'stats'],
+    queryKey: qk('admin', 'stats'),
     queryFn: () => getAdminStats(),
     staleTime: 30_000,
   });
 
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
-    queryKey: ['admin', 'reports', 'home'],
+    queryKey: qk('admin', 'reports', 'home'),
     queryFn: () => listAdminReports({ limit: 100 }),
   });
 
   const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
-    queryKey: ['admin', 'users', 'home', userSearch],
+    queryKey: qk('admin', 'users', 'home', userSearch),
     queryFn: () => listAdminUsers({ q: userSearch || undefined, limit: 100 }),
   });
 
   const { data: auditData, isLoading: auditLoading } = useQuery({
-    queryKey: ['admin', 'audit-logs', 'home'],
+    queryKey: qk('admin', 'audit-logs', 'home'),
     queryFn: () => listAdminAuditLogs({ limit: 50 }),
     enabled: activeTab === 'audit',
   });
 
   const { data: cohortsData, isLoading: cohortsLoading, refetch: refetchCohorts } = useQuery({
-    queryKey: ['admin-cohorts', cohortSearch],
+    queryKey: qk('admin', 'cohorts', cohortSearch),
     queryFn: () => listAdminCohorts({ q: cohortSearch || undefined, limit: 50 }),
     enabled: activeTab === 'cohorts',
   });
@@ -503,14 +504,14 @@ export default function AdminPage() {
   });
 
   const { data: eventsData, isLoading: eventsLoading, isError: eventsError, refetch: refetchEvents } = useQuery({
-    queryKey: ['events', 'admin'],
+    queryKey: qk('events', 'admin'),
     queryFn: () => listEvents({ limit: 50 }),
     enabled: activeTab === 'content',
     retry: 1,
   });
 
   const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
-    queryKey: ['jobs', 'admin'],
+    queryKey: qk('jobs', 'admin'),
     queryFn: () => listJobs({ limit: 50 }),
     enabled: activeTab === 'content',
     retry: 1,
@@ -520,8 +521,8 @@ export default function AdminPage() {
     mutationFn: ({ type, id, featured }: { type: 'event' | 'group' | 'job'; id: string; featured: boolean }) =>
       featureContent(type, id, featured),
     onSuccess: (_, { featured }) => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: qk('events') });
+      queryClient.invalidateQueries({ queryKey: qk('jobs') });
       success(featured ? 'Featured' : 'Unfeatured', 'Content visibility updated.');
     },
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
@@ -531,8 +532,8 @@ export default function AdminPage() {
     mutationFn: ({ type, id }: { type: 'event' | 'group' | 'job'; id: string }) =>
       removeContent(type, id, 'Removed by admin'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: qk('events') });
+      queryClient.invalidateQueries({ queryKey: qk('jobs') });
       success('Removed', 'Content removed from the platform.');
     },
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
@@ -568,8 +569,8 @@ export default function AdminPage() {
         moderationStatus: banUserId ? 'banned' : undefined,
       }),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: qk('admin', 'reports') });
+      queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
       if (vars.banUserId) success('User banned', 'Report resolved and user banned.');
       else if (vars.status === 'resolved') success('Report resolved', 'Action recorded.');
       else success('Report dismissed', 'No action taken.');
@@ -581,7 +582,7 @@ export default function AdminPage() {
     mutationFn: ({ userId, status }: { userId: string; status: 'active' | 'suspended' | 'banned' }) =>
       updateAdminUserModeration(userId, status),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
       const labels: Record<string, string> = {
         active: 'reactivated',
         suspended: 'suspended',

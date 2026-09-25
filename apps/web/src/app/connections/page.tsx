@@ -42,6 +42,7 @@ import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -268,7 +269,7 @@ export default function ConnectionsPage() {
       : null;
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['connections', tab],
+    queryKey: qk('connections', tab),
     queryFn: () =>
       listConnectionRequests({
         type: tab === 'intros' ? 'received' : tab,
@@ -280,7 +281,7 @@ export default function ConnectionsPage() {
     mutationFn: ({ id, status, otherUserId }: { id: string; status: 'accepted' | 'declined'; otherUserId?: string; acceptedUserInfo?: { id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null } }) =>
       respondToConnectionRequest(id, status).then(() => otherUserId),
     onSuccess: (otherUserId, { status, acceptedUserInfo }) => {
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: qk('connections') });
       if (status === 'accepted' && otherUserId && acceptedUserInfo) {
         setJustAcceptedUser(acceptedUserInfo);
       } else if (status !== 'accepted') {

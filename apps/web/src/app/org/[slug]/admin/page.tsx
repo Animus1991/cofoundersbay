@@ -59,6 +59,7 @@ import {
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 type OrgMember = {
   id: string;
@@ -245,14 +246,14 @@ export default function OrgAdminPage() {
   const [inviting, setInviting] = useState(false);
 
   const orgQuery = useQuery({
-    queryKey: ['org-admin', slug],
+    queryKey: qk('org', 'admin', slug),
     queryFn: () => getOrganizationBySlug(slug),
     retry: 0,
     staleTime: 60_000,
   });
   const orgId = orgQuery.data?.id;
   const membersQuery = useQuery({
-    queryKey: ['org-admin-members', orgId],
+    queryKey: qk('org', 'admin-members', orgId),
     enabled: !!orgId,
     queryFn: () => listOrganizationMembers(orgId as string),
     retry: 0,
@@ -280,8 +281,8 @@ export default function OrgAdminPage() {
   };
 
   const refresh = () => {
-    void qc.invalidateQueries({ queryKey: ['org-admin-members', orgId] });
-    void qc.invalidateQueries({ queryKey: ['org-admin', slug] });
+    void qc.invalidateQueries({ queryKey: qk('org', 'admin-members', orgId) });
+    void qc.invalidateQueries({ queryKey: qk('org', 'admin', slug) });
   };
 
   const filteredMembers = members.filter((m) => {

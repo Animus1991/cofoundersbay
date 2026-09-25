@@ -17,6 +17,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { AppShell } from '@/components/layout/AppShell';
 import { ListEmptyState } from '@/components/common/EmptyStates';
+import { qk } from '@/lib/query-keys';
 
 interface OrgContentProps {
   org: OrgProfile;
@@ -25,17 +26,17 @@ interface OrgContentProps {
 
 export function OrgContent({ org, slug }: OrgContentProps) {
   const { data: opportunitiesData, isLoading: oppsLoading } = useQuery({
-    queryKey: ['org-opportunities', slug],
+    queryKey: qk('org', 'opportunities', slug),
     queryFn: () => getOrgOpportunities(slug),
   });
 
   const { data: cohortsData, isLoading: cohortsLoading } = useQuery({
-    queryKey: ['org', 'cohorts', slug],
+    queryKey: qk('org', 'cohorts', slug),
     queryFn: () => getOrgCohorts(slug),
   });
 
   const { data: membersData, isLoading: membersLoading } = useQuery({
-    queryKey: ['org', 'members', slug],
+    queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug),
   });
 

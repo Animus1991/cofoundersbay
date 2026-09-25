@@ -35,6 +35,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
+import { qk } from '@/lib/query-keys';
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 const MatchCompatibilityChart = dynamic(
@@ -55,7 +56,7 @@ type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'avail
 
 function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; open: boolean; onClose: () => void }) {
   const { data: detail, isLoading: detailLoading } = useQuery({
-    queryKey: ['match-breakdown', hit?.userId],
+    queryKey: qk('matching', 'breakdown', hit?.userId),
     queryFn: () => getMatchBreakdown(hit!.userId),
     enabled: open && Boolean(hit?.userId),
     staleTime: 5 * 60_000,
@@ -512,7 +513,7 @@ export default function MatchesPage() {
   const hasToken = useIsAuthenticated();
 
   const { data: shortlistIdsData } = useQuery({
-    queryKey: ['shortlist', 'ids'],
+    queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,
     staleTime: 5 * 60_000,
     enabled: hasToken,
@@ -525,7 +526,7 @@ export default function MatchesPage() {
   }, [shortlistIdsData]);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['recommendations', 'matches', { limit: 50 }],
+    queryKey: qk('recommendations', 'matches', { limit: 50 }),
     queryFn: () => getRecommendations({ limit: 50 }),
     staleTime: 3 * 60_000,
     enabled: hasToken,
@@ -594,8 +595,8 @@ export default function MatchesPage() {
       success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
       setShowConnectionDialog(false);
       setConnectionTarget(null);
-      queryClient.invalidateQueries({ queryKey: ['recommendations'] });
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: qk('recommendations') });
+      queryClient.invalidateQueries({ queryKey: qk('connections') });
     } catch (err) {
       showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
     }

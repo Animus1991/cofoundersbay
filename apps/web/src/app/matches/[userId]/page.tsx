@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 import {
   getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
@@ -271,7 +272,7 @@ export default function MatchDetailPage() {
 
   // Fetch whether this user is already in shortlist
   useQuery({
-    queryKey: ['shortlist', 'ids'],
+    queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,
     staleTime: 60_000,
     onSuccess: (d: { ids: string[] }) => {
@@ -280,7 +281,7 @@ export default function MatchDetailPage() {
   } as any);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['match-vs', targetUserId],
+    queryKey: qk('matching', 'vs', targetUserId),
     queryFn: () => getMatchVs(targetUserId),
     enabled: !!targetUserId,
   });

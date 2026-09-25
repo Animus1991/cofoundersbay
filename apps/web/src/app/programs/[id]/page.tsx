@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/toast';
 import { applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
 import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { qk } from '@/lib/query-keys';
 
 function formatDate(d: string | null): string {
   if (!d) return '—';
@@ -40,14 +41,14 @@ export default function ProgramDetailPage() {
   const placeholder = primary === 'el' ? programsEl('fit_placeholder') : programsEn('fit_placeholder');
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['programs', 'detail', id],
+    queryKey: qk('programs', 'detail', id),
     queryFn: () => getProgram(id),
     enabled: Boolean(id),
     staleTime: 60_000,
     retry: 0,
   });
   const { data: mine } = useQuery({
-    queryKey: ['programs', 'mine'],
+    queryKey: qk('programs', 'mine'),
     queryFn: getMyPrograms,
     staleTime: 60_000,
     retry: 0,
@@ -60,7 +61,7 @@ export default function ProgramDetailPage() {
     onSuccess: () => {
       success(programsEn('applied'), program?.title);
       setNote('');
-      void queryClient.invalidateQueries({ queryKey: ['programs'] });
+      void queryClient.invalidateQueries({ queryKey: qk('programs') });
     },
     onError: (e) => showError('Could not apply', e instanceof Error ? e.message : 'Sign in and try again.'),
   });

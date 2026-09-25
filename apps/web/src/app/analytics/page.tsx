@@ -28,6 +28,7 @@ import { analyticsEn, analyticsEl } from '@/lib/i18n/strings-analytics';
 import { formatShortDate } from '@/lib/i18n/format';
 import { metricsToDisplay, type AnalyticsMetric } from './metrics';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
+import { qk } from '@/lib/query-keys';
 
 const ProfileViewsChart = dynamic(
   () => import('./AnalyticsCharts').then((m) => ({ default: m.ProfileViewsChart })),
@@ -573,7 +574,7 @@ export default function AnalyticsPage() {
   );
 
   const { data: overview, isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: ['analytics', 'overview', period],
+    queryKey: qk('analytics', 'overview', period),
     queryFn: () => getAnalyticsOverview(period, 5),
     staleTime: 60_000,
     retry: 1,
@@ -581,7 +582,7 @@ export default function AnalyticsPage() {
   });
 
   const { data: achievements } = useQuery({
-    queryKey: ['achievements', 'analytics'],
+    queryKey: qk('achievements', 'analytics'),
     queryFn: getAnalyticsAchievements,
     staleTime: 60_000,
     retry: 0,

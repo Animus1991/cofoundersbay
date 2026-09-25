@@ -37,6 +37,7 @@ import {
 import { EmptyOrgEvents } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 type OrgEvent = {
   id: string;
@@ -278,7 +279,7 @@ export default function OrgEventsPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['events', 'org'],
+    queryKey: qk('events', 'org'),
     queryFn: () => listEvents({ scope: 'mine', limit: 50 }),
     staleTime: 60_000,
     retry: 0,
@@ -310,7 +311,7 @@ export default function OrgEventsPage() {
     } catch (err) {
       toastError('Could not duplicate the event', err instanceof Error ? err.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['events'] });
+      void queryClient.invalidateQueries({ queryKey: qk('events') });
     }
   };
 

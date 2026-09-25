@@ -42,6 +42,7 @@ import {
 import { cn, initialsOf } from '@/lib/utils';
 import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type PublicPitchDeck } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -462,7 +463,7 @@ export default function PitchDeckPage() {
 
   // Fetch deck (falls back to demo if API unavailable)
   const { data } = useQuery({
-    queryKey: ['pitch-deck', deckId],
+    queryKey: qk('pitch-deck', deckId),
     queryFn: () => getPublicPitchDeck(deckId),
     retry: false,
   });

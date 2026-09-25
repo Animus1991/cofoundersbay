@@ -30,6 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { qk } from '@/lib/query-keys';
 import {
   Select,
   SelectContent,
@@ -52,7 +53,7 @@ export default function OrgSettingsPage() {
   const { success, error: showError } = useToast();
 
   const { data: profileData } = useQuery({
-    queryKey: ['org', 'profile', slug],
+    queryKey: qk('org', 'profile', slug),
     queryFn: () => getOrgProfile(slug!),
     enabled: Boolean(slug),
     staleTime: 60_000,
@@ -78,7 +79,7 @@ export default function OrgSettingsPage() {
   const savedSettings = profileData?.org?.settings ?? null;
 
   const membersQuery = useQuery({
-    queryKey: ['org', 'admin-members', organizationId],
+    queryKey: qk('org', 'admin-members', organizationId),
     queryFn: () => listOrganizationMembers(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 30_000,
@@ -114,7 +115,7 @@ export default function OrgSettingsPage() {
         timezone,
       }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['org'] });
+      void qc.invalidateQueries({ queryKey: qk('org') });
       success('Organisation details saved');
     },
     onError: (err) =>
@@ -124,7 +125,7 @@ export default function OrgSettingsPage() {
   const saveBranding = useMutation({
     mutationFn: () => updateOrganization(organizationId!, { primaryColor }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['org'] });
+      void qc.invalidateQueries({ queryKey: qk('org') });
       success('Branding saved');
     },
     onError: (err) =>
@@ -137,7 +138,7 @@ export default function OrgSettingsPage() {
         settings: { ...(savedSettings ?? {}), policies: next },
       }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['org'] });
+      void qc.invalidateQueries({ queryKey: qk('org') });
       success('Access policies saved');
     },
     onError: (err) =>
@@ -153,7 +154,7 @@ export default function OrgSettingsPage() {
     mutationFn: ({ memberId, role }: { memberId: string; role: string }) =>
       updateOrganizationMember(organizationId!, memberId, { role }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['org', 'admin-members', organizationId] });
+      void qc.invalidateQueries({ queryKey: qk('org', 'admin-members', organizationId) });
       success('Role updated');
     },
     onError: (err) =>

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { listAdminAuditLogs, type AdminAuditLogItem } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
   create: Plus,
@@ -116,7 +117,7 @@ export default function AdminAuditLogPage() {
   const [page, setPage] = useState(0);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['admin', 'audit-logs', entityType, action, page],
+    queryKey: qk('admin', 'audit-logs', entityType, action, page),
     queryFn: () =>
       listAdminAuditLogs({
         entityType: entityType !== 'all' ? entityType : undefined,

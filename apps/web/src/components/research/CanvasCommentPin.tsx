@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -318,7 +319,7 @@ export function CanvasCommentPins({
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['node-comments', nodeId],
+    queryKey: qk('research-boards', 'node-comments', nodeId),
     queryFn: () => listNodeComments(nodeId),
     enabled: enabled && !!nodeId && apiAvailable,
     refetchInterval: pollInterval(30_000),
@@ -362,7 +363,7 @@ export function CanvasCommentPins({
       success('Comment pinned');
       setPendingPin(null);
       setNewPinBody('');
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       onPinPlaced?.();
     } catch {
       showError('Failed to add comment');
@@ -374,7 +375,7 @@ export function CanvasCommentPins({
   const handleResolve = async (commentId: string) => {
     try {
       await resolveComment(commentId);
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       success('Comment resolved');
     } catch {
       showError('Failed to resolve comment');
@@ -384,7 +385,7 @@ export function CanvasCommentPins({
   const handleReply = async (parentId: string, body: string) => {
     try {
       await createComment(nodeId, body, { parentId, commentType: 'general' });
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       success('Reply added');
     } catch {
       showError('Failed to add reply');

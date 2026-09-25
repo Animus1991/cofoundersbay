@@ -49,17 +49,35 @@ function parse(content: string): Block[] {
   return blocks;
 }
 
+/** `**term:** text` inside a line: the term bold, never interpreted as HTML. */
+function Inline({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-foreground">
+            {part}
+          </strong>
+        ) : (
+          <Fragment key={i}>{part}</Fragment>
+        ),
+      )}
+    </>
+  );
+}
+
 export function LegalText({ content }: { content: string }) {
   return (
     <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
       {parse(content).map((block, i) => (
         <Fragment key={i}>
           {block.kind === 'heading' && <h3 className="pt-1 text-sm font-semibold text-foreground">{block.text}</h3>}
-          {block.kind === 'para' && <p>{block.text}</p>}
+          {block.kind === 'para' && <p><Inline text={block.text} /></p>}
           {block.kind === 'list' && (
             <ul className="list-disc space-y-1 pl-5 marker:text-muted-foreground/70">
               {block.items.map((item, j) => (
-                <li key={j}>{item}</li>
+                <li key={j}><Inline text={item} /></li>
               ))}
             </ul>
           )}

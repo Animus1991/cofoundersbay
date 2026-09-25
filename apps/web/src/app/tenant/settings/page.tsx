@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { qk } from '@/lib/query-keys';
 import {
   Select,
   SelectContent,
@@ -84,7 +85,7 @@ export default function TenantSettingsPage() {
         },
       }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['tenant'] });
+      void qc.invalidateQueries({ queryKey: qk('tenant') });
       success('Settings saved');
     },
     onError: (err) =>

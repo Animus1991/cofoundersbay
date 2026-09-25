@@ -41,14 +41,16 @@ const EXCEPTIONS: Record<string, string> = {
   searchProfiles: 'two unrelated searches',
 };
 
-/** `queryKeys.x...` factories resolve to their literal first segment. */
+/** `qk('root', ...)` and `queryKeys.x...` resolve to their literal first segment. */
 function firstSegment(key: string): string {
+  const built = key.match(/^qk\(\s*'([^']+)'/);
+  if (built) return built[1];
   const factory = key.match(/^queryKeys\.(\w+)/);
   if (factory) {
     const source = readFileSync('src/lib/query-keys.ts', 'utf8');
-    const direct = source.match(new RegExp(`\\b${factory[1]}:\\s*\\[\\s*'([^']+)'`));
+    const direct = source.match(new RegExp(`\\b${factory[1]}:\\s*(?:\\[|qk\\(|\\(\\)\\s*=>\\s*qk\\()\\s*'([^']+)'`));
     if (direct) return direct[1];
-    const assigned = source.match(new RegExp(`const ${factory[1]}\\s*=\\s*Object\\.assign\\(\\[\\s*'([^']+)'`));
+    const assigned = source.match(new RegExp(`const ${factory[1]}\\s*=\\s*Object\\.assign\\((?:\\[|qk\\()\\s*'([^']+)'`));
     if (assigned) return assigned[1];
     if (factory[1] === 'connectionsPending') return 'connections';
     return factory[1];
@@ -57,7 +59,7 @@ function firstSegment(key: string): string {
 }
 
 const USE_QUERY =
-  /useQuery\(\{\s*queryKey:\s*(\[[^\]\n]*\]|queryKeys\.[\w.()]+)\s*,\s*\n?\s*queryFn:\s*(?:\(\)\s*=>\s*)?(?:async\s*\(\)\s*=>\s*)?\{?\s*(?:return\s+)?(?:await\s+)?([a-z]\w*)\s*[(,\n]/g;
+  /useQuery\(\{\s*queryKey:\s*(\[[^\]\n]*\]|qk\([^)\n]*\)|queryKeys\.[\w.()]+)\s*,\s*\n?\s*queryFn:\s*(?:\(\)\s*=>\s*)?(?:async\s*\(\)\s*=>\s*)?\{?\s*(?:return\s+)?(?:await\s+)?([a-z]\w*)\s*[(,\n]/g;
 
 describe('query key coherence', () => {
   const byRead = new Map<string, Map<string, string[]>>();

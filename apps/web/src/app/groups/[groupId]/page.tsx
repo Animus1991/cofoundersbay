@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/toast';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 import {
   getGroup,
   joinGroup,
@@ -56,7 +57,7 @@ function PostCard({
   const { error: toastError } = useToast();
 
   const commentsQuery = useQuery({
-    queryKey: ['group-comments', post.id],
+    queryKey: qk('groups', 'comments', post.id),
     queryFn: () => listGroupComments(groupId, post.id, { limit: 20 }),
     enabled: showComments,
     staleTime: 30_000,
@@ -235,14 +236,14 @@ export default function GroupDetailPage() {
   }, []);
 
   const groupQuery = useQuery({
-    queryKey: ['group', groupId],
+    queryKey: qk('groups', 'one', groupId),
     queryFn: () => getGroup(groupId!),
     staleTime: 60_000,
     enabled: !!groupId,
   });
 
   const postsQuery = useQuery({
-    queryKey: ['group-posts', groupId],
+    queryKey: qk('groups', 'posts', groupId),
     queryFn: () => listGroupPosts(groupId!, { limit: 20 }),
     staleTime: 30_000,
     enabled: !!groupId,
@@ -263,8 +264,8 @@ export default function GroupDetailPage() {
         await joinGroup(group.id);
         success('Joined!', `Welcome to ${group.name}!`);
       }
-      queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'one', groupId) });
+      queryClient.invalidateQueries({ queryKey: qk('groups') });
     } catch (e: unknown) {
       toastError('Error', errorMessage(e, 'Something went wrong.'));
     } finally {
@@ -278,7 +279,7 @@ export default function GroupDetailPage() {
     try {
       await createGroupPost(group.id, { content: newPost.trim() });
       setNewPost('');
-      queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
     } catch (e: unknown) {
       toastError('Error', errorMessage(e, 'Failed to create post.'));
     } finally {
@@ -290,7 +291,7 @@ export default function GroupDetailPage() {
     if (!group) return;
     try {
       await deleteGroupPost(group.id, postId);
-      queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
       success('Post deleted', '');
     } catch (e: unknown) {
       toastError('Error', errorMessage(e, 'Failed to delete post.'));
@@ -301,7 +302,7 @@ export default function GroupDetailPage() {
     if (!group) return;
     try {
       await reactToGroupPost(group.id, postId, emoji);
-      queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
     } catch {}
   };
 

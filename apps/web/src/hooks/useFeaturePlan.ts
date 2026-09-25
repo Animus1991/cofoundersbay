@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getBillingSubscription } from '@/lib/api';
 import { planHasFeature, type PlanFeatureKey } from '@/lib/billing';
 import { useSession } from './useSession';
+import { qk } from '@/lib/query-keys';
 
 /**
  * Returns the current user's active subscription + a helper to check
@@ -13,7 +14,7 @@ export function useFeaturePlan() {
   const { hasSession } = useSession();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['billing', 'subscription'],
+    queryKey: qk('billing', 'subscription'),
     queryFn: getBillingSubscription,
     enabled: hasSession,
     staleTime: 5 * 60_000,

@@ -1,6 +1,6 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getServerQueryClient, serverFetch } from '@/lib/server-query';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import FounderDashboardContent from './FounderDashboardContent';
 
 export default async function FounderDashboardPage() {
@@ -32,7 +32,7 @@ export default async function FounderDashboardPage() {
 
   await Promise.allSettled([
     seed(queryKeys.me.profile(), '/api/me/profile'),
-    seed(['dashboard', 'stats', 'founder'], '/api/dashboard/stats'),
+    seed(qk('dashboard', 'stats', 'founder'), '/api/dashboard/stats'),
     // Must stay `queryKeys.recommendations` (= ['recommendations']) to match the
     // client's useQuery. It previously prefetched ['recommendations', {limit:5}],
     // which hydrates into a different cache entry — so this fetch was paid for on

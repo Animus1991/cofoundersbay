@@ -35,6 +35,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { messagesEn, messagesEl } from '@/lib/i18n/strings-messages';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 export type ValidationMode = 'casual' | 'one_party' | 'two_party';
 
@@ -144,7 +145,7 @@ export function ConversationValidationMenu({
   const updateModeMutation = useMutation({
     mutationFn: (mode: ValidationMode) => updateConversationValidationMode(conversationId, mode as ApiValidationMode),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       onModeChange?.(data.validationState.mode);
       success('Validation mode updated', messagesEn(MODE_CONFIG[data.validationState.mode].labelKey));
       setShowModeDialog(false);
@@ -157,7 +158,7 @@ export function ConversationValidationMenu({
   const acceptMutation = useMutation({
     mutationFn: () => acceptConversationValidation(conversationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       success('Validation accepted', 'Two-party validation is now active');
       setShowAcceptDialog(false);
     },
@@ -169,7 +170,7 @@ export function ConversationValidationMenu({
   const declineMutation = useMutation({
     mutationFn: () => declineConversationValidation(conversationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       success('Validation declined', 'Conversation remains in casual mode');
       setShowAcceptDialog(false);
     },

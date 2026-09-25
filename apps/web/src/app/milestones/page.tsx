@@ -42,6 +42,7 @@ import {
   type MilestonePriority,
 } from '@/lib/api';
 import { MilestoneFormModal } from './MilestoneFormModal';
+import { qk } from '@/lib/query-keys';
 
 // ── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<MilestoneStatus, { statusKey: 'status_todo' | 'status_in_progress' | 'status_blocked' | 'status_completed' | 'status_cancelled'; glyph: CfbGlyphName; tone: StatusTone }> = {
@@ -373,7 +374,7 @@ export default function MilestonesPage() {
     setMounted(true);
   }, []);
 
-  const queryKey = ['milestones', statusFilter, priorityFilter];
+  const queryKey = qk('milestones', statusFilter, priorityFilter);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
@@ -388,7 +389,7 @@ export default function MilestonesPage() {
   });
 
   const { data: summaryData } = useQuery({
-    queryKey: ['milestones', 'summary'],
+    queryKey: qk('milestones', 'summary'),
     queryFn: getMilestoneSummary,
     staleTime: 60_000,
     enabled: mounted && isAuthenticated && !isChecking,
@@ -406,7 +407,7 @@ export default function MilestonesPage() {
   const createMut = useMutation({
     mutationFn: createMilestone,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['milestones'] });
+      qc.invalidateQueries({ queryKey: qk('milestones') });
       setCreateOpen(false);
     },
   });
@@ -415,7 +416,7 @@ export default function MilestonesPage() {
     mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateMilestone>[1] }) =>
       updateMilestone(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['milestones'] });
+      qc.invalidateQueries({ queryKey: qk('milestones') });
       setEditTarget(null);
     },
   });
@@ -429,7 +430,7 @@ export default function MilestonesPage() {
         milestones: (old?.milestones ?? []).filter((m) => m.id !== id),
       }));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['milestones'] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('milestones') }),
   });
 
   const handleStatusChange = useCallback(

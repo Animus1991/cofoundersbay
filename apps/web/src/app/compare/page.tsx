@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getMatchBreakdown, sendConnectionRequest } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 const ComparisonChart = dynamic(
   () => import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
@@ -252,7 +253,7 @@ export default function ComparePage() {
 
   // Fetch profiles
   const { data: profiles, isLoading } = useQuery({
-    queryKey: ['compare-profiles', profileIds],
+    queryKey: qk('matching', 'compare', profileIds),
     queryFn: async () => {
       if (profileIds.length === 0) return [];
       const results = await Promise.all(

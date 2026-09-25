@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 type Program = {
   /** Set on live rows; the owning organisation's own programs page. */
@@ -216,7 +217,7 @@ export default function AdminProgramsPage() {
   // Programs are public reads; the list was a fixed array dated 2025 while
   // GET /programs served every organisation's programmes.
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['programs', 'admin'],
+    queryKey: qk('programs', 'admin'),
     queryFn: () => listPrograms({ limit: 100 }),
     staleTime: 60_000,
     retry: 0,
@@ -248,7 +249,7 @@ export default function AdminProgramsPage() {
           : err instanceof Error ? err.message : undefined,
       );
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['programs'] });
+      void queryClient.invalidateQueries({ queryKey: qk('programs') });
     }
   };
 

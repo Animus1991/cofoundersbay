@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { qk } from '@/lib/query-keys';
 import {
   Target,
   Zap,
@@ -78,7 +79,7 @@ interface ReadinessPanelProps {
 
 export function WorkspaceReadinessPanel({ workspaceId, compact = false }: ReadinessPanelProps) {
   const { data, isLoading } = useQuery<GamificationReadinessSummary>({
-    queryKey: ['gamification-readiness', workspaceId],
+    queryKey: qk('gamification', 'readiness', workspaceId),
     queryFn: () => getWorkspaceReadiness(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -196,7 +197,7 @@ interface MomentumPanelProps {
 
 export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
   const { data, isLoading } = useQuery<GamificationMomentumSummary>({
-    queryKey: ['gamification-momentum', workspaceId],
+    queryKey: qk('gamification', 'momentum', workspaceId),
     queryFn: () => getWorkspaceMomentum(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -296,7 +297,7 @@ interface ContributionPanelProps {
 
 export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
   const { data: contributors, isLoading } = useQuery<GamificationContributionSummary[]>({
-    queryKey: ['gamification-contributions', workspaceId],
+    queryKey: qk('gamification', 'contributions', workspaceId),
     queryFn: () => getWorkspaceContributions(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -377,7 +378,7 @@ interface MentorMetricsPanelProps {
 
 export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
   const { data, isLoading } = useQuery<GamificationMentorMetrics>({
-    queryKey: ['gamification-mentor-metrics', workspaceId],
+    queryKey: qk('gamification', 'mentor-metrics', workspaceId),
     queryFn: () => getWorkspaceMentorMetrics(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,

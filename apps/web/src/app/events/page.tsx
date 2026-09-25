@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent } from '@/components/ui/card';
+import { qk } from '@/lib/query-keys';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
@@ -76,7 +77,7 @@ export default function EventsPage() {
   const scope = activeTab === 'my-events' ? 'mine' : activeTab === 'past' ? 'past' : 'upcoming';
 
   const { data: eventsResult, isLoading: loading, isError, refetch } = useQuery({
-    queryKey: ['events', scope, searchQuery, filter],
+    queryKey: qk('events', scope, searchQuery, filter),
     queryFn: () =>
       listEvents({
         scope,
@@ -99,7 +100,7 @@ export default function EventsPage() {
       const nextStatus = event.viewerRsvp === 'going' ? 'not_going' : 'going';
       await rsvpEvent(event.id, nextStatus);
       queryClient.setQueryData(
-        ['events', scope, searchQuery, filter],
+        qk('events', scope, searchQuery, filter),
         (old: { events: EventItem[] } | undefined) => {
           if (!old) return old;
           return {

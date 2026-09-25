@@ -59,6 +59,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn, initialsOf } from '@/lib/utils';
 import Link from 'next/link';
+import { qk } from '@/lib/query-keys';
 
 // Types
 interface Participant {
@@ -377,7 +378,7 @@ export default function CohortDetailPage() {
    * then ignored, so every cohort an organiser opened was the same one.
    */
   const { data, isLoading } = useQuery({
-    queryKey: ['org', slug, 'cohort', cohortId],
+    queryKey: qk('org', slug, 'cohort', cohortId),
     queryFn: () => getOrgCohortDetail(slug!, cohortId),
     enabled: Boolean(slug && cohortId),
     staleTime: 60_000,

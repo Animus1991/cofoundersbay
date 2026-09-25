@@ -25,6 +25,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
 import { cn } from '@/lib/utils';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 type NotificationChannel = 'push' | 'email' | 'inApp';
 
@@ -250,7 +251,7 @@ export default function NotificationPreferencesPage() {
   const [automationPrefs, setAutomationPrefs] = useState<Record<AutomationKey, boolean>>(() => loadAutomationPrefs());
 
   const { data: prefs } = useQuery({
-    queryKey: ['notification-preferences'],
+    queryKey: qk('notifications', 'preferences'),
     queryFn: getNotificationPreferences,
   });
 

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from './useSession';
+import { qk } from '@/lib/query-keys';
 import {
   getNextAction,
   recordNudgeDismissed,
@@ -17,7 +18,7 @@ export function useNextAction({ surface = 'dashboard', enabled = true }: UseNext
   const queryClient = useQueryClient();
 
   const query = useQuery<NextActionResponse>({
-    queryKey: ['next-action', surface],
+    queryKey: qk('next-action', surface),
     queryFn: () => getNextAction(surface),
     enabled: enabled && hasSession,
     staleTime: 10 * 60_000,
@@ -27,7 +28,7 @@ export function useNextAction({ surface = 'dashboard', enabled = true }: UseNext
   const dismissMutation = useMutation({
     mutationFn: (logId: string) => recordNudgeDismissed(logId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['next-action'] });
+      void queryClient.invalidateQueries({ queryKey: qk('next-action') });
     },
   });
 

@@ -45,6 +45,7 @@ import {
 import { EmptyOrgCohorts } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the API row.
@@ -211,7 +212,7 @@ export default function OrgCohortsPage() {
    */
   const { slug } = useCurrentOrg();
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'cohorts', slug],
+    queryKey: qk('org', 'cohorts', slug),
     queryFn: () => getOrgCohorts(slug!, { limit: 50 }),
     enabled: Boolean(slug),
     staleTime: 60_000,

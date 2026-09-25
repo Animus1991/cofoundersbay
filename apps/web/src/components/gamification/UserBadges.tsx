@@ -25,6 +25,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 interface BadgeItem {
   id: string;
@@ -194,7 +195,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const { data: apiBadges, isLoading } = useQuery({
-    queryKey: ['my-badges'],
+    queryKey: qk('gamification', 'my-badges'),
     queryFn: getMyBadges,
     staleTime: 5 * 60_000,
     enabled: live,

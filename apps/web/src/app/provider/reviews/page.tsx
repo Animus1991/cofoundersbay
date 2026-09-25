@@ -23,6 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type Review = {
   id: string;
@@ -182,7 +183,7 @@ export default function ProviderReviewsPage() {
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['provider', 'reviews'],
+    queryKey: qk('provider', 'reviews'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 100 }),
     staleTime: 60_000,
     retry: 0,

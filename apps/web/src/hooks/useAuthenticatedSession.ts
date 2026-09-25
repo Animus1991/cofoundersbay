@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getMe, type AuthUser } from '@/lib/api';
 import { useHasSession } from './useSession';
 import { useApiAvailability } from './useApiAvailability';
+import { qk } from '@/lib/query-keys';
 
 /**
  * Cookie presence (`cfb_session`) is not enough — the token may be expired while
@@ -22,7 +23,7 @@ export function useAuthenticatedSession(): {
   const apiAvailable = useApiAvailability();
 
   const { data, isPending, isFetching, isError } = useQuery({
-    queryKey: ['auth', 'me'],
+    queryKey: qk('auth', 'me'),
     queryFn: getMe,
     enabled: hasCookie && apiAvailable,
     staleTime: 5 * 60_000,

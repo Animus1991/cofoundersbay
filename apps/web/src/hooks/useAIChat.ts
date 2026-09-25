@@ -34,7 +34,7 @@ import type { InvalidationTopic } from '@cofounderbay/shared';
 import { getActionSpec, isUndoable, undoAction as runUndo } from '@/lib/action-registry';
 import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
-import { CONNECTION_KEYS, MESSAGE_KEYS, PROFILE_KEYS, queryKeys } from '@/lib/query-keys';
+import { CONNECTION_KEYS, MESSAGE_KEYS, PROFILE_KEYS, queryKeys, qk } from '@/lib/query-keys';
 
 export interface AIMessage {
   id: string;
@@ -93,16 +93,17 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   shortlist: [queryKeys.shortlist, queryKeys.shortlistIds],
   graph: [queryKeys.graphMe],
   // Both the canonical score and anything keyed under a workspace beneath it.
-  readiness: [['readiness']],
-  workspaces: [['builder'], ['workspaces']],
+  readiness: [qk('readiness')],
+  workspaces: [qk('builder'), qk('workspaces')],
   // One key covers the board, its summary and its activity: they are one row.
-  investor: [['investor']],
-  research: [['research-boards'], ['research-board']],
+  investor: [qk('investor')],
+  // One root for boards, a board, and its versions, snapshots and comments.
+  research: [qk('research-boards')],
   profile: [...PROFILE_KEYS],
   // The page keys its list by the filters in state, so the base key is the
   // only shape that reaches every variant of it.
-  milestones: [['milestones']],
-  events: [['events']],
+  milestones: [qk('milestones')],
+  events: [qk('events')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
@@ -496,7 +497,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       const topics = getActionSpec(tool)?.invalidates ?? [];
       for (const topic of topics) {
         for (const key of TOPIC_KEYS[topic]) {
-          void queryClient.invalidateQueries({ queryKey: [...key] });
+          void queryClient.invalidateQueries({ queryKey: key });
         }
       }
     },

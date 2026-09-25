@@ -21,6 +21,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-activity';
+import { qk } from '@/lib/query-keys';
 
 // ── Type config ─────────────────────────────────────────────────────────────
 
@@ -242,7 +243,7 @@ export default function ActivityPage() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const { data: activityData, isLoading: activityLoading, isError: activityError, refetch: refetchActivity } = useQuery<DashboardActivityPage>({
-    queryKey: ['dashboard-activity', PAGE_SIZE],
+    queryKey: qk('dashboard', 'activity', PAGE_SIZE),
     queryFn: () => getDashboardActivity({ limit: PAGE_SIZE, offset: 0 }),
     staleTime: 30_000,
   });
@@ -271,7 +272,7 @@ export default function ActivityPage() {
   };
 
   const { data: notifData, isLoading: notifLoading, isError: notifError, refetch: refetchNotif } = useQuery({
-    queryKey: ['notifications-activity'],
+    queryKey: qk('notifications', 'activity'),
     queryFn: () => listNotifications({ limit: 50 }),
     staleTime: 30_000,
     enabled: activeTab === 'notifications',
@@ -279,7 +280,7 @@ export default function ActivityPage() {
 
   const markAll = useMutation({
     mutationFn: markAllNotificationsRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications-activity'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('notifications', 'activity') }),
   });
 
   const activityItems = allItems;

@@ -28,6 +28,7 @@ import { STATUS } from '@/lib/semantic-colors';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 const TYPE_GLYPH: Record<string, CfbGlyphName> = {
   message: 'messages',
@@ -80,7 +81,7 @@ export function NotificationsBell({ className }: { className?: string }) {
   // depending on which fifteen they were, and never agreed with the sidebar.
   const queryClient = useQueryClient();
   const { notifications: unread } = useUnreadCounts();
-  const refreshCounts = () => queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  const refreshCounts = () => queryClient.invalidateQueries({ queryKey: qk('notifications') });
   const ready = hasSession && !isChecking && isAuthenticated && apiAvailable;
 
   const load = async (force = false) => {

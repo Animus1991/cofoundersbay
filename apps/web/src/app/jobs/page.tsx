@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
 import { bilingualInline } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -244,7 +245,7 @@ export default function JobsPage() {
   const [showPostForm, setShowPostForm] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['jobs'],
+    queryKey: qk('jobs'),
     queryFn: () => listJobs({ limit: 50 }),
     staleTime: 60_000,
     retry: 1,
@@ -277,7 +278,7 @@ export default function JobsPage() {
     {showPostForm && (
       <PostJobForm
         onClose={() => setShowPostForm(false)}
-        onCreated={() => queryClient.invalidateQueries({ queryKey: ['jobs'] })}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: qk('jobs') })}
       />
     )}
     <AppShell

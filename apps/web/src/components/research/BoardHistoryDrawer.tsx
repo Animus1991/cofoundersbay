@@ -34,6 +34,7 @@ import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { LocalTime } from '@/components/common/LocalTime';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ interface SnapshotPreviewProps {
 
 function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPreviewProps) {
   const { data, isLoading } = useQuery({
-    queryKey: ['snapshot', boardId, snapshot.id],
+    queryKey: qk('research-boards', 'snapshot', boardId, snapshot.id),
     queryFn: () => getSnapshot(boardId, snapshot.id),
     enabled: open,
   });
@@ -211,7 +212,7 @@ export function BoardHistoryDrawer({
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['snapshots', boardId],
+    queryKey: qk('research-boards', 'snapshots', boardId),
     queryFn: () => listSnapshots(boardId),
     enabled: open && !!boardId && apiAvailable,
     refetchInterval: pollInterval(60_000),
@@ -227,7 +228,7 @@ export function BoardHistoryDrawer({
       await createSnapshot(boardId, snapshotLabel.trim() || undefined);
       success('Snapshot saved');
       setSnapshotLabel('');
-      queryClient.invalidateQueries({ queryKey: ['snapshots', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'snapshots', boardId) });
     } catch {
       toastError('Failed to save snapshot');
     } finally {

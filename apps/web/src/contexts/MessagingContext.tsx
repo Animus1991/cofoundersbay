@@ -43,7 +43,7 @@ import { listMessageConversations } from '@/lib/api';
 import { isApiCircuitOpen, probeApiHealth } from '@/lib/api';
 import { createMessagingSocket } from '@/lib/messagingSocket';
 import type { MessageItem } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 
 type ConversationList = Awaited<ReturnType<typeof listMessageConversations>>;
 
@@ -180,7 +180,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, queryClient]);
 
-  // An observer on the shared list, so `invalidateQueries(['conversations'])`
+  // An observer on the shared list, so `invalidateQueries(qk('conversations'))`
   // (a report, a thread, a realtime event) refetches it and the count follows.
   // Without one, an invalidation only marked the entry stale.
   const apiAvailable = useApiAvailability();

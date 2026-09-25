@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 type SecurityEvent = {
   id: string;
@@ -85,13 +86,13 @@ export default function SecurityMonitoringPage() {
    * count over the loaded twenty are different statements.
    */
   const { data: flagsData } = useQuery({
-    queryKey: ['admin', 'abuse', 'flags'],
+    queryKey: qk('admin', 'abuse', 'flags'),
     queryFn: () => adminListAbuseFlags({ limit: 50 }),
     staleTime: 30_000,
     retry: 0,
   });
   const { data: abuseStats } = useQuery({
-    queryKey: ['admin', 'abuse', 'stats'],
+    queryKey: qk('admin', 'abuse', 'stats'),
     queryFn: adminGetAbuseStats,
     staleTime: 30_000,
     retry: 0,

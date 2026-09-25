@@ -27,6 +27,7 @@ import {
 } from '@/lib/api';
 import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
+import { qk } from '@/lib/query-keys';
 
 // ── Color swatch + input ───────────────────────────────────────────────────────
 
@@ -131,7 +132,7 @@ export default function TenantBrandingPage() {
   const [saved, setSaved] = useState(false);
 
   const { data: branding, isLoading } = useQuery({
-    queryKey: ['tenant-branding', tenantId],
+    queryKey: qk('tenant', 'branding', tenantId),
     queryFn: () => getTenantBranding(tenantId),
     enabled: !!tenantId,
   });
@@ -182,7 +183,7 @@ export default function TenantBrandingPage() {
   const saveMutation = useMutation({
     mutationFn: (data: FormState) => updateTenantBranding(tenantId, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('tenant', 'branding', tenantId) });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
       void analytics.track('tenant_branding_updated', {
@@ -196,12 +197,12 @@ export default function TenantBrandingPage() {
 
   const publishMutation = useMutation({
     mutationFn: () => publishTenantBranding(tenantId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('tenant', 'branding', tenantId) }),
   });
 
   const unpublishMutation = useMutation({
     mutationFn: () => unpublishTenantBranding(tenantId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('tenant', 'branding', tenantId) }),
   });
 
   const handleSave = () => saveMutation.mutate(form);

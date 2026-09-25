@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMeProfile, listLearningResources, getLearningCategories, type LearningResourceItem } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -340,7 +340,7 @@ export default function LearningPage() {
 
   // Fetch from real backend; fall back to DEMO_RESOURCES if empty (new installation)
   const { data: learningData, isLoading: learningLoading } = useQuery({
-    queryKey: ['learning', selectedCategory !== 'All' ? selectedCategory : undefined, searchQuery || undefined],
+    queryKey: qk('learning', selectedCategory !== 'All' ? selectedCategory : undefined, searchQuery || undefined),
     queryFn: () => listLearningResources({
       category: selectedCategory !== 'All' ? selectedCategory : undefined,
       search: searchQuery.trim() || undefined,
@@ -350,7 +350,7 @@ export default function LearningPage() {
   });
 
   const { data: categoriesData } = useQuery({
-    queryKey: ['learning-categories'],
+    queryKey: qk('learning', 'categories'),
     queryFn: getLearningCategories,
     staleTime: 60 * 60_000,
   });

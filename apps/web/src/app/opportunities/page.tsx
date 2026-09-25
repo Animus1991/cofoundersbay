@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
 import { bilingualInline } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -518,7 +519,7 @@ export default function OpportunitiesPage() {
   const [showPostForm, setShowPostForm] = useState(false);
 
   const { data: opportunitiesData, isLoading: oppLoading, isError: oppError, refetch: refetchOpp } = useQuery({
-    queryKey: ['opportunities', { search, type: oppTypeFilter, isRemote: remoteOnly || undefined }],
+    queryKey: qk('opportunities', { search, type: oppTypeFilter, isRemote: remoteOnly || undefined }),
     queryFn: () => listOpportunities({
       search: search.trim() || undefined,
       type: oppTypeFilter !== 'all' ? oppTypeFilter : undefined,
@@ -530,7 +531,7 @@ export default function OpportunitiesPage() {
   });
 
   const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
-    queryKey: ['jobs', { limit: 50 }],
+    queryKey: qk('jobs', { limit: 50 }),
     queryFn: () => listJobs({ limit: 50 }),
     staleTime: 60_000,
     retry: 1,
@@ -564,7 +565,7 @@ export default function OpportunitiesPage() {
       {showPostForm && (
         <PostOpportunityForm
           onClose={() => setShowPostForm(false)}
-          onCreated={() => queryClient.invalidateQueries({ queryKey: ['jobs'] })}
+          onCreated={() => queryClient.invalidateQueries({ queryKey: qk('jobs') })}
         />
       )}
       <AppShell

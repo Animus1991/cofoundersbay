@@ -37,6 +37,7 @@ import { EmptyOrgMembers } from '@/components/common/EmptyStates';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
+import { qk } from '@/lib/query-keys';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -184,7 +185,7 @@ export default function OrgMembersPage() {
 
   const { slug } = useCurrentOrg();
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'members', slug],
+    queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug!, { limit: 100 }),
     enabled: Boolean(slug),
     staleTime: 60_000,

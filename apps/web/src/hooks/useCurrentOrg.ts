@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getUserOrganizations, type OrgMembershipItem } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 /**
  * Which organisation the /org screens are administering.
@@ -34,7 +35,7 @@ export type CurrentOrg = {
 
 export function useCurrentOrg(): CurrentOrg {
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'my-memberships'],
+    queryKey: qk('org', 'my-memberships'),
     queryFn: getUserOrganizations,
     // An organisation membership changes rarely and every /org screen asks for
     // it, so this is cached longer than the data it unlocks.

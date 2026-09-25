@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   listBranches,
   createBranch,
@@ -246,7 +247,7 @@ export function BranchPanel({
   const [proposalBranch, setProposalBranch] = useState<ArtifactBranch | null>(null);
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['branches', documentId],
+    queryKey: qk('builder', 'branches', documentId),
     queryFn: () => listBranches(documentId),
     enabled: open && !!documentId,
   });
@@ -258,7 +259,7 @@ export function BranchPanel({
     try {
       await closeBranch(branchId);
       success('Draft variant closed');
-      queryClient.invalidateQueries({ queryKey: ['branches', documentId] });
+      queryClient.invalidateQueries({ queryKey: qk('builder', 'branches', documentId) });
     } catch {
       toastError('Failed to close variant');
     }
@@ -426,7 +427,7 @@ export function BranchPanel({
         onClose={() => setShowCreateDialog(false)}
         documentId={documentId}
         currentVersion={currentDocVersion}
-        onCreated={() => queryClient.invalidateQueries({ queryKey: ['branches', documentId] })}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: qk('builder', 'branches', documentId) })}
       />
 
       {proposalBranch && (
@@ -435,8 +436,8 @@ export function BranchPanel({
           onClose={() => setProposalBranch(null)}
           branch={proposalBranch}
           onSubmitted={() => {
-            queryClient.invalidateQueries({ queryKey: ['branches', documentId] });
-            queryClient.invalidateQueries({ queryKey: ['proposals', documentId] });
+            queryClient.invalidateQueries({ queryKey: qk('builder', 'branches', documentId) });
+            queryClient.invalidateQueries({ queryKey: qk('builder', 'proposals', documentId) });
           }}
         />
       )}

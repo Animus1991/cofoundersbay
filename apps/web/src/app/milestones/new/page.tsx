@@ -18,6 +18,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 import {
   milestoneEn,
   milestoneEl,
@@ -63,7 +64,7 @@ export default function NewMilestonePage() {
         collaboratorId: collaboratorId || undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['milestones'] });
+      queryClient.invalidateQueries({ queryKey: qk('milestones') });
       success(t(milestoneEn('created'), milestoneEl('created')), t(milestoneEn('created_hint'), milestoneEl('created_hint')));
       router.push('/milestones');
     },

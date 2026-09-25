@@ -16,6 +16,7 @@ import { useTenant } from '@/components/providers/TenantContext';
 import { getTenantMembers } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { qk } from '@/lib/query-keys';
 import {
   Select,
   SelectContent,
@@ -38,7 +39,7 @@ export default function TenantAnalyticsPage() {
   const { activeTenant } = useTenant();
   const tenantId = activeTenant?.id ?? null;
   const { data } = useQuery({
-    queryKey: ['tenant', 'members', tenantId],
+    queryKey: qk('tenant', 'members', tenantId),
     queryFn: () => getTenantMembers(tenantId!, { limit: 500 }),
     enabled: Boolean(tenantId),
     staleTime: 60_000,

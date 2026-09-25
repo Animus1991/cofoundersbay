@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { votePoll } from '@/lib/api';
 import type { PollView } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 export type PollOption = { id: string; label: string; votes: number };
 export type DashboardPollData = {
@@ -47,7 +48,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
       votePoll(pollId, optionId),
     onMutate: ({ optionId }) => setOptimisticVote(optionId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['polls', 'active'] });
+      void queryClient.invalidateQueries({ queryKey: qk('polls', 'active') });
       success('Vote recorded');
     },
     onError: (err) => {

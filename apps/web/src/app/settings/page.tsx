@@ -43,6 +43,7 @@ import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 import { useI18n } from '@/components/common/I18nProvider';
+import { qk } from '@/lib/query-keys';
 
 type NotifPrefs = {
   messages: boolean;
@@ -188,7 +189,7 @@ export default function SettingsPage() {
   const [working, setWorking] = useState<'checkout' | 'portal' | null>(null);
 
   const { data: subData, isLoading: loading } = useQuery({
-    queryKey: ['billing', 'subscription'],
+    queryKey: qk('billing', 'subscription'),
     queryFn: getBillingSubscription,
     staleTime: 60_000,
     enabled: hasToken,
@@ -196,7 +197,7 @@ export default function SettingsPage() {
   const subscription = subData?.subscription ?? null;
 
   const { data: twoFaData } = useQuery({
-    queryKey: ['2fa', 'status'],
+    queryKey: qk('auth', '2fa', 'status'),
     queryFn: getTwoFactorStatus,
     staleTime: 30_000,
     enabled: hasToken,
@@ -204,7 +205,7 @@ export default function SettingsPage() {
   const twoFaEnabled = twoFaData?.enabled ?? false;
 
   const { data: linkedAccountsData } = useQuery({
-    queryKey: ['linked-accounts'],
+    queryKey: qk('auth', 'linked-accounts'),
     queryFn: getLinkedAccounts,
     staleTime: 60_000,
     enabled: hasToken,
@@ -632,7 +633,7 @@ export default function SettingsPage() {
                   <TwoFactorManagement
                     isEnabled={twoFaEnabled}
                     onStatusChange={(enabled) =>
-                      queryClient.setQueryData(['2fa', 'status'], { enabled })
+                      queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
                     }
                   />
                 </CardContent>

@@ -37,6 +37,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type Inquiry = {
   id: string;
@@ -275,7 +276,7 @@ export default function ProviderInquiriesPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['provider', 'inquiries'],
+    queryKey: qk('provider', 'inquiries'),
     queryFn: () => listServiceInquiries({ side: 'provider', limit: 100 }),
     staleTime: 30_000,
     retry: 0,
@@ -291,7 +292,7 @@ export default function ProviderInquiriesPage() {
     } catch (e) {
       toastError('Could not update the inquiry', e instanceof Error ? e.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['provider', 'inquiries'] });
+      void queryClient.invalidateQueries({ queryKey: qk('provider', 'inquiries') });
     }
   };
   const inquiries =

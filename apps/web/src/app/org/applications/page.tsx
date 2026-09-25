@@ -48,6 +48,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 /**
  * An application is a program participant whose status says so.
@@ -295,7 +296,7 @@ export default function OrgApplicationsPage() {
   const { success, error: showError } = useToast();
 
   const { data: programsData } = useQuery({
-    queryKey: ['programs', 'mine'],
+    queryKey: qk('programs', 'mine'),
     queryFn: getMyPrograms,
     staleTime: 60_000,
     retry: 0,
@@ -304,7 +305,7 @@ export default function OrgApplicationsPage() {
 
   const participantQueries = useQueries({
     queries: programs.map((program) => ({
-      queryKey: ['org', 'participants', program.id],
+      queryKey: qk('org', 'participants', program.id),
       queryFn: () => getProgramParticipants(program.id),
       staleTime: 60_000,
       retry: 0,
@@ -334,7 +335,7 @@ export default function OrgApplicationsPage() {
       status: 'accepted' | 'rejected';
     }) => updateProgramParticipant(programId, participantId, { status }),
     onSuccess: (_result, variables) => {
-      void qc.invalidateQueries({ queryKey: ['org', 'participants', variables.programId] });
+      void qc.invalidateQueries({ queryKey: qk('org', 'participants', variables.programId) });
       success(variables.status === 'accepted' ? 'Application accepted' : 'Application rejected');
     },
     onError: (err) =>

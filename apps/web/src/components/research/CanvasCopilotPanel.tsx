@@ -23,6 +23,7 @@ import {
   type ResearchNode,
 } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 // ── Agent metadata ────────────────────────────────────────────────────────────
 
@@ -257,7 +258,7 @@ export function CanvasCopilotPanel({
 
   // Fetch agents
   const { data: agentsData } = useQuery({
-    queryKey: ['copilot-agents', boardId],
+    queryKey: qk('ai', 'copilot-agents', boardId),
     queryFn: () => listCanvasCopilotAgents(boardId),
   });
   const agents = agentsData?.agents ?? FALLBACK_AGENTS;
@@ -265,7 +266,7 @@ export function CanvasCopilotPanel({
 
   // Fetch importable documents
   const { data: importableData, refetch: refetchImportable } = useQuery({
-    queryKey: ['importable-docs', boardId],
+    queryKey: qk('research-boards', 'importable-docs', boardId),
     queryFn: () => listImportableDocuments(boardId),
     enabled: tab === 'import',
   });

@@ -43,6 +43,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -117,7 +118,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const hasToken = useIsAuthenticated();
 
   const { data: profile, isLoading, isError } = useQuery({
-    queryKey: ['public-profile', userId],
+    queryKey: qk('public-profile', userId),
     queryFn: () => getPublicProfile(userId),
     staleTime: 2 * 60_000,
     enabled: !!userId,
@@ -125,7 +126,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   });
 
   const { data: connStatus } = useQuery({
-    queryKey: ['connection-status', userId],
+    queryKey: qk('connection-status', userId),
     queryFn: () => getConnectionStatus(userId),
     staleTime: 30_000,
     enabled: !!userId && hasToken,
@@ -135,7 +136,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     setConnecting(true);
     try {
       await sendConnectionRequest({ receiverId: userId });
-      queryClient.setQueryData(['connection-status', userId], {
+      queryClient.setQueryData(qk('connection-status', userId), {
         status: 'pending', connectionId: null, direction: 'sent',
       });
       success('Request sent!', `Your connection request has been sent.`);

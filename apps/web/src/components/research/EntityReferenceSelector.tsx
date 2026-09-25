@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { searchProfiles } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 export type EntityType = 'user' | 'opportunity' | 'group' | 'project' | 'mentor';
 
@@ -51,7 +52,7 @@ export function EntityReferenceSelector({
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: searchResults, isLoading } = useQuery({
-    queryKey: ['entity-search', selectedType, searchQuery],
+    queryKey: qk('entity-search', selectedType, searchQuery),
     queryFn: async () => {
       if (!selectedType || !searchQuery.trim()) return [];
       

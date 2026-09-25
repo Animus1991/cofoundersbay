@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { AppShell } from '@/components/layout/AppShell';
+import { qk } from '@/lib/query-keys';
 
 import {
   Users,
@@ -150,7 +151,7 @@ export default function AdminDashboardPage() {
     error: metricsError,
     refetch: refetchMetrics,
   } = useQuery({
-    queryKey: ['admin-metrics', timeRange],
+    queryKey: qk('admin', 'metrics', timeRange),
     queryFn: fetchAdminMetrics,
     refetchInterval: pollInterval(refreshInterval),
     refetchIntervalInBackground: false,
@@ -162,7 +163,7 @@ export default function AdminDashboardPage() {
     isLoading: alertsLoading,
     refetch: refetchAlerts,
   } = useQuery({
-    queryKey: ['admin-alerts'],
+    queryKey: qk('admin', 'alerts'),
     queryFn: fetchSecurityAlerts,
     refetchInterval: pollInterval(refreshInterval),
     refetchIntervalInBackground: false,

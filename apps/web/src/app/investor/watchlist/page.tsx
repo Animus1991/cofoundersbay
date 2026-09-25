@@ -50,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -412,13 +413,13 @@ export default function InvestorWatchlistPage() {
    * is on; a real one always wins.
    */
   const { data: watchedPage } = useQuery({
-    queryKey: ['investor', 'deals', 'discovered'],
+    queryKey: qk('investor', 'deals', 'discovered'),
     queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
     staleTime: 60_000,
     retry: 0,
   });
   const { data: activityPage } = useQuery({
-    queryKey: ['investor', 'activity'],
+    queryKey: qk('investor', 'activity'),
     queryFn: () => getInvestorActivity(20),
     staleTime: 60_000,
     retry: 0,
@@ -430,7 +431,7 @@ export default function InvestorWatchlistPage() {
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
-  const refreshBoard = () => void queryClient.invalidateQueries({ queryKey: ['investor'] });
+  const refreshBoard = () => void queryClient.invalidateQueries({ queryKey: qk('investor') });
   const watchActions: WatchActions = {
     onPromote: async (st) => {
       try {

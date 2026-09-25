@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   adminListSkills,
   adminCreateSkill,
@@ -193,7 +194,7 @@ export default function AdminTaxonomyPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminSkillItem | null>(null);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin-skills', search, categoryFilter],
+    queryKey: qk('admin', 'skills', search, categoryFilter),
     queryFn: () => adminListSkills({ q: search || undefined, category: categoryFilter || undefined, limit: 200 }),
     staleTime: 30_000,
   });
@@ -214,7 +215,7 @@ export default function AdminTaxonomyPage() {
     mutationFn: adminCreateSkill,
     onSuccess: () => {
       success('Skill created');
-      qc.invalidateQueries({ queryKey: ['admin-skills'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
       setEditTarget(null);
     },
     onError: (e: Error) => showError('Failed to create skill', e.message),
@@ -225,7 +226,7 @@ export default function AdminTaxonomyPage() {
       adminUpdateSkill(id, body),
     onSuccess: () => {
       success('Skill updated');
-      qc.invalidateQueries({ queryKey: ['admin-skills'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
       setEditTarget(null);
     },
     onError: (e: Error) => showError('Failed to update skill', e.message),
@@ -235,7 +236,7 @@ export default function AdminTaxonomyPage() {
     mutationFn: adminDeleteSkill,
     onSuccess: () => {
       success('Skill deleted');
-      qc.invalidateQueries({ queryKey: ['admin-skills'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
       setDeleteTarget(null);
     },
     onError: (e: Error) => showError('Failed to delete skill', e.message),

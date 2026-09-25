@@ -32,6 +32,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { qk } from '@/lib/query-keys';
 
 const ChartFallback = () => <Skeleton className="h-[160px] w-full rounded-lg" />;
 const MemberGrowthChart = dynamic(
@@ -99,14 +100,14 @@ export default function TenantDashboardPage() {
   const tenantId = activeTenant?.id ?? null;
 
   const { data: membersData } = useQuery({
-    queryKey: ['tenant', 'members', tenantId],
+    queryKey: qk('tenant', 'members', tenantId),
     queryFn: () => getTenantMembers(tenantId!, { limit: 100 }),
     enabled: Boolean(tenantId),
     staleTime: 60_000,
     retry: 0,
   });
   const { data: eventsData } = useQuery({
-    queryKey: ['events', 'tenant'],
+    queryKey: qk('events', 'tenant'),
     queryFn: () => listEvents({ scope: 'upcoming', limit: 5 }),
     staleTime: 60_000,
     retry: 0,

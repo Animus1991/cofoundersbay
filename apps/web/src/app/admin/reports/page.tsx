@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the moderation queue row.
@@ -315,7 +316,7 @@ export default function AdminReportsPage() {
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['admin', 'reports'],
+    queryKey: qk('admin', 'reports'),
     queryFn: () => listAdminReports({ limit: 100 }),
     staleTime: 30_000,
     retry: 0,
@@ -329,7 +330,7 @@ export default function AdminReportsPage() {
     mutationFn: ({ id, resolution }: { id: string; resolution: 'resolved' | 'dismissed' }) =>
       resolveAdminReport(id, resolution),
     onSuccess: (_r, variables) => {
-      void qc.invalidateQueries({ queryKey: ['admin', 'reports'] });
+      void qc.invalidateQueries({ queryKey: qk('admin', 'reports') });
       success(variables.resolution === 'resolved' ? 'Report resolved' : 'Report dismissed');
     },
     onError: (err) =>

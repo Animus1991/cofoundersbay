@@ -34,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { listNotifications, markNotificationRead, markAllNotificationsRead, type NotificationItem } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { qk } from '@/lib/query-keys';
 
 // Use NotificationItem from @/lib/api
 
@@ -151,7 +152,7 @@ export function NotificationCenter() {
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['notifications', filter, categoryFilter],
+    queryKey: qk('notifications', filter, categoryFilter),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filter === 'unread') params.append('unread', 'true');
@@ -178,7 +179,7 @@ export function NotificationCenter() {
       await markNotificationRead(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: qk('notifications') });
     },
   });
 
@@ -187,7 +188,7 @@ export function NotificationCenter() {
       await markAllNotificationsRead();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: qk('notifications') });
     },
   });
 
@@ -197,7 +198,7 @@ export function NotificationCenter() {
       await markNotificationRead(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: qk('notifications') });
     },
   });
 
@@ -211,7 +212,7 @@ export function NotificationCenter() {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'notification') {
-        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        queryClient.invalidateQueries({ queryKey: qk('notifications') });
 
         if (Notification.permission === 'granted') {
           new Notification(data.title, {

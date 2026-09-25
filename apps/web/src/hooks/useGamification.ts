@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api';
 import { useHasSession } from '@/hooks/useSession';
+import { qk } from '@/lib/query-keys';
 
 // ══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -111,7 +112,7 @@ export interface MentorMetrics {
 export function useMyXP() {
   const hasSession = useHasSession();
   return useQuery<XPSummary>({
-    queryKey: ['gamification', 'xp', 'me'],
+    queryKey: qk('gamification', 'xp', 'me'),
     queryFn: async () => {
       const res = await apiRequest('/api/gamification/users/me/xp');
       return res as XPSummary;
@@ -126,7 +127,7 @@ export function useMyXP() {
  */
 export function useUserXP(userId: string | undefined) {
   return useQuery<XPSummary>({
-    queryKey: ['gamification', 'xp', userId],
+    queryKey: qk('gamification', 'xp', userId),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/users/${userId}/xp`);
       return res as XPSummary;
@@ -142,7 +143,7 @@ export function useUserXP(userId: string | undefined) {
 export function useMyBadges() {
   const hasSession = useHasSession();
   return useQuery<Badge[]>({
-    queryKey: ['gamification', 'badges', 'me'],
+    queryKey: qk('gamification', 'badges', 'me'),
     queryFn: async () => {
       const res = await apiRequest('/api/gamification/users/me/badges');
       return res as Badge[];
@@ -157,7 +158,7 @@ export function useMyBadges() {
  */
 export function useUserBadges(userId: string | undefined) {
   return useQuery<Badge[]>({
-    queryKey: ['gamification', 'badges', userId],
+    queryKey: qk('gamification', 'badges', userId),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/users/${userId}/badges`);
       return res as Badge[];
@@ -180,7 +181,7 @@ export function useMarkBadgesSeen() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gamification', 'badges', 'me'] });
+      queryClient.invalidateQueries({ queryKey: qk('gamification', 'badges', 'me') });
     },
   });
 }
@@ -191,7 +192,7 @@ export function useMarkBadgesSeen() {
 export function useMyStreak() {
   const hasSession = useHasSession();
   return useQuery<{ currentStreak: number; longestStreak: number; lastActiveDate: Date | null }>({
-    queryKey: ['gamification', 'streak', 'me'],
+    queryKey: qk('gamification', 'streak', 'me'),
     queryFn: async () => {
       const res = await apiRequest('/api/gamification/users/me/streak');
       return res as { currentStreak: number; longestStreak: number; lastActiveDate: Date | null };
@@ -206,7 +207,7 @@ export function useMyStreak() {
  */
 export function useReadinessScore(workspaceId: string | undefined) {
   return useQuery<ReadinessScore>({
-    queryKey: ['gamification', 'readiness', workspaceId],
+    queryKey: qk('gamification', 'readiness', workspaceId),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/workspaces/${workspaceId}/readiness`);
       return res as ReadinessScore;
@@ -230,7 +231,7 @@ export function useRefreshReadiness() {
       return res as ReadinessScore;
     },
     onSuccess: (_, workspaceId) => {
-      queryClient.invalidateQueries({ queryKey: ['gamification', 'readiness', workspaceId] });
+      queryClient.invalidateQueries({ queryKey: qk('gamification', 'readiness', workspaceId) });
     },
   });
 }
@@ -240,7 +241,7 @@ export function useRefreshReadiness() {
  */
 export function useMomentumScore(workspaceId: string | undefined) {
   return useQuery<MomentumScore>({
-    queryKey: ['gamification', 'momentum', workspaceId],
+    queryKey: qk('gamification', 'momentum', workspaceId),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/workspaces/${workspaceId}/momentum`);
       return res as MomentumScore;
@@ -255,7 +256,7 @@ export function useMomentumScore(workspaceId: string | undefined) {
  */
 export function useWorkspaceContributions(workspaceId: string | undefined) {
   return useQuery<ContributionScore[]>({
-    queryKey: ['gamification', 'contributions', workspaceId],
+    queryKey: qk('gamification', 'contributions', workspaceId),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/workspaces/${workspaceId}/contributions`);
       return res as ContributionScore[];
@@ -270,7 +271,7 @@ export function useWorkspaceContributions(workspaceId: string | undefined) {
  */
 export function useMyContribution(workspaceId: string | undefined) {
   return useQuery<ContributionScore>({
-    queryKey: ['gamification', 'contributions', workspaceId, 'me'],
+    queryKey: qk('gamification', 'contributions', workspaceId, 'me'),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/workspaces/${workspaceId}/contributions/me`);
       return res as ContributionScore;
@@ -285,7 +286,7 @@ export function useMyContribution(workspaceId: string | undefined) {
  */
 export function useMentorMetrics(workspaceId: string | undefined) {
   return useQuery<MentorMetrics>({
-    queryKey: ['gamification', 'mentor-metrics', workspaceId],
+    queryKey: qk('gamification', 'mentor-metrics', workspaceId),
     queryFn: async () => {
       const res = await apiRequest(`/api/gamification/workspaces/${workspaceId}/mentor-metrics`);
       return res as MentorMetrics;

@@ -57,6 +57,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type Startup = {
   id: string;
@@ -89,7 +90,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
   const { success, error: showError } = useToast();
 
   const { data: watched } = useQuery({
-    queryKey: ['investor', 'deals', 'discovered'],
+    queryKey: qk('investor', 'deals', 'discovered'),
     queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
     staleTime: 60_000,
     retry: 0,
@@ -119,7 +120,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     onMutate: () => setPending(true),
     onSettled: () => setPending(false),
     onSuccess: (added) => {
-      void qc.invalidateQueries({ queryKey: ['investor'] });
+      void qc.invalidateQueries({ queryKey: qk('investor') });
       success(added ? 'Added to your watchlist' : 'Removed from your watchlist');
     },
     onError: (err) =>
@@ -152,7 +153,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
       });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['investor'] });
+      void qc.invalidateQueries({ queryKey: qk('investor') });
       success('Added to your pipeline', `${startup.name} is in Reviewing.`);
     },
     onError: (err) => showError('Could not add to the pipeline', err instanceof Error ? err.message : undefined),

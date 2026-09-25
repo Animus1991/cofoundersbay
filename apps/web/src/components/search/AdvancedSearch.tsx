@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 interface SearchResult {
   id: string;
@@ -82,7 +83,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
   }, []);
 
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ['search', debouncedQuery, selectedTypes],
+    queryKey: qk('search', debouncedQuery, selectedTypes),
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 
@@ -104,7 +105,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
   });
 
   const { data: suggestions = [] } = useQuery({
-    queryKey: ['search-suggestions', debouncedQuery],
+    queryKey: qk('search-suggestions', debouncedQuery),
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 

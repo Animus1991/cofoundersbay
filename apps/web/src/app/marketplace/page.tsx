@@ -26,6 +26,7 @@ import {
 import { listMarketplaceServices, type MarketplaceCategory } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { qk } from '@/lib/query-keys';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -269,7 +270,7 @@ export default function MarketplacePage() {
   const [availableOnly, setAvailableOnly] = useState(false);
 
   const { data: apiData, isLoading } = useQuery({
-    queryKey: ['marketplace', selectedCategory !== 'All' ? selectedCategory : undefined, search || undefined],
+    queryKey: qk('marketplace', selectedCategory !== 'All' ? selectedCategory : undefined, search || undefined),
     queryFn: () => listMarketplaceServices({
       category: selectedCategory !== 'All' ? selectedCategory.toLowerCase() as MarketplaceCategory : undefined,
       search: search.trim() || undefined,

@@ -13,7 +13,7 @@ import {
   listConnectionRequests,
   type EndorsementItem,
 } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MessageButton } from '@/components/common/PersonActions';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -254,7 +254,7 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
   // the reader's own accepted connections; the demo names stay as the fallback
   // for a session that has none.
   const { data: accepted } = useQuery({
-    queryKey: ['connections', 'accepted', 'for-endorsements'],
+    queryKey: qk('connections', 'accepted', 'for-endorsements'),
     queryFn: () => listConnectionRequests({ type: 'accepted', limit: 50 }),
     enabled: !!meId,
     staleTime: 5 * 60_000,
@@ -366,7 +366,7 @@ export default function EndorsementsPage() {
 
   // Real API: received endorsements
   const { data: receivedData } = useQuery({
-    queryKey: ['endorsements', 'received', meId],
+    queryKey: qk('endorsements', 'received', meId),
     queryFn: () => getEndorsementsForUser(meId!, { includeUnapproved: true }),
     enabled: !showDemoData && !!meId,
     staleTime: 60_000,
@@ -374,7 +374,7 @@ export default function EndorsementsPage() {
 
   // Real API: stats
   const { data: statsData } = useQuery({
-    queryKey: ['endorsements', 'stats'],
+    queryKey: qk('endorsements', 'stats'),
     queryFn: getEndorsementStats,
     enabled: !showDemoData,
     staleTime: 60_000,
@@ -414,11 +414,11 @@ export default function EndorsementsPage() {
   // Mutations
   const approveMutation = useMutation({
     mutationFn: approveEndorsement,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['endorsements'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('endorsements') }),
   });
   const declineMutation = useMutation({
     mutationFn: declineEndorsement,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['endorsements'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('endorsements') }),
   });
 
   const handleApprove = (id: string) => {

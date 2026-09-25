@@ -15,6 +15,7 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 import type { BuilderActivityLog } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { qk } from '@/lib/query-keys';
 
 // ── Activity type metadata ────────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ export function ActivityTimeline({
 }: ActivityTimelineProps) {
   const { apiAvailable, pollInterval } = usePollingGuards();
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['activityLog', workspaceId, limit],
+    queryKey: qk('builder', 'activity-log', workspaceId, limit),
     queryFn: () => getActivityLog(workspaceId, limit),
     refetchInterval: pollInterval(60_000),
     refetchIntervalInBackground: false,

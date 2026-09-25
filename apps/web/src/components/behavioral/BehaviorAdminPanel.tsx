@@ -24,6 +24,7 @@ import {
   type BehavioralStateResponse,
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
+import { qk } from '@/lib/query-keys';
 
 const STATE_LABELS: Record<string, { label: string; color: string }> = {
   newly_onboarded:    { label: 'New Onboard',      color: 'bg-blue-500' },
@@ -105,14 +106,14 @@ function UserClassifyTab() {
   const [queried, setQueried] = useState('');
 
   const { data, isLoading, refetch } = useQuery<BehavioralStateResponse>({
-    queryKey: ['admin-classify', queried],
+    queryKey: qk('admin', 'classify', queried),
     queryFn: () => adminClassifyUser(queried),
     enabled: !!queried,
     retry: 0,
   });
 
   const { data: logs, isLoading: logsLoading } = useQuery({
-    queryKey: ['admin-nudge-logs', queried],
+    queryKey: qk('admin', 'nudge-logs', queried),
     queryFn: () => adminGetBehaviorNudgeLogs(queried, 15),
     enabled: !!queried,
     retry: 0,
@@ -186,7 +187,7 @@ function UserClassifyTab() {
 
 export function BehaviorAdminPanel() {
   const { data: stats, isLoading, refetch, isFetching } = useQuery<BehaviorPlatformStats>({
-    queryKey: ['behavior-admin-stats'],
+    queryKey: qk('admin', 'behavior-stats'),
     queryFn: adminGetBehaviorStats,
     staleTime: 5 * 60_000,
   });

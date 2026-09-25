@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { qk } from '@/lib/query-keys';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -55,7 +56,7 @@ export function ScheduleSessionDialog({
   onScheduled: () => void;
 }) {
   const { data, isLoading } = useQuery({
-    queryKey: ['mentorships', 'mentor'],
+    queryKey: qk('mentorships', 'mentor'),
     queryFn: () => getMyMentorships('mentor'),
     enabled: open,
     staleTime: 60_000,

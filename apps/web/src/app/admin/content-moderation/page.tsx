@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 
 type Report = {
     id: string;
@@ -73,7 +74,7 @@ export default function ContentModerationPage() {
   const qc = useQueryClient();
 
   const { data } = useQuery({
-    queryKey: ['admin', 'reports'],
+    queryKey: qk('admin', 'reports'),
     queryFn: () => listAdminReports({ limit: 100 }),
     staleTime: 30_000,
     retry: 0,
@@ -106,7 +107,7 @@ export default function ContentModerationPage() {
     } catch (err) {
       error('Could not update the report', err instanceof Error ? err.message : undefined);
     } finally {
-      void qc.invalidateQueries({ queryKey: ['admin', 'reports'] });
+      void qc.invalidateQueries({ queryKey: qk('admin', 'reports') });
     }
   };
 

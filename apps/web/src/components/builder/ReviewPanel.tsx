@@ -37,6 +37,7 @@ import {
   type ChangeProposal,
 } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { qk } from '@/lib/query-keys';
 
 // ── Proposal Status helpers ────────────────────────────────────────────────
 
@@ -221,7 +222,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['proposals', documentId],
+    queryKey: qk('builder', 'proposals', documentId),
     queryFn: () => listProposals(documentId),
     enabled: open && !!documentId && apiAvailable,
     refetchInterval: pollInterval(30_000),
@@ -411,7 +412,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
           proposal={decisionState.proposal}
           decision={decisionState.decision}
           onDecisionSubmitted={() => {
-            queryClient.invalidateQueries({ queryKey: ['proposals', documentId] });
+            queryClient.invalidateQueries({ queryKey: qk('builder', 'proposals', documentId) });
             setDecisionState(null);
           }}
         />

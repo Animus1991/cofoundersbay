@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { getLinkedAccounts, unlinkGoogleAccount, unlinkLinkedInAccount } from '@/lib/api';
 import { getAbsoluteApiOrigin } from '@/lib/api-origin';
 import { useHasSession } from '@/hooks/useSession';
+import { qk } from '@/lib/query-keys';
 
 export function LinkedAccounts() {
   const queryClient = useQueryClient();
@@ -15,7 +16,7 @@ export function LinkedAccounts() {
   const hasSession = useHasSession();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['linked-accounts'],
+    queryKey: qk('auth', 'linked-accounts'),
     queryFn: getLinkedAccounts,
     enabled: hasSession,
   });
@@ -23,7 +24,7 @@ export function LinkedAccounts() {
   const unlinkGoogleMutation = useMutation({
     mutationFn: unlinkGoogleAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['linked-accounts'] });
+      queryClient.invalidateQueries({ queryKey: qk('auth', 'linked-accounts') });
       setUnlinkingProvider(null);
     },
     onError: () => {
@@ -34,7 +35,7 @@ export function LinkedAccounts() {
   const unlinkLinkedInMutation = useMutation({
     mutationFn: unlinkLinkedInAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['linked-accounts'] });
+      queryClient.invalidateQueries({ queryKey: qk('auth', 'linked-accounts') });
       setUnlinkingProvider(null);
     },
     onError: () => {

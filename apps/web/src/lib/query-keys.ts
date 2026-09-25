@@ -1,68 +1,148 @@
 /**
- * Canonical React Query key factory.
+ * Every React Query key in the app, from one place.
  *
- * docs/AI_PLATFORM_UPGRADE_PLAN.md §1.2 identified duplicate keys for the same
- * resource (e.g. ['me','profile'] vs ['me-profile'], ['connections'] vs
- * ['connection-requests']) — since invalidateQueries() only reaches keys that
- * share the array prefix, a write on one variant silently leaves the other
- * stale (concretely: saving /profile/edit never refreshed any dashboard,
- * because every dashboard read profile under a different key entirely).
+ * `invalidateQueries({ queryKey: ['x'] })` refreshes every key that starts
+ * with `['x']` and nothing else, so the first segment of a key decides which
+ * writes reach which screens. Written as array literals across 145 files,
+ * the app had grown 115 first segments for about 60 resources: "my XP" was
+ * cached under `['xp','me']`, `['gamification-xp-me']` and `['my-xp']`; a
+ * research board's versions, snapshots, branches and comments each had a
+ * root of their own; and three writes invalidated keys that no query read at
+ * all - restoring a canvas version refreshed `['board', id]` while the canvas
+ * read `['research-board', id]`, so the restored board kept showing the old
+ * one.
  *
- * New code should build keys from here rather than writing array literals,
- * so a resource has exactly one key shape and invalidating it always reaches
- * every consumer. This is additive — it does not attempt to migrate every
- * existing key in one pass, only to give new and touched call sites a single
- * source of truth to converge on.
+ * Now a key is `qk(root, ...rest)`. The root must be one of `QUERY_ROOTS`,
+ * one per resource, so a new spelling of an existing resource does not
+ * compile. Parts of a resource are the second segment (`qk('research-boards',
+ * 'versions', boardId)`), which puts them under the resource's invalidation:
+ * whatever refreshes the board refreshes its versions. `queryKeyFactory.test.ts`
+ * fails on an array-literal key outside this file and on an invalidation that
+ * no query can match.
  */
 
-const connectionsList = (tab?: string) =>
-  tab ? (['connections', tab] as const) : (['connections'] as const);
-const connectionsPending = () => ['connections', 'pending-received'] as const;
+export const QUERY_ROOTS = [
+  'achievements',
+  'activity-feed',
+  'admin',
+  'ai',
+  'analytics',
+  'auth',
+  'automation',
+  'billing',
+  'builder',
+  'connection-status',
+  'connections',
+  'conversations',
+  'dashboard',
+  'data-exports',
+  // The endorsement dialog's recipient picker: a search of its own (see
+  // queryKeyCoherence.test.ts), kept apart so its results are not dropped by
+  // another search's invalidation.
+  'endorsement-recipient-search',
+  'endorsements',
+  'entity-search',
+  'events',
+  'expert-reviews',
+  'feed',
+  'gamification',
+  'graph',
+  'groups',
+  'investor',
+  'invites',
+  'jobs',
+  'learning',
+  'marketplace',
+  'matching',
+  'me',
+  'members',
+  'mentors',
+  'mentorships',
+  'messages',
+  'milestones',
+  'next-action',
+  'notifications',
+  'opportunities',
+  'org',
+  'pitch-deck',
+  'polls',
+  'programs',
+  'provider',
+  'public-profile',
+  'readiness',
+  'recommendations',
+  'research-boards',
+  'roles',
+  'saved-searches',
+  'search',
+  'search-suggestions',
+  'shortlist',
+  'skills',
+  'sso',
+  'tenant',
+  'user-search-invite',
+  'weekly-digest',
+  'workspaces',
+] as const;
 
-const connections = Object.assign(['connections'] as const, {
+export type QueryRoot = (typeof QUERY_ROOTS)[number];
+
+/** A key under one of the app's resources: `qk('programs', 'mine')`. */
+export function qk<const R extends QueryRoot, const T extends readonly unknown[]>(
+  root: R,
+  ...rest: T
+): readonly [R, ...T] {
+  return [root, ...rest] as const;
+}
+
+const connectionsList = (tab?: string) => (tab ? qk('connections', tab) : qk('connections'));
+const connectionsPending = () => qk('connections', 'pending-received');
+
+const connections = Object.assign(qk('connections'), {
   list: connectionsList,
   pendingReceived: connectionsPending,
 });
 
 type ConnectionsKey = readonly ['connections'] & {
-  list: (tab?: string) => readonly string[];
+  list: (tab?: string) => readonly unknown[];
   pendingReceived: () => readonly ['connections', 'pending-received'];
 };
 
+/** Named keys shared by several screens. Everything else is `qk(...)` at the call site. */
 export const queryKeys = {
   me: {
     /** Current user's profile. */
-    profile: () => ['me', 'profile'] as const,
+    profile: () => qk('me', 'profile'),
   },
   /** Connections query-key family. Use as an array or call `.list()` / `.pendingReceived()`. */
   connections: connections as ConnectionsKey,
-  profileMe: ['me', 'profile'] as const,
-  meProfileLegacy: ['me-profile'] as const,
-  connectionsPending: ['connections', 'pending-received'] as const,
-  conversations: ['conversations'] as const,
-  conversationsList: ['conversations', 'list'] as const,
-  messages: (conversationId: string) => ['messages', conversationId] as const,
-  notifications: ['notifications'] as const,
-  notificationsUnread: ['notifications', 'unread-count'] as const,
-  recommendations: ['recommendations'] as const,
-  graphMe: ['graph', 'me'] as const,
-  xpMe: ['xp', 'me'] as const,
-  aiConversations: ['ai', 'conversations'] as const,
-  aiConversation: (id: string) => ['ai', 'conversation', id] as const,
-  aiPreferences: ['ai', 'preferences'] as const,
-  aiHealth: ['ai-health'] as const,
-  aiModels: ['ai-models'] as const,
-  aiAgents: ['ai-agents'] as const,
-  roles: ['roles', 'dashboard-context'] as const,
-  shortlist: ['shortlist'] as const,
-  shortlistIds: ['shortlist', 'ids'] as const,
+  profileMe: qk('me', 'profile'),
+  connectionsPending: qk('connections', 'pending-received'),
+  conversations: qk('conversations'),
+  conversationsList: qk('conversations', 'list'),
+  messages: (conversationId: string) => qk('messages', conversationId),
+  notifications: qk('notifications'),
+  notificationsUnread: qk('notifications', 'unread-count'),
+  recommendations: qk('recommendations'),
+  graphMe: qk('graph', 'me'),
+  xpMe: qk('gamification', 'xp', 'me'),
+  aiConversations: qk('ai', 'conversations'),
+  aiConversation: (id: string) => qk('ai', 'conversation', id),
+  aiPreferences: qk('ai', 'preferences'),
+  aiHealth: qk('ai', 'health'),
+  aiModels: qk('ai', 'models'),
+  aiAgents: qk('ai', 'agents'),
+  roles: qk('roles', 'dashboard-context'),
+  shortlist: qk('shortlist'),
+  shortlistIds: qk('shortlist', 'ids'),
 };
 
-export const PROFILE_KEYS = [
-  queryKeys.profileMe,
-  queryKeys.meProfileLegacy,
-  queryKeys.me.profile(),
-] as const;
+/*
+ * `['me-profile']`, a second key for the same profile, was listed here so a
+ * write would refresh both. No query reads it any more, so the invalidation
+ * it asked for reached nothing; the profile has the one key above.
+ */
+export const PROFILE_KEYS = [queryKeys.profileMe] as const;
 export const CONNECTION_KEYS = [
   queryKeys.connections,
   queryKeys.connectionsPending,

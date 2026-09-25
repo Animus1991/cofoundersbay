@@ -31,6 +31,7 @@ import { EmptyOrgMentors } from '@/components/common/EmptyStates';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the pool row.
@@ -241,7 +242,7 @@ export default function OrgMentorsPage() {
   const { membership } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'mentor-pool', organizationId],
+    queryKey: qk('org', 'mentor-pool', organizationId),
     queryFn: () => getOrgMentorPool(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 60_000,

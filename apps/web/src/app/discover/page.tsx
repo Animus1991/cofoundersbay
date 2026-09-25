@@ -38,7 +38,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -121,7 +121,7 @@ export default function DiscoverPage() {
 
   const hasToken = useIsAuthenticated();
   const { data: recommendationsData, isLoading: suggestionsLoading } = useQuery({
-    queryKey: ['recommendations', { limit: 8 }],
+    queryKey: qk('recommendations', { limit: 8 }),
     queryFn: () => getRecommendations({ limit: 8 }),
     staleTime: 3 * 60_000,
     enabled: hasToken,
@@ -129,7 +129,7 @@ export default function DiscoverPage() {
   const suggestions: SearchHit[] = (recommendationsData?.suggestions ?? []) as SearchHit[];
 
   const { data: platformStats } = useQuery({
-    queryKey: ['dashboard', 'stats', 'discover-header'],
+    queryKey: qk('dashboard', 'stats', 'discover-header'),
     queryFn: getDashboardStats,
     staleTime: 5 * 60_000,
     retry: 0,

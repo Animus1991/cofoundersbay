@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useQueryClient } from '@tanstack/react-query';
+import { qk } from '@/lib/query-keys';
 
 interface Message {
   id: string;
@@ -98,12 +99,12 @@ export function useRealtimeMessages(conversationId?: string) {
     return on('message:new', ({ message }: { message: Message }) => {
       // Update messages query cache
       queryClient.setQueryData(
-        ['messages', message.conversationId],
+        qk('messages', message.conversationId),
         (old: MessagesCache | undefined) => prependCachedMessage(old, message),
       );
 
       // Update conversation list
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
     });
   }, [connected, on, queryClient]);
 
@@ -116,7 +117,7 @@ export function useRealtimeMessages(conversationId?: string) {
 
       // Replace optimistic message with real one
       queryClient.setQueryData(
-        ['messages', message.conversationId],
+        qk('messages', message.conversationId),
         (old: MessagesCache | undefined) =>
           mapCachedMessages(old, (msg) =>
             msg.tempId === tempId ? { ...message, tempId: undefined } : msg,
@@ -161,7 +162,7 @@ export function useRealtimeMessages(conversationId?: string) {
 
     return on('message:read', ({ messageId, userId, readAt }: ReadReceipt) => {
       queryClient.setQueryData(
-        ['messages', conversationId],
+        qk('messages', conversationId),
         (old: MessagesCache | undefined) =>
           mapCachedMessages(old, (msg) => (msg.id === messageId ? { ...msg, readAt } : msg)),
       );
@@ -174,7 +175,7 @@ export function useRealtimeMessages(conversationId?: string) {
 
     return on('message:reaction', ({ messageId, userId, emoji }: MessageReaction) => {
       queryClient.setQueryData(
-        ['messages', conversationId],
+        qk('messages', conversationId),
         (old: MessagesCache | undefined) =>
           mapCachedMessages(old, (msg) => {
             if (msg.id !== messageId) return msg;
@@ -221,7 +222,7 @@ export function useRealtimeMessages(conversationId?: string) {
       };
 
       queryClient.setQueryData(
-        ['messages', conversationId],
+        qk('messages', conversationId),
         (old: MessagesCache | undefined) => {
           if (!old?.pages) return old;
           const newPages = [...old.pages];

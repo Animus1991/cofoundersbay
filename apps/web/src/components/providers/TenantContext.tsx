@@ -12,6 +12,7 @@ import {
 } from '@/lib/api';
 import { useSession } from '@/hooks/useSession';
 import { useApiAvailability } from '@/hooks/useApiAvailability';
+import { qk } from '@/lib/query-keys';
 
 // ── Domain detection (client-side only) ──────────────────────────────────────
 
@@ -151,7 +152,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   // Resolve tenant from subdomain (by slug)
   const { data: subdomainTenantData, isLoading: subdomainLoading } = useQuery({
-    queryKey: ['tenant', 'by-slug', domainCtx.value],
+    queryKey: qk('tenant', 'by-slug', domainCtx.value),
     queryFn: () => getTenantBySlug(domainCtx.value!),
     enabled: domainCtx.type === 'subdomain' && !!domainCtx.value,
     staleTime: 5 * 60 * 1000,
@@ -159,7 +160,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   // Resolve tenant from custom domain (by full hostname)
   const { data: customDomainData, isLoading: customDomainLoading } = useQuery({
-    queryKey: ['tenant', 'by-domain', domainCtx.value],
+    queryKey: qk('tenant', 'by-domain', domainCtx.value),
     queryFn: () => resolveTenantFromDomain(domainCtx.value!),
     enabled: domainCtx.type === 'custom' && !!domainCtx.value,
     staleTime: 5 * 60 * 1000,
@@ -167,7 +168,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
   // Membership-based tenant (used when not on a domain)
   const { data: membershipsData, isLoading: membershipsLoading } = useQuery({
-    queryKey: ['tenant', 'memberships'],
+    queryKey: qk('tenant', 'memberships'),
     queryFn: getUserTenantMemberships,
     enabled: hasSession && domainCtx.type === 'none' && apiAvailable,
     staleTime: 5 * 60 * 1000,

@@ -52,6 +52,7 @@ import {
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 const ROLE_ICON: Record<string, typeof Users> = {
   founder: Briefcase,
@@ -439,19 +440,19 @@ export default function RecommendationsPage() {
   const role = (activeTab === 'all' || activeTab === 'saved') ? undefined : activeTab.replace(/s$/, '');
 
   const { data: recsData, isLoading: recsLoading, isError: recsError, refetch: refetchRecs } = useQuery({
-    queryKey: ['recommendations', role, refreshKey],
+    queryKey: qk('recommendations', role, refreshKey),
     queryFn: () => getRecommendations({ role, limit: 20 }),
     staleTime: 5 * 60_000,
   });
 
   const { data: digestData, isLoading: digestLoading } = useQuery({
-    queryKey: ['weekly-digest'],
+    queryKey: qk('weekly-digest'),
     queryFn: getWeeklyDigest,
     staleTime: 10 * 60_000,
   });
 
   const { data: statsData } = useQuery({
-    queryKey: ['matching-stats'],
+    queryKey: qk('matching', 'stats'),
     queryFn: getMatchingStats,
     staleTime: 5 * 60_000,
   });
@@ -472,7 +473,7 @@ export default function RecommendationsPage() {
         fb === 'better_fit_wanted' ? 'Understood — refining suggestions.' :
         'Feedback recorded.';
       toastSuccess(msg);
-      queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+      queryClient.invalidateQueries({ queryKey: qk('recommendations') });
     },
   });
 
@@ -485,7 +486,7 @@ export default function RecommendationsPage() {
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
-    queryClient.invalidateQueries({ queryKey: ['weekly-digest'] });
+    queryClient.invalidateQueries({ queryKey: qk('weekly-digest') });
   };
 
   const handleSave = (userId: string) => {

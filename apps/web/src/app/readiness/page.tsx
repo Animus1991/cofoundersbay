@@ -48,6 +48,7 @@ import {
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { qk } from '@/lib/query-keys';
 
 const RadarFallback = () => <Skeleton className="h-[280px] w-full rounded-xl" />;
 const LineFallback = () => <Skeleton className="h-[200px] w-full rounded-xl" />;
@@ -764,14 +765,14 @@ export default function ReadinessPage() {
       } catch {
         /* a blocked read leaves the current selection alone */
       }
-      void qc.invalidateQueries({ queryKey: ['readiness'] });
+      void qc.invalidateQueries({ queryKey: qk('readiness') });
     };
     window.addEventListener('cfb:readiness-updated', onChanged);
     return () => window.removeEventListener('cfb:readiness-updated', onChanged);
   }, [qc]);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: ['readiness', workspaceId, 'canonical'],
+    queryKey: qk('readiness', workspaceId, 'canonical'),
     enabled: mode === 'live' && !!workspaceId,
     queryFn: async () => {
       if (!workspaceId || isDemo) throw new Error('A live workspace is required');
@@ -788,7 +789,7 @@ export default function ReadinessPage() {
       if (!workspaceId || mode !== 'live' || !data || isError) throw new Error('A live assessment is required');
       return updateReadinessCriterion(workspaceId, { dimension: dimKey, criterionId, completed: !completed });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['readiness', workspaceId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('readiness', workspaceId) }),
     onError: () => toastError(bilingualInline(readinessEn('update_failed'), readinessEl('update_failed'))),
   });
 

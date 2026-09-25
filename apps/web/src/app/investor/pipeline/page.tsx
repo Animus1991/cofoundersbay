@@ -27,6 +27,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -220,7 +221,7 @@ export default function InvestorPipelinePage() {
    * not scaffolding — but a real deal always wins over an illustrative one.
    */
   const { data: dealsPage, isLoading } = useQuery({
-    queryKey: ['investor', 'deals'],
+    queryKey: qk('investor', 'deals'),
     queryFn: () => listInvestorDeals({ limit: 100 }),
     staleTime: 60_000,
     retry: 0,
@@ -251,7 +252,7 @@ export default function InvestorPipelinePage() {
     } catch (e) {
       toastError('Could not move the deal', e instanceof Error ? e.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['investor'] });
+      void queryClient.invalidateQueries({ queryKey: qk('investor') });
     }
   };
 

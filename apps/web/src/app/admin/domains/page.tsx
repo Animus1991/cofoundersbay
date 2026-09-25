@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppShell } from '@/components/layout/AppShell';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { qk } from '@/lib/query-keys';
 import {
   Globe,
   Plus,
@@ -228,7 +229,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
   const [customDomainInput, setCustomDomainInput] = useState('');
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['tenant', tenant.id, 'domains'],
+    queryKey: qk('tenant', tenant.id, 'domains'),
     queryFn: () => listTenantDomains(tenant.id),
     staleTime: 30_000,
   });
@@ -318,7 +319,7 @@ export default function DomainsAdminPage() {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
 
   const { data: tenantsData, isLoading } = useQuery({
-    queryKey: ['admin', 'tenants'],
+    queryKey: qk('admin', 'tenants'),
     queryFn: () => listTenants({ limit: 100 }),
     staleTime: 60_000,
   });

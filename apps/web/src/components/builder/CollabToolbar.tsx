@@ -60,6 +60,7 @@ import {
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { ReviewPanel } from './ReviewPanel';
 import { BranchPanel } from './BranchPanel';
+import { qk } from '@/lib/query-keys';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -250,7 +251,7 @@ export function CollabToolbar({
   // ── Data fetching ─────────────────────────────────────────────────────────
 
   const { data: branchesData } = useQuery({
-    queryKey: ['branches', documentId],
+    queryKey: qk('builder', 'branches', documentId),
     queryFn: () => listBranches(documentId),
     refetchInterval: pollInterval(30_000),
     refetchIntervalInBackground: false,
@@ -259,7 +260,7 @@ export function CollabToolbar({
   });
 
   const { data: proposalsData } = useQuery({
-    queryKey: ['proposals', documentId],
+    queryKey: qk('builder', 'proposals', documentId),
     queryFn: () => listProposals(documentId),
     refetchInterval: pollInterval(30_000),
     refetchIntervalInBackground: false,

@@ -39,6 +39,7 @@ import { EmptyOrgStartups } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the organisation's member list.
@@ -250,7 +251,7 @@ export default function OrgStartupsPage() {
    */
   const { slug } = useCurrentOrg();
   const { data, isLoading } = useQuery({
-    queryKey: ['org', 'members', slug],
+    queryKey: qk('org', 'members', slug),
     queryFn: () => getOrgMembers(slug!, { limit: 100 }),
     enabled: Boolean(slug),
     staleTime: 60_000,

@@ -30,6 +30,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { downloadCsv } from '@/lib/csv';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { qk } from '@/lib/query-keys';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -284,13 +285,13 @@ export default function InvestorPortfolioPage() {
    * switch is on; a real investment always wins.
    */
   const { data: investedPage, isLoading } = useQuery({
-    queryKey: ['investor', 'deals', 'invested'],
+    queryKey: qk('investor', 'deals', 'invested'),
     queryFn: () => listInvestorDeals({ pipelineStage: 'invested', limit: 100 }),
     staleTime: 60_000,
     retry: 0,
   });
   const { data: summary } = useQuery({
-    queryKey: ['investor', 'summary'],
+    queryKey: qk('investor', 'summary'),
     queryFn: getInvestorSummary,
     staleTime: 60_000,
     retry: 0,

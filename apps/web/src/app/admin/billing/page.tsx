@@ -33,6 +33,7 @@ import {
 } from '@/lib/api';
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 const ALL_STATUSES = 'all';
 
@@ -140,25 +141,25 @@ export default function AdminBillingPage() {
   const [couponForm, setCouponForm] = useState({ code: '', discountType: 'percent', discountValue: 10, maxRedemptions: '' as string | number });
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'stats'],
+    queryKey: qk('admin', 'billing', 'stats'),
     queryFn: getAdminBillingStats,
     staleTime: 60_000,
   });
 
   const { data: subsData, isLoading: subsLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'subscriptions', statusFilter, search],
+    queryKey: qk('admin', 'billing', 'subscriptions', statusFilter, search),
     queryFn: () => listAdminSubscriptions({ status: statusFilter === ALL_STATUSES ? undefined : statusFilter, search: search || undefined }),
     staleTime: 30_000,
   });
 
   const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'invoices', statusFilter],
+    queryKey: qk('admin', 'billing', 'invoices', statusFilter),
     queryFn: () => listAdminInvoices({ status: statusFilter === ALL_STATUSES ? undefined : statusFilter }),
     staleTime: 30_000,
   });
 
   const { data: couponsData, isLoading: couponsLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'coupons'],
+    queryKey: qk('admin', 'billing', 'coupons'),
     queryFn: listCoupons,
     staleTime: 60_000,
   });
@@ -174,20 +175,20 @@ export default function AdminBillingPage() {
 
   const { mutate: extendTrial } = useMutation({
     mutationFn: (id: string) => adminExtendTrial(id, 7),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'billing', 'subscriptions'] }); toastSuccess('Trial extended by 7 days'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') }); toastSuccess('Trial extended by 7 days'); },
     onError: () => toastError('Failed to extend trial'),
   });
 
   const { mutate: cancelSub } = useMutation({
     mutationFn: ({ id, immediate }: { id: string; immediate: boolean }) => adminCancelSubscription(id, immediate),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'billing', 'subscriptions'] }); toastSuccess('Subscription canceled'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') }); toastSuccess('Subscription canceled'); },
     onError: () => toastError('Failed to cancel'),
   });
 
   const { mutate: applyOverride, isPending: overriding } = useMutation({
     mutationFn: () => adminOverrideSubscription(overrideTarget!.id, { planId: overridePlanId }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'billing', 'subscriptions'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') });
       setOverrideTarget(null);
       toastSuccess('Plan override applied');
     },
@@ -202,7 +203,7 @@ export default function AdminBillingPage() {
       maxRedemptions: couponForm.maxRedemptions ? Number(couponForm.maxRedemptions) : undefined,
     }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'billing', 'coupons'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'coupons') });
       setShowCouponForm(false);
       setCouponForm({ code: '', discountType: 'percent', discountValue: 10, maxRedemptions: '' });
       toastSuccess('Coupon created');
@@ -212,7 +213,7 @@ export default function AdminBillingPage() {
 
   const { mutate: removeCoupon } = useMutation({
     mutationFn: (id: string) => deleteCoupon(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'billing', 'coupons'] }); toastSuccess('Coupon deactivated'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'coupons') }); toastSuccess('Coupon deactivated'); },
     onError: () => toastError('Failed to remove coupon'),
   });
 
@@ -281,7 +282,7 @@ export default function AdminBillingPage() {
       content: (
         <button
           type="button"
-          onClick={() => qc.invalidateQueries({ queryKey: ['admin', 'billing'] })}
+          onClick={() => qc.invalidateQueries({ queryKey: qk('admin', 'billing') })}
           className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
         >
           <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />

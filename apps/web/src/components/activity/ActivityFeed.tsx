@@ -21,6 +21,7 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 interface Activity {
   id: string;
@@ -56,7 +57,7 @@ const ACTIVITY_CONFIG = {
 
 export function ActivityFeed() {
   const { data: activities = [], isLoading } = useQuery({
-    queryKey: ['activity-feed'],
+    queryKey: qk('activity-feed'),
     queryFn: async () => {
       const response = await fetch('/api/v1/activity/feed', {
         headers: {

@@ -37,6 +37,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { qk } from '@/lib/query-keys';
 
 type SearchCategory = SearchCategoryKey;
 
@@ -396,7 +397,7 @@ export default function SearchPage() {
   }, [debouncedQuery, category, router]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['search', debouncedQuery, category],
+    queryKey: qk('search', debouncedQuery, category),
     queryFn: () => performSearch(debouncedQuery, category),
     enabled: debouncedQuery.length >= 2,
     staleTime: 30_000,

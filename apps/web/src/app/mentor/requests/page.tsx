@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
+import { qk } from '@/lib/query-keys';
 import {
   getMyReceivedMentorRequests,
   respondToMentorRequest,
@@ -166,7 +167,7 @@ export default function MentorRequestsPage() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['mentor-requests-received'],
+    queryKey: qk('mentorships', 'requests-received'),
     queryFn: getMyReceivedMentorRequests,
     enabled: hasSession && mounted,
   });
@@ -178,8 +179,8 @@ export default function MentorRequestsPage() {
       setRespondingId(requestId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mentor-requests-received'] });
-      queryClient.invalidateQueries({ queryKey: ['mentorships'] });
+      queryClient.invalidateQueries({ queryKey: qk('mentorships', 'requests-received') });
+      queryClient.invalidateQueries({ queryKey: qk('mentorships') });
     },
     onSettled: () => {
       setRespondingId(null);

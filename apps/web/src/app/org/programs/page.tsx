@@ -28,6 +28,7 @@ import {
 import { EmptyOrgPrograms } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 /**
  * The page's own row from the API row.
@@ -84,7 +85,7 @@ function ProgramCard({ program }: { program: Program }) {
   const archive = useMutation({
     mutationFn: () => updateProgram(program.id, { status: 'archived' }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['programs'] });
+      void qc.invalidateQueries({ queryKey: qk('programs') });
       success('Program archived');
     },
     onError: (err) =>
@@ -218,7 +219,7 @@ export default function OrgProgramsPage() {
    * screen still teaches its shape rather than opening empty.
    */
   const { data, isLoading } = useQuery({
-    queryKey: ['programs', 'mine'],
+    queryKey: qk('programs', 'mine'),
     queryFn: getMyPrograms,
     staleTime: 60_000,
     retry: 0,

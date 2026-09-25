@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
+import { qk } from '@/lib/query-keys';
 import {
   getMyMentorships,
   type MentorshipRelationshipItem,
@@ -134,7 +135,7 @@ export default function MenteesPage() {
   const { hasSession, mounted } = useSession();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['mentorships', 'mentor'],
+    queryKey: qk('mentorships', 'mentor'),
     queryFn: () => getMyMentorships('mentor'),
     enabled: hasSession && mounted,
   });

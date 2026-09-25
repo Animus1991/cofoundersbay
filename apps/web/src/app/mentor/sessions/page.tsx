@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
+import { qk } from '@/lib/query-keys';
 import {
   getUpcomingMentorshipSessions,
   updateMentorshipSession,
@@ -144,7 +145,7 @@ export default function MentorSessionsPage() {
   const { hasSession, mounted } = useSession();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['mentorship-sessions-upcoming'],
+    queryKey: qk('mentorships', 'sessions-upcoming'),
     queryFn: getUpcomingMentorshipSessions,
     enabled: hasSession && mounted,
   });
@@ -155,7 +156,7 @@ export default function MentorSessionsPage() {
   const [menteeHint, setMenteeHint] = useState<string | null>(null);
   const [rescheduling, setRescheduling] = useState<MentorshipSessionItem | null>(null);
   const [notesFor, setNotesFor] = useState<MentorshipSessionItem | null>(null);
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['mentorship-sessions-upcoming'] });
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions-upcoming') });
 
   // /mentor/sessions?new=1&mentee=<id> - how the mentees page asks for a new
   // session with a particular mentee. Read after mount so SSR and hydration

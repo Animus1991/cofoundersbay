@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -278,7 +279,7 @@ export default function ProviderProjectsPage() {
 
   // Mock data
   const { data, isLoading } = useQuery({
-    queryKey: ['provider', 'projects'],
+    queryKey: qk('provider', 'projects'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 100 }),
     staleTime: 60_000,
     retry: 0,
@@ -303,7 +304,7 @@ export default function ProviderProjectsPage() {
     } catch (e) {
       toastError('Could not complete the project', e instanceof Error ? e.message : undefined);
     } finally {
-      void queryClient.invalidateQueries({ queryKey: ['provider', 'projects'] });
+      void queryClient.invalidateQueries({ queryKey: qk('provider', 'projects') });
     }
   };
 

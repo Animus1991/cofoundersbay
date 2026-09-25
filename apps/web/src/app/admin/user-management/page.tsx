@@ -66,6 +66,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 type UserRole = 'admin' | 'moderator' | 'mentor' | 'founder' | 'co-founder' | 'user';
@@ -194,7 +195,7 @@ export default function AdminUserManagementPage() {
   const { success, error } = useToast();
   const qc = useQueryClient();
   const { data: adminUsers } = useQuery({
-    queryKey: ['admin', 'users'],
+    queryKey: qk('admin', 'users'),
     queryFn: () => listAdminUsers({ limit: 200 }),
     staleTime: 60_000,
     retry: 0,
@@ -212,7 +213,7 @@ export default function AdminUserManagementPage() {
     setIsLive(true);
   }, [adminUsers]);
 
-  const refresh = () => qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+  const refresh = () => qc.invalidateQueries({ queryKey: qk('admin', 'users') });
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');

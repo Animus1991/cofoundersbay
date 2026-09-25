@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Logo } from '@/components/brand/Logo';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 function deriveProfileFields(profile: PublicProfile) {
   const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
@@ -115,7 +116,7 @@ export default function PublicProfilePage() {
   const username = params?.username as string;
 
   const { data: profile, isLoading: profileLoading, isError } = useQuery({
-    queryKey: ['public-profile', username],
+    queryKey: qk('public-profile', username),
     queryFn: () => getPublicProfile(username),
     staleTime: 60_000,
     retry: 1,
@@ -125,7 +126,7 @@ export default function PublicProfilePage() {
   const derived = profile ? deriveProfileFields(profile) : null;
 
   const { data: endorsementsData, isLoading: endorsementsLoading } = useQuery({
-    queryKey: ['endorsements', profile?.userId],
+    queryKey: qk('endorsements', profile?.userId),
     queryFn: () => getEndorsementsForUser(profile!.userId),
     enabled: !!profile?.userId,
     staleTime: 60_000,

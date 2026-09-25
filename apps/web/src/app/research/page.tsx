@@ -63,6 +63,7 @@ import {
 } from '@/components/research/BoardTemplates';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { qk } from '@/lib/query-keys';
 
 const BOARD_COLORS: { nameKey: 'color_default' | 'color_blue' | 'color_green' | 'color_purple' | 'color_orange' | 'color_pink' | 'color_cyan'; value: string | null }[] = [
   { nameKey: 'color_default', value: null },
@@ -135,7 +136,7 @@ export default function ResearchBoardsPage() {
 
   const showArchived = filter === 'archived';
   const { data, isLoading, error } = useQuery({
-    queryKey: ['research-boards', showArchived],
+    queryKey: qk('research-boards', showArchived),
     queryFn: () => listResearchBoards({ archived: showArchived }),
   });
   const bootLoad = isLoading && !data && filter === 'all';
@@ -143,7 +144,7 @@ export default function ResearchBoardsPage() {
   const createMutation = useMutation({
     mutationFn: createResearchBoard,
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success(t(researchEn('created'), researchEl('created')), `"${result.board.title}" ${t(researchEn('created_ready'), researchEl('created_ready'))}`);
       setCreateDialogOpen(false);
       setNewBoardTitle('');
@@ -161,14 +162,14 @@ export default function ResearchBoardsPage() {
     mutationFn: ({ boardId, data }: { boardId: string; data: Parameters<typeof updateResearchBoard>[1] }) =>
       updateResearchBoard(boardId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteResearchBoard,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success(t(researchEn('deleted'), researchEl('deleted')), t(researchEn('deleted_hint'), researchEl('deleted_hint')));
     },
     onError: (err) => {
@@ -270,7 +271,7 @@ export default function ResearchBoardsPage() {
           tags: node.tags,
         });
       }
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success(
         t(researchEn('duplicated'), researchEl('duplicated')),
         `"${result.board.title}" · ${full.board.nodes.length} ${t(researchEn('tpl_nodes'), researchEl('tpl_nodes'))}`,
@@ -303,7 +304,7 @@ export default function ResearchBoardsPage() {
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success(
         t(researchEn('created_tpl'), researchEl('created_tpl')),
         `"${template.name}" · ${template.initialNodes.length} ${t(researchEn('tpl_nodes'), researchEl('tpl_nodes'))}`,
@@ -565,7 +566,7 @@ export default function ResearchBoardsPage() {
           <p className="mb-4 text-destructive-accessible">
             <BilingualText en={researchEn('load_fail')} el={researchEl('load_fail')} />
           </p>
-          <Button size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
+          <Button size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: qk('research-boards') })}>
             <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
           </Button>
         </div>

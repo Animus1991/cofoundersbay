@@ -56,6 +56,7 @@ import {
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { LocalTime } from '@/components/common/LocalTime';
+import { qk } from '@/lib/query-keys';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -336,7 +337,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['snapshots', boardId],
+    queryKey: qk('research-boards', 'snapshots', boardId),
     queryFn: () => listSnapshots(boardId),
     enabled: apiAvailable && !!boardId,
     refetchInterval: pollInterval(60_000),
@@ -352,7 +353,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
       await createSnapshot(boardId, snapshotLabel.trim() || undefined);
       success('Snapshot saved');
       setSnapshotLabel('');
-      queryClient.invalidateQueries({ queryKey: ['snapshots', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'snapshots', boardId) });
     } catch {
       toastError('Failed to save snapshot');
     } finally {
@@ -366,8 +367,8 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
     try {
       await restoreBoardSnapshot(boardId, restoreTarget.id);
       success('Canvas restored to snapshot');
-      queryClient.invalidateQueries({ queryKey: ['snapshots', boardId] });
-      queryClient.invalidateQueries({ queryKey: ['board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'snapshots', boardId) });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       setRestoreTarget(null);
     } catch {
       toastError('Restore failed');
@@ -538,7 +539,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['canvas-versions', boardId],
+    queryKey: qk('research-boards', 'versions', boardId),
     queryFn: () => listCanvasVersions(boardId),
     enabled: apiAvailable && !!boardId,
     refetchInterval: pollInterval(90_000),
@@ -554,7 +555,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
       await createCanvasVersion(boardId, { label: label.trim() || undefined, triggerType: 'manual' });
       success('Version committed');
       setLabel('');
-      queryClient.invalidateQueries({ queryKey: ['canvas-versions', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'versions', boardId) });
     } catch {
       toastError('Failed to commit version');
     } finally {
@@ -568,8 +569,8 @@ function VersionsTab({ boardId }: { boardId: string }) {
     try {
       await restoreCanvasVersion(boardId, restoreTarget.id);
       success('Canvas restored to this version');
-      queryClient.invalidateQueries({ queryKey: ['canvas-versions', boardId] });
-      queryClient.invalidateQueries({ queryKey: ['board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'versions', boardId) });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       setRestoreTarget(null);
     } catch {
       toastError('Restore failed');
@@ -695,7 +696,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
   const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['canvas-branches', boardId],
+    queryKey: qk('research-boards', 'branches', boardId),
     queryFn: () => listCanvasBranches(boardId),
     enabled: apiAvailable && !!boardId,
     refetchInterval: pollInterval(60_000),
@@ -712,7 +713,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
       await createCanvasBranch(boardId, { name: name.trim(), description: desc.trim() || undefined });
       success(`Branch "${name.trim()}" created`);
       setName(''); setDesc(''); setShowCreate(false);
-      queryClient.invalidateQueries({ queryKey: ['canvas-branches', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
     } catch (e) {
       toastError(e instanceof Error ? e.message : 'Failed to create branch');
     } finally {
@@ -724,7 +725,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
     mutationFn: ({ branchId }: { branchId: string }) => archiveCanvasBranch(boardId, branchId),
     onSuccess: () => {
       success('Branch archived');
-      queryClient.invalidateQueries({ queryKey: ['canvas-branches', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
     },
     onError: () => toastError('Failed to archive branch'),
   });
@@ -734,7 +735,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
     onSuccess: () => {
       success('Branch deleted');
       setDeletingId(null);
-      queryClient.invalidateQueries({ queryKey: ['canvas-branches', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
     },
     onError: () => toastError('Failed to delete branch'),
   });

@@ -35,7 +35,7 @@ import {
   type MilestoneSummary,
   type MentorProfileItem,
 } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys, qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, NavIcon, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
@@ -237,21 +237,21 @@ export function DashboardHome() {
   const pendingCount = pendingData?.connections?.filter((c) => c.status === 'pending').length ?? 0;
 
   const { data: meSummary } = useQuery({
-    queryKey: ['dashboard', 'me'],
+    queryKey: qk('dashboard', 'me'),
     queryFn: getDashboardMe,
     staleTime: 60_000,
     enabled: queryEnabled,
   });
 
   const { data: statsData } = useQuery({
-    queryKey: ['dashboard', 'stats'],
+    queryKey: qk('dashboard', 'stats'),
     queryFn: getDashboardStats,
     staleTime: 60_000,
     enabled: queryEnabled,
   });
 
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
-    queryKey: ['recommendations', { limit: 4 }],
+    queryKey: qk('recommendations', { limit: 4 }),
     queryFn: () => getRecommendations({ limit: 4 }),
     staleTime: 3 * 60_000,
     enabled: queryEnabled,
@@ -259,7 +259,7 @@ export function DashboardHome() {
   const topMatches = (matchesData?.suggestions ?? []) as SearchHit[];
 
   const { data: eventsData } = useQuery({
-    queryKey: ['events', { scope: 'upcoming', limit: 3 }],
+    queryKey: qk('events', { scope: 'upcoming', limit: 3 }),
     queryFn: () => listEvents({ scope: 'upcoming', limit: 3 }),
     staleTime: 2 * 60_000,
     enabled: queryEnabled,
@@ -267,7 +267,7 @@ export function DashboardHome() {
   const upcomingEvents = eventsData?.events ?? [];
 
   const { data: activityData } = useQuery({
-    queryKey: ['dashboard', 'activity'],
+    queryKey: qk('dashboard', 'activity'),
     queryFn: () => getDashboardActivity({ limit: 4 }),
     staleTime: 60_000,
     enabled: queryEnabled,
@@ -275,7 +275,7 @@ export function DashboardHome() {
   const recentActivity = activityData?.items ?? [];
 
   const { data: milestonesData } = useQuery({
-    queryKey: ['milestones', 'in_progress', 3],
+    queryKey: qk('milestones', 'in_progress', 3),
     queryFn: () => listMilestones({ status: 'in_progress' as const, limit: 3 }),
     staleTime: 60_000,
     enabled: queryEnabled,
@@ -283,14 +283,14 @@ export function DashboardHome() {
   const activeMilestonesList: Milestone[] = milestonesData?.milestones ?? [];
 
   const { data: milestoneSummary } = useQuery<MilestoneSummary>({
-    queryKey: ['milestones', 'summary'],
+    queryKey: qk('milestones', 'summary'),
     queryFn: getMilestoneSummary,
     staleTime: 5 * 60_000,
     enabled: queryEnabled,
   });
 
   const { data: mentorsData } = useQuery({
-    queryKey: ['mentors', 'dashboard-suggestions'],
+    queryKey: qk('mentors', 'dashboard-suggestions'),
     queryFn: () => discoverMentors({ limit: 3, availabilityStatus: 'available' }),
     staleTime: 5 * 60_000,
     enabled: queryEnabled,
@@ -298,7 +298,7 @@ export function DashboardHome() {
   const mentorSuggestions: MentorProfileItem[] = (mentorsData?.mentors ?? []).slice(0, 3);
 
   const { data: myGroupsData } = useQuery({
-    queryKey: ['groups', 'my'],
+    queryKey: qk('groups', 'my'),
     queryFn: getMyGroups,
     staleTime: 2 * 60_000,
     enabled: queryEnabled,

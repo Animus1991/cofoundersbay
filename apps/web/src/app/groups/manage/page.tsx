@@ -41,6 +41,7 @@ import {
 import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
 
 type ManagedGroup = {
   id: string;
@@ -168,7 +169,7 @@ export default function ManageGroupsPage() {
   // The groups the viewer runs, from GET /groups/my; this list was a fixed
   // array. Plain membership is not management, so members are left out.
   const { data, isLoading } = useQuery({
-    queryKey: ['groups', 'my'],
+    queryKey: qk('groups', 'my'),
     queryFn: getMyGroups,
     staleTime: 60_000,
     retry: 0,
@@ -220,7 +221,7 @@ export default function ManageGroupsPage() {
       } catch (e) {
         toastError('Could not delete the group', e instanceof Error ? e.message : undefined);
       } finally {
-        void queryClient.invalidateQueries({ queryKey: ['groups'] });
+        void queryClient.invalidateQueries({ queryKey: qk('groups') });
       }
     },
   };

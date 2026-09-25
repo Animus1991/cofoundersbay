@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { qk } from '@/lib/query-keys';
 import {
   listNotifications,
   markNotificationRead,
@@ -226,7 +227,7 @@ export default function NotificationsPage() {
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const queryKey = ['notifications', activeTab, showUnreadOnly];
+  const queryKey = qk('notifications', activeTab, showUnreadOnly);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey,
@@ -253,7 +254,7 @@ export default function NotificationsPage() {
         ),
       }));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
   const markAllRead = useMutation({
@@ -268,7 +269,7 @@ export default function NotificationsPage() {
         })),
       }));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
   // Offered to the assistant: the category tab, unread-only, and mark all
@@ -299,7 +300,7 @@ export default function NotificationsPage() {
         notifications: (old?.notifications ?? []).filter((n) => n.id !== id),
       }));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
   const handleRead = useCallback((id: string) => markRead.mutate(id), [markRead]);

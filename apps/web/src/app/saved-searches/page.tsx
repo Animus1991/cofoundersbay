@@ -44,6 +44,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { SAVED_SEARCHES_STRINGS, savedSearchesEn, savedSearchesEl } from '@/lib/i18n/strings-saved-searches';
 import { useRouter } from 'next/navigation';
+import { qk } from '@/lib/query-keys';
 
 function SearchCard({
   search,
@@ -312,7 +313,7 @@ export default function SavedSearchesPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['saved-searches'],
+    queryKey: qk('saved-searches'),
     queryFn: () => listSavedSearches(),
   });
 
@@ -322,7 +323,7 @@ export default function SavedSearchesPage() {
     mutationFn: ({ id, alertsEnabled }: { id: string; alertsEnabled: boolean }) =>
       updateSavedSearch(id, { alertsEnabled }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
       success(t('alerts_updated'));
     },
     onError: () => showError(t('alerts_failed')),
@@ -332,7 +333,7 @@ export default function SavedSearchesPage() {
     mutationFn: ({ id, data }: { id: string; data: Partial<Pick<SavedSearch, 'name' | 'alertsEnabled' | 'alertFrequency'>> }) =>
       updateSavedSearch(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
       success(t('search_updated'));
     },
     onError: () => showError(t('search_update_failed')),
@@ -341,7 +342,7 @@ export default function SavedSearchesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteSavedSearch(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
       setDeleteConfirm(null);
       success(t('search_deleted'));
     },

@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { blockUser, createUserReport } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type ReportReason = 
   | 'harassment'
@@ -152,7 +153,8 @@ export function ReportBlockModal({
           ? 'Our team will review the report, and this user can no longer contact you.'
           : 'Our team will review this report within 24 hours.',
       );
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+      // Every public profile view: /profiles/[id] keys by id, /p/[username] by handle.
+      queryClient.invalidateQueries({ queryKey: qk('public-profile') });
       handleClose();
     },
     onError: (error) => {
@@ -165,8 +167,9 @@ export function ReportBlockModal({
     onSuccess: () => {
       onBlocked?.(userId);
       success('User blocked', `${userName} has been blocked. They can no longer contact you.`);
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      // Every public profile view: /profiles/[id] keys by id, /p/[username] by handle.
+      queryClient.invalidateQueries({ queryKey: qk('public-profile') });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       handleClose();
     },
     onError: (error) => {

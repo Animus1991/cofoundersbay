@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { getMyXP, type GamificationRecentEvent } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 interface ReputationActivity {
   id: string;
@@ -140,7 +141,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
   const [activeTab, setActiveTab] = useState('overview');
 
   const { data: xpData, isLoading } = useQuery({
-    queryKey: ['my-xp'],
+    queryKey: qk('gamification', 'my-xp'),
     queryFn: getMyXP,
     staleTime: 3 * 60_000,
     enabled: externalPoints === undefined,

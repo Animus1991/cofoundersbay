@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { qk } from '@/lib/query-keys';
 import {
   Building2, Shield, Plus, Check, X, AlertTriangle,
   Key, Activity, ChevronRight, RefreshCw, Trash2,
@@ -49,17 +50,17 @@ export default function SSOAdminPage() {
   const [eventsPage] = useState(0);
 
   const { data: tenants, isLoading: tenantsLoading, isError: tenantsError } = useQuery({
-    queryKey: ['admin', 'tenants'],
+    queryKey: qk('admin', 'tenants'),
     queryFn: () => listTenants({ limit: 100 }),
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['sso', 'stats'],
+    queryKey: qk('sso', 'stats'),
     queryFn: getSSOStats,
   });
 
   const { data: events, isLoading: eventsLoading, refetch: refetchEvents } = useQuery({
-    queryKey: ['sso', 'events', eventsPage],
+    queryKey: qk('sso', 'events', eventsPage),
     queryFn: () => getSSOAuthEvents({ limit: 20, offset: eventsPage * 20 }),
   });
 
@@ -170,7 +171,7 @@ export default function SSOAdminPage() {
 
 function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => void }) {
   const { data: config } = useQuery({
-    queryKey: ['sso', 'config', tenant.id],
+    queryKey: qk('sso', 'config', tenant.id),
     queryFn: () => getTenantSSOConfig(tenant.id),
   });
 
@@ -246,12 +247,12 @@ function SSOConfigPanel({
     });
 
   const { data: existingConfig, isLoading: configLoading } = useQuery({
-    queryKey: ['sso', 'config', tenantId],
+    queryKey: qk('sso', 'config', tenantId),
     queryFn: () => getTenantSSOConfig(tenantId),
   });
 
   const { data: providers, isLoading: providersLoading, refetch: refetchProviders } = useQuery({
-    queryKey: ['sso', 'providers', tenantId],
+    queryKey: qk('sso', 'providers', tenantId),
     queryFn: () => listSSOProviders(tenantId),
   });
 
@@ -309,8 +310,8 @@ function SSOConfigPanel({
       sessionDurationHours,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sso', 'config', tenantId] });
-      queryClient.invalidateQueries({ queryKey: ['sso', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'config', tenantId) });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'stats') });
       setSaveError('');
     },
     onError: (e: Error) => setSaveError(e.message),
@@ -332,7 +333,7 @@ function SSOConfigPanel({
       isActive: true,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sso', 'providers', tenantId] });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'providers', tenantId) });
       setShowNewProvider(false);
       setNewProvider({ providerName: '', oidcIssuerUrl: '', oidcClientId: '', oidcClientSecret: '', oidcScopes: 'openid profile email', samlEntryPoint: '', samlIssuer: '', samlCert: '', samlMetadataUrl: '', loginButtonText: 'Continue with SSO' });
     },
@@ -341,18 +342,18 @@ function SSOConfigPanel({
 
   const deleteProviderMut = useMutation({
     mutationFn: (id: string) => deleteSSOProvider(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'providers', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'providers', tenantId) }),
   });
 
   const { data: domainMappings, isLoading: domainsLoading } = useQuery({
-    queryKey: ['sso', 'domains', tenantId],
+    queryKey: qk('sso', 'domains', tenantId),
     queryFn: () => listSSODomainMappings(tenantId),
   });
 
   const addDomainMut = useMutation({
     mutationFn: () => createSSODomainMapping(tenantId, newDomain, newDomainAutoRedirect),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sso', 'domains', tenantId] });
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'domains', tenantId) });
       setNewDomain('');
       setNewDomainAutoRedirect(false);
     },
@@ -361,17 +362,17 @@ function SSOConfigPanel({
 
   const deleteDomainMut = useMutation({
     mutationFn: (id: string) => deleteSSODomainMapping(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'domains', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'domains', tenantId) }),
   });
 
   const verifyDomainMut = useMutation({
     mutationFn: (id: string) => verifySSODomainMapping(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sso', 'domains', tenantId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('sso', 'domains', tenantId) }),
   });
 
   const toggleActive = (p: IdentityProviderItem) =>
     updateSSOProvider(p.id, { isActive: !p.isActive }).then(() =>
-      queryClient.invalidateQueries({ queryKey: ['sso', 'providers', tenantId] })
+      queryClient.invalidateQueries({ queryKey: qk('sso', 'providers', tenantId) })
     );
 
   return (

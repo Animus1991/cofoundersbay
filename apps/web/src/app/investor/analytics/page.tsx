@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
@@ -166,7 +167,7 @@ export default function InvestorAnalyticsPage() {
   const [period, setPeriod] = useState<'3m' | '6m' | '1y'>('6m');
 
   const { data: summary } = useQuery({
-    queryKey: ['investor', 'summary'],
+    queryKey: qk('investor', 'summary'),
     queryFn: getInvestorSummary,
     staleTime: 60_000,
     retry: 0,

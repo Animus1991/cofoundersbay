@@ -16,6 +16,7 @@ import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
+import { qk } from '@/lib/query-keys';
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -115,7 +116,7 @@ interface VentureReadinessCardProps {
 
 export function VentureReadinessCard({ data: prefetched, compact = false, className, footer }: VentureReadinessCardProps) {
   const { data, isLoading } = useQuery({
-    queryKey: ['venture-readiness'],
+    queryKey: qk('readiness', 'venture'),
     queryFn: getVentureReadiness,
     enabled: !prefetched,
     staleTime: 5 * 60 * 1000,

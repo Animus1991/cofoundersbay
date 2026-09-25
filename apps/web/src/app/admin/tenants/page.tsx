@@ -28,6 +28,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type StatusFilter = 'all' | TenantItem['status'];
 type BrandingFilter = 'all' | 'branded' | 'unbranded';
@@ -65,7 +66,7 @@ export default function TenantsAdminPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const { data: tenants, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'tenants'],
+    queryKey: qk('admin', 'tenants'),
     queryFn: () => listTenants({ limit: 100 }),
   });
 
@@ -118,7 +119,7 @@ export default function TenantsAdminPage() {
       label: 'Activate',
       onClick: async (ids: string[]) => {
         await Promise.all(ids.map(id => updateTenant(id, { status: 'active' })));
-        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
         void analytics.track('tenant_bulk_activate', { count: ids.length });
       },
     },
@@ -128,7 +129,7 @@ export default function TenantsAdminPage() {
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
         await Promise.all(ids.map(id => updateTenant(id, { status: 'suspended' })));
-        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
         void analytics.track('tenant_bulk_suspend', { count: ids.length });
       },
     },
@@ -144,7 +145,7 @@ export default function TenantsAdminPage() {
         });
         if (!ok) return;
         await Promise.all(ids.map(id => deleteTenant(id)));
-        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
         void analytics.track('tenant_bulk_delete', { count: ids.length });
       },
     },
@@ -474,7 +475,7 @@ export default function TenantsAdminPage() {
             setIsCreating(false);
           }}
           onSave={() => {
-            queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+            queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
             setSelectedTenant(null);
             setIsCreating(false);
           }}
@@ -549,35 +550,35 @@ function TenantEditor({
 
   const createMut = useMutation({
     mutationFn: () => createTenant({ ...general }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }); onSave(); },
     onError: (e: Error) => setSaveError(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: () => updateTenant(tenant!.id, { ...general }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }); onSave(); },
     onError: (e: Error) => setSaveError(e.message),
   });
 
   const brandingMut = useMutation({
     mutationFn: () => updateTenantBranding(tenant!.id, { ...branding }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }),
     onError: (e: Error) => setSaveError(e.message),
   });
 
   const publishMut = useMutation({
     mutationFn: () => publishTenantBranding(tenant!.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }),
   });
 
   const unpublishMut = useMutation({
     mutationFn: () => unpublishTenantBranding(tenant!.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }),
   });
 
   const deleteMut = useMutation({
     mutationFn: () => deleteTenant(tenant!.id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }); onSave(); },
   });
 
   const isSaving = createMut.isPending || updateMut.isPending;

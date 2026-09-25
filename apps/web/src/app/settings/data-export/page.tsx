@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 type ExportStatus = 'idle' | 'processing' | 'ready' | 'expired';
 
@@ -222,7 +223,7 @@ export default function DataExportPage() {
   );
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['data-exports'],
+    queryKey: qk('data-exports'),
     queryFn: getExportStatus,
     refetchInterval: (query) => {
       const exports = query.state.data?.exports || [];

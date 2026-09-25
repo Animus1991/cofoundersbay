@@ -24,6 +24,7 @@ import {
 } from '@/lib/api';
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 function SeatRow({
   seat, onRevoke, revoking,
@@ -72,13 +73,13 @@ export default function TenantBillingPage() {
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const { data: subData, isLoading: subLoading } = useQuery({
-    queryKey: ['billing', 'tenant', tenantId],
+    queryKey: qk('billing', 'tenant', tenantId),
     queryFn: () => getTenantBillingSubscription(tenantId),
     enabled: Boolean(tenantId),
   });
 
   const { data: seatsData, isLoading: seatsLoading } = useQuery({
-    queryKey: ['billing', 'tenant', tenantId, 'seats'],
+    queryKey: qk('billing', 'tenant', tenantId, 'seats'),
     queryFn: () => listTenantSeats(tenantId),
     enabled: Boolean(tenantId),
   });
@@ -92,7 +93,7 @@ export default function TenantBillingPage() {
   const { mutate: saveContact, isPending: savingContact } = useMutation({
     mutationFn: () => upsertTenantBillingContact(tenantId, contactForm),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['billing', 'tenant', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('billing', 'tenant', tenantId) });
       setShowContactForm(false);
       toastSuccess('Billing contact saved');
     },
@@ -103,8 +104,8 @@ export default function TenantBillingPage() {
     setRevokingId(userId);
     try {
       await revokeTenantSeat(tenantId, userId);
-      qc.invalidateQueries({ queryKey: ['billing', 'tenant', tenantId, 'seats'] });
-      qc.invalidateQueries({ queryKey: ['billing', 'tenant', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('billing', 'tenant', tenantId, 'seats') });
+      qc.invalidateQueries({ queryKey: qk('billing', 'tenant', tenantId) });
       toastSuccess('Seat revoked');
     } catch {
       toastError('Failed to revoke seat');

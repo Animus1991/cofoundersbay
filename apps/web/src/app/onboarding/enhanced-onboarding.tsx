@@ -42,6 +42,7 @@ import { createProfile, uploadAvatar, listSkills,
 } from '@/lib/api';
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 const STEPS = [
   { id: 'welcome', title: 'Welcome to CoFounderBay', icon: Sparkles },
@@ -247,7 +248,7 @@ export default function EnhancedOnboardingPage() {
   const [avatarPreview, setAvatarPreview] = useState<string>('');
 
   const { data: skillsData } = useQuery({
-    queryKey: ['skills'],
+    queryKey: qk('skills'),
     queryFn: () => listSkills(),
   });
 

@@ -37,6 +37,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { qk } from '@/lib/query-keys';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -586,7 +587,7 @@ export default function FeedPage() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ['feed', 'personalized', activeTab],
+    queryKey: qk('feed', 'personalized', activeTab),
     initialPageParam: 0,
     queryFn: ({ pageParam }) => getPersonalizedFeed({
       limit: PAGE_SIZE,
@@ -616,7 +617,7 @@ export default function FeedPage() {
     data: preferences,
     isLoading: prefsLoading,
   } = useQuery({
-    queryKey: ['feed', 'preferences'],
+    queryKey: qk('feed', 'preferences'),
     queryFn: getFeedPreferences,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
@@ -625,7 +626,7 @@ export default function FeedPage() {
   const {
     data: trendingData,
   } = useQuery({
-    queryKey: ['feed', 'trending-topics'],
+    queryKey: qk('feed', 'trending-topics'),
     queryFn: () => getTrendingTopics(10),
     staleTime: 15 * 60 * 1000, // 15 minutes
   });
@@ -635,7 +636,7 @@ export default function FeedPage() {
     mutationFn: updateFeedPreferences,
     onSuccess: () => {
       success('Feed preferences updated');
-      queryClient.invalidateQueries({ queryKey: ['feed', 'preferences'] });
+      queryClient.invalidateQueries({ queryKey: qk('feed', 'preferences') });
       refetchFeed(); // Refresh feed with new preferences
     },
   });
@@ -682,7 +683,7 @@ export default function FeedPage() {
     });
 
     // Update UI optimistically
-    queryClient.setQueryData(['feed', 'personalized', activeTab], (old: any) => {
+    queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
       if (!old) return old;
       return {
         ...old,
@@ -707,7 +708,7 @@ export default function FeedPage() {
     });
 
     // Update UI optimistically
-    queryClient.setQueryData(['feed', 'personalized', activeTab], (old: any) => {
+    queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
       if (!old) return old;
       return {
         ...old,

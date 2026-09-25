@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { qk } from '@/lib/query-keys';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
@@ -306,7 +307,7 @@ function execStatusIcon(status: string) {
 
 function LogPanel({ executionId }: { executionId: string }) {
   const { data: logs = [], isLoading } = useQuery<AutomationLogItem[]>({
-    queryKey: ['automation-logs', executionId],
+    queryKey: qk('automation', 'logs', executionId),
     queryFn: () => getAutomationExecutionLogs(executionId),
     enabled: !!executionId,
   });
@@ -341,12 +342,12 @@ export default function AutomationsPage() {
   const [editRule, setEditRule] = useState<AutomationRuleItem | null>(null);
 
   const { data: rulesData, isLoading: rulesLoading } = useQuery({
-    queryKey: ['automation-rules'],
+    queryKey: qk('automation', 'rules'),
     queryFn: () => listAutomationRules({ limit: 100 }),
   });
 
   const { data: executions = [], isLoading: execLoading } = useQuery<AutomationExecutionItem[]>({
-    queryKey: ['automation-executions'],
+    queryKey: qk('automation', 'executions'),
     queryFn: () => listAutomationExecutions({ limit: 50 }),
     enabled: activeTab === 'executions' && apiAvailable,
     refetchInterval: pollInterval(10_000),
@@ -358,7 +359,7 @@ export default function AutomationsPage() {
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'paused' | 'archived' }) =>
       setAutomationRuleStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-rules'] });
+      queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') });
       success('Rule status updated');
     },
     onError: () => showError('Failed to update status'),
@@ -367,7 +368,7 @@ export default function AutomationsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteAutomationRule(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-rules'] });
+      queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') });
       success('Rule deleted');
     },
     onError: () => showError('Failed to delete rule'),
@@ -376,7 +377,7 @@ export default function AutomationsPage() {
   const triggerMutation = useMutation({
     mutationFn: (id: string) => triggerAutomationRule(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-executions'] });
+      queryClient.invalidateQueries({ queryKey: qk('automation', 'executions') });
       success('Rule triggered manually');
     },
     onError: () => showError('Failed to trigger rule'),
@@ -401,13 +402,13 @@ export default function AutomationsPage() {
         <CreateRuleSlideOver
           open={showCreate}
           onClose={() => setShowCreate(false)}
-          onCreated={() => queryClient.invalidateQueries({ queryKey: ['automation-rules'] })}
+          onCreated={() => queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') })}
         />
         {editRule && (
           <EditRuleSlideOver
             rule={editRule}
             onClose={() => setEditRule(null)}
-            onSaved={() => queryClient.invalidateQueries({ queryKey: ['automation-rules'] })}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') })}
           />
         )}
 
