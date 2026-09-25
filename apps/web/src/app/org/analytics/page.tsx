@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   BarChart3,
@@ -33,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
 const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
@@ -272,39 +274,42 @@ export default function OrgAnalyticsPage() {
       <div className="space-y-6">
 
         {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <StatCard
             title="Total Startups"
             value={stats.totalStartups}
-            change="+5 this month"
-            changeType="positive"
             icon={Rocket}
           />
           <StatCard
             title="Active Mentorships"
             value={stats.activeMentorships}
-            change="+8 this month"
-            changeType="positive"
             icon={GraduationCap}
           />
           <StatCard
             title="Avg. Readiness Score"
             value={stats.avgReadinessScore == null ? '\u2014' : `${stats.avgReadinessScore}%`}
-            change="+3% from last month"
-            changeType="positive"
             icon={Target}
           />
           <StatCard
             title="Mentor Sessions"
             value={stats.totalSessions ?? '\u2014'}
-            change="+24 this month"
-            changeType="positive"
             icon={Calendar}
           />
         </div>
 
+        {/* The four figures above are counted from the organisation's rows,
+            and carry no change line: none of the endpoints report history, so
+            the "+5 this month" that stood under a live 0 was invented. The
+            trend, session, stage, industry and funnel panels below are fixed
+            illustrations until the API reports them, and say so here. */}
+        <SampleDataNotice
+          surface="Organisation analytics"
+          detail="The counts at the top are your organisation's own. The trend, session, stage, industry and funnel panels below are illustrative until the platform reports them."
+          askAiPrompt="Which of my organisation's analytics are live, and which are illustrative?"
+        />
+
         {/* Charts Row */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Applications Trend */}
           <Card>
             <CardHeader className="pb-2">
@@ -332,13 +337,19 @@ export default function OrgAnalyticsPage() {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Program Performance */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Program Performance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {programMetrics.length === 0 && (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  No programmes yet. Each programme you run appears here with how full it is.{' '}
+                  <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline">Create a programme</Link>
+                </p>
+              )}
               {programMetrics.map((program) => (
                 <div key={program.name} className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -427,21 +438,28 @@ export default function OrgAnalyticsPage() {
             <CardTitle className="text-lg">Application Funnel</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between gap-4">
-              {FUNNEL_STEPS.map((step, index) => (
-                <div key={step.label} className="flex-1 text-center">
-                  <div className={cn('h-24 rounded-lg flex items-center justify-center', step.bar)}>
-                    <span className="text-xl font-bold text-primary-foreground">{step.value}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">{step.label}</p>
-                  {index < FUNNEL_STEPS.length - 1 && (
-                    <p className="text-xs text-muted-foreground">
-                      {Math.round((step.value / 120) * 100)}%
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+            {/* A funnel reads by length: each bar is its step's share of the
+                applications that entered, and the right column is how many of
+                the previous step went on. Equal-height tiles showed neither, and
+                five of them did not fit a phone. */}
+            <ol className="space-y-2.5">
+              {FUNNEL_STEPS.map((step, index) => {
+                const top = FUNNEL_STEPS[0]?.value || 1;
+                const prev = index > 0 ? FUNNEL_STEPS[index - 1]?.value : undefined;
+                return (
+                  <li key={step.label} className="grid grid-cols-[6.5rem_1fr_2.5rem_2.75rem] items-center gap-3 text-sm sm:grid-cols-[8rem_1fr_3rem_3rem]">
+                    <span className="truncate text-muted-foreground">{step.label}</span>
+                    <span className="h-2.5 overflow-hidden rounded-full bg-muted/50" aria-hidden="true">
+                      <span className={cn('block h-full rounded-full', step.bar)} style={{ width: `${Math.max(3, Math.round((step.value / top) * 100))}%` }} />
+                    </span>
+                    <span className="text-right font-semibold tabular-nums">{step.value}</span>
+                    <span className="text-right text-xs tabular-nums text-muted-foreground">
+                      {prev ? `${Math.round((step.value / prev) * 100)}%` : '—'}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
           </CardContent>
         </Card>
       </div>

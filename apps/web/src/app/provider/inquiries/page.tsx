@@ -73,15 +73,15 @@ function InquiryCard({
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
       <CardContent className="p-4">
-        <div className="flex gap-4">
-          <Avatar className="h-12 w-12">
+        <div className="flex gap-3 sm:gap-4">
+          <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
             <AvatarImage src={inquiry.clientAvatar} />
             <AvatarFallback>{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-semibold">{inquiry.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
                     <StatusIcon className="mr-1 icon-sm" />
@@ -92,8 +92,8 @@ function InquiryCard({
                   <p className="text-sm text-muted-foreground">{inquiry.clientCompany}</p>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1">
+                <span className="whitespace-nowrap text-xs text-muted-foreground">
                   <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
                 </span>
                 <DropdownMenu>

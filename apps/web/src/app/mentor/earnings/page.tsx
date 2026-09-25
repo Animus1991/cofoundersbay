@@ -280,33 +280,37 @@ export default function MentorEarningsPage() {
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
                   {transactions.map(tx => (
-                    <div key={tx.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors">
+                    // Amount and status stack on the right; the date joins the
+                    // topic line below sm. Five columns in one row drew the
+                    // name, amount and duration on top of each other at 390px.
+                    <div key={tx.id} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30 sm:gap-4">
                       <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} />
                         <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
                           {tx.mentee.name[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{tx.mentee.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{tx.topic}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{tx.mentee.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {tx.topic} · {tx.duration} min<span className="sm:hidden"> · {tx.date}</span>
+                        </p>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold">{formatCurrency(tx.amount)}</p>
-                        <p className="text-xs text-muted-foreground">{tx.duration} min</p>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <p className="text-sm font-semibold tabular-nums">{formatCurrency(tx.amount)}</p>
+                        <Badge
+                          variant={tx.status === 'paid' ? 'secondary' : 'outline'}
+                          className={cn(
+                            'text-xs',
+                            tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
+                          )}
+                        >
+                          {tx.status === 'paid' ? (
+                            <><CheckCircle2 className="icon-sm mr-1" />Paid</>
+                          ) : 'Pending'}
+                        </Badge>
                       </div>
-                      <Badge
-                        variant={tx.status === 'paid' ? 'secondary' : 'outline'}
-                        className={cn(
-                          'text-xs shrink-0',
-                          tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
-                        )}
-                      >
-                        {tx.status === 'paid' ? (
-                          <><CheckCircle2 className="icon-sm mr-1" />Paid</>
-                        ) : 'Pending'}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground w-20 text-right">{tx.date}</p>
+                      <p className="hidden w-24 shrink-0 text-right text-xs tabular-nums text-muted-foreground sm:block">{tx.date}</p>
                     </div>
                   ))}
                 </div>

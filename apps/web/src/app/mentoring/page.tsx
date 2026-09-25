@@ -722,7 +722,7 @@ export default function MentoringPage() {
     >
       <div className="pb-10">
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList>
           <TabsTrigger value="find" className="gap-2">
             <Search className="icon-sm" />
             Find Mentors
@@ -749,7 +749,7 @@ export default function MentoringPage() {
               const SIcon = s.icon;
               return (
                 <Card key={s.label} className="border-border/40">
-                  <CardContent className="flex items-center gap-2.5 p-3">
+                  <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-2.5">
                     <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                       <SIcon className="icon-sm" />
                     </div>

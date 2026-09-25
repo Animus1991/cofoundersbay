@@ -181,7 +181,10 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
   const statusCfg = STATUS_CONFIG[event.status];
   const typeColors = STATUS[typeCfg.tone];
   const statusColors = STATUS[statusCfg.tone];
-  const fill = Math.round((event.attendees / event.capacity) * 100);
+  // An event without a cap (the API's capacity is optional, mapped to 0) has
+  // no fill: dividing by it printed "156/0 attending · Infinity% full".
+  const capped = event.capacity > 0;
+  const fill = capped ? Math.round((event.attendees / event.capacity) * 100) : 0;
   const fillColor = fill >= 90 ? STATUS.danger.icon : fill >= 70 ? STATUS.warning.icon : STATUS.success.icon;
 
   return (
@@ -208,7 +211,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
                 {event.location}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />{event.attendees}/{event.capacity} attending
+                <Users className="icon-sm" aria-hidden="true" />{capped ? `${event.attendees}/${event.capacity}` : event.attendees} attending
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
@@ -222,7 +225,11 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
             <div className="flex items-center gap-3 mt-3">
               <Badge variant="secondary" className={cn('text-xs border', typeColors.chip)}>{typeCfg.label}</Badge>
               <span className="text-xs text-muted-foreground">
-                Capacity: <span className={cn('font-medium', fillColor)}>{fill}% full</span>
+                {capped ? (
+                  <>Capacity: <span className={cn('font-medium', fillColor)}>{fill}% full</span></>
+                ) : (
+                  'No attendance cap'
+                )}
               </span>
             </div>
           </div>
@@ -336,7 +343,7 @@ export default function OrgEventsPage() {
       <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
             { label: 'Upcoming Events', value: upcoming, icon: Calendar },
             { label: 'Total Attendees (all)', value: totalAttendees, icon: Users },

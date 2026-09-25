@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { STATUS } from '@/lib/semantic-colors';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -100,7 +101,7 @@ export default function ApiStatusPage() {
   const getStatusBadge = (status: EndpointStatus['status']) => {
     switch (status) {
       case 'success':
-        return <Badge variant="default" className="bg-green-500">Working</Badge>;
+        return <Badge variant="outline" className={STATUS.success.chip}>Working</Badge>;
       case 'error':
         return <Badge variant="destructive">Error</Badge>;
       case 'loading':
@@ -124,14 +125,14 @@ export default function ApiStatusPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {endpoints.map((endpoint, index) => (
           <Card key={index}>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
                   {getStatusIcon(endpoint.status)}
-                  <CardTitle className="text-lg">{endpoint.endpoint}</CardTitle>
+                  <CardTitle className="min-w-0 break-all text-base sm:text-lg">{endpoint.endpoint}</CardTitle>
                   {getStatusBadge(endpoint.status)}
                 </div>
                 {endpoint.responseTime && (

@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -543,7 +543,7 @@ function SuggestedConnections() {
             <div key={person.id} className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
-                  {person.name.split(' ').map((n) => n[0]).join('')}
+                  {initialsOf(person.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">

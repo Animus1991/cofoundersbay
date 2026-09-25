@@ -60,3 +60,22 @@ export function isAbortError(error: unknown): boolean {
       (error as { name?: unknown }).name === 'AbortError')
   );
 }
+
+/**
+ * Two letters for an avatar: first and last word, titles skipped.
+ *
+ * Twenty call sites built initials with `name.split(' ').map(n => n[0])`,
+ * which gave "DSK" for "Dr. Sarah Kim" - three letters in a 32px circle,
+ * drawn over the avatar beside it.
+ */
+const NAME_TITLES = new Set(['dr', 'mr', 'mrs', 'ms', 'mx', 'prof', 'sir']);
+export function initialsOf(name: string | null | undefined): string {
+  const words = (name ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w && !NAME_TITLES.has(w.replace(/\.$/, '').toLowerCase()));
+  if (!words.length) return '?';
+  const first = words[0][0] ?? '';
+  const last = words.length > 1 ? words[words.length - 1][0] ?? '' : '';
+  return (first + last).toUpperCase();
+}

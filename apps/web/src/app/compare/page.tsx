@@ -370,7 +370,7 @@ export default function ComparePage() {
         {/* Profile Columns */}
         {profileIds.length > 0 && (
           <div className={cn(
-            'grid gap-6',
+            'grid grid-cols-1 gap-6',
             profileIds.length === 1 && 'grid-cols-1 max-w-md',
             profileIds.length === 2 && 'grid-cols-2',
             profileIds.length === 3 && 'grid-cols-3',

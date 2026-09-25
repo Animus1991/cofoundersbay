@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   KeyRound,
-  Plus,
   Copy,
   Eye,
   EyeOff,
@@ -28,6 +27,7 @@ import { EmptyTenantApiKeys } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { UnavailableButton } from '@/components/common/UnavailableButton';
 
 type ApiKey = {
   id: string;
@@ -109,9 +109,12 @@ export default function TenantApiKeysPage() {
       description="Manage API keys for programmatic access to your tenant data"
       actions={
         // Had no handler; there is no key-issuing service behind this page.
-        <Button size="sm" disabled title="API key issuing has no backend yet">
-          <Plus className="mr-2 icon-sm" aria-hidden="true" />Create API Key
-        </Button>
+        <UnavailableButton
+          en="Create API key"
+          el="Νέο κλειδί API"
+          reasonEn="Issuing keys needs a key service the platform does not run yet."
+          reasonEl="Η έκδοση κλειδιών χρειάζεται υπηρεσία που η πλατφόρμα δεν έχει ακόμη."
+        />
       }
     >
       <div className="space-y-5">

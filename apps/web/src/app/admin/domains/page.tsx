@@ -333,7 +333,7 @@ export default function DomainsAdminPage() {
     >
       <div className="space-y-6">
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         {/* Tenant selector */}
         <Card className="h-fit">
           <CardHeader className="pb-3">

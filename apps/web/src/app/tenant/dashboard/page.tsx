@@ -166,7 +166,7 @@ export default function TenantDashboardPage() {
       <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <StatCard
             title="Total Members"
             value={stats.totalMembers}
@@ -192,7 +192,7 @@ export default function TenantDashboardPage() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Active Programs */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -254,7 +254,7 @@ export default function TenantDashboardPage() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -291,7 +291,7 @@ export default function TenantDashboardPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               {upcomingEvents.map((event) => (
                 <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-2 mb-1">

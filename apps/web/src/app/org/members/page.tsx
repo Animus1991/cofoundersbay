@@ -34,8 +34,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgMembers } from '@/components/common/EmptyStates';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { UnavailableButton } from '@/components/common/UnavailableButton';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -107,7 +108,7 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
     <div className="flex items-center gap-4 py-3 px-1 border-b border-border last:border-0 hover:bg-muted/30 rounded-lg transition-colors">
       <Avatar className="icon-md shrink-0">
         <AvatarImage src={member.avatarUrl} />
-        <AvatarFallback className="text-sm font-medium">{member.name.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
+        <AvatarFallback className="text-sm font-medium">{initialsOf(member.name).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -222,17 +223,20 @@ export default function OrgMembersPage() {
             </Link>
           </Button>
         ) : (
-          <Button disabled title="Join an organisation to invite members">
-            <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
-            Invite Member
-          </Button>
+          <UnavailableButton
+            size="md"
+            en="Invite member"
+            el="Πρόσκληση μέλους"
+            reasonEn="Invitations are sent on behalf of an organisation; join or create one first."
+            reasonEl="Οι προσκλήσεις στέλνονται εκ μέρους οργανισμού· γίνετε μέλος ή δημιουργήστε έναν πρώτα."
+          />
         )
       )}
     >
       <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
             { label: 'Total Members', value: data?.total ?? members.length },
             { label: 'Admins', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },

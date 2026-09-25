@@ -489,7 +489,7 @@ export default function TenantProgramsPage() {
           <DialogHeader>
             <DialogTitle>{form.id ? 'Edit program' : 'Create program'}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-2">
+          <div className="grid grid-cols-1 gap-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="program-name">Name</Label>
               <Input

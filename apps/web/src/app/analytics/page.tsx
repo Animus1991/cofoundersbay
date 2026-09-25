@@ -731,7 +731,7 @@ export default function AnalyticsPage() {
       labelEl: 'Πού να πάτε μετά',
       content: (
         <div className="space-y-3">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
               <Link href="/profile">
                 <CfbGlyph name="profile" className="icon-sm" />
@@ -841,7 +841,7 @@ export default function AnalyticsPage() {
               {metrics.length > 0 && (
                 <>
                   <WindowHighlights metrics={metrics} />
-                  <div className="grid min-w-0 gap-4 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 min-w-0 gap-4 lg:grid-cols-3">
                     <div className="min-w-0 lg:col-span-1">
                       <NetworkVelocity metrics={metrics} />
                     </div>
@@ -926,7 +926,7 @@ export default function AnalyticsPage() {
           ) : waiting ? (
             <AnalyticsSkeleton />
           ) : (
-            <div className="grid min-w-0 gap-5 lg:grid-cols-2">
+            <div className="grid grid-cols-1 min-w-0 gap-5 lg:grid-cols-2">
               <EngagementBreakdown engagement={engagement} />
               {topContent && topContent.length > 0 ? (
                 <div className="space-y-3">

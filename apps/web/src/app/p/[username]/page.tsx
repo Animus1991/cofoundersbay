@@ -187,7 +187,7 @@ export default function PublicProfilePage() {
       </header>
 
       <main id="main-content" className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Header */}
@@ -409,22 +409,20 @@ export default function PublicProfilePage() {
             {/* Stats */}
             <Card>
               <CardContent className="pt-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-xl font-bold text-foreground">{derived?.connectionsCount ?? '—'}</div>
-                    <div className="text-xs text-muted-foreground">Connections</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-foreground">{derived?.projectsCount ?? '—'}</div>
-                    <div className="text-xs text-muted-foreground">Projects</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-foreground">
-                      {endorsementsLoading ? '—' : endorsements.length}
+                {/* Label and figure on one row: three centred columns did not
+                    fit this sidebar ("ConnectionsProjects" ran together). */}
+                <dl className="divide-y divide-border/50 text-sm">
+                  {[
+                    { label: 'Connections', value: derived?.connectionsCount ?? '—' },
+                    { label: 'Projects', value: derived?.projectsCount ?? '—' },
+                    { label: 'Endorsements', value: endorsementsLoading ? '—' : endorsements.length },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                      <dt className="text-muted-foreground">{row.label}</dt>
+                      <dd className="font-semibold tabular-nums text-foreground">{row.value}</dd>
                     </div>
-                    <div className="text-xs text-muted-foreground">Endorsements</div>
-                  </div>
-                </div>
+                  ))}
+                </dl>
               </CardContent>
             </Card>
 

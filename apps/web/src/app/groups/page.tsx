@@ -274,7 +274,12 @@ export default function GroupsPage() {
   const restGroups = displayGroups.slice(4);
 
   const totalGroups = discoverGroups.length;
-  const myGroupsCount = myGroups.length;
+  // The my-groups read only runs on its tab, so on Discover this counted an
+  // empty list and said "Joined 0" beside cards marked joined. Until that read
+  // has run, the discover rows carry the same fact.
+  const myGroupsCount = myGroupsQuery.data
+    ? myGroups.length
+    : discoverGroups.filter((g) => g.isMember).length;
   const trendingGroup = discoverGroups.find((g) => g.postCount > 0) ?? discoverGroups[0];
 
   const discoverFiltersActive =
@@ -316,13 +321,13 @@ export default function GroupsPage() {
           const Icon = s.Icon;
           return (
             <Card key={s.labelEn} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-3 p-3">
+              <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.tone.bg, s.tone.icon)}>
                   <Icon className="icon-sm" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground truncate"><BilingualText en={s.labelEn} el={s.labelEl} compact /></p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -332,7 +337,7 @@ export default function GroupsPage() {
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <TabsList className="grid w-full max-w-xs grid-cols-2">
+          <TabsList>
             <TabsTrigger value="discover"><BilingualText en="Discover" el="Ανακάλυψη" compact /></TabsTrigger>
             <TabsTrigger value="my-groups">
               <BilingualText en="My Communities" el="Οι κοινότητές μου" compact />

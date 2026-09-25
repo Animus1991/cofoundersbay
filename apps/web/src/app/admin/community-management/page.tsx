@@ -33,7 +33,7 @@ export default function CommunityManagementPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
         {[
           { label: 'Total communities', value: COMMUNITIES.length, icon: Layers },
           { label: 'Total members', value: COMMUNITIES.reduce((s, c) => s + c.members, 0), icon: Users },

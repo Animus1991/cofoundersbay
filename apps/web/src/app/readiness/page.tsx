@@ -711,7 +711,7 @@ function ReadinessSkeleton() {
         <Skeleton className="h-4 w-96" />
       </div>
       <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[...Array(6)].map((_, i) => (
           <Card key={i}><CardContent className="p-5"><Skeleton className="h-32 w-full" /></CardContent></Card>
         ))}
@@ -1130,7 +1130,7 @@ export default function ReadinessPage() {
       labelEl: 'Επόμενα βήματα',
       content: <div className="space-y-3">
         {/* Quick Actions */}
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
         <Link href="/builder">
         <CfbGlyph name="builder" className="icon-sm" />
@@ -1191,7 +1191,7 @@ export default function ReadinessPage() {
 
         {/* One card now: the two audience readouts moved to the rail, so the
             gauge no longer shares a row with two restatements of itself. */}
-        <div className="grid min-w-0 gap-5">
+        <div className="grid grid-cols-1 min-w-0 gap-5">
           <Card className="min-w-0 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/15 via-indigo-500/5 to-transparent lg:col-span-1">
             <CardContent className="flex h-full flex-col items-center gap-4 p-5 text-center">
               <ScoreEmblem
@@ -1243,7 +1243,7 @@ export default function ReadinessPage() {
         </div>
 
         {/* Radar + AI Insights row */}
-        <div className="grid min-w-0 gap-5">
+        <div className="grid grid-cols-1 min-w-0 gap-5">
           <div className="min-w-0">
             <ReadinessRadarChart dimensions={dimensions} />
           </div>
@@ -1276,7 +1276,7 @@ export default function ReadinessPage() {
                 </div>
               </div>
             )}
-            <div className="grid min-w-0 gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 min-w-0 gap-5 md:grid-cols-2">
               {dimensions.map((dim) => (
                 <DimensionCard
                   key={dim.key}
@@ -1368,7 +1368,7 @@ export default function ReadinessPage() {
           </TabsContent>
 
           <TabsContent value="benchmarks" className="mt-5">
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
@@ -1435,7 +1435,7 @@ export default function ReadinessPage() {
                 <CardTitle className="text-sm"><BilingualText en={readinessEn('dimension_weights')} el={readinessEl('dimension_weights')} /></CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   {dimensions.map((d) => {
                     const pct = Math.round((d.score / d.maxScore) * 100);
                     const accelContrib = Math.round(pct * d.acceleratorWeight / 100);

@@ -381,18 +381,20 @@ export default function InvestorPipelinePage() {
             <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /> Pipeline Conversion</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
+            {/* Seven stages do not fit one row on a phone: a 4-column grid
+                there, the arrowed funnel from sm up. */}
+            <div className="grid grid-cols-4 gap-x-2 gap-y-3 sm:flex sm:items-center sm:gap-2">
               {PIPELINE_STAGES.map((stage, i) => {
                 const count = getDealsByStage(stage.key).length;
                 const pct = deals.length > 0 ? Math.round((count / deals.length) * 100) : 0;
                 return (
-                  <div key={stage.key} className="flex items-center gap-2 flex-1">
-                    <div className="flex-1 text-center">
+                  <div key={stage.key} className="flex min-w-0 flex-1 items-center gap-2">
+                    <div className="min-w-0 flex-1 text-center">
                       <p className="text-lg font-bold tabular-nums">{count}</p>
-                      <p className="text-2xs text-muted-foreground">{stage.label}</p>
+                      <p className="truncate text-2xs text-muted-foreground">{stage.label}</p>
                       <Progress value={pct} className="h-1 mt-1" />
                     </div>
-                    {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="icon-sm text-muted-foreground/40 shrink-0" />}
+                    {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="hidden icon-sm shrink-0 text-muted-foreground/40 sm:block" aria-hidden="true" />}
                   </div>
                 );
               })}

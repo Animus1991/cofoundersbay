@@ -449,7 +449,7 @@ export default function LearningPage() {
               <BilingualText en="paths" el="μονοπάτια" compact />
             </span>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {LEARNING_PATHS.map((path) => (
               <LearningPathCard
                 key={path.id}
@@ -484,7 +484,7 @@ export default function LearningPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
+        <TabsList>
           <TabsTrigger value="all">
             <BilingualText en={learningEn('tab_all')} el={learningEl('tab_all')} compact />
           </TabsTrigger>

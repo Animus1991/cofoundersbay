@@ -107,7 +107,7 @@ function AssistantBody({
         </div>
       )}
       {message.actions && message.actions.length > 0 && (
-        <div className="grid gap-2 pt-1">
+        <div className="grid grid-cols-1 gap-2 pt-1">
           {message.actions.map((action) => (
             <ActionCard
               key={action.id}

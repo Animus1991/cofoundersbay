@@ -32,13 +32,13 @@ import {
   ExternalLink,
   FolderOpen,
   Plus,
-  Zap,
   BarChart3,
   BadgeCheck,
   Calendar,
   MessageSquare,
   Link as LinkIcon,
   User,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { getMeProfile, getDashboardActivity } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
@@ -482,7 +482,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* Main content column.
               A flex column from `lg` so the last card can take the slack: the
               sidebar runs 315px longer than this column, which left a void down
@@ -545,7 +545,7 @@ export default function ProfilePage() {
                     <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-4 sm:grid-cols-2 pt-5">
+                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-5">
                   {cards.map(({ icon: Icon, labelEn, labelEl, value }) => (
                     <div key={labelEn} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="mb-2 flex items-start gap-2.5">
@@ -594,7 +594,7 @@ export default function ProfilePage() {
                 </div>
               </CardHeader>
               <CardContent className="pt-5">
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => {
                     const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
                     const pct = lvl === 'expert' ? 92 - i * 2 : lvl === 'intermediate' ? 68 - i * 3 : 42 - i * 2;
@@ -711,15 +711,17 @@ export default function ProfilePage() {
                   <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
                 </Link>
               </Button>
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
+              {/* Stacked: two bilingual labels side by side ran out of their
+                  buttons in this column. */}
+              <div className="grid grid-cols-1 gap-2">
+                <Button variant="outline" className="w-full justify-start gap-2" onClick={handleShare}>
                   <LinkIcon className="icon-sm" />
-                  <BilingualText en={profileEn('copy_link')} el={profileEl('copy_link')} />
+                  <BilingualText en={profileEn('copy_link')} el={profileEl('copy_link')} compact />
                 </Button>
-                <Button variant="outline" className="w-full gap-2" asChild>
+                <Button variant="outline" className="w-full justify-start gap-2" asChild>
                   <Link href="/settings" className="block w-full">
-                    <Zap className="icon-sm" />
-                    <BilingualText en={profileEn('settings')} el={profileEl('settings')} />
+                    <SettingsIcon className="icon-sm" />
+                    <BilingualText en={profileEn('settings')} el={profileEl('settings')} compact />
                   </Link>
                 </Button>
               </div>

@@ -195,13 +195,13 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
               </div>
             )}
 
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1 whitespace-nowrap">
                 <Users className="icon-sm" />
                 {flag.affectedUsers?.toLocaleString('en-GB') ?? 0} affected
               </span>
-              <span>Updated <RelativeTime date={flag.updatedAt} format={formatRelativeTime} /></span>
-              <span>By {flag.createdBy}</span>
+              <span className="whitespace-nowrap">Updated <RelativeTime date={flag.updatedAt} format={formatRelativeTime} /></span>
+              <span className="min-w-0 truncate">By {flag.createdBy}</span>
             </div>
           </div>
           <DropdownMenu>

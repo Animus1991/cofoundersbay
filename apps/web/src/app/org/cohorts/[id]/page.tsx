@@ -57,7 +57,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import Link from 'next/link';
 
 // Types
@@ -552,7 +552,7 @@ export default function CohortDetailPage() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 kpi-odd-span-md md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -683,12 +683,12 @@ export default function CohortDetailPage() {
                       <div className="flex -space-x-2">
                         <Avatar className="h-8 w-8 border-2 border-background">
                           <AvatarFallback>
-                            {match.participant1.name.split(' ').map(n => n[0]).join('')}
+                            {initialsOf(match.participant1.name)}
                           </AvatarFallback>
                         </Avatar>
                         <Avatar className="h-8 w-8 border-2 border-background">
                           <AvatarFallback>
-                            {match.participant2.name.split(' ').map(n => n[0]).join('')}
+                            {initialsOf(match.participant2.name)}
                           </AvatarFallback>
                         </Avatar>
                       </div>
@@ -723,7 +723,7 @@ export default function CohortDetailPage() {
                       <div key={session.id} className="flex items-center gap-3 p-3 border rounded-lg">
                         <Avatar className="h-10 w-10">
                           <AvatarFallback>
-                            {session.mentor.name.split(' ').map(n => n[0]).join('')}
+                            {initialsOf(session.mentor.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
@@ -773,7 +773,7 @@ export default function CohortDetailPage() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback>
-                              {participant.name.split(' ').map(n => n[0]).join('')}
+                              {initialsOf(participant.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
@@ -853,12 +853,12 @@ export default function CohortDetailPage() {
                     <div className="flex -space-x-3">
                       <Avatar className="h-12 w-12 border-2 border-background">
                         <AvatarFallback className="text-lg">
-                          {match.participant1.name.split(' ').map(n => n[0]).join('')}
+                          {initialsOf(match.participant1.name)}
                         </AvatarFallback>
                       </Avatar>
                       <Avatar className="h-12 w-12 border-2 border-background">
                         <AvatarFallback className="text-lg">
-                          {match.participant2.name.split(' ').map(n => n[0]).join('')}
+                          {initialsOf(match.participant2.name)}
                         </AvatarFallback>
                       </Avatar>
                     </div>
@@ -975,7 +975,7 @@ export default function CohortDetailPage() {
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback>
-                                {session.mentor.name.split(' ').map(n => n[0]).join('')}
+                                {initialsOf(session.mentor.name)}
                               </AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{session.mentor.name}</span>
@@ -985,7 +985,7 @@ export default function CohortDetailPage() {
                           <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback>
-                                {session.mentee.name.split(' ').map(n => n[0]).join('')}
+                                {initialsOf(session.mentee.name)}
                               </AvatarFallback>
                             </Avatar>
                             <span>{session.mentee.name}</span>

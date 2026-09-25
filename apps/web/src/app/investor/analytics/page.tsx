@@ -216,7 +216,7 @@ export default function InvestorAnalyticsPage() {
     >
       <div className="py-6 space-y-6">
         {/* KPI Grid */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-sm gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {kpis.map(kpi => (
             <Card key={kpi.label}>
               <CardContent className="p-4">

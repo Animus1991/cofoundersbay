@@ -5,6 +5,28 @@ import { DEMO_CRITERIA } from './readiness-demo';
 
 const NOW = '2026-09-04T10:00:00.000Z';
 
+// Declared first: module-level seeds (analytics, mentorships) read the demo
+// clock while this file loads.
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?Z$/;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function previewClockOffsetMs(now: number = Date.now()): number {
+  const weeks = Math.floor((now - Date.parse(NOW)) / WEEK_MS);
+  return weeks > 0 ? weeks * WEEK_MS : 0;
+}
+
+/**
+ * "Now" on the demo's own calendar. Records stamped at request time (a new
+ * comment, an activity series ending today) use this, not Date.now(): every
+ * payload is moved forward to the reader's week on the way out
+ * (resolvePreviewApiNow), and a real-clock stamp would be moved with it into
+ * the future.
+ */
+function previewNowMs(): number {
+  return Date.now() - previewClockOffsetMs();
+}
+
 function seedPreviewGtmNodes() {
   const base = {
     boardId: 'board-gtm',
@@ -81,7 +103,7 @@ type PreviewResearchComment = {
 let previewResearchComments: PreviewResearchComment[] = [];
 
 function makePreviewResearchComment(nodeId: string, body: Record<string, unknown>): PreviewResearchComment {
-  const now = new Date().toISOString();
+  const now = new Date(previewNowMs()).toISOString();
   return {
     id: `preview-cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     nodeId,
@@ -280,7 +302,7 @@ function previewMilestoneSummary() {
   const counts = { todo: 0, in_progress: 0, blocked: 0, completed: 0, cancelled: 0 };
   let overdue = 0;
   let dueSoon = 0;
-  const now = Date.now();
+  const now = previewNowMs();
   const soon = now + 7 * 24 * 60 * 60 * 1000;
   for (const m of previewMilestones) {
     counts[m.status] = (counts[m.status] ?? 0) + 1;
@@ -982,7 +1004,7 @@ const PREVIEW_USER_METRICS = {
 function previewProfileViews() {
   const seed = [31, 27, 44, 38, 52, 29, 27];
   return seed.map((views, i) => {
-    const d = new Date(Date.now() - (seed.length - 1 - i) * 86_400_000);
+    const d = new Date(previewNowMs() - (seed.length - 1 - i) * 86_400_000);
     return {
       date: d.toISOString().slice(0, 10),
       views,
@@ -1014,7 +1036,7 @@ const PREVIEW_ANALYTICS_OVERVIEW = {
  * cannot disagree between the server pass and hydration.
  */
 function previewIsoInDays(days: number, hour = 14): string {
-  const d = new Date(Date.now() + days * 86_400_000);
+  const d = new Date(previewNowMs() + days * 86_400_000);
   d.setUTCHours(hour, 0, 0, 0);
   return d.toISOString();
 }
@@ -1346,7 +1368,11 @@ function kitchenSink() {
     milestones: [],
     subscription: null,
     profile: ME_PROFILE.profile,
-    total: PEOPLE.length,
+    // Zero, like the lists: the fallback answers every unhandled list endpoint
+    // with an empty `programs` / `items` / `rules`, and a total of four beside
+    // them put "Total Programs 4", "Total Skills 4" and "Total Rules 4" over
+    // "No programs found", "No skills yet" and "No automation rules".
+    total: 0,
     hasMore: false,
     nextCursor: null,
     count: 2,
@@ -1379,6 +1405,60 @@ function parseBody(init?: RequestInit): Record<string, unknown> {
     /* ignore */
   }
   return {};
+}
+
+/**
+ * The demo world keeps time with the reader's calendar.
+ *
+ * Every date here was written against one frozen day (`NOW`, 4 Sept 2026).
+ * The pages compare against the real clock, so as weeks passed the demo
+ * contradicted itself: /events listed "upcoming" events that /events/[id]
+ * called ended, milestones due in "a week" were a month overdue, and the
+ * feed's "2 days ago" was three weeks old. The payloads now move forward by
+ * whole weeks - weekdays and times of day stay what the seed intended - to
+ * the reader's current week, and a date sent in (a new milestone's due date)
+ * moves back by the same amount before it is stored, so a round trip is
+ * exact. `resolvePreviewApi` answers on the seed's calendar; where it asks
+ * "what is now" (the upcoming/past split, request-time stamps) it uses
+ * `previewNowMs()`, which is the seed day whenever the system clock is pinned
+ * to it - as the preview tests do.
+ */
+
+function shiftIso(value: string, offsetMs: number): string {
+  if (ISO_DATE_TIME.test(value)) return new Date(Date.parse(value) + offsetMs).toISOString();
+  if (ISO_DATE.test(value)) return new Date(Date.parse(`${value}T00:00:00.000Z`) + offsetMs).toISOString().slice(0, 10);
+  return value;
+}
+
+/** Moves every ISO date in a payload by `offsetMs`. Pure; returns a copy. */
+export function shiftPreviewDates<T>(payload: T, offsetMs: number): T {
+  if (!offsetMs) return payload;
+  const walk = (v: unknown): unknown => {
+    if (typeof v === 'string') return shiftIso(v, offsetMs);
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, x] of Object.entries(v as Record<string, unknown>)) out[k] = walk(x);
+      return out;
+    }
+    return v;
+  };
+  return walk(payload) as T;
+}
+
+/** The preview API as the app sees it: on the reader's calendar. */
+export function resolvePreviewApiNow(path: string, init?: RequestInit): unknown {
+  const offset = previewClockOffsetMs();
+  if (!offset) return resolvePreviewApi(path, init);
+  let shiftedInit = init;
+  if (typeof init?.body === 'string') {
+    try {
+      shiftedInit = { ...init, body: JSON.stringify(shiftPreviewDates(JSON.parse(init.body), -offset)) };
+    } catch {
+      /* not JSON: pass through */
+    }
+  }
+  return shiftPreviewDates(resolvePreviewApi(path, shiftedInit), offset);
 }
 
 /** Returns a payload for preview, or null to fall through (never used — always resolve). */
@@ -1493,8 +1573,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
      * header counts are derived from the very rows below them — the directory
      * cannot show "2 online" over a list where nobody has a dot.
      */
-    const nowSeconds = Math.floor(Date.now() / 1000);
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const nowSeconds = Math.floor(previewNowMs() / 1000);
+    const weekAgo = new Date(previewNowMs() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const directoryHits = people.map((p) => ({
       ...p,
       createdAt: Math.floor(new Date(p.joinedAt).getTime() / 1000),
@@ -1504,7 +1584,10 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return {
       hits: directoryHits,
       results,
-      total: results.length,
+      // Profile search counts profiles: /members said "8 members found" over
+      // four cards, because this counted every result type (people, jobs,
+      // events, groups). The network search keeps its all-types total.
+      total: pathname.startsWith('/api/search/profiles') ? directoryHits.length : results.length,
       stats: {
         onlineNow: directoryHits.filter((p) => p.lastSeenAt != null && nowSeconds - p.lastSeenAt <= 300).length,
         newThisWeek: people.filter((p) => p.joinedAt >= weekAgo).length,
@@ -1874,7 +1957,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
           width: typeof patch.width === 'number' ? patch.width : node.width,
           height: typeof patch.height === 'number' ? patch.height : node.height,
           zIndex: typeof patch.zIndex === 'number' ? patch.zIndex : node.zIndex,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(previewNowMs()).toISOString(),
         };
       });
       return { ok: true };
@@ -1895,8 +1978,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         locked: body.locked === true,
         collapsed: body.collapsed === true,
         zIndex: typeof body.zIndex === 'number' ? body.zIndex : 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(previewNowMs()).toISOString(),
+        updatedAt: new Date(previewNowMs()).toISOString(),
       };
       previewGtmBoardNodes = [...previewGtmBoardNodes, node];
       return { node };
@@ -1953,7 +2036,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
           ...(typeof body.builderDocumentId === 'string' || body.builderDocumentId === null
             ? { builderDocumentId: body.builderDocumentId as string | null }
             : {}),
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(previewNowMs()).toISOString(),
         };
         return updated;
       });
@@ -2012,7 +2095,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
               ...c,
               body: typeof body.body === 'string' ? body.body : c.body,
               resolved: typeof body.resolved === 'boolean' ? body.resolved : c.resolved,
-              updatedAt: new Date().toISOString(),
+              updatedAt: new Date(previewNowMs()).toISOString(),
             }
           : c,
       );
@@ -2201,7 +2284,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     const conv = convId ? PREVIEW_AI_CONVERSATIONS.find((c) => c.id === convId) : undefined;
     if (conv && text) {
       const reply = `Preview copilot received: “${text}”. Use the in-app assistant tools for live graph actions.`;
-      const at = new Date().toISOString();
+      const at = new Date(previewNowMs()).toISOString();
       conv.messages.push(
         { id: `ai-msg-${Date.now()}-u`, role: 'user', content: text, createdAt: at },
         { id: `ai-msg-${Date.now()}-a`, role: 'assistant', content: reply, model: 'copilot', createdAt: at },
@@ -2498,7 +2581,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         userId,
         role,
         isActive: true,
-        invitedAt: new Date().toISOString(),
+        invitedAt: new Date(previewNowMs()).toISOString(),
         user: {
           id: userId,
           displayName: userId,
@@ -2524,8 +2607,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       completionPercent: 0,
       aiGenerated: false,
       version: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(previewNowMs()).toISOString(),
+      updatedAt: new Date(previewNowMs()).toISOString(),
     };
     previewBuilderDocs = [doc, ...previewBuilderDocs];
     return doc;
@@ -2534,7 +2617,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (builderDocMatch) {
     const found = previewBuilderDocs.find((d) => d.id === builderDocMatch[1]);
     if ((method === 'PUT' || method === 'PATCH') && found) {
-      const next = { ...found, ...body, updatedAt: new Date().toISOString() } as PreviewBuilderDoc;
+      const next = { ...found, ...body, updatedAt: new Date(previewNowMs()).toISOString() } as PreviewBuilderDoc;
       previewBuilderDocs = previewBuilderDocs.map((d) => (d.id === found.id ? next : d));
       return next;
     }
@@ -2605,11 +2688,11 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         priority: (body.priority as PreviewMilestone['priority']) || 'medium',
         category: typeof body.category === 'string' ? body.category : null,
         dueDate: typeof body.dueDate === 'string' ? body.dueDate : null,
-        completedAt: body.status === 'completed' ? new Date().toISOString() : null,
+        completedAt: body.status === 'completed' ? new Date(previewNowMs()).toISOString() : null,
         progress: typeof body.progress === 'number' ? body.progress : 0,
         notes: typeof body.notes === 'string' ? body.notes : null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(previewNowMs()).toISOString(),
+        updatedAt: new Date(previewNowMs()).toISOString(),
       };
       previewMilestones = [created, ...previewMilestones];
       return created;
@@ -2639,10 +2722,10 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         ...body,
         id: found.id,
         ownerId: found.ownerId,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(previewNowMs()).toISOString(),
         completedAt:
           body.status === 'completed'
-            ? found.completedAt ?? new Date().toISOString()
+            ? found.completedAt ?? new Date(previewNowMs()).toISOString()
             : body.status
               ? null
               : found.completedAt,
@@ -2684,7 +2767,12 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     const q = params.get('q')?.toLowerCase() ?? '';
     const mode = params.get('mode');
     const limit = Number(params.get('limit') ?? 48);
-    const startsAfterNow = (e: PreviewEvent) => e.startAt >= NOW;
+    // Against the demo clock, not the frozen seed day: the payload is moved
+    // forward by whole weeks, so "now" on the seed's calendar is
+    // previewNowMs(). Comparing with NOW listed as upcoming an event that had
+    // happened up to a week before the reader opened the page.
+    const demoNow = new Date(previewNowMs()).toISOString();
+    const startsAfterNow = (e: PreviewEvent) => e.startAt >= demoNow;
     const events = PREVIEW_EVENTS
       .filter((e) => (
         scope === 'past' ? !startsAfterNow(e)

@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ const MOCK_INVESTORS: Investor[] = [
 
 function InvestorCard({ investor }: { investor: Investor }) {
   const [saved, setSaved] = useState(false);
-  const initials = investor.displayName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  const initials = initialsOf(investor.displayName);
 
   return (
     <Card className="group transition-all hover:shadow-md hover:border-primary/20">
@@ -171,10 +171,14 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   )}
                 </div>
                 {investor.firmName && (
-                  <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <Building2 className="icon-sm" />
-                    {investor.firmName}
-                    {investor.firmRole && <span className="text-muted-foreground"> · {investor.firmRole}</span>}
+                  <p className="mt-0.5 flex min-w-0 items-center gap-1 text-sm text-muted-foreground">
+                    <Building2 className="icon-sm shrink-0" aria-hidden="true" />
+                    {/* One text run: firm and role as separate flex items broke
+                        into ragged columns ("Horizon / Capital · Principal"). */}
+                    <span className="truncate">
+                      {investor.firmName}
+                      {investor.firmRole ? ` · ${investor.firmRole}` : ''}
+                    </span>
                   </p>
                 )}
               </div>
@@ -214,13 +218,13 @@ function InvestorCard({ investor }: { investor: Investor }) {
             </div>
 
             {/* Stats & Actions */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border/40 pt-3">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><Briefcase className="icon-sm" />{investor.portfolioCount} investments</span>
                 <span className="flex items-center gap-1"><Eye className="icon-sm" />{investor.viewCount.toLocaleString('en-GB')} views</span>
                 <span className="flex items-center gap-1"><BarChart3 className="icon-sm" />{investor.dealsThisYear} deals / yr</span>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="ml-auto flex shrink-0 gap-2">
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
                   <Link href={`/p/${investor.userId}`}>
                     <Eye className="icon-sm" />Profile

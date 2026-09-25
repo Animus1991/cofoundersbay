@@ -66,8 +66,8 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
   return (
     <Card className="transition-all hover:shadow-md">
       <CardContent className="p-4">
-        <div className="flex gap-4">
-          <div className="flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg bg-primary/5">
+        <div className="flex gap-3 sm:gap-4">
+          <div className="flex min-w-[3.5rem] flex-col items-center justify-center self-start rounded-lg bg-primary/5 p-2">
             <span className="text-xs text-muted-foreground uppercase">
               {scheduledDate.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short' })}
             </span>
@@ -106,7 +106,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
             )}
 
             {session.status === 'scheduled' && (
-              <div className="flex gap-2 mt-3">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {session.meetingUrl && (
                   <Button size="sm" variant="default" className="h-7 text-xs" asChild>
                     <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">

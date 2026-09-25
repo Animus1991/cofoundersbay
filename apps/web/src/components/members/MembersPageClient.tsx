@@ -680,7 +680,7 @@ export function MembersPageClient() {
           </Card>
         ) : isLoading ? (
           <div className={cn(
-            'grid gap-4',
+            'grid grid-cols-1 gap-4',
             viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'
           )}>
             {Array.from({ length: 8 }).map((_, i) => (
@@ -704,7 +704,7 @@ export function MembersPageClient() {
           </Card>
         ) : (
           <div className={cn(
-            'grid gap-4',
+            'grid grid-cols-1 gap-4',
             viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'
           )}>
             {members.map((member) => (

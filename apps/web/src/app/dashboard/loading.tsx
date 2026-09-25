@@ -16,7 +16,7 @@ export default function DashboardLoading() {
             </div>
           ))}
         </div>
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-border/50 bg-card p-4 space-y-3">

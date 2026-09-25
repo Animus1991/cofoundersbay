@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { TREND } from '@/lib/semantic-colors';
 import { Slot } from '@radix-ui/react-slot';
 import { Badge } from './badge';
@@ -195,7 +195,7 @@ export const ProfileCard = React.forwardRef<
       <div className="flex items-start gap-4">
         <div className="relative">
           <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-semibold">
-            {profile.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            {initialsOf(profile.name).toUpperCase()}
           </div>
           {profile.verified && (
             <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center">
@@ -349,7 +349,7 @@ export const ActivityCard = React.forwardRef<
       <div className="flex items-start gap-3">
         {user && (
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
-            {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            {initialsOf(user.name).toUpperCase()}
           </div>
         )}
         

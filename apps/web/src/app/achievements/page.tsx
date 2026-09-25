@@ -411,7 +411,7 @@ function AchievementsSkeleton() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-40 w-full" />
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5">

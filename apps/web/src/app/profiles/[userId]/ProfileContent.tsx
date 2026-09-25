@@ -167,7 +167,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   if (isLoading)
     return (
       <AppShell>
-        <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
           <div className="space-y-4">
             <Skeleton className="h-64 w-full rounded-2xl" />
             <Skeleton className="h-32 w-full rounded-2xl" />
@@ -256,7 +256,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
         {/* Identity card */}
         <div className="space-y-4">
           <Card className="animate-fade-in">

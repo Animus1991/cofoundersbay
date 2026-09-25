@@ -9,14 +9,14 @@ export default function ProfileLoading() {
           <Skeleton className="h-8 w-8 rounded-full" />
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
           <div className="hidden lg:block space-y-2">
             {Array.from({ length: 7 }).map((_, i) => (
               <Skeleton key={i} className="h-9 w-full rounded-lg" />
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
             {/* Left column */}
             <div className="space-y-4">
               <div className="rounded-2xl border border-border/40 bg-card p-6 space-y-4">

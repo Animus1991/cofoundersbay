@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   Webhook,
-  Plus,
   Copy,
   Edit,
   Trash2,
@@ -31,6 +30,8 @@ import { EmptyTenantWebhooks } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { UnavailableButton } from '@/components/common/UnavailableButton';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type WebhookItem = {
   id: string;
@@ -145,9 +146,12 @@ export default function TenantWebhooksPage() {
       description="Send real-time event notifications to external services"
       actions={
         // Had no handler; there is no webhook service to register one with.
-        <Button size="sm" disabled title="Webhook delivery has no backend yet">
-          <Plus className="mr-2 icon-sm" aria-hidden="true" />Add Webhook
-        </Button>
+        <UnavailableButton
+          en="Add webhook"
+          el="Νέο webhook"
+          reasonEn="Sending events out needs a delivery service the platform does not run yet."
+          reasonEl="Η αποστολή συμβάντων χρειάζεται υπηρεσία παράδοσης που η πλατφόρμα δεν έχει ακόμη."
+        />
       }
     >
       <div className="space-y-5">
@@ -158,7 +162,7 @@ export default function TenantWebhooksPage() {
             askAiPrompt="Why does the webhooks page show sample endpoints?"
           />
         )}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-3 md:grid-cols-3">
           {[
             { label: 'Active Webhooks', value: webhooks.filter(w => w.isActive).length },
             { label: 'Total Deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
@@ -175,12 +179,15 @@ export default function TenantWebhooksPage() {
             <div className="space-y-3">
               {webhooks.map(w => <WebhookCard key={w.id} webhook={w} />)}
             </div>
-            <Card className="border-dashed">
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-muted-foreground">Add another endpoint</p>
-                <Button size="sm" variant="outline" className="mt-2" disabled title="Webhook delivery has no backend yet"><Plus className="mr-1.5 icon-sm" aria-hidden="true" />Add Webhook</Button>
-              </CardContent>
-            </Card>
+            {/* The header's "Add webhook" is the one place to add one; this
+                card repeated it as a second disabled button. */}
+            <p className="rounded-xl border border-dashed border-border/70 p-4 text-center text-sm text-muted-foreground">
+              <BilingualText
+                en="New endpoints are added from the header once webhook delivery is available."
+                el="Νέα endpoints προστίθενται από την κεφαλίδα μόλις γίνει διαθέσιμη η αποστολή webhooks."
+                wrap
+              />
+            </p>
           </>
         )}
       </div>

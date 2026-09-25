@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 /**
  * Secondary line shared by every menu entry. Sizing is deliberately NOT set here:
@@ -47,7 +47,7 @@ export function UserMenu({
   const { displayMode, setDisplayMode } = useLanguagePreference();
 
   const initials =
-    user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
+    (user?.displayName ? initialsOf(user.displayName) : '') ||
     user?.email?.slice(0, 2).toUpperCase() ||
     'ME';
 

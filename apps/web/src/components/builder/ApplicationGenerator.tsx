@@ -409,7 +409,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {(
           [
             { glyph: 'applications' as const, label: 'app_stat_programs' as const, value: String(stats.programs) },
@@ -432,7 +432,7 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         {applications.map((app) => {
           const completion = requiredCompletion(app);
           

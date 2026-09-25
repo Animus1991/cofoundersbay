@@ -379,29 +379,20 @@ export default function SavedSearchesPage() {
   const totalNewResults = searches.reduce((sum, s) => sum + (s.newResults || 0), 0);
 
   return (
-    <AppShell>
+    <AppShell
+      actions={
+        <Button onClick={handleCreateNew}>
+          <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />
+          <BilingualText en={savedSearchesEn('new_search')} el={savedSearchesEl('new_search')} compact wrap />
+        </Button>
+      }
+    >
       <div className="space-y-6 pb-10">
-        {/* The page title and its description come from the registry through
-            AppShell; this block used to repeat them as its own `h1`, so the
-            page carried two headings and two first-level landmarks. What is
-            left is the live count, which the registry cannot know. */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="min-w-0 text-sm text-muted-foreground">
-            <BilingualText {...fill('count_line', { n: searches.length })} compact wrap />
-            {totalNewResults > 0 && (
-              <span className="ml-2 text-primary-accessible">
-                • <BilingualText {...fill('new_results_suffix', { n: totalNewResults })} compact />
-              </span>
-            )}
-          </p>
-          <Button onClick={handleCreateNew}>
-            <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />
-            <BilingualText en={savedSearchesEn('new_search')} el={savedSearchesEl('new_search')} compact wrap />
-          </Button>
-        </div>
-
+        {/* The count line that stood here repeated the first card below
+            ("0 saved searches" twice), and its new-results suffix the third.
+            The page's action joins the others in the header. */}
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 kpi-odd-span-sm gap-4 sm:grid-cols-3">
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">

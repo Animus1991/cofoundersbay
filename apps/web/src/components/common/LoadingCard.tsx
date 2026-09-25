@@ -104,7 +104,7 @@ export function LoadingCardGrid({
   };
 
   return (
-    <div className={cn('grid gap-4', colsClass[columns], className)}>
+    <div className={cn('grid grid-cols-1 gap-4', colsClass[columns], className)}>
       {Array.from({ length: count }).map((_, i) => (
         <LoadingCard 
           key={i} 

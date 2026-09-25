@@ -408,7 +408,7 @@ export default function ReferralsPage() {
         <StatsCards referrals={referrals} />
 
         {/* Main Content */}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_350px]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_350px]">
           <div className="space-y-6">
             {/* Referral Link */}
             <ReferralLink code={referralCode} />

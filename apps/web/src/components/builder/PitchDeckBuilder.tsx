@@ -845,7 +845,7 @@ export function PitchDeckBuilder({
                 <BilingualText en={builderEn('pitch_gen_full')} el={builderEl('pitch_gen_full')} compact />
               </Button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {SLIDE_TEMPLATES.map((template, index) => (
                 <button
                   key={template.type}
@@ -934,7 +934,7 @@ export function PitchDeckBuilder({
             </div>
           )}
 
-          <div className="grid min-w-0 gap-6 lg:grid-cols-4">
+          <div className="grid grid-cols-1 min-w-0 gap-6 lg:grid-cols-4">
             <div className="order-2 min-w-0 space-y-4 lg:order-1 lg:col-span-1">
               <Card className="min-w-0">
                 <CardHeader className="py-3">

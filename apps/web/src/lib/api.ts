@@ -1,4 +1,4 @@
-import { resolvePreviewApi } from '@/lib/preview-api';
+import { resolvePreviewApiNow } from '@/lib/preview-api';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -365,7 +365,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   init?.signal?.throwIfAborted();
   if (isPreviewDemoSession()) {
-    return resolvePreviewApi(path.startsWith('/') ? path : `/${path}`, init) as T;
+    return resolvePreviewApiNow(path.startsWith('/') ? path : `/${path}`, init) as T;
   }
 
   const res = await apiFetch(path, init, opts);

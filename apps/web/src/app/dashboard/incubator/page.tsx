@@ -32,16 +32,11 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
-import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
+import { ATTENTION_ROW, STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { getMeProfile } from '@/lib/api';
+import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { queryKeys } from '@/lib/query-keys';
-
-function getTimeBasedGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
 
 function StatCard({
   icon: Icon,
@@ -150,10 +145,10 @@ function StartupCard({ startup }: { startup: any }) {
 
 function ApplicationCard({ application }: { application: any }) {
   return (
-    <div className={cn('flex items-start gap-3 rounded-lg border p-3', STATUS.warning.border, STATUS.warning.bg)}>
+    <div className={cn('flex items-start gap-3', ATTENTION_ROW)}>
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={application.logoUrl} />
-        <AvatarFallback className={cn('rounded-lg', STATUS.warning.bg, STATUS.warning.icon)}>
+        <AvatarFallback className="rounded-lg bg-muted text-foreground">
           {application.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -251,7 +246,7 @@ export default function IncubatorDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -262,34 +257,27 @@ export default function IncubatorDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h2>
-            <p className="text-muted-foreground">
-              Manage your programs and portfolio companies
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5">
-              <Building className="icon-sm" />
-              Incubator Admin
-            </Badge>
-            <Button size="sm" asChild>
-              <Link href="/tenant/programs">
-                <Plus className="mr-1.5 icon-sm" />
-                New Program
-              </Link>
-            </Button>
-          </div>
-        </div>
+    <AppShell
+      actions={
+        <>
+          <Badge variant="outline" className="gap-1.5">
+            <Building className="icon-sm" />
+            Incubator Admin
+          </Badge>
+          <Button size="sm" asChild>
+            <Link href="/tenant/programs">
+              <Plus className="mr-1.5 icon-sm" />
+              New Program
+            </Link>
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-6">
+        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <StatCard
             icon={LayoutGrid}
             label="Active Programs"
@@ -315,7 +303,7 @@ export default function IncubatorDashboard() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Applications */}
@@ -394,7 +382,7 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-2">
+              <CardContent className="grid grid-cols-1 gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/tenant/programs">
                     <Plus className="mr-2 icon-sm" />

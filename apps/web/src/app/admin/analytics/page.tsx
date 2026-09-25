@@ -99,7 +99,7 @@ export default function AdminAnalyticsPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">
         {[
           { label: 'Total users', value: METRICS.totalUsers ?? dash, icon: Users },
           { label: 'Active users', value: METRICS.activeUsers ?? dash, icon: TrendingUp },

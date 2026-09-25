@@ -300,7 +300,7 @@ export default function JobsPage() {
           const SIcon = s.icon;
           return (
             <Card key={s.labelEn} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-3 p-3">
+              <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="icon-sm" />
                 </div>

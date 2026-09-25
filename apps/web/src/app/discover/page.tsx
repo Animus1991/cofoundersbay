@@ -377,7 +377,7 @@ export default function DiscoverPage() {
           {/* Results */}
           {loading && (
             <div className={cn(
-              'grid gap-4',
+              'grid grid-cols-1 gap-4',
               viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
             )}>
               {[...Array(6)].map((_, i) => (
@@ -452,7 +452,7 @@ export default function DiscoverPage() {
               animation="fade-in-up"
               staggerDelay={50}
               className={cn(
-                'grid gap-4',
+                'grid grid-cols-1 gap-4',
                 viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
               )}
             >
@@ -487,7 +487,7 @@ export default function DiscoverPage() {
 
           {!suggestionsLoaded && (
             <div className={cn(
-              'grid gap-4',
+              'grid grid-cols-1 gap-4',
               viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'
             )}>
               {[...Array(4)].map((_, i) => (
@@ -518,7 +518,7 @@ export default function DiscoverPage() {
               animation="fade-in-up"
               staggerDelay={75}
               className={cn(
-                'grid gap-6',
+                'grid grid-cols-1 gap-6',
                 viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'
               )}
             >
@@ -552,7 +552,7 @@ export default function DiscoverPage() {
           </div>
 
           {!suggestionsLoaded && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {[...Array(4)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant="featured" />
               ))}
@@ -577,7 +577,7 @@ export default function DiscoverPage() {
             <AnimatedList
               animation="scale-in"
               staggerDelay={100}
-              className="grid gap-6 md:grid-cols-2"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2"
             >
               {suggestions.slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);

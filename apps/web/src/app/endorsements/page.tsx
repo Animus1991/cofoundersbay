@@ -31,7 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -132,24 +132,25 @@ function EndorsementCard({
   const user = type === 'received'
     ? { name: endorsement.fromUserName, avatar: endorsement.fromUserAvatar, role: endorsement.fromUserRole, id: endorsement.fromUserId }
     : { name: endorsement.toUserName, avatar: endorsement.toUserAvatar, id: endorsement.toUserId };
-  const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  const initials = initialsOf(user.name);
 
   return (
     <Card className={cn(
       'transition-all hover:border-primary/20',
-      !endorsement.isApproved && type === 'received' && 'border-status-warning-border bg-status-warning-bg',
+      // Waiting on the reader: a warning edge, not an amber-filled card.
+      !endorsement.isApproved && type === 'received' && 'border-l-2 border-l-status-warning',
     )}>
       <CardContent className="p-5">
         {/* Quote icon + pending badge */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3">
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+          <div className="flex min-w-0 flex-1 basis-56 items-center gap-3">
             <Link href={`/p/${user.id}`}>
               <Avatar className="h-11 w-11 rounded-lg">
                 <AvatarImage src={user.avatar} />
                 <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">{initials}</AvatarFallback>
               </Avatar>
             </Link>
-            <div>
+            <div className="min-w-0">
               <Link href={`/p/${user.id}`} className="font-semibold text-sm hover:text-primary-accessible transition-colors">
                 {user.name}
               </Link>
@@ -157,7 +158,7 @@ function EndorsementCard({
               {endorsement.relationship && <p className="text-xs text-muted-foreground">Relationship: {endorsement.relationship}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             {endorsement.skill && (
               <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
             )}
@@ -448,7 +449,7 @@ export default function EndorsementsPage() {
               { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-status-warning' },
             ].map(s => (
               <Card key={s.label}>
-                <CardContent className="p-3 flex items-center gap-2">
+                <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center">
                   <div className="rounded-lg bg-secondary p-1.5 shrink-0">
                     <s.icon className={cn('icon-sm', s.color)} />
                   </div>

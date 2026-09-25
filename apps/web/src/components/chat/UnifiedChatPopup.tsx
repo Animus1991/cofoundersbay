@@ -28,7 +28,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { useDraggable } from '@/hooks/useDraggable';
 import { usePopupChat } from '@/contexts/PopupChatContext';
-import { useMessaging } from '@/contexts/MessagingContext';
+import { useMessaging, useMessagingUnreadCount } from '@/contexts/MessagingContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 import { CopilotWorkspace } from '@/components/ai/CopilotWorkspace';
 import {
   getMe, listMessageConversations, listConversationMessages,
@@ -183,6 +185,8 @@ export function UnifiedChatPopup() {
   const { hasSession, mounted: sessionReady } = useSession();
   const { isOpen, isMinimized, initialUserId, preferredTab, pendingPrompt, consumePrompt, close, minimize, restore } = usePopupChat();
   const { setActiveConversationId, markConversationRead } = useMessaging();
+  const sharedUnread = useMessagingUnreadCount();
+  const queryClient = useQueryClient();
   const sayOne = useBilingualString();
 
   const TAB_KEY = 'cfb-chat-popup-tab';
@@ -341,6 +345,7 @@ export function UnifiedChatPopup() {
 
         if (conversations.length === 0) {
           const { conversations: list } = await listMessageConversations();
+          queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
           if (!mounted) return;
           setConversations(list.map(mapConversation));
         }
@@ -360,6 +365,7 @@ export function UnifiedChatPopup() {
           const { conversationId } = await getOrCreateDirectConversation(initialUserId);
           if (!mounted) return;
           const { conversations: refreshed } = await listMessageConversations();
+          queryClient.setQueryData(queryKeys.conversationsList, { conversations: refreshed });
           const remapped = refreshed.map(mapConversation);
           if (!mounted) return;
           setConversations(remapped);
@@ -414,6 +420,7 @@ export function UnifiedChatPopup() {
         const { conversationId } = await getOrCreateDirectConversation(initialUserId);
         if (cancelled) return;
         const { conversations: refreshed } = await listMessageConversations();
+        queryClient.setQueryData(queryKeys.conversationsList, { conversations: refreshed });
         const remapped = refreshed.map(mapConversation);
         if (cancelled) return;
         setConversations(remapped);
@@ -532,7 +539,9 @@ export function UnifiedChatPopup() {
   const filteredConvos = conversations.filter(
     c => !c.isArchived && c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-  const totalMsgUnread = conversations.reduce((s, c) => s + (c.unreadCount ?? 0), 0);
+  // The shared count - the same number as the chat bubble and the sidebar.
+  // Summing this popup's own list disagreed with both after every read.
+  const totalMsgUnread = sharedUnread;
 
   // ── Render guards ──────────────────────────────────────────────────────────
   if (!hasSession || !sessionReady || !isOpen || shouldHide) return null;

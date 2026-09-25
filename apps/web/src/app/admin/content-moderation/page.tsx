@@ -147,7 +147,9 @@ export default function ContentModerationPage() {
         {filtered.map((r) => (
           <div key={r.id} className="flex flex-wrap items-center gap-3 border-b px-4 py-3 last:border-b-0">
             <Flag className="icon-sm text-status-warning shrink-0" />
-            <div className="min-w-0 flex-1">
+            {/* basis-48: the decision buttons wrap under the report on a
+                phone instead of squeezing it to one word a line. */}
+            <div className="min-w-0 flex-1 basis-48">
               <p className="font-medium capitalize">{r.type} · {r.reason}</p>
               <p className="text-xs text-muted-foreground">Reported by {r.reporter} · <RelativeTime date={r.createdAt} format={formatRelativeTime} /></p>
                     </div>

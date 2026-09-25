@@ -573,7 +573,10 @@ export default function AdminUserManagementPage() {
                     <AvatarImage src={user.avatar} alt={user.name} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0 flex-1">
+                  {/* A basis, not just flex-1: without one the name shrank to a
+                      letter a line on a phone while the badges held the row.
+                      Now the badges and actions wrap under it instead. */}
+                  <div className="min-w-0 flex-1 basis-40">
                     <div className="flex items-center gap-2">
                       <Link href={`/admin/user-detail/${user.id}`} className="font-medium hover:text-primary-accessible">
                         {user.name}

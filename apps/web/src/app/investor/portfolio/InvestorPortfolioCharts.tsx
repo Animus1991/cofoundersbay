@@ -21,8 +21,8 @@ export function PortfolioValueChart({ data }: { data: ValueDatum[] }) {
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-        <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}K`} />
-        <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Value']} />
+        <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `€${v}K`} />
+        <RechartsTooltip formatter={(v: number) => [`€${v}K`, 'Value']} />
         <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#portGrad)" strokeWidth={2} />
       </AreaChart>
     </ResponsiveContainer>
@@ -33,13 +33,13 @@ export function SectorMixChart({ data }: { data: SectorDatum[] }) {
   return (
     <ResponsiveContainer width="100%" height={200}>
       <RPieChart>
-        <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: $${value}K`} labelLine={false}>
+        <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: €${value}K`} labelLine={false}>
           {data.map((entry, i) => (
             <Cell key={i} fill={entry.color} />
           ))}
         </Pie>
         <Legend />
-        <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Invested']} />
+        <RechartsTooltip formatter={(v: number) => [`€${v}K`, 'Invested']} />
       </RPieChart>
     </ResponsiveContainer>
   );

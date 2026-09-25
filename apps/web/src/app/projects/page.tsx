@@ -411,7 +411,7 @@ export default function ProjectsPage() {
       );
     }
     return (
-      <div className={cn(viewMode === 'grid' ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-3')}>
+      <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-3')}>
         {items.map((project) => (
           <ProjectCard
             key={project.id}

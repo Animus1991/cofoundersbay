@@ -151,7 +151,7 @@ export default function ProviderProfilePage() {
         </Card>
 
         <Tabs defaultValue="basics">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="w-full sm:grid sm:grid-cols-3">
             <TabsTrigger value="basics">Basics</TabsTrigger>
             <TabsTrigger value="targeting">Targeting</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>

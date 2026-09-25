@@ -13,7 +13,7 @@ export default function DiscoverLoading() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
           {/* SideNav skeleton */}
           <div className="hidden lg:block space-y-2">
             {Array.from({ length: 7 }).map((_, i) => (

@@ -311,7 +311,7 @@ export default function SettingsPage() {
               first and every row would take the height of its taller half —
               the same defect, six times over. Danger Zone stays full width
               below, where a destructive section belongs. */}
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
             <div className="min-w-0 space-y-6">
               {/* Billing */}
               <Card className="shadow-sm border-border/50">
@@ -557,8 +557,15 @@ export default function SettingsPage() {
                       Sign out
                     </Button>
                   </div>
+                  {/* Export is self-service (/settings/data-export); only
+                      deletion goes through support. The old line sent both
+                      to support while the Danger Zone below offered Export. */}
                   <p className="text-xs text-muted-foreground">
-                    To delete your account or export your data, contact support.
+                    <BilingualText
+                      en="Data export and account deletion are under Danger Zone, below."
+                      el="Η εξαγωγή δεδομένων και η διαγραφή λογαριασμού βρίσκονται παρακάτω, στη Ζώνη κινδύνου."
+                      wrap
+                    />
                   </p>
                 </CardContent>
               </Card>

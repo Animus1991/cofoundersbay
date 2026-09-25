@@ -179,7 +179,7 @@ export default function EventDetailPage() {
         </>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           {event.coverImageUrl && (
             <img src={event.coverImageUrl} alt="" className="aspect-[3/1] w-full rounded-2xl object-cover" />
@@ -239,7 +239,7 @@ export default function EventDetailPage() {
               {ended ? (
                 <Badge variant="secondary"><BilingualText en="This event has ended" el="Η εκδήλωση ολοκληρώθηκε" compact /></Badge>
               ) : (
-                <div className="grid gap-2" role="radiogroup" aria-label="RSVP">
+                <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="RSVP">
                   {RSVP_OPTIONS.map((o) => (
                     <Button
                       key={o.value}

@@ -39,6 +39,7 @@ import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type AIPreferences = {
   preferredModel: string;
@@ -173,7 +174,7 @@ export default function AISettingsPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="max-w-4xl">
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -233,16 +234,33 @@ export default function AISettingsPage() {
                   {isAIAvailable ? 'AI Assistant is Online' : 'AI Assistant is Offline'}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {isAIAvailable 
-                    ? `${models.length} model(s) available via Ollama`
-                    : 'Start Ollama to enable AI features. Run: ollama serve'}
+                  {/* Written for the reader, not the operator: "Run: ollama
+                      serve" was shown to every user. The built-in copilot
+                      answers from platform data without a model, so the
+                      assistant is not off - model-written replies are. */}
+                  {isAIAvailable ? (
+                    <BilingualText
+                      en={`${models.length} model(s) available`}
+                      el={`${models.length} διαθέσιμα μοντέλα`}
+                      wrap
+                    />
+                  ) : (
+                    <BilingualText
+                      en="The language model is not reachable right now. The assistant still answers from your platform data; replies written by the model return when it is back."
+                      el="Το γλωσσικό μοντέλο δεν είναι διαθέσιμο αυτή τη στιγμή. Ο βοηθός απαντά ακόμη από τα δεδομένα της πλατφόρμας σας· οι απαντήσεις του μοντέλου επιστρέφουν μόλις γίνει ξανά διαθέσιμο."
+                      wrap
+                    />
+                  )}
+                  {!isAIAvailable && process.env.NODE_ENV !== 'production' && (
+                    <span className="mt-1 block font-mono text-xs">dev: ollama serve</span>
+                  )}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {/* Model Settings */}
           <Card>
             <CardHeader>
@@ -267,6 +285,10 @@ export default function AISettingsPage() {
                       <SelectValue placeholder="Select model" />
                     </SelectTrigger>
                     <SelectContent>
+                      {/* The built-in copilot is a real choice (the demo and
+                          any deployment without a model service use it), and
+                          without an item for it the select rendered empty. */}
+                      <SelectItem value="copilot">Built-in copilot · no model service</SelectItem>
                       {models.length > 0 ? (
                         models.map((m) => (
                           <SelectItem key={m.name} value={m.name}>

@@ -4,19 +4,79 @@ import { cn } from '@/lib/utils';
 
 const Tabs = TabsPrimitive.Root;
 
+/**
+ * Say when a tab strip continues past its edge, and keep the selected tab in it.
+ *
+ * The list scrolls sideways with its scrollbar hidden, which is right on a
+ * phone and left no sign that there was more: /connections cut "Sent" to
+ * "Ser", /data-room cut "Settings", and nothing said the strip moved. While it
+ * overflows, the edge that hides tabs fades (`data-fade`, styled in
+ * globals.css), and the selected tab is scrolled into the strip whenever the
+ * selection changes - by the list's own scroll offset, so the page never jumps.
+ */
+function useTabStripOverflow(ref: React.RefObject<HTMLDivElement | null>) {
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 1) {
+        el.removeAttribute('data-fade');
+        return;
+      }
+      const start = el.scrollLeft > 1;
+      const end = el.scrollLeft < max - 1;
+      el.setAttribute('data-fade', start && end ? 'both' : start ? 'start' : end ? 'end' : '');
+    };
+    const reveal = () => {
+      const active = el.querySelector<HTMLElement>('[data-state="active"]');
+      if (!active || el.scrollWidth <= el.clientWidth) return;
+      const left = active.offsetLeft;
+      const right = left + active.offsetWidth;
+      if (left < el.scrollLeft) el.scrollLeft = left - 8;
+      else if (right > el.scrollLeft + el.clientWidth) el.scrollLeft = right - el.clientWidth + 8;
+      update();
+    };
+    update();
+    reveal();
+    el.addEventListener('scroll', update, { passive: true });
+    const resize = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
+    resize?.observe(el);
+    const selection = typeof MutationObserver !== 'undefined' ? new MutationObserver(reveal) : null;
+    selection?.observe(el, { subtree: true, attributes: true, attributeFilter: ['data-state'] });
+    return () => {
+      el.removeEventListener('scroll', update);
+      resize?.disconnect();
+      selection?.disconnect();
+    };
+  }, [ref]);
+}
+
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      'inline-flex min-h-11 max-w-full items-center gap-0.5 overflow-x-auto scrollbar-hide rounded-xl border border-border bg-muted/40 p-1 text-muted-foreground',
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, forwardedRef) => {
+  const innerRef = React.useRef<HTMLDivElement | null>(null);
+  useTabStripOverflow(innerRef);
+  const setRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      innerRef.current = node;
+      if (typeof forwardedRef === 'function') forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    },
+    [forwardedRef],
+  );
+  return (
+    <TabsPrimitive.List
+      ref={setRef}
+      className={cn(
+        'tab-strip inline-flex min-h-11 max-w-full items-center gap-0.5 overflow-x-auto scrollbar-hide rounded-xl border border-border bg-muted/40 p-1 text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 /**

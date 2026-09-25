@@ -387,7 +387,7 @@ export default function OrgApplicationsPage() {
       <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-5">
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total</p>

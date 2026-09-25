@@ -553,7 +553,7 @@ export default function ProfileEditPage() {
         </div>
       }
     >
-      <div className="grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
+      <div className="grid grid-cols-1 gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

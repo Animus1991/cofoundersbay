@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { formatRelativeTime } from './utils';
+import { formatRelativeTime, initialsOf } from './utils';
 
 describe('formatRelativeTime', () => {
   afterEach(() => vi.useRealTimers());
@@ -19,5 +19,20 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime('Never')).toBe('Never');
     expect(formatRelativeTime('')).toBe('—');
     expect(formatRelativeTime(new Date('nope'))).toBe('—');
+  });
+});
+
+describe('initialsOf', () => {
+  it('takes the first and last word and skips titles', () => {
+    expect(initialsOf('Dr. Sarah Kim')).toBe('SK');
+    expect(initialsOf('Elena Papadopoulos')).toBe('EP');
+    expect(initialsOf('Maria del Carmen Ruiz')).toBe('MR');
+    expect(initialsOf('prof Ada')).toBe('A');
+  });
+
+  it('never returns more than two letters, and a mark for no name', () => {
+    expect(initialsOf('Anna Maria Lisa Kowalski').length).toBe(2);
+    expect(initialsOf('')).toBe('?');
+    expect(initialsOf(null)).toBe('?');
   });
 });

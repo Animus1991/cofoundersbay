@@ -1048,7 +1048,7 @@ export function BuilderWorkspace({ onOpenStage }: { onOpenStage?: (tab: string) 
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid gap-3 text-sm">
+                <div className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
                       <BilingualText en={builderEn('startup')} el={builderEl('startup')} compact />

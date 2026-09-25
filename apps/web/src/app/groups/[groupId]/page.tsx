@@ -113,7 +113,7 @@ function PostCard({
 
       {/* Media */}
       {post.mediaUrls.length > 0 && (
-        <div className={cn('grid gap-2', post.mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
+        <div className={cn('grid grid-cols-1 gap-2', post.mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
           {post.mediaUrls.map((url, i) => (
             <img key={i} src={url} alt="" className="rounded-lg object-cover max-h-64 w-full" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           ))}
@@ -351,8 +351,10 @@ export default function GroupDetailPage() {
           )}
 
           <div className="px-6 pb-5 -mt-8 relative">
-            <div className="flex items-end justify-between gap-4">
-              <div className="flex items-end gap-4">
+            {/* On a phone the join button drops under the name instead of
+                being pushed off the card's right edge. */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex min-w-0 items-end gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg">
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
@@ -360,9 +362,9 @@ export default function GroupDetailPage() {
                     <Users className="h-7 w-7 text-primary-accessible" />
                   )}
                 </div>
-                <div className="pb-1">
+                <div className="min-w-0 pb-1">
                   <h2 className="font-display text-xl sm:text-2xl xl:text-3xl font-bold">{group.name}</h2>
-                  <div className="flex items-center gap-3 mt-1">
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
                       <span className="capitalize">{group.privacy}</span>
@@ -381,7 +383,7 @@ export default function GroupDetailPage() {
 
               <Button
                 variant={isMember ? 'outline' : 'default'}
-                className="gap-2 shrink-0"
+                className="w-full gap-2 shrink-0 sm:w-auto"
                 disabled={togglingMembership}
                 onClick={handleToggleMembership}
               >
@@ -440,7 +442,7 @@ export default function GroupDetailPage() {
 
         {/* Feed section */}
         {activeSection === 'feed' && (
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="space-y-4">
               {/* Create post */}
               {isMember && (

@@ -582,7 +582,7 @@ export default function ActivityPage() {
               <CardHeader className="pb-3 pt-4">
                 <CardTitle className="text-sm"><BilingualText en={activityEn('quick_actions')} el={activityEl('quick_actions')} compact wrap /></CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-2 pb-4">
+              <CardContent className="grid grid-cols-1 gap-2 pb-4">
                 {QUICK_ACTIONS.map((a) => {
                   const AIcon = a.icon;
                   return (

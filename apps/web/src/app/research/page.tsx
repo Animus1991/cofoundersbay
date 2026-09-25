@@ -363,7 +363,7 @@ export default function ResearchBoardsPage() {
       labelEl: 'Σύνοψη',
       content: (
         <div className="space-y-3">
-          <div className="grid min-w-0 gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-1 min-w-0 gap-5 lg:grid-cols-3">
             <Card className="min-w-0">
               <CardContent className="flex h-full flex-col gap-4 p-5">
                 <div className="flex min-w-0 items-center gap-3">
@@ -589,7 +589,7 @@ export default function ResearchBoardsPage() {
                 <BilingualText en={researchEn('templates_see_all')} el={researchEl('templates_see_all')} compact />
               </Button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {BOARD_TEMPLATES.slice(0, 3).map((template) => (
                 <ResearchTemplateTile key={template.id} template={template} onSelect={handleSelectTemplate} />
               ))}

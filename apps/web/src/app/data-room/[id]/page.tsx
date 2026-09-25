@@ -69,7 +69,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 // Types
 interface Document {
@@ -494,9 +494,12 @@ export default function DataRoomPage() {
                         <TableHead>Name</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Size</TableHead>
-                        <TableHead>Uploaded</TableHead>
-                        <TableHead>Access</TableHead>
-                        <TableHead>Views</TableHead>
+                        {/* Secondary columns from md: on a phone the name,
+                            type and size are what tell documents apart, and
+                            seven columns wrapped every cell a word a line. */}
+                        <TableHead className="hidden md:table-cell">Uploaded</TableHead>
+                        <TableHead className="hidden md:table-cell">Access</TableHead>
+                        <TableHead className="hidden md:table-cell">Views</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -507,9 +510,16 @@ export default function DataRoomPage() {
                           <TableRow key={document.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <FileIcon className="icon-md text-muted-foreground" />
-                                <div>
-                                  <p className="font-medium">{document.name}</p>
+                                <FileIcon className="icon-md shrink-0 text-muted-foreground" />
+                                <div className="min-w-0">
+                                  <p className="flex items-center gap-1.5 font-medium">
+                                    <span className="break-words">{document.name}</span>
+                                    {document.isPublic ? (
+                                      <Unlock className="icon-sm shrink-0 text-status-success md:hidden" aria-label="Public" />
+                                    ) : (
+                                      <Lock className="icon-sm shrink-0 text-status-warning md:hidden" aria-label="Private" />
+                                    )}
+                                  </p>
                                   {document.description && (
                                     <p className="text-xs text-muted-foreground">
                                       {document.description}
@@ -521,12 +531,12 @@ export default function DataRoomPage() {
                             <TableCell>
                               <Badge variant="outline">{document.type.toUpperCase()}</Badge>
                             </TableCell>
-                            <TableCell>{formatFileSize(document.size)}</TableCell>
-                            <TableCell>
+                            <TableCell className="whitespace-nowrap">{formatFileSize(document.size)}</TableCell>
+                            <TableCell className="hidden md:table-cell">
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
                                   <AvatarFallback className="text-xs">
-                                    {document.uploadedBy.name.split(' ').map((n) => n[0]).join('')}
+                                    {initialsOf(document.uploadedBy.name)}
                                   </AvatarFallback>
                                 </Avatar>
                                 <span className="text-sm text-muted-foreground">
@@ -534,7 +544,7 @@ export default function DataRoomPage() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="hidden md:table-cell">
                               {document.isPublic ? (
                                 <Badge variant="outline" className="bg-status-success-bg text-status-success border-status-success-border">
                                   <Unlock className="icon-sm mr-1" />
@@ -547,7 +557,7 @@ export default function DataRoomPage() {
                                 </Badge>
                               )}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="hidden md:table-cell">
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Eye className="icon-sm" />
@@ -677,7 +687,7 @@ export default function DataRoomPage() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback>
-                              {investor.name.split(' ').map((n) => n[0]).join('')}
+                              {initialsOf(investor.name)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
@@ -872,7 +882,7 @@ export default function DataRoomPage() {
               Drag and drop files or click to browse
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-1 gap-4 py-4">
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
               <Upload className="icon-xl mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
@@ -918,7 +928,7 @@ export default function DataRoomPage() {
               Invite investors to access this data room
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-1 gap-4 py-4">
             <div>
               <label htmlFor="dr-invite-email" className="text-sm font-medium mb-2 block">Email Address</label>
               <Input id="dr-invite-email" type="email" placeholder="investor@firm.com" />

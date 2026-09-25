@@ -257,7 +257,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
 
       {/* Badges Grid */}
       <Tabs defaultValue="all" onValueChange={setSelectedCategory}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="w-full lg:grid lg:grid-cols-5">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="engagement">
             <MessageCircle className="icon-sm mr-1" />

@@ -320,7 +320,7 @@ export function EnhancedMemberDirectory() {
 
       {/* Members Grid/List */}
       <div className={cn(
-        "grid gap-4",
+        "grid grid-cols-1 gap-4",
         viewMode === 'grid' ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
       )}>
         {filteredMembers.map((member) => (

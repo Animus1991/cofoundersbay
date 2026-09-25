@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import {
   getMyMentorships,
   getMentorshipSessions,
@@ -269,7 +269,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
           <Avatar className="h-10 w-10 shrink-0">
             {session.coachAvatar && <AvatarImage src={session.coachAvatar} />}
             <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
-              {session.coachName.split(' ').map((n) => n[0]).join('')}
+              {initialsOf(session.coachName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -454,7 +454,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
         <Avatar className="h-10 w-10 shrink-0">
           {coach.avatar && <AvatarImage src={coach.avatar} />}
           <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
-            {coach.name.split(' ').map((n) => n[0]).join('')}
+            {initialsOf(coach.name)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">

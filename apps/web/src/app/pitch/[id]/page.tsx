@@ -39,7 +39,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type PublicPitchDeck } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
 
@@ -374,7 +374,7 @@ function TeamSlide({ slide }: { slide: SlideBase }) {
           <div key={i} className="rounded-2xl border bg-card p-6 text-center">
             <Avatar className="h-16 w-16 mx-auto mb-4">
               <AvatarFallback className="text-xl">
-                {member.name.split(' ').map((n) => n[0]).join('')}
+                {initialsOf(member.name)}
               </AvatarFallback>
             </Avatar>
             <p className="font-semibold">{member.name}</p>
@@ -627,7 +627,7 @@ export default function PitchDeckPage() {
               <Avatar className="h-10 w-10">
                 <AvatarImage src={deck.author.avatarUrl} />
                 <AvatarFallback>
-                  {deck.author.name.split(' ').map((n) => n[0]).join('')}
+                  {initialsOf(deck.author.name)}
                 </AvatarFallback>
               </Avatar>
               <div>

@@ -606,7 +606,7 @@ export default function SearchPage() {
                 secondaryFrom="lg"
               />
             </h3>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Link href="/discover" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">

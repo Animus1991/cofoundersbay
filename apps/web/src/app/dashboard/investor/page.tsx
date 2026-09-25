@@ -31,14 +31,9 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
+import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { queryKeys } from '@/lib/query-keys';
-
-function getTimeBasedGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
 
 function StatCard({
   icon: Icon,
@@ -227,7 +222,7 @@ export default function InvestorDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -239,7 +234,6 @@ export default function InvestorDashboard() {
 
   return (
     <AppShell
-      title={`${getTimeBasedGreeting()}, ${displayName}`}
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       actions={
         <Badge variant="outline" className="gap-1.5">
@@ -249,9 +243,10 @@ export default function InvestorDashboard() {
       }
     >
       <div className="space-y-6">
+        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard
             icon={Briefcase}
             label="Deal Flow"
@@ -279,7 +274,7 @@ export default function InvestorDashboard() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Trending Startups */}
@@ -370,7 +365,7 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-2">
+              <CardContent className="grid grid-cols-1 gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/scouting">
                     <Search className="mr-2 icon-sm" />

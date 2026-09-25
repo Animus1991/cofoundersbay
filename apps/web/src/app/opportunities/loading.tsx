@@ -8,7 +8,7 @@ export default function OpportunitiesLoading() {
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-9 w-36 rounded-lg" />
         </div>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
           <div className="hidden lg:block space-y-2">
             {Array.from({ length: 7 }).map((_, i) => (
               <Skeleton key={i} className="h-9 w-full rounded-lg" />

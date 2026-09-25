@@ -773,7 +773,7 @@ export default function FounderDashboardContent() {
 
         <AttentionChips items={attentionItems} />
 
-        <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 min-w-0 gap-6 lg:grid-cols-3">
           {/* Main column */}
           <div className="min-w-0 space-y-6 lg:col-span-2">
 
@@ -788,7 +788,7 @@ export default function FounderDashboardContent() {
                 data={vrs}
                 footer={
                   <div className="space-y-2.5">
-                    <div className="grid gap-2.5 sm:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                       <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/readiness" className="w-full">
                           <CfbGlyph name="chart" className="icon-sm" />

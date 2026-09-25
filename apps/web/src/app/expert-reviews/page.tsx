@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -244,7 +244,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
-              {review.expertName.split(' ').map((n) => n[0]).join('')}
+              {initialsOf(review.expertName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -416,7 +416,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
-            {expert.name.split(' ').map((n) => n[0]).join('')}
+            {initialsOf(expert.name)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">

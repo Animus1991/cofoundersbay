@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resolvePreviewApi } from './preview-api';
 
 /**
@@ -14,6 +14,16 @@ type Groups = { groups: Array<{ id: string; category: string | null; memberCount
 type Opps = { opportunities: Array<{ id: string; type: string; isRemote: boolean }>; total: number };
 
 const NOW = '2026-09-04T10:00:00.000Z';
+
+// The resolver splits upcoming from past on the demo's own clock, which the
+// app moves to the reader's week (previewClock.test.ts). Pinned to the seed
+// day here, the split is the seed's, and these assertions do not depend on
+// the date the suite runs.
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(NOW));
+});
+afterEach(() => vi.useRealTimers());
 
 describe('preview showcase areas', () => {
   it('serves upcoming events, and past ones only under the past scope', () => {

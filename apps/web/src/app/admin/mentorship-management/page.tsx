@@ -28,7 +28,7 @@ export default function MentorshipManagementPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
         {[
           { label: 'Active mentors', value: 2, icon: GraduationCap },
           { label: 'Sessions (30d)', value: 70, icon: Calendar },

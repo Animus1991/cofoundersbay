@@ -143,3 +143,15 @@ export const READINESS_BAR: Record<ReadinessStatus, string> = {
   'needs-work': '[&>div]:bg-status-warning',
   critical: '[&>div]:bg-status-danger',
 };
+
+/**
+ * A row that is waiting on the reader: a request to review, an application to
+ * score, an endorsement to approve.
+ *
+ * A neutral surface with a warning edge, not a card filled amber. The filled
+ * version shouted on every dashboard that had a queue - two amber slabs above
+ * the reader's own programmes - and made "waiting on you" look like "something
+ * went wrong". The edge carries the same signal at the weight of a list row,
+ * the way milestones already mark overdue work.
+ */
+export const ATTENTION_ROW = 'rounded-lg border border-border/70 border-l-2 border-l-status-warning bg-card p-3';

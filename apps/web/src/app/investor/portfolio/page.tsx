@@ -41,13 +41,16 @@ const SectorMixChart = dynamic(
   { ssr: false, loading: ChartFallback },
 );
 
+// Thousands of euros. Starts at the €350K invested and ends at the €555K the
+// "Current value" tile shows, so the chart and the tiles tell one story (it
+// ended at 535, in dollars, beside tiles in euros).
 const PORTFOLIO_VALUE_HISTORY = [
-  { month: 'Oct', value: 200 },
-  { month: 'Nov', value: 215 },
-  { month: 'Dec', value: 250 },
-  { month: 'Jan', value: 310 },
-  { month: 'Feb', value: 445 },
-  { month: 'Mar', value: 535 },
+  { month: 'Oct', value: 350 },
+  { month: 'Nov', value: 368 },
+  { month: 'Dec', value: 395 },
+  { month: 'Jan', value: 432 },
+  { month: 'Feb', value: 498 },
+  { month: 'Mar', value: 555 },
 ];
 
 const SECTOR_DISTRIBUTION = [
@@ -115,6 +118,45 @@ function toInvestment(deal: InvestorDeal): Investment {
     teamSize: deal.teamSize ?? 0,
     lastUpdate: deal.lastActivityAt,
   };
+}
+
+const SECTOR_COLOURS = ['#6366f1', '#0ea5e9', '#22c55e', '#f97316', '#a855f7', '#eab308'];
+
+/**
+ * Invested capital over time, then what it is worth now - in thousands of
+ * euros. Every point is a fact on the deal rows: each investment date adds its
+ * amount, and the last point is the sum of current values. No history is
+ * invented between them.
+ */
+function portfolioValueSeries(deals: InvestorDeal[]): { month: string; value: number }[] {
+  const dated = deals
+    .filter((d) => d.investedAt && d.investedCents != null)
+    .sort((a, b) => (a.investedAt ?? '').localeCompare(b.investedAt ?? ''));
+  let running = 0;
+  const points = dated.map((d) => {
+    running += d.investedCents ?? 0;
+    return {
+      month: new Date(d.investedAt as string).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }),
+      value: Math.round(running / 100_000),
+    };
+  });
+  const now = deals.reduce((sum, d) => sum + (d.currentValueCents ?? d.investedCents ?? 0), 0);
+  if (points.length) points.push({ month: 'Now', value: Math.round(now / 100_000) });
+  return points;
+}
+
+/** Invested capital by the industry each deal records, in thousands of euros. */
+function portfolioSectorMix(deals: InvestorDeal[]): { name: string; value: number; color: string }[] {
+  const byIndustry = new Map<string, number>();
+  for (const d of deals) {
+    const key = d.industry ?? 'Other';
+    byIndustry.set(key, (byIndustry.get(key) ?? 0) + (d.investedCents ?? 0));
+  }
+  return [...byIndustry.entries()].map(([name, cents], i) => ({
+    name,
+    value: Math.round(cents / 100_000),
+    color: SECTOR_COLOURS[i % SECTOR_COLOURS.length],
+  }));
 }
 
 const MOCK_INVESTMENTS: Investment[] = [
@@ -259,8 +301,16 @@ export default function InvestorPortfolioPage() {
     ? liveInvestments
     : showDemoData ? MOCK_INVESTMENTS : [];
   const isLive = liveInvestments.length > 0;
-  const valueHistory = showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
-  const sectorData = showDemoData ? SECTOR_DISTRIBUTION : [];
+  // Both charts come from the rows on this page. The fixed series and sector
+  // mix described four mock companies (FoodTech Pro, CloudSecure...) under a
+  // portfolio of Aegis Health and Orion Grid, in dollars beside euro tiles.
+  const liveDeals = investedPage?.deals ?? [];
+  const valueHistory = isLive
+    ? portfolioValueSeries(liveDeals)
+    : showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
+  const sectorData = isLive
+    ? portfolioSectorMix(liveDeals)
+    : showDemoData ? SECTOR_DISTRIBUTION : [];
 
   const totalInvested = 275000;
   const totalValue = 535000;
@@ -304,7 +354,7 @@ export default function InvestorPortfolioPage() {
     >
       <div className="space-y-6">
         {/* Summary Stats */}
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
           {[
             /*
              * "$275K" and "$535K" were string constants sitting beside a real
@@ -339,7 +389,7 @@ export default function InvestorPortfolioPage() {
           <TabsContent value="performance">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Portfolio Value (K USD)</CardTitle>
+                <CardTitle className="text-sm">Portfolio value (€K)</CardTitle>
               </CardHeader>
               <CardContent>
                 <PortfolioValueChart data={valueHistory} />
@@ -349,7 +399,7 @@ export default function InvestorPortfolioPage() {
           <TabsContent value="sectors">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Investment by Sector (K USD)</CardTitle>
+                <CardTitle className="text-sm">Invested by sector (€K)</CardTitle>
               </CardHeader>
               <CardContent>
                 <SectorMixChart data={sectorData} />

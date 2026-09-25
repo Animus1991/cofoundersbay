@@ -197,7 +197,7 @@ function OrgOwnershipSection({
           <p className="text-xs text-muted-foreground">You don&apos;t belong to any organizations yet.</p>
         </div>
       ) : (
-        <div className="grid gap-1.5">
+        <div className="grid grid-cols-1 gap-1.5">
           {/* Personal (no org) option */}
           <button
             onClick={() => !currentOrgId ? undefined : onUpdate({ visibility: 'private' })}
@@ -343,7 +343,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
               {/* Visibility */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold">Visibility</label>
-                <div className="grid gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {VISIBILITY_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     const isActive = board.visibility === opt.value;

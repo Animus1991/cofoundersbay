@@ -174,7 +174,7 @@ export default function OrgSettingsPage() {
       <div className="space-y-6">
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="w-full lg:grid lg:grid-cols-5">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="branding">Branding</TabsTrigger>
             <TabsTrigger value="team">Team</TabsTrigger>

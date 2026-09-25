@@ -254,7 +254,7 @@ export default function ManageGroupsPage() {
           />
         )}
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
             { label: 'Groups Managed', value: groups.length },
             { label: 'Total Members', value: totalMembers.toLocaleString('en-GB') },

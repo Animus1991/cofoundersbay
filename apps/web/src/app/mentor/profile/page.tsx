@@ -118,8 +118,8 @@ export default function MentorProfilePage() {
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
                   <BadgeCheck className="icon-sm text-primary-accessible" />
                   <Badge variant="secondary" className="text-xs">Mentor</Badge>
@@ -127,7 +127,7 @@ export default function MentorProfilePage() {
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your headline below...'}
                 </p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" /> 4.9 (12 reviews)</span>
                   <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
                   <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
@@ -142,7 +142,7 @@ export default function MentorProfilePage() {
         </Card>
 
         <Tabs defaultValue="basics">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="w-full sm:grid sm:grid-cols-3">
             <TabsTrigger value="basics">Basics</TabsTrigger>
             <TabsTrigger value="expertise">Expertise</TabsTrigger>
             <TabsTrigger value="pricing">Pricing & Formats</TabsTrigger>

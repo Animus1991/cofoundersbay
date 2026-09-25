@@ -913,6 +913,35 @@ html {
     display: none;
   }
 
+  /* KPI strips run two-up on a phone (one tile per row pushed the page's
+     content a screen down). An odd last tile takes the whole row until the
+     breakpoint where the strip gains columns. One utility per breakpoint,
+     written out so Tailwind keeps them. */
+  @media (max-width: 639.98px) {
+    .kpi-odd-span-sm > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  @media (max-width: 767.98px) {
+    .kpi-odd-span-md > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  @media (max-width: 1023.98px) {
+    .kpi-odd-span-lg > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+
+  /* A tab strip that continues past its edge fades on that edge
+     (TabsList sets data-fade while it overflows). */
+  .tab-strip[data-fade='end'] {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  }
+  .tab-strip[data-fade='start'] {
+    -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to left, #000 calc(100% - 2rem), transparent);
+  }
+  .tab-strip[data-fade='both'] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+  }
+
   /* Screen-reader only utility */
   .sr-only {
     position: absolute;

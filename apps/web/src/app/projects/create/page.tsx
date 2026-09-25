@@ -158,7 +158,7 @@ export default function CreateProjectPage() {
         </Button>
       }
     >
-      <div className="mx-auto max-w-2xl space-y-5">
+      <div className="max-w-2xl space-y-5">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -235,7 +235,7 @@ export default function CreateProjectPage() {
             <CardContent className="space-y-6">
               <div className="space-y-3">
                 <Label><BilingualText en={projectEn('field_stage')} el={projectEl('field_stage')} compact /> *</Label>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {STATUS_OPTIONS.map((opt) => {
                     const fullKey = PROJECT_STAGE_FULL_KEYS[opt.value];
                     return (
@@ -418,7 +418,7 @@ export default function CreateProjectPage() {
                 <h3 className="font-semibold text-foreground">
                   <BilingualText en={projectEn('review')} el={projectEl('review')} compact />
                 </h3>
-                <div className="grid gap-3 text-sm">
+                <div className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground"><BilingualText en={projectEn('review_name')} el={projectEl('review_name')} compact /></span>
                     <span className="font-medium">{name || '—'}</span>

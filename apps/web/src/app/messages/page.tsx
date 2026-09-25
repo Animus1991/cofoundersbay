@@ -45,6 +45,8 @@ import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagin
 import { useSession } from '@/hooks/useSession';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
+import { queryKeys } from '@/lib/query-keys';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ConversationValidationState } from '@/components/messaging/ConversationValidation';
 
 function mapConversation(s: ConversationSummary): Conversation {
@@ -263,6 +265,9 @@ export default function MessagesPage() {
   const [reportBlockModal, setReportBlockModal] = useState<{ open: boolean; mode: 'report' | 'block' | 'both' }>({ open: false, mode: 'both' });
   const [validationStates, setValidationStates] = useState<Record<string, ConversationValidationState>>({});
   const { setActiveConversationId, markConversationRead } = useMessaging();
+  // Every list this page fetches is published to the shared conversation
+  // cache, which the unread badges derive from (MessagingContext).
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     return () => { setActiveConversationId(null); };
@@ -397,6 +402,7 @@ export default function MessagesPage() {
         setCurrentUserId(resolvedUserId);
 
         const { conversations: list } = await listMessageConversations();
+        queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
         if (!mounted) return;
         setConversations(list.map(mapConversation));
 
@@ -488,6 +494,7 @@ export default function MessagesPage() {
         if (accepted) {
           const { conversationId } = await getOrCreateDirectConversation(accepted.requesterId);
           const { conversations: list } = await listMessageConversations();
+          queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
           const mapped = list.map(mapConversation);
           setConversations(mapped);
           const conv = mapped.find((c) => c.id === conversationId);
@@ -514,6 +521,7 @@ export default function MessagesPage() {
       const { conversationId } = await getOrCreateDirectConversation(userId);
       socketRef.current?.emit('conversation:join', { conversationId });
       const { conversations: list } = await listMessageConversations();
+      queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
       const mapped = list.map(mapConversation);
       setConversations(mapped);
       const conv = mapped.find((c) => c.id === conversationId);
@@ -544,6 +552,7 @@ export default function MessagesPage() {
         socketRef.current?.emit('conversation:join', { conversationId });
 
         const { conversations: list } = await listMessageConversations();
+        queryClient.setQueryData(queryKeys.conversationsList, { conversations: list });
         if (cancelled) return;
         const mapped = list.map(mapConversation);
         setConversations(mapped);

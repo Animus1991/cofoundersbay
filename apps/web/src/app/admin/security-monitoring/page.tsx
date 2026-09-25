@@ -123,7 +123,7 @@ export default function SecurityMonitoringPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
         {[
           { label: 'Flags', value: isLive ? (abuseStats?.totalFlags ?? events.length) : events.length, icon: Activity },
           { label: 'Pending', value: isLive ? (abuseStats?.pendingFlags ?? 0) : events.filter((e) => e.level === 'critical').length, icon: AlertTriangle },

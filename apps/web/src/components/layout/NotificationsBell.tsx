@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -21,6 +22,7 @@ import {
 import { useHasSession } from '@/hooks/useSession';
 import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import { useApiAvailability } from '@/hooks/useApiAvailability';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
@@ -73,7 +75,12 @@ export function NotificationsBell({ className }: { className?: string }) {
   const lastLoadedAt = useRef(0);
   const MIN_RELOAD_MS = 30_000; // minimum 30 s between background reloads
 
-  const unread = items.filter((notification) => !notification.readAt).length;
+  // The server's count, the one the sidebar and the notifications page show:
+  // counting unread among the fifteen rows loaded here said "9+" or "3"
+  // depending on which fifteen they were, and never agreed with the sidebar.
+  const queryClient = useQueryClient();
+  const { notifications: unread } = useUnreadCounts();
+  const refreshCounts = () => queryClient.invalidateQueries({ queryKey: ['notifications'] });
   const ready = hasSession && !isChecking && isAuthenticated && apiAvailable;
 
   const load = async (force = false) => {
@@ -183,6 +190,7 @@ export function NotificationsBell({ className }: { className?: string }) {
                   ...notification,
                   readAt: notification.readAt ?? new Date().toISOString(),
                 })));
+                void refreshCounts();
               } catch (error) {
                 showError('Failed to mark read', error instanceof Error ? error.message : 'Please try again');
               }
@@ -224,6 +232,7 @@ export function NotificationsBell({ className }: { className?: string }) {
                           : item
                       )),
                     );
+                    void refreshCounts();
                   }
                 } catch {
                   // Ignore best-effort read receipts here.

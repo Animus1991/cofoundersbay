@@ -30,15 +30,11 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { ATTENTION_ROW } from '@/lib/semantic-colors';
 import { getMeProfile } from '@/lib/api';
+import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { queryKeys } from '@/lib/query-keys';
-
-function getTimeBasedGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
 
 function StatCard({
   icon: Icon,
@@ -143,10 +139,10 @@ function ProjectCard({ project }: { project: any }) {
 
 function InquiryCard({ inquiry }: { inquiry: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
+    <div className={cn('flex items-start gap-3', ATTENTION_ROW)}>
       <Avatar className="h-10 w-10">
         <AvatarImage src={inquiry.avatarUrl} />
-        <AvatarFallback className="bg-status-warning-bg text-status-warning">
+        <AvatarFallback className="bg-muted text-foreground">
           {inquiry.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -254,7 +250,7 @@ export default function ProviderDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -265,26 +261,19 @@ export default function ProviderDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h2>
-            <p className="text-muted-foreground">
-              Manage your services and client projects
-            </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5">
-            <Wrench className="icon-sm" />
-            Service Provider
-          </Badge>
-        </div>
+    <AppShell
+      actions={
+        <Badge variant="outline" className="gap-1.5">
+          <Wrench className="icon-sm" />
+          Service Provider
+        </Badge>
+      }
+    >
+      <div className="space-y-6">
+        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <StatCard
             icon={Package}
             label="Active Services"
@@ -311,7 +300,7 @@ export default function ProviderDashboard() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Inquiries */}
@@ -395,7 +384,7 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-2">
+              <CardContent className="grid grid-cols-1 gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/services">
                     <Package className="mr-2 icon-sm" />

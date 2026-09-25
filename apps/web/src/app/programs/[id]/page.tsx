@@ -111,10 +111,10 @@ export default function ProgramDetailPage() {
       description={program.organization?.name}
       askAi={`Is the programme "${program.title}" a good fit for my startup?`}
     >
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
           <Card>
-            <CardContent className="grid gap-3 p-5 text-sm sm:grid-cols-2">
+            <CardContent className="grid grid-cols-1 gap-3 p-5 text-sm sm:grid-cols-2">
               <p className="flex items-center gap-2">
                 <Building2 className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 {program.organization?.slug ? (

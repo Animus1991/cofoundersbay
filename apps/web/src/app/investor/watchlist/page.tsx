@@ -502,7 +502,7 @@ export default function InvestorWatchlistPage() {
       <div className="py-6 space-y-6">
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
             { label: 'Watching', value: watched.length, icon: Eye },
             { label: 'Alerts On', value: alertCount, icon: Bell },

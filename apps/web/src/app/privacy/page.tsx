@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Shield, ArrowLeft, Eye, Database, Lock, Globe, UserCheck, Mail, Settings, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { LegalText } from '@/components/common/LegalText';
 
 const LAST_UPDATED = 'March 20, 2026';
 
@@ -218,13 +219,14 @@ export default function PrivacyPage() {
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="icon-sm" />
-            <span className="text-sm font-medium">Back to CoFounderBay</span>
+            {/* "CoFounderBay" alone on a phone, so the bar keeps one line. */}
+            <span className="text-sm font-medium"><span className="hidden sm:inline">Back to </span>CoFounderBay</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-xs" asChild>
+          <div className="flex items-center gap-1 sm:gap-3">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
               <Link href="/terms">Terms of Service</Link>
             </Button>
-            <Button variant="ghost" size="sm" className="text-xs" asChild>
+            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
               <Link href="/help">Help Center</Link>
             </Button>
           </div>
@@ -298,11 +300,7 @@ export default function PrivacyPage() {
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>
                 </div>
-                <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line text-sm text-muted-foreground leading-relaxed">
-                    {section.content}
-                  </p>
-                </div>
+                <LegalText content={section.content} />
               </CardContent>
             </Card>
           ))}

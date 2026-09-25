@@ -166,7 +166,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
         <Progress value={completionPercentage} className="h-1.5" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <Card>
             <CardHeader>

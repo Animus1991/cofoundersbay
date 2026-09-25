@@ -366,7 +366,7 @@ export default function ProviderAnalyticsPage() {
 
         {/* Metric Grid */}
         {overview && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">
           <MetricCard icon={Eye} label="Profile Views" value={overview.profileViews.value} change={overview.profileViews.change} trend={overview.profileViews.trend} />
           <MetricCard icon={MessageCircle} label="Inquiries" value={overview.inquiries.value} change={overview.inquiries.change} trend={overview.inquiries.trend} />
           <MetricCard icon={Users} label="Active Projects" value={overview.activeProjects.value} change={overview.activeProjects.change} trend={overview.activeProjects.trend} />
@@ -376,7 +376,7 @@ export default function ProviderAnalyticsPage() {
         </div>
         )}
         {!showDemoData && live && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">
             {liveMetrics.map((m) => (
               <MetricCard
                 key={m.label}

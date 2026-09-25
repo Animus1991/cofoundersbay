@@ -17,7 +17,7 @@ import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { getNavLabelEl, getNavSectionEl } from '@/lib/i18n/strings-nav';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { NavIcon } from '@/components/icons/CfbGlyph';
 import { useStoredUser } from '@/hooks/useStoredUser';
@@ -89,7 +89,7 @@ export function MobileNav() {
   };
 
   const initials =
-    user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
+    (user?.displayName ? initialsOf(user.displayName) : '') ||
     user?.email?.slice(0, 2).toUpperCase() ||
     'ME';
 

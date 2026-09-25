@@ -321,6 +321,9 @@ const el: Record<string, string> = {
   Close: 'Κλείσιμο',
   'Close dialog': 'Κλείσιμο διαλόγου',
   '{surface} is showing sample items': '{surface} δείχνει δείγματα',
+  'Organisation analytics': 'Τα αναλυτικά του οργανισμού',
+  "The counts at the top are your organisation's own. The trend, session, stage, industry and funnel panels below are illustrative until the platform reports them.":
+    'Οι αριθμοί στην κορυφή είναι του οργανισμού σας. Τα πάνελ τάσης, συνεδριών, σταδίων, κλάδων και χοάνης παρακάτω είναι ενδεικτικά μέχρι να τα αναφέρει η πλατφόρμα.',
   'Select date range': 'Επιλογή εύρους ημερομηνιών',
   'Write something...': 'Γράψε κάτι...',
   'Link text...': 'Κείμενο συνδέσμου...',

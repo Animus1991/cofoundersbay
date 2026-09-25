@@ -571,7 +571,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
       )}
 
       {/* Dimension Details */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {data.dimensions.map((dimension) => {
           const StatusIcon = getStatusIcon(dimension.status);
           const isExpanded = expandedDimension === dimension.id;

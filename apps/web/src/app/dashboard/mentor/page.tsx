@@ -27,15 +27,11 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { ATTENTION_ROW } from '@/lib/semantic-colors';
 import { getMeProfile } from '@/lib/api';
+import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { queryKeys } from '@/lib/query-keys';
-
-function getTimeBasedGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
 
 function StatCard({
   icon: Icon,
@@ -147,10 +143,10 @@ function SessionCard({ session }: { session: any }) {
 
 function RequestCard({ request }: { request: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
+    <div className={cn('flex items-start gap-3', ATTENTION_ROW)}>
       <Avatar className="h-10 w-10">
         <AvatarImage src={request.avatarUrl} />
-        <AvatarFallback className="bg-status-warning-bg text-status-warning">
+        <AvatarFallback className="bg-muted text-foreground">
           {request.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -223,7 +219,7 @@ export default function MentorDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -235,7 +231,6 @@ export default function MentorDashboard() {
 
   return (
     <AppShell
-      title={`${getTimeBasedGreeting()}, ${displayName}`}
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       actions={
         <Badge variant="outline" className="gap-1.5">
@@ -245,6 +240,7 @@ export default function MentorDashboard() {
       }
     >
       <div className="space-y-6">
+        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
 
         {/* Next Session Banner */}
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
@@ -262,7 +258,7 @@ export default function MentorDashboard() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <StatCard
             icon={Users}
             label="Active Mentees"
@@ -291,7 +287,7 @@ export default function MentorDashboard() {
 
         {/* Earnings Banner */}
         {showDemoData && (
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Link href="/mentor/earnings">
               <div className="flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3 transition-all hover:border-status-success-border cursor-pointer">
                 <DollarSign className="icon-md text-status-success shrink-0" />
@@ -322,7 +318,7 @@ export default function MentorDashboard() {
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Requests */}
@@ -406,7 +402,7 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-2">
+              <CardContent className="grid grid-cols-1 gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/availability">
                     <Clock className="mr-2 icon-sm" />

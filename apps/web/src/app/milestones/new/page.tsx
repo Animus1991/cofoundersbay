@@ -92,7 +92,7 @@ export default function NewMilestonePage() {
         </div>
       }
     >
-      <div className="mx-auto max-w-2xl space-y-4">
+      <div className="max-w-2xl space-y-4">
         <p className="text-sm text-muted-foreground">
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>

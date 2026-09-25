@@ -19,7 +19,7 @@ export default function CalendarLoading() {
           ))}
         </div>
         {/* Calendar + sidebar */}
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
             <div className="flex items-center justify-between mb-2">
               <Skeleton className="h-6 w-32" />

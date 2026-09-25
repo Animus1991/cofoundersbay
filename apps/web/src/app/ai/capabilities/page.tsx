@@ -116,7 +116,7 @@ export default function AICapabilitiesPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="max-w-4xl">
         <Link
           href="/ai"
           className="mb-6 inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -159,7 +159,7 @@ export default function AICapabilitiesPage() {
               wrap
             />
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {reads.map((spec) => (
               <CapabilityCard key={spec.id} spec={spec} />
             ))}
@@ -177,7 +177,7 @@ export default function AICapabilitiesPage() {
               wrap
             />
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {mutations.map((spec) => (
               <CapabilityCard key={spec.id} spec={spec} />
             ))}

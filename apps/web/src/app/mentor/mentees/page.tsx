@@ -191,7 +191,7 @@ export default function MenteesPage() {
     >
       <div className="py-6 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">

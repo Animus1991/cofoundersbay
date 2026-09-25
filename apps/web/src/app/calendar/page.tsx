@@ -427,7 +427,7 @@ export default function CalendarPage() {
         />
 
         {view === 'calendar' ? (
-          <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
             {/* Left: Mini calendar */}
             <div className="space-y-4">
               <Card>

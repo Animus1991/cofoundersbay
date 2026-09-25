@@ -165,6 +165,22 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
     en: 'Here is what needs attention, and what to do next.',
     el: 'Εδώ βλέπετε τι χρειάζεται προσοχή και τι να κάνετε μετά.',
   },
+  investor_lead: {
+    en: 'Deal flow, the deals in motion and your portfolio, in one view.',
+    el: 'Ροή συμφωνιών, οι συμφωνίες σε εξέλιξη και το χαρτοφυλάκιό σας, με μια ματιά.',
+  },
+  mentor_lead: {
+    en: 'Requests waiting on you, your next sessions and your mentees.',
+    el: 'Αιτήματα που σας περιμένουν, οι επόμενες συνεδρίες και οι mentees σας.',
+  },
+  incubator_lead: {
+    en: 'Applications waiting on you, your programmes and how your startups are doing.',
+    el: 'Αιτήσεις που σας περιμένουν, τα προγράμματά σας και η πορεία των startups σας.',
+  },
+  provider_lead: {
+    en: 'Inquiries waiting on you, active projects and your services.',
+    el: 'Αιτήματα που σας περιμένουν, ενεργά έργα και οι υπηρεσίες σας.',
+  },
   no_recent_activity: { en: 'No recent activity', el: 'Καμία πρόσφατη δραστηριότητα' },
   browse_all: { en: 'Browse all', el: 'Περιήγηση όλων' },
   all_groups: { en: 'All groups', el: 'Όλες οι ομάδες' },

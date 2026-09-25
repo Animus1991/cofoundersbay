@@ -72,7 +72,7 @@ export default function AdminUserDetailPage() {
         </p>
       </HelpCallout>
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
             <Avatar className="h-20 w-20">
@@ -103,7 +103,7 @@ export default function AdminUserDetailPage() {
         </Card>
 
         <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 kpi-odd-span-sm gap-3 sm:grid-cols-3">
             {[
               { label: 'Connections', value: user.stats.connections, icon: User },
               { label: 'Posts', value: user.stats.posts, icon: Activity },

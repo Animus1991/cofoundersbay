@@ -25,7 +25,7 @@ import { choiceControl, usePageControls, type PageControl } from '@/lib/page-con
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { listAdminUsers, updateAdminUserModeration, changeUserRole, type AdminUserItem } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
@@ -121,7 +121,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
   };
 
   const config = statusConfig[user.status];
-  const initials = user.name?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() || '??';
+  const initials = (user.name ? initialsOf(user.name) : '??');
 
   return (
     <div className="flex items-center gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors">
