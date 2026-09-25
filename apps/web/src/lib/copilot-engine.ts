@@ -62,6 +62,8 @@ export type PageContextPacket = {
     options?: { value: string; label: string }[];
     current?: string;
     unavailable?: string;
+    /** The command names a verified opposite, so its card can offer Undo. */
+    undoable?: boolean;
   }[];
   /**
    * What the page's lists show (`usePageList`): the first rows on screen as
@@ -539,7 +541,9 @@ export async function runCopilotTurn(
           tool: control.writes ? 'run_page_command' : 'use_page_control',
           title: what,
           description: control.writes
-            ? t('Runs the page’s own command. Nothing happens until you confirm.')
+            ? control.undoable
+              ? t('Runs the page’s own command once you confirm. You can undo it afterwards while this page is open.')
+              : t('Runs the page’s own command. Nothing happens until you confirm.')
             : t('Changes what this page shows. Nothing is stored.'),
           confirmLabel: control.writes ? t('Run') : t('Apply'),
           payload: { control: control.id, label: what, ...(option ? { value: option.value } : {}) },

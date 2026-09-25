@@ -48,10 +48,24 @@ export type PageControl = {
   unavailableEl?: string;
   /** The page's own handler. Receives the chosen option's value. */
   run: (value?: string) => void | Promise<void>;
+  /**
+   * The verified opposite of a command, for Undo.
+   *
+   * Asked *before* the command runs, with the value it will run on, so the
+   * page answers from the row's current state: suspending an active user is
+   * undone by reactivating them; suspending a banned one is not undone by
+   * anything here, and the answer is `undefined`. Name an opposite only when
+   * it restores exactly what the command changed - read the endpoint first.
+   * A removal that loses a note, or a leave that loses a role, has none.
+   */
+  undo?: (value?: string) => PageControlUndo | undefined;
 };
 
-/** What leaves the page: everything but the handler. */
-export type PageControlSummary = Omit<PageControl, 'run'>;
+/** The control that takes a command back, and the value to run it with. */
+export type PageControlUndo = { control: string; value?: string };
+
+/** What leaves the page: everything but the handlers, and whether it can be undone. */
+export type PageControlSummary = Omit<PageControl, 'run' | 'undo'> & { undoable?: boolean };
 
 type Entry = { controls: PageControl[] };
 
@@ -64,12 +78,12 @@ function summarise(): PageControlSummary[] {
   const out: PageControlSummary[] = [];
   const seen = new Set<string>();
   for (const { controls } of owners.values()) {
-    for (const { run: _run, ...rest } of controls) {
+    for (const { run: _run, undo, ...rest } of controls) {
       // First registration wins: two components on one page offering the same
       // id would otherwise make the assistant's choice ambiguous.
       if (seen.has(rest.id)) continue;
       seen.add(rest.id);
-      out.push(rest);
+      out.push(undo ? { ...rest, undoable: true } : rest);
     }
   }
   return out;
@@ -115,13 +129,15 @@ export function usePageControls(controls: PageControl[]): void {
   const latest = useRef(controls);
   latest.current = controls;
 
-  const key = JSON.stringify(controls.map(({ run: _run, ...rest }) => rest));
+  const key = JSON.stringify(controls.map(({ run: _run, undo, ...rest }) => (undo ? { ...rest, undoable: true } : rest)));
   useEffect(() => {
     owners.set(owner, {
-      // Each run reads the newest handler, never the one from registration.
+      // Each run reads the newest handler, never the one from registration;
+      // the same for the undo, which must answer from the rows as they are.
       controls: latest.current.map((c) => ({
         ...c,
         run: (value?: string) => latest.current.find((x) => x.id === c.id)?.run(value),
+        undo: c.undo ? (value?: string) => latest.current.find((x) => x.id === c.id)?.undo?.(value) : undefined,
       })),
     });
     publish();
@@ -136,7 +152,9 @@ export function usePageControls(controls: PageControl[]): void {
   );
 }
 
-export type PageControlOutcome = { ok: true } | { ok: false; error: string };
+export type PageControlOutcome =
+  | { ok: true; undo?: PageControlUndo }
+  | { ok: false; error: string };
 
 /**
  * Run a control by id. The executors' single entry point.
@@ -150,6 +168,7 @@ export async function runPageControl(
   id: string,
   value: string | undefined,
   expectWrites: boolean,
+  options: { undoing?: boolean } = {},
 ): Promise<PageControlOutcome> {
   let control: PageControl | undefined;
   for (const { controls } of owners.values()) {
@@ -176,6 +195,14 @@ export async function runPageControl(
     };
   }
   if (control.unavailableEn) return { ok: false, error: control.unavailableEn };
+  // An undo runs the opposite on the row the command just changed. That row
+  // may not be among the opposite's choices yet - the list refreshes after
+  // the write lands - so the choice is taken as given; the page's handler
+  // still looks the row up and does nothing if it is gone.
+  if (options.undoing && value) {
+    await control.run(value);
+    return { ok: true };
+  }
   if (control.options?.length) {
     if (!value) return { ok: false, error: `"${control.labelEn}" needs a choice: ${control.options.map((o) => o.labelEn).join(', ')}.` };
     // A model may name the option rather than its value; both are accepted.
@@ -188,8 +215,11 @@ export async function runPageControl(
     }
     value = match.value;
   }
+  // Asked before the handler runs: afterwards the row already shows the new
+  // state, and the page could no longer say what to restore.
+  const undo = control.writes ? control.undo?.(value) : undefined;
   await control.run(value);
-  return { ok: true };
+  return undo ? { ok: true, undo } : { ok: true };
 }
 
 /** For tests: forget every registration. */

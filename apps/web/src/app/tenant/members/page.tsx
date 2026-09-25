@@ -403,6 +403,12 @@ export default function TenantMembersPage() {
       options: rowOptions(filteredMembers.filter((m) => m.role !== role), (m) => m.id, (m) => m.name),
       unavailableEn: liveOnlyEn,
       unavailableEl: liveOnlyEl,
+      // tenant.service updateMember writes the fields it is sent - here only
+      // `role` - so the command for the previous role restores it.
+      undo: (v?: string) => {
+        const prior = memberById(v)?.role;
+        return prior && prior !== role && (TENANT_ROLES as readonly string[]).includes(prior) ? { control: `make_${prior}`, value: v } : undefined;
+      },
       run: (v?: string) => { const m = memberById(v); if (m) void memberActions.onRole?.(m, role); },
     })),
     {

@@ -413,8 +413,10 @@ export default function AutomationsPage() {
     { id: 'new_rule', labelEn: 'Open the new rule form', labelEl: 'Άνοιγμα φόρμας νέου κανόνα', writes: false, run: () => setShowCreate(true) },
     { id: 'edit_rule', labelEn: 'Edit automation rule', labelEl: 'Επεξεργασία κανόνα', writes: false, options: ruleRows(rules), run: (v) => { const r = ruleById(v); if (r) setEditRule(r); } },
     { id: 'trigger_rule', labelEn: 'Run automation rule now', labelEl: 'Εκτέλεση κανόνα τώρα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), run: (v) => { if (v) triggerMutation.mutate(v); } },
-    { id: 'pause_rule', labelEn: 'Pause automation rule', labelEl: 'Παύση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'paused' }); } },
-    { id: 'activate_rule', labelEn: 'Activate automation rule', labelEl: 'Ενεργοποίηση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status !== 'active')), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'active' }); } },
+    // setRuleStatus writes `status` and nothing else (automation.service), so
+    // pausing an active rule is undone by activating it, and the reverse.
+    { id: 'pause_rule', labelEn: 'Pause automation rule', labelEl: 'Παύση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), undo: (v) => ({ control: 'activate_rule', value: v }), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'paused' }); } },
+    { id: 'activate_rule', labelEn: 'Activate automation rule', labelEl: 'Ενεργοποίηση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status !== 'active')), undo: (v) => (ruleById(v)?.status === 'paused' ? { control: 'pause_rule', value: v } : undefined), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'active' }); } },
     { id: 'delete_rule', labelEn: 'Delete automation rule', labelEl: 'Διαγραφή κανόνα', writes: true, options: ruleRows(rules), run: (v) => { const r = ruleById(v); if (r) void deleteRule(r); } },
   ]);
 

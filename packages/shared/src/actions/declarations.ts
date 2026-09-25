@@ -429,11 +429,17 @@ export const ACTION_DECLARATIONS = [
     writes: true,
     // The page's handler refreshes what it changed, as it does for a click.
     invalidates: [],
+    // Partial, and only per command: a page names the verified opposite of a
+    // command (reactivate for suspend, unpin for pin) from the row's state
+    // before it runs, and Undo runs that opposite on the same row while the
+    // page is open. A command whose opposite would not restore what it
+    // changed - a removal that loses a note, a role lost on leaving - names
+    // none, and its card offers no Undo.
     reversal: {
-      kind: 'none',
+      kind: 'partial',
       explanation: {
-        en: 'This runs the page’s own command, so the assistant cannot take it back. Where the page offers the opposite command (reinstate, reopen), that is how to reverse it.',
-        el: 'Εκτελεί την εντολή της ίδιας της σελίδας, οπότε ο βοηθός δεν μπορεί να την αναιρέσει. Όπου η σελίδα προσφέρει την αντίθετη εντολή (επαναφορά, επανάνοιγμα), έτσι αναστρέφεται.',
+        en: 'This runs the page’s own command. Where the page has a verified opposite for it (reactivate for suspend, unpin for pin), Undo runs that on the same row while this page is open; otherwise it cannot be taken back here.',
+        el: 'Εκτελεί την εντολή της ίδιας της σελίδας. Όπου η σελίδα έχει επαληθευμένη αντίθετη εντολή (επανενεργοποίηση για αναστολή, ξεκαρφίτσωμα για καρφίτσωμα), η Αναίρεση την εκτελεί στην ίδια γραμμή όσο η σελίδα είναι ανοιχτή· αλλιώς δεν αναιρείται εδώ.',
       },
     },
     auditSubject: { param: 'control', entityType: 'page_command' },

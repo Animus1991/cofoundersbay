@@ -14,7 +14,7 @@ import {
   usePageList,
   type PageControl,
 } from './page-controls';
-import { executeAction, getActionSpec } from './action-registry';
+import { executeAction, getActionSpec, undoAction, undoAvailable } from './action-registry';
 import { pageControlFor, pageListFor } from './copilot-planner';
 import { runCopilotTurn } from './copilot-engine';
 
@@ -210,6 +210,78 @@ describe('an assistant turn on a page with controls', () => {
   });
 });
 
+describe('undo through a verified opposite', () => {
+  type Row = { id: string; name: string; status: 'active' | 'suspended' | 'banned' };
+  function Users({ onChange }: { onChange: (id: string, status: Row['status']) => void }) {
+    const [rows, setRows] = useState<Row[]>([
+      { id: 'u1', name: 'Mike Johnson', status: 'active' },
+      { id: 'u2', name: 'Mike Chen', status: 'banned' },
+    ]);
+    const set = (id: string, status: Row['status']) => {
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+      onChange(id, status);
+    };
+    const opts = (list: Row[]) => list.map((r) => ({ value: r.id, labelEn: r.name, labelEl: r.name }));
+    usePageControls([
+      {
+        id: 'suspend_user',
+        labelEn: 'Suspend user',
+        labelEl: 'Αναστολή χρήστη',
+        writes: true,
+        options: opts(rows.filter((r) => r.status !== 'suspended')),
+        // Only an active user comes back by reactivating; a banned one does not.
+        undo: (v) => (rows.find((r) => r.id === v)?.status === 'active' ? { control: 'reactivate_user', value: v } : undefined),
+        run: (v) => { if (v) set(v, 'suspended'); },
+      },
+      {
+        id: 'reactivate_user',
+        labelEn: 'Reactivate user',
+        labelEl: 'Επανενεργοποίηση χρήστη',
+        writes: true,
+        options: opts(rows.filter((r) => r.status !== 'active')),
+        run: (v) => { if (v) set(v, 'active'); },
+      },
+    ]);
+    return <p data-testid="rows">{rows.map((r) => `${r.id}:${r.status}`).join(' ')}</p>;
+  }
+
+  it('hands back the opposite the page named from the row before it changed, and runs it', async () => {
+    const changes: string[] = [];
+    const view = render(<Users onChange={(id, st) => changes.push(`${id}:${st}`)} />);
+    let outcome: Awaited<ReturnType<typeof executeAction>> | undefined;
+    await act(async () => {
+      outcome = await executeAction('run_page_command', { control: 'suspend_user', value: 'u1' });
+    });
+    expect(outcome).toEqual({ ok: true, undo: { control: 'reactivate_user', value: 'u1' } });
+    expect(undoAvailable('run_page_command', outcome?.undo)).toBe(true);
+    await act(async () => {
+      await expect(undoAction('run_page_command', {}, outcome?.undo ?? {})).resolves.toEqual({ ok: true });
+    });
+    expect(view.getByTestId('rows').textContent).toBe('u1:active u2:banned');
+    expect(changes).toEqual(['u1:suspended', 'u1:active']);
+  });
+
+  it('offers no undo where the opposite would not restore the row', async () => {
+    render(<Users onChange={() => undefined} />);
+    let outcome: Awaited<ReturnType<typeof executeAction>> | undefined;
+    await act(async () => {
+      outcome = await executeAction('run_page_command', { control: 'suspend_user', value: 'u2' });
+    });
+    // Mike Chen was banned: reactivating would make him active, not banned.
+    expect(outcome).toEqual({ ok: true });
+    expect(undoAvailable('run_page_command', outcome?.undo)).toBe(false);
+    await expect(undoAction('run_page_command', {}, {})).resolves.toEqual({ ok: false, error: 'Not reversible' });
+  });
+
+  it('says a command can be undone in what the assistant sees, without the handler', () => {
+    render(<Users onChange={() => undefined} />);
+    const listed = currentPageControls();
+    expect(listed.find((c) => c.id === 'suspend_user')).toMatchObject({ undoable: true });
+    expect(listed.find((c) => c.id === 'reactivate_user')?.undoable).toBeUndefined();
+    expect(listed.every((c) => !('undo' in c))).toBe(true);
+  });
+});
+
 describe('what a page’s lists show', () => {
   function Deals({ rows, total }: { rows?: string[]; total?: number }) {
     usePageList([{ id: 'deals', labelEn: 'Deals', labelEl: 'Συμφωνίες', rows, total }]);
@@ -376,5 +448,25 @@ describe('pages that offer controls', () => {
       .filter((f) => !(COVERED_BY[f] && readFileSync(COVERED_BY[f], 'utf8').includes('usePageControls([')));
     expect(uncovered).toEqual([]);
     expect(menuFiles.length).toBeGreaterThan(40);
+  });
+
+  it('names an undo only by a command the same page offers', () => {
+    // An undo runs another control on the same page by its id. A typo, or a
+    // control that was renamed, would leave a card whose Undo fails - so
+    // every literal target must be an id the page registers. Template ids
+    // (`move_to_${stage}`) are checked by the page's own tests.
+    const broken: string[] = [];
+    for (const file of users) {
+      const src = readFileSync(file, 'utf8');
+      if (!src.includes('undo:')) continue;
+      const ids = new Set([...src.matchAll(/\bid: '([a-z_]+)'/g)].map((m) => m[1]));
+      for (const m of src.matchAll(/undo:[^\n]*?control: '([a-z_]+)'/g)) {
+        if (!ids.has(m[1])) broken.push(`${file}: ${m[1]}`);
+      }
+      for (const m of src.matchAll(/\? \{ control: '([a-z_]+)'/g)) {
+        if (!ids.has(m[1])) broken.push(`${file}: ${m[1]}`);
+      }
+    }
+    expect(broken).toEqual([]);
   });
 });

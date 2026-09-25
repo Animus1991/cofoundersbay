@@ -490,6 +490,16 @@ export default function MilestonesPage() {
         labelEl: `Σήμανση ορόσημου ως ${milestoneEl(key)}`,
         writes: true,
         options: rowOptions(milestones.filter((m) => m.status !== status), (m) => m.id, (m) => m.title),
+        // Between to do, in progress and blocked the update writes `status`
+        // alone, so the previous one restores it. Completing also sets
+        // progress to 100 and stamps completedAt (milestones.service), which
+        // going back does not undo - so no opposite into or out of completed.
+        undo: (v?: string) => {
+          const prior = milestones.find((m) => m.id === v)?.status;
+          return prior && prior !== 'completed' && status !== 'completed' && prior !== status && ['todo', 'in_progress', 'blocked'].includes(prior)
+            ? { control: `mark_${prior}`, value: v }
+            : undefined;
+        },
         run: (v?: string) => { if (v) handleStatusChange(v, status); },
       };
     }),

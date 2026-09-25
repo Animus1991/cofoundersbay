@@ -507,7 +507,14 @@ export default function AdminUserManagementPage() {
   const SAMPLE_EN = isLive ? undefined : 'These rows are illustrative until the directory loads.';
   const SAMPLE_EL = isLive ? undefined : 'Οι γραμμές είναι ενδεικτικές μέχρι να φορτώσει ο κατάλογος.';
   const byName = (list: ManagedUser[]) => rowOptions(list, (u) => u.id, (u) => u.name);
-  const rowCommand = (id: string, en: string, el: string, list: ManagedUser[], run: (u: ManagedUser) => void): PageControl => ({
+  const rowCommand = (
+    id: string,
+    en: string,
+    el: string,
+    list: ManagedUser[],
+    run: (u: ManagedUser) => void,
+    undo?: (u: ManagedUser) => string | undefined,
+  ): PageControl => ({
     id,
     labelEn: en,
     labelEl: el,
@@ -515,8 +522,15 @@ export default function AdminUserManagementPage() {
     options: byName(list),
     unavailableEn: SAMPLE_EN,
     unavailableEl: SAMPLE_EL,
+    ...(undo ? { undo: (v?: string) => { const u = users.find((row) => row.id === v); const back = u ? undo(u) : undefined; return back ? { control: back, value: v } : undefined; } } : {}),
     run: (v) => { const u = users.find((row) => row.id === v); if (u) run(u); },
   });
+  // The moderation and role endpoints each set one field to what they are
+  // sent (admin.service), so the command that sets the previous value back
+  // restores the row. `pending` is not stored, and roles this page cannot set
+  // have no command, so neither has an opposite.
+  const backToStatus = (u: ManagedUser) =>
+    u.status === 'active' ? 'set_active' : u.status === 'suspended' ? 'suspend_user' : u.status === 'banned' ? 'ban_user' : undefined;
   usePageList([
     {
       id: 'users',
@@ -569,9 +583,9 @@ export default function AdminUserManagementPage() {
       run: exportCsv,
     },
     { id: 'quick_view', labelEn: 'Quick view a user', labelEl: 'Γρήγορη προβολή χρήστη', writes: false, options: byName(filtered), run: (v) => { const u = users.find((row) => row.id === v); if (u) setDetailUser(u); } },
-    rowCommand('set_active', 'Set user active', 'Ενεργοποίηση χρήστη', filtered.filter((u) => u.status !== 'active'), (u) => void updateStatus(u.id, 'active')),
-    rowCommand('suspend_user', 'Suspend user', 'Αναστολή χρήστη', filtered.filter((u) => u.status !== 'suspended'), (u) => void updateStatus(u.id, 'suspended')),
-    rowCommand('ban_user', 'Ban user', 'Αποκλεισμός χρήστη', filtered.filter((u) => u.status !== 'banned'), (u) => void updateStatus(u.id, 'banned')),
+    rowCommand('set_active', 'Set user active', 'Ενεργοποίηση χρήστη', filtered.filter((u) => u.status !== 'active'), (u) => void updateStatus(u.id, 'active'), backToStatus),
+    rowCommand('suspend_user', 'Suspend user', 'Αναστολή χρήστη', filtered.filter((u) => u.status !== 'suspended'), (u) => void updateStatus(u.id, 'suspended'), backToStatus),
+    rowCommand('ban_user', 'Ban user', 'Αποκλεισμός χρήστη', filtered.filter((u) => u.status !== 'banned'), (u) => void updateStatus(u.id, 'banned'), backToStatus),
     rowCommand('make_admin', 'Make user an admin', 'Ορισμός χρήστη ως διαχειριστή', filtered.filter((u) => u.role !== 'admin'), (u) => void updateRole(u.id, 'admin')),
   ]);
   return (

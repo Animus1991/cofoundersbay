@@ -446,8 +446,9 @@ export default function ProjectsPage() {
     ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
     choiceControl('tab', 'Projects tab', 'Καρτέλα έργων', (['discover', 'mine', 'joined', 'starred'] as const).map((id) => ({ value: id, en: projectEn(`tab_${id}`), el: projectEl(`tab_${id}`) })), tab, (v) => setTab(v as TabId)),
     // The card menu's own actions over the projects on this tab.
-    { id: 'star_project', labelEn: 'Star project', labelEl: 'Αστέρι σε έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => !p.isStarred), (p) => p.id, (p) => p.name), run: (v) => { if (v) handleStar(v); } },
-    { id: 'unstar_project', labelEn: 'Unstar project', labelEl: 'Αφαίρεση αστεριού από έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => p.isStarred), (p) => p.id, (p) => p.name), run: (v) => { if (v) handleStar(v); } },
+    // toggleDemoStar flips one flag on the project kept in this browser.
+    { id: 'star_project', labelEn: 'Star project', labelEl: 'Αστέρι σε έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => !p.isStarred), (p) => p.id, (p) => p.name), undo: (v) => ({ control: 'unstar_project', value: v }), run: (v) => { if (v) handleStar(v); } },
+    { id: 'unstar_project', labelEn: 'Unstar project', labelEl: 'Αφαίρεση αστεριού από έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => p.isStarred), (p) => p.id, (p) => p.name), undo: (v) => ({ control: 'star_project', value: v }), run: (v) => { if (v) handleStar(v); } },
     { id: 'share_project', labelEn: 'Copy a link to project', labelEl: 'Αντιγραφή συνδέσμου έργου', writes: false, options: rowOptions(byTab[tab], (p) => p.id, (p) => p.name), run: (v) => { const p = projects.find((row) => row.id === v); if (p) handleShare(p); } },
   ]);
   usePageList([

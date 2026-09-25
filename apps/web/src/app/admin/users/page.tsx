@@ -509,6 +509,15 @@ export default function AdminUsersPage() {
     options: userRows,
     unavailableEn: onRows,
     unavailableEl: onRowsEl,
+    // The moderation endpoint sets one field, `moderationStatus`, to what it
+    // is sent (admin.service updateUserModerationStatus), so the command that
+    // sets the row's previous status restores it exactly. `pending` is not a
+    // stored status, so a pending row has no opposite.
+    undo: (value) => {
+      const prior = users.find((u) => u.id === value)?.status;
+      const back = prior === 'active' ? 'reinstate_user' : prior === 'suspended' ? 'suspend_user' : prior === 'banned' ? 'ban_user' : undefined;
+      return back && prior !== next ? { control: back, value } : undefined;
+    },
     run: (value) => {
       const user = users.find((u) => u.id === value);
       if (user) void moderate(user, next);
@@ -541,6 +550,12 @@ export default function AdminUsersPage() {
       options: userRows,
       unavailableEn: onRows,
       unavailableEl: onRowsEl,
+      // One field, `role` (admin.service changeUserRole): setting the previous
+      // role back restores it, when that role is one this page can assign.
+      undo: (value) => {
+        const prior = users.find((u) => u.id === value)?.role;
+        return prior && prior !== r && (ASSIGNABLE_ROLES as readonly string[]).includes(prior) ? { control: `role_${prior}`, value } : undefined;
+      },
       run: (value) => {
         const user = users.find((u) => u.id === value);
         if (user) void assignRole(user, r);

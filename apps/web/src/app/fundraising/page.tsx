@@ -665,6 +665,12 @@ export default function FundraisingPage() {
       labelEl: `Μετακίνηση επενδυτή σε ${stageName(st).el}`,
       writes: true,
       options: leads.filter((l) => l.status !== st).map((l) => ({ value: l.id, labelEn: l.name, labelEl: l.name })),
+      // A move sets the lead's one status in the browser overlay; moving it
+      // back to where it was restores it.
+      undo: (value?: string) => {
+        const prior = leads.find((l) => l.id === value)?.status;
+        return prior && prior !== st && PIPELINE_STAGES.includes(prior) ? { control: `move_to_${prior}`, value } : undefined;
+      },
       run: (value?: string) => { if (value) handleMove(value, st); },
     })),
   ]);

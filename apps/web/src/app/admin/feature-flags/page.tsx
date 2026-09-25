@@ -377,13 +377,17 @@ export default function AdminFeatureFlagsPage() {
   // still ask before a delete.
   const SAMPLE_EN = isLive ? undefined : 'These flags are samples until the experiments API returns rows.';
   const SAMPLE_EL = isLive ? undefined : 'Οι σημαίες είναι δείγματα μέχρι το API πειραμάτων να επιστρέψει γραμμές.';
-  const flagCommand = (id: string, en: string, el: string, writes: boolean, list: FeatureFlag[], run: (f: FeatureFlag) => void, sampleOk = false): PageControl => ({
+  const flagCommand = (id: string, en: string, el: string, writes: boolean, list: FeatureFlag[], run: (f: FeatureFlag) => void, sampleOk = false, opposite?: string): PageControl => ({
     id,
     labelEn: en,
     labelEl: el,
     writes,
     options: rowOptions(list, (f) => f.id, (f) => f.name),
     ...(sampleOk ? {} : { unavailableEn: SAMPLE_EN, unavailableEl: SAMPLE_EL }),
+    // activate / deactivate flip the experiment's `active` and stamp the time
+    // (experimentation.service); the split and the assignments are untouched,
+    // so the other switch restores the flag, with a new start or end time.
+    ...(opposite ? { undo: (v?: string) => ({ control: opposite, value: v }) } : {}),
     run: (v) => { const f = flags.find((row) => row.id === v); if (f) run(f); },
   });
   usePageList([
@@ -405,8 +409,8 @@ export default function AdminFeatureFlagsPage() {
       { value: 'disabled', en: 'Disabled', el: 'Ανενεργές' },
     ], activeTab, setActiveTab),
     { id: 'new_flag', labelEn: 'Open the new flag form', labelEl: 'Άνοιγμα φόρμας νέας σημαίας', writes: false, run: () => setCreating(true) },
-    flagCommand('enable_flag', 'Turn feature flag on', 'Ενεργοποίηση σημαίας', true, filtered.filter((f) => f.status === 'disabled'), (f) => void handleToggle(f.id, true)),
-    flagCommand('disable_flag', 'Turn feature flag off', 'Απενεργοποίηση σημαίας', true, filtered.filter((f) => f.status !== 'disabled'), (f) => void handleToggle(f.id, false)),
+    flagCommand('enable_flag', 'Turn feature flag on', 'Ενεργοποίηση σημαίας', true, filtered.filter((f) => f.status === 'disabled'), (f) => void handleToggle(f.id, true), false, 'disable_flag'),
+    flagCommand('disable_flag', 'Turn feature flag off', 'Απενεργοποίηση σημαίας', true, filtered.filter((f) => f.status !== 'disabled'), (f) => void handleToggle(f.id, false), false, 'enable_flag'),
     flagCommand('edit_flag', 'Edit feature flag', 'Επεξεργασία σημαίας', false, filtered, (f) => openEdit(f, 'details')),
     flagCommand('set_rollout', 'Set a flag rollout percentage', 'Ορισμός ποσοστού διάθεσης σημαίας', false, filtered, (f) => openEdit(f, 'rollout')),
     flagCommand('copy_flag_key', 'Copy a flag key', 'Αντιγραφή κλειδιού σημαίας', false, filtered, (f) => void copyKey(f), true),

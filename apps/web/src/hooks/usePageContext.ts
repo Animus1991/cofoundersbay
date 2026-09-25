@@ -76,6 +76,7 @@ export function usePageContext(): PageContextPacket {
       ...(c.options?.length ? { options: c.options.map((o) => ({ value: o.value, label: el ? o.labelEl : o.labelEn })) } : {}),
       ...(c.current !== undefined ? { current: c.current } : {}),
       ...(c.unavailableEn ? { unavailable: el ? (c.unavailableEl ?? c.unavailableEn) : c.unavailableEn } : {}),
+      ...(c.undoable ? { undoable: true } : {}),
     })),
   );
   // What the page's lists show, in the reader's language: a label, the

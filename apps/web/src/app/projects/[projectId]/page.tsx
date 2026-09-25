@@ -87,8 +87,8 @@ export default function ProjectDetailPage() {
   const missingEn = project ? undefined : 'This project was not found.';
   const missingEl = project ? undefined : 'Το έργο δεν βρέθηκε.';
   usePageControls([
-    { id: 'star_project', labelEn: 'Star this project', labelEl: 'Αστέρι σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (starred ? 'It is already starred.' : undefined), unavailableEl: missingEl ?? (starred ? 'Έχει ήδη αστέρι.' : undefined), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
-    { id: 'unstar_project', labelEn: 'Unstar this project', labelEl: 'Αφαίρεση αστεριού από το έργο', writes: true, unavailableEn: missingEn ?? (starred ? undefined : 'It is not starred.'), unavailableEl: missingEl ?? (starred ? undefined : 'Δεν έχει αστέρι.'), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
+    { id: 'star_project', labelEn: 'Star this project', labelEl: 'Αστέρι σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (starred ? 'It is already starred.' : undefined), unavailableEl: missingEl ?? (starred ? 'Έχει ήδη αστέρι.' : undefined), undo: () => ({ control: 'unstar_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
+    { id: 'unstar_project', labelEn: 'Unstar this project', labelEl: 'Αφαίρεση αστεριού από το έργο', writes: true, unavailableEn: missingEn ?? (starred ? undefined : 'It is not starred.'), unavailableEl: missingEl ?? (starred ? undefined : 'Δεν έχει αστέρι.'), undo: () => ({ control: 'star_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
     { id: 'share_project', labelEn: 'Copy a link to this project', labelEl: 'Αντιγραφή συνδέσμου του έργου', writes: false, unavailableEn: missingEn, unavailableEl: missingEl, run: handleShare },
     { id: 'delete_project', labelEn: 'Delete this project', labelEl: 'Διαγραφή του έργου', writes: true, unavailableEn: missingEn, unavailableEl: missingEl, run: () => void handleDelete() },
   ]);

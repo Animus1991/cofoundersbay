@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -252,6 +252,8 @@ type WatchActions = {
 
 function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { startup: WatchedStartup; live: boolean } & WatchActions) {
   const [alertsEnabled, setAlertsEnabled] = useState(startup.alertsEnabled);
+  // Follow the deal when it changes from elsewhere (the assistant, a refetch).
+  useEffect(() => setAlertsEnabled(startup.alertsEnabled), [startup.alertsEnabled]);
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/20">
@@ -510,8 +512,10 @@ export default function InvestorWatchlistPage() {
     ], alertsOnly ? 'on' : 'off', (v) => setAlertsOnly(v === 'on')),
     { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onPromote(st); } },
     { id: 'remove_from_watchlist', labelEn: 'Remove startup from watchlist', labelEl: 'Αφαίρεση startup από τη λίστα', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onRemove(st); } },
-    { id: 'alerts_on', labelEn: 'Turn alerts on for startup', labelEl: 'Ενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => !st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, true); } },
-    { id: 'alerts_off', labelEn: 'Turn alerts off for startup', labelEl: 'Απενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, false); } },
+    // `alertsEnabled` is one field on the deal (updateInvestorDeal), so on and
+    // off are each other's exact opposite.
+    { id: 'alerts_on', labelEn: 'Turn alerts on for startup', labelEl: 'Ενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => !st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, true); } },
+    { id: 'alerts_off', labelEn: 'Turn alerts off for startup', labelEl: 'Απενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, false); } },
   ]);
 
   return (

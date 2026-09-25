@@ -361,8 +361,9 @@ export default function ProviderServicesPage() {
   ]);
   usePageControls([
     { id: 'add_service', labelEn: 'Open the new listing form', labelEl: 'Άνοιγμα φόρμας νέας καταχώρισης', writes: false, run: openCreate },
-    { id: 'publish_service', labelEn: 'Make listing live', labelEl: 'Δημοσίευση καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => !s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, true); } },
-    { id: 'hide_service', labelEn: 'Hide listing', labelEl: 'Απόκρυψη καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, false); } },
+    // `isActive` alone (updateMarketplaceService): live and hidden are opposites.
+    { id: 'publish_service', labelEn: 'Make listing live', labelEl: 'Δημοσίευση καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => !s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, undo: (v) => ({ control: 'hide_service', value: v }), run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, true); } },
+    { id: 'hide_service', labelEn: 'Hide listing', labelEl: 'Απόκρυψη καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, undo: (v) => ({ control: 'publish_service', value: v }), run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, false); } },
     { id: 'edit_service', labelEn: 'Edit listing', labelEl: 'Επεξεργασία καταχώρισης', writes: false, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) serviceActions.onEdit?.(s); } },
     { id: 'delete_service', labelEn: 'Delete listing', labelEl: 'Διαγραφή καταχώρισης', writes: true, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onDelete?.(s); } },
   ]);

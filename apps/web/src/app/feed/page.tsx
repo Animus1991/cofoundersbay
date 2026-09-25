@@ -797,10 +797,11 @@ export default function FeedPage() {
       unavailableEl: hasNextPage ? undefined : 'Δεν υπάρχουν άλλες αναρτήσεις.',
       run: () => void fetchNextPage(),
     },
-    { id: 'like_post', labelEn: 'Like post', labelEl: 'Μου αρέσει η ανάρτηση', writes: true, options: byAuthor(posts.filter((p) => !p.isLiked)), run: (v) => { if (v) handleLike(v, false); } },
-    { id: 'unlike_post', labelEn: 'Unlike post', labelEl: 'Αναίρεση «μου αρέσει»', writes: true, options: byAuthor(posts.filter((p) => p.isLiked)), run: (v) => { if (v) handleLike(v, true); } },
-    { id: 'save_post', labelEn: 'Save post', labelEl: 'Αποθήκευση ανάρτησης', writes: true, options: byAuthor(posts.filter((p) => !p.isBookmarked)), run: (v) => { if (v) handleBookmark(v, false); } },
-    { id: 'unsave_post', labelEn: 'Remove post from saved', labelEl: 'Αφαίρεση από αποθηκευμένα', writes: true, options: byAuthor(posts.filter((p) => p.isBookmarked)), run: (v) => { if (v) handleBookmark(v, true); } },
+    // Like and save each flip one flag on the post; the other command flips it back.
+    { id: 'like_post', labelEn: 'Like post', labelEl: 'Μου αρέσει η ανάρτηση', writes: true, options: byAuthor(posts.filter((p) => !p.isLiked)), undo: (v) => ({ control: 'unlike_post', value: v }), run: (v) => { if (v) handleLike(v, false); } },
+    { id: 'unlike_post', labelEn: 'Unlike post', labelEl: 'Αναίρεση «μου αρέσει»', writes: true, options: byAuthor(posts.filter((p) => p.isLiked)), undo: (v) => ({ control: 'like_post', value: v }), run: (v) => { if (v) handleLike(v, true); } },
+    { id: 'save_post', labelEn: 'Save post', labelEl: 'Αποθήκευση ανάρτησης', writes: true, options: byAuthor(posts.filter((p) => !p.isBookmarked)), undo: (v) => ({ control: 'unsave_post', value: v }), run: (v) => { if (v) handleBookmark(v, false); } },
+    { id: 'unsave_post', labelEn: 'Remove post from saved', labelEl: 'Αφαίρεση από αποθηκευμένα', writes: true, options: byAuthor(posts.filter((p) => p.isBookmarked)), undo: (v) => ({ control: 'save_post', value: v }), run: (v) => { if (v) handleBookmark(v, true); } },
     { id: 'share_post', labelEn: 'Copy a link to post', labelEl: 'Αντιγραφή συνδέσμου ανάρτησης', writes: false, options: byAuthor(posts), run: (v) => { if (v) handleShare(v); } },
     {
       id: 'report_author',

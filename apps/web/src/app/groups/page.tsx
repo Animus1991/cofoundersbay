@@ -312,6 +312,10 @@ export default function GroupsPage() {
       labelEl: 'Συμμετοχή σε ομάδα',
       writes: true,
       options: rowOptions(displayGroups.filter((g) => !g.isMember), (g) => g.id, (g) => g.name),
+      // joinGroup creates a `member` row and leaveGroup deletes it
+      // (groups.service), so leaving takes a join back. The welcome the join
+      // triggers has been sent either way.
+      undo: (v) => ({ control: 'leave_group', value: v }),
       run: (v) => { if (v) void handleToggle(v, false); },
     },
     {
@@ -320,6 +324,9 @@ export default function GroupsPage() {
       labelEl: 'Αποχώρηση από ομάδα',
       writes: true,
       options: rowOptions(displayGroups.filter((g) => g.isMember), (g) => g.id, (g) => g.name),
+      // Rejoining comes back as `member`: exact for a member, not for an
+      // admin or moderator, whose role would be lost - so only then.
+      undo: (v) => (displayGroups.find((g) => g.id === v)?.memberRole === 'member' ? { control: 'join_group', value: v } : undefined),
       run: (v) => { if (v) void handleToggle(v, true); },
     },
   ]);

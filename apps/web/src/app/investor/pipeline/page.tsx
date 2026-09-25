@@ -315,6 +315,12 @@ export default function InvestorPipelinePage() {
       options: deals.filter((d) => d.pipelineStage !== stage.key).map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.name })),
       unavailableEn: sampleEn,
       unavailableEl: sampleEl,
+      // updateInvestorDeal sets `pipelineStage`; moving the deal back to the
+      // stage it had is the same undo the move_deal_stage capability uses.
+      undo: (value?: string) => {
+        const prior = deals.find((d) => d.id === value)?.pipelineStage;
+        return prior && prior !== stage.key ? { control: `move_to_${prior}`, value } : undefined;
+      },
       run: (value?: string) => {
         const deal = deals.find((d) => d.id === value);
         if (deal) void moveDeal(deal, stage.key);

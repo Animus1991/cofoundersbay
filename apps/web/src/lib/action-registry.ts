@@ -517,6 +517,16 @@ async function resolveMilestoneId(payload: Record<string, unknown>): Promise<str
  * deleted, so there is nothing honest to reverse.
  */
 const UNDOS: Record<UndoableActionId, Undo> = {
+  // The page named the opposite before the command ran, from the row's state
+  // at that moment; the executor handed it over as the outcome's `undo`. No
+  // opposite, no undo - `undoAvailable` keeps the button off such a card.
+  run_page_command: async (_payload, context) => {
+    const control = typeof context.control === 'string' ? context.control : '';
+    if (!control) return { ok: false, error: 'Not reversible' };
+    const value = typeof context.value === 'string' ? context.value : undefined;
+    return runPageControl(control, value, true, { undoing: true });
+  },
+
   shortlist_add: async (payload) => {
     const userId = requireString(payload, 'userId');
     if (!userId) return { ok: false, error: 'Missing user' };
@@ -666,6 +676,20 @@ export function canExecute(id: string): boolean {
 /** True when the action declares an undo the UI can actually offer. */
 export function isUndoable(id: string): boolean {
   return Object.prototype.hasOwnProperty.call(UNDOS, id);
+}
+
+/**
+ * Whether this particular run can be taken back.
+ *
+ * Every other capability is reversible or not as a whole. A page command is
+ * reversible only when its page named a verified opposite for the row it ran
+ * on, which arrives as the outcome's `undo`; without it the card offers no
+ * Undo rather than one that fails.
+ */
+export function undoAvailable(id: string, context: Record<string, unknown> | undefined): boolean {
+  if (!isUndoable(id)) return false;
+  if (id === 'run_page_command') return typeof context?.control === 'string' && context.control.length > 0;
+  return true;
 }
 
 /**

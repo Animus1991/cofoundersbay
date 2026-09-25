@@ -134,14 +134,25 @@ export default function NotificationPreferencesPage() {
         { value: 'off', labelEn: 'Off', labelEl: 'Ανενεργές' },
       ],
       current: prefs.quietHours.enabled ? 'on' : 'off',
+      // One flag; its hours are left as they were.
+      undo: () => ({ control: 'quiet_hours', value: prefs.quietHours.enabled ? 'on' : 'off' }),
       run: (v) => setQuietHours({ enabled: v === 'on' }),
     },
-    ...CHANNELS.flatMap((ch) => [
-      { id: `${ch.id}_on`, labelEn: `Turn ${ch.en.toLowerCase()} notifications on for`, labelEl: `Ενεργοποίηση ειδοποιήσεων ${ch.el} για`, writes: true, options: categoryRows, run: (v?: string) => { const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v); if (c) setCategory(c, ch.id, true); } },
-      { id: `${ch.id}_off`, labelEn: `Turn ${ch.en.toLowerCase()} notifications off for`, labelEl: `Απενεργοποίηση ειδοποιήσεων ${ch.el} για`, writes: true, options: categoryRows, run: (v?: string) => { const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v); if (c) setCategory(c, ch.id, false); } },
-    ]),
-    { id: 'automation_on', labelEn: 'Turn automated messages on', labelEl: 'Ενεργοποίηση αυτοματοποιημένων μηνυμάτων', writes: true, options: automationRows.filter((a) => !prefs.automation[a.value as AutomationKey]), run: (v) => { if (v) setAutomation(v as AutomationKey, true); } },
-    { id: 'automation_off', labelEn: 'Turn automated messages off', labelEl: 'Απενεργοποίηση αυτοματοποιημένων μηνυμάτων', writes: true, options: automationRows.filter((a) => prefs.automation[a.value as AutomationKey]), run: (v) => { if (v) setAutomation(v as AutomationKey, false); } },
+    // A category switch sets every type in it, so the opposite restores the
+    // category only when all its types agreed before - otherwise it would
+    // flatten choices made one by one, and there is no undo.
+    ...CHANNELS.flatMap((ch) => {
+      const uniform = (v: string | undefined, on: boolean) => {
+        const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v);
+        return c ? c.settings.every((st) => channelsOf(prefs, st)[ch.id] === on) : false;
+      };
+      return [
+        { id: `${ch.id}_on`, labelEn: `Turn ${ch.en.toLowerCase()} notifications on for`, labelEl: `Ενεργοποίηση ειδοποιήσεων ${ch.el} για`, writes: true, options: categoryRows, undo: (v?: string) => (uniform(v, false) ? { control: `${ch.id}_off`, value: v } : undefined), run: (v?: string) => { const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v); if (c) setCategory(c, ch.id, true); } },
+        { id: `${ch.id}_off`, labelEn: `Turn ${ch.en.toLowerCase()} notifications off for`, labelEl: `Απενεργοποίηση ειδοποιήσεων ${ch.el} για`, writes: true, options: categoryRows, undo: (v?: string) => (uniform(v, true) ? { control: `${ch.id}_on`, value: v } : undefined), run: (v?: string) => { const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v); if (c) setCategory(c, ch.id, false); } },
+      ];
+    }),
+    { id: 'automation_on', labelEn: 'Turn automated messages on', labelEl: 'Ενεργοποίηση αυτοματοποιημένων μηνυμάτων', writes: true, options: automationRows.filter((a) => !prefs.automation[a.value as AutomationKey]), undo: (v) => ({ control: 'automation_off', value: v }), run: (v) => { if (v) setAutomation(v as AutomationKey, true); } },
+    { id: 'automation_off', labelEn: 'Turn automated messages off', labelEl: 'Απενεργοποίηση αυτοματοποιημένων μηνυμάτων', writes: true, options: automationRows.filter((a) => prefs.automation[a.value as AutomationKey]), undo: (v) => ({ control: 'automation_on', value: v }), run: (v) => { if (v) setAutomation(v as AutomationKey, false); } },
   ]);
 
   const saveButton = (className?: string) => (

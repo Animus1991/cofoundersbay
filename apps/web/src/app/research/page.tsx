@@ -361,11 +361,13 @@ export default function ResearchBoardsPage() {
       const board = (id?: string) => filteredBoards.find((b) => b.id === id);
       const active = filteredBoards.filter((b) => !b.isArchived);
       return [
-        { id: 'pin_board', labelEn: 'Pin board', labelEl: 'Καρφίτσωμα πίνακα', writes: true, options: byTitle(active.filter((b) => !b.isPinned)), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
-        { id: 'unpin_board', labelEn: 'Unpin board', labelEl: 'Ξεκαρφίτσωμα πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isPinned)), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
+        // updateBoard writes only the fields it is sent (research.service), so
+        // pin / unpin and archive / restore are each other's exact opposite.
+        { id: 'pin_board', labelEn: 'Pin board', labelEl: 'Καρφίτσωμα πίνακα', writes: true, options: byTitle(active.filter((b) => !b.isPinned)), undo: (v?: string) => ({ control: 'unpin_board', value: v }), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
+        { id: 'unpin_board', labelEn: 'Unpin board', labelEl: 'Ξεκαρφίτσωμα πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isPinned)), undo: (v?: string) => ({ control: 'pin_board', value: v }), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
         { id: 'duplicate_board', labelEn: 'Duplicate board', labelEl: 'Αντίγραφο πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); if (b) void handleDuplicate(b); } },
-        { id: 'archive_board', labelEn: 'Archive board', labelEl: 'Αρχειοθέτηση πίνακα', writes: true, options: byTitle(active), run: (v?: string) => { const b = board(v); if (b) void handleArchive(b); } },
-        { id: 'restore_board', labelEn: 'Restore archived board', labelEl: 'Επαναφορά αρχειοθετημένου πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isArchived)), run: (v?: string) => { const b = board(v); if (b) void handleRestore(b); } },
+        { id: 'archive_board', labelEn: 'Archive board', labelEl: 'Αρχειοθέτηση πίνακα', writes: true, options: byTitle(active), undo: (v?: string) => ({ control: 'restore_board', value: v }), run: (v?: string) => { const b = board(v); if (b) void handleArchive(b); } },
+        { id: 'restore_board', labelEn: 'Restore archived board', labelEl: 'Επαναφορά αρχειοθετημένου πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isArchived)), undo: (v?: string) => ({ control: 'archive_board', value: v }), run: (v?: string) => { const b = board(v); if (b) void handleRestore(b); } },
         { id: 'delete_board', labelEn: 'Delete board', labelEl: 'Διαγραφή πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); if (b) void handleDelete(b); } },
       ];
     })(),

@@ -754,6 +754,10 @@ export default function MatchesPage() {
       labelEl: 'Αποθήκευση αντιστοίχισης στη λίστα',
       writes: true,
       options: hitRows(filtered.filter((h) => !savedIds.has(h.userId))),
+      // A save creates a fresh shortlist row, so removing it takes the save
+      // back. Not the reverse: removing drops the row's note, which saving
+      // again does not restore.
+      undo: (v) => ({ control: 'unshortlist_match', value: v }),
       run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
     },
     {

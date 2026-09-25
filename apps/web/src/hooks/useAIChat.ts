@@ -31,7 +31,7 @@ import { followUpRequest, readsToRun } from '@/lib/copilot-loop';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { actionsFromToolCalls, executeCopilotAction, replyLocaleFor, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
 import type { InvalidationTopic } from '@cofounderbay/shared';
-import { getActionSpec, isUndoable, undoAction as runUndo } from '@/lib/action-registry';
+import { getActionSpec, undoAvailable, undoAction as runUndo } from '@/lib/action-registry';
 import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
 import { CONNECTION_KEYS, MESSAGE_KEYS, PROFILE_KEYS, queryKeys, qk } from '@/lib/query-keys';
@@ -556,7 +556,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const undoAction = useCallback(
     async (action: CopilotAction) => {
       if (pendingActionId) return false;
-      if (!isUndoable(action.tool)) return false;
+      if (!undoAvailable(action.tool, action.undoContext)) return false;
 
       setPendingActionId(action.id);
       try {

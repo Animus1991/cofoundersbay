@@ -45,7 +45,7 @@ import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '
 import { useI18n } from '@/components/common/I18nProvider';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
-import { NOTIFICATION_CATEGORIES, categoryChannelOn, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
+import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
 
 /*
  * The quick notification switches here are the in-app channel of each
@@ -336,6 +336,13 @@ export default function SettingsPage() {
       labelEl: 'Ενεργοποίηση ειδοποιήσεων εφαρμογής για',
       writes: true,
       options: categoryOptions(false),
+      // Turning a category on sets every type in it. Only a category that was
+      // entirely off comes back exactly by turning it off again; one with a
+      // mix of choices would lose them, so it has no opposite.
+      undo: (v) => {
+        const c = quickCategories.find((x) => x.id === v);
+        return c && c.settings.every((st) => !channelsOf(notificationPrefs, st).inApp) ? { control: 'in_app_off', value: v } : undefined;
+      },
       run: (v) => { const c = quickCategories.find((x) => x.id === v); if (c) setInApp(c, true); },
     },
     {
@@ -344,6 +351,8 @@ export default function SettingsPage() {
       labelEl: 'Απενεργοποίηση ειδοποιήσεων εφαρμογής για',
       writes: true,
       options: categoryOptions(true),
+      // Offered only for categories entirely on, so turning it on restores it.
+      undo: (v) => ({ control: 'in_app_on', value: v }),
       run: (v) => { const c = quickCategories.find((x) => x.id === v); if (c) setInApp(c, false); },
     },
     {
@@ -356,6 +365,12 @@ export default function SettingsPage() {
         { value: 'off', labelEn: 'Off', labelEl: 'Ανενεργή' },
       ],
       current: digestOn ? 'on' : 'off',
+      // The switch writes `weekly` or `never`. Going back is exact from those
+      // two; from daily or monthly it would land on weekly, so no opposite.
+      undo: () => {
+        const prior = digestPrefs?.digestFrequency ?? 'weekly';
+        return prior === 'weekly' ? { control: 'email_digest', value: 'on' } : prior === 'never' ? { control: 'email_digest', value: 'off' } : undefined;
+      },
       run: (v) => saveDigest.mutate(v === 'on'),
     },
     {

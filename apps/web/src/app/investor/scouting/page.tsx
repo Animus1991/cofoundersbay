@@ -369,7 +369,10 @@ export default function InvestorScoutingPage() {
       { value: 'list', en: 'List', el: 'Λίστα' },
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
     ], viewMode, (v) => setViewMode(v as 'list' | 'grid')),
-    { id: 'watch_startup', labelEn: 'Watch startup', labelEl: 'Παρακολούθηση startup', writes: true, options: startupRows(startups.filter((st) => !dealFor(st))), run: (v) => void scout(byId(v), 'watch') },
+    // Watching creates a fresh deal from this card, so stopping deletes
+    // exactly what was made. Not the reverse: a watched deal may carry notes
+    // that deleting it loses and watching again would not bring back.
+    { id: 'watch_startup', labelEn: 'Watch startup', labelEl: 'Παρακολούθηση startup', writes: true, options: startupRows(startups.filter((st) => !dealFor(st))), undo: (v) => ({ control: 'unwatch_startup', value: v }), run: (v) => void scout(byId(v), 'watch') },
     { id: 'unwatch_startup', labelEn: 'Stop watching startup', labelEl: 'Διακοπή παρακολούθησης startup', writes: true, options: startupRows(startups.filter((st) => dealFor(st))), run: (v) => void scout(byId(v), 'unwatch') },
     { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(startups), run: (v) => void scout(byId(v), 'pipeline') },
   ]);

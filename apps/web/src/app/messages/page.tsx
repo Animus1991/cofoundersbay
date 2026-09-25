@@ -845,8 +845,10 @@ export default function MessagesPage() {
         setIsMobileViewingChat(true);
       },
     },
-    { id: 'pin_conversation', labelEn: 'Pin conversation', labelEl: 'Καρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => !c.isPinned)), run: (v) => { if (v) void handlePin(v); } },
-    { id: 'unpin_conversation', labelEn: 'Unpin conversation', labelEl: 'Ξεκαρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => c.isPinned)), run: (v) => { if (v) void handlePin(v); } },
+    // updateConversationFlags sends one flag; pinning and unpinning are each
+    // other's opposite. Archive has no opposite on this page.
+    { id: 'pin_conversation', labelEn: 'Pin conversation', labelEl: 'Καρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => !c.isPinned)), undo: (v) => ({ control: 'unpin_conversation', value: v }), run: (v) => { if (v) void handlePin(v); } },
+    { id: 'unpin_conversation', labelEn: 'Unpin conversation', labelEl: 'Ξεκαρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => c.isPinned)), undo: (v) => ({ control: 'pin_conversation', value: v }), run: (v) => { if (v) void handlePin(v); } },
     { id: 'archive_conversation', labelEn: 'Archive conversation', labelEl: 'Αρχειοθέτηση συνομιλίας', writes: true, options: byPerson(inbox), run: (v) => { if (v) void handleArchive(v); } },
     // The open chat's header menu: report or block the other person. Both
     // open the same dialog, which asks for the reason and confirms.

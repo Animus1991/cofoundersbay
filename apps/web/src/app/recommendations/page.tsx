@@ -547,7 +547,9 @@ export default function RecommendationsPage() {
     choiceControl('min_score', 'Minimum match score', 'Ελάχιστη βαθμολογία', [0, 50, 65, 80].map((n) => ({ value: String(n), en: n ? `${n}% or more` : 'Any score', el: n ? `${n}% και πάνω` : 'Οποιαδήποτε' })), String(minScore), (v) => setMinScore(Number(v))),
     { id: 'refresh', labelEn: 'Refresh recommendations', labelEl: 'Ανανέωση προτάσεων', writes: false, run: handleRefresh },
     { id: 'connect_with', labelEn: 'Send a connection request to', labelEl: 'Αίτημα σύνδεσης προς', writes: true, options: byName(people), run: (v) => { if (v) connectMutation.mutate(v); } },
-    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(people.filter((p) => !savedIds.has(p.userId))), run: (v) => { if (v) handleSave(v); } },
+    // Saving creates a fresh shortlist row, so removing it is the undo; not
+    // the reverse, since removing drops the row's note.
+    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(people.filter((p) => !savedIds.has(p.userId))), undo: (v) => ({ control: 'unsave_person', value: v }), run: (v) => { if (v) handleSave(v); } },
     { id: 'unsave_person', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: byName(people.filter((p) => savedIds.has(p.userId))), run: (v) => { if (v) handleSave(v); } },
     { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: (v) => { if (v) feedbackMutation.mutate({ userId: v, fb: 'not_relevant' }); } },
   ]);

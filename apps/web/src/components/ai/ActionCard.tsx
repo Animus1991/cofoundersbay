@@ -4,7 +4,7 @@ import { AlertTriangle, Check, Loader2, RotateCcw, Sparkles, X } from 'lucide-re
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
-import { getActionSpec, isUndoable } from '@/lib/action-registry';
+import { getActionSpec, undoAvailable } from '@/lib/action-registry';
 import { cn } from '@/lib/utils';
 import type { CopilotAction } from '@/lib/copilot-types';
 
@@ -30,7 +30,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
   // not their data, so its "nothing to undo" line would be noise on every card.
   const showReversal = Boolean(spec?.writes && reversal);
   const irreversible = spec?.writes === true && reversal?.kind === 'none';
-  const canUndo = Boolean(onUndo) && isUndoable(action.tool);
+  const canUndo = Boolean(onUndo) && undoAvailable(action.tool, action.undoContext);
 
   return (
     <div

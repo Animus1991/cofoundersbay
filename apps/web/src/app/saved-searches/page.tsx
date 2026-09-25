@@ -395,8 +395,9 @@ export default function SavedSearchesPage() {
   usePageControls([
     { id: 'new_search', labelEn: 'Start a new saved search', labelEl: 'Νέα αποθηκευμένη αναζήτηση', writes: false, run: handleCreateNew },
     { id: 'run_search', labelEn: 'Run saved search', labelEl: 'Εκτέλεση αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) handleRun(x); } },
-    { id: 'alerts_on', labelEn: 'Turn search alerts on', labelEl: 'Ενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => !x.alertsEnabled)), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, false); } },
-    { id: 'alerts_off', labelEn: 'Turn search alerts off', labelEl: 'Απενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => x.alertsEnabled)), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, true); } },
+    // updateSavedSearch sends `alertsEnabled` alone; on and off are opposites.
+    { id: 'alerts_on', labelEn: 'Turn search alerts on', labelEl: 'Ενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => !x.alertsEnabled)), undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, false); } },
+    { id: 'alerts_off', labelEn: 'Turn search alerts off', labelEl: 'Απενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => x.alertsEnabled)), undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, true); } },
     { id: 'edit_search', labelEn: 'Edit saved search', labelEl: 'Επεξεργασία αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) setEditingSearch(x); } },
     { id: 'delete_search', labelEn: 'Delete saved search', labelEl: 'Διαγραφή αποθηκευμένης αναζήτησης', writes: true, options: byName(searches), run: (v) => { if (v) setDeleteConfirm(v); } },
   ]);
