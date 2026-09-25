@@ -2,6 +2,7 @@ import { Controller, Get, Param, Post, Delete, Query, UseGuards, Patch, Body } f
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -107,14 +108,15 @@ export class NotificationsController {
       where: { userId: user.id },
     });
     return {
-      digestFrequency: digest?.frequency ?? 'weekly',
+      // No preference row means the user has not explicitly opted into email.
+      digestFrequency: digest?.frequency ?? 'never',
     };
   }
 
   @Patch('preferences')
   async updatePreferences(
     @CurrentUser() user: { id: string },
-    @Body() body: { digestFrequency?: 'daily' | 'weekly' | 'never' },
+    @Body() body: UpdateNotificationPreferencesDto,
   ) {
     if (body.digestFrequency) {
       await this.prisma.activityDigestPreference.upsert({

@@ -92,14 +92,14 @@ export default function NotificationPreferencesPage() {
   }, [serverPrefs]);
 
   const saveDigest = useMutation({
-    mutationFn: () => updateNotificationPreferences({ digestFrequency: digest as 'daily' | 'weekly' | 'never' }),
+    mutationFn: () => updateNotificationPreferences({ digestFrequency: digest }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: qk('notifications', 'preferences') });
       success('Digest saved', 'Your email digest frequency is saved to your account.');
     },
     onError: () => toastError('Could not save the digest'),
   });
-  const digestDirty = (serverPrefs?.digestFrequency ?? 'weekly') !== digest;
+  const digestDirty = (serverPrefs?.digestFrequency ?? 'never') !== digest;
 
   const setQuietHours = (patch: Partial<typeof prefs.quietHours>) =>
     updateNotificationPrefs((prev) => ({ ...prev, quietHours: { ...prev.quietHours, ...patch } }));

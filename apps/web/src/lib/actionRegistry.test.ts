@@ -358,6 +358,19 @@ describe('executing registry actions', () => {
     await expect(executeAction('navigate', {})).resolves.toEqual({ ok: true, href: '/dashboard' });
   });
 
+  it('refuses external, protocol-relative and backslash navigation targets', async () => {
+    for (const href of ['javascript:alert(1)', 'https://example.com', '//example.com', '/\\example.com']) {
+      await expect(executeAction('navigate', { href })).resolves.toEqual({
+        ok: false,
+        error: 'Only internal CoFounderBay routes can be opened',
+      });
+    }
+    await expect(executeAction('navigate', { href: '/matches?role=founder#top' })).resolves.toEqual({
+      ok: true,
+      href: '/matches?role=founder#top',
+    });
+  });
+
   it('parks a canvas command and opens Research when no board is listening', async () => {
     await expect(executeAction('canvas_command', { op: 'not-a-step' })).resolves.toEqual({
       ok: false,

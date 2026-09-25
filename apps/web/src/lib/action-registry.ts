@@ -183,12 +183,31 @@ function notifyReadinessChanged(): void {
   window.dispatchEvent(new CustomEvent('cfb:readiness-updated'));
 }
 
+function internalRoute(value: string): string | null {
+  const href = value.trim();
+  if (!href.startsWith('/') || href.startsWith('//') || href.includes('\\')) return null;
+  if (/[\u0000-\u001f\u007f]/.test(href)) return null;
+
+  try {
+    const base = 'https://cofounderbay.invalid';
+    const url = new URL(href, base);
+    if (url.origin !== base) return null;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 /** Exhaustive over every declared mutation. Adding one without an arm fails to compile. */
 const EXECUTORS: Record<MutationActionId, Executor> = {
-  navigate: async (payload) => ({
-    ok: true,
-    href: requireString(payload, 'href') || '/dashboard',
-  }),
+  navigate: async (payload) => {
+    const requested = requireString(payload, 'href');
+    if (!requested) return { ok: true, href: '/dashboard' };
+    const href = internalRoute(requested);
+    return href
+      ? { ok: true, href }
+      : { ok: false, error: 'Only internal CoFounderBay routes can be opened' };
+  },
 
   // A page's own controls (`usePageControls`). The registry refuses the
   // wrong kind, so a view control never runs as a write or the reverse.

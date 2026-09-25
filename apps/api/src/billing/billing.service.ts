@@ -1,10 +1,19 @@
-import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { SubscriptionStatus, BillingCycle } from '@prisma/client';
+import type { SubscriptionStatus, BillingCycle, Prisma, Role } from '@prisma/client';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from './stripe.service';
 import { AutomationService } from '../automation/automation.service';
+
+export type BillingActor = { id: string; role?: Role };
+
+export type BillingContactInput = {
+  name: string; email: string; phone?: string; company?: string;
+  addressLine1?: string; addressLine2?: string; city?: string;
+  state?: string; postalCode?: string; country?: string;
+  vatId?: string; taxId?: string; legalName?: string;
+};
 
 @Injectable()
 export class BillingService {
@@ -316,52 +325,97 @@ export class BillingService {
       : null;
   }
 
-  async upsertBillingContact(subscriptionId: string, data: {
-    name: string; email: string; phone?: string; company?: string;
-    addressLine1?: string; addressLine2?: string; city?: string;
-    state?: string; postalCode?: string; country?: string;
-    vatId?: string; taxId?: string; legalName?: string;
-  }) {
+  async upsertBillingContact(subscriptionId: string, data: BillingContactInput) {
+    // Explicit projection protects this low-level method even when it is called
+    // outside an HTTP controller and therefore outside ValidationPipe.
+    const safeData: BillingContactInput = {
+      name: data.name,
+      email: data.email,
+      ...(data.phone !== undefined && { phone: data.phone }),
+      ...(data.company !== undefined && { company: data.company }),
+      ...(data.addressLine1 !== undefined && { addressLine1: data.addressLine1 }),
+      ...(data.addressLine2 !== undefined && { addressLine2: data.addressLine2 }),
+      ...(data.city !== undefined && { city: data.city }),
+      ...(data.state !== undefined && { state: data.state }),
+      ...(data.postalCode !== undefined && { postalCode: data.postalCode }),
+      ...(data.country !== undefined && { country: data.country }),
+      ...(data.vatId !== undefined && { vatId: data.vatId }),
+      ...(data.taxId !== undefined && { taxId: data.taxId }),
+      ...(data.legalName !== undefined && { legalName: data.legalName }),
+    };
     const pc = this.prisma as unknown as { billingContact: { upsert: (args: unknown) => Promise<unknown> } };
     return pc.billingContact.upsert({
       where: { subscriptionId },
-      create: { subscriptionId, ...data },
-      update: data,
+      create: { subscriptionId, ...safeData },
+      update: safeData,
     });
   }
 
   // ── Seat Management ────────────────────────────────────────────────────────
 
-  async allocateSeat(subscriptionId: string, targetUserId: string, allocatedBy: string) {
-    const sub = await this.prisma.subscription.findUnique({ where: { id: subscriptionId } });
-    if (!sub) throw new NotFoundException('Subscription not found');
-    if (sub.seatLimit !== null && sub.activeSeatCount >= sub.seatLimit) {
-      throw new BadRequestException('Seat limit reached');
+  private async withSerializableSeatTransaction<T>(operation: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await this.prisma.$transaction(operation, { isolationLevel: 'Serializable' });
+      } catch (error) {
+        if ((error as { code?: string }).code !== 'P2034' || attempt === 2) throw error;
+      }
     }
-    const alloc = await this.prisma.seatAllocation.upsert({
-      where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
-      create: { subscriptionId, userId: targetUserId, allocatedBy, isActive: true },
-      update: { isActive: true, allocatedAt: new Date(), allocatedBy },
+    throw new Error('Seat transaction retry limit exceeded');
+  }
+
+  private async synchronizeSeatCount(tx: Prisma.TransactionClient, subscriptionId: string, hasIncludedSeat: boolean) {
+    const allocated = await tx.seatAllocation.count({ where: { subscriptionId, isActive: true } });
+    const activeSeatCount = allocated + (hasIncludedSeat ? 1 : 0);
+    await tx.subscription.update({ where: { id: subscriptionId }, data: { activeSeatCount } });
+    return activeSeatCount;
+  }
+
+  async allocateSeat(subscriptionId: string, targetUserId: string, allocatedBy: string) {
+    return this.withSerializableSeatTransaction(async (tx) => {
+      const sub = await tx.subscription.findUnique({ where: { id: subscriptionId } });
+      if (!sub) throw new NotFoundException('Subscription not found');
+      const existing = await tx.seatAllocation.findUnique({
+        where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+      });
+      const allocated = await tx.seatAllocation.count({ where: { subscriptionId, isActive: true } });
+      const includedSeats = sub.tenantId ? 1 : 0;
+
+      if (existing?.isActive) {
+        await tx.subscription.update({
+          where: { id: subscriptionId },
+          data: { activeSeatCount: allocated + includedSeats },
+        });
+        return existing;
+      }
+      if (sub.seatLimit !== null && allocated + includedSeats >= sub.seatLimit) {
+        throw new BadRequestException('Seat limit reached');
+      }
+
+      const allocation = await tx.seatAllocation.upsert({
+        where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+        create: { subscriptionId, userId: targetUserId, allocatedBy, isActive: true },
+        update: { isActive: true, allocatedAt: new Date(), deactivatedAt: null, allocatedBy },
+      });
+      await this.synchronizeSeatCount(tx, subscriptionId, Boolean(sub.tenantId));
+      return allocation;
     });
-    await this.prisma.subscription.update({
-      where: { id: subscriptionId },
-      data: { activeSeatCount: { increment: 1 } },
-    });
-    return alloc;
   }
 
   async revokeSeat(subscriptionId: string, targetUserId: string) {
-    const alloc = await this.prisma.seatAllocation.findUnique({
-      where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
-    });
-    if (!alloc) throw new NotFoundException('Seat allocation not found');
-    await this.prisma.seatAllocation.update({
-      where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
-      data: { isActive: false, deactivatedAt: new Date() },
-    });
-    await this.prisma.subscription.update({
-      where: { id: subscriptionId },
-      data: { activeSeatCount: { decrement: 1 } },
+    await this.withSerializableSeatTransaction(async (tx) => {
+      const sub = await tx.subscription.findUnique({ where: { id: subscriptionId } });
+      if (!sub) throw new NotFoundException('Subscription not found');
+      const allocation = await tx.seatAllocation.findUnique({
+        where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+      });
+      if (allocation?.isActive) {
+        await tx.seatAllocation.update({
+          where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+          data: { isActive: false, deactivatedAt: new Date() },
+        });
+      }
+      await this.synchronizeSeatCount(tx, subscriptionId, Boolean(sub.tenantId));
     });
   }
 
@@ -374,6 +428,55 @@ export class BillingService {
   }
 
   // ── Tenant Billing ─────────────────────────────────────────────────────────
+
+  private async assertTenantBillingAccess(actor: BillingActor, tenantId: string) {
+    if (actor.role === 'admin' || actor.role === 'super_admin') return;
+    const membership = await this.prisma.tenantMembership.findUnique({
+      where: { tenantId_userId: { tenantId, userId: actor.id } },
+      select: { role: true, isActive: true },
+    });
+    if (!membership?.isActive || !['owner', 'admin'].includes(membership.role)) {
+      throw new ForbiddenException('Tenant billing access requires an active owner or admin membership');
+    }
+  }
+
+  async getTenantSubscriptionFor(actor: BillingActor, tenantId: string) {
+    await this.assertTenantBillingAccess(actor, tenantId);
+    return this.getTenantSubscription(tenantId);
+  }
+
+  async listTenantSeatsFor(actor: BillingActor, tenantId: string) {
+    await this.assertTenantBillingAccess(actor, tenantId);
+    const { subscription } = await this.getTenantSubscription(tenantId);
+    return { seats: subscription ? await this.listSeatAllocations(subscription.id) : [] };
+  }
+
+  async allocateTenantSeatFor(actor: BillingActor, tenantId: string, targetUserId: string) {
+    await this.assertTenantBillingAccess(actor, tenantId);
+    const membership = await this.prisma.tenantMembership.findUnique({
+      where: { tenantId_userId: { tenantId, userId: targetUserId } },
+      select: { role: true, isActive: true },
+    });
+    if (!membership?.isActive) throw new BadRequestException('Seats can only be allocated to active tenant members');
+    if (membership.role === 'owner') throw new BadRequestException('The tenant owner already uses the included seat');
+    const { subscription } = await this.getTenantSubscription(tenantId);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    return this.allocateSeat(subscription.id, targetUserId, actor.id);
+  }
+
+  async revokeTenantSeatFor(actor: BillingActor, tenantId: string, targetUserId: string) {
+    await this.assertTenantBillingAccess(actor, tenantId);
+    const { subscription } = await this.getTenantSubscription(tenantId);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    await this.revokeSeat(subscription.id, targetUserId);
+  }
+
+  async upsertTenantBillingContactFor(actor: BillingActor, tenantId: string, data: BillingContactInput) {
+    await this.assertTenantBillingAccess(actor, tenantId);
+    const { subscription } = await this.getTenantSubscription(tenantId);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    return this.upsertBillingContact(subscription.id, data);
+  }
 
   async getTenantSubscription(tenantId: string) {
     const sub = await this.prisma.subscription.findFirst({

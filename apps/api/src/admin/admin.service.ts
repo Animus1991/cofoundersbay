@@ -170,22 +170,62 @@ export class AdminService {
     userId: string;
     newRole: Role;
   }): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: params.userId } });
-    if (!user) throw new NotFoundException('User not found');
+    if (params.adminId === params.userId) {
+      throw new ForbiddenException('Administrators cannot change their own role');
+    }
 
-    const oldRole = user.role;
-    await this.prisma.user.update({
-      where: { id: params.userId },
-      data: { role: params.newRole },
-    });
+    await this.prisma.$transaction(async (tx) => {
+      const [actor, user] = await Promise.all([
+        tx.user.findUnique({ where: { id: params.adminId }, select: { role: true, moderationStatus: true } }),
+        tx.user.findUnique({ where: { id: params.userId }, select: { role: true } }),
+      ]);
+      if (!actor || !['admin', 'super_admin'].includes(actor.role) || actor.moderationStatus !== 'active') {
+        throw new ForbiddenException('Active administrator privileges are required');
+      }
+      if (!user) throw new NotFoundException('User not found');
 
-    await this.audit.log({
-      actorId: params.adminId,
-      action: 'user.role_change',
-      entityType: 'user',
-      entityId: params.userId,
-      meta: { oldRole, newRole: params.newRole },
-    });
+      const privilegedRoles: Role[] = [Role.admin, Role.super_admin];
+      if (actor.role !== Role.super_admin && (privilegedRoles.includes(user.role) || privilegedRoles.includes(params.newRole))) {
+        throw new ForbiddenException('Only a super administrator can grant or remove administrative roles');
+      }
+      if (user.role === params.newRole) return;
+      if (user.role === Role.super_admin && params.newRole !== Role.super_admin) {
+        const activeSuperAdmins = await tx.user.count({
+          where: { role: Role.super_admin, moderationStatus: UserModerationStatus.active },
+        });
+        if (activeSuperAdmins <= 1) throw new ForbiddenException('The last active super administrator cannot be demoted');
+      }
+
+      await tx.user.update({ where: { id: params.userId }, data: { role: params.newRole } });
+      await tx.adminAuditLog.create({
+        data: {
+          actorId: params.adminId,
+          action: 'user.role_change',
+          entityType: 'user',
+          entityId: params.userId,
+          meta: { oldRole: user.role, newRole: params.newRole },
+        },
+      });
+    }, { isolationLevel: 'Serializable' });
+  }
+
+  private async assertCanModerateUser(adminId: string, userId: string) {
+    if (adminId === userId) throw new ForbiddenException('Administrators cannot moderate their own account');
+    const [actor, target] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: adminId }, select: { role: true, moderationStatus: true } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+    ]);
+    if (!actor || !['admin', 'super_admin'].includes(actor.role) || actor.moderationStatus !== 'active') {
+      throw new ForbiddenException('Active administrator privileges are required');
+    }
+    if (!target) throw new NotFoundException('User not found');
+    if (target.role === Role.super_admin) {
+      throw new ForbiddenException('Super administrator moderation requires the break-glass workflow');
+    }
+    if (actor.role !== Role.super_admin && target.role === Role.admin) {
+      throw new ForbiddenException('Only a super administrator can moderate an administrator');
+    }
+    return target;
   }
 
   async banUser(params: {
@@ -193,9 +233,7 @@ export class AdminService {
     userId: string;
     reason: string;
   }): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: params.userId } });
-    if (!user) throw new NotFoundException('User not found');
-    if (user.role === 'admin') throw new ForbiddenException('Cannot ban admin users');
+    await this.assertCanModerateUser(params.adminId, params.userId);
 
     await this.prisma.user.update({
       where: { id: params.userId },
@@ -215,8 +253,7 @@ export class AdminService {
     adminId: string;
     userId: string;
   }): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: params.userId } });
-    if (!user) throw new NotFoundException('User not found');
+    await this.assertCanModerateUser(params.adminId, params.userId);
 
     await this.prisma.user.update({
       where: { id: params.userId },
@@ -323,8 +360,7 @@ export class AdminService {
     status: 'active' | 'suspended' | 'banned';
     reason?: string;
   }): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: params.userId } });
-    if (!user) throw new NotFoundException('User not found');
+    await this.assertCanModerateUser(params.adminId, params.userId);
 
     await this.prisma.user.update({
       where: { id: params.userId },

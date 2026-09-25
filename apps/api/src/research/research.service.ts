@@ -307,6 +307,16 @@ export class ResearchService {
   ): Promise<ResearchNodeDto> {
     await this.assertBoardAccess(userId, boardId, 'edit');
 
+    if (data.uploadId) {
+      const ownedResearchAsset = await this.prisma.upload.findFirst({
+        where: { id: data.uploadId, userId, kind: 'research_asset' },
+        select: { id: true },
+      });
+      if (!ownedResearchAsset) {
+        throw new NotFoundException('Research asset not found');
+      }
+    }
+
     // Get max zIndex
     const maxZ = await this.prisma.researchNode.aggregate({
       where: { boardId },

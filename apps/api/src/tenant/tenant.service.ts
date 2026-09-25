@@ -76,7 +76,11 @@ export class TenantService {
   async findById(id: string) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id },
-      include: { branding: true, ssoConfig: { include: { identityProvider: true } } },
+      // This method backs a public route and must return only public tenant
+      // presentation data. IdentityProvider contains oidcClientSecret and
+      // certificate material; SSO configuration is exposed only by the
+      // authenticated SSO administration controller.
+      include: { branding: true },
     });
     if (!tenant) throw new NotFoundException(`Tenant "${id}" not found`);
     return tenant;

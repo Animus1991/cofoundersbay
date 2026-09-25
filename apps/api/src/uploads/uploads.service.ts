@@ -75,6 +75,7 @@ export class UploadsService {
       Key: key,
       Body: params.buffer,
       ContentType: params.mimeType,
+      ContentDisposition: params.mimeType.startsWith('image/') ? 'inline' : 'attachment',
     }));
 
     const cdnBase = this.config.get<string>('AWS_CDN_URL') || `https://${bucket}.s3.${region}.amazonaws.com`;

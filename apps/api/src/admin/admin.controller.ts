@@ -23,11 +23,11 @@ import { MailerService } from '../mailer/mailer.service';
 import { ScoringInspectorService } from './scoring-inspector.service';
 import { AbuseDetectionService } from './abuse-detection.service';
 import { ExperimentationService } from './experimentation.service';
-import { Role } from '@prisma/client';
+import { BanUserDto, ChangeUserRoleDto, UpdateUserModerationDto } from './dto/admin-user.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
+@Roles('admin', 'super_admin')
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
@@ -69,7 +69,7 @@ export class AdminController {
   async changeUserRole(
     @CurrentUser() admin: { id: string },
     @Param('userId') userId: string,
-    @Body() body: { role: Role },
+    @Body() body: ChangeUserRoleDto,
   ) {
     await this.adminService.changeUserRole({
       adminId: admin.id,
@@ -83,7 +83,7 @@ export class AdminController {
   async banUser(
     @CurrentUser() admin: { id: string },
     @Param('userId') userId: string,
-    @Body() body: { reason: string },
+    @Body() body: BanUserDto,
   ) {
     await this.adminService.banUser({
       adminId: admin.id,
@@ -232,7 +232,7 @@ export class AdminController {
   async updateUserModeration(
     @CurrentUser() admin: { id: string },
     @Param('userId') userId: string,
-    @Body() body: { status: 'active' | 'suspended' | 'banned'; reason?: string },
+    @Body() body: UpdateUserModerationDto,
   ) {
     await this.adminService.updateUserModerationStatus({ adminId: admin.id, userId, status: body.status, reason: body.reason });
     return { success: true };

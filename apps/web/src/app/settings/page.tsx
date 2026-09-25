@@ -244,12 +244,17 @@ export default function SettingsPage() {
     queryFn: getNotificationPreferences,
     enabled: hasToken,
   });
-  const digestOn = (digestPrefs?.digestFrequency ?? 'weekly') !== 'never';
+  const [preferredDigestCadence, setPreferredDigestCadence] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  useEffect(() => {
+    const cadence = digestPrefs?.digestFrequency;
+    if (cadence && cadence !== 'never') setPreferredDigestCadence(cadence);
+  }, [digestPrefs?.digestFrequency]);
+  const digestOn = (digestPrefs?.digestFrequency ?? 'never') !== 'never';
   const saveDigest = useMutation({
-    mutationFn: (on: boolean) => updateNotificationPreferences({ digestFrequency: on ? 'weekly' : 'never' }),
+    mutationFn: (on: boolean) => updateNotificationPreferences({ digestFrequency: on ? preferredDigestCadence : 'never' }),
     onSuccess: (_d, on) => {
       void queryClient.invalidateQueries({ queryKey: qk('notifications', 'preferences') });
-      success('Saved', on ? 'Weekly email digest on.' : 'Email digest off.');
+      success('Saved', on ? `${preferredDigestCadence[0].toUpperCase()}${preferredDigestCadence.slice(1)} email digest on.` : 'Email digest off.');
     },
     onError: () => showError('Could not save', 'Please try again.'),
   });
@@ -357,8 +362,8 @@ export default function SettingsPage() {
     },
     {
       id: 'email_digest',
-      labelEn: 'Weekly email digest',
-      labelEl: 'Εβδομαδιαία email σύνοψη',
+      labelEn: 'Email activity digest',
+      labelEl: 'Σύνοψη δραστηριότητας μέσω email',
       writes: true,
       options: [
         { value: 'on', labelEn: 'On', labelEl: 'Ενεργή' },
@@ -368,7 +373,7 @@ export default function SettingsPage() {
       // The switch writes `weekly` or `never`. Going back is exact from those
       // two; from daily or monthly it would land on weekly, so no opposite.
       undo: () => {
-        const prior = digestPrefs?.digestFrequency ?? 'weekly';
+        const prior = digestPrefs?.digestFrequency ?? 'never';
         return prior === 'weekly' ? { control: 'email_digest', value: 'on' } : prior === 'never' ? { control: 'email_digest', value: 'off' } : undefined;
       },
       run: (v) => saveDigest.mutate(v === 'on'),

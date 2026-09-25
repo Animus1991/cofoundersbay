@@ -8,6 +8,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { Role } from '@prisma/client';
+import { AllocateSeatDto, BillingContactDto } from './dto/billing.dto';
 
 type RawBodyRequest = Request & { rawBody?: Buffer };
 
@@ -66,55 +68,61 @@ export class BillingController {
 
   @Post('subscription/billing-contact')
   @UseGuards(JwtAuthGuard)
-  async upsertBillingContact(@CurrentUser() user: { id: string }, @Body() body: Record<string, unknown>) {
+  async upsertBillingContact(@CurrentUser() user: { id: string }, @Body() body: BillingContactDto) {
     const { subscription } = await this.billing.getUserSubscriptionFull(user.id);
     if (!subscription) throw new BadRequestException('No subscription found');
-    return this.billing.upsertBillingContact(subscription.id, body as Parameters<typeof this.billing.upsertBillingContact>[1]);
+    return this.billing.upsertBillingContact(subscription.id, body);
   }
 
   // ── Tenant billing ─────────────────────────────────────────────────────────
 
   @Get('tenant/:tenantId')
   @UseGuards(JwtAuthGuard)
-  async getTenantSubscription(@Param('tenantId') tenantId: string) {
-    return this.billing.getTenantSubscription(tenantId);
+  async getTenantSubscription(
+    @Param('tenantId') tenantId: string,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    return this.billing.getTenantSubscriptionFor(user, tenantId);
   }
 
   @Get('tenant/:tenantId/seats')
   @UseGuards(JwtAuthGuard)
-  async listTenantSeats(@Param('tenantId') tenantId: string) {
-    const { subscription } = await this.billing.getTenantSubscription(tenantId);
-    if (!subscription) return { seats: [] };
-    return { seats: await this.billing.listSeatAllocations(subscription.id) };
+  async listTenantSeats(
+    @Param('tenantId') tenantId: string,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    return this.billing.listTenantSeatsFor(user, tenantId);
   }
 
   @Post('tenant/:tenantId/seats')
   @UseGuards(JwtAuthGuard)
   async allocateTenantSeat(
     @Param('tenantId') tenantId: string,
-    @Body() body: { userId: string },
-    @CurrentUser() user: { id: string },
+    @Body() body: AllocateSeatDto,
+    @CurrentUser() user: { id: string; role: Role },
   ) {
-    const { subscription } = await this.billing.getTenantSubscription(tenantId);
-    if (!subscription) throw new BadRequestException('No subscription found');
-    return this.billing.allocateSeat(subscription.id, body.userId, user.id);
+    return this.billing.allocateTenantSeatFor(user, tenantId, body.userId);
   }
 
   @Delete('tenant/:tenantId/seats/:userId')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async revokeTenantSeat(@Param('tenantId') tenantId: string, @Param('userId') userId: string) {
-    const { subscription } = await this.billing.getTenantSubscription(tenantId);
-    if (!subscription) throw new BadRequestException('No subscription found');
-    await this.billing.revokeSeat(subscription.id, userId);
+  async revokeTenantSeat(
+    @Param('tenantId') tenantId: string,
+    @Param('userId') userId: string,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    await this.billing.revokeTenantSeatFor(user, tenantId, userId);
   }
 
   @Post('tenant/:tenantId/billing-contact')
   @UseGuards(JwtAuthGuard)
-  async upsertTenantBillingContact(@Param('tenantId') tenantId: string, @Body() body: Record<string, unknown>) {
-    const { subscription } = await this.billing.getTenantSubscription(tenantId);
-    if (!subscription) throw new BadRequestException('No subscription found');
-    return this.billing.upsertBillingContact(subscription.id, body as Parameters<typeof this.billing.upsertBillingContact>[1]);
+  async upsertTenantBillingContact(
+    @Param('tenantId') tenantId: string,
+    @Body() body: BillingContactDto,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    return this.billing.upsertTenantBillingContactFor(user, tenantId, body);
   }
 
   // ── Admin ──────────────────────────────────────────────────────────────────

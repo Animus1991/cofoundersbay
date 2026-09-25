@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ReadinessPage from './page';
 import { assessReadiness, updateReadinessCriterion } from '@/lib/api';
+import { writeReadinessOverlay } from '@/lib/readiness-demo';
 
 vi.mock('@/lib/api', () => ({ assessReadiness: vi.fn(), updateReadinessCriterion: vi.fn() }));
 // The score history and the audience readouts live in the page's rail now;
@@ -48,6 +49,7 @@ function mount() {
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  sessionStorage.clear();
   document.cookie = 'cfb_preview_demo=; Max-Age=0';
   document.cookie = 'cfb_session=; Max-Age=0';
   vi.mocked(assessReadiness).mockResolvedValue({ assessment });
@@ -139,6 +141,19 @@ describe('live readiness and explicit showcase isolation', () => {
 
     expect((screen.getByRole('button', { name: /Reassess/i }) as HTMLButtonElement).disabled).toBe(true);
     expect(assessReadiness).not.toHaveBeenCalled();
+    expect(updateReadinessCriterion).not.toHaveBeenCalled();
+  });
+
+  it('reflects a demo criterion changed by the assistant without a reload', async () => {
+    localStorage.setItem('cfb_demo_data', '1');
+    mount();
+    await screen.findByRole('button', { name: /Co-founder identified/ });
+    expect(screen.getAllByText('3/5').length).toBeGreaterThan(0);
+
+    writeReadinessOverlay({ 'team/t1': false });
+    window.dispatchEvent(new CustomEvent('cfb:readiness-updated'));
+
+    await waitFor(() => expect(screen.getAllByText('2/5').length).toBeGreaterThan(0));
     expect(updateReadinessCriterion).not.toHaveBeenCalled();
   });
 

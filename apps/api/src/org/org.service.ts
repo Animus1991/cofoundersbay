@@ -5,6 +5,33 @@ import { PrismaService } from '../prisma/prisma.service';
 export class OrgService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getUserMemberships(userId: string) {
+    const memberships = await this.prisma.organizationMembership.findMany({
+      where: { userId, isActive: true },
+      select: {
+        id: true,
+        organizationId: true,
+        role: true,
+        organization: {
+          select: { id: true, name: true, slug: true, logoUrl: true },
+        },
+      },
+      orderBy: { joinedAt: 'asc' },
+    });
+
+    return {
+      memberships: memberships.map(({ organization, ...membership }) => ({
+        ...membership,
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+          avatarUrl: organization.logoUrl,
+        },
+      })),
+    };
+  }
+
   async getOrgProfile(slug: string) {
     // Use findFirst so we can filter by both slug and role
     const org = await this.prisma.user.findFirst({

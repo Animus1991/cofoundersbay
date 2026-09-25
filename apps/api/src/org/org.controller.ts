@@ -1,11 +1,20 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { OrgService } from './org.service';
 import { OptionalJwtAuthGuard } from '../auth/guards/jwt-optional.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('org')
 @UseGuards(OptionalJwtAuthGuard)
 export class OrgController {
   constructor(private readonly orgService: OrgService) {}
+
+  /** The authenticated user's memberships, in the shape every /org page uses. */
+  @Get('my-memberships')
+  @UseGuards(JwtAuthGuard)
+  async getMyMemberships(@CurrentUser() user: { id: string }) {
+    return this.orgService.getUserMemberships(user.id);
+  }
 
   @Get(':slug')
   async getOrgProfile(@Param('slug') slug: string) {

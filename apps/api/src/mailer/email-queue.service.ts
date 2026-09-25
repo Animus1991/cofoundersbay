@@ -56,15 +56,16 @@ export class EmailQueueService implements OnModuleInit, OnModuleDestroy {
     await this.queue?.close();
   }
 
-  async enqueueSendEmail(params: SendEmailParams): Promise<void> {
-    if (!this.mailer.isEnabled()) return;
+  async enqueueSendEmail(params: SendEmailParams): Promise<'disabled' | 'sent' | 'queued'> {
+    if (!this.mailer.isEnabled()) return 'disabled';
 
     if (!this.queue) {
       await this.mailer.sendEmail(params);
-      return;
+      return 'sent';
     }
 
     await this.queue.add('sendEmail', params);
+    return 'queued';
   }
 }
 

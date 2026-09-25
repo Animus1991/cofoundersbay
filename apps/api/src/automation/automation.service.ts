@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailerService } from '../mailer/mailer.service';
 import { MatchingService } from '../matching/matching.service';
+import { sendSafeWebhook } from './safe-webhook';
 
 export interface TriggerContext {
   triggerType: string;
@@ -420,24 +421,25 @@ export class AutomationService {
       case 'webhook_call': {
         const url = params.url as string;
         if (!url) throw new Error('url required for webhook_call action');
-        const method = ((params.method as string) ?? 'POST').toUpperCase();
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          ...(params.headers as Record<string, string> ?? {}),
-        };
-        const body = params.body ? JSON.stringify(params.body) : JSON.stringify({
+        const body = params.body ?? {
           ruleId: execution.ruleId,
           executionId: execution.id,
           targetUserId: execution.targetUserId,
           targetEntityType: execution.targetEntityType,
           targetEntityId: execution.targetEntityId,
           timestamp: new Date().toISOString(),
-        });
-        const response = await fetch(url, { method, headers, body: method !== 'GET' ? body : undefined });
-        if (!response.ok) {
-          throw new Error(`Webhook returned ${response.status}: ${await response.text().catch(() => '')}`);
-        }
-        await this.addLog(execution.id, 'info', `Webhook ${method} ${url} → ${response.status}`);
+        };
+        const allowedHosts = (process.env.AUTOMATION_WEBHOOK_ALLOWED_HOSTS ?? '')
+          .split(',').map((host) => host.trim()).filter(Boolean);
+        const result = await sendSafeWebhook({
+          url,
+          method: params.method as string | undefined,
+          headers: params.headers as Record<string, string> | undefined,
+          body,
+        }, { allowedHosts });
+        // Query strings commonly carry signatures. Never persist them in
+        // execution logs, and never include a remote response body in errors.
+        await this.addLog(execution.id, 'info', `Webhook ${result.method} ${result.destination} -> ${result.status}`);
         break;
       }
 

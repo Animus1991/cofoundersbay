@@ -760,6 +760,10 @@ export default function ReadinessPage() {
    */
   useEffect(() => {
     const onChanged = () => {
+      // Demo writes live in sessionStorage rather than React Query. Re-read
+      // that overlay as well as invalidating live scores so an assistant tick
+      // becomes visible immediately on an already-open showcase.
+      setDemoOverlay(readReadinessOverlay());
       try {
         setWorkspaceId(localStorage.getItem('cfb_default_workspace')?.trim() || null);
       } catch {

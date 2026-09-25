@@ -922,7 +922,7 @@ export async function deleteNotification(id: string): Promise<{ ok: true }> {
 }
 
 export type NotificationPreferences = {
-  digestFrequency: 'daily' | 'weekly' | 'never';
+  digestFrequency: 'daily' | 'weekly' | 'monthly' | 'never';
 };
 
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
