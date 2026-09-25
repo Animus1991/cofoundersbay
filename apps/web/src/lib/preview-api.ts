@@ -2,6 +2,7 @@
 
 import { mergeNodeMetadata } from './canvas/canvas-geometry';
 import { DEMO_CRITERIA } from './readiness-demo';
+import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 
 const NOW = '2026-09-04T10:00:00.000Z';
 
@@ -685,9 +686,9 @@ previewMilestones = PREVIEW_MILESTONES;
  */
 const PREVIEW_EVENT_HOSTS = {
   elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, role: 'founder' },
-  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, role: 'investor' },
+  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, role: 'cofounder' },
   sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, role: 'mentor' },
-  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, role: 'founder' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, role: 'investor' },
 } as const;
 
 type PreviewEvent = {
@@ -900,7 +901,7 @@ const PREVIEW_DEALS: PreviewDeal[] = [
     currency: 'EUR', askAmountCents: 25_000_000, investedCents: null, currentValueCents: null,
     investedAt: null, status: 'active',
     lastActivityAt: '2026-09-01T09:00:00.000Z', createdAt: '2026-06-14T09:00:00.000Z',
-    founder: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Founder at Meltemi' },
+    founder: { id: 'user-sofia', displayName: 'Sofia Alexiou', avatarUrl: null, headline: 'Founder at Meltemi' },
     recentEvents: [
       { id: 'ev-m1', type: 'milestone', title: 'First paying design partner', body: null, createdAt: '2026-09-01T09:00:00.000Z' },
     ],
@@ -926,7 +927,7 @@ const PREVIEW_DEALS: PreviewDeal[] = [
     currency: 'EUR', askAmountCents: null, investedCents: 25_000_000, currentValueCents: 41_000_000,
     investedAt: '2025-09-30T09:00:00.000Z', status: 'active',
     lastActivityAt: '2026-07-18T09:00:00.000Z', createdAt: '2025-04-08T09:00:00.000Z',
-    founder: null,
+    founder: { id: 'user-dimitris', displayName: 'Dimitris Kostas', avatarUrl: null, headline: 'Founder at Orion Grid' },
     recentEvents: [
       { id: 'ev-o1', type: 'fundraise', title: 'Closed a Series A extension', body: null, createdAt: '2026-07-18T09:00:00.000Z' },
     ],
@@ -939,7 +940,7 @@ const PREVIEW_DEALS: PreviewDeal[] = [
     currency: 'EUR', askAmountCents: 20_000_000, investedCents: null, currentValueCents: null,
     investedAt: null, status: 'active',
     lastActivityAt: '2026-09-04T07:00:00.000Z', createdAt: '2026-09-02T09:00:00.000Z',
-    founder: null,
+    founder: { id: 'user-yannis', displayName: 'Yannis Petrou', avatarUrl: null, headline: 'Founder at Kolo Labs' },
     recentEvents: [
       { id: 'ev-k1', type: 'update', title: 'Added to the board', body: null, createdAt: '2026-09-02T09:00:00.000Z' },
     ],
@@ -952,7 +953,7 @@ const PREVIEW_DEALS: PreviewDeal[] = [
     currency: 'EUR', askAmountCents: 45_000_000, investedCents: null, currentValueCents: null,
     investedAt: null, status: 'active',
     lastActivityAt: '2026-08-29T09:00:00.000Z', createdAt: '2026-07-21T09:00:00.000Z',
-    founder: null,
+    founder: { id: 'user-maria', displayName: 'Maria Georgiou', avatarUrl: null, headline: 'Founder at Thalia' },
     recentEvents: [
       { id: 'ev-t1', type: 'team', title: 'Hired a second engineer', body: null, createdAt: '2026-08-29T09:00:00.000Z' },
     ],
@@ -1150,6 +1151,229 @@ function previewMentorshipSessions() {
       menteeRating: 4,
       createdAt: '2026-08-18T09:00:00.000Z',
     },
+  ];
+}
+
+/**
+ * The reader's other side: the founders they mentor.
+ *
+ * `/mentorship/relationships?role=mentor` answered with the reader's own
+ * coaching relationship, so /mentor/mentees listed "Alex Demo" as Alex Demo's
+ * mentee. The mentees are the founders of Meltemi, Kolo Labs and Thalia, plus
+ * one finished mentorship (demo/mentor-world), and the sessions, requests and
+ * dashboard figures below are counted from these rows.
+ */
+const ME_AS_MENTOR = { id: ME_ID, displayName: 'Alex Demo', headline: 'Founder at Harbor · mentors early founders', avatarUrl: null };
+const MENTOR_SIDE_FOCUS: Record<string, string[]> = {
+  'user-sofia': ['Pricing', 'Sales hiring'],
+  'user-yannis': ['Fundraising', 'Developer go-to-market'],
+  'user-maria': ['Product', 'Payments'],
+  'user-dimitris': ['Go-to-market', 'Enterprise pilots'],
+};
+function previewMentorSideRelationships() {
+  const active = MENTOR_DEMO_MENTEES.map((p, i) => ({
+    id: `preview-mrel-${p.id}`,
+    mentorId: ME_ID,
+    menteeId: p.id,
+    status: 'active' as const,
+    goals: { primary: MENTOR_SIDE_FOCUS[p.id]?.[0] ?? 'Growth' },
+    focusAreas: MENTOR_SIDE_FOCUS[p.id] ?? [],
+    startedAt: previewIsoInDays(-60 - i * 21, 9),
+    completedAt: null,
+    nextSessionAt: previewIsoInDays(1 + i * 2, 10 + i * 2),
+    totalSessions: [4, 3, 2][i] ?? 1,
+    mentor: ME_AS_MENTOR,
+    mentee: { id: p.id, displayName: p.name, headline: p.headline, avatarUrl: null, role: 'founder' },
+  }));
+  const done = {
+    id: `preview-mrel-${MENTOR_DEMO_ALUMNUS.id}`,
+    mentorId: ME_ID,
+    menteeId: MENTOR_DEMO_ALUMNUS.id,
+    status: 'completed' as const,
+    goals: { primary: 'Go-to-market' },
+    focusAreas: MENTOR_SIDE_FOCUS[MENTOR_DEMO_ALUMNUS.id],
+    startedAt: previewIsoInDays(-240, 9),
+    completedAt: previewIsoInDays(-60, 9),
+    nextSessionAt: null,
+    totalSessions: 6,
+    mentor: ME_AS_MENTOR,
+    mentee: { id: MENTOR_DEMO_ALUMNUS.id, displayName: MENTOR_DEMO_ALUMNUS.name, headline: MENTOR_DEMO_ALUMNUS.headline, avatarUrl: null, role: 'founder' },
+  };
+  return [...active, done];
+}
+/** The next session with each active mentee: what the dashboard and /mentor/sessions list. */
+function previewMentorSideSessions() {
+  return previewMentorSideRelationships()
+    .filter((r) => r.status === 'active')
+    .map((r, i) => ({
+      id: `preview-msess-${r.menteeId}`,
+      relationshipId: r.id,
+      title: `${r.focusAreas[0] ?? 'Check-in'} with ${r.mentee.displayName.split(' ')[0]}`,
+      description: null,
+      scheduledAt: r.nextSessionAt as string,
+      duration: [60, 45, 30][i] ?? 45,
+      timezone: 'Europe/Athens',
+      meetingType: 'video' as const,
+      meetingUrl: `https://meet.example.com/${r.menteeId}`,
+      meetingLocation: null,
+      status: 'scheduled' as const,
+      agenda: null,
+      mentorNotes: null,
+      menteeNotes: null,
+      actionItems: [] as Record<string, unknown>[],
+      mentorRating: null,
+      menteeRating: null,
+      createdAt: previewIsoInDays(-7, 9),
+    }));
+}
+/** Two founders waiting for an answer, and the request that became Sofia's mentorship. */
+function previewMentorRequests() {
+  const req = (id: string, who: { id: string; name: string; headline: string }, status: 'pending' | 'accepted', days: number, message: string, focusAreas: string[]) => ({
+    id,
+    requesterId: who.id,
+    mentorId: ME_ID,
+    message,
+    goals: null,
+    focusAreas,
+    preferredFormat: 'video',
+    status,
+    createdAt: previewIsoInDays(-days, 11),
+    updatedAt: previewIsoInDays(-days, 11),
+    requester: { id: who.id, displayName: who.name, headline: who.headline, avatarUrl: null, role: 'founder' },
+    mentor: { id: ME_ID, displayName: 'Alex Demo', headline: ME_AS_MENTOR.headline, avatarUrl: null },
+  });
+  return [
+    req('preview-mreq-katerina', { id: 'user-katerina', name: 'Katerina Nikolaou', headline: 'Founder at Ledgerly' }, 'pending', 1,
+      'We are pricing a climate-fintech product for SMEs and keep undercharging. Could we talk through how you priced Harbor?', ['Pricing']),
+    req('preview-mreq-giorgos', { id: 'user-giorgos', name: 'Giorgos Vlachos', headline: 'Founder at Agora B2B' }, 'pending', 3,
+      'Two-sided marketplace, 40 suppliers live, buyers are slow to come back. Looking for help on retention before our seed.', ['Go-to-market', 'Fundraising']),
+    req('preview-mreq-sofia', { id: 'user-sofia', name: 'Sofia Alexiou', headline: 'Founder at Meltemi' }, 'accepted', 70,
+      'Logistics SaaS, first ten customers. I would value a monthly session on pricing and the first sales hire.', ['Pricing', 'Sales hiring']),
+  ];
+}
+
+/**
+ * The reader's provider side: four services and the founders who asked for
+ * them.
+ *
+ * /provider/dashboard, /dashboard/provider, /provider/inquiries, /projects,
+ * /reviews and /services each carried their own sample (John Doe, TechStart
+ * Inc, Sarah W., "Startup Legal Package") and their own totals. They now read
+ * these rows through the endpoints they already call, so a project here is a
+ * project there, and the rating is the average of the reviews listed.
+ */
+const PROVIDER_ME = { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null };
+const PREVIEW_PROVIDER_SERVICES = [
+  { id: 'svc-seed-model', title: 'Seed-round financial model', category: 'finance', pricing: '€1,800 fixed', description: 'A three-statement model built around your raise, with the assumptions an investor will ask about written down.', tags: ['fundraising', 'model'], isActive: true, isFeatured: true },
+  { id: 'svc-incorporation', title: 'Incorporation & shareholder agreement', category: 'legal', pricing: '€1,200 fixed', description: 'Company set-up in Greece or Cyprus, cap table and a founders\' agreement that survives a seed round.', tags: ['legal', 'cap table'], isActive: true, isFeatured: false },
+  { id: 'svc-fractional-cfo', title: 'Fractional CFO', category: 'finance', pricing: '€95 / hour', description: 'Monthly close, investor updates and runway planning, a day or two a month.', tags: ['finance'], isActive: true, isFeatured: false },
+  { id: 'svc-deck-review', title: 'Pitch deck review', category: 'consulting', pricing: '€400 fixed', description: 'One written review and one call on narrative, traction and the ask.', tags: ['pitch'], isActive: false, isFeatured: false },
+] as const;
+function previewProviderServices() {
+  return PREVIEW_PROVIDER_SERVICES.map((svc, i) => ({
+    ...svc,
+    tags: [...svc.tags],
+    providerName: 'Harbor Advisory',
+    providerLogo: null,
+    contactUrl: null,
+    websiteUrl: null,
+    createdAt: previewIsoInDays(-120 + i * 20, 9),
+  }));
+}
+function previewProviderInquiries() {
+  const svc = (id: string) => {
+    const s = PREVIEW_PROVIDER_SERVICES.find((x) => x.id === id)!;
+    return { id: s.id, title: s.title, category: s.category };
+  };
+  const row = (
+    id: string,
+    client: { id: string; displayName: string },
+    offerId: string,
+    status: 'open' | 'in_discussion' | 'accepted' | 'completed',
+    days: number,
+    message: string,
+    extra: { agreedPrice?: number; rating?: number; reviewComment?: string; budgetEstimate?: number } = {},
+  ) => ({
+    id,
+    status,
+    message,
+    responseMessage: status === 'open' ? null : 'Thanks - happy to help. Here is how I would approach it.',
+    agreedScope: extra.agreedPrice ? 'As discussed on the call' : null,
+    budgetEstimate: extra.budgetEstimate ?? null,
+    agreedPrice: extra.agreedPrice ?? null,
+    currency: 'EUR',
+    timelineExpected: status === 'open' ? 'Within a month' : null,
+    rating: extra.rating ?? null,
+    reviewComment: extra.reviewComment ?? null,
+    createdAt: previewIsoInDays(-days, 10),
+    resolvedAt: status === 'completed' ? previewIsoInDays(-Math.max(1, days - 20), 17) : null,
+    offer: svc(offerId),
+    client: { ...client, avatarUrl: null },
+    provider: PROVIDER_ME,
+  });
+  return [
+    row('inq-katerina', { id: 'user-katerina', displayName: 'Katerina Nikolaou' }, 'svc-seed-model', 'open', 1,
+      'Raising a €1.2M seed for Ledgerly in Q1. Our model is a spreadsheet of hopes - can you build one investors will trust?', { budgetEstimate: 1800 }),
+    row('inq-giorgos', { id: 'user-giorgos', displayName: 'Giorgos Vlachos' }, 'svc-incorporation', 'in_discussion', 3,
+      'Two founders, one angel committed. We need the company set up and a shareholder agreement before the money lands.'),
+    row('inq-sofia', { id: 'user-sofia', displayName: 'Sofia Alexiou' }, 'svc-fractional-cfo', 'accepted', 18,
+      'Meltemi needs a monthly close and a runway view we can show the board.', { agreedPrice: 3800 }),
+    row('inq-yannis', { id: 'user-yannis', displayName: 'Yannis Petrou' }, 'svc-seed-model', 'completed', 45,
+      'Kolo Labs seed model, with the hardware revenue split out.', { agreedPrice: 1800, rating: 5, reviewComment: 'The model answered every question our lead asked before they asked it.' }),
+    row('inq-maria', { id: 'user-maria', displayName: 'Maria Georgiou' }, 'svc-incorporation', 'completed', 70,
+      'Thalia incorporation in Cyprus and a founders\' agreement.', { agreedPrice: 1200, rating: 4, reviewComment: 'Clear, fast, and the agreement held up in due diligence. Slightly slow on the Cyprus filing.' }),
+    row('inq-dimitris', { id: 'user-dimitris', displayName: 'Dimitris Kostas' }, 'svc-fractional-cfo', 'completed', 110,
+      'Orion Grid needs a CFO for the utility pilots, two days a month.', { agreedPrice: 5700, rating: 5, reviewComment: 'Turned our pilots into a board pack we were proud of.' }),
+  ];
+}
+
+/**
+ * The platform as an admin sees it: the same people as everywhere else.
+ *
+ * With no admin handler the directory fell through to the generic fallback,
+ * so /admin/users drew its own sample (Tom Brown, Lisa Martinez...) and
+ * /admin/user-management another (David Kim...), neither of them anyone the
+ * founder, investor or mentor pages had met. Both read this list now, and the
+ * admin home's totals are counted from it and from the demo's own events,
+ * groups, jobs and connections.
+ */
+const PREVIEW_ADMIN_USERS = [
+  { id: ME_ID, name: 'Alex Demo', email: 'alex@harbor.example', role: 'admin', status: 'active', joined: -400, seen: 0 },
+  { id: 'user-elena', name: 'Elena Papadopoulos', email: 'elena@harbor.example', role: 'founder', status: 'active', joined: -380, seen: 0 },
+  { id: 'user-marcus', name: 'Marcus Chen', email: 'marcus@marcuschen.dev', role: 'founder', status: 'active', joined: -300, seen: -1 },
+  { id: 'user-sarah', name: 'Dr. Sarah Kim', email: 'sarah@sarahkim.co', role: 'mentor', status: 'active', joined: -500, seen: -2 },
+  { id: 'user-nikos', name: 'Nikos Andreou', email: 'nikos@andreou.vc', role: 'investor', status: 'active', joined: -450, seen: -1 },
+  { id: 'user-sofia', name: 'Sofia Alexiou', email: 'sofia@meltemi.example', role: 'founder', status: 'active', joined: -200, seen: 0 },
+  { id: 'user-yannis', name: 'Yannis Petrou', email: 'yannis@kololabs.example', role: 'founder', status: 'active', joined: -190, seen: -3 },
+  { id: 'user-maria', name: 'Maria Georgiou', email: 'maria@thalia.example', role: 'founder', status: 'active', joined: -160, seen: -5 },
+  { id: 'user-dimitris', name: 'Dimitris Kostas', email: 'dimitris@oriongrid.example', role: 'founder', status: 'active', joined: -420, seen: -12 },
+  { id: 'user-katerina', name: 'Katerina Nikolaou', email: 'katerina@ledgerly.example', role: 'founder', status: 'active', joined: -20, seen: -1 },
+  { id: 'user-giorgos', name: 'Giorgos Vlachos', email: 'giorgos@agorab2b.example', role: 'founder', status: 'active', joined: -14, seen: -3 },
+  { id: 'user-anna', name: 'Anna Lambrou', email: 'anna@acmefounders.example', role: 'org', status: 'active', joined: -600, seen: -1 },
+  { id: 'user-spyros', name: 'Spyros Karras', email: 'deals@quickfunding.example', role: 'founder', status: 'suspended', joined: -9, seen: -8 },
+] as const;
+function previewAdminUsers() {
+  return PREVIEW_ADMIN_USERS.map((u) => ({
+    id: u.id,
+    email: u.email,
+    role: u.role,
+    moderationStatus: u.status,
+    createdAt: previewIsoInDays(u.joined, 9),
+    lastSeenAt: previewIsoInDays(u.seen, 12),
+    profile: { displayName: u.name, avatarUrl: null },
+    reportsCount: u.id === 'user-spyros' ? 2 : 0,
+  }));
+}
+function previewAdminReports() {
+  const person = (id: string) => {
+    const u = PREVIEW_ADMIN_USERS.find((x) => x.id === id)!;
+    return { id: u.id, email: u.email, name: u.name, role: u.role };
+  };
+  const spyros = { ...person('user-spyros'), moderationStatus: 'suspended' as const };
+  return [
+    { id: 'rep-1', type: 'spam' as const, status: 'pending' as const, reason: 'Sends the same "guaranteed funding" message to every founder in Athens.', context: null, createdAt: previewIsoInDays(-1, 10), updatedAt: previewIsoInDays(-1, 10), resolvedAt: null, reporter: person('user-sofia'), reported: spyros },
+    { id: 'rep-2', type: 'fake' as const, status: 'pending' as const, reason: 'Claims to be an investor at a fund that has never heard of him.', context: null, createdAt: previewIsoInDays(-2, 15), updatedAt: previewIsoInDays(-2, 15), resolvedAt: null, reporter: person('user-nikos'), reported: spyros },
+    { id: 'rep-3', type: 'inappropriate' as const, status: 'resolved' as const, reason: 'An off-topic post in Athens Founders, since removed by its author.', context: null, createdAt: previewIsoInDays(-12, 11), updatedAt: previewIsoInDays(-11, 9), resolvedAt: previewIsoInDays(-11, 9), reporter: person('user-maria'), reported: { ...person('user-giorgos'), moderationStatus: 'active' as const } },
   ];
 }
 
@@ -2626,7 +2850,24 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
 
   // -- Mentorship, which /coaching reads from the founder's side --------------
   if (pathname === '/api/mentorship/relationships') {
-    return { relationships: PREVIEW_MENTORSHIP_RELATIONSHIPS };
+    const role = new URLSearchParams(path.split('?')[1] ?? '').get('role');
+    return { relationships: role === 'mentor' ? previewMentorSideRelationships() : PREVIEW_MENTORSHIP_RELATIONSHIPS };
+  }
+  if (pathname === '/api/mentorship/requests/received') {
+    return { requests: previewMentorRequests() };
+  }
+  if (pathname === '/api/mentorship/dashboard/mentor') {
+    const rels = previewMentorSideRelationships();
+    const rating = mentorDemoRating();
+    return {
+      activeMentees: rels.filter((r) => r.status === 'active').length,
+      pendingRequests: previewMentorRequests().filter((r) => r.status === 'pending').length,
+      completedMentorships: rels.filter((r) => r.status === 'completed').length,
+      upcomingSessions: previewMentorSideSessions().length,
+      totalSessions: rels.reduce((s, r) => s + r.totalSessions, 0),
+      averageRating: rating.average,
+      recentActivity: [],
+    };
   }
   const mentorshipSessionsMatch = pathname.match(
     /^\/api\/mentorship\/relationships\/([^/]+)\/sessions$/,
@@ -2634,11 +2875,18 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (mentorshipSessionsMatch) {
     return {
       sessions:
-        mentorshipSessionsMatch[1] === PREVIEW_COACHING_REL_ID ? previewMentorshipSessions() : [],
+        mentorshipSessionsMatch[1] === PREVIEW_COACHING_REL_ID
+          ? previewMentorshipSessions()
+          : previewMentorSideSessions().filter((x) => x.relationshipId === mentorshipSessionsMatch[1]),
     };
   }
   if (pathname === '/api/mentorship/sessions/upcoming') {
-    return { sessions: previewMentorshipSessions().filter((x) => x.status === 'scheduled') };
+    // Both sides of the reader's calendar, as the endpoint returns them: the
+    // session with their own mentor and the ones they give.
+    return {
+      sessions: [...previewMentorshipSessions().filter((x) => x.status === 'scheduled'), ...previewMentorSideSessions()]
+        .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt)),
+    };
   }
   if (pathname === '/api/mentorship/mentors') {
     const mentors = previewMentors();
@@ -2868,6 +3116,73 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { memberships: [] };
   }
 
+  if (pathname === '/api/admin/users') {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const q = params.get('q')?.toLowerCase() ?? '';
+    const users = previewAdminUsers().filter((u) => !q || `${u.profile.displayName} ${u.email}`.toLowerCase().includes(q));
+    return { users };
+  }
+  if (pathname === '/api/admin/reports') {
+    const status = new URLSearchParams(path.split('?')[1] ?? '').get('status');
+    return { reports: previewAdminReports().filter((r) => !status || r.status === status) };
+  }
+  if (pathname === '/api/admin/stats') {
+    const users = previewAdminUsers();
+    const usersByRole = users.reduce<Record<string, number>>((acc, u) => {
+      acc[u.role] = (acc[u.role] ?? 0) + 1;
+      return acc;
+    }, {});
+    const dayMs = 86_400_000;
+    const since = (days: number, key: 'createdAt' | 'lastSeenAt') =>
+      users.filter((u) => previewNowMs() - Date.parse(u[key]) <= days * dayMs).length;
+    return {
+      stats: {
+        totalUsers: users.length,
+        usersByRole,
+        newUsersToday: since(1, 'createdAt'),
+        newUsersThisWeek: since(7, 'createdAt'),
+        newUsersThisMonth: since(30, 'createdAt'),
+        activeUsersToday: since(1, 'lastSeenAt'),
+        activeUsersThisWeek: since(7, 'lastSeenAt'),
+        activeUsersThisMonth: since(30, 'lastSeenAt'),
+        totalConnections: CONNECTIONS.length,
+        totalMessages: CONVERSATIONS.length,
+        totalEvents: PREVIEW_EVENTS.length,
+        totalGroups: PREVIEW_GROUPS.length,
+        totalJobs: PREVIEW_JOBS.length,
+        pendingReports: previewAdminReports().filter((r) => r.status === 'pending').length,
+      },
+    };
+  }
+  if (pathname === '/api/services/inquiries') {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const kind = params.get('kind');
+    const status = params.get('status');
+    const limit = Number(params.get('limit') ?? 50);
+    const rows = previewProviderInquiries()
+      .filter((r) => kind !== 'projects' || r.status === 'accepted' || r.status === 'completed')
+      .filter((r) => kind !== 'reviews' || r.rating != null)
+      .filter((r) => !status || r.status === status);
+    return { inquiries: rows.slice(0, limit), total: rows.length };
+  }
+  if (pathname === '/api/services/summary') {
+    const rows = previewProviderInquiries();
+    const count = (st: string) => rows.filter((r) => r.status === st).length;
+    const rated = rows.filter((r) => r.rating != null);
+    const services = PREVIEW_PROVIDER_SERVICES;
+    return {
+      offers: { total: services.length, active: services.filter((x) => x.isActive).length },
+      inquiryCounts: { open: count('open'), in_discussion: count('in_discussion'), accepted: count('accepted'), declined: count('declined'), completed: count('completed'), cancelled: count('cancelled') },
+      openInquiries: count('open') + count('in_discussion'),
+      projects: count('accepted') + count('completed'),
+      reviewCount: rated.length,
+      avgRating: rated.length ? Math.round((rated.reduce((a, r) => a + (r.rating ?? 0), 0) / rated.length) * 10) / 10 : null,
+    };
+  }
+  if (pathname === '/api/marketplace/mine') {
+    const services = previewProviderServices();
+    return { services, total: services.length, hasMore: false };
+  }
   if (pathname === '/api/investor/summary') {
     const invested = PREVIEW_DEALS.filter((d) => d.pipelineStage === 'invested');
     const deployedCents = invested.reduce((sum, d) => sum + (d.investedCents ?? 0), 0);

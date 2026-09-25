@@ -9,7 +9,6 @@ import {
   ChevronRight,
   DollarSign,
   Eye,
-  Filter,
   LineChart,
   PieChart,
   Rocket,
@@ -17,212 +16,184 @@ import {
   Star,
   Target,
   TrendingUp,
-  Users,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { useSession } from '@/hooks/useSession';
-import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
-import { getMeProfile } from '@/lib/api';
+import {
+  getInvestorActivity,
+  getInvestorSummary,
+  getMeProfile,
+  listInvestorDeals,
+  type InvestorDeal,
+  type PipelineStage,
+} from '@/lib/api';
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
-import { queryKeys } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
+
+/*
+ * The investor's home, read from the investor's own board.
+ *
+ * Every figure here was a constant: "Deal Flow 24, +18% this month", a
+ * portfolio of "12" companies worth "$8.7M" at "3.6x", active deals called
+ * TechVenture, DataFlow and CloudScale, and a "Recent Activity" of three
+ * fixed lines. The pipeline, portfolio and analytics pages beside it read the
+ * investor API and told a different story - Kolo Labs, Thalia, Meltemi,
+ * Harbor; two investments, €350K deployed - in a different currency. It reads
+ * the same three endpoints now (summary, deals, activity), so the home and
+ * the pages it links to say the same thing, and a trend is not shown where
+ * nothing earlier was recorded to compare against.
+ */
+
+const ACTIVE_STAGES: PipelineStage[] = ['reviewing', 'meeting', 'due_diligence', 'negotiating'];
+const STAGE_LABEL: Record<string, string> = {
+  discovered: 'Discovered',
+  reviewing: 'Reviewing',
+  meeting: 'Meeting',
+  due_diligence: 'Due diligence',
+  negotiating: 'Negotiating',
+  invested: 'Invested',
+  passed: 'Passed',
+};
+const STAGE_TONE: Record<string, string> = {
+  reviewing: 'bg-status-info-bg text-status-info',
+  meeting: 'bg-status-accent-bg text-status-accent',
+  due_diligence: 'bg-status-warning-bg text-status-warning',
+  negotiating: 'bg-status-accent-bg text-status-accent',
+};
+
+function money(cents: number | null | undefined, currency = 'EUR'): string {
+  if (cents == null) return '—';
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(cents / 100);
+}
 
 function StatCard({
   icon: Icon,
   label,
   value,
   subtext,
-  trend,
   href,
 }: {
   icon: React.ElementType;
   label: string;
   value: number | string;
   subtext?: string;
-  trend?: { value: number; positive: boolean };
   href?: string;
 }) {
   const content = (
-    <Card className="relative overflow-hidden transition-all hover:shadow-md">
+    <Card className="h-full transition-all hover:shadow-md">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
-            {trend && (
-              <p className={cn('text-xs', trend.positive ? 'text-status-success' : 'text-status-danger')}>
-                {trend.positive ? '+' : ''}{trend.value}% this month
-              </p>
-            )}
           </div>
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary-accessible" />
+          <div className="shrink-0 rounded-lg bg-primary/10 p-2">
+            <Icon className="icon-md text-primary-accessible" aria-hidden="true" />
           </div>
         </div>
       </CardContent>
     </Card>
   );
-
-  return href ? <Link href={href}>{content}</Link> : content;
+  return href ? <Link href={href} className="block h-full rounded-xl focus-ring">{content}</Link> : content;
 }
 
-function StartupCard({ startup }: { startup: any }) {
-  const stageColors: Record<string, string> = {
-    'pre-seed': 'bg-status-accent-bg text-status-accent border-status-accent-border',
-    'seed': 'bg-status-info-bg text-status-info border-status-info-border',
-    'series-a': 'bg-status-success-bg text-status-success border-status-success-border',
-    'series-b': 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  };
-
+function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.ReactNode }) {
   return (
     <Link
-      href={`/investor/scouting`}
-      className="group flex items-start gap-3 rounded-lg border p-3 transition-all hover:border-primary/30 hover:shadow-sm"
+      href={`/startups/${deal.id}`}
+      className="group flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30"
     >
-      <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={startup.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
-          {startup.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">{startup.name}</p>
-          {startup.isHot && (
-            <Badge variant="destructive" size="sm">HOT</Badge>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground line-clamp-1">{startup.description}</p>
-        <div className="flex items-center gap-2 mt-1.5">
-          <Badge variant="outline" size="sm" className={cn(stageColors[startup.stage] || '')}>
-            {startup.stage}
-          </Badge>
-          <span className="text-xs text-muted-foreground">{startup.industry}</span>
-        </div>
-      </div>
-      <div className="text-right">
-        <p className="text-sm font-semibold text-primary-accessible">{startup.raising}</p>
-        <p className="text-xs text-muted-foreground">{startup.matchScore}% match</p>
-      </div>
-    </Link>
-  );
-}
-
-function DealCard({ deal }: { deal: any }) {
-  const statusColors: Record<string, string> = {
-    'reviewing': 'bg-status-info-bg text-status-info',
-    'due-diligence': 'bg-status-warning-bg text-status-warning',
-    'negotiating': 'bg-status-accent-bg text-status-accent',
-    'closed': 'bg-status-success-bg text-status-success',
-    'passed': 'bg-gray-500/10 text-muted-foreground',
-  };
-
-  return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
-      <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={deal.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-muted">
+      <Avatar className="h-10 w-10 shrink-0 rounded-lg">
+        <AvatarImage src={deal.logoUrl ?? undefined} />
+        <AvatarFallback className="rounded-lg bg-primary/10 font-semibold text-primary-accessible">
           {deal.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{deal.name}</p>
-        <p className="text-xs text-muted-foreground">{deal.stage} · {deal.amount}</p>
-      </div>
-      <Badge size="sm" className={cn(statusColors[deal.status] || '')}>
-        {deal.status.replace('-', ' ')}
-      </Badge>
-    </div>
-  );
-}
-
-function PortfolioItem({ company }: { company: any }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
-      <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={company.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible">
-          {company.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{company.name}</p>
-        <p className="text-xs text-muted-foreground">Invested {company.investedDate}</p>
-      </div>
-      <div className="text-right">
-        <p className={cn(
-          'text-sm font-semibold',
-          company.returnMultiple >= 1 ? 'text-status-success' : 'text-status-danger'
-        )}>
-          {company.returnMultiple}x
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{deal.name}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {[deal.industry, deal.companyStage].filter(Boolean).join(' · ') || deal.tagline || '—'}
         </p>
-        <p className="text-xs text-muted-foreground">{company.currentValue}</p>
       </div>
-    </div>
+      <div className="shrink-0 text-right">{trailing}</div>
+    </Link>
   );
 }
 
 export default function InvestorDashboard() {
   const { hasSession, mounted } = useSession();
-  const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
+  const { data: summary } = useQuery({
+    queryKey: qk('investor', 'summary'),
+    queryFn: getInvestorSummary,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: dealsPage, isLoading: dealsLoading } = useQuery({
+    queryKey: qk('investor', 'deals', 'all'),
+    queryFn: () => listInvestorDeals({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: activityPage } = useQuery({
+    queryKey: qk('investor', 'activity'),
+    queryFn: () => getInvestorActivity(20),
+    staleTime: 60_000,
+    retry: 0,
+  });
 
   const displayName = profile?.profile?.displayName || 'Investor';
+  const deals = dealsPage?.deals ?? [];
+  const discovered = deals.filter((d) => d.pipelineStage === 'discovered').slice(0, 4);
+  const active = deals.filter((d) => ACTIVE_STAGES.includes(d.pipelineStage));
+  const invested = deals.filter((d) => d.pipelineStage === 'invested');
+  const activity = (activityPage?.activity ?? []).slice(0, 5);
+  const currency = invested[0]?.currency ?? deals[0]?.currency ?? 'EUR';
 
-  const investorStats = showDemoData ? {
-    dealFlow: 24,
-    activeDeals: 5,
-    portfolioCompanies: 12,
-    totalInvested: '$2.4M',
-    portfolioValue: '$8.7M',
-    avgReturn: '3.6x',
-  } : {
-    dealFlow: 0,
-    activeDeals: 0,
-    portfolioCompanies: 0,
-    totalInvested: '$0',
-    portfolioValue: '$0',
-    avgReturn: '—',
-  };
+  // What the board leans toward, counted from it - not a preference set
+  // nobody entered. The profile is where an investor states theirs.
+  const topOf = (values: (string | null)[]) =>
+    Object.entries(
+      values.filter((v): v is string => Boolean(v)).reduce<Record<string, number>>((acc, v) => {
+        acc[v] = (acc[v] ?? 0) + 1;
+        return acc;
+      }, {}),
+    )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([v]) => v);
+  const leaningIndustries = topOf(deals.map((d) => d.industry));
+  const leaningStages = topOf(deals.map((d) => d.companyStage));
 
-  const trendingStartups = showDemoData ? [
-    { id: '1', name: 'NeuralFlow AI', description: 'Enterprise AI automation platform', stage: 'seed', industry: 'AI/ML', raising: '$1.5M', matchScore: 92, isHot: true, logoUrl: null },
-    { id: '2', name: 'GreenGrid', description: 'Sustainable energy management', stage: 'pre-seed', industry: 'CleanTech', raising: '$500K', matchScore: 87, isHot: false, logoUrl: null },
-    { id: '3', name: 'HealthSync', description: 'Patient data interoperability', stage: 'seed', industry: 'HealthTech', raising: '$2M', matchScore: 84, isHot: true, logoUrl: null },
-  ] : [];
-
-  const activeDeals = showDemoData ? [
-    { id: '1', name: 'TechVenture', stage: 'Seed', amount: '$500K', status: 'due-diligence', logoUrl: null },
-    { id: '2', name: 'DataFlow', stage: 'Series A', amount: '$2M', status: 'negotiating', logoUrl: null },
-    { id: '3', name: 'CloudScale', stage: 'Seed', amount: '$750K', status: 'reviewing', logoUrl: null },
-  ] : [];
-
-  const portfolio = showDemoData ? [
-    { id: '1', name: 'AIStartup', investedDate: 'Jan 2024', returnMultiple: 2.4, currentValue: '$600K', logoUrl: null },
-    { id: '2', name: 'FinTech Co', investedDate: 'Mar 2023', returnMultiple: 1.8, currentValue: '$450K', logoUrl: null },
-    { id: '3', name: 'SaaS Platform', investedDate: 'Jun 2023', returnMultiple: 3.2, currentValue: '$800K', logoUrl: null },
-  ] : [];
+  const multiple = (d: InvestorDeal) =>
+    d.investedCents && d.currentValueCents != null ? d.currentValueCents / d.investedCents : null;
 
   if (!mounted) {
     return (
       <AppShell>
-        <div className="py-6 space-y-6">
+        <div className="space-y-6 py-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -237,7 +208,7 @@ export default function InvestorDashboard() {
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       actions={
         <Badge variant="outline" className="gap-1.5">
-          <DollarSign className="icon-sm" />
+          <DollarSign className="icon-sm" aria-hidden="true" />
           Investor
         </Badge>
       }
@@ -245,214 +216,215 @@ export default function InvestorDashboard() {
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <StatCard
-            icon={Briefcase}
-            label="Deal Flow"
-            value={investorStats.dealFlow}
-            subtext="This month"
-            trend={{ value: 18, positive: true }}
-          />
-          <StatCard
-            icon={Target}
-            label="Active Deals"
-            value={investorStats.activeDeals}
-            subtext="In pipeline"
-          />
-          <StatCard
-            icon={Building2}
-            label="Portfolio"
-            value={investorStats.portfolioCompanies}
-            subtext={investorStats.portfolioValue}
-          />
+        {/* The four figures, each linking to the page that holds its rows. */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <StatCard icon={Briefcase} label="Deal flow" value={summary?.totalDeals ?? '—'} subtext="Deals on your board" href="/investor/pipeline" />
+          <StatCard icon={Target} label="Active deals" value={summary ? active.length : '—'} subtext="Reviewing to negotiating" href="/investor/pipeline" />
+          <StatCard icon={Building2} label="Portfolio" value={summary?.investments ?? '—'} subtext={summary ? `${money(summary.currentValueCents, currency)} current value` : undefined} href="/investor/portfolio" />
           <StatCard
             icon={TrendingUp}
-            label="Avg Return"
-            value={investorStats.avgReturn}
-            subtext="Multiple"
+            label="Return"
+            value={summary?.returnPct == null ? '—' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`}
+            subtext={summary ? `on ${money(summary.deployedCents, currency)} deployed` : undefined}
+            href="/investor/analytics"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Trending Startups */}
+          <div className="space-y-6 lg:col-span-2">
+            {/* Active deals first: they are what needs a decision. */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Rocket className="icon-sm text-primary-accessible" />
-                    Trending Startups
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {/* Had no handler; scouting is where startups are filtered. */}
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href="/investor/scouting">
-                        <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
-                        Filter
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href="/discover">
-                        View all <ArrowRight className="ml-1 icon-sm" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {trendingStartups.map((startup) => (
-                  <StartupCard key={startup.id} startup={startup} />
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Active Deals */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="icon-sm text-primary-accessible" />
-                    Active Deals
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <BarChart3 className="icon-sm text-primary-accessible" aria-hidden="true" />
+                    Active deals
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/pipeline">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      Pipeline <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {activeDeals.map((deal) => (
-                  <DealCard key={deal.id} deal={deal} />
+                {dealsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
+                {!dealsLoading && active.map((deal) => (
+                  <DealRow
+                    key={deal.id}
+                    deal={deal}
+                    trailing={
+                      <>
+                        <Badge size="sm" className={cn(STAGE_TONE[deal.pipelineStage] ?? '')}>
+                          {STAGE_LABEL[deal.pipelineStage] ?? deal.pipelineStage}
+                        </Badge>
+                        {deal.askAmountCents != null && (
+                          <p className="mt-1 text-xs text-muted-foreground">asking {money(deal.askAmountCents, deal.currency)}</p>
+                        )}
+                      </>
+                    }
+                  />
                 ))}
-                {activeDeals.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No active deals in pipeline
+                {!dealsLoading && active.length === 0 && (
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    No deal is between review and term sheet right now.
                   </p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Portfolio Performance */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <PieChart className="icon-sm text-primary-accessible" />
-                    Portfolio Companies
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <PieChart className="icon-sm text-primary-accessible" aria-hidden="true" />
+                    Portfolio
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/portfolio">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      All companies <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {portfolio.map((company) => (
-                  <PortfolioItem key={company.id} company={company} />
+                {invested.map((deal) => {
+                  const x = multiple(deal);
+                  return (
+                    <DealRow
+                      key={deal.id}
+                      deal={deal}
+                      trailing={
+                        <>
+                          <p className={cn('text-sm font-semibold tabular-nums', x == null ? 'text-muted-foreground' : x >= 1 ? 'text-status-success' : 'text-status-danger')}>
+                            {x == null ? '—' : `${x.toFixed(1)}x`}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{money(deal.currentValueCents ?? deal.investedCents, deal.currency)}</p>
+                        </>
+                      }
+                    />
+                  );
+                })}
+                {!dealsLoading && invested.length === 0 && (
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    Mark a deal as invested in the pipeline to track it here.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Rocket className="icon-sm text-primary-accessible" aria-hidden="true" />
+                    Recently discovered
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/investor/scouting">
+                      Scout more <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {discovered.map((deal) => (
+                  <DealRow
+                    key={deal.id}
+                    deal={deal}
+                    trailing={
+                      deal.askAmountCents != null ? (
+                        <p className="text-sm font-semibold text-primary-accessible">{money(deal.askAmountCents, deal.currency)}</p>
+                      ) : null
+                    }
+                  />
                 ))}
+                {!dealsLoading && discovered.length === 0 && (
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    Startups you watch from Scouting appear here first.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
+            {/* A navigation list, not a stack of full-width outlined buttons. */}
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Go to</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/investor/scouting">
-                    <Search className="mr-2 icon-sm" />
-                    Scout Startups
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/investor/watchlist">
-                    <Star className="mr-2 icon-sm" />
-                    My Watchlist
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/investor/pipeline">
-                    <Target className="mr-2 icon-sm" />
-                    Deal Pipeline
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/investor/portfolio">
-                    <LineChart className="mr-2 icon-sm" />
-                    Portfolio
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/investor/analytics">
-                    <BarChart3 className="mr-2 icon-sm" />
-                    Analytics
-                  </Link>
-                </Button>
+              <CardContent className="p-2">
+                <nav aria-label="Investor pages" className="flex flex-col">
+                  {[
+                    { href: '/investor/scouting', icon: Search, label: 'Scout startups' },
+                    { href: '/investor/watchlist', icon: Star, label: 'Watchlist' },
+                    { href: '/investor/pipeline', icon: Target, label: 'Deal pipeline' },
+                    { href: '/investor/portfolio', icon: LineChart, label: 'Portfolio' },
+                    { href: '/investor/analytics', icon: BarChart3, label: 'Analytics' },
+                  ].map(({ href, icon: Icon, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="group flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted/60"
+                    >
+                      <Icon className="icon-sm text-muted-foreground group-hover:text-primary-accessible" aria-hidden="true" />
+                      <span className="flex-1">{label}</span>
+                      <ChevronRight className="icon-sm text-muted-foreground/60" aria-hidden="true" />
+                    </Link>
+                  ))}
+                </nav>
               </CardContent>
             </Card>
 
-            {/* Investment Thesis */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Investment Focus</CardTitle>
+                <CardTitle className="text-base">Where your board leans</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Preferred Stages</p>
+                  <p className="mb-1.5 text-xs text-muted-foreground">Industries</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="secondary">Pre-seed</Badge>
-                    <Badge variant="secondary">Seed</Badge>
+                    {leaningIndustries.length ? leaningIndustries.map((i) => <Badge key={i} variant="outline">{i}</Badge>) : <span className="text-sm text-muted-foreground">{'—'}</span>}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Industries</p>
+                  <p className="mb-1.5 text-xs text-muted-foreground">Company stages</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="outline">AI/ML</Badge>
-                    <Badge variant="outline">FinTech</Badge>
-                    <Badge variant="outline">SaaS</Badge>
+                    {leaningStages.length ? leaningStages.map((s) => <Badge key={s} variant="secondary">{s}</Badge>) : <span className="text-sm text-muted-foreground">{'—'}</span>}
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Check Size</p>
-                  <p className="text-sm font-medium">$100K - $500K</p>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Counted from the deals on your board. State your own focus on your profile.
+                </p>
                 <Button variant="secondary" size="sm" className="w-full" asChild>
-                  <Link href="/profile">
-                    Edit Preferences
-                  </Link>
+                  <Link href="/profile/edit">Edit investment focus</Link>
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Recent Activity */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="icon-sm" />
-                  Recent Activity
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Eye className="icon-sm" aria-hidden="true" />
+                  Recent activity
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="text-muted-foreground">Viewed NeuralFlow AI</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="text-muted-foreground">Shortlisted GreenGrid</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 rounded-full bg-purple-500" />
-                  <span className="text-muted-foreground">Meeting with HealthSync</span>
-                </div>
+                {activity.map((a) => (
+                  <Link key={a.id} href={`/startups/${a.dealId}`} className="flex items-start gap-2 rounded-md text-sm hover:text-foreground">
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" aria-hidden="true" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-foreground">{a.title}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {a.dealName} · <RelativeTime date={a.createdAt} />
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+                {activity.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Moves, notes and meetings on your deals show up here.</p>
+                )}
               </CardContent>
             </Card>
           </div>

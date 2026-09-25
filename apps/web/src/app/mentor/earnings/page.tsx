@@ -23,6 +23,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
+import { MENTOR_DEMO_EARNINGS } from '@/lib/demo/mentor-world';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -34,14 +35,8 @@ import { queryKeys } from '@/lib/query-keys';
  */
 const DAY = 86_400_000;
 const daysAgo = (n: number) => new Date(Date.now() - n * DAY).toISOString().slice(0, 10);
-const MOCK_TRANSACTION_ROWS = [
-  { id: '1', name: 'Alex K.', ago: 2, duration: 60, amount: 120, status: 'paid', topic: 'Product strategy review' },
-  { id: '2', name: 'Maria P.', ago: 4, duration: 30, amount: 60, status: 'paid', topic: 'Fundraising pitch feedback' },
-  { id: '3', name: 'Nikos L.', ago: 6, duration: 45, amount: 90, status: 'paid', topic: 'GTM strategy' },
-  { id: '4', name: 'Sofia A.', ago: 9, duration: 60, amount: 120, status: 'pending', topic: 'Co-founder selection' },
-  { id: '5', name: 'Panos D.', ago: 40, duration: 30, amount: 60, status: 'paid', topic: 'MVP validation' },
-  { id: '6', name: 'Elena T.', ago: 75, duration: 60, amount: 120, status: 'paid', topic: 'Investor readiness' },
-] as const;
+// The same rows the mentor dashboard counts its month from (demo/mentor-world).
+const MOCK_TRANSACTION_ROWS = MENTOR_DEMO_EARNINGS;
 function mockTransactions() {
   return MOCK_TRANSACTION_ROWS.map((r) => ({
     id: r.id,

@@ -28,10 +28,17 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { ATTENTION_ROW } from '@/lib/semantic-colors';
-import { getMeProfile } from '@/lib/api';
+import {
+  getMeProfile,
+  getMentorDashboardStats,
+  getMyMentorships,
+  getMyReceivedMentorRequests,
+  getUpcomingMentorshipSessions,
+} from '@/lib/api';
+import { mentorDemoMonthEarnings, mentorDemoRating } from '@/lib/demo/mentor-world';
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
-import { queryKeys } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
 
 function StatCard({
   icon: Icon,
@@ -175,39 +182,78 @@ export default function MentorDashboard() {
 
   const displayName = profile?.profile?.displayName || 'Mentor';
 
-  const mentorStats = showDemoData ? {
-    activeMentees: 8,
-    totalSessions: 47,
-    avgRating: 4.8,
-    pendingRequests: 3,
-    upcomingSessions: 4,
-    hoursThisMonth: 12,
-    earningsThisMonth: '$1,280',
-  } : {
-    activeMentees: 0,
-    totalSessions: 0,
-    avgRating: 0,
-    pendingRequests: 0,
-    upcomingSessions: 0,
-    hoursThisMonth: 0,
-    earningsThisMonth: '$0',
+  /*
+   * Read from the mentorship endpoints the mentor pages use. The figures
+   * were constants - 8 mentees, 47 sessions, a 4.8 "based on 32 reviews",
+   * "2 new this month", "24 mentees helped", "Top 10% mentor" - with mentees
+   * and requests nobody on /mentor/mentees or /mentor/requests had heard of.
+   * Earnings and reviews have no endpoint yet; in the showcase they come from
+   * the same rows /mentor/earnings and /mentor/reviews list, and outside it
+   * the cards say there is nothing recorded rather than showing a number.
+   */
+  const enabled = hasSession && mounted;
+  const { data: stats } = useQuery({
+    queryKey: qk('mentorships', 'dashboard', 'mentor'),
+    queryFn: getMentorDashboardStats,
+    enabled,
+    retry: 0,
+  });
+  const { data: relData } = useQuery({
+    queryKey: qk('mentorships', 'mentor'),
+    queryFn: () => getMyMentorships('mentor'),
+    enabled,
+    retry: 0,
+  });
+  const { data: sessionData } = useQuery({
+    queryKey: qk('mentorships', 'sessions-upcoming'),
+    queryFn: getUpcomingMentorshipSessions,
+    enabled,
+    retry: 0,
+  });
+  const { data: requestData } = useQuery({
+    queryKey: qk('mentorships', 'requests-received'),
+    queryFn: getMyReceivedMentorRequests,
+    enabled,
+    retry: 0,
+  });
+
+  const relationships = relData?.relationships ?? [];
+  const activeRelationships = relationships.filter((r) => r.status === 'active');
+  const relById = new Map(relationships.map((r) => [r.id, r]));
+  // The endpoint returns both sides of the reader's calendar; this page is
+  // the sessions they give.
+  const upcomingSessions = (sessionData?.sessions ?? [])
+    .filter((x) => relById.has(x.relationshipId))
+    .map((x) => ({
+      id: x.id,
+      menteeName: relById.get(x.relationshipId)?.mentee?.displayName ?? 'Mentee',
+      scheduledAt: x.scheduledAt,
+      duration: x.duration,
+      meetingUrl: x.meetingUrl,
+    }));
+  const mentees = activeRelationships.map((r) => ({
+    id: r.menteeId,
+    name: r.mentee?.displayName ?? 'Mentee',
+    startup: r.mentee?.headline?.replace(/^Founder at /, '') ?? null,
+    sessionsCompleted: r.totalSessions,
+    avatarUrl: r.mentee?.avatarUrl ?? null,
+  }));
+  const pendingRequests = (requestData?.requests ?? [])
+    .filter((r) => r.status === 'pending')
+    .map((r) => ({ id: r.id, name: r.requester?.displayName ?? 'Founder', message: r.message, avatarUrl: r.requester?.avatarUrl ?? null }));
+
+  const month = showDemoData ? mentorDemoMonthEarnings() : null;
+  const rating = showDemoData ? mentorDemoRating() : null;
+  const averageRating = stats?.averageRating ?? rating?.average ?? null;
+  const mentorStats = {
+    activeMentees: stats?.activeMentees ?? activeRelationships.length,
+    totalSessions: stats?.totalSessions ?? relationships.reduce((sum, r) => sum + r.totalSessions, 0),
+    completedMentorships: stats?.completedMentorships ?? relationships.filter((r) => r.status === 'completed').length,
+    upcomingSessions: upcomingSessions.length,
+    avgRating: averageRating == null ? '\u2014' : averageRating.toFixed(1),
+    hoursThisMonth: month ? Math.round((month.minutes / 60) * 10) / 10 : null,
+    earningsThisMonth: month ? `$${month.amount.toLocaleString('en-US')}` : null,
   };
-
-  const mentees = showDemoData ? [
-    { id: '1', name: 'Alex Chen', startup: 'TechFlow AI', sessionsCompleted: 6, avatarUrl: null },
-    { id: '2', name: 'Sarah Johnson', startup: 'GreenCommute', sessionsCompleted: 4, avatarUrl: null },
-    { id: '3', name: 'Mike Rodriguez', startup: 'HealthTrack', sessionsCompleted: 3, avatarUrl: null },
-  ] : [];
-
-  const upcomingSessions = showDemoData ? [
-    { id: '1', menteeName: 'Alex Chen', scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), duration: 30 },
-    { id: '2', menteeName: 'Sarah Johnson', scheduledAt: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(), duration: 45 },
-  ] : [];
-
-  const pendingRequests = showDemoData ? [
-    { id: '1', name: 'Jordan Lee', message: 'Hi! I\'m building a fintech startup and would love your guidance on product-market fit.', avatarUrl: null },
-    { id: '2', name: 'Emma Wilson', message: 'Looking for mentorship on scaling my SaaS business. Your experience would be invaluable.', avatarUrl: null },
-  ] : [];
 
   const nextSession = upcomingSessions[0];
   const nextSessionMinsAway = nextSession
@@ -263,25 +309,29 @@ export default function MentorDashboard() {
             icon={Users}
             label="Active Mentees"
             value={mentorStats.activeMentees}
-            subtext="2 new this month"
+            subtext={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
+            href="/mentor/mentees"
           />
           <StatCard
             icon={Video}
             label="Total Sessions"
             value={mentorStats.totalSessions}
-            subtext={`${mentorStats.hoursThisMonth}h this month`}
+            subtext={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h this month` : 'Across your mentorships'}
+            href="/mentor/sessions"
           />
           <StatCard
             icon={Star}
             label="Average Rating"
             value={mentorStats.avgRating}
-            subtext="Based on 32 reviews"
+            subtext={rating ? `From ${rating.count} reviews` : 'No reviews recorded yet'}
+            href="/mentor/reviews"
           />
           <StatCard
             icon={Clock}
             label="Upcoming"
             value={mentorStats.upcomingSessions}
             subtext="Sessions scheduled"
+            href="/mentor/sessions"
           />
         </div>
 
@@ -293,7 +343,7 @@ export default function MentorDashboard() {
                 <DollarSign className="icon-md text-status-success shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Earnings this month</p>
-                  <p className="text-lg font-bold text-status-success">{mentorStats.earningsThisMonth}</p>
+                  <p className="text-lg font-bold text-status-success">{mentorStats.earningsThisMonth ?? '\u2014'}</p>
                 </div>
               </div>
             </Link>
@@ -311,7 +361,7 @@ export default function MentorDashboard() {
                 <Video className="icon-md text-primary-accessible shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Hours this month</p>
-                  <p className="text-lg font-bold text-primary-accessible">{mentorStats.hoursThisMonth}h</p>
+                  <p className="text-lg font-bold text-primary-accessible">{mentorStats.hoursThisMonth ?? 0}h</p>
                 </div>
               </div>
             </Link>
@@ -444,22 +494,16 @@ export default function MentorDashboard() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Mentees helped</span>
-                    <span className="font-medium">24</span>
+                    <span className="text-muted-foreground">Founders mentored</span>
+                    <span className="font-medium tabular-nums">{relationships.length}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Hours mentored</span>
-                    <span className="font-medium">156</span>
+                    <span className="text-muted-foreground">Sessions given</span>
+                    <span className="font-medium tabular-nums">{mentorStats.totalSessions}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Success stories</span>
-                    <span className="font-medium">8</span>
-                  </div>
-                </div>
-                <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2">
-                    <Star className="icon-sm text-status-warning fill-status-warning" />
-                    <span className="text-sm font-medium">Top 10% Mentor</span>
+                    <span className="text-muted-foreground">Mentorships completed</span>
+                    <span className="font-medium tabular-nums">{mentorStats.completedMentorships}</span>
                   </div>
                 </div>
               </CardContent>
@@ -481,7 +525,7 @@ export default function MentorDashboard() {
                   <Badge variant="success">Active</Badge>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  You have 4 slots available this week
+                  Founders can request you while this is on. Set the hours you offer on the availability page.
                 </div>
                 <Button variant="secondary" size="sm" className="w-full" asChild>
                   <Link href="/mentor/availability">

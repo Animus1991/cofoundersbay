@@ -25,6 +25,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { MENTOR_DEMO_REVIEWS } from '@/lib/demo/mentor-world';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type Review = {
@@ -94,13 +95,17 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
-const MOCK_REVIEWS: Review[] = [
-    { id: '1', mentee: 'John Doe', rating: 5, comment: 'Incredibly insightful session! The mentor provided actionable advice that helped us pivot our go-to-market strategy. Highly recommend!', date: 'Mar 20, 2025', sessionType: 'Strategy', helpful: 12 },
-    { id: '2', mentee: 'Jane Smith', rating: 5, comment: 'Great mentor with deep industry knowledge. The feedback on our pitch deck was invaluable.', date: 'Mar 18, 2025', sessionType: 'Pitch Review', helpful: 8 },
-    { id: '3', mentee: 'Mike Johnson', rating: 4, comment: 'Very helpful session on fundraising. Would have liked more time to discuss term sheets.', date: 'Mar 15, 2025', sessionType: 'Fundraising', helpful: 5 },
-    { id: '4', mentee: 'Sarah Williams', rating: 5, comment: 'The mentor helped us identify key metrics we were missing. Our investor conversations have improved significantly.', date: 'Mar 12, 2025', sessionType: 'Metrics', helpful: 15 },
-    { id: '5', mentee: 'Tom Brown', rating: 4, comment: 'Good technical advice on our architecture. Would recommend for technical founders.', date: 'Mar 10, 2025', sessionType: 'Technical', helpful: 3 },
-  ];
+// The mentees whose sessions /mentor/earnings lists (demo/mentor-world),
+// dated relative to today rather than to March 2025.
+const MOCK_REVIEWS: Review[] = MENTOR_DEMO_REVIEWS.map((r) => ({
+  id: r.id,
+  mentee: r.mentee,
+  rating: r.rating,
+  comment: r.comment,
+  date: new Date(Date.now() - r.ago * 86_400_000).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }),
+  sessionType: r.sessionType,
+  helpful: r.helpful,
+}));
 
 export default function MentorReviewsPage() {
   const { showDemoData } = useDemoData();
