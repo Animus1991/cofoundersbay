@@ -20,6 +20,8 @@ import {
   GraduationCap,
   Rocket,
   Award,
+  TrendingUp,
+  Building2,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -67,10 +69,14 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
-type UserRole = 'admin' | 'moderator' | 'mentor' | 'founder' | 'co-founder' | 'user';
+// The API's Role enum (schema.prisma). The page used to offer moderator,
+// co-founder and user, which ChangeUserRoleDto rejects, and filed every
+// investor and organisation account under "user".
+type UserRole = 'founder' | 'mentor' | 'investor' | 'org' | 'admin' | 'super_admin';
 
 type ManagedUser = {
   id: string;
@@ -98,10 +104,10 @@ type ManagedUser = {
  * and stay unset rather than asserted.
  */
 function toManagedUser(row: AdminUserItem): ManagedUser {
-  const role = (['admin', 'moderator', 'mentor', 'founder', 'co-founder', 'user'] as const)
+  const role = (['founder', 'mentor', 'investor', 'org', 'admin', 'super_admin'] as const)
     .includes(row.role as UserRole)
     ? (row.role as UserRole)
-    : 'user';
+    : 'founder';
   return {
     id: row.id,
     name: row.profile?.displayName ?? row.email,
@@ -167,7 +173,7 @@ const MOCK_USERS: ManagedUser[] = [
     id: '5',
     name: 'David Kim',
     email: 'david.kim@example.com',
-    role: 'user',
+    role: 'investor',
     status: 'pending',
     verified: false,
     createdAt: '2024-04-02',
@@ -185,12 +191,22 @@ const STATUS_STYLES: Record<UserStatus, string> = {
 
 const ROLE_ICONS: Record<UserRole, React.ReactNode> = {
   admin: <Shield className="icon-sm" />,
-  moderator: <Award className="icon-sm" />,
+  super_admin: <Award className="icon-sm" />,
   mentor: <GraduationCap className="icon-sm" />,
   founder: <Rocket className="icon-sm" />,
-  'co-founder': <Users className="icon-sm" />,
-  user: <User className="icon-sm" />,
+  investor: <TrendingUp className="icon-sm" />,
+  org: <Building2 className="icon-sm" />,
 };
+
+const ROLE_OPTIONS: { value: UserRole; en: string; el: string }[] = [
+  { value: 'founder', en: 'Founder', el: 'Ιδρυτής' },
+  { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
+  { value: 'investor', en: 'Investor', el: 'Επενδυτής' },
+  { value: 'org', en: 'Organisation', el: 'Οργανισμός' },
+  { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+  { value: 'super_admin', en: 'Super admin', el: 'Υπερδιαχειριστής' },
+];
+const roleLabel = (role: UserRole) => ROLE_OPTIONS.find((r) => r.value === role)?.en ?? role;
 
 export default function AdminUserManagementPage() {
   const { success, error } = useToast();
@@ -202,17 +218,23 @@ export default function AdminUserManagementPage() {
     retry: 0,
   });
 
-  const [users, setUsers] = useState<ManagedUser[]>(MOCK_USERS);
+  // The sample rows stood in for a failed read in production too; they are
+  // the showcase's now.
+  const { showDemoData } = useDemoData();
+  const [users, setUsers] = useState<ManagedUser[]>([]);
   /** True once real rows are in hand: the write paths refuse to act on the
    *  illustrative ones, which have no server row behind them. */
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     const rows = adminUsers?.users ?? [];
-    if (rows.length === 0) return;
+    if (rows.length === 0) {
+      if (showDemoData) setUsers(MOCK_USERS);
+      return;
+    }
     setUsers(rows.map(toManagedUser));
     setIsLive(true);
-  }, [adminUsers]);
+  }, [adminUsers, showDemoData]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: qk('admin', 'users') });
   const [search, setSearch] = useState('');
@@ -401,12 +423,9 @@ export default function AdminUserManagementPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="moderator">Moderator</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
-                <SelectItem value="founder">Founder</SelectItem>
-                <SelectItem value="co-founder">Co-founder</SelectItem>
-                <SelectItem value="user">User</SelectItem>
+                {ROLE_OPTIONS.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>{r.en}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -544,12 +563,7 @@ export default function AdminUserManagementPage() {
   usePageControls([
     choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', [
       { value: 'all', en: 'All roles', el: 'Όλοι οι ρόλοι' },
-      { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
-      { value: 'moderator', en: 'Moderator', el: 'Συντονιστής' },
-      { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
-      { value: 'founder', en: 'Founder', el: 'Ιδρυτής' },
-      { value: 'co-founder', en: 'Co-founder', el: 'Συνιδρυτής' },
-      { value: 'user', en: 'User', el: 'Χρήστης' },
+      ...ROLE_OPTIONS,
     ], roleFilter, (v) => { setRoleFilter(v); setPage(1); }),
     choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
       { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
@@ -599,11 +613,7 @@ export default function AdminUserManagementPage() {
         <p>
           Use the <strong>filters in the page tools</strong> on the right to narrow by role or status. Select rows with
           checkboxes for <strong>bulk activate, suspend, or delete</strong>. Open a user with the eye
-          icon or row menu — full detail lives on{' '}
-          <Link href="/admin/user-detail/1" className="text-primary-accessible underline-offset-2 hover:underline">
-            User detail
-          </Link>
-          .
+          icon or row menu; each user&apos;s name opens their full admin detail page.
         </p>
       </HelpCallout>
 
@@ -677,7 +687,7 @@ export default function AdminUserManagementPage() {
                   </div>
                   <Badge variant="outline" className="gap-1 capitalize">
                     {ROLE_ICONS[user.role]}
-                    {user.role}
+                    {roleLabel(user.role)}
                   </Badge>
                   <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
                     {user.status}

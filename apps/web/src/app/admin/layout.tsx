@@ -6,14 +6,18 @@ import Link from 'next/link';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { AppShellFrame } from '@/components/layout/AppShell';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Building2, KeyRound, Globe, Zap } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
+import { LayoutDashboard, LayoutGrid, Building2, KeyRound, Globe, Zap } from 'lucide-react';
 
+// The overview is the platform admin's home (the role's landing page); the
+// console holds the moderation queue and the twelve operational sections.
 const ADMIN_NAV = [
-  { href: '/admin',              label: 'Platform',      icon: LayoutGrid },
-  { href: '/admin/tenants',      label: 'Organizations',  icon: Building2 },
-  { href: '/admin/sso',          label: 'SSO',            icon: KeyRound },
-  { href: '/admin/domains',      label: 'Domains',        icon: Globe },
-  { href: '/admin/automations',  label: 'Automations',    icon: Zap },
+  { href: '/admin/dashboard',    label: 'Overview',       labelEl: 'Επισκόπηση',   icon: LayoutDashboard },
+  { href: '/admin',              label: 'Console',        labelEl: 'Κονσόλα',      icon: LayoutGrid },
+  { href: '/admin/tenants',      label: 'Organisations',  labelEl: 'Οργανισμοί',   icon: Building2 },
+  { href: '/admin/sso',          label: 'SSO',            labelEl: 'SSO',          icon: KeyRound },
+  { href: '/admin/domains',      label: 'Domains',        labelEl: 'Τομείς',       icon: Globe },
+  { href: '/admin/automations',  label: 'Automations',    labelEl: 'Αυτοματισμοί', icon: Zap },
 ];
 
 function AdminSubNav() {
@@ -21,7 +25,7 @@ function AdminSubNav() {
   return (
     <div className="border-b border-border/50 bg-card/60 px-4">
       <nav aria-label="Admin sections" className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-[84rem] mx-auto">
-        {ADMIN_NAV.map(({ href, label, icon: Icon }) => {
+        {ADMIN_NAV.map(({ href, label, labelEl, icon: Icon }) => {
           const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
           return (
             <Link
@@ -35,8 +39,8 @@ function AdminSubNav() {
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
               )}
             >
-              <Icon className="icon-sm" />
-              {label}
+              <Icon className="icon-sm" aria-hidden="true" />
+              <BilingualText en={label} el={labelEl} compact />
             </Link>
           );
         })}

@@ -366,7 +366,8 @@ export const adminNavSections: NavSection[] = [
   {
     section: 'Platform Admin',
     links: [
-      { href: '/admin', label: 'Admin Dashboard', icon: Shield },
+      { href: '/admin/dashboard', label: 'Platform overview', icon: LayoutDashboard },
+      { href: '/admin', label: 'Admin console', icon: Shield },
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/tenants', label: 'Tenants', icon: Building2 },
       { href: '/admin/programs', label: 'Programs', icon: Award },

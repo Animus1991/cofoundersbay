@@ -1200,6 +1200,17 @@ html {
     letter-spacing: 0;
   }
 
+  /* Greek set in capitals with open tracking drops its accents and loses its
+     word shapes: "ΔΡΑΣΤΗΡΙΟΤΗΤΑ & ΦΗΜΗ" under "ACTIVITY & REPUTATION" read as
+     a second shout rather than a translation. An uppercase label keeps its
+     capitals in English and reads Greek in sentence case, whichever of the
+     two is the primary line. */
+  .uppercase [lang='el'],
+  .uppercase[lang='el'] {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
   /* Separator between primary and secondary in inline mode. */
   .bilingual-separator {
     @apply select-none text-muted-foreground/40;

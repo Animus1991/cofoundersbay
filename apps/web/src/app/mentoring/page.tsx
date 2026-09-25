@@ -162,11 +162,16 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-0.5">
-                <Star className="icon-sm fill-status-warning text-status-warning" />
-                <span className="font-medium text-foreground">{mentor.rating > 0 ? mentor.rating.toFixed(1) : 'New'}</span>
-                {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
-              </span>
+              {/* Search results carry no rating, so a star with "New" beside
+                  every mentor claimed each one was unreviewed. The slot shows
+                  a rating only when one is known. */}
+              {mentor.rating > 0 && (
+                <span className="flex items-center gap-0.5">
+                  <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
+                  <span className="font-medium text-foreground">{mentor.rating.toFixed(1)}</span>
+                  {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
+                </span>
+              )}
               {mentor.location && (
                 <span className="flex items-center gap-1"><MapPin className="icon-sm" />{mentor.location}</span>
               )}

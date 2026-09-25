@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -451,11 +451,70 @@ function UserRow({
   );
 }
 
+/** The console's sections, grouped by the job each serves. */
+const ADMIN_TAB_GROUPS: ReadonlyArray<{
+  en: string;
+  el: string;
+  tabs: ReadonlyArray<{ value: string; en: string; el: string; icon: typeof Flag }>;
+}> = [
+  {
+    en: 'Moderation',
+    el: 'Έλεγχος',
+    tabs: [
+      { value: 'reports', en: 'Reports', el: 'Αναφορές', icon: Flag },
+      { value: 'abuse', en: 'Abuse monitor', el: 'Καταχρήσεις', icon: AlertTriangle },
+      { value: 'audit', en: 'Audit log', el: 'Αρχείο ελέγχου', icon: Shield },
+    ],
+  },
+  {
+    en: 'People',
+    el: 'Άνθρωποι',
+    tabs: [
+      { value: 'users', en: 'Users', el: 'Χρήστες', icon: Users },
+      { value: 'cohorts', en: 'Cohorts', el: 'Κοόρτεις', icon: GraduationCap },
+    ],
+  },
+  {
+    en: 'Content',
+    el: 'Περιεχόμενο',
+    tabs: [
+      { value: 'content', en: 'Events & jobs', el: 'Εκδηλώσεις & αγγελίες', icon: Layers },
+      { value: 'email', en: 'Email templates', el: 'Πρότυπα email', icon: Mail },
+    ],
+  },
+  {
+    en: 'Insights',
+    el: 'Αναλύσεις',
+    tabs: [
+      { value: 'analytics', en: 'Analytics', el: 'Αναλυτικά', icon: BarChart3 },
+      { value: 'score-inspector', en: 'Score inspector', el: 'Έλεγχος βαθμολογίας', icon: BarChart3 },
+      { value: 'behavior', en: 'Behaviour AI', el: 'Συμπεριφορά (AI)', icon: Brain },
+      { value: 'experiments', en: 'Experiments', el: 'Πειράματα', icon: FlaskConical },
+      { value: 'gamification', en: 'Gamification', el: 'Παιχνιδοποίηση', icon: Zap },
+    ],
+  },
+];
+
+const WIDE_QUERY = '(min-width: 1024px)';
+/** True from lg up, where the console's sections become a column. */
+function useWide(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const list = window.matchMedia(WIDE_QUERY);
+      list.addEventListener?.('change', onChange);
+      return () => list.removeEventListener?.('change', onChange);
+    },
+    () => window.matchMedia(WIDE_QUERY).matches,
+    () => false,
+  );
+}
+
 export default function AdminPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('reports');
+  const wide = useWide();
   const [userSearch, setUserSearch] = useState('');
   const [cohortSearch, setCohortSearch] = useState('');
   const [showNewCohort, setShowNewCohort] = useState(false);
@@ -672,10 +731,10 @@ export default function AdminPage() {
     { id: 'reactivate_user', labelEn: 'Reactivate user', labelEl: 'Επανενεργοποίηση χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'active'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'suspended' ? { control: 'suspend_user', value: v } : prior === 'banned' ? { control: 'ban_user', value: v } : undefined; }, run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'active' }); } },
     { id: 'ban_user', labelEn: 'Ban user', labelEl: 'Αποκλεισμός χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'banned'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'active' ? { control: 'reactivate_user', value: v } : prior === 'suspended' ? { control: 'suspend_user', value: v } : undefined; }, run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'banned' }); } },
     { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κοορτής', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κοόρτεις.', run: (v) => { const c = cohorts.find((x) => x.id === v); if (c) void deleteCohort(c); } },
-    { id: 'feature_event', labelEn: 'Feature or unfeature event', labelEl: 'Προβολή ή απόσυρση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { const e = events.find((x) => x.id === v); if (e) featureMutation.mutate({ type: 'event', id: e.id, featured: !e.isFeatured }); } },
-    { id: 'feature_job', labelEn: 'Feature or unfeature job', labelEl: 'Προβολή ή απόσυρση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { const j = jobs.find((x) => x.id === v); if (j) featureMutation.mutate({ type: 'job', id: j.id, featured: !j.isFeatured }); } },
-    { id: 'remove_event', labelEn: 'Remove event', labelEl: 'Αφαίρεση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'event', id: v }); } },
-    { id: 'remove_job', labelEn: 'Remove job', labelEl: 'Αφαίρεση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'job', id: v }); } },
+    { id: 'feature_event', labelEn: 'Feature or unfeature event', labelEl: 'Προβολή ή απόσυρση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { const e = events.find((x) => x.id === v); if (e) featureMutation.mutate({ type: 'event', id: e.id, featured: !e.isFeatured }); } },
+    { id: 'feature_job', labelEn: 'Feature or unfeature job', labelEl: 'Προβολή ή απόσυρση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { const j = jobs.find((x) => x.id === v); if (j) featureMutation.mutate({ type: 'job', id: j.id, featured: !j.isFeatured }); } },
+    { id: 'remove_event', labelEn: 'Remove event', labelEl: 'Αφαίρεση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'event', id: v }); } },
+    { id: 'remove_job', labelEn: 'Remove job', labelEl: 'Αφαίρεση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'job', id: v }); } },
   ]);
 
   /*
@@ -727,6 +786,12 @@ export default function AdminPage() {
             value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
             icon={<Users className="icon-md" />}
           />
+          <Link
+            href="/admin/dashboard"
+            className="flex min-h-10 items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-primary-accessible hover:bg-muted/70 focus-ring"
+          >
+            <BilingualText en="Platform overview and API health" el="Επισκόπηση πλατφόρμας και υγεία API" compact wrap />
+          </Link>
         </div>
       ),
     },
@@ -765,68 +830,50 @@ export default function AdminPage() {
 
   return (
     <AppShell
-      title="Admin Dashboard"
-      description="Manage users, moderate content, and monitor platform health"
+      title="Admin console"
+      titleEl="Κονσόλα διαχείρισης"
+      description="Reports, people, content and the platform's tools."
+      descriptionEl="Αναφορές, άνθρωποι, περιεχόμενο και τα εργαλεία της πλατφόρμας."
       showHelp
       rail={rail}
     >
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="reports" className="gap-2">
-            <Flag className="icon-sm" aria-hidden="true" />
-            Reports
-            {pendingReports > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
-                {pendingReports}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="users" className="gap-2">
-            <Users className="icon-sm" aria-hidden="true" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="content" className="gap-2">
-            <Layers className="icon-sm" aria-hidden="true" />
-            Content
-          </TabsTrigger>
-          <TabsTrigger value="cohorts" className="gap-2">
-            <GraduationCap className="icon-sm" aria-hidden="true" />
-            Cohorts
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2">
-            <BarChart3 className="icon-sm" aria-hidden="true" />
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="audit" className="gap-2">
-            <Shield className="icon-sm" aria-hidden="true" />
-            Audit Log
-          </TabsTrigger>
-          <TabsTrigger value="email" className="gap-2">
-            <Mail className="icon-sm" aria-hidden="true" />
-            Email Templates
-          </TabsTrigger>
-          <TabsTrigger value="gamification" className="gap-2">
-            <Zap className="icon-sm" aria-hidden="true" />
-            Gamification
-          </TabsTrigger>
-          <TabsTrigger value="score-inspector" className="gap-2">
-            <BarChart3 className="icon-sm" aria-hidden="true" />
-            Score Inspector
-          </TabsTrigger>
-          <TabsTrigger value="abuse" className="gap-2">
-            <AlertTriangle className="icon-sm" aria-hidden="true" />
-            Abuse Monitor
-          </TabsTrigger>
-          <TabsTrigger value="experiments" className="gap-2">
-            <FlaskConical className="icon-sm" aria-hidden="true" />
-            Experiments
-          </TabsTrigger>
-          <TabsTrigger value="behavior" className="gap-2">
-            <Brain className="icon-sm" aria-hidden="true" />
-            Behavior AI
-          </TabsTrigger>
+      {/*
+        Twelve sections in one horizontal strip hid a third of them past its
+        edge at every desktop width ("Abus" was the last visible). On a
+        desktop they are a column, grouped by the job each one serves, so all
+        twelve are visible and the four groups say where to look; below lg
+        the same list is the scrolling strip it was, in the same order.
+      */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        orientation={wide ? 'vertical' : 'horizontal'}
+        className="lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start lg:gap-6"
+      >
+        <TabsList className="lg:sticky lg:top-24 lg:flex lg:w-full lg:flex-col lg:items-stretch lg:gap-0.5 lg:overflow-visible lg:p-1.5">
+          {ADMIN_TAB_GROUPS.map((group) => (
+            <Fragment key={group.en}>
+              <span aria-hidden="true" className="hidden px-3 pb-1 pt-3 text-[11px] font-medium text-muted-foreground/80 first:pt-1.5 lg:block">
+                <BilingualText en={group.en} el={group.el} compact />
+              </span>
+              {group.tabs.map(({ value, en, el, icon: Icon }) => (
+                <TabsTrigger key={value} value={value} className="gap-2 lg:justify-start lg:whitespace-normal lg:text-left">
+                  <Icon className="icon-sm shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 lg:flex-1">
+                    <BilingualText en={en} el={el} stacked wrap />
+                  </span>
+                  {value === 'reports' && pendingReports > 0 && (
+                    <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
+                      {pendingReports}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              ))}
+            </Fragment>
+          ))}
         </TabsList>
+
+        <div className="min-w-0 lg:[&>[role=tabpanel]]:mt-0">
 
         {/* Reports Tab */}
         <TabsContent value="reports" className="mt-6 space-y-4">
@@ -1311,6 +1358,7 @@ export default function AdminPage() {
         <TabsContent value="behavior" className="mt-6">
           <BehaviorAdminPanel />
         </TabsContent>
+        </div>
       </Tabs>
     </AppShell>
   );

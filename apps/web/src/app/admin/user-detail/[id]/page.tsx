@@ -2,175 +2,314 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Ban,
   CheckCircle2,
+  Flag,
   Mail,
-  MapPin,
+  PauseCircle,
+  ScrollText,
   Shield,
-  User,
-  Calendar,
-  Activity,
+  UserX,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { HelpCallout } from '@/components/common/HelpCallout';
+import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/toast';
+import {
+  changeUserRole,
+  listAdminAuditLogs,
+  listAdminReports,
+  listAdminUsers,
+  updateAdminUserModeration,
+  type AdminUserItem,
+} from '@/lib/api';
+import { qk } from '@/lib/query-keys';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 
-const DEMO_USER = {
-  id: '1',
-  name: 'John Doe',
-  email: 'john@example.com',
-  role: 'founder',
-  status: 'active' as const,
-  verified: true,
-  location: 'Athens, GR',
-  createdAt: '2024-01-15',
-  lastActive: '2 hours ago',
-  bio: 'Building a climate-tech startup. Looking for a technical co-founder.',
-  stats: { connections: 42, posts: 18, sessions: 6 },
-  moderation: { warnings: 0, reports: 0 },
+// The API's Role enum; ChangeUserRoleDto accepts nothing else.
+const ROLES = [
+  { value: 'founder', en: 'Founder', el: 'Ιδρυτής' },
+  { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
+  { value: 'investor', en: 'Investor', el: 'Επενδυτής' },
+  { value: 'org', en: 'Organisation', el: 'Οργανισμός' },
+  { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+  { value: 'super_admin', en: 'Super admin', el: 'Υπερδιαχειριστής' },
+] as const;
+
+const STATUS: Record<AdminUserItem['moderationStatus'], { en: string; el: string; variant: 'success' | 'warning' | 'destructive' }> = {
+  active: { en: 'Active', el: 'Ενεργός', variant: 'success' },
+  suspended: { en: 'Suspended', el: 'Σε αναστολή', variant: 'warning' },
+  banned: { en: 'Banned', el: 'Αποκλεισμένος', variant: 'destructive' },
 };
 
+const REPORT_STATUS: Record<string, 'warning' | 'success' | 'secondary' | 'info'> = {
+  pending: 'warning',
+  reviewed: 'info',
+  resolved: 'success',
+  dismissed: 'secondary',
+};
+
+/*
+ * Every id opened "John Doe", john@example.com, 42 connections, and three
+ * buttons that toasted "Demo only" - in production as well. The page now
+ * reads the person from the admin user list (there is no single-user admin
+ * route; the list is the one /admin/user-management caches), the reports
+ * filed about and by them, and the audit entries about their account. The
+ * three actions write through the same endpoints the console uses.
+ */
 export default function AdminUserDetailPage() {
   const params = useParams();
-  const id = String(params?.id ?? '1');
-  const { success } = useToast();
-  const user = { ...DEMO_USER, id };
+  const id = String(params?.id ?? '');
+  const queryClient = useQueryClient();
+  const confirm = useConfirm();
+  const { success, error: showError } = useToast();
 
-  const initials =
-    user.name
-      .split(' ')
-      .map((n: string) => n[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || '??';
+  const { data: usersData, isLoading: usersLoading, isError: usersError } = useQuery({
+    queryKey: qk('admin', 'users'),
+    queryFn: () => listAdminUsers({ limit: 200 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: reportsData } = useQuery({
+    queryKey: qk('admin', 'reports'),
+    queryFn: () => listAdminReports({ limit: 100 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const { data: auditData } = useQuery({
+    queryKey: qk('admin', 'audit-logs', 'user-detail', id),
+    queryFn: () => listAdminAuditLogs({ entityType: 'user', limit: 100 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const user = usersData?.users?.find((u) => u.id === id) ?? null;
+  const reports = reportsData?.reports ?? [];
+  const against = reports.filter((r) => r.reported?.id === id);
+  const filed = reports.filter((r) => r.reporter?.id === id);
+  const openAgainst = against.filter((r) => r.status === 'pending' || r.status === 'reviewed');
+  const history = (auditData?.logs ?? []).filter((l) => l.entityId === id);
+
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
+    void queryClient.invalidateQueries({ queryKey: qk('admin', 'audit-logs') });
+  };
+
+  const moderation = useMutation({
+    mutationFn: (status: AdminUserItem['moderationStatus']) => updateAdminUserModeration(id, status),
+    onSuccess: (_, status) => {
+      refresh();
+      success(status === 'active' ? 'Account reactivated' : status === 'suspended' ? 'Account suspended' : 'Account banned');
+    },
+    onError: (err) => showError('Could not change the account status', err instanceof Error ? err.message : undefined),
+  });
+  const role = useMutation({
+    mutationFn: (next: string) => changeUserRole(id, next),
+    onSuccess: () => {
+      refresh();
+      success('Role changed');
+    },
+    onError: (err) => showError('Could not change the role', err instanceof Error ? err.message : undefined),
+  });
+
+  const name = user?.profile?.displayName ?? user?.email ?? 'User';
+  const status = user ? STATUS[user.moderationStatus] ?? STATUS.active : null;
+
+  const setStatus = async (next: AdminUserItem['moderationStatus']) => {
+    if (next !== 'active') {
+      const ok = await confirm({
+        title: next === 'banned' ? `Ban ${name}?` : `Suspend ${name}?`,
+        description:
+          next === 'banned'
+            ? 'They lose access to the platform until an admin reactivates the account.'
+            : 'They cannot sign in while suspended. Reactivate the account to restore access.',
+        confirmLabel: next === 'banned' ? 'Ban account' : 'Suspend account',
+      });
+      if (!ok) return;
+    }
+    moderation.mutate(next);
+  };
+
+  const dash = '—';
 
   return (
     <AppShell
-      title={user.name}
-      description="Admin view — account status, activity summary, and moderation controls."
+      title={user ? name : 'User detail'}
+      titleEl={user ? name : 'Στοιχεία χρήστη'}
+      description="Account status, reports and the admin actions taken on this account."
+      descriptionEl="Κατάσταση λογαριασμού, αναφορές και οι διαχειριστικές ενέργειες σε αυτόν."
       actions={
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/user-management">
-            <ArrowLeft className="icon-sm mr-1.5" />
-            Back to user list
+            <ArrowLeft className="icon-sm mr-1.5" aria-hidden="true" />
+            <BilingualText en="Back to user list" el="Πίσω στη λίστα χρηστών" compact />
           </Link>
         </Button>
       }
     >
       <HelpCallout id="admin-user-detail" title="Admin user detail">
         <p>
-          Changes here affect platform access only — they do not delete the person&apos;s public profile
-          history. Use <strong>Suspend</strong> for temporary lockout; contact support for permanent removal
-          requests.
+          Changes here affect platform access only; they do not delete the person&apos;s public profile or
+          history. Use <strong>Suspend</strong> for a temporary lockout and <strong>Ban</strong> for a lasting one;
+          both are undone with <strong>Reactivate</strong>.
         </p>
       </HelpCallout>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+      {usersLoading && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+          <Skeleton className="h-72" />
+          <Skeleton className="h-72" />
+        </div>
+      )}
+
+      {!usersLoading && !user && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={undefined} alt={user.name} />
-              <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-lg font-semibold">{user.name}</h2>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Badge variant="outline" className="capitalize">{user.role}</Badge>
-              <Badge variant="outline" className="capitalize">{user.status}</Badge>
-              {user.verified && <Badge>Verified</Badge>}
-            </div>
-            <div className="mt-2 flex w-full flex-col gap-2">
-              <Button size="sm" className="w-full" onClick={() => success('Email queued', 'Demo only — no email sent.')}>
-                <Mail className="icon-sm mr-2" /> Send email
-              </Button>
-              <Button size="sm" variant="outline" className="w-full" onClick={() => success('User suspended', 'Demo only.')}>
-                <Ban className="icon-sm mr-2" /> Suspend account
-              </Button>
-              <Button size="sm" variant="outline" className="w-full" onClick={() => success('Role updated', 'Demo only.')}>
-                <Shield className="icon-sm mr-2" /> Change role
-              </Button>
-            </div>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <UserX className="icon-xl text-muted-foreground/60" aria-hidden="true" />
+            <p className="font-medium">
+              <BilingualText
+                en={usersError ? 'The user list could not be loaded' : 'No user with this id'}
+                el={usersError ? 'Η λίστα χρηστών δεν φορτώθηκε' : 'Δεν υπάρχει χρήστης με αυτό το id'}
+              />
+            </p>
+            <p className="font-mono text-xs text-muted-foreground">{id}</p>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/user-management">
+                <BilingualText en="Open the user list" el="Άνοιγμα λίστας χρηστών" compact />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
+      )}
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 kpi-odd-span-sm gap-3 sm:grid-cols-3">
-            {[
-              { label: 'Connections', value: user.stats.connections, icon: User },
-              { label: 'Posts', value: user.stats.posts, icon: Activity },
-              { label: 'Sessions', value: user.stats.sessions, icon: Calendar },
-            ].map(({ label, value, icon: Icon }) => (
-              <Card key={label}>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <Icon className="icon-md text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="text-xl font-bold">{value}</p>
+      {user && status && (
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={user.profile?.avatarUrl ?? undefined} alt={name} />
+                <AvatarFallback className="text-lg">{initialsOf(name)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold">{name}</h2>
+                <p className="break-all text-sm text-muted-foreground">{user.email}</p>
+              </div>
+              <Badge variant={status.variant}>
+                <BilingualText en={status.en} el={status.el} compact />
+              </Badge>
+
+              <div className="mt-2 w-full space-y-1.5 text-left">
+                <label htmlFor="user-role" className="text-xs font-medium text-muted-foreground">
+                  <BilingualText en="Role" el="Ρόλος" compact />
+                </label>
+                <Select value={user.role} onValueChange={(v) => { if (v !== user.role) role.mutate(v); }} disabled={role.isPending}>
+                  <SelectTrigger id="user-role" aria-label="Role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLES.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>{r.en}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="mt-2 flex w-full flex-col gap-2">
+                <Button size="sm" variant="outline" className="w-full" asChild>
+                  <a href={`mailto:${user.email}`}>
+                    <Mail className="icon-sm mr-2" aria-hidden="true" />
+                    <BilingualText en="Email" el="Email" compact />
+                  </a>
+                </Button>
+                {user.moderationStatus === 'active' ? (
+                  <>
+                    <Button size="sm" variant="outline" className="w-full" disabled={moderation.isPending} onClick={() => void setStatus('suspended')}>
+                      <PauseCircle className="icon-sm mr-2" aria-hidden="true" />
+                      <BilingualText en="Suspend account" el="Αναστολή" compact wrap />
+                    </Button>
+                    <Button size="sm" variant="outline" className="w-full text-destructive-accessible" disabled={moderation.isPending} onClick={() => void setStatus('banned')}>
+                      <Ban className="icon-sm mr-2" aria-hidden="true" />
+                      <BilingualText en="Ban account" el="Αποκλεισμός" compact wrap />
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" className="w-full" disabled={moderation.isPending} onClick={() => void setStatus('active')}>
+                    <CheckCircle2 className="icon-sm mr-2" aria-hidden="true" />
+                    <BilingualText en="Reactivate account" el="Επανενεργοποίηση" compact wrap />
+                  </Button>
+                )}
+              </div>
+
+              <dl className="mt-2 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t border-border/60 pt-3 text-left text-xs">
+                <dt className="min-w-0 text-muted-foreground"><BilingualText en="Joined" el="Εγγραφή" stacked wrap /></dt>
+                <dd className="whitespace-nowrap text-right"><RelativeTime date={user.createdAt} format={formatRelativeTime} /></dd>
+                <dt className="min-w-0 text-muted-foreground"><BilingualText en="Last seen" el="Τελευταία παρουσία" stacked wrap /></dt>
+                <dd className="whitespace-nowrap text-right">{user.lastSeenAt ? <RelativeTime date={user.lastSeenAt} format={formatRelativeTime} /> : dash}</dd>
+                <dt className="text-muted-foreground">ID</dt>
+                <dd className="max-w-[9rem] truncate text-right font-mono" title={user.id}>{user.id}</dd>
+              </dl>
+            </CardContent>
+          </Card>
+
+          <div className="min-w-0 space-y-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+              <MetricTile icon={Flag} label="Open reports about them" labelEl="Ανοιχτές αναφορές γι' αυτόν" value={reportsData ? openAgainst.length : dash} caption={reportsData ? `${against.length} in total` : undefined} captionEl={reportsData ? `${against.length} συνολικά` : undefined} href="/admin/reports" />
+              <MetricTile icon={Flag} label="Reports they filed" labelEl="Αναφορές που υπέβαλε" value={reportsData ? filed.length : dash} />
+              <MetricTile icon={ScrollText} label="Admin actions" labelEl="Διαχειριστικές ενέργειες" value={auditData ? history.length : dash} href="/admin/audit-log" />
+            </div>
+
+            <SectionCard title="Reports about this account" titleEl="Αναφορές για αυτόν τον λογαριασμό" icon={Flag} action={{ href: '/admin/reports', label: 'All reports', labelEl: 'Όλες οι αναφορές' }}>
+              {against.map((r) => (
+                <div key={r.id} className="rounded-lg border border-border/60 p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm" className="capitalize">{r.status}</Badge>
+                    <span className="text-xs capitalize text-muted-foreground">{r.type}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      <RelativeTime date={r.createdAt} format={formatRelativeTime} />
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <p className="mt-1.5 text-sm">{r.reason}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Reported by {r.reporter?.name ?? r.reporter?.email ?? 'someone'}</p>
+                </div>
+              ))}
+              {reportsData && against.length === 0 && (
+                <EmptyLine en="Nobody has reported this account." el="Κανείς δεν έχει αναφέρει αυτόν τον λογαριασμό." />
+              )}
+            </SectionCard>
+
+            <SectionCard title="Admin history" titleEl="Ιστορικό διαχείρισης" icon={Shield} action={{ href: '/admin/audit-log', label: 'Audit log', labelEl: 'Αρχείο ελέγχου' }}>
+              {history.map((l) => (
+                <div key={l.id} className="flex flex-wrap items-start gap-x-3 gap-y-1 border-b border-border/50 py-2 text-sm last:border-b-0">
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{l.action}</code>
+                  <span className="min-w-0 flex-1 text-muted-foreground">
+                    {l.actorEmail}
+                    {typeof l.meta?.reason === 'string' ? ` · ${l.meta.reason}` : ''}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    <RelativeTime date={l.createdAt} format={formatRelativeTime} />
+                  </span>
+                </div>
+              ))}
+              {auditData && history.length === 0 && (
+                <EmptyLine en="No admin action has been taken on this account." el="Δεν έχει γίνει διαχειριστική ενέργεια σε αυτόν τον λογαριασμό." />
+              )}
+            </SectionCard>
           </div>
-
-          <Tabs defaultValue="overview">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
-              <TabsTrigger value="moderation">Moderation</TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Profile</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p>{user.bio}</p>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="icon-sm" /> {user.location}
-                  </div>
-                  <dl className="grid grid-cols-2 gap-2 pt-2">
-                    <dt className="text-muted-foreground">User ID</dt>
-                    <dd className="font-mono text-xs">{id}</dd>
-                    <dt className="text-muted-foreground">Joined</dt>
-                    <dd>{user.createdAt}</dd>
-                    <dt className="text-muted-foreground">Last active</dt>
-                    <dd>{user.lastActive}</dd>
-                  </dl>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="activity">
-              <Card>
-                <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                  Recent logins, messages, and profile edits appear here when connected to the audit API.
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="moderation">
-              <Card>
-                <CardContent className="flex items-center gap-3 p-6">
-                  <CheckCircle2 className="icon-lg text-status-success" />
-                  <div>
-                    <p className="font-medium">Clean record</p>
-                    <p className="text-sm text-muted-foreground">
-                      {user.moderation.warnings} warnings · {user.moderation.reports} open reports
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
         </div>
-      </div>
+      )}
     </AppShell>
   );
 }

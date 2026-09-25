@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   Calendar as CalendarIcon,
@@ -32,6 +33,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventItem, type Milestone, type MentorshipSessionItem } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 
@@ -123,6 +127,63 @@ const DEMO_EVENTS: CalendarEvent[] = [
   { id: '12', title: 'User Testing Round 2',         titleEl: 'Δοκιμές χρηστών γύρος 2',          type: 'milestone', date: d(27), priority: 'medium', status: 'pending' },
   { id: '13', title: 'Community AMA',                titleEl: 'AMA κοινότητας',                   type: 'event',     date: d(28, 19), time: '19:00', endTime: '20:00', location: 'Discord', href: '/events' },
 ];
+
+// ── Live items ───────────────────────────────────────────────────────────────
+//
+// The calendar drew the thirteen items above for every account, production
+// included ("Mentor Session — Sarah Lee", "Advisor Call — Dr. Papadakis"),
+// under a notice that there was no merged API. There still is not one, so the
+// page merges the three it has: milestone due dates, upcoming mentoring
+// sessions (both sides: the ones you attend and the ones you give), and the
+// events you said you are going to or interested in. The samples above are the
+// showcase's, shown only when the demo has nothing of its own.
+
+const hhmm = (iso: string) => iso.slice(11, 16);
+
+function fromMilestone(mst: Milestone): CalendarEvent | null {
+  if (!mst.dueDate) return null;
+  return {
+    id: `milestone-${mst.id}`,
+    title: mst.title,
+    type: mst.priority === 'high' ? 'deadline' : 'milestone',
+    date: mst.dueDate,
+    priority: mst.priority,
+    status: mst.status,
+    href: '/milestones',
+  };
+}
+
+function fromSession(sess: MentorshipSessionItem): CalendarEvent {
+  const end = new Date(Date.parse(sess.scheduledAt) + (sess.duration ?? 0) * 60_000).toISOString();
+  return {
+    id: `session-${sess.id}`,
+    title: sess.title ?? 'Mentoring session',
+    titleEl: sess.title ?? 'Συνεδρία mentoring',
+    type: 'session',
+    date: sess.scheduledAt,
+    time: hhmm(sess.scheduledAt),
+    endTime: sess.duration ? hhmm(end) : undefined,
+    description: sess.agenda ?? undefined,
+    location: sess.meetingType === 'in_person' ? sess.meetingLocation ?? undefined : sess.meetingType === 'video' ? 'Video call' : undefined,
+    locationEl: sess.meetingType === 'video' ? 'Βιντεοκλήση' : undefined,
+    status: sess.status,
+    href: '/coaching',
+  };
+}
+
+function fromEvent(ev: EventItem): CalendarEvent {
+  return {
+    id: `event-${ev.id}`,
+    title: ev.title,
+    type: 'event',
+    date: ev.startAt,
+    time: hhmm(ev.startAt),
+    endTime: ev.endAt ? hhmm(ev.endAt) : undefined,
+    location: ev.isOnline ? 'Online' : ev.location ?? undefined,
+    locationEl: ev.isOnline ? 'Διαδικτυακά' : undefined,
+    href: `/events/${ev.id}`,
+  };
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -298,11 +359,38 @@ export default function CalendarPage() {
     else setCurrentMonth((m) => m + 1);
   };
 
+  const { showDemoData } = useDemoData();
+  const { data: milestoneData, isLoading: milestonesLoading } = useQuery({
+    queryKey: qk('milestones', 'all', 'all'),
+    queryFn: () => listMilestones({ limit: 100 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const { data: sessionData, isLoading: sessionsLoading } = useQuery({
+    queryKey: qk('mentorships', 'sessions-upcoming'),
+    queryFn: getUpcomingMentorshipSessions,
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const { data: eventData, isLoading: eventsLoading } = useQuery({
+    queryKey: qk('events', 'calendar'),
+    queryFn: () => listEvents({ scope: 'upcoming', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const loading = milestonesLoading || sessionsLoading || eventsLoading;
+  const liveEvents = useMemo<CalendarEvent[]>(() => [
+    ...(milestoneData?.milestones ?? []).map(fromMilestone).filter((e): e is CalendarEvent => e != null),
+    ...(sessionData?.sessions ?? []).filter((x) => x.status === 'scheduled').map(fromSession),
+    ...(eventData?.events ?? []).filter((ev) => ev.viewerRsvp === 'going' || ev.viewerRsvp === 'interested').map(fromEvent),
+  ], [milestoneData, sessionData, eventData]);
+  const isSample = !loading && liveEvents.length === 0 && showDemoData;
+
   const filteredEvents = useMemo(() => {
-    let evts = DEMO_EVENTS;
+    let evts = liveEvents.length ? liveEvents : isSample ? DEMO_EVENTS : [];
     if (typeFilter !== 'all') evts = evts.filter((e) => e.type === typeFilter);
-    return evts.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [typeFilter]);
+    return [...evts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [typeFilter, liveEvents, isSample]);
 
   const selectedDayEvents = useMemo(() => {
     return filteredEvents.filter((e) => isSameDay(new Date(e.date), selectedDate));
@@ -328,8 +416,8 @@ export default function CalendarPage() {
       id: 'month',
       labelEn: 'This month',
       labelEl: 'Αυτός ο μήνας',
-      rows: thisMonthEvents.map((e) => `${e.date.slice(0, 10)}${e.time ? ` ${e.time}` : ''} · ${e.title} · ${e.type}${e.location ? ` · ${e.location}` : ''}`),
-      sample: true,
+      rows: loading ? undefined : thisMonthEvents.map((e) => `${e.date.slice(0, 10)}${e.time ? ` ${e.time}` : ''} · ${e.title} · ${e.type}${e.location ? ` · ${e.location}` : ''}`),
+      sample: isSample,
     },
   ]);
   // Offered to the assistant: the event-type filter, through the same setter.
@@ -410,7 +498,7 @@ export default function CalendarPage() {
     <AppShell
       showHelp
       rail={rail}
-      askAi="The calendar still shows sample items. What live surfaces should I use for sessions, events, and milestones, and what should I do next?"
+      askAi="What is coming up on my calendar this week, and what should I prepare first?"
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center overflow-hidden rounded-xl border">
@@ -429,11 +517,13 @@ export default function CalendarPage() {
       }
     >
       <div className="space-y-6">
-        <SampleDataNotice
-          surface="Calendar"
-          detail="Live sessions, events, and milestone due dates are not merged into one API yet. These items are samples so you can learn the layout. Ask the assistant to open Events or Milestones instead."
-          askAiPrompt="The calendar still shows sample items. What live surfaces should I use for sessions, events, and milestones, and what should I do next?"
-        />
+        {isSample && (
+          <SampleDataNotice
+            surface="Calendar"
+            detail="You have no milestone due dates, upcoming sessions or events you are going to yet. These items are samples so you can learn the layout."
+            askAiPrompt="What should I put on my calendar first: milestones, a mentoring session, or an event?"
+          />
+        )}
 
         {view === 'calendar' ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">

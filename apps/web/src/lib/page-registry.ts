@@ -106,7 +106,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/tenant/settings', title: 'Tenant Settings', description: 'General workspace settings: membership policy, notifications, and email preferences.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
 
   // ── Platform admin ──
-  { path: '/admin', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', helpId: 'admin-overview', helpTitle: 'What this console covers', helpTitleEl: 'Τι καλύπτει αυτή η κονσόλα', section: 'Admin', audience: ['platform_admin'], priority: 'critical', status: 'complete' },
+  { path: '/admin', title: 'Admin console', description: 'Moderation queue, users, content, cohorts and the platform\'s operational tools.', helpId: 'admin-overview', helpTitle: 'What this console covers', helpTitleEl: 'Τι καλύπτει αυτή η κονσόλα', section: 'Admin', audience: ['platform_admin'], priority: 'critical', status: 'complete' },
   { path: '/admin/users', title: 'Users', description: 'Search and moderate platform accounts.', section: 'Admin', status: 'complete' },
   { path: '/admin/user-management', title: 'User management', description: 'Advanced filters, bulk actions, and verification controls.', helpId: 'admin-user-management', helpTitle: 'User management', helpTitleEl: 'Διαχείριση χρηστών', section: 'Admin', status: 'complete' },
   { path: '/admin/analytics', title: 'Global analytics', description: 'Growth, engagement, and financial platform metrics.', helpId: 'admin-analytics', helpTitle: 'Reading the analytics', helpTitleEl: 'Πώς διαβάζονται τα αναλυτικά', section: 'Admin', status: 'complete' },
@@ -118,7 +118,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   // Without their own entry these fell through to `/admin` and each announced
   // itself as "Admin dashboard — platform-wide health", which is a different
   // page. Titles here match the heading each route already renders.
-  { path: '/admin/dashboard', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', section: 'Admin', audience: ['platform_admin'], status: 'complete' },
+  { path: '/admin/dashboard', title: 'Platform overview', description: 'Users, activity, what waits on an admin, and API health.', section: 'Admin', audience: ['platform_admin'], status: 'complete' },
   { path: '/admin/audit-log', title: 'Audit log', description: 'Immutable record of administrative actions — who changed what, and when.', section: 'Admin', status: 'complete' },
   { path: '/admin/automations', title: 'Automation rules', description: 'Trigger-and-action rules that run without manual review.', section: 'Admin', status: 'complete' },
   { path: '/admin/billing', title: 'Billing administration', description: 'Platform revenue, invoices, and subscription states across all accounts.', section: 'Admin', status: 'complete' },

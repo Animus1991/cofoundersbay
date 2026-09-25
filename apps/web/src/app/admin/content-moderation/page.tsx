@@ -151,7 +151,7 @@ export default function ContentModerationPage() {
             {/* basis-48: the decision buttons wrap under the report on a
                 phone instead of squeezing it to one word a line. */}
             <div className="min-w-0 flex-1 basis-48">
-              <p className="font-medium capitalize">{r.type} · {r.reason}</p>
+              <p className="font-medium"><span className="capitalize">{r.type}</span> · {r.reason}</p>
               <p className="text-xs text-muted-foreground">Reported by {r.reporter} · <RelativeTime date={r.createdAt} format={formatRelativeTime} /></p>
                     </div>
             <Badge variant="outline" className="capitalize">{r.status}</Badge>

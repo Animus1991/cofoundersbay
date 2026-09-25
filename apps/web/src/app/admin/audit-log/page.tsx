@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Shield, Search, Filter, RefreshCw, Download, User,
-  Trash2, PenLine, Plus, Eye, LogIn, LogOut, Settings,
+  Trash2, PenLine, Plus, Eye, LogOut, Settings,
   AlertTriangle, CheckCircle2, Loader2, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -22,45 +22,64 @@ import { cn } from '@/lib/utils';
 import { listAdminAuditLogs, type AdminAuditLogItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 
+/*
+ * The API writes dotted actions - `user.ban`, `report.resolve`,
+ * `cohort.create` (AdminAction in admin-audit.service.ts). This page filtered
+ * and coloured by bare verbs (`ban`, `create`), so against a real database the
+ * action filter matched nothing and every row fell back to the settings icon.
+ * The lists below are the API's own, and a row's icon and colour come from the
+ * verb after the dot.
+ */
 const ACTION_ICONS: Record<string, React.ElementType> = {
   create: Plus,
+  add_member: Plus,
   update: PenLine,
   delete: Trash2,
-  view: Eye,
-  login: LogIn,
-  logout: LogOut,
+  remove: Trash2,
+  remove_member: Trash2,
   ban: AlertTriangle,
+  suspend: AlertTriangle,
+  escalate: AlertTriangle,
   unban: CheckCircle2,
+  activate: CheckCircle2,
+  resolve: CheckCircle2,
+  dismiss: Eye,
+  feature: Plus,
+  unfeature: LogOut,
   role_change: User,
-  config: Settings,
 };
 
 const ACTION_COLORS: Record<string, string> = {
   create: 'bg-status-success-bg text-status-success border-status-success-border',
+  add_member: 'bg-status-success-bg text-status-success border-status-success-border',
   update: 'bg-status-info-bg text-status-info border-status-info-border',
+  feature: 'bg-status-info-bg text-status-info border-status-info-border',
   delete: 'bg-status-danger-bg text-status-danger border-status-danger-border',
-  view: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
-  login: 'bg-primary/10 text-primary-accessible border-primary/20',
-  logout: 'bg-muted text-muted-foreground border-border',
+  remove: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+  remove_member: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   ban: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  suspend: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  escalate: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   unban: 'bg-status-success-bg text-status-success border-status-success-border',
+  activate: 'bg-status-success-bg text-status-success border-status-success-border',
+  resolve: 'bg-status-success-bg text-status-success border-status-success-border',
+  dismiss: 'bg-muted text-muted-foreground border-border',
+  unfeature: 'bg-muted text-muted-foreground border-border',
   role_change: 'bg-status-accent-bg text-status-accent border-status-accent-border',
 };
 
-const ENTITY_TYPES = ['all', 'user', 'tenant', 'program', 'event', 'group', 'job', 'automation', 'sso', 'report'];
-const ACTION_TYPES = ['all', 'create', 'update', 'delete', 'view', 'login', 'logout', 'ban', 'unban', 'role_change'];
+const verbOf = (action: string) => action.toLowerCase().split('.').pop() ?? action;
 
-const MOCK_LOGS: AdminAuditLogItem[] = [
-  { id: '1', actorId: 'u1', actorEmail: 'admin@cofounderbay.com', action: 'role_change', entityType: 'user', entityId: 'u42', meta: { from: 'founder', to: 'platform_admin' }, createdAt: new Date(Date.now() - 10 * 60000).toISOString() },
-  { id: '2', actorId: 'u1', actorEmail: 'admin@cofounderbay.com', action: 'ban', entityType: 'user', entityId: 'u87', meta: { reason: 'Spam content' }, createdAt: new Date(Date.now() - 25 * 60000).toISOString() },
-  { id: '3', actorId: 'u1', actorEmail: 'admin@cofounderbay.com', action: 'create', entityType: 'program', entityId: 'p12', meta: { name: 'Accelerator Cohort 2025' }, createdAt: new Date(Date.now() - 2 * 3600000).toISOString() },
-  { id: '4', actorId: 'u2', actorEmail: 'ops@cofounderbay.com', action: 'delete', entityType: 'automation', entityId: 'a5', meta: { name: 'Welcome Email Sequence' }, createdAt: new Date(Date.now() - 3 * 3600000).toISOString() },
-  { id: '5', actorId: 'u1', actorEmail: 'admin@cofounderbay.com', action: 'update', entityType: 'tenant', entityId: 't3', meta: { field: 'plan', from: 'starter', to: 'pro' }, createdAt: new Date(Date.now() - 5 * 3600000).toISOString() },
-  { id: '6', actorId: 'u3', actorEmail: 'support@cofounderbay.com', action: 'view', entityType: 'user', entityId: 'u31', meta: { reason: 'Support request' }, createdAt: new Date(Date.now() - 6 * 3600000).toISOString() },
-  { id: '7', actorId: 'u2', actorEmail: 'ops@cofounderbay.com', action: 'create', entityType: 'sso', entityId: 's1', meta: { provider: 'okta', tenantId: 't5' }, createdAt: new Date(Date.now() - 24 * 3600000).toISOString() },
-  { id: '8', actorId: 'u1', actorEmail: 'admin@cofounderbay.com', action: 'unban', entityType: 'user', entityId: 'u55', meta: { reason: 'Appeal approved' }, createdAt: new Date(Date.now() - 26 * 3600000).toISOString() },
-  { id: '9', actorId: 'u1', actorEmail: 'admin@cofounderbay.com', action: 'delete', entityType: 'group', entityId: 'g9', meta: { name: 'Spam Community', reason: 'Violated ToS' }, createdAt: new Date(Date.now() - 2 * 86400000).toISOString() },
-  { id: '10', actorId: 'u4', actorEmail: 'content@cofounderbay.com', action: 'update', entityType: 'program', entityId: 'p8', meta: { field: 'status', value: 'published' }, createdAt: new Date(Date.now() - 3 * 86400000).toISOString() },
+// The entity types AdminService writes (content actions name the event or job).
+const ENTITY_TYPES = ['all', 'user', 'report', 'event', 'job', 'cohort', 'skill'];
+const ACTION_TYPES = [
+  'all',
+  'user.ban', 'user.unban', 'user.suspend', 'user.activate', 'user.role_change', 'user.delete',
+  'report.resolve', 'report.dismiss', 'report.escalate',
+  'content.feature', 'content.unfeature', 'content.remove',
+  'cohort.create', 'cohort.update', 'cohort.delete', 'cohort.add_member', 'cohort.remove_member',
+  'settings.update',
+  'skill.create', 'skill.update', 'skill.delete',
 ];
 
 function formatRelativeTime(iso: string): string {
@@ -73,8 +92,8 @@ function formatRelativeTime(iso: string): string {
 }
 
 function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
-  const ActionIcon = ACTION_ICONS[log.action.toLowerCase()] ?? Settings;
-  const colorClass = ACTION_COLORS[log.action.toLowerCase()] ?? 'bg-muted text-muted-foreground border-border';
+  const ActionIcon = ACTION_ICONS[verbOf(log.action)] ?? Settings;
+  const colorClass = ACTION_COLORS[verbOf(log.action)] ?? 'bg-muted text-muted-foreground border-border';
 
   const metaStr = Object.entries(log.meta ?? {})
     .filter(([k]) => !['actorId'].includes(k))
@@ -116,7 +135,7 @@ export default function AdminAuditLogPage() {
   const [action, setAction] = useState('all');
   const [page, setPage] = useState(0);
 
-  const { data, isLoading, isFetching, refetch } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: qk('admin', 'audit-logs', entityType, action, page),
     queryFn: () =>
       listAdminAuditLogs({
@@ -128,8 +147,11 @@ export default function AdminAuditLogPage() {
     placeholderData: (prev) => prev,
   });
 
-  const logs = data?.logs ?? MOCK_LOGS;
-  const total = data?.total ?? MOCK_LOGS.length;
+  // Ten invented entries stood in whenever the request failed - in production
+  // too - under a header that counted the real total (0). The demo's entries
+  // now come from the preview API, and a failure says so.
+  const logs = data?.logs ?? [];
+  const total = data?.total ?? logs.length;
 
   const filtered = logs.filter(
     (l) =>
@@ -143,8 +165,10 @@ export default function AdminAuditLogPage() {
 
   return (
     <AppShell
-      title="Audit Log"
-      description="Track all administrative actions on the platform"
+      title="Audit log"
+      titleEl="Αρχείο ελέγχου"
+      description="Every administrative action on the platform: who changed what, and when."
+      descriptionEl="Κάθε διαχειριστική ενέργεια στην πλατφόρμα: ποιος άλλαξε τι και πότε."
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
@@ -227,11 +251,19 @@ export default function AdminAuditLogPage() {
                   </div>
                 ))}
               </div>
+            ) : isError && logs.length === 0 ? (
+              <div className="py-16 text-center">
+                <AlertTriangle className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
+                <p className="text-sm font-medium">The audit log could not be loaded</p>
+                <p className="text-xs text-muted-foreground mt-1">Refresh to try again.</p>
+              </div>
             ) : filtered.length === 0 ? (
               <div className="py-16 text-center">
                 <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <p className="text-sm font-medium">No audit log entries</p>
-                <p className="text-xs text-muted-foreground mt-1">Try adjusting filters</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {entityType !== 'all' || action !== 'all' || search ? 'Try adjusting filters' : 'Administrative actions appear here as they happen.'}
+                </p>
               </div>
             ) : (
               <div>

@@ -48,7 +48,7 @@ describe('preview showcase areas', () => {
     const all = resolvePreviewApi('/api/events?scope=upcoming') as Events;
     expect(online.events.length).toBeLessThan(all.events.length);
 
-    const searched = resolvePreviewApi('/api/events?scope=upcoming&q=demo') as Events;
+    const searched = resolvePreviewApi('/api/events?scope=upcoming&q=pitch') as Events;
     expect(searched.events.length).toBeGreaterThan(0);
     expect(searched.events.length).toBeLessThan(all.events.length);
   });

@@ -291,7 +291,8 @@ export const adminWorkSections: NavSection[] = [
   {
     section: 'Overview',
     links: [
-      { href: '/admin', label: 'Admin Dashboard', icon: Shield },
+      { href: '/admin/dashboard', label: 'Platform overview', icon: LayoutDashboard },
+      { href: '/admin', label: 'Admin console', icon: Shield },
       { href: '/admin/analytics', label: 'Global Analytics', icon: BarChart3 },
     ],
   },

@@ -45,9 +45,11 @@ type SecurityEvent = {
  * the mapping is stated here rather than a number being rendered as if it
  * were a category.
  */
+// `AbuseFlag.severity` is a 0.0-1.0 risk score (schema.prisma). Thresholds of
+// 4 and 2 read every real flag as "info"; these match the abuse monitor's bar.
 function levelFor(severity: number): SecurityEvent['level'] {
-  if (severity >= 4) return 'critical';
-  if (severity >= 2) return 'warning';
+  if (severity >= 0.7) return 'critical';
+  if (severity >= 0.4) return 'warning';
   return 'info';
 }
 

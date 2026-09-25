@@ -23,6 +23,18 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Four different people from the demo world, so the specimen shows how the
+ * theme treats varied names, roles and tags - four copies of one card showed
+ * nothing but the card.
+ */
+const SPECIMEN = [
+  { name: 'Elena Papadopoulos', role: 'Founder & CEO at Harbor', badge: 'Founder', pitch: 'Building the operating system for early-stage founders. Looking for a technical cofounder.', tags: ['SaaS', 'Product', 'Seed'], place: 'Athens, Greece', sector: 'Software', banner: 'from-blue-500 via-indigo-500 to-violet-500' },
+  { name: 'Marcus Chen', role: 'Technical cofounder · Full-stack', badge: 'Builder', pitch: 'Ships MVPs in weeks. Looking for a complementary business founder.', tags: ['TypeScript', 'AI', 'Developer tools'], place: 'Berlin, Germany', sector: 'Developer tools', banner: 'from-cyan-500 via-sky-500 to-blue-600' },
+  { name: 'Dr. Sarah Kim', role: 'Startup mentor · Ex-Google · 3x founder', badge: 'Mentor', pitch: 'Helping first-time founders reach product-market fit.', tags: ['Go-to-market', 'Leadership', 'Mentoring'], place: 'London, UK', sector: 'Marketplaces', banner: 'from-emerald-500 via-teal-500 to-cyan-600' },
+  { name: 'Nikos Andreou', role: 'Angel investor · Seed', badge: 'Investor', pitch: 'Invests in Mediterranean B2B SaaS at pre-seed and seed.', tags: ['B2B', 'SaaS', 'Pre-seed'], place: 'Limassol, Cyprus', sector: 'Venture', banner: 'from-amber-500 via-orange-500 to-rose-500' },
+] as const;
+
 export default function AllianceThemePage() {
   const [activeTab, setActiveTab] = useState('discover');
 
@@ -36,7 +48,7 @@ export default function AllianceThemePage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
               <Sparkles className="icon-sm" />
-              <span className="text-sm font-medium">Alliance Theme Preview</span>
+              <span className="text-sm font-medium">Alliance theme preview · sample content</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
               Connect. Collaborate. Succeed.
@@ -45,7 +57,7 @@ export default function AllianceThemePage() {
               Join the premier network for startup founders, investors, and innovators
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-status-info hover:bg-status-info-bg" asChild>
+              <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90" asChild>
                 <Link href="/register">
                   Get Started
                   <ChevronRight className="ml-2 icon-md" aria-hidden="true" />
@@ -91,7 +103,7 @@ export default function AllianceThemePage() {
                 'flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-white text-muted-foreground hover:bg-muted '
+                  : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
               <tab.icon className="h-4 w-4" />
@@ -102,26 +114,28 @@ export default function AllianceThemePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-                <div className="h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative">
+            {SPECIMEN.map((person) => (
+              <Card key={person.name} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+                <div className={cn('h-32 bg-gradient-to-br relative', person.banner)}>
                   <div className="absolute inset-0 bg-black/20"></div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-foreground hover:bg-white">Featured</Badge>
+                    <Badge className="bg-white/90 text-slate-900 hover:bg-white">Featured</Badge>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex-shrink-0 border-4 border-white -mt-12 relative z-10"></div>
+                    <div className="relative z-10 -mt-12 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-blue-400 to-purple-400 text-lg font-semibold text-white" aria-hidden="true">
+                      {person.name.replace(/^Dr\.\s*/, '').split(' ').map((w) => w[0]).slice(0, 2).join('')}
+                    </div>
                     <div className="flex-1 pt-2">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-xl font-bold">Sarah Johnson</h3>
+                        <h3 className="text-xl font-bold">{person.name}</h3>
                         <Badge variant="secondary" className="text-xs">
-                          <Star className="icon-sm mr-1 fill-status-warning text-yellow-400" />
-                          Pro
+                          <Star className="icon-sm mr-1 fill-status-warning text-yellow-400" aria-hidden="true" />
+                          {person.badge}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">CEO & Founder at TechVentures</p>
+                      <p className="text-sm text-muted-foreground">{person.role}</p>
                     </div>
                     <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="rounded-full">
                       <Users className="icon-sm mr-2" />
@@ -130,11 +144,11 @@ export default function AllianceThemePage() {
                   </div>
 
                   <p className="text-sm text-muted-foreground mb-4">
-                    Looking for technical co-founder to build next-gen AI platform. 10+ years in SaaS, 2 successful exits.
+                    {person.pitch}
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {['AI/ML', 'SaaS', 'B2B', 'Series A'].map((tag) => (
+                    {person.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="rounded-full">
                         {tag}
                       </Badge>
@@ -144,11 +158,11 @@ export default function AllianceThemePage() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <MapPin className="icon-sm" />
-                      San Francisco, CA
+                      {person.place}
                     </div>
                     <div className="flex items-center gap-1">
                       <Building className="icon-sm" />
-                      Tech Industry
+                      {person.sector}
                     </div>
                   </div>
 
@@ -204,7 +218,7 @@ export default function AllianceThemePage() {
                 <p className="text-sm text-blue-100 mb-4">
                   Unlock premium features and connect with top founders
                 </p>
-                <Button className="w-full bg-white text-status-info hover:bg-status-info-bg" asChild>
+                <Button className="w-full bg-white text-slate-900 hover:bg-white/90" asChild>
                   <Link href="/pricing">Get Started</Link>
                 </Button>
               </CardContent>

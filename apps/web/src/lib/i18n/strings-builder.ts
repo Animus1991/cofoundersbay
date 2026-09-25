@@ -497,9 +497,12 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   app_deadline_rolling: { en: 'Rolling admissions', el: 'Συνεχείς αιτήσεις' },
   app_deadline_varies: { en: 'Varies by program', el: 'Διαφέρει ανά πρόγραμμα' },
   app_application: { en: 'Application', el: 'Αίτηση' },
+  // The page header already names the four templates and where answers are
+  // saved; the body line said both again. It keeps only what the header does
+  // not: the assistant can draft answers.
   app_lead: {
-    en: 'Four program templates — YC, Techstars, university incubator, and grants. Answers save on the same workspace artefact as the Applications tab in Builder. Ask AI to draft from Idea Core, Market, and Pitch.',
-    el: 'Τέσσερα πρότυπα — YC, Techstars, πανεπιστημιακό incubator και επιχορηγήσεις. Οι απαντήσεις αποθηκεύονται στο ίδιο παραδοτέο με την καρτέλα Αιτήσεις στον Builder. Ρωτήστε το AI να συντάξει από Ιδέα, Αγορά και Pitch.',
+    en: 'Ask AI to draft any answer from your Idea Core, Market and Pitch.',
+    el: 'Ζητήστε από το AI να συντάξει οποιαδήποτε απάντηση από την Ιδέα, την Αγορά και το Pitch σας.',
   },
   app_back: { en: 'Back to Startup Builder', el: 'Πίσω στον Startup Builder' },
   loading_apps: { en: 'Loading applications…', el: 'Φόρτωση αιτήσεων…' },

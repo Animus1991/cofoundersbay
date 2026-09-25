@@ -1,11 +1,6 @@
 'use client';
 
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   PieChart,
@@ -16,7 +11,6 @@ import {
 import { useChartTheme } from '@/lib/chart-theme';
 
 interface RoleData { name: string; value: number }
-interface EngagementData { name: string; value: number }
 
 export function UserRoleChart({ data }: { data: RoleData[] }) {
   const theme = useChartTheme();
@@ -62,28 +56,6 @@ export function UserRoleChart({ data }: { data: RoleData[] }) {
         <Tooltip contentStyle={theme.tooltipStyle} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
       </PieChart>
-    </ResponsiveContainer>
-  );
-}
-
-export function EngagementChart({ data }: { data: EngagementData[] }) {
-  const theme = useChartTheme();
-
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} vertical={false} />
-        <XAxis
-          dataKey="name"
-          stroke={theme.axis}
-          tickLine={false}
-          axisLine={false}
-          fontSize={12}
-        />
-        <YAxis stroke={theme.axis} tickLine={false} axisLine={false} fontSize={12} />
-        <Tooltip contentStyle={theme.tooltipStyle} cursor={{ fill: theme.grid, opacity: 0.35 }} />
-        <Bar dataKey="value" fill={theme.series[0]} radius={[4, 4, 0, 0]} />
-      </BarChart>
     </ResponsiveContainer>
   );
 }

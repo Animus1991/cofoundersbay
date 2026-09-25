@@ -35,7 +35,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   navigate: { en: 'Open matches', el: 'Άνοιξε τις αντιστοιχίσεις' },
   open_rail_section: { en: 'Show me the filters on this page', el: 'Δείξε μου τα φίλτρα αυτής της σελίδας' },
   use_page_control: { en: 'Show only suspended users', el: 'Δείξε μόνο τους χρήστες σε αναστολή' },
-  run_page_command: { en: 'Suspend Mike Johnson', el: 'Θέσε σε αναστολή τον Mike Johnson' },
+  run_page_command: { en: 'Suspend Spyros Karras', el: 'Θέσε σε αναστολή τον Σπύρο Κάρρα' },
   shortlist_add: { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα' },
   shortlist_remove: { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα' },
   send_connection: { en: 'Connect with Elena', el: 'Σύνδεση με την Elena' },
@@ -116,7 +116,7 @@ export default function AICapabilitiesPage() {
 
   return (
     <AppShell>
-      <div className="max-w-4xl">
+      <div className="max-w-[84rem]">
         <Link
           href="/ai"
           className="mb-6 inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -159,7 +159,7 @@ export default function AICapabilitiesPage() {
               wrap
             />
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {reads.map((spec) => (
               <CapabilityCard key={spec.id} spec={spec} />
             ))}
@@ -177,7 +177,7 @@ export default function AICapabilitiesPage() {
               wrap
             />
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {mutations.map((spec) => (
               <CapabilityCard key={spec.id} spec={spec} />
             ))}

@@ -119,7 +119,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </Button>
             )}
 
-            <Button size="lg" className="bg-white text-primary-accessible hover:bg-white/90 gap-2 shadow" asChild>
+            <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90 gap-2 shadow" asChild>
               <Link href={b?.ctaUrl || '/register'}>
                 {b?.ctaLabel || 'Get Started'}
                 <ChevronRight className="icon-sm" />

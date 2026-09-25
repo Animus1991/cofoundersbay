@@ -654,8 +654,10 @@ export default function ProfilePage() {
             </Card>
           )}
 
-          {/* Portfolio placeholder */}
-          <Card className="animate-fade-in shadow-sm border-border/50 lg:flex lg:flex-1 lg:flex-col">
+          {/* Portfolio placeholder. It used to stretch to the right column's
+              height, which drew a 550px dashed box around one line of text;
+              the empty state keeps its own height now. */}
+          <Card className="animate-fade-in shadow-sm border-border/50">
             <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -669,8 +671,8 @@ export default function ProfilePage() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-5 lg:flex lg:flex-1 lg:flex-col">
-              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60 lg:flex-1">
+            <CardContent className="pt-5">
+              <div className="flex flex-col items-center justify-center gap-3 py-8 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-accessible">
                   <FolderOpen className="icon-lg" />
                 </div>

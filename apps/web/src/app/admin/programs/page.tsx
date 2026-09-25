@@ -26,6 +26,7 @@ import {
   RefreshCw,
   Download,
   CheckCircle2,
+  CalendarClock,
   FileText,
   Archive,
 } from 'lucide-react';
@@ -49,6 +50,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 type Program = {
   /** Set on live rows; the owning organisation's own programs page. */
@@ -58,7 +60,7 @@ type Program = {
   name: string;
   organization: string;
   type: string;
-  status: 'draft' | 'active' | 'completed' | 'archived';
+  status: 'draft' | 'upcoming' | 'active' | 'completed' | 'archived';
   startups: number;
   mentors: number;
   startDate: string;
@@ -68,6 +70,7 @@ type Program = {
 
 const PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
   draft: 'neutral',
+  upcoming: 'accent',
   active: 'success',
   completed: 'info',
   archived: 'warning',
@@ -89,7 +92,9 @@ function elapsed(start: string | null, end: string | null): number {
 }
 
 function toProgram(p: ProgramItem): Program {
-  const known: Program['status'][] = ['draft', 'active', 'completed', 'archived'];
+  // ProgramStatus has five values; `upcoming` used to fall through to "draft",
+  // so a programme open for applications read as unpublished.
+  const known: Program['status'][] = ['draft', 'upcoming', 'active', 'completed', 'archived'];
   return {
     id: p.id,
     name: p.title,
@@ -197,6 +202,7 @@ function ProgramCard({
 
 const STATUS_OPTIONS: { value: string; en: string; el: string }[] = [
   { value: 'all', en: 'Any status', el: 'Οποιαδήποτε κατάσταση' },
+  { value: 'upcoming', en: 'Upcoming', el: 'Προσεχή' },
   { value: 'active', en: 'Active', el: 'Ενεργά' },
   { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένα' },
   { value: 'draft', en: 'Draft', el: 'Πρόχειρα' },
@@ -204,6 +210,7 @@ const STATUS_OPTIONS: { value: string; en: string; el: string }[] = [
 ];
 
 export default function AdminProgramsPage() {
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -260,7 +267,8 @@ export default function AdminProgramsPage() {
     { id: '4', name: 'Fall Accelerator 2024', organization: 'TechHub', type: 'Accelerator', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100 },
     { id: '5', name: 'FinTech Incubator', organization: 'FinLab', type: 'Incubator', status: 'active', startups: 6, mentors: 4, startDate: 'Jan 2025', endDate: 'Jul 2025', progress: 45 },
   ];
-  const programs: Program[] = live.length > 0 ? live : isLoading ? [] : sample;
+  // Sample rows are the showcase's; an empty platform sees the empty state.
+  const programs: Program[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : sample;
 
   const filteredPrograms = programs.filter((p) => {
     const matchesSearch =
@@ -288,6 +296,7 @@ export default function AdminProgramsPage() {
   const totals = [
     { id: 'total', en: 'Total programs', el: 'Σύνολο προγραμμάτων', value: programs.length, icon: Award, tone: 'text-primary-accessible' },
     { id: 'active', en: 'Active', el: 'Ενεργά', value: count('active'), icon: CheckCircle2, tone: STATUS.success.text },
+    { id: 'upcoming', en: 'Upcoming', el: 'Προσεχή', value: count('upcoming'), icon: CalendarClock, tone: STATUS.accent.text },
     { id: 'draft', en: 'Draft', el: 'Πρόχειρα', value: count('draft'), icon: FileText, tone: 'text-muted-foreground' },
     { id: 'archived', en: 'Archived', el: 'Αρχειοθετημένα', value: count('archived'), icon: Archive, tone: 'text-muted-foreground' },
     { id: 'startups', en: 'Total startups', el: 'Σύνολο startups', value: programs.reduce((acc, p) => acc + p.startups, 0), icon: Users, tone: 'text-primary-accessible' },

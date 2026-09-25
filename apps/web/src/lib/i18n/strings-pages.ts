@@ -357,9 +357,9 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
 
   // ── Platform admin ──
   '/admin': {
-    title: 'Πίνακας ελέγχου διαχειριστή',
+    title: 'Κονσόλα διαχείρισης',
     description:
-      'Υγεία πλατφόρμας, ειδοποιήσεις και γρήγορες ενέργειες.',
+      'Ουρά ελέγχου, χρήστες, περιεχόμενο, κοόρτεις και τα λειτουργικά εργαλεία της πλατφόρμας.',
     section: 'Διαχείριση',
   },
   '/admin/users': {
@@ -410,8 +410,8 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Διαχείριση',
   },
   '/admin/dashboard': {
-    title: 'Πίνακας διαχείρισης',
-    description: 'Υγεία πλατφόρμας, ειδοποιήσεις και γρήγορες ενέργειες.',
+    title: 'Επισκόπηση πλατφόρμας',
+    description: 'Χρήστες, δραστηριότητα, ό,τι περιμένει διαχειριστή και υγεία του API.',
     section: 'Διαχείριση',
   },
   '/admin/audit-log': {

@@ -103,6 +103,8 @@ const el: Record<string, string> = {
   Team: 'Ομάδα',
   Members: 'Μέλη',
   'Admin Dashboard': 'Πίνακας διαχειριστή',
+  'Admin console': 'Κονσόλα διαχείρισης',
+  'Platform overview': 'Επισκόπηση πλατφόρμας',
   'Global Analytics': 'Καθολικά αναλυτικά',
   Users: 'Χρήστες',
   Communities: 'Κοινότητες',

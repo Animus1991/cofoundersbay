@@ -459,6 +459,12 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
       ],
     };
   }
+  // The platform's tenant list: the demo platform hosts one organisation, the
+  // one every /org and /tenant screen is about.
+  if (pathname === '/api/tenants') {
+    const status = params.get('status');
+    return [tenantItem(iso)].filter((t) => !status || t.status === status);
+  }
   if (pathname === `/api/tenants/by-slug/${ORG_SLUG}` || pathname === `/api/tenants/${TENANT_ID}`) {
     return tenantItem(iso);
   }

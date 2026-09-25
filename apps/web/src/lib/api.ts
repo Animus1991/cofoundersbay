@@ -3221,6 +3221,24 @@ export async function getAdminStats(): Promise<{ stats: AdminPlatformStats }> {
   return apiRequest('/api/admin/stats');
 }
 
+/** `GET /admin/health`: the API process and its database, measured on request. */
+export interface AdminHealth {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  /** Seconds since this API process started. */
+  uptime: number;
+  services: {
+    database: { status: 'up' | 'down'; latency?: number };
+    /** Heap figures in MB. */
+    memory: { used: number; total: number; percentage: number };
+  };
+  version: string;
+}
+
+export async function getAdminHealth(): Promise<AdminHealth> {
+  return apiRequest('/api/admin/health');
+}
+
 export async function changeUserRole(userId: string, role: string): Promise<{ success: boolean }> {
   return apiRequest(`/api/admin/users/${userId}/role`, {
     method: 'PATCH',

@@ -4,7 +4,7 @@ import { mergeNodeMetadata } from './canvas/canvas-geometry';
 import { DEMO_CRITERIA } from './readiness-demo';
 import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 import { previewOrgApi } from './demo/org-api';
-import { ORG, ORG_SLUG } from './demo/org-world';
+import { ORG, ORG_MENTORS, ORG_SLUG } from './demo/org-world';
 
 const NOW = '2026-09-04T10:00:00.000Z';
 
@@ -716,8 +716,10 @@ type PreviewEvent = {
 const PREVIEW_EVENTS: PreviewEvent[] = [
   {
     id: 'ev-demo-day',
-    title: 'Athens Demo Day — Seed Cohort 12',
-    description: 'Twelve teams pitch to a room of pre-seed and seed investors, eight minutes each, followed by open networking.',
+    // Hosted by the Athens Founders group's owner: "Seed Cohort 12" named a
+    // programme no organisation in the demo runs.
+    title: 'Athens Founders Pitch Night',
+    description: 'Twelve teams from the Athens Founders community pitch to pre-seed and seed investors, eight minutes each, followed by open networking.',
     eventType: 'demo_day', mode: 'in-person',
     startAt: '2026-09-11T16:00:00.000Z', endAt: '2026-09-11T18:30:00.000Z',
     timezone: 'Europe/Athens', location: 'Stegi, Athens', isOnline: false, meetingUrl: null,
@@ -1417,6 +1419,23 @@ function previewAdminUsers() {
     reportsCount: u.id === 'user-spyros' ? 2 : 0,
   }));
 }
+/**
+ * The abuse monitor's flags, about the same account the moderation queue is
+ * about: Spyros is reported for spam, suspended, and flagged by detection for
+ * the burst of messages that got him reported. The dismissed flag is the
+ * founder whose off-topic post /admin's resolved report already mentions.
+ */
+function previewAbuseFlags() {
+  const who = (id: string) => {
+    const u = PREVIEW_ADMIN_USERS.find((x) => x.id === id)!;
+    return { userId: u.id, email: u.email, displayName: u.name };
+  };
+  return [
+    { id: 'flag-1', ...who('user-spyros'), type: 'burst_spam', severity: 0.82, description: 'Sent 46 near-identical messages to founders within 20 minutes.', metadata: { messages: 46, windowMinutes: 20 }, status: 'pending', resolvedAt: null, resolvedById: null, actionTaken: null, createdAt: previewIsoInDays(-1, 9) },
+    { id: 'flag-2', ...who('user-spyros'), type: 'fake_collaboration', severity: 0.64, description: 'Listed as a collaborator on three projects whose owners never invited him.', metadata: { projects: 3 }, status: 'pending', resolvedAt: null, resolvedById: null, actionTaken: null, createdAt: previewIsoInDays(-2, 16) },
+    { id: 'flag-3', ...who('user-giorgos'), type: 'low_quality_repetition', severity: 0.31, description: 'Posted the same launch update in four groups on one afternoon.', metadata: { groups: 4 }, status: 'dismissed', resolvedAt: previewIsoInDays(-11, 9), resolvedById: ME_ID, actionTaken: 'safe', createdAt: previewIsoInDays(-12, 14) },
+  ];
+}
 function previewAdminReports() {
   const person = (id: string) => {
     const u = PREVIEW_ADMIN_USERS.find((x) => x.id === id)!;
@@ -1437,27 +1456,55 @@ function previewAdminReports() {
  * someone a visitor can also meet on /matches and /discover.
  */
 function previewMentors() {
-  const mentors = PEOPLE.filter((p) => p.role === 'mentor' || p.role === 'investor');
-  return mentors.map((p, i) => ({
-    id: `preview-mentor-${p.userId}`,
-    userId: p.userId,
-    displayName: p.displayName,
-    headline: p.headline ?? null,
-    bio: p.bio ?? null,
-    avatarUrl: p.avatarUrl ?? null,
-    location: p.location ?? null,
-    industries: p.industries ?? [],
-    skills: p.skillNames ?? [],
-    startupStages: ['pre_seed', 'seed'],
-    yearsExperience: null,
-    availabilityStatus: (i === 0 ? 'available' : 'limited') as 'available' | 'limited',
-    isFree: i !== 0,
-    hourlyRate: i === 0 ? 150 : null,
-    currency: i === 0 ? 'EUR' : null,
-    sessionCount: i === 0 ? 3 : 0,
-    rating: i === 0 ? 4.5 : null,
-    reviewCount: i === 0 ? 2 : 0,
-  }));
+  // The showcase's mentor plus the organisation's pool (the viewer excluded),
+  // so /coaching, /mentoring and /admin/mentorship-management name the same
+  // coaches /org/mentors lists. An investor is not a mentor profile.
+  const sarah = PEOPLE.find((p) => p.userId === 'user-sarah')!;
+  const org = ORG_MENTORS.filter((m) => m.id !== ME_ID && m.id !== sarah.userId);
+  return [
+    {
+      id: `preview-mentor-${sarah.userId}`,
+      userId: sarah.userId,
+      displayName: sarah.displayName,
+      headline: sarah.headline ?? null,
+      bio: sarah.bio ?? null,
+      avatarUrl: null,
+      location: sarah.location ?? null,
+      industries: sarah.industries ?? [],
+      skills: sarah.skillNames ?? [],
+      startupStages: ['pre_seed', 'seed'],
+      yearsExperience: 15,
+      availabilityStatus: 'available' as 'available' | 'limited' | 'unavailable',
+      isFree: false,
+      hourlyRate: 150 as number | null,
+      currency: 'EUR' as string | null,
+      sessionCount: 9,
+      rating: 4.5 as number | null,
+      reviewCount: 2,
+    },
+    ...org.map((m, i) => ({
+      id: `preview-mentor-${m.id}`,
+      userId: m.id,
+      displayName: m.name,
+      headline: m.headline,
+      bio: `Mentors early-stage founders on ${m.expertise.slice(0, 2).join(' and ').toLowerCase()}.`,
+      avatarUrl: null,
+      location: m.location,
+      industries: [] as string[],
+      skills: m.expertise,
+      startupStages: ['pre_seed', 'seed'],
+      yearsExperience: null,
+      availabilityStatus: (i === 0 ? 'limited' : 'available') as 'available' | 'limited' | 'unavailable',
+      isFree: true,
+      hourlyRate: null,
+      currency: null,
+      // Thanos has held sessions with his two climate founders; Ioanna has
+      // joined the pool but not yet been matched.
+      sessionCount: m.mentees.length ? 5 : 0,
+      rating: m.mentees.length ? 4.8 : null,
+      reviewCount: m.mentees.length ? 2 : 0,
+    })),
+  ];
 }
 
 /**
@@ -1774,11 +1821,37 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     const q = params.get('q')?.toLowerCase() ?? '';
     const location = params.get('location')?.toLowerCase() ?? '';
     const category = params.get('category') ?? 'all';
-    const people = PEOPLE.filter((p) => {
+    // `roles` narrows the directory the way the API does: /mentoring asks for
+    // mentors and was shown every founder in the fixtures as one.
+    const roles = (params.get('roles') ?? '').split(',').filter(Boolean);
+    // The organisation's other mentors join the directory when mentors are
+    // asked for, so /mentoring lists the coaches /org/mentors already shows.
+    const orgMentorHits = ORG_MENTORS.filter((m) => m.id !== ME_ID && !PEOPLE.some((p) => p.userId === m.id)).map((m) => ({
+      id: `hit-${m.id}`,
+      userId: m.id,
+      displayName: m.name,
+      headline: m.headline,
+      bio: `Mentors early-stage founders on ${m.expertise.slice(0, 2).join(' and ').toLowerCase()}.`,
+      avatarUrl: null,
+      location: m.location,
+      role: 'mentor',
+      skillNames: m.expertise,
+      skills: m.expertise.slice(0, 2),
+      industries: [] as string[],
+      matchScore: undefined as number | undefined,
+      matchReasons: [] as string[],
+      lookingFor: 'mentees',
+      availability: 'part-time',
+      lastSeenSecondsAgo: 86_400,
+      joinedAt: previewIsoInDays(-m.joined, 9),
+    }));
+    const pool = roles.includes('mentor') ? [...PEOPLE, ...orgMentorHits] : PEOPLE;
+    const people = pool.filter((p) => {
       const blob = `${p.displayName} ${p.headline} ${p.bio} ${p.skillNames.join(' ')} ${p.lookingFor} ${p.role}`.toLowerCase();
       const qOk = !q || q.split(/\s+/).every((token) => blob.includes(token) || p.location.toLowerCase().includes(token));
       const locOk = !location || p.location.toLowerCase().includes(location) || blob.includes(location);
-      return qOk && locOk;
+      const roleOk = !roles.length || roles.includes(p.role);
+      return qOk && locOk && roleOk;
     });
     const peopleHits = people.map((p) => ({
       id: p.userId,
@@ -3195,6 +3268,88 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname === '/api/admin/reports') {
     const status = new URLSearchParams(path.split('?')[1] ?? '').get('status');
     return { reports: previewAdminReports().filter((r) => !status || r.status === status) };
+  }
+  if (pathname === '/api/admin/skills') {
+    // The skills the demo's profiles carry, counted over those profiles, in the
+    // taxonomy page's own categories. "Energy markets" is the one the audit
+    // log records the admin adding.
+    const SKILLS: Array<[string, string]> = [
+      ['TypeScript', 'Technical'], ['Next.js', 'Technical'], ['AI', 'Technical'],
+      ['Product', 'Product'], ['Growth', 'Marketing'], ['Go-to-market', 'Business'],
+      ['Fundraising', 'Finance'], ['Pricing', 'Business'], ['Hiring', 'Operations'],
+      ['Leadership', 'Business'], ['Mentoring', 'Other'], ['Energy markets', 'Business'],
+    ];
+    const holders = (name: string) =>
+      PEOPLE.filter((p) => p.skillNames.includes(name)).length +
+      ORG_MENTORS.filter((m) => m.expertise.includes(name)).length;
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const q = params.get('q')?.toLowerCase() ?? '';
+    const category = params.get('category');
+    const items = SKILLS
+      .map(([name, cat]) => ({ id: `skill-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), category: cat, count: holders(name) }))
+      .filter((sk) => (!q || sk.name.toLowerCase().includes(q)) && (!category || sk.category === category))
+      .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+    return { items, total: items.length };
+  }
+  if (pathname === '/api/admin/audit-logs') {
+    // What the admin did to the rows the other admin screens show: the
+    // suspension behind Spyros's status, the resolved report and the
+    // dismissed flag, the featured demo day. Actions are AdminService's own.
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const me = PREVIEW_ADMIN_USERS.find((u) => u.id === ME_ID)!;
+    const entry = (id: string, action: string, entityType: string, entityId: string, meta: Record<string, unknown>, days: number, hour: number) => ({
+      id, actorId: me.id, actorEmail: me.email, action, entityType, entityId, meta, createdAt: previewIsoInDays(days, hour),
+    });
+    const all = [
+      entry('audit-5', 'user.suspend', 'user', 'user-spyros', { reason: 'Two spam reports in two days; suspended pending review.' }, -1, 11),
+      entry('audit-4', 'content.feature', 'event', 'ev-demo-day', { reason: 'Athens Founders pitch night' }, -3, 10),
+      entry('audit-3', 'report.resolve', 'report', 'rep-3', { note: 'Post removed by its author.', banUser: false }, -11, 9),
+      entry('audit-2', 'skill.create', 'skill', 'skill-energy-markets', { name: 'Energy markets' }, -30, 15),
+      entry('audit-1', 'user.role_change', 'user', 'user-anna', { oldRole: 'founder', newRole: 'org' }, -120, 12),
+    ];
+    const action = params.get('action');
+    const entityType = params.get('entityType');
+    const rows = all.filter((l) => (!action || l.action === action) && (!entityType || l.entityType === entityType));
+    const limit = Number(params.get('limit') ?? 50);
+    const offset = Number(params.get('offset') ?? 0);
+    return { logs: rows.slice(offset, offset + limit), total: rows.length };
+  }
+  if (pathname === '/api/admin/abuse/stats') {
+    const flags = previewAbuseFlags();
+    const count = (st: string) => flags.filter((f) => f.status === st).length;
+    const offenders = new Map<string, { userId: string; email: string; displayName: string | null; flagCount: number; maxSeverity: number }>();
+    for (const f of flags) {
+      const o = offenders.get(f.userId) ?? { userId: f.userId, email: f.email, displayName: f.displayName, flagCount: 0, maxSeverity: 0 };
+      o.flagCount += 1;
+      o.maxSeverity = Math.max(o.maxSeverity, f.severity);
+      offenders.set(f.userId, o);
+    }
+    return {
+      totalFlags: flags.length,
+      pendingFlags: count('pending'),
+      actionedFlags: count('actioned'),
+      dismissedFlags: count('dismissed'),
+      byType: flags.reduce<Record<string, number>>((acc, f) => ({ ...acc, [f.type]: (acc[f.type] ?? 0) + 1 }), {}),
+      topOffenders: [...offenders.values()].sort((a, b) => b.flagCount - a.flagCount),
+    };
+  }
+  if (pathname === '/api/admin/abuse') {
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const status = params.get('status');
+    const type = params.get('type');
+    const flags = previewAbuseFlags().filter((f) => (!status || f.status === status) && (!type || f.type === type));
+    return { flags, total: flags.length };
+  }
+  if (pathname === '/api/admin/health') {
+    // One API process that has been up for six days; the figures are the
+    // shape HealthController measures, not a claim about a real server.
+    return {
+      status: 'healthy',
+      timestamp: new Date(previewNowMs()).toISOString(),
+      uptime: 6 * 86_400 + 4 * 3_600 + 12 * 60,
+      services: { database: { status: 'up', latency: 4 }, memory: { used: 182, total: 256, percentage: 71 } },
+      version: '1.0.0',
+    };
   }
   if (pathname === '/api/admin/stats') {
     const users = previewAdminUsers();

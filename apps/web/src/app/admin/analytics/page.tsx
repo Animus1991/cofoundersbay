@@ -6,7 +6,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { downloadCsv } from '@/lib/csv';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { getAdminStats } from '@/lib/api';
+import { getAdminStats, listTenants } from '@/lib/api';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,8 +25,21 @@ const UserRoleChart = dynamic(
   { ssr: false, loading: () => <div className="h-[280px] animate-pulse rounded-lg bg-muted/40" /> },
 );
 
+/*
+ * The range offered 90 days and a year and changed nothing: every tile read
+ * the same fields whatever was picked. `/admin/stats` counts new and active
+ * users over three windows, so those are the three ranges, and the two tiles
+ * that depend on a window read the one selected.
+ */
+const RANGES = [
+  { value: 'today', en: 'Today', el: 'Σήμερα' },
+  { value: 'week', en: 'Last 7 days', el: 'Τελευταίες 7 ημέρες' },
+  { value: 'month', en: 'Last 30 days', el: 'Τελευταίες 30 ημέρες' },
+] as const;
+type Range = (typeof RANGES)[number]['value'];
+
 export default function AdminAnalyticsPage() {
-  const [range, setRange] = useState('30d');
+  const [range, setRange] = useState<Range>('month');
 
   /*
    * Six figures written into the source, over an `admin/stats` endpoint that
@@ -44,15 +57,26 @@ export default function AdminAnalyticsPage() {
     retry: 0,
   });
 
+  // The same list /admin/tenants reads, so the two pages count one set.
+  const { data: tenants } = useQuery({
+    queryKey: qk('admin', 'tenants'),
+    queryFn: () => listTenants({ limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
   const stats = data?.stats;
   const byRole = stats?.usersByRole ?? {};
+  const active = range === 'today' ? stats?.activeUsersToday : range === 'week' ? stats?.activeUsersThisWeek : stats?.activeUsersThisMonth;
+  const fresh = range === 'today' ? stats?.newUsersToday : range === 'week' ? stats?.newUsersThisWeek : stats?.newUsersThisMonth;
   const METRICS = {
     totalUsers: stats?.totalUsers ?? null,
-    activeUsers: stats?.activeUsersThisMonth ?? null,
+    activeUsers: active ?? null,
+    newUsers: fresh ?? null,
     totalStartups: byRole.founder ?? null,
     totalMentors: byRole.mentor ?? null,
     totalInvestors: byRole.investor ?? null,
-    totalTenants: null as number | null,
+    totalTenants: Array.isArray(tenants) ? tenants.length : null,
   };
   const dash = '\u2014';
 
@@ -63,15 +87,14 @@ export default function AdminAnalyticsPage() {
       showHelp
       actions={
         <div className="flex flex-wrap gap-2">
-          <Select value={range} onValueChange={setRange}>
-            <SelectTrigger aria-label="Time range" className="w-[140px] h-9">
+          <Select value={range} onValueChange={(v) => setRange(v as Range)}>
+            <SelectTrigger aria-label="Time range" className="w-[150px] h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
+              {RANGES.map((r) => (
+                <SelectItem key={r.value} value={r.value}>{r.en}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           {/* Both had no handler. */}
@@ -95,15 +118,16 @@ export default function AdminAnalyticsPage() {
     >
       <HelpCallout id="admin-analytics" title="Reading these metrics">
         <p>
-          <strong>Active users</strong> logged in during the selected range. Role charts show signup mix — use this to
+          <strong>Active</strong> and <strong>new users</strong> are counted over the selected range; the other figures are platform totals. Role charts show signup mix — use this to
           balance supply (mentors/investors) vs demand (founders). Tenant count reflects white-label communities.
         </p>
       </HelpCallout>
 
-      <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
         {[
           { label: 'Total users', value: METRICS.totalUsers ?? dash, icon: Users },
           { label: 'Active users', value: METRICS.activeUsers ?? dash, icon: TrendingUp },
+          { label: 'New users', value: METRICS.newUsers ?? dash, icon: Users },
           { label: 'Startups', value: METRICS.totalStartups ?? dash, icon: Rocket },
           { label: 'Mentors', value: METRICS.totalMentors ?? dash, icon: BarChart3 },
           { label: 'Investors', value: METRICS.totalInvestors ?? dash, icon: TrendingUp },

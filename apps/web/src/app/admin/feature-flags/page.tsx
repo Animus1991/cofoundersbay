@@ -41,6 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
@@ -230,9 +231,14 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
 export default function AdminFeatureFlagsPage() {
   const [search, setSearch] = useState('');
   const qc = useQueryClient();
-  const [flags, setFlags] = useState<FeatureFlag[]>(MOCK_FLAGS);
+  const [liveFlags, setFlags] = useState<FeatureFlag[]>([]);
   /** True once real experiments are in hand; the toggles refuse before that. */
   const [isLive, setIsLive] = useState(false);
+  // The eight sample flags stood in for an empty experiments table in
+  // production as well; they are the showcase's now, and a real platform
+  // with no experiments sees the empty state.
+  const { showDemoData } = useDemoData();
+  const flags = isLive ? liveFlags : showDemoData ? MOCK_FLAGS : [];
 
   const { data: experiments } = useQuery({
     queryKey: qk('admin', 'experiments'),
