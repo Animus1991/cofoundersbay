@@ -41,6 +41,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -370,6 +371,47 @@ export default function AdminFeatureFlagsPage() {
       activeTab === f.category;
     return matchesSearch && matchesTab;
   });
+
+  // Offered to the assistant: the tabs, New Flag, the switch and every item
+  // of the card menu - the same handlers, which refuse the sample flags and
+  // still ask before a delete.
+  const SAMPLE_EN = isLive ? undefined : 'These flags are samples until the experiments API returns rows.';
+  const SAMPLE_EL = isLive ? undefined : 'Οι σημαίες είναι δείγματα μέχρι το API πειραμάτων να επιστρέψει γραμμές.';
+  const flagCommand = (id: string, en: string, el: string, writes: boolean, list: FeatureFlag[], run: (f: FeatureFlag) => void, sampleOk = false): PageControl => ({
+    id,
+    labelEn: en,
+    labelEl: el,
+    writes,
+    options: rowOptions(list, (f) => f.id, (f) => f.name),
+    ...(sampleOk ? {} : { unavailableEn: SAMPLE_EN, unavailableEl: SAMPLE_EL }),
+    run: (v) => { const f = flags.find((row) => row.id === v); if (f) run(f); },
+  });
+  usePageList([
+    {
+      id: 'flags',
+      labelEn: 'Feature flags',
+      labelEl: 'Σημαίες λειτουργιών',
+      rows: filtered.map((f) => `${f.name} (${f.key}) · ${f.status}${f.rolloutPct != null ? ` · ${f.rolloutPct}% rollout` : ''} · ${f.category}`),
+      total: flags.length,
+      sample: !isLive,
+    },
+  ]);
+  usePageControls([
+    choiceControl('flag_tab', 'Flag filter', 'Φίλτρο σημαιών', [
+      { value: 'all', en: 'All', el: 'Όλες' },
+      { value: 'enabled', en: 'Enabled', el: 'Ενεργές' },
+      { value: 'rollout', en: 'Rollout', el: 'Σταδιακή διάθεση' },
+      { value: 'experiment', en: 'Experiments', el: 'Πειράματα' },
+      { value: 'disabled', en: 'Disabled', el: 'Ανενεργές' },
+    ], activeTab, setActiveTab),
+    { id: 'new_flag', labelEn: 'Open the new flag form', labelEl: 'Άνοιγμα φόρμας νέας σημαίας', writes: false, run: () => setCreating(true) },
+    flagCommand('enable_flag', 'Turn feature flag on', 'Ενεργοποίηση σημαίας', true, filtered.filter((f) => f.status === 'disabled'), (f) => void handleToggle(f.id, true)),
+    flagCommand('disable_flag', 'Turn feature flag off', 'Απενεργοποίηση σημαίας', true, filtered.filter((f) => f.status !== 'disabled'), (f) => void handleToggle(f.id, false)),
+    flagCommand('edit_flag', 'Edit feature flag', 'Επεξεργασία σημαίας', false, filtered, (f) => openEdit(f, 'details')),
+    flagCommand('set_rollout', 'Set a flag rollout percentage', 'Ορισμός ποσοστού διάθεσης σημαίας', false, filtered, (f) => openEdit(f, 'rollout')),
+    flagCommand('copy_flag_key', 'Copy a flag key', 'Αντιγραφή κλειδιού σημαίας', false, filtered, (f) => void copyKey(f), true),
+    flagCommand('delete_flag', 'Delete feature flag', 'Διαγραφή σημαίας', true, filtered, (f) => void deleteFlag(f)),
+  ]);
 
   const stats = {
     enabled:    flags.filter((f) => f.status === 'enabled').length,

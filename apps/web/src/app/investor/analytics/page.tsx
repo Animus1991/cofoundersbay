@@ -26,6 +26,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
@@ -201,6 +203,27 @@ export default function InvestorAnalyticsPage() {
     { label: 'Portfolio Value', value: money(summary?.currentValueCents), icon: LineChart, color: 'text-status-success' },
   ];
 
+  const [tab, setTab] = useState('flow');
+  // Offered to the assistant: the header's window and the chart tabs; the
+  // tiles go out as figures, so "what is my conversion rate?" has an answer.
+  usePageControls([
+    choiceControl('period', 'Analytics window', 'Περίοδος στατιστικών', [
+      { value: '3m', en: '3 months', el: '3 μήνες' },
+      { value: '6m', en: '6 months', el: '6 μήνες' },
+      { value: '1y', en: '1 year', el: '1 έτος' },
+    ], period, (v) => setPeriod(v as typeof period)),
+    choiceControl('tab', 'Analytics view', 'Προβολή στατιστικών', [
+      { value: 'flow', en: 'Deal flow', el: 'Ροή συμφωνιών' },
+      { value: 'sectors', en: 'Sectors', el: 'Κλάδοι' },
+      { value: 'geo', en: 'Geography', el: 'Γεωγραφία' },
+      { value: 'returns', en: 'Portfolio returns', el: 'Αποδόσεις χαρτοφυλακίου' },
+    ], tab, setTab),
+  ]);
+  usePublishPageSnapshot('/investor/analytics', summary ? {
+    state: 'ready',
+    figures: Object.fromEntries(kpis.map((k) => [k.label, k.value])),
+  } : null);
+
   return (
     <AppShell
       actions={
@@ -244,7 +267,7 @@ export default function InvestorAnalyticsPage() {
           ))}
         </div>
 
-        <Tabs defaultValue="flow">
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value="flow">Deal Flow</TabsTrigger>
             <TabsTrigger value="sectors">Sectors</TabsTrigger>

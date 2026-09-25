@@ -322,8 +322,12 @@ describe('pages that offer controls', () => {
     // figures rather than rows and describe those in their snapshot.
     const NO_LIST: Record<string, string> = {
       'src/app/analytics/page.tsx': 'charts and totals, published as the page snapshot',
+      'src/app/investor/analytics/page.tsx': 'KPI tiles and charts, published as the page snapshot',
       'src/app/provider/analytics/page.tsx': 'charts and totals for one period',
       'src/app/readiness/page.tsx': 'a score and its dimensions, published as the page snapshot',
+      'src/app/settings/page.tsx': 'switches and forms; nothing is listed',
+      'src/app/settings/notifications/page.tsx': 'switches per notification type; nothing is listed',
+      'src/app/settings/ai/page.tsx': 'a preferences form; nothing is listed',
     };
     const missing = users.filter((f) => {
       const s = readFileSync(f, 'utf8');

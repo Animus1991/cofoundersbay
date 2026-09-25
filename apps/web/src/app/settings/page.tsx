@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useSearchParams } from 'next/navigation';
@@ -37,30 +37,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, type BillingSubscription } from '@/lib/api';
+import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 import { useI18n } from '@/components/common/I18nProvider';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { NOTIFICATION_CATEGORIES, categoryChannelOn, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
 
-type NotifPrefs = {
-  messages: boolean;
-  connections: boolean;
-  events: boolean;
-  jobs: boolean;
-  mentoring: boolean;
-  emailDigest: boolean;
-};
-
-const DEFAULT_PREFS: NotifPrefs = {
-  messages: true,
-  connections: true,
-  events: true,
-  jobs: false,
-  mentoring: true,
-  emailDigest: false,
+/*
+ * The quick notification switches here are the in-app channel of each
+ * category on /settings/notifications - one store (`notification-prefs`),
+ * two views. They used to be six switches of their own under `notifPrefs`,
+ * which nothing read, beside a detail page that disagreed with them.
+ */
+const QUICK_ICONS: Record<NotificationCategoryDef['id'], React.ElementType> = {
+  messages: MessageCircle,
+  connections: UserPlus,
+  matches: Activity,
+  projects: Briefcase,
+  events: Calendar,
+  security: Shield,
 };
 
 /**
@@ -140,11 +139,19 @@ function LanguageCard() {
   );
 }
 
+/*
+ * These four were switches that changed component state and nothing else -
+ * no endpoint writes profile visibility (the schema's `profileVisibility`,
+ * `showInSearch` and `showInMatching` have no API), so a reader who turned
+ * "Appear in search" off stayed in search. They now show what the platform
+ * does today, and say why they cannot be changed yet.
+ */
+const PRIVACY_CURRENT: Record<(typeof PRIVACY_ITEMS)[number]['id'], boolean> = {
+  publicProfile: true, showLocation: true, searchable: true, showActivity: false,
+};
+
 function PrivacyCard() {
   const { t } = useI18n();
-  const [flags, setFlags] = useState<Record<string, boolean>>({
-    publicProfile: true, showLocation: true, searchable: true, showActivity: false,
-  });
   return (
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
@@ -152,7 +159,14 @@ function PrivacyCard() {
           <Globe className="icon-md text-primary-accessible" />
           {t('Privacy & Visibility')}
         </CardTitle>
-        <CardDescription>Control who can see your profile and activity.</CardDescription>
+        <CardDescription>
+          <BilingualText
+            en="What others can see today. These cannot be changed yet: visibility is not stored per member."
+            el="Τι βλέπουν οι άλλοι σήμερα. Δεν αλλάζουν ακόμη: η ορατότητα δεν αποθηκεύεται ανά μέλος."
+            compact
+            wrap
+          />
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-1">
         {PRIVACY_ITEMS.map(({ id, icon: Icon, label, desc }) => (
@@ -166,7 +180,12 @@ function PrivacyCard() {
                 <p className="text-xs text-muted-foreground">{t(desc)}</p>
               </div>
             </div>
-            <Toggle label={t(label)} checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
+            <Switch
+              checked={PRIVACY_CURRENT[id]}
+              disabled
+              aria-label={t(label)}
+              title="Visibility is not stored per member yet"
+            />
           </div>
         ))}
       </CardContent>
@@ -177,7 +196,7 @@ function PrivacyCard() {
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
@@ -214,23 +233,26 @@ export default function SettingsPage() {
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwWorking, setPwWorking] = useState(false);
   const [showPw, setShowPw] = useState(false);
-  const [prefs, setPrefs] = useState<NotifPrefs>(DEFAULT_PREFS);
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('notifPrefs');
-      if (saved) setPrefs((p) => ({ ...p, ...JSON.parse(saved) }));
-    } catch { /* silent */ }
-  }, []);
+  const notificationPrefs = useNotificationPrefs();
+  const quickCategories = NOTIFICATION_CATEGORIES.filter((c) => c.id !== 'security');
+  const setInApp = (category: NotificationCategoryDef, value: boolean) =>
+    setChannel(category.settings.map((st) => st.id), 'inApp', value);
 
-  const updatePref = (key: keyof NotifPrefs, value: boolean) => {
-    setPrefs((prev) => {
-      const next = { ...prev, [key]: value };
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('notifPrefs', JSON.stringify(next));
-      }
-      return next;
-    });
-  };
+  // The email digest is the one notification choice the server keeps.
+  const { data: digestPrefs } = useQuery({
+    queryKey: qk('notifications', 'preferences'),
+    queryFn: getNotificationPreferences,
+    enabled: hasToken,
+  });
+  const digestOn = (digestPrefs?.digestFrequency ?? 'weekly') !== 'never';
+  const saveDigest = useMutation({
+    mutationFn: (on: boolean) => updateNotificationPreferences({ digestFrequency: on ? 'weekly' : 'never' }),
+    onSuccess: (_d, on) => {
+      void queryClient.invalidateQueries({ queryKey: qk('notifications', 'preferences') });
+      success('Saved', on ? 'Weekly email digest on.' : 'Email digest off.');
+    },
+    onError: () => showError('Could not save', 'Please try again.'),
+  });
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,6 +295,88 @@ export default function SettingsPage() {
   const status = subscription?.status ?? 'free';
   const statusLabel = status === 'free' ? 'Free' : status.replaceAll('_', ' ');
   const isPremium = ['trialing', 'active', 'past_due', 'paused'].includes(status);
+
+  const startCheckout = async () => {
+    try {
+      setWorking('checkout');
+      const res = await createBillingCheckout();
+      if (!res.url) throw new Error('No checkout URL returned');
+      window.location.href = res.url;
+    } catch (e) {
+      showError('Checkout failed', e instanceof Error ? e.message : 'Please try again');
+    } finally {
+      setWorking(null);
+    }
+  };
+  const openPortal = async () => {
+    try {
+      setWorking('portal');
+      const res = await createBillingPortal();
+      window.location.href = res.url;
+    } catch (e) {
+      showError('Portal failed', e instanceof Error ? e.message : 'Please try again');
+    } finally {
+      setWorking(null);
+    }
+  };
+
+  // Offered to the assistant: the language, the quick notification switches
+  // and the digest, and the billing buttons - the same handlers. Checkout and
+  // the portal leave the page for the payment provider; nothing is charged
+  // until the reader confirms there.
+  const categoryOptions = (inApp: boolean) =>
+    quickCategories
+      .filter((c) => categoryChannelOn(notificationPrefs, c, 'inApp') === inApp)
+      .map((c) => ({ value: c.id, labelEn: c.titleEn, labelEl: c.titleEl }));
+  usePageControls([
+    choiceControl('language', 'Language', 'Γλώσσα', APP_LOCALES.map((l) => ({ value: l.value, en: l.label, el: l.label })), locale, (v) => applyLocale(v)),
+    {
+      id: 'in_app_on',
+      labelEn: 'Turn in-app notifications on for',
+      labelEl: 'Ενεργοποίηση ειδοποιήσεων εφαρμογής για',
+      writes: true,
+      options: categoryOptions(false),
+      run: (v) => { const c = quickCategories.find((x) => x.id === v); if (c) setInApp(c, true); },
+    },
+    {
+      id: 'in_app_off',
+      labelEn: 'Turn in-app notifications off for',
+      labelEl: 'Απενεργοποίηση ειδοποιήσεων εφαρμογής για',
+      writes: true,
+      options: categoryOptions(true),
+      run: (v) => { const c = quickCategories.find((x) => x.id === v); if (c) setInApp(c, false); },
+    },
+    {
+      id: 'email_digest',
+      labelEn: 'Weekly email digest',
+      labelEl: 'Εβδομαδιαία email σύνοψη',
+      writes: true,
+      options: [
+        { value: 'on', labelEn: 'On', labelEl: 'Ενεργή' },
+        { value: 'off', labelEn: 'Off', labelEl: 'Ανενεργή' },
+      ],
+      current: digestOn ? 'on' : 'off',
+      run: (v) => saveDigest.mutate(v === 'on'),
+    },
+    {
+      id: 'upgrade',
+      labelEn: 'Upgrade to Premium',
+      labelEl: 'Αναβάθμιση σε Premium',
+      writes: false,
+      unavailableEn: isPremium ? 'Premium is already active.' : undefined,
+      unavailableEl: isPremium ? 'Το Premium είναι ήδη ενεργό.' : undefined,
+      run: () => void startCheckout(),
+    },
+    {
+      id: 'manage_subscription',
+      labelEn: 'Manage subscription',
+      labelEl: 'Διαχείριση συνδρομής',
+      writes: false,
+      unavailableEn: isPremium ? undefined : 'There is no subscription to manage.',
+      unavailableEl: isPremium ? undefined : 'Δεν υπάρχει συνδρομή για διαχείριση.',
+      run: () => void openPortal(),
+    },
+  ]);
 
   return (
     <AppShell
@@ -355,18 +459,7 @@ export default function SettingsPage() {
                     <Button
                       className="gap-2"
                       disabled={working !== null || isPremium}
-                      onClick={async () => {
-                        try {
-                          setWorking('checkout');
-                          const res = await createBillingCheckout();
-                          if (!res.url) throw new Error('No checkout URL returned');
-                          window.location.href = res.url;
-                        } catch (e) {
-                          showError('Checkout failed', e instanceof Error ? e.message : 'Please try again');
-                        } finally {
-                          setWorking(null);
-                        }
-                      }}
+                      onClick={startCheckout}
                     >
                       {working === 'checkout' ? <Loader2 className="icon-sm animate-spin" /> : <Crown className="icon-sm" />}
                       {isPremium ? 'Premium active' : 'Upgrade'}
@@ -376,17 +469,7 @@ export default function SettingsPage() {
                         variant="secondary"
                         className="gap-2"
                         disabled={working !== null}
-                        onClick={async () => {
-                          try {
-                            setWorking('portal');
-                            const res = await createBillingPortal();
-                            window.location.href = res.url;
-                          } catch (e) {
-                            showError('Portal failed', e instanceof Error ? e.message : 'Please try again');
-                          } finally {
-                            setWorking(null);
-                          }
-                        }}
+                        onClick={openPortal}
                       >
                         {working === 'portal' ? <Loader2 className="icon-sm animate-spin" /> : <ExternalLink className="icon-sm" />}
                         Manage subscription
@@ -574,49 +657,80 @@ export default function SettingsPage() {
             </div>
 
             <div className="min-w-0 space-y-6">
-              {/* Notifications */}
+              {/* Notifications: the quick view of /settings/notifications. */}
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="border-b border-border/50">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Bell className="icon-md text-primary-accessible" />
-                    Notification preferences
-                  </CardTitle>
-                  <CardDescription>
-                    Choose which in-app notifications you receive.
-                  </CardDescription>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1.5">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Bell className="icon-md text-primary-accessible" />
+                        <BilingualText en="Notifications" el="Ειδοποιήσεις" compact />
+                      </CardTitle>
+                      <CardDescription>
+                        <BilingualText
+                          en="In-app notifications by category, kept on this device. The digest is saved to your account."
+                          el="Ειδοποιήσεις στην εφαρμογή ανά κατηγορία, σε αυτή τη συσκευή. Η σύνοψη αποθηκεύεται στον λογαριασμό σας."
+                          compact
+                          wrap
+                        />
+                      </CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/settings/notifications">
+                        <BilingualText en="All channels" el="Όλα τα κανάλια" compact />
+                      </Link>
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-1">
-                  {([
-                    { key: 'messages', icon: MessageCircle, label: 'New messages', desc: 'When someone sends you a message' },
-                    { key: 'connections', icon: UserPlus, label: 'Connection requests', desc: 'When someone wants to connect' },
-                    { key: 'mentoring', icon: Shield, label: 'Mentoring sessions', desc: 'Booking requests and updates' },
-                    { key: 'events', icon: Calendar, label: 'Events', desc: 'New events and RSVPs' },
-                    { key: 'jobs', icon: Briefcase, label: 'Job postings', desc: 'New relevant job opportunities' },
-                    { key: 'emailDigest', icon: Mail, label: 'Weekly email digest', desc: 'Summary of activity via email' },
-                  ] as const).map(({ key, icon: Icon, label, desc }) => (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                          <Icon className="icon-sm text-primary-accessible" />
+                  {quickCategories.map((category) => {
+                    const Icon = QUICK_ICONS[category.id];
+                    return (
+                      <div
+                        key={category.id}
+                        className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <Icon className="icon-sm text-primary-accessible" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground">
+                              <BilingualText en={category.titleEn} el={category.titleEl} compact />
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <BilingualText en={category.descriptionEn} el={category.descriptionEl} compact wrap />
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{label}</p>
-                          <p className="text-xs text-muted-foreground">{desc}</p>
-                        </div>
+                        <Toggle
+                          label={`${category.titleEn} in-app notifications`}
+                          checked={categoryChannelOn(notificationPrefs, category, 'inApp')}
+                          onChange={(v) => setInApp(category, v)}
+                        />
                       </div>
-                      <Toggle
-                        label={label}
-                        checked={prefs[key]}
-                        onChange={(v) => {
-                          updatePref(key, v);
-                          success('Saved', `${label} notifications ${v ? 'enabled' : 'disabled'}.`);
-                        }}
-                      />
+                    );
+                  })}
+                  <div className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Mail className="icon-sm text-primary-accessible" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          <BilingualText en="Weekly email digest" el="Εβδομαδιαία email σύνοψη" compact />
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          <BilingualText en="A summary of activity by email" el="Σύνοψη δραστηριότητας μέσω email" compact wrap />
+                        </p>
+                      </div>
                     </div>
-                  ))}
+                    <Toggle
+                      label="Weekly email digest"
+                      checked={digestOn}
+                      onChange={(v) => saveDigest.mutate(v)}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 

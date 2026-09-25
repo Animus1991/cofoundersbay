@@ -40,6 +40,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -269,9 +270,46 @@ export default function JobsPage() {
     return matchSearch && matchRole && matchEmp;
   });
 
+  // The featured strip shows the postings flagged as featured, or the three
+  // newest when none are, and the sections below it do not repeat them - the
+  // same three cards used to appear twice, once as featured and again under
+  // Remote or On-site.
+  const showFeatured = !search && roleFilter === 'all';
+  const flagged = filtered.filter((j) => j.isFeatured);
+  const featuredJobs = showFeatured ? (flagged.length ? flagged : filtered).slice(0, 3) : [];
+  const featuredIds = new Set(featuredJobs.map((j) => j.id));
   const remoteJobs = filtered.filter((j) => j.isRemote);
   const onsiteJobs = filtered.filter((j) => !j.isRemote);
-  const featuredJobs = filtered.slice(0, 3);
+  const remoteRest = remoteJobs.filter((j) => !featuredIds.has(j.id));
+  const onsiteRest = onsiteJobs.filter((j) => !featuredIds.has(j.id));
+
+  // Offered to the assistant: the role and type chips, the search reset and
+  // the Post form, through the same setters; the postings go out as a list.
+  usePageList([
+    {
+      id: 'jobs',
+      labelEn: 'Job postings',
+      labelEl: 'Αγγελίες',
+      rows: isLoading ? undefined : filtered.map((j) =>
+        `${j.title}${j.role ? ` · ${j.role}` : ''} · ${j.creator.displayName} · ${j.isRemote ? 'remote' : (j.location ?? 'on-site')}${j.type ? ` · ${j.type}` : ''}`,
+      ),
+      total: jobs.length,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_FILTERS.map((r) => ({ value: r.value, en: jobsEn(r.labelKey), el: jobsEl(r.labelKey) })), roleFilter, (v) => setRoleFilter(v as RoleFilter)),
+    choiceControl('employment_type', 'Employment type', 'Τύπος απασχόλησης', EMPLOYMENT_TYPES.map((t) => ({ value: t.value, en: jobsEn(t.labelKey), el: jobsEl(t.labelKey) })), employmentType, (v) => setEmploymentType(v as typeof employmentType)),
+    {
+      id: 'clear_search',
+      labelEn: 'Clear the job search',
+      labelEl: 'Καθαρισμός αναζήτησης αγγελιών',
+      writes: false,
+      unavailableEn: search ? undefined : 'No search is set.',
+      unavailableEl: search ? undefined : 'Δεν υπάρχει αναζήτηση.',
+      run: () => setSearch(''),
+    },
+    { id: 'post_job', labelEn: 'Open the post a job form', labelEl: 'Άνοιγμα φόρμας νέας αγγελίας', writes: false, run: () => setShowPostForm(true) },
+  ]);
 
   return (
     <>
@@ -389,12 +427,8 @@ export default function JobsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           illustration="rocket"
-          title={search ? jobsEn('empty_search') : jobsEn('empty')}
-          description={
-            search
-              ? jobsEn('empty_search_hint')
-              : jobsEn('empty_hint')
-          }
+          title={<BilingualText en={jobsEn(search ? 'empty_search' : 'empty')} el={jobsEl(search ? 'empty_search' : 'empty')} />}
+          description={<BilingualText en={jobsEn(search ? 'empty_search_hint' : 'empty_hint')} el={jobsEl(search ? 'empty_search_hint' : 'empty_hint')} />}
           askAiPrompt={
             search
               ? `No jobs matched "${search}". Suggest better keywords or people I should reach instead of a job post.`
@@ -416,14 +450,15 @@ export default function JobsPage() {
       ) : (
         <div className="space-y-6">
           <p className="text-xs text-muted-foreground">
-            {filtered.length === 1
-              ? jobsEn('found_one')
-              : jobsEn('found_many').replace('{n}', String(filtered.length))}
-            {remoteJobs.length > 0 && ` · ${jobsEn('remote_suffix').replace('{n}', String(remoteJobs.length))}`}
+            <BilingualText
+              en={`${filtered.length === 1 ? jobsEn('found_one') : jobsEn('found_many').replace('{n}', String(filtered.length))}${remoteJobs.length > 0 ? ` · ${jobsEn('remote_suffix').replace('{n}', String(remoteJobs.length))}` : ''}`}
+              el={`${filtered.length === 1 ? jobsEl('found_one') : jobsEl('found_many').replace('{n}', String(filtered.length))}${remoteJobs.length > 0 ? ` · ${jobsEl('remote_suffix').replace('{n}', String(remoteJobs.length))}` : ''}`}
+              compact
+            />
           </p>
 
           {/* Featured strip */}
-          {!search && roleFilter === 'all' && featuredJobs.length > 0 && (
+          {featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="icon-sm text-primary-accessible" />
@@ -436,7 +471,7 @@ export default function JobsPage() {
           )}
 
           {/* Remote jobs */}
-          {remoteJobs.length > 0 && (
+          {remoteRest.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <Wifi className="icon-sm text-status-success" />
@@ -444,11 +479,11 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
                 </h2>
               </div>
-              {remoteJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              {remoteRest.map((job) => <JobCard key={job.id} job={job} />)}
             </section>
           )}
 
-          {onsiteJobs.length > 0 && (
+          {onsiteRest.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
                 <MapPin className="icon-sm text-status-info" />
@@ -456,7 +491,7 @@ export default function JobsPage() {
                   <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
                 </h2>
               </div>
-              {onsiteJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              {onsiteRest.map((job) => <JobCard key={job.id} job={job} />)}
             </section>
           )}
         </div>

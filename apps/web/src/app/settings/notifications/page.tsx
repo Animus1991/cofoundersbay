@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Bell, Mail, MessageSquare, Users, Calendar,
   Briefcase, TrendingUp, Shield, Volume2, VolumeX, Smartphone,
-  Monitor, Save, Loader2, Zap, GitMerge, CreditCard, RefreshCw,
+  Monitor, Save, Loader2, Zap, GitMerge, CreditCard, RefreshCw, Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -26,294 +27,129 @@ import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
 import { cn } from '@/lib/utils';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls } from '@/lib/page-controls';
+import {
+  AUTOMATION_KEYS,
+  NOTIFICATION_CATEGORIES,
+  categoryChannelOn,
+  channelsOf,
+  setChannel,
+  updateNotificationPrefs,
+  useNotificationPrefs,
+  type AutomationKey,
+  type NotificationCategoryDef,
+  type NotificationChannel,
+} from '@/lib/notification-prefs';
 
-type NotificationChannel = 'push' | 'email' | 'inApp';
+type Digest = 'daily' | 'weekly' | 'monthly' | 'never';
 
-type NotificationSetting = {
-  id: string;
-  label: string;
-  description: string;
-  icon: React.ElementType;
-  channels: {
-    push: boolean;
-    email: boolean;
-    inApp: boolean;
-  };
-};
-
-type NotificationCategory = {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  settings: NotificationSetting[];
-};
-
-const AUTOMATION_CATEGORIES = [
-  { key: 'automation_onboarding', label: 'Onboarding', description: 'Welcome, profile nudges, setup reminders', icon: Users },
-  { key: 'automation_matching', label: 'Matching', description: 'New matches, connection follow-ups, unread match nudges', icon: GitMerge },
-  { key: 'automation_mentorship', label: 'Mentorship', description: 'Mentor request updates, session reminders', icon: TrendingUp },
-  { key: 'automation_community', label: 'Community', description: 'Welcome messages, activity nudges in groups', icon: Users },
-  { key: 'automation_billing', label: 'Billing & Subscriptions', description: 'Trial reminders, payment alerts, renewal notices', icon: CreditCard },
-  { key: 'automation_reengagement', label: 'Re-engagement', description: 'Personalized prompts when inactive', icon: RefreshCw },
-] as const;
-
-type AutomationKey = typeof AUTOMATION_CATEGORIES[number]['key'];
-
-const AUTOMATION_PREFS_KEY = 'cfb_automation_notif_prefs';
-
-function loadAutomationPrefs(): Record<AutomationKey, boolean> {
-  const defaults: Record<AutomationKey, boolean> = {
-    automation_onboarding: true,
-    automation_matching: true,
-    automation_mentorship: true,
-    automation_community: true,
-    automation_billing: true,
-    automation_reengagement: false,
-  };
-  if (typeof window === 'undefined') return defaults;
-  try {
-    const stored = localStorage.getItem(AUTOMATION_PREFS_KEY);
-    return stored ? { ...defaults, ...JSON.parse(stored) } : defaults;
-  } catch { return defaults; }
-}
-
-const DEFAULT_CATEGORIES: NotificationCategory[] = [
-  {
-    id: 'messages',
-    title: 'Messages',
-    description: 'Notifications about direct messages and conversations',
-    icon: MessageSquare,
-    settings: [
-      {
-        id: 'new_message',
-        label: 'New messages',
-        description: 'When someone sends you a message',
-        icon: MessageSquare,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'message_request',
-        label: 'Message requests',
-        description: 'When someone new wants to message you',
-        icon: MessageSquare,
-        channels: { push: true, email: true, inApp: true },
-      },
-    ],
-  },
-  {
-    id: 'connections',
-    title: 'Connections',
-    description: 'Notifications about connection requests and updates',
-    icon: Users,
-    settings: [
-      {
-        id: 'connection_request',
-        label: 'Connection requests',
-        description: 'When someone wants to connect with you',
-        icon: Users,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'connection_accepted',
-        label: 'Connection accepted',
-        description: 'When someone accepts your connection request',
-        icon: Users,
-        channels: { push: true, email: false, inApp: true },
-      },
-      {
-        id: 'profile_view',
-        label: 'Profile views',
-        description: 'When someone views your profile',
-        icon: Users,
-        channels: { push: false, email: false, inApp: true },
-      },
-    ],
-  },
-  {
-    id: 'matches',
-    title: 'Matches & Recommendations',
-    description: 'Notifications about new matches and AI recommendations',
-    icon: TrendingUp,
-    settings: [
-      {
-        id: 'new_match',
-        label: 'New matches',
-        description: 'When we find a new potential co-founder match',
-        icon: TrendingUp,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'match_update',
-        label: 'Match score updates',
-        description: 'When your compatibility score changes',
-        icon: TrendingUp,
-        channels: { push: false, email: false, inApp: true },
-      },
-      {
-        id: 'weekly_digest',
-        label: 'Weekly match digest',
-        description: 'Summary of your top matches each week',
-        icon: Mail,
-        channels: { push: false, email: true, inApp: false },
-      },
-    ],
-  },
-  {
-    id: 'projects',
-    title: 'Projects & Collaborations',
-    description: 'Notifications about projects you\'re involved in',
-    icon: Briefcase,
-    settings: [
-      {
-        id: 'project_invite',
-        label: 'Project invitations',
-        description: 'When you\'re invited to join a project',
-        icon: Briefcase,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'project_update',
-        label: 'Project updates',
-        description: 'Updates from projects you\'re part of',
-        icon: Briefcase,
-        channels: { push: true, email: false, inApp: true },
-      },
-      {
-        id: 'role_application',
-        label: 'Role applications',
-        description: 'When someone applies to your project',
-        icon: Users,
-        channels: { push: true, email: true, inApp: true },
-      },
-    ],
-  },
-  {
-    id: 'events',
-    title: 'Events & Meetings',
-    description: 'Notifications about scheduled events and calls',
-    icon: Calendar,
-    settings: [
-      {
-        id: 'event_reminder',
-        label: 'Event reminders',
-        description: 'Reminders before scheduled events',
-        icon: Calendar,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'meeting_request',
-        label: 'Meeting requests',
-        description: 'When someone wants to schedule a call',
-        icon: Calendar,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'event_update',
-        label: 'Event changes',
-        description: 'When an event is rescheduled or cancelled',
-        icon: Calendar,
-        channels: { push: true, email: true, inApp: true },
-      },
-    ],
-  },
-  {
-    id: 'security',
-    title: 'Security & Account',
-    description: 'Important notifications about your account security',
-    icon: Shield,
-    settings: [
-      {
-        id: 'login_alert',
-        label: 'Login alerts',
-        description: 'When your account is accessed from a new device',
-        icon: Shield,
-        channels: { push: true, email: true, inApp: true },
-      },
-      {
-        id: 'password_change',
-        label: 'Password changes',
-        description: 'When your password is changed',
-        icon: Shield,
-        channels: { push: true, email: true, inApp: true },
-      },
-    ],
-  },
+const DIGEST_OPTIONS: { value: Digest; en: string; el: string }[] = [
+  { value: 'daily', en: 'Daily', el: 'Καθημερινά' },
+  { value: 'weekly', en: 'Weekly', el: 'Εβδομαδιαία' },
+  { value: 'monthly', en: 'Monthly', el: 'Μηνιαία' },
+  { value: 'never', en: 'Never', el: 'Ποτέ' },
 ];
+
+const CATEGORY_ICONS: Record<NotificationCategoryDef['id'], React.ElementType> = {
+  messages: MessageSquare,
+  connections: Users,
+  matches: TrendingUp,
+  projects: Briefcase,
+  events: Calendar,
+  security: Shield,
+};
+
+const CHANNELS: { id: NotificationChannel; icon: React.ElementType; en: string; el: string }[] = [
+  { id: 'push', icon: Smartphone, en: 'Push', el: 'Push' },
+  { id: 'email', icon: Mail, en: 'Email', el: 'Email' },
+  { id: 'inApp', icon: Monitor, en: 'In-app', el: 'Στην εφαρμογή' },
+];
+
+const AUTOMATION: { key: AutomationKey; icon: React.ElementType; en: string; el: string; descEn: string; descEl: string }[] = [
+  { key: 'automation_onboarding', icon: Users, en: 'Onboarding', el: 'Πρώτα βήματα', descEn: 'Welcome, profile nudges, setup reminders', descEl: 'Καλωσόρισμα, υπενθυμίσεις προφίλ και ρύθμισης' },
+  { key: 'automation_matching', icon: GitMerge, en: 'Matching', el: 'Αντιστοιχίσεις', descEn: 'New matches, connection follow-ups, unread match nudges', descEl: 'Νέες αντιστοιχίσεις, συνέχειες συνδέσεων, υπενθυμίσεις' },
+  { key: 'automation_mentorship', icon: TrendingUp, en: 'Mentorship', el: 'Mentoring', descEn: 'Mentor request updates, session reminders', descEl: 'Ενημερώσεις αιτημάτων μέντορα, υπενθυμίσεις συνεδριών' },
+  { key: 'automation_community', icon: Users, en: 'Community', el: 'Κοινότητα', descEn: 'Welcome messages, activity nudges in groups', descEl: 'Μηνύματα καλωσορίσματος, υπενθυμίσεις σε ομάδες' },
+  { key: 'automation_billing', icon: CreditCard, en: 'Billing & subscriptions', el: 'Χρεώσεις & συνδρομές', descEn: 'Trial reminders, payment alerts, renewal notices', descEl: 'Υπενθυμίσεις δοκιμής, ειδοποιήσεις πληρωμών και ανανεώσεων' },
+  { key: 'automation_reengagement', icon: RefreshCw, en: 'Re-engagement', el: 'Επανασύνδεση', descEn: 'Personalised prompts when inactive', descEl: 'Εξατομικευμένες υπενθυμίσεις όταν είστε ανενεργοί' },
+];
+
+const HOURS = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
 export default function NotificationPreferencesPage() {
   const { success, error: toastError } = useToast();
-  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [emailDigestFrequency, setEmailDigestFrequency] = useState<'daily' | 'weekly' | 'never'>('weekly');
-  const [quietHoursEnabled, setQuietHoursEnabled] = useState(false);
-  const [quietHoursStart, setQuietHoursStart] = useState('22:00');
-  const [quietHoursEnd, setQuietHoursEnd] = useState('08:00');
-  const [automationPrefs, setAutomationPrefs] = useState<Record<AutomationKey, boolean>>(() => loadAutomationPrefs());
+  const queryClient = useQueryClient();
+  const prefs = useNotificationPrefs();
+  const [digest, setDigest] = useState<Digest>('weekly');
 
-  const { data: prefs } = useQuery({
+  const { data: serverPrefs } = useQuery({
     queryKey: qk('notifications', 'preferences'),
     queryFn: getNotificationPreferences,
   });
 
   useEffect(() => {
-    if (prefs?.digestFrequency) setEmailDigestFrequency(prefs.digestFrequency);
-  }, [prefs]);
+    if (serverPrefs?.digestFrequency) setDigest(serverPrefs.digestFrequency as Digest);
+  }, [serverPrefs]);
 
-  const savePrefs = useMutation({
-    mutationFn: () => updateNotificationPreferences({ digestFrequency: emailDigestFrequency }),
-    onSuccess: () => success('Preferences saved', 'Your notification preferences have been updated.'),
-    onError: () => toastError('Failed to save preferences'),
+  const saveDigest = useMutation({
+    mutationFn: () => updateNotificationPreferences({ digestFrequency: digest as 'daily' | 'weekly' | 'never' }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk('notifications', 'preferences') });
+      success('Digest saved', 'Your email digest frequency is saved to your account.');
+    },
+    onError: () => toastError('Could not save the digest'),
   });
+  const digestDirty = (serverPrefs?.digestFrequency ?? 'weekly') !== digest;
 
-  const toggleChannel = (categoryId: string, settingId: string, channel: NotificationChannel) => {
-    setCategories((prev) =>
-      prev.map((cat) => {
-        if (cat.id !== categoryId) return cat;
-        return {
-          ...cat,
-          settings: cat.settings.map((setting) => {
-            if (setting.id !== settingId) return setting;
-            return {
-              ...setting,
-              channels: {
-                ...setting.channels,
-                [channel]: !setting.channels[channel],
-              },
-            };
-          }),
-        };
-      })
-    );
-  };
+  const setQuietHours = (patch: Partial<typeof prefs.quietHours>) =>
+    updateNotificationPrefs((prev) => ({ ...prev, quietHours: { ...prev.quietHours, ...patch } }));
+  const setAutomation = (key: AutomationKey, value: boolean) =>
+    updateNotificationPrefs((prev) => ({ ...prev, automation: { ...prev.automation, [key]: value } }));
+  const setCategory = (category: NotificationCategoryDef, channel: NotificationChannel, value: boolean) =>
+    setChannel(category.settings.map((s) => s.id), channel, value);
 
-  const toggleAllInCategory = (categoryId: string, channel: NotificationChannel, value: boolean) => {
-    setCategories((prev) =>
-      prev.map((cat) => {
-        if (cat.id !== categoryId) return cat;
-        return {
-          ...cat,
-          settings: cat.settings.map((setting) => ({
-            ...setting,
-            channels: {
-              ...setting.channels,
-              [channel]: value,
-            },
-          })),
-        };
-      })
-    );
-  };
+  // Offered to the assistant: the digest (chosen, then saved), quiet hours,
+  // and a whole category or automated-message type on or off - the same
+  // setters the switches call.
+  const categoryRows = rowOptions(NOTIFICATION_CATEGORIES, (c) => c.id, (c) => c.titleEn, (c) => c.titleEl);
+  const automationRows = AUTOMATION.map((a) => ({ value: a.key, labelEn: a.en, labelEl: a.el }));
+  usePageControls([
+    choiceControl('digest_frequency', 'Email digest frequency', 'Συχνότητα email σύνοψης', DIGEST_OPTIONS, digest, (v) => setDigest(v as Digest)),
+    {
+      id: 'save_digest',
+      labelEn: 'Save the email digest frequency',
+      labelEl: 'Αποθήκευση συχνότητας email σύνοψης',
+      writes: true,
+      unavailableEn: digestDirty ? undefined : 'The digest frequency is already saved.',
+      unavailableEl: digestDirty ? undefined : 'Η συχνότητα σύνοψης είναι ήδη αποθηκευμένη.',
+      run: () => saveDigest.mutate(),
+    },
+    {
+      id: 'quiet_hours',
+      labelEn: 'Quiet hours',
+      labelEl: 'Ώρες ησυχίας',
+      writes: true,
+      options: [
+        { value: 'on', labelEn: 'On', labelEl: 'Ενεργές' },
+        { value: 'off', labelEn: 'Off', labelEl: 'Ανενεργές' },
+      ],
+      current: prefs.quietHours.enabled ? 'on' : 'off',
+      run: (v) => setQuietHours({ enabled: v === 'on' }),
+    },
+    ...CHANNELS.flatMap((ch) => [
+      { id: `${ch.id}_on`, labelEn: `Turn ${ch.en.toLowerCase()} notifications on for`, labelEl: `Ενεργοποίηση ειδοποιήσεων ${ch.el} για`, writes: true, options: categoryRows, run: (v?: string) => { const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v); if (c) setCategory(c, ch.id, true); } },
+      { id: `${ch.id}_off`, labelEn: `Turn ${ch.en.toLowerCase()} notifications off for`, labelEl: `Απενεργοποίηση ειδοποιήσεων ${ch.el} για`, writes: true, options: categoryRows, run: (v?: string) => { const c = NOTIFICATION_CATEGORIES.find((x) => x.id === v); if (c) setCategory(c, ch.id, false); } },
+    ]),
+    { id: 'automation_on', labelEn: 'Turn automated messages on', labelEl: 'Ενεργοποίηση αυτοματοποιημένων μηνυμάτων', writes: true, options: automationRows.filter((a) => !prefs.automation[a.value as AutomationKey]), run: (v) => { if (v) setAutomation(v as AutomationKey, true); } },
+    { id: 'automation_off', labelEn: 'Turn automated messages off', labelEl: 'Απενεργοποίηση αυτοματοποιημένων μηνυμάτων', writes: true, options: automationRows.filter((a) => prefs.automation[a.value as AutomationKey]), run: (v) => { if (v) setAutomation(v as AutomationKey, false); } },
+  ]);
 
-  const toggleAutomationPref = (key: AutomationKey, value: boolean) => {
-    const next = { ...automationPrefs, [key]: value };
-    setAutomationPrefs(next);
-    try { localStorage.setItem(AUTOMATION_PREFS_KEY, JSON.stringify(next)); } catch {}
-  };
-
-  const handleSave = () => {
-    savePrefs.mutate();
-    try { localStorage.setItem(AUTOMATION_PREFS_KEY, JSON.stringify(automationPrefs)); } catch {}
-  };
+  const saveButton = (className?: string) => (
+    <Button size="sm" onClick={() => saveDigest.mutate()} disabled={saveDigest.isPending || !digestDirty} className={cn('gap-2', className)}>
+      {saveDigest.isPending ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
+      <BilingualText en={saveDigest.isPending ? settingsEn('saving') : 'Save digest'} el={saveDigest.isPending ? settingsEl('saving') : 'Αποθήκευση σύνοψης'} compact />
+    </Button>
+  );
 
   return (
     <AppShell
@@ -327,231 +163,230 @@ export default function NotificationPreferencesPage() {
           <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
             <Link href="/settings">
               <ArrowLeft className="icon-sm" />
-              <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
+              <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} compact />
             </Link>
           </Button>
-          <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
-            {savePrefs.isPending ? (
-              <Loader2 className="icon-sm animate-spin" />
-            ) : (
-              <Save className="icon-sm" />
-            )}
-            <BilingualText en={savePrefs.isPending ? settingsEn('saving') : 'Save Changes'} el={savePrefs.isPending ? settingsEl('saving') : 'Αποθήκευση αλλαγών'} />
-          </Button>
+          {saveButton('hidden sm:inline-flex')}
         </div>
       }
     >
       <div className="space-y-6 pb-10">
+        {/* Where each choice is kept - said once, before any switch. */}
+        <p className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          <Info className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
+          <BilingualText
+            en="The email digest is saved to your account. Channels, quiet hours and automated messages are kept on this device and take effect immediately here; delivery from the server does not read them yet."
+            el="Η email σύνοψη αποθηκεύεται στον λογαριασμό σας. Τα κανάλια, οι ώρες ησυχίας και τα αυτοματοποιημένα μηνύματα κρατούνται σε αυτή τη συσκευή και ισχύουν αμέσως εδώ· η αποστολή από τον διακομιστή δεν τα διαβάζει ακόμη."
+            wrap
+          />
+        </p>
 
-        {/* Global Settings */}
+        {/* Delivery */}
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="icon-md text-primary-accessible" />
-              Global Settings
+              <Bell className="icon-md text-primary-accessible" aria-hidden="true" />
+              <BilingualText en="Delivery" el="Παράδοση" compact />
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Email Digest */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Email Digest Frequency</Label>
+          <CardContent className="divide-y divide-border/50 p-0">
+            <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0 space-y-0.5">
+                <Label htmlFor="digest" className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                  <BilingualText en="Email digest" el="Email σύνοψη" compact />
+                  <Badge variant="secondary" className="text-2xs">
+                    <BilingualText en="Saved to your account" el="Στον λογαριασμό" compact />
+                  </Badge>
+                </Label>
                 <p className="text-sm text-muted-foreground">
-                  How often to receive summary emails
+                  <BilingualText en="A summary of activity, sent by email" el="Σύνοψη δραστηριότητας μέσω email" compact wrap />
                 </p>
               </div>
-              <Select value={emailDigestFrequency} onValueChange={(v) => setEmailDigestFrequency(v as 'daily' | 'weekly' | 'never')}>
-                <SelectTrigger className="w-[180px]" aria-label="Notification digest frequency">
+              <Select value={digest} onValueChange={(v) => setDigest(v as Digest)}>
+                <SelectTrigger id="digest" className="w-full sm:w-44" aria-label="Email digest frequency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="never">Never</SelectItem>
+                  {DIGEST_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      <BilingualText en={o.en} el={o.el} compact />
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Quiet Hours */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base flex items-center gap-2">
-                    {quietHoursEnabled ? <VolumeX className="icon-sm" /> : <Volume2 className="icon-sm" />}
-                    Quiet Hours
+            <div className="space-y-3 px-6 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0 space-y-0.5">
+                  <Label className="flex items-center gap-2 text-sm font-medium">
+                    {prefs.quietHours.enabled ? <VolumeX className="icon-sm" aria-hidden="true" /> : <Volume2 className="icon-sm" aria-hidden="true" />}
+                    <BilingualText en="Quiet hours" el="Ώρες ησυχίας" compact />
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Pause push notifications during specific hours
+                    <BilingualText en="Pause push notifications during these hours" el="Παύση push ειδοποιήσεων αυτές τις ώρες" compact wrap />
                   </p>
                 </div>
                 <Switch
-                  checked={quietHoursEnabled}
-                  onCheckedChange={setQuietHoursEnabled}
+                  checked={prefs.quietHours.enabled}
+                  onCheckedChange={(v) => setQuietHours({ enabled: v })}
                   aria-label="Enable quiet hours"
                 />
               </div>
-              {quietHoursEnabled && (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-6">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm text-muted-foreground">From</Label>
-                    <Select value={quietHoursStart} onValueChange={setQuietHoursStart}>
-                      <SelectTrigger className="w-[100px]" aria-label="Quiet hours start time">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }, (_, i) => {
-                          const time = `${i.toString().padStart(2, '0')}:00`;
-                          return <SelectItem key={time} value={time}>{time}</SelectItem>;
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm text-muted-foreground">To</Label>
-                    <Select value={quietHoursEnd} onValueChange={setQuietHoursEnd}>
-                      <SelectTrigger className="w-[100px]" aria-label="Quiet hours end time">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }, (_, i) => {
-                          const time = `${i.toString().padStart(2, '0')}:00`;
-                          return <SelectItem key={time} value={time}>{time}</SelectItem>;
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
+              {prefs.quietHours.enabled && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  {([['start', 'From', 'Από'], ['end', 'To', 'Έως']] as const).map(([key, en, el]) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <Label className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact /></Label>
+                      <Select value={prefs.quietHours[key]} onValueChange={(v) => setQuietHours({ [key]: v })}>
+                        <SelectTrigger className="w-[100px]" aria-label={key === 'start' ? 'Quiet hours start time' : 'Quiet hours end time'}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {HOURS.map((time) => <SelectItem key={time} value={time}>{time}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Automation Notifications */}
+        {/* Notification types: one matrix, the channels as columns. */}
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="icon-md text-primary-accessible" />
-              Automation Notifications
+              <Bell className="icon-md text-primary-accessible" aria-hidden="true" />
+              <BilingualText en="What you are notified about" el="Για τι ειδοποιείστε" compact />
             </CardTitle>
             <CardDescription>
-              Control which automated workflow notifications you receive. These preferences are saved locally.
+              <BilingualText en="Choose a channel per notification type. A category's own row switches all of its types at once." el="Επιλέξτε κανάλι ανά τύπο ειδοποίησης. Η γραμμή κάθε κατηγορίας αλλάζει όλους τους τύπους της μαζί." compact wrap />
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            {/* Column heads, from sm up; below sm each switch carries its own icon. */}
+            <div className="hidden items-center justify-end gap-4 border-b border-border/50 px-6 py-2 text-xs font-medium text-muted-foreground sm:flex">
+              {CHANNELS.map((ch) => (
+                <span key={ch.id} className="flex w-16 flex-col items-center gap-0.5 text-center">
+                  <ch.icon className="icon-sm" aria-hidden="true" />
+                  <BilingualText en={ch.en} el={ch.el} compact />
+                </span>
+              ))}
+            </div>
+            {NOTIFICATION_CATEGORIES.map((category) => {
+              const Icon = CATEGORY_ICONS[category.id];
+              return (
+                <section key={category.id} className="border-b border-border/50 last:border-b-0" aria-labelledby={`cat-${category.id}`}>
+                  <div className="flex flex-col gap-3 bg-muted/20 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Icon className="icon-sm text-primary-accessible" aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 id={`cat-${category.id}`} className="text-sm font-semibold text-foreground">
+                          <BilingualText en={category.titleEn} el={category.titleEl} compact />
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          <BilingualText en={category.descriptionEn} el={category.descriptionEl} compact wrap />
+                        </p>
+                      </div>
+                    </div>
+                    <ChannelSwitches
+                      label={category.titleEn}
+                      value={(ch) => categoryChannelOn(prefs, category, ch)}
+                      onChange={(ch, v) => setCategory(category, ch, v)}
+                      scope="all"
+                    />
+                  </div>
+                  {category.settings.map((setting) => {
+                    const channels = channelsOf(prefs, setting);
+                    return (
+                      <div key={setting.id} className="flex flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:pl-[4.5rem]">
+                        <div className="min-w-0 space-y-0.5">
+                          <p className="text-sm font-medium text-foreground">
+                            <BilingualText en={setting.labelEn} el={setting.labelEl} compact />
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            <BilingualText en={setting.descriptionEn} el={setting.descriptionEl} compact wrap />
+                          </p>
+                        </div>
+                        <ChannelSwitches
+                          label={setting.labelEn}
+                          value={(ch) => channels[ch]}
+                          onChange={(ch, v) => setChannel([setting.id], ch, v)}
+                        />
+                      </div>
+                    );
+                  })}
+                </section>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Automated messages */}
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="icon-md text-primary-accessible" aria-hidden="true" />
+              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
+            </CardTitle>
+            <CardDescription>
+              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
             </CardDescription>
           </CardHeader>
           <CardContent className="divide-y divide-border/40">
-            {AUTOMATION_CATEGORIES.map(({ key, label, description, icon: Icon }) => (
-              <div key={key} className="flex items-center justify-between py-3 gap-4">
-                <div className="flex items-start gap-3 min-w-0">
-                  <Icon className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
+            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
+              <div key={key} className="flex items-center justify-between gap-4 py-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="text-xs text-muted-foreground">{description}</p>
+                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
                   </div>
                 </div>
                 <Switch
-                  checked={automationPrefs[key]}
-                  onCheckedChange={(val) => toggleAutomationPref(key, val)}
-                  aria-label={label}
+                  checked={prefs.automation[key]}
+                  onCheckedChange={(val) => setAutomation(key, val)}
+                  aria-label={en}
                 />
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* Channel Legend */}
-        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Smartphone className="icon-sm" />
-            <span>Push</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Mail className="icon-sm" />
-            <span>Email</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Monitor className="icon-sm" />
-            <span>In-App</span>
-          </div>
-        </div>
-
-        {/* Notification Categories */}
-        {categories.map((category) => {
-          const CategoryIcon = category.icon;
-          return (
-            <Card key={category.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <CategoryIcon className="icon-md text-primary-accessible" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{category.title}</CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {category.settings.map((setting, i) => (
-                    <div
-                      key={setting.id}
-                      className={cn(
-                        'flex flex-col items-stretch gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4',
-                        i < category.settings.length - 1 && 'border-b border-border/60'
-                      )}
-                    >
-                      <div className="min-w-0 space-y-0.5">
-                        <Label className="text-sm font-medium">{setting.label}</Label>
-                        <p className="text-xs text-muted-foreground">{setting.description}</p>
-                      </div>
-                      <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-start">
-                        <div className="flex items-center gap-1.5">
-                          <Smartphone className="icon-sm text-muted-foreground" />
-                          <Switch
-                            checked={setting.channels.push}
-                            onCheckedChange={() => toggleChannel(category.id, setting.id, 'push')}
-                            aria-label={`${setting.label} — push notifications`}
-                          />
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Mail className="icon-sm text-muted-foreground" />
-                          <Switch
-                            checked={setting.channels.email}
-                            onCheckedChange={() => toggleChannel(category.id, setting.id, 'email')}
-                            aria-label={`${setting.label} — email notifications`}
-                          />
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Monitor className="icon-sm text-muted-foreground" />
-                          <Switch
-                            checked={setting.channels.inApp}
-                            onCheckedChange={() => toggleChannel(category.id, setting.id, 'inApp')}
-                            aria-label={`${setting.label} — in-app notifications`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-
-        {/* Save Button (Mobile) */}
-        <div className="sm:hidden">
-          <Button className="w-full" onClick={handleSave} disabled={savePrefs.isPending}>
-            {savePrefs.isPending ? (
-              <Loader2 className="icon-sm mr-2 animate-spin" />
-            ) : (
-              <Save className="icon-sm mr-2" />
-            )}
-            Save Changes
-          </Button>
-        </div>
+        <div className="sm:hidden">{saveButton('w-full')}</div>
       </div>
     </AppShell>
+  );
+}
+
+/** Three switches, one per channel, aligned under the column heads. */
+function ChannelSwitches({
+  label,
+  value,
+  onChange,
+  scope,
+}: {
+  label: string;
+  value: (channel: NotificationChannel) => boolean;
+  onChange: (channel: NotificationChannel, value: boolean) => void;
+  scope?: 'all';
+}) {
+  return (
+    <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
+      {CHANNELS.map((ch) => (
+        <div key={ch.id} className="flex items-center gap-1.5 sm:w-16 sm:justify-center">
+          <ch.icon className="icon-sm text-muted-foreground sm:hidden" aria-hidden="true" />
+          <Switch
+            checked={value(ch.id)}
+            onCheckedChange={(v) => onChange(ch.id, v)}
+            aria-label={`${label}${scope === 'all' ? ' (all types)' : ''} — ${ch.en.toLowerCase()} notifications`}
+          />
+        </div>
+      ))}
+    </div>
   );
 }

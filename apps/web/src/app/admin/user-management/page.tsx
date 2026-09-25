@@ -67,6 +67,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 type UserRole = 'admin' | 'moderator' | 'mentor' | 'founder' | 'co-founder' | 'user';
@@ -499,6 +500,80 @@ export default function AdminUserManagementPage() {
     },
   ];
 
+
+  // Offered to the assistant: the three selects, the page, export, and every
+  // item of the row menu - the same handlers, which still refuse the
+  // illustrative rows. Rows are the whole filtered list, not one page of it.
+  const SAMPLE_EN = isLive ? undefined : 'These rows are illustrative until the directory loads.';
+  const SAMPLE_EL = isLive ? undefined : 'Οι γραμμές είναι ενδεικτικές μέχρι να φορτώσει ο κατάλογος.';
+  const byName = (list: ManagedUser[]) => rowOptions(list, (u) => u.id, (u) => u.name);
+  const rowCommand = (id: string, en: string, el: string, list: ManagedUser[], run: (u: ManagedUser) => void): PageControl => ({
+    id,
+    labelEn: en,
+    labelEl: el,
+    writes: true,
+    options: byName(list),
+    unavailableEn: SAMPLE_EN,
+    unavailableEl: SAMPLE_EL,
+    run: (v) => { const u = users.find((row) => row.id === v); if (u) run(u); },
+  });
+  usePageList([
+    {
+      id: 'users',
+      labelEn: 'Users',
+      labelEl: 'Χρήστες',
+      rows: filtered.map((u) => `${u.name} · ${u.email} · ${u.role} · ${u.status}${u.location ? ` · ${u.location}` : ''}`),
+      total: users.length,
+      sample: !isLive,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', [
+      { value: 'all', en: 'All roles', el: 'Όλοι οι ρόλοι' },
+      { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+      { value: 'moderator', en: 'Moderator', el: 'Συντονιστής' },
+      { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
+      { value: 'founder', en: 'Founder', el: 'Ιδρυτής' },
+      { value: 'co-founder', en: 'Co-founder', el: 'Συνιδρυτής' },
+      { value: 'user', en: 'User', el: 'Χρήστης' },
+    ], roleFilter, (v) => { setRoleFilter(v); setPage(1); }),
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργός' },
+      { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+      { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+      { value: 'banned', en: 'Banned', el: 'Αποκλεισμένος' },
+    ], statusFilter, (v) => { setStatusFilter(v); setPage(1); }),
+    choiceControl('sort', 'Sort users', 'Ταξινόμηση χρηστών', [
+      { value: 'name', en: 'Name', el: 'Όνομα' },
+      { value: 'email', en: 'Email', el: 'Email' },
+      { value: 'createdAt', en: 'Created date', el: 'Ημερομηνία δημιουργίας' },
+      { value: 'lastActive', en: 'Last active', el: 'Τελευταία δραστηριότητα' },
+    ], sortBy, (v) => setSortBy(v as typeof sortBy)),
+    {
+      id: 'page',
+      labelEn: 'Go to page',
+      labelEl: 'Μετάβαση σε σελίδα',
+      writes: false,
+      options: Array.from({ length: totalPages }, (_, i) => ({ value: String(i + 1), labelEn: `Page ${i + 1}`, labelEl: `Σελίδα ${i + 1}` })),
+      current: String(page),
+      run: (v) => { if (v) setPage(Number(v)); },
+    },
+    {
+      id: 'export_csv',
+      labelEn: 'Export users as CSV',
+      labelEl: 'Εξαγωγή χρηστών σε CSV',
+      writes: false,
+      unavailableEn: filtered.length ? undefined : 'There is nothing to export.',
+      unavailableEl: filtered.length ? undefined : 'Δεν υπάρχει κάτι για εξαγωγή.',
+      run: exportCsv,
+    },
+    { id: 'quick_view', labelEn: 'Quick view a user', labelEl: 'Γρήγορη προβολή χρήστη', writes: false, options: byName(filtered), run: (v) => { const u = users.find((row) => row.id === v); if (u) setDetailUser(u); } },
+    rowCommand('set_active', 'Set user active', 'Ενεργοποίηση χρήστη', filtered.filter((u) => u.status !== 'active'), (u) => void updateStatus(u.id, 'active')),
+    rowCommand('suspend_user', 'Suspend user', 'Αναστολή χρήστη', filtered.filter((u) => u.status !== 'suspended'), (u) => void updateStatus(u.id, 'suspended')),
+    rowCommand('ban_user', 'Ban user', 'Αποκλεισμός χρήστη', filtered.filter((u) => u.status !== 'banned'), (u) => void updateStatus(u.id, 'banned')),
+    rowCommand('make_admin', 'Make user an admin', 'Ορισμός χρήστη ως διαχειριστή', filtered.filter((u) => u.role !== 'admin'), (u) => void updateRole(u.id, 'admin')),
+  ]);
   return (
     <AppShell
       title="User Management"

@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 type ExportStatus = 'idle' | 'processing' | 'ready' | 'expired';
 
@@ -257,6 +258,33 @@ export default function DataExportPage() {
       return next;
     });
   };
+
+  // Offered to the assistant: which categories go in, and the request -
+  // the same toggle and mutation; past exports go out as a list.
+  const categoryOption = (c: DataCategory) => ({ value: c.id, labelEn: c.label, labelEl: c.label });
+  usePageList([
+    {
+      id: 'exports',
+      labelEn: 'Data exports',
+      labelEl: 'Εξαγωγές δεδομένων',
+      rows: isLoading ? undefined : exports.map((e) =>
+        `${e.requestedAt.slice(0, 10)} · ${e.status} · ${e.dataTypes.join(', ')}${e.expiresAt ? ` · expires ${e.expiresAt.slice(0, 10)}` : ''}`,
+      ),
+    },
+  ]);
+  usePageControls([
+    { id: 'include_category', labelEn: 'Include in the export', labelEl: 'Συμπερίληψη στην εξαγωγή', writes: false, options: DATA_CATEGORIES.filter((c) => !selectedCategories.has(c.id)).map(categoryOption), run: (v) => { if (v) toggleCategory(v); } },
+    { id: 'exclude_category', labelEn: 'Leave out of the export', labelEl: 'Εξαίρεση από την εξαγωγή', writes: false, options: DATA_CATEGORIES.filter((c) => selectedCategories.has(c.id)).map(categoryOption), run: (v) => { if (v) toggleCategory(v); } },
+    {
+      id: 'request_export',
+      labelEn: 'Request a data export',
+      labelEl: 'Αίτημα εξαγωγής δεδομένων',
+      writes: true,
+      unavailableEn: hasActiveExport ? 'An export is already being prepared.' : selectedCategories.size === 0 ? 'Choose at least one category.' : undefined,
+      unavailableEl: hasActiveExport ? 'Μια εξαγωγή ετοιμάζεται ήδη.' : selectedCategories.size === 0 ? 'Επιλέξτε τουλάχιστον μία κατηγορία.' : undefined,
+      run: () => exportMutation.mutate(),
+    },
+  ]);
 
   return (
     <AppShell title="Data Export" description="Download a copy of your data">

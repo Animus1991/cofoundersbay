@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk, queryKeys } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 type AIPreferences = {
   preferredModel: string;
@@ -179,6 +180,60 @@ export default function AISettingsPage() {
     };
   }, []);
 
+  // Offered to the assistant: every choice on the form, through the same
+  // setter (so the unsaved-changes bar appears as it does for a click), and
+  // Save, which is the one step that stores anything.
+  const FEATURES: { key: keyof AIPreferences; en: string; el: string }[] = [
+    { key: 'enableStreaming', en: 'Streaming responses', el: 'Ροή απαντήσεων' },
+    { key: 'enableSuggestions', en: 'Suggested questions', el: 'Προτεινόμενες ερωτήσεις' },
+    { key: 'enableContextMemory', en: 'Context memory', el: 'Μνήμη πλαισίου' },
+    { key: 'enableAutoSave', en: 'Auto-save conversations', el: 'Αυτόματη αποθήκευση συνομιλιών' },
+    { key: 'saveConversations', en: 'Save conversations', el: 'Αποθήκευση συνομιλιών' },
+    { key: 'anonymizeData', en: 'Anonymise data', el: 'Ανωνυμοποίηση δεδομένων' },
+    { key: 'shareForTraining', en: 'Help improve the AI', el: 'Βοήθεια στη βελτίωση του AI' },
+    { key: 'useEmoji', en: 'Use emojis', el: 'Χρήση emoji' },
+  ];
+  const setFlag = (key: keyof AIPreferences, value: boolean) => {
+    setPrefs((p) => ({ ...p, [key]: value }));
+    setHasChanges(true);
+  };
+  const featureOptions = (on: boolean) =>
+    FEATURES.filter((f) => Boolean(prefs[f.key]) === on).map((f) => ({ value: f.key, labelEn: f.en, labelEl: f.el }));
+  usePageControls([
+    choiceControl('response_style', 'Response style', 'Ύφος απαντήσεων', [
+      { value: 'concise', en: 'Concise', el: 'Σύντομο' },
+      { value: 'detailed', en: 'Detailed', el: 'Αναλυτικό' },
+      { value: 'casual', en: 'Casual', el: 'Φιλικό' },
+      { value: 'formal', en: 'Formal', el: 'Επίσημο' },
+    ], prefs.responseStyle, (v) => updatePref('responseStyle', v as AIPreferences['responseStyle'])),
+    choiceControl('creativity', 'Creativity', 'Δημιουργικότητα', [
+      { value: '0.1', en: 'Very precise', el: 'Πολύ ακριβές' },
+      { value: '0.3', en: 'Focused', el: 'Εστιασμένο' },
+      { value: '0.5', en: 'Balanced', el: 'Ισορροπημένο' },
+      { value: '0.7', en: 'Creative', el: 'Δημιουργικό' },
+      { value: '0.9', en: 'Very creative', el: 'Πολύ δημιουργικό' },
+      { value: '1.0', en: 'Maximum creativity', el: 'Μέγιστη δημιουργικότητα' },
+    ], String(prefs.temperature), (v) => updatePref('temperature', parseFloat(v))),
+    choiceControl('response_length', 'Response length', 'Μήκος απαντήσεων', [
+      { value: '512', en: 'Short', el: 'Σύντομο' },
+      { value: '1024', en: 'Medium', el: 'Μεσαίο' },
+      { value: '2048', en: 'Long', el: 'Μεγάλο' },
+      { value: '4096', en: 'Very long', el: 'Πολύ μεγάλο' },
+    ], String(prefs.maxTokens), (v) => updatePref('maxTokens', parseInt(v, 10))),
+    ...(agents.length ? [choiceControl('default_agent', 'Default assistant', 'Προεπιλεγμένος βοηθός', agents.map((a: AgentConfig) => ({ value: a.id, en: a.name, el: a.name })), prefs.defaultAgent, (v) => updatePref('defaultAgent', v))] : []),
+    ...(models.length ? [choiceControl('preferred_model', 'Preferred model', 'Προτιμώμενο μοντέλο', models.map((m) => ({ value: m.name, en: m.name, el: m.name })), prefs.preferredModel, (v) => updatePref('preferredModel', v))] : []),
+    { id: 'feature_on', labelEn: 'Turn an AI option on', labelEl: 'Ενεργοποίηση επιλογής AI', writes: false, options: featureOptions(false), run: (v) => { if (v) setFlag(v as keyof AIPreferences, true); } },
+    { id: 'feature_off', labelEn: 'Turn an AI option off', labelEl: 'Απενεργοποίηση επιλογής AI', writes: false, options: featureOptions(true), run: (v) => { if (v) setFlag(v as keyof AIPreferences, false); } },
+    {
+      id: 'save_ai_preferences',
+      labelEn: 'Save AI preferences',
+      labelEl: 'Αποθήκευση προτιμήσεων AI',
+      writes: true,
+      unavailableEn: hasChanges ? undefined : 'There are no unsaved changes.',
+      unavailableEl: hasChanges ? undefined : 'Δεν υπάρχουν μη αποθηκευμένες αλλαγές.',
+      run: () => handleSave(),
+    },
+  ]);
   return (
     <AppShell>
       <div className="max-w-4xl">

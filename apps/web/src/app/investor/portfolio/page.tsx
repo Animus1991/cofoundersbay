@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { downloadCsv } from '@/lib/csv';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -317,6 +318,50 @@ export default function InvestorPortfolioPage() {
   const totalValue = 535000;
   const totalReturn = ((totalValue - totalInvested) / totalInvested) * 100;
 
+  const [chartTab, setChartTab] = useState('performance');
+  const exportPortfolio = () =>
+    downloadCsv(
+      'portfolio',
+      ['name', 'industry', 'stage', 'status', 'invested_at', 'amount', 'current_value', 'return_pct', 'team_size'],
+      investments.map((i) => [i.name, i.industry, i.stage, i.status, i.investedAt, i.amount, i.currentValue, i.returnPct, i.teamSize]),
+    );
+  // Offered to the assistant, above the empty-portfolio return: the chart
+  // tab, the header's export and each row's Export Report.
+  usePageList([
+    {
+      id: 'investments',
+      labelEn: 'Portfolio companies',
+      labelEl: 'Εταιρείες χαρτοφυλακίου',
+      rows: isLoading ? undefined : investments.map((i) =>
+        `${i.name} · ${i.industry}, ${i.stage} · ${i.status.replace('_', ' ')} · invested ${i.amount}, now ${i.currentValue} (${i.returnPct >= 0 ? '+' : ''}${i.returnPct}%)`,
+      ),
+      sample: !isLive,
+    },
+  ]);
+  usePageControls([
+    choiceControl('chart', 'Portfolio chart', 'Γράφημα χαρτοφυλακίου', [
+      { value: 'performance', en: 'Value over time', el: 'Αξία στον χρόνο' },
+      { value: 'sectors', en: 'Sector mix', el: 'Κατανομή κλάδων' },
+    ], chartTab, setChartTab),
+    {
+      id: 'export_portfolio',
+      labelEn: 'Export the portfolio as CSV',
+      labelEl: 'Εξαγωγή χαρτοφυλακίου σε CSV',
+      writes: false,
+      unavailableEn: investments.length ? undefined : 'There is nothing to export yet.',
+      unavailableEl: investments.length ? undefined : 'Δεν υπάρχει ακόμη κάτι για εξαγωγή.',
+      run: exportPortfolio,
+    },
+    {
+      id: 'export_investment',
+      labelEn: 'Export an investment report',
+      labelEl: 'Εξαγωγή αναφοράς επένδυσης',
+      writes: false,
+      options: rowOptions(investments, (i) => i.id, (i) => i.name),
+      run: (v) => { const inv = investments.find((i) => i.id === v); if (inv) exportInvestment(inv); },
+    },
+  ]);
+
   if (!isLoading && !showDemoData && investments.length === 0) {
     return (
       <AppShell title="Portfolio" description="Track your investments and returns">
@@ -341,13 +386,7 @@ export default function InvestorPortfolioPage() {
           variant="outline"
           size="sm"
           disabled={investments.length === 0}
-          onClick={() =>
-            downloadCsv(
-              'portfolio',
-              ['name', 'industry', 'stage', 'status', 'invested_at', 'amount', 'current_value', 'return_pct', 'team_size'],
-              investments.map((i) => [i.name, i.industry, i.stage, i.status, i.investedAt, i.amount, i.currentValue, i.returnPct, i.teamSize]),
-            )
-          }
+          onClick={exportPortfolio}
         >
           <Download className="mr-2 icon-sm" aria-hidden="true" />Export Report
         </Button>
@@ -382,7 +421,7 @@ export default function InvestorPortfolioPage() {
         </div>
 
         {/* Charts */}
-        <Tabs defaultValue="performance">
+        <Tabs value={chartTab} onValueChange={setChartTab}>
           <TabsList>
             <TabsTrigger value="performance">Value Over Time</TabsTrigger>
             <TabsTrigger value="sectors">Sector Mix</TabsTrigger>

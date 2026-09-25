@@ -25,6 +25,7 @@ import { HairlineMeter } from '@/components/ui/hairline-meter';
 import { SettingsRow } from '@/components/ui/settings-row';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -136,6 +137,45 @@ export default function UserBillingPage() {
 
   const sub = subData?.subscription;
   const invoices = invoicesData?.invoices ?? [];
+
+  // Offered to the assistant: the portal, the contact form, and opening an
+  // invoice - the same handlers and links; the invoices go out as a list.
+  usePageList([
+    {
+      id: 'invoices',
+      labelEn: 'Invoices',
+      labelEl: 'Τιμολόγια',
+      rows: invoicesLoading ? undefined : invoices.map((i) =>
+        `${i.invoiceNumber} · ${formatCents(i.total, i.currency)} · ${i.status} · ${i.periodStart.slice(0, 10)} to ${i.periodEnd.slice(0, 10)}${i.paidAt ? ` · paid ${i.paidAt.slice(0, 10)}` : ''}`,
+      ),
+    },
+  ]);
+  const withLinks = invoices.filter((i) => i.hostedInvoiceUrl);
+  usePageControls([
+    {
+      id: 'open_billing_portal',
+      labelEn: 'Open the billing portal',
+      labelEl: 'Άνοιγμα πύλης χρεώσεων',
+      writes: false,
+      unavailableEn: sub ? undefined : 'There is no subscription to manage.',
+      unavailableEl: sub ? undefined : 'Δεν υπάρχει συνδρομή για διαχείριση.',
+      run: () => openPortal(),
+    },
+    { id: 'edit_billing_contact', labelEn: 'Edit the billing contact', labelEl: 'Επεξεργασία στοιχείων χρέωσης', writes: false, run: () => setShowContactForm(true) },
+    {
+      id: 'open_invoice',
+      labelEn: 'Open an invoice',
+      labelEl: 'Άνοιγμα τιμολογίου',
+      writes: false,
+      options: rowOptions(withLinks, (i) => i.id, (i) => i.invoiceNumber),
+      unavailableEn: withLinks.length ? undefined : 'No invoice has a document to open.',
+      unavailableEl: withLinks.length ? undefined : 'Κανένα τιμολόγιο δεν έχει έγγραφο.',
+      run: (v) => {
+        const url = withLinks.find((i) => i.id === v)?.hostedInvoiceUrl;
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      },
+    },
+  ]);
 
   return (
     <AppShell
