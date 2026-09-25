@@ -23,7 +23,6 @@ import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/ap
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -182,86 +181,57 @@ export default function TenantDashboardPage() {
             )}
           </SectionCard>
 
-          {/* Recent Members */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Recent Members</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {recentMembers.map((member) => (
-                <div key={member.id} className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={member.avatarUrl} />
-                    <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{member.name}</p>
-                    <p className="text-xs text-muted-foreground">{member.role}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    <RelativeTime date={member.joinedAt} format={formatRelativeTime} />
-                  </span>
+          <SectionCard title="Recent members" titleEl="Πρόσφατα μέλη" action={{ href: '/tenant/members', label: 'All members', labelEl: 'Όλα τα μέλη' }} contentClassName="space-y-3">
+            {recentMembers.map((member) => (
+              <div key={member.id} className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={member.avatarUrl} />
+                  <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{member.name}</p>
+                  <p className="text-xs capitalize text-muted-foreground">{member.role}</p>
                 </div>
-              ))}
-              <Button variant="outline" className="w-full mt-2" size="sm" asChild>
-                <Link href="/tenant/members">View All Members</Link>
-              </Button>
-            </CardContent>
-          </Card>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  <RelativeTime date={member.joinedAt} format={formatRelativeTime} />
+                </span>
+              </div>
+            ))}
+            {membersData && recentMembers.length === 0 && (
+              <EmptyLine en="Invite someone to see them here." el="Προσκαλέστε κάποιον για να εμφανιστεί εδώ." />
+            )}
+          </SectionCard>
         </div>
 
-        {/* Charts Row */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Member Growth</CardTitle>
-                <Badge variant="secondary" className="text-2xs">6 months</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <MemberGrowthChart data={memberGrowth} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Applications and places</CardTitle>
-                <Badge variant="secondary" className="text-2xs">Running and upcoming</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ProgramEngagementChart data={engagement} />
-            </CardContent>
-          </Card>
+          <SectionCard title="Member growth" titleEl="Αύξηση μελών" contentClassName="space-y-2">
+            <MemberGrowthChart data={memberGrowth} />
+            <p className="text-xs text-muted-foreground">Members at the end of each of the last six months, from join dates.</p>
+          </SectionCard>
+          <SectionCard title="Applications and places" titleEl="Αιτήσεις και θέσεις" contentClassName="space-y-2">
+            <ProgramEngagementChart data={engagement} />
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Applications</span> and <span className="font-medium text-status-success">places filled</span> in each running or upcoming program.
+            </p>
+          </SectionCard>
         </div>
 
-        {/* Upcoming Events */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">Upcoming Events</CardTitle>
-            <Button variant="ghost" size="sm" className="gap-1.5" asChild>
-              <Link href="/events/create">
-                <Calendar className="icon-sm" aria-hidden="true" /> Add Event
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="icon-sm text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{event.date}</span>
-                  </div>
-                  <p className="font-medium text-sm">{event.name}</p>
-                  <Badge variant="outline" className="mt-2 text-xs">{event.type}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard title="Upcoming events" titleEl="Επόμενες εκδηλώσεις" action={{ href: '/events/create', label: 'Add event', labelEl: 'Νέα εκδήλωση' }}>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {upcomingEvents.map((event) => (
+              <div key={event.id} className="rounded-lg border border-border/60 p-3">
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="icon-sm" aria-hidden="true" />
+                  {event.date} · {event.type}
+                </p>
+                <p className="mt-1 text-sm font-medium">{event.name}</p>
+              </div>
+            ))}
+          </div>
+          {eventsData && upcomingEvents.length === 0 && (
+            <EmptyLine en="No event is on the calendar." el="Καμία εκδήλωση στο ημερολόγιο." />
+          )}
+        </SectionCard>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

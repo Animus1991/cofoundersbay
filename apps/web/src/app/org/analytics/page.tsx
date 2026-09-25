@@ -419,8 +419,8 @@ export default function OrgAnalyticsPage() {
               const prev = index > 0 ? funnel[index - 1]?.value : undefined;
               return (
                 <li key={step.label} className="grid grid-cols-[6.5rem_1fr_2.5rem_2.75rem] items-center gap-3 text-sm sm:grid-cols-[8rem_1fr_3rem_3rem]">
-                  <span className="truncate text-muted-foreground">
-                    <BilingualText en={step.label} el={step.labelEl} />
+                  <span className="min-w-0 text-muted-foreground">
+                    <BilingualText en={step.label} el={step.labelEl} stacked wrap />
                   </span>
                   <span className="h-2.5 overflow-hidden rounded-full bg-muted/50" aria-hidden="true">
                     <span className={cn('block h-full rounded-full', step.bar)} style={{ width: `${Math.max(3, Math.round((step.value / top) * 100))}%` }} />
