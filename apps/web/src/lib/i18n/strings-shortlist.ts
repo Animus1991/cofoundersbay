@@ -75,10 +75,10 @@ export const SHORTLIST_STRINGS: Record<string, BilingualPair> = {
   selected_max: { en: '{n} profiles selected (max 3)', el: '{n} προφίλ επιλεγμένα (έως 3)' },
 
   // ── The label a founder puts on someone while deciding ──
-  status_hot: { en: '🔥 Hot lead', el: '🔥 Ζεστή επαφή' },
-  status_follow_up: { en: '⏰ Follow up', el: '⏰ Επανεπικοινωνία' },
-  status_contacted: { en: '✅ Contacted', el: '✅ Επικοινωνήσαμε' },
-  status_not_relevant: { en: '⛔ Not relevant', el: '⛔ Μη σχετικό' },
+  status_hot: { en: 'Hot lead', el: 'Ζεστή επαφή' },
+  status_follow_up: { en: 'Follow up', el: 'Επανεπικοινωνία' },
+  status_contacted: { en: 'Contacted', el: 'Επικοινωνήσαμε' },
+  status_not_relevant: { en: 'Not relevant', el: 'Μη σχετικό' },
 
   match_suffix: { en: 'match', el: 'αντιστοίχιση' },
   saved_on: { en: 'Saved {date}', el: 'Αποθηκεύτηκε {date}' },

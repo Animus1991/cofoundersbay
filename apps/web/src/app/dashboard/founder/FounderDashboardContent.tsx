@@ -465,14 +465,9 @@ export default function FounderDashboardContent() {
             el: `${openMilestones.length} ανοιχτά`,
           };
   const attentionItems: { href: string; glyph: CfbGlyphName; en: string; el: string }[] = [];
-  if (unreadMessages > 0) {
-    attentionItems.push({
-      href: '/messages',
-      glyph: 'messages',
-      en: unreadMessages === 1 ? '1 unread message' : `${unreadMessages} unread messages`,
-      el: unreadMessages === 1 ? '1 αδιάβαστο μήνυμα' : `${unreadMessages} αδιάβαστα μηνύματα`,
-    });
-  }
+  // Unread messages have their own tile directly above these chips, linking to
+  // the same inbox; a chip saying "1 unread message" under "Unread messages 1"
+  // was the same fact twice. The chips carry what no tile says.
   if (pendingRequests > 0) {
     attentionItems.push({
       href: '/connections?tab=requests',

@@ -10,10 +10,27 @@ import {
 } from '@/lib/api';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
-  Star, Clock, CheckCircle2, XCircle, AlertTriangle, FileText,
-  Plus, ChevronRight, TrendingUp, Award, MessageCircle, Eye,
-  BarChart3, Lightbulb, DollarSign, Scale, Palette, Code2,
-  Target, Search, RefreshCw,
+  AlertTriangle,
+  Award,
+  BarChart3,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Code2,
+  DollarSign,
+  Eye,
+  FileText,
+  Lightbulb,
+  MessageCircle,
+  Palette,
+  Plus,
+  RefreshCw,
+  Scale,
+  Search,
+  Star,
+  Target,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -380,7 +397,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.success.icon)}>✅ Strengths</p>
+              <p className={cn('mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider', STATUS.success.icon)}><CheckCircle2 className="h-3 w-3" aria-hidden="true" />Strengths</p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">

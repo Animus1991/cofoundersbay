@@ -823,9 +823,10 @@ const PREVIEW_GROUP_RULES = [
 
 const PREVIEW_GROUP_FOUNDERS = {
   elena: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null, headline: 'Founder & CEO at Harbor', role: 'founder' },
-  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, headline: 'Partner at Northbound', role: 'investor' },
+  marcus: { id: 'user-marcus', displayName: 'Marcus Chen', avatarUrl: null, headline: 'Technical cofounder · Full-stack', role: 'cofounder' },
   sarah: { id: 'user-sarah', displayName: 'Dr. Sarah Kim', avatarUrl: null, headline: 'ML lead and advisor', role: 'mentor' },
-  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Founder at Meltemi', role: 'founder' },
+  nikos: { id: 'user-nikos', displayName: 'Nikos Andreou', avatarUrl: null, headline: 'Angel investor', role: 'investor' },
+  sofia: { id: 'user-sofia', displayName: 'Sofia Alexiou', avatarUrl: null, headline: 'Founder at Meltemi', role: 'founder' },
 };
 
 const PREVIEW_GROUPS: PreviewGroup[] = [
@@ -838,15 +839,63 @@ const PREVIEW_GROUPS: PreviewGroup[] = [
   { id: 'grp-b2b-sales', name: 'B2B Sales for Technical Founders', slug: 'b2b-sales-technical-founders', description: 'Just opened. The first discussion thread goes up after the kickoff call.', privacy: 'public', category: 'Sales', tags: ['sales', 'b2b'], coverImageUrl: null, avatarUrl: null, rules: PREVIEW_GROUP_RULES, memberCount: 143, postCount: 0, eventCount: 0, createdAt: '2026-08-30T09:00:00.000Z', updatedAt: NOW, createdBy: PREVIEW_GROUP_FOUNDERS.nikos, isMember: false, memberRole: null },
 ];
 
+/** The newest posts in a group, from the people the rest of the showcase already has. */
+function previewGroupPosts(group: PreviewGroup) {
+  const F = PREVIEW_GROUP_FOUNDERS;
+  const byGroup: Record<string, { author: (typeof F)[keyof typeof F]; content: string; days: number; comments: number; reactions: number; pinned?: boolean }[]> = {
+    'grp-athens-founders': [
+      { author: F.elena, content: 'Harbor is hiring a first account executive in Athens. Greek and English, B2B SaaS, someone who likes a blank page. Intros welcome.', days: -1, comments: 6, reactions: 14, pinned: true },
+      { author: F.sofia, content: 'Anyone switched accountants this year? Looking for someone who understands SAFEs and does not bill by the email.', days: -2, comments: 9, reactions: 5 },
+      { author: F.nikos, content: 'Office hours for pre-seed founders on Thursday at 17:00, Syntagma. Bring your deck and your hardest question.', days: -4, comments: 3, reactions: 11 },
+    ],
+    'grp-saas-metrics': [
+      { author: F.marcus, content: 'This month\'s benchmark swap: net revenue retention for teams under €1M ARR. Share yours in the thread, anonymised is fine.', days: -1, comments: 12, reactions: 18, pinned: true },
+      { author: F.elena, content: 'We moved from monthly to annual prepay and our cash runway went from 11 to 16 months. Happy to share the pricing page before and after.', days: -3, comments: 7, reactions: 21 },
+    ],
+  };
+  const rows = byGroup[group.id] ?? [
+    { author: group.createdBy as (typeof F)[keyof typeof F], content: `Welcome to ${group.name}. Introduce yourself: what you are building and what you need this month.`, days: -6, comments: 4, reactions: 9, pinned: true },
+  ];
+  return rows.map((row, i) => ({
+    id: `${group.id}-post-${i}`,
+    groupId: group.id,
+    content: row.content,
+    mediaUrls: [],
+    isPinned: Boolean(row.pinned),
+    createdAt: previewIsoInDays(row.days, 10 + i),
+    editedAt: null,
+    commentCount: row.comments,
+    reactionCount: row.reactions,
+    myReaction: null,
+    author: { id: row.author.id, displayName: row.author.displayName, avatarUrl: null, headline: row.author.headline, role: row.author.role },
+  }));
+}
+
+/** The members a group shows by name: its founder, the reader when joined, and the cast. */
+function previewGroupMembers(group: PreviewGroup) {
+  const F = PREVIEW_GROUP_FOUNDERS;
+  const people = [group.createdBy as (typeof F)[keyof typeof F], F.elena, F.sofia, F.marcus, F.nikos]
+    .filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i);
+  return [
+    ...people.map((p, i) => ({
+      userId: p.id,
+      role: i === 0 ? 'owner' : 'member',
+      joinedAt: previewIsoInDays(-120 + i * 9, 10),
+      user: { id: p.id, displayName: p.displayName, avatarUrl: null, headline: p.headline, role: p.role },
+    })),
+    ...(group.isMember ? [{ userId: ME_ID, role: group.memberRole ?? 'member', joinedAt: previewIsoInDays(-60, 10), user: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null, headline: 'Founder', role: 'founder' } }] : []),
+  ];
+}
+
 const PREVIEW_OPPORTUNITIES = [
-  { id: 'opp-technical-cofounder', title: 'Technical co-founder — vertical SaaS for logistics', description: 'Design partner signed, 14 interviews done, no engineer. Equity, not salary, until the pre-seed closes.', type: 'cofounder', company: 'Meltemi', location: 'Athens, Greece', isRemote: false, url: null, tags: ['cofounder', 'logistics', 'saas'], deadline: '2026-10-15T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-08-26T09:00:00.000Z' },
+  { id: 'opp-technical-cofounder', title: 'Technical co-founder — vertical SaaS for logistics', description: 'Design partner signed, 14 interviews done, no engineer. Equity, not salary, until the pre-seed closes.', type: 'cofounder', company: 'Meltemi', location: 'Athens, Greece', isRemote: false, url: null, tags: ['cofounder', 'logistics', 'saas'], deadline: '2026-10-15T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Sofia Alexiou', avatarUrl: null }, createdAt: '2026-08-26T09:00:00.000Z' },
   { id: 'opp-fractional-cto', title: 'Fractional CTO — two days a week', description: 'Six-month engagement to take an existing prototype to production and hire the first two engineers.', type: 'job', company: 'Harbor', location: 'Remote — EU time zones', isRemote: true, url: null, tags: ['engineering', 'leadership'], deadline: '2026-09-30T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-29T09:00:00.000Z' },
-  { id: 'opp-angel-syndicate', title: 'Angel syndicate — pre-seed allocation', description: 'Open allocation alongside a lead. Greek and Cypriot SaaS teams with a paying design partner.', type: 'investment', company: 'Northbound', location: 'Remote', isRemote: true, url: null, tags: ['fundraising', 'pre-seed'], deadline: '2026-11-01T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Marcus Chen', avatarUrl: null }, createdAt: '2026-09-01T09:00:00.000Z' },
+  { id: 'opp-angel-syndicate', title: 'Angel syndicate — pre-seed allocation', description: 'Open allocation alongside a lead. Greek and Cypriot SaaS teams with a paying design partner.', type: 'investment', company: 'Andreou Angels', location: 'Remote', isRemote: true, url: null, tags: ['fundraising', 'pre-seed'], deadline: '2026-11-01T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-09-01T09:00:00.000Z' },
   { id: 'opp-design-partner', title: 'Design partner wanted — ops teams of 20 to 200', description: 'Free for six months in exchange for weekly feedback sessions and a public case study.', type: 'partnership', company: 'Harbor', location: 'Remote', isRemote: true, url: null, tags: ['partnership', 'b2b'], deadline: null, isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-18T09:00:00.000Z' },
   { id: 'opp-mentor-ml', title: 'Mentorship — ML evaluation and cost control', description: 'Four sessions with a practitioner, for teams putting their first model in front of customers.', type: 'mentorship', company: null, location: 'Remote', isRemote: true, url: null, tags: ['ai', 'mentorship'], deadline: '2026-10-05T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Dr. Sarah Kim', avatarUrl: null }, createdAt: '2026-09-02T09:00:00.000Z' },
   { id: 'opp-aegean-bootcamp', title: 'Pre-seed Bootcamp · Spring 2027 — applications open', description: 'Six weeks from idea to first paying customer, in Athens. Ten places; applications close three weeks from now.', type: 'other', company: 'Aegean Venture Lab', location: 'Athens, Greece', isRemote: false, url: null, tags: ['program', 'pre-seed'], deadline: '2026-10-16T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Anna Lambrou', avatarUrl: null }, createdAt: '2026-09-15T09:00:00.000Z' },
   { id: 'opp-aegean-mentors', title: 'Mentors wanted — fintech compliance and payments', description: 'Two hours a month with the Autumn 2026 cohort. Ledgerly and Thalia are both building on payments rails.', type: 'mentorship', company: 'Aegean Venture Lab', location: 'Athens, Greece', isRemote: true, url: null, tags: ['mentorship', 'fintech'], deadline: null, isActive: true, createdBy: { displayName: 'Anna Lambrou', avatarUrl: null }, createdAt: '2026-09-10T09:00:00.000Z' },
-  { id: 'opp-gtm-advisor', title: 'GTM advisor — Southeast Europe expansion', description: 'Advisory shares for someone who has sold B2B software into Greece, Romania and Bulgaria.', type: 'other', company: 'Meltemi', location: 'Thessaloniki, Greece', isRemote: false, url: null, tags: ['gtm', 'advisory'], deadline: null, isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-07-22T09:00:00.000Z' },
+  { id: 'opp-gtm-advisor', title: 'GTM advisor — Southeast Europe expansion', description: 'Advisory shares for someone who has sold B2B software into Greece, Romania and Bulgaria.', type: 'other', company: 'Meltemi', location: 'Thessaloniki, Greece', isRemote: false, url: null, tags: ['gtm', 'advisory'], deadline: null, isActive: true, createdBy: { displayName: 'Sofia Alexiou', avatarUrl: null }, createdAt: '2026-07-22T09:00:00.000Z' },
 ];
 
 /*
@@ -2736,14 +2785,16 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       // finds them exact. No STREAK_BONUS row: its base is 0 and the server
       // computes it, so a literal here would be an invented number.
       recentEvents: [
-        { id: 'xp-1', eventType: 'IMPROVE_ARTIFACT', xpAmount: 40, entityType: 'artifact', metadata: null, createdAt: NOW },
-        { id: 'xp-2', eventType: 'APPLY_FEEDBACK', xpAmount: 80, entityType: 'review', metadata: null, createdAt: '2026-09-03T09:05:00.000Z' },
-        { id: 'xp-3', eventType: 'RECEIVE_MENTOR_FEEDBACK', xpAmount: 60, entityType: 'review', metadata: null, createdAt: '2026-09-02T18:40:00.000Z' },
-        { id: 'xp-4', eventType: 'COMPLETE_MILESTONE', xpAmount: 100, entityType: 'milestone', metadata: null, createdAt: '2026-09-01T11:00:00.000Z' },
-        { id: 'xp-5', eventType: 'CREATE_ARTIFACT', xpAmount: 25, entityType: 'artifact', metadata: null, createdAt: '2026-08-30T14:30:00.000Z' },
-        { id: 'xp-6', eventType: 'INVITE_COLLABORATOR', xpAmount: 50, entityType: 'workspace', metadata: null, createdAt: '2026-08-29T10:10:00.000Z' },
+        { id: 'xp-1', eventType: 'IMPROVE_ARTIFACT', xpAmount: 40, entityType: 'artifact', metadata: null, createdAt: previewIsoInDays(0, 8) },
+        { id: 'xp-2', eventType: 'APPLY_FEEDBACK', xpAmount: 80, entityType: 'review', metadata: null, createdAt: previewIsoInDays(-1, 9) },
+        { id: 'xp-3', eventType: 'RECEIVE_MENTOR_FEEDBACK', xpAmount: 60, entityType: 'review', metadata: null, createdAt: previewIsoInDays(-2, 18) },
+        { id: 'xp-4', eventType: 'COMPLETE_MILESTONE', xpAmount: 100, entityType: 'milestone', metadata: null, createdAt: previewIsoInDays(-3, 11) },
+        { id: 'xp-5', eventType: 'CREATE_ARTIFACT', xpAmount: 25, entityType: 'artifact', metadata: null, createdAt: previewIsoInDays(-5, 14) },
+        { id: 'xp-6', eventType: 'INVITE_COLLABORATOR', xpAmount: 50, entityType: 'workspace', metadata: null, createdAt: previewIsoInDays(-6, 10) },
       ],
-      streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW },
+      // Four days running, the last of them today: the events above fall on
+      // each of them. A fixed date drifted a week behind the streak it ended.
+      streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: new Date(previewNowMs() - 2 * 3_600_000).toISOString() },
     };
   }
   // useMyStreak() fetches the streak on its own endpoint, not from the XP payload
@@ -2751,7 +2802,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // object has no currentStreak/longestStreak — which is why the dashboard read
   // "undefined day streak · Best: undefined days" in demo mode.
   if (pathname === '/api/gamification/users/me/streak' || pathname.endsWith('/streak')) {
-    return { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW };
+    return { currentStreak: 4, longestStreak: 7, lastActiveDate: new Date(previewNowMs() - 2 * 3_600_000).toISOString() };
   }
   if (pathname === '/api/gamification/users/me/badges' || pathname.endsWith('/badges')) {
     return [
@@ -3098,9 +3149,23 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true, groupId: pathname.split('/')[3], isMember: pathname.endsWith('/join') };
   }
   if (pathname.startsWith('/api/groups/')) {
-    const id = pathname.split('/')[3];
+    const parts = pathname.split('/');
+    const id = parts[3];
     const group = PREVIEW_GROUPS.find((g) => g.id === id || g.slug === id) ?? PREVIEW_GROUPS[0];
-    return { group: { ...group, members: [] } };
+    // Comments under a post: none yet in the showcase.
+    if (parts[4] === 'posts' && parts[6] === 'comments') return { comments: [], total: 0, hasMore: false };
+    if (parts[4] === 'posts') {
+      const posts = previewGroupPosts(group);
+      return { posts, total: group.postCount, hasMore: group.postCount > posts.length };
+    }
+    if (parts[4] === 'members') return { members: previewGroupMembers(group), total: group.memberCount };
+    // The client reads membership beside the group, not inside it: nested,
+    // it read false, so /groups said "joined" and the group said "Join".
+    return {
+      group: { ...group, members: previewGroupMembers(group) },
+      isMember: group.isMember,
+      memberRole: group.memberRole,
+    };
   }
 
   if (pathname === '/api/opportunities' || pathname.startsWith('/api/opportunities?')) {

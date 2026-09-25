@@ -8,11 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  TrendingUp,
-  TrendingDown,
-  Save,
-  RefreshCw,
   AlertTriangle,
+  CheckCircle2,
+  RefreshCw,
+  Save,
+  TrendingDown,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -94,6 +96,23 @@ const defaultFinancialData: FinancialData = {
     aggressive: { revenue12m: 0, costs12m: 0 }
   }
 };
+
+
+/**
+ * A unit-economics verdict with its mark: the product's icons and status
+ * colours, where emoji (a check, a warning sign, a cross) rendered
+ * differently on every platform and carried the meaning alone.
+ */
+function Verdict({ ok, warn, children }: { ok: boolean; warn: boolean; children: React.ReactNode }) {
+  const Icon = ok ? CheckCircle2 : warn ? AlertTriangle : XCircle;
+  const tone = ok ? 'text-status-success' : warn ? 'text-status-warning' : 'text-status-danger';
+  return (
+    <div className={cn('mt-1 inline-flex items-center justify-center gap-1 text-xs', tone)}>
+      <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+      <span>{children}</span>
+    </div>
+  );
+}
 
 export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProps) {
   const t = useBuilderPrimaryText();
@@ -702,28 +721,28 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     {data.unitEconomics.ltvCacRatio.toFixed(1)}x
                   </div>
                   <div className="text-sm text-muted-foreground">LTV/CAC Ratio</div>
-                  <div className="text-xs mt-1">
-                    {data.unitEconomics.ltvCacRatio >= 3 ? '✅ Healthy (>3x)' :
-                     data.unitEconomics.ltvCacRatio >= 1 ? '⚠️ Needs improvement' : '❌ Unsustainable'}
-                  </div>
+                  <Verdict ok={data.unitEconomics.ltvCacRatio >= 3} warn={data.unitEconomics.ltvCacRatio >= 1}>
+                    {data.unitEconomics.ltvCacRatio >= 3 ? 'Healthy (>3x)' :
+                     data.unitEconomics.ltvCacRatio >= 1 ? 'Needs improvement' : 'Unsustainable'}
+                  </Verdict>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(BUILDER_STAT, 'mb-2 text-status-info')}>
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
                   <div className="text-sm text-muted-foreground">Payback Period</div>
-                  <div className="text-xs mt-1">
-                    {data.unitEconomics.paybackPeriod <= 12 ? '✅ Good (<12 mo)' : '⚠️ Long payback'}
-                  </div>
+                  <Verdict ok={data.unitEconomics.paybackPeriod <= 12} warn>
+                    {data.unitEconomics.paybackPeriod <= 12 ? 'Good (<12 mo)' : 'Long payback'}
+                  </Verdict>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(BUILDER_STAT, 'mb-2 text-status-accent')}>
                     {data.unitEconomics.grossMargin}%
                   </div>
                   <div className="text-sm text-muted-foreground">Gross Margin</div>
-                  <div className="text-xs mt-1">
-                    {data.unitEconomics.grossMargin >= 70 ? '✅ SaaS-level (>70%)' : '⚠️ Below SaaS average'}
-                  </div>
+                  <Verdict ok={data.unitEconomics.grossMargin >= 70} warn>
+                    {data.unitEconomics.grossMargin >= 70 ? 'SaaS-level (>70%)' : 'Below SaaS average'}
+                  </Verdict>
                 </div>
               </div>
             </CardContent>

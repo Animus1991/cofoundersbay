@@ -5,27 +5,28 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
+  ArrowUpDown,
   Compass,
-  Search,
-  Filter,
-  Star,
-  MoreVertical,
-  TrendingUp,
-  Users,
-  MapPin,
+  DollarSign,
   Eye,
+  Filter,
+  Flame,
   GanttChart,
-  MessageCircle,
+  GitCompare,
+  Globe,
   LayoutGrid,
   List,
-  ArrowUpDown,
-  Zap,
-  DollarSign,
-  Globe,
+  MapPin,
+  MessageCircle,
+  MoreVertical,
   Rocket,
-  GitCompare,
+  Search,
   SlidersHorizontal,
+  Star,
+  TrendingUp,
+  Users,
   X,
+  Zap,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
@@ -174,7 +175,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                     {startup.name}
                   </Link>
-                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 px-1.5">🔥 HOT</Badge>}
+                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 gap-0.5 px-1.5"><Flame className="h-2.5 w-2.5" aria-hidden="true" />Hot</Badge>}
                   {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30">Featured</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
@@ -475,7 +476,7 @@ export default function InvestorScoutingPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{filtered.length}</span> startup{filtered.length !== 1 ? 's' : ''} found
-            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-status-warning">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
+            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" />{ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
           </p>
           <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
             <GanttChart className="icon-sm" />View Pipeline

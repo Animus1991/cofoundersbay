@@ -5,9 +5,25 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
-  Search, Users, Plus, TrendingUp, Lock, Globe, CheckCircle2,
-  UserPlus, MessageCircle, LogOut, Loader2, RefreshCw, Sparkles,
-  Layers, BookOpen, Rocket, Star, ArrowRight, Zap,
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Globe,
+  Layers,
+  Loader2,
+  Lock,
+  LogOut,
+  MessageCircle,
+  Plus,
+  RefreshCw,
+  Rocket,
+  Search,
+  Sparkles,
+  Star,
+  TrendingUp,
+  UserPlus,
+  Users,
+  Zap,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -500,7 +516,7 @@ export default function GroupsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">
-                  🔥 Trending: <span className={STATUS.warning.text}>{trendingGroup.name}</span>
+                  Trending: <span className={STATUS.warning.text}>{trendingGroup.name}</span>
                 </p>
                 <p className="text-2xs text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
               </div>

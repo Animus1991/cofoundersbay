@@ -1,5 +1,6 @@
 'use client';
 
+import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -62,16 +63,32 @@ type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
 
 const UserIcon = User;
 
+/*
+ * One completeness measure. This card counted six equal items (three skills
+ * or more) and read 67% while /profile/edit weighed seven items (one skill,
+ * social links) and read 80% for the same profile. Both now read
+ * calculateProfileCompletion, the weighted list the edit page and its
+ * "missing items" use; only the labels are this page's, in both languages.
+ */
+const COMPLETION_LABEL: Record<string, { en: string; el: string }> = {
+  basic: { en: profileEn('display_name'), el: profileEl('display_name') },
+  skills: { en: 'Skills', el: 'Δεξιότητες' },
+  bio: { en: profileEn('bio'), el: profileEl('bio') },
+  headline: { en: profileEn('headline'), el: profileEl('headline') },
+  location: { en: profileEn('location'), el: profileEl('location') },
+  avatar: { en: profileEn('avatar'), el: profileEl('avatar') },
+  links: { en: 'Social links', el: 'Σύνδεσμοι' },
+};
+
 function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> }) {
-  const items = [
-    { done: !!profile.displayName, labelEn: profileEn('display_name'), labelEl: profileEl('display_name') },
-    { done: !!profile.headline, labelEn: profileEn('headline'), labelEl: profileEl('headline') },
-    { done: !!profile.bio, labelEn: profileEn('bio'), labelEl: profileEl('bio') },
-    { done: (profile.skills?.length ?? 0) >= 3, labelEn: profileEn('three_plus_skills'), labelEl: profileEl('three_plus_skills') },
-    { done: !!profile.location, labelEn: profileEn('location'), labelEl: profileEl('location') },
-    { done: !!profile.avatarUrl, labelEn: profileEn('avatar'), labelEl: profileEl('avatar') },
-  ];
-  const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
+  const fields = calculateProfileCompletion(profile as unknown as Record<string, unknown>);
+  const items = fields.map((f) => ({
+    done: f.completed,
+    labelEn: COMPLETION_LABEL[f.id]?.en ?? f.label,
+    labelEl: COMPLETION_LABEL[f.id]?.el ?? f.label,
+  }));
+  const total = fields.reduce((sum, f) => sum + f.weight, 0);
+  const pct = total ? Math.round((fields.filter((f) => f.completed).reduce((sum, f) => sum + f.weight, 0) / total) * 100) : 0;
   if (pct === 100) return null;
 
   return (

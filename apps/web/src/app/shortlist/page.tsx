@@ -3,12 +3,43 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Bookmark, BookmarkX, MapPin, Briefcase, Trash2,
-  MessageCircle, ExternalLink, RefreshCw, Edit2, Check, X,
-  User, AlertTriangle, Search, SlidersHorizontal, Grid3X3,
-  List, GitMerge, Star, Tag, Clock, TrendingUp, Filter,
-  ChevronDown, CheckSquare, Square, ArrowUpDown, Sparkles,
-  UserCheck, GraduationCap, DollarSign, Building2, Target,
+  AlarmClock,
+  AlertTriangle,
+  ArrowUpDown,
+  Ban,
+  Bookmark,
+  BookmarkX,
+  Briefcase,
+  Building2,
+  Check,
+  CheckCircle2,
+  CheckSquare,
+  ChevronDown,
+  Clock,
+  DollarSign,
+  Edit2,
+  ExternalLink,
+  Filter,
+  Flame,
+  GitMerge,
+  GraduationCap,
+  Grid3X3,
+  List,
+  MapPin,
+  MessageCircle,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Square,
+  Star,
+  Tag,
+  Target,
+  Trash2,
+  TrendingUp,
+  User,
+  UserCheck,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
@@ -52,12 +83,17 @@ const ROLE_TABS: { value: RoleFilter; key: string; icon: React.ElementType }[] =
   { value: 'org', key: 'role_org', icon: Building2 },
 ];
 
-/** `key` rather than `label`, so the pill reads in the reader's language. */
-const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { key: string; color: string }> = {
-  hot:          { key: 'status_hot',          color: 'bg-status-danger-bg text-status-danger' },
-  follow_up:    { key: 'status_follow_up',    color: 'bg-status-warning-bg text-status-warning' },
-  contacted:    { key: 'status_contacted',    color: 'bg-status-success-bg text-status-success' },
-  not_relevant: { key: 'status_not_relevant', color: 'bg-muted text-muted-foreground' },
+/**
+ * `key` rather than `label`, so the pill reads in the reader's language. The
+ * mark is an icon from the product's set: the labels carried emoji (a flame,
+ * an alarm clock, a check, a no-entry sign), which render differently on every
+ * platform and were the only emoji status marks in the product.
+ */
+const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { key: string; color: string; icon: React.ElementType }> = {
+  hot:          { key: 'status_hot',          color: 'bg-status-danger-bg text-status-danger', icon: Flame },
+  follow_up:    { key: 'status_follow_up',    color: 'bg-status-warning-bg text-status-warning', icon: AlarmClock },
+  contacted:    { key: 'status_contacted',    color: 'bg-status-success-bg text-status-success', icon: CheckCircle2 },
+  not_relevant: { key: 'status_not_relevant', color: 'bg-muted text-muted-foreground', icon: Ban },
 };
 
 function ShortlistCardSkeleton({ grid }: { grid?: boolean }) {
@@ -191,7 +227,8 @@ function ShortlistCard({
                   </span>
                 )}
                 {statusLabel && (
-                  <span className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
+                  <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
+                    {(() => { const Icon = STATUS_CONFIG[statusLabel].icon; return <Icon className="h-3 w-3" aria-hidden="true" />; })()}
                     <BilingualText
                       en={shortlistEn(STATUS_CONFIG[statusLabel].key)}
                       el={shortlistEl(STATUS_CONFIG[statusLabel].key)}
@@ -254,10 +291,11 @@ function ShortlistCard({
                 key={key}
                 onClick={() => setStatusLabel(statusLabel === key ? null : key)}
                 className={cn(
-                  'rounded-full border px-2 py-0.5 text-2xs transition-all',
+                  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
                   statusLabel === key ? cfg.color : 'border-border/60 text-muted-foreground hover:border-border',
                 )}
               >
+                <cfg.icon className="h-3 w-3" aria-hidden="true" />
                 <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
               </button>
             ))}

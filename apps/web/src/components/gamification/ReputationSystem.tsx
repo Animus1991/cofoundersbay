@@ -2,20 +2,21 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  TrendingUp, 
-  Award, 
-  Star, 
-  Zap, 
-  Target,
-  ArrowUp,
-  ArrowDown,
+import {
   Activity,
+  ArrowDown,
+  ArrowUp,
+  Award,
   Calendar,
-  Users,
-  MessageCircle,
+  Flame,
   Handshake,
   Lightbulb,
+  MessageCircle,
+  Star,
+  Target,
+  TrendingUp,
+  Users,
+  Zap,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -195,7 +196,8 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
               </Badge>
               {currentStreak > 0 && (
                 <Badge variant="secondary" className="text-xs gap-1">
-                  🔥 {currentStreak}-day streak
+                  <Flame className="h-3 w-3 text-status-warning" aria-hidden="true" />
+                  {currentStreak}-day streak
                 </Badge>
               )}
             </div>
