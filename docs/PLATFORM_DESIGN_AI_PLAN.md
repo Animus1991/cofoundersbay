@@ -841,3 +841,95 @@ Production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-ap
 | `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3` | 0 | πρόγονος |
 
 `git merge --ff-only origin/claude/project-audit-upgrade-y2ebnr`. Το HEAD είναι το `34c2944`: **260** commits μπροστά από το `main`, και ταυτόσημο με το μοναδικό tip που περιέχει integration + γύρο 11 (§21–§23). Κανένα άλλο remote branch δεν έχει commit που λείπει. Δεν υπήρχε divergence, άρα δεν έγινε cherry-pick και δεν έμεινε τίποτα απέξω.
+
+## 25. Γύρος 12 — ο assistant πατά τα controls της σελίδας, ένα cache prefix ανά δεδομένο, οπτικός έλεγχος (2026-09-24)
+
+### 25.1 Έλεγχος και ενσωμάτωση του άλλου μοντέλου
+
+`git fetch --all --prune`: δύο branches κινήθηκαν μετά το `34c2944`, και τα δύο **περιέχουν ήδη** όλα τα δικά μας commits.
+
+| branch | commits που μας έλειπαν | περιεχόμενο |
+|---|---|---|
+| `integration/ai-platform-upgrade` `0cf0962` | 9 | rail κύμα 5 — `/readiness`, `/analytics`, `/research`, `/milestones`, founder dashboard, `BuilderWorkspace`, `PitchDeckBuilder` — «άνοιγμα σε πλήρες μέγεθος» ανά section του rail, CSS που μαζεύει τα viewport grids μέσα στο rail |
+| `cursor/ui-upgrade-cloudflare-preview-53e0` `97e0eab` | 1 (ήδη μέσα στο integration) | docs §24 |
+
+**Απόδειξη διατήρησης λειτουργιών, μηχανικά** (όχι «με το μάτι»): για κάθε αρχείο που άλλαξε, σύνολα από i18n keys, hrefs, handlers, EN labels, κλήσεις API και prompts πριν/μετά — **0 εξαφανίσεις** σε 8 αρχεία, μόνο προσθήκες. Μετρήσεις interactive στοιχείων: μία αλλαγή, `/readiness` `AskAiButton 3→2, Button 13→14` — το δεύτερο «Ask AI for a plan» έγινε κουμπί που ανοίγει το section του rail (τεκμηριωμένο de-duplication). Το `analytics_set_period` βασίζεται στο `?period=` — επαληθεύτηκε ότι διαβάζεται ακόμη. `git merge --ff-only` (tag `pre-round12-ff`)· όλοι οι guards πέρασαν στο merged δέντρο, μαζί και ο state-level κανόνας του rail πάνω στα 7 νέα rails.
+
+Ζωντανός έλεγχος της δουλειάς του: 5/7 νέα rails καθαρά στο axe σε 1440 και 390· το `/readiness` είχε `nested-interactive` (τα 6 pips-σύνδεσμοι μέσα σε `role="img"`) — διορθώθηκε. Το dialog πλήρους μεγέθους: τίτλος, description, 0 διπλά ids, 0 υπερχείλιση, καθαρό axe σε 4 σελίδες — αλλά στο κλείσιμο το focus έπεφτε στο `<body>` (ανοίγει από state, όχι από Radix trigger) — διορθώθηκε. Τα 2 console errors σε `/builder` είναι websocket προς το mock API — περιβάλλον, όχι bug.
+
+### 25.2 Μετρήσεις που οδήγησαν τον γύρο
+
+| μέτρηση | τιμή | εργαλείο |
+|---|---|---|
+| API reads που χρησιμοποιούν οι σελίδες και φτάνει ο assistant | **15 / 104** | `aicoverage.mjs` (στατικό, κάτω όριο: οι εντολές καμβά περνούν από bus) |
+| API writes που χρησιμοποιούν οι σελίδες και φτάνει ο assistant | **14 / 167** | ίδιο |
+| API reads cached κάτω από 2+ keys | **33 / 138** — σε ~12 με **διαφορετικό prefix**, άρα write σε μια σελίδα δεν ανανέωνε την άλλη | `querykeys.mjs` |
+| σελίδες που ο assistant μπορούσε να χειριστεί τα controls τους | **0** | — |
+| page titles που σπάνε σε 2 γραμμές στα 1440 | **10 / 138** (0 στα 1920) | `titlewrap.mjs` |
+| «Ask AI» στην κεφαλίδα κάθε σελίδας | έφευγε στο `/ai`, **έχανε το page context**, και μόνο *προσυμπλήρωνε* την ερώτηση | ανάγνωση κώδικα |
+
+### 25.3 Τι υλοποιήθηκε
+
+**α. Ο assistant πατά τα controls της σελίδας** (`lib/page-controls.ts`). Μια σελίδα καλεί `usePageControls([...])` με τους *ίδιους* handlers που καλούν τα κουμπιά της: id, ετικέτα EN/EL, αν γράφει, επιλογές (τιμές φίλτρου, περίοδοι, *γραμμές* για εντολές), τρέχουσα τιμή, και γιατί δεν μπορεί να τρέξει όταν δεν μπορεί. Δύο δηλωμένες δυνατότητες ώστε το `writes` της κάρτας επιβεβαίωσης να είναι πάντα αληθές: `use_page_control` (writes false) και `run_page_command` (writes true, reversal `none` — «εκτελεί την εντολή της σελίδας· όπου η σελίδα έχει την αντίθετη εντολή, έτσι αναστρέφεται»). Κάθε executor αρνείται το λάθος είδος, άγνωστο id, επιλογή εκτός λίστας, και control που δηλώνει ότι δεν μπορεί — λέγοντας τι υπάρχει. Το page-context packet τα μεταφέρει στο τοπικό engine και στο μοντέλο. Ο matcher: λέξεις ετικέτας + λέξεις επιλογής, χωρίς τόνους, stem 5 γραμμάτων, ΟΛΕΣ οι λέξεις ονόματος γραμμής («Mike» μόνο δεν επιλέγει «Mike Johnson»), ρήμα θέασης/ενέργειας, και **εντολή που γράφει χρειάζεται δικές της λέξεις** («show Mike Johnson» δεν αναστέλλει κανέναν).
+
+**21 σελίδες, 78 controls (66 προβολής, 12 εντολές):**
+
+| σελίδα | controls |
+|---|---|
+| `/admin/users` | φίλτρα ρόλου/κατάστασης, ανανέωση, εξαγωγή · εντολές: αναστολή, αποκλεισμός (ρωτά πρώτα), επαναφορά, αλλαγή ρόλου ×5 — άρνηση σε δείγματα |
+| `/admin/reports` | καρτέλα ουράς, τύπος, προτεραιότητα, ανανέωση, εξαγωγή, άνοιγμα · εντολές: επίλυση, απόρριψη (μόνο ανοιχτές, μόνο live) |
+| `/admin/programs` | κατάσταση, τύπος, ανανέωση, εξαγωγή, άνοιγμα · εντολή: αρχειοθέτηση (ρωτά, αρνείται δείγματα) |
+| `/admin/tenants` | κατάσταση, επωνυμία, ανανέωση, εξαγωγή, φόρμα νέου, ρυθμίσεις tenant |
+| `/admin/communities` · `/tenant/programs` · `/mentor/earnings` · `/provider/analytics` | φίλτρα / περίοδος / εξαγωγές / φόρμα δημιουργίας |
+| `/matches` · `/marketplace` · `/projects` · `/calendar` · `/milestones` · `/research` · `/coaching` · `/events` · `/connections` · `/groups` | φίλτρα, ταξινόμηση, διάταξη, καρτέλες, φόρμα δημιουργίας |
+| `/analytics` | περίοδος και καρτέλα μέσω των setters που γράφουν το URL (το Back δουλεύει), ανανέωση |
+| `/readiness` | επανεκτίμηση (υπολογισμένο read — το endpoint δεν αποθηκεύει τίποτα, επαληθευμένο στον controller/service), live/showcase |
+| `/notifications` | κατηγορία, μόνο αδιάβαστες · εντολή: σήμανση όλων ως αναγνωσμένων |
+
+**β. Ask AI στη θέση του.** `PopupChatContext.ask()` ανοίγει τον assistant της σελίδας στην καρτέλα AI και στέλνει την ερώτηση· το `AIComposer` το χρησιμοποιεί παντού εκτός από το `/ai`. Το `/ai` στέλνει πλέον το `?q=` (11 σύνδεσμοι «Ask AI about this» καταλήγουν εκεί) και αφαιρεί το `?q` ώστε το reload να μη ρωτά ξανά. Αίτημα που απαντά η ίδια η σελίδα δεν σέρνει πια το προεπιλεγμένο graph read του planner.
+
+**γ. Ένα cache prefix ανά δεδομένο.** admin home (`admin-*` → `['admin', …]`, `['events','admin']`, `['jobs','admin']`), `getMyPrograms` (3 keys → `['programs','mine']`, writes → `['programs']`), communities → `['groups','admin']`, org/tenant events → `['events', …]`, tenant automation → `['automation-rules', …]`, SSO admin+tenant → `['sso', …]`, org cohorts/members, memberships, mentorships, coach list, founder stats (και το server seed), achievements, provider dashboard. Guard: `queryKeyCoherence.test.ts` (μία τεκμηριωμένη εξαίρεση: `searchProfiles`, δύο άσχετες αναζητήσεις)· επαληθευμένο ότι αποτυγχάνει στο παλιό δέντρο.
+
+**δ. Οπτικός έλεγχος — ευρήματα και διορθώσεις.** Κεφαλίδα: ο τίτλος παίρνει ελάχιστο 42rem και η μπάρα Ask AI υποχωρεί ως 20rem (10 σπασμένοι τίτλοι στα 1440 → μέτρηση στο §25.5)· `/events`: 3 στήλες το πολύ, κάρτες που αναδιπλώνουν αντί να συγκρούονται («by Elena Papadopoulos84 attending»)· `/builder`: εσωτερική καρτέλα «Summary» αντί για δεύτερο «Overview»· `/discover`: οι δύο σειρές ρόλων λένε τι κάνει η καθεμία («Show» = στενεύει τα αποτελέσματα, «Search only» = αλλάζει το query) και είναι δίγλωσσες.
+
+**Guards που προστέθηκαν:** hook-order για `usePageControls` (lint δεν τρέχει εδώ), ο rail contract αγνοεί τα `usePageControls` blocks (δεν αποδίδουν τίποτα), query-key coherence, 19 tests για page controls (registry, executors, matcher, engine, hook order).
+
+Διόρθωση καταγραφής: το commit `feat(web): twenty pages offer…` είχε στην πραγματικότητα **17** σελίδες· με το επόμενο έγιναν 21.
+
+### 25.4 Πλάνο — επόμενα κύματα, με μετρήσιμο στόχο
+
+| # | κατεύθυνση | τι | στόχος / μέτρηση |
+|---|---|---|---|
+| 1 | AI-first | `usePageControls` στις υπόλοιπες σελίδες με controls, κατά σειρά πλήθους controls (script: `rail-candidates.mjs` families) — πρώτα `/admin/user-management`, `/admin/billing`, `/data-room/[id]`, `/org/[slug]/admin`, `/fundraising`, `/feed`, investor pipeline/watchlist/scouting, `/jobs`, `/opportunities`, `/shortlist`, `/settings/*` | σελίδες με controls 21 → 60+· ποσοστό writes σελίδων που φτάνει ο assistant (σήμερα 14/167 + εντολές σελίδων) |
+| 2 | AI-first | εντολές ανά γραμμή σε κάθε λίστα που έχει row menu (accept intro, apply to programme, archive board, star deal) — ίδιοι handlers, ίδιες επιβεβαιώσεις | κάθε `DropdownMenuItem` με handler έχει αντίστοιχο control (μετρήσιμο στατικά από τον dead-controls scanner) |
+| 3 | AI-first | ο assistant διαβάζει *τι δείχνει* η λίστα (όχι μόνο τα controls): `usePublishPageSnapshot` σε κάθε σελίδα με control, με τα φιλτραρισμένα σύνολα | σελίδες με snapshot 3 → όσες έχουν controls |
+| 4 | AI-first | undo για εντολές όπου υπάρχει αντίθετη εντολή (suspend ↔ reinstate): `run_page_command` με `reversal: partial` μόνο όταν η σελίδα δηλώνει `undo` | καμία δήλωση reversal χωρίς επαληθευμένη αντίθετη εντολή |
+| 5 | Συνοχή δεδομένων | όλα τα query keys από το `queryKeys` factory· κάθε mutation δηλώνει topics όπως οι capabilities (`invalidates`) | 0 array-literal keys εκτός factory |
+| 6 | Συνοχή δεδομένων | τα αδιάβαστα/badges (header, sidebar, rail, chat) από μία πηγή — σήμερα `useUnreadCounts` + ανά σελίδα queries | 1 hook ανά μετρητή |
+| 7 | UI/UX | κεφαλίδα: έλεγχος 1280px· `/builder` η σειρά 7 καρτελών με οριζόντιο scroll χωρίς ένδειξη· κάρτες σε πλέγματα 4 στηλών σε άλλες σελίδες (ίδιο μοτίβο με `/events`) | 0 σπασμένοι τίτλοι στα 1280/1440, 0 συγκρούσεις κειμένου (probe) |
+| 8 | Ποιότητα | ~~το e2e «Ask AI → control → αλλάζει η σελίδα» μέσα στη σουίτα Playwright~~ **έγινε σε αυτόν τον γύρο:** `e2e/assistant-page-controls.spec.ts`, desktop + mobile, 4/4 | στο `test:a11y` |
+
+### 25.5 Πύλες
+
+Όλες στο τελικό δέντρο (`c2ecbc1`), production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-api.mjs`.
+
+| πύλη | αποτέλεσμα |
+|---|---|
+| web typecheck | 0 errors |
+| api typecheck | 0 errors |
+| web vitest | 57 αρχεία, **531/531** |
+| api vitest | 8 αρχεία, 187/187 |
+| script tests (`deploy`, `platform-inventory`) | 12/12 |
+| sweep 160 routes × {1440, 390} | 0 page errors · 0 React key warnings · 0 οριζόντια υπερχείλιση · ακριβώς 1 `<h1>` παντού · 0 controls χωρίς όνομα · 0 «NaN/undefined/Invalid Date» · **32 rails** (ήταν 21 στον γύρο 11) |
+| axe WCAG 2.1 A/AA — 39 σελίδες (όλα τα rails του γύρου + όσες άλλαξαν) × 2 πλάτη | **0 παραβιάσεις** (πριν τη διόρθωση του `/ai`: 1 `color-contrast` ανά πλάτος στο ενεργό νήμα) |
+| page titles σε 2+ γραμμές | **0 / 138** στα 1440 και στα 1280 (ήταν 10 στα 1440) |
+| e2e «Ask AI → control → αλλάζει η σελίδα» | Playwright `assistant-page-controls.spec.ts` **4/4** (desktop + mobile) · probe script 16/16 |
+
+**Δύο regressions που έπιασε το sweep, πριν φτάσουν σε αναγνώστη** — και οι δύο από τη δική μας καλωδίωση των controls:
+
+| εύρημα | αιτία | διόρθωση | guard |
+|---|---|---|---|
+| `/mentor/earnings` React #310 (λευκή σελίδα) | `usePageControls` μετά από `if (!mounted) {` πολλών γραμμών — ο αριθμός hooks άλλαζε μεταξύ renders | το hook πριν από το early return | ο hook-order guard πιάνει πλέον και τη μορφή `if (…) {\n return` — επαληθευμένο ότι αποτυγχάνει στο παλιό αρχείο |
+| `/admin/tenants` `.map is not a function` | οι επιλογές διάβαζαν το ωμό payload αντί για το `tenantList` που η σελίδα ήδη φρουρεί | `tenantList` | sweep |
+
+Τι **δεν** αποδεικνύουν: το mock API σερβίρει κενές συλλογές, άρα οι εντολές σε `/admin/users` αρνούνται (σωστά) πάνω στα δείγματα· μια *πραγματική* αναστολή/επίλυση φτάνει στο endpoint μόνο με ζωντανά δεδομένα, και persistence, JWT, Redis δεν ελέγχονται εδώ. Το μοντέλο δεν τρέχει στο stub· οι δικές του κλήσεις `use_page_control`/`run_page_command` περνούν από τους ίδιους executors (unit tests), όχι από e2e. Lint δεν αναφέρεται — το `next lint` δεν έχει flat config (AGENTS.md).
