@@ -46,6 +46,7 @@ import { useSession } from '@/hooks/useSession';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
 import { queryKeys } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ConversationValidationState } from '@/components/messaging/ConversationValidation';
 
@@ -794,11 +795,6 @@ export default function MessagesPage() {
     }
   };
 
-  // Handle delete
-  const handleDelete = async (id: string) => {
-    // For V1 we soft-delete by archiving
-    await handleArchive(id);
-  };
 
   const pendingIntrosCount = introRequests.length;
   const unreadTotal = conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
@@ -813,6 +809,50 @@ export default function MessagesPage() {
       avatarUrl: c.recipientAvatar,
       userId: c.recipientId,
     }));
+
+  // Offered to the assistant, above the preparing return: Chats / Intros,
+  // New message, opening a conversation, and each row's pin / unpin /
+  // archive - the same handlers. The conversations go out as a list: who,
+  // how many unread, and the last line, which the reader already sees.
+  const inbox = conversations.filter((c) => !c.isArchived);
+  const byPerson = (list: typeof conversations) => rowOptions(list, (c) => c.id, (c) => c.recipientName);
+  usePageList([
+    {
+      id: 'conversations',
+      labelEn: 'Conversations',
+      labelEl: 'Συνομιλίες',
+      rows: inbox.map((c) => `${c.recipientName}${c.unreadCount ? ` · ${c.unreadCount} unread` : ''}${c.isPinned ? ' · pinned' : ''} · "${c.lastMessage}"`),
+    },
+  ]);
+  usePageControls([
+    choiceControl('inbox_tab', 'Inbox section', 'Ενότητα εισερχομένων', [
+      { value: 'chats', en: 'Chats', el: 'Συνομιλίες' },
+      { value: 'intros', en: 'Intro requests', el: 'Αιτήματα γνωριμίας' },
+    ], sidebarTab, (v) => setSidebarTab(v as 'chats' | 'intros')),
+    { id: 'new_message', labelEn: 'Start a new message', labelEl: 'Νέο μήνυμα', writes: false, run: () => setComposeOpen(true) },
+    {
+      id: 'open_conversation',
+      labelEn: 'Open conversation with',
+      labelEl: 'Άνοιγμα συνομιλίας με',
+      writes: false,
+      options: byPerson(inbox),
+      run: (v) => {
+        const conv = inbox.find((c) => c.id === v);
+        if (!conv) return;
+        setSelectedConversation(conv);
+        setActiveConversationId(conv.id);
+        markConversationRead(conv.id);
+        setIsMobileViewingChat(true);
+      },
+    },
+    { id: 'pin_conversation', labelEn: 'Pin conversation', labelEl: 'Καρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => !c.isPinned)), run: (v) => { if (v) void handlePin(v); } },
+    { id: 'unpin_conversation', labelEn: 'Unpin conversation', labelEl: 'Ξεκαρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => c.isPinned)), run: (v) => { if (v) void handlePin(v); } },
+    { id: 'archive_conversation', labelEn: 'Archive conversation', labelEl: 'Αρχειοθέτηση συνομιλίας', writes: true, options: byPerson(inbox), run: (v) => { if (v) void handleArchive(v); } },
+    // The open chat's header menu: report or block the other person. Both
+    // open the same dialog, which asks for the reason and confirms.
+    { id: 'report_person', labelEn: 'Report the person in this chat', labelEl: 'Αναφορά του ατόμου της συνομιλίας', writes: false, unavailableEn: selectedConversation ? undefined : 'Open a conversation first.', unavailableEl: selectedConversation ? undefined : 'Ανοίξτε πρώτα μια συνομιλία.', run: () => setReportBlockModal({ open: true, mode: 'report' }) },
+    { id: 'block_person', labelEn: 'Block the person in this chat', labelEl: 'Αποκλεισμός του ατόμου της συνομιλίας', writes: false, unavailableEn: selectedConversation ? undefined : 'Open a conversation first.', unavailableEl: selectedConversation ? undefined : 'Ανοίξτε πρώτα μια συνομιλία.', run: () => setReportBlockModal({ open: true, mode: 'block' }) },
+  ]);
 
   if (!canUseMessaging) {
     return (
@@ -922,7 +962,6 @@ export default function MessagesPage() {
                   onNewMessage={() => setComposeOpen(true)}
                   onPin={handlePin}
                   onArchive={handleArchive}
-                  onDelete={handleDelete}
                 />
               </TabsContent>
 

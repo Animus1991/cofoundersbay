@@ -60,6 +60,8 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 type OrgMember = {
   id: string;
@@ -323,8 +325,18 @@ export default function OrgAdminPage() {
     }
   };
 
+  const confirm = useConfirm();
   const handleRemoveMember = async (memberId: string) => {
     if (!isLive || !orgId) return notLive();
+    // Removed on the first click before; membership is not restored by any
+    // other control on this page, so it asks.
+    const name = members.find((m) => m.id === memberId)?.name ?? 'this member';
+    const ok = await confirm({
+      title: `Remove ${name}?`,
+      description: 'They lose access to this organisation. Their account itself is not deleted.',
+      confirmLabel: 'Remove member',
+    });
+    if (!ok) return;
     try {
       await removeOrganizationMember(orgId, memberId);
       success('Member removed', 'The member has been removed from the organization');
@@ -372,6 +384,46 @@ export default function OrgAdminPage() {
 
   const activeFilters =
     (roleFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0) + (searchQuery.trim() ? 1 : 0);
+
+  // Offered to the assistant: the filters, Invite, Export, and the member
+  // menu - make admin / member, suspend / reactivate, remove (which asks).
+  // The same handlers, which refuse the illustrative rows.
+  const liveEn = isLive ? undefined : 'These rows are illustrative until the organisation loads.';
+  const liveEl = isLive ? undefined : 'Οι γραμμές είναι ενδεικτικές μέχρι να φορτώσει ο οργανισμός.';
+  const byName = (list: typeof members) => rowOptions(list, (m) => m.id, (m) => m.name);
+  usePageList([
+    {
+      id: 'members',
+      labelEn: 'Organisation members',
+      labelEl: 'Μέλη οργανισμού',
+      rows: filteredMembers.map((m) => `${m.name} · ${m.email} · ${m.role} · ${m.status}`),
+      total: members.length,
+      sample: !isLive,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', [
+      { value: 'all', en: 'All roles', el: 'Όλοι οι ρόλοι' },
+      { value: 'owner', en: 'Owner', el: 'Ιδιοκτήτης' },
+      { value: 'admin', en: 'Admin', el: 'Διαχειριστής' },
+      { value: 'program_manager', en: 'Program manager', el: 'Υπεύθυνος προγράμματος' },
+      { value: 'mentor', en: 'Mentor', el: 'Μέντορας' },
+      { value: 'reviewer', en: 'Reviewer', el: 'Αξιολογητής' },
+      { value: 'member', en: 'Member', el: 'Μέλος' },
+    ], roleFilter, setRoleFilter),
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργά' },
+      { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+    ], statusFilter, setStatusFilter),
+    { id: 'invite_member', labelEn: 'Open the add member form', labelEl: 'Άνοιγμα φόρμας προσθήκης μέλους', writes: false, run: () => setInviteOpen(true) },
+    { id: 'export_members', labelEn: 'Export members as CSV', labelEl: 'Εξαγωγή μελών σε CSV', writes: false, unavailableEn: filteredMembers.length ? undefined : 'There is nothing to export.', unavailableEl: filteredMembers.length ? undefined : 'Δεν υπάρχει κάτι για εξαγωγή.', run: exportCsv },
+    { id: 'make_admin', labelEn: 'Make member an admin', labelEl: 'Ορισμός μέλους ως διαχειριστή', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'admin' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => { if (v) void handleRoleChange(v, 'admin'); } },
+    { id: 'make_member', labelEn: 'Change role to member', labelEl: 'Αλλαγή ρόλου σε μέλος', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'member' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => { if (v) void handleRoleChange(v, 'member'); } },
+    { id: 'suspend_member', labelEn: 'Suspend member', labelEl: 'Αναστολή μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.status === 'active' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => { if (v) void handleSetActive(v, false); } },
+    { id: 'reactivate_member', labelEn: 'Reactivate member', labelEl: 'Επανενεργοποίηση μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.status !== 'active')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => { if (v) void handleSetActive(v, true); } },
+    { id: 'remove_member', labelEn: 'Remove member', labelEl: 'Αφαίρεση μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => { if (v) void handleRemoveMember(v); } },
+  ]);
 
   /*
    * The page rail: totals, member filters, and the tools row that used to

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, MoreHorizontal, Archive, Pin, Trash2 } from 'lucide-react';
+import { Search, MoreHorizontal, Archive, Pin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +16,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   messagesEn,
@@ -46,7 +47,6 @@ type ConversationListProps = {
   onNewMessage?: () => void;
   onArchive?: (id: string) => void;
   onPin?: (id: string) => void;
-  onDelete?: (id: string) => void;
 };
 
 function formatListTime(date: Date, yesterday: string, lang: 'en' | 'el'): string {
@@ -69,7 +69,6 @@ function ConversationItem({
   onSelect,
   onArchive,
   onPin,
-  onDelete,
   yesterdayLabel,
   lang,
 }: {
@@ -78,7 +77,6 @@ function ConversationItem({
   onSelect: () => void;
   onArchive?: () => void;
   onPin?: () => void;
-  onDelete?: () => void;
   yesterdayLabel: string;
   lang: 'en' | 'el';
 }) {
@@ -180,7 +178,7 @@ function ConversationItem({
             size="icon"
             className="absolute right-1.5 top-1.5 z-10 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
             onClick={(e) => e.stopPropagation()}
-            aria-label={bilingualAria(messagesEn('delete_chat'), messagesEl('delete_chat'))}
+            aria-label={bilingualAria(`Actions for ${conversation.recipientName}`, `Ενέργειες για ${conversation.recipientName}`)}
           >
             <MoreHorizontal className="icon-sm" />
           </Button>
@@ -198,10 +196,18 @@ function ConversationItem({
             <Archive className="icon-sm mr-2" />
             <BilingualText en={messagesEn('archive')} el={messagesEl('archive')} compact />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDelete} className="rounded-lg text-destructive-accessible">
-            <Trash2 className="icon-sm mr-2" />
-            <BilingualText en={messagesEn('delete_chat')} el={messagesEl('delete_chat')} compact />
-          </DropdownMenuItem>
+          {/*
+            * "Delete chat" called the archive handler: the API has no way to
+            * delete a conversation, so the reader who chose Delete got an
+            * Archive under another name. It stays, unavailable, and says
+            * what to use instead.
+            */}
+          <UnavailableMenuItem
+            en={messagesEn('delete_chat')}
+            el={messagesEl('delete_chat')}
+            reasonEn="Conversations cannot be deleted yet. Archive hides this one from your inbox."
+            reasonEl="Οι συνομιλίες δεν διαγράφονται ακόμη. Η αρχειοθέτηση την κρύβει από τα εισερχόμενα."
+          />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -215,7 +221,6 @@ export function ConversationList({
   onNewMessage,
   onArchive,
   onPin,
-  onDelete,
 }: ConversationListProps) {
   const t = useMessagesPrimaryText();
   const { primary } = useLanguagePreference();
@@ -280,7 +285,6 @@ export function ConversationList({
                 onSelect={() => onSelect(conv)}
                 onArchive={() => onArchive?.(conv.id)}
                 onPin={() => onPin?.(conv.id)}
-                onDelete={() => onDelete?.(conv.id)}
               />
             ))}
           </div>
@@ -303,7 +307,6 @@ export function ConversationList({
                 onSelect={() => onSelect(conv)}
                 onArchive={() => onArchive?.(conv.id)}
                 onPin={() => onPin?.(conv.id)}
-                onDelete={() => onDelete?.(conv.id)}
               />
             ))}
           </div>

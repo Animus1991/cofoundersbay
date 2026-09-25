@@ -38,6 +38,7 @@ import { EmptyOrgEvents } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 type OrgEvent = {
   id: string;
@@ -327,6 +328,28 @@ export default function OrgEventsPage() {
 
   const filtersActive = !!search || activeTab !== 'all';
   const clearFilters = () => { setSearch(''); setActiveTab('all'); };
+
+  // Offered to the assistant: the tab, clearing the filters, and the card
+  // menu's Duplicate (a week later, refused on sample events).
+  usePageList([
+    {
+      id: 'events',
+      labelEn: 'Organisation events',
+      labelEl: 'Εκδηλώσεις οργανισμού',
+      rows: isLoading ? undefined : filtered.map((e) => `${e.title} · ${e.date} ${e.time} · ${e.format} · ${e.status} · ${e.attendees}/${e.capacity} attendees`),
+      total: events.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('event_tab', 'Event filter', 'Φίλτρο εκδηλώσεων', [
+      { value: 'all', en: 'All', el: 'Όλες' },
+      { value: 'active', en: 'Active', el: 'Ενεργές' },
+      { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένες' },
+    ], activeTab, setActiveTab),
+    { id: 'clear_filters', labelEn: 'Clear the event filters', labelEl: 'Καθαρισμός φίλτρων εκδηλώσεων', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
+    { id: 'duplicate_event', labelEn: 'Duplicate event a week later', labelEl: 'Αντίγραφο εκδήλωσης μια εβδομάδα αργότερα', writes: true, options: rowOptions(filtered, (e) => e.id, (e) => e.title), unavailableEn: live.length > 0 ? undefined : 'These events are samples; there is nothing to duplicate.', unavailableEl: live.length > 0 ? undefined : 'Οι εκδηλώσεις είναι δείγματα· δεν υπάρχει κάτι για αντιγραφή.', run: (v) => { const e = events.find((x) => x.id === v); if (e) void duplicate(e); } },
+  ]);
 
   return (
     <AppShell

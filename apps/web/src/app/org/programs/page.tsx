@@ -29,6 +29,7 @@ import { EmptyOrgPrograms } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 /**
  * The page's own row from the API row.
@@ -237,6 +238,43 @@ export default function OrgProgramsPage() {
 
   const filtersActive = !!search || statusFilter !== 'all';
   const clearFilters = () => { setSearch(''); setStatusFilter('all'); };
+
+  // Offered to the assistant: clearing the search and each card's Archive -
+  // the same endpoint the card's menu calls, refused on the sample
+  // programmes, which have nothing behind them.
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+  const archiveProgram = useMutation({
+    mutationFn: (id: string) => updateProgram(id, { status: 'archived' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk('programs') });
+      success('Program archived');
+    },
+    onError: (err) => showError('Could not archive the program', err instanceof Error ? err.message : undefined),
+  });
+  usePageList([
+    {
+      id: 'programs',
+      labelEn: 'Programs',
+      labelEl: 'Προγράμματα',
+      rows: isLoading ? undefined : filteredPrograms.map((p) => `${p.name} · ${p.type} · ${p.status} · ${p.enrolled}/${p.capacity} enrolled`),
+      total: programs.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    { id: 'clear_filters', labelEn: 'Clear the program search', labelEl: 'Καθαρισμός αναζήτησης προγραμμάτων', writes: false, unavailableEn: filtersActive ? undefined : 'No search is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει αναζήτηση.', run: clearFilters },
+    {
+      id: 'archive_program',
+      labelEn: 'Archive program',
+      labelEl: 'Αρχειοθέτηση προγράμματος',
+      writes: true,
+      options: rowOptions(filteredPrograms.filter((p) => p.status !== 'archived'), (p) => p.id, (p) => p.name),
+      unavailableEn: live.length > 0 ? undefined : 'These programs are samples; there is nothing behind them to archive.',
+      unavailableEl: live.length > 0 ? undefined : 'Τα προγράμματα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για αρχειοθέτηση.',
+      run: (v) => { if (v) archiveProgram.mutate(v); },
+    },
+  ]);
 
   return (
     <AppShell

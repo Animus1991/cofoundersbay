@@ -328,11 +328,53 @@ describe('pages that offer controls', () => {
       'src/app/settings/page.tsx': 'switches and forms; nothing is listed',
       'src/app/settings/notifications/page.tsx': 'switches per notification type; nothing is listed',
       'src/app/settings/ai/page.tsx': 'a preferences form; nothing is listed',
+      'src/app/projects/[projectId]/page.tsx': 'one project, not a list',
     };
     const missing = users.filter((f) => {
       const s = readFileSync(f, 'utf8');
       return s.includes('usePageControls([') && !s.includes('usePageList([') && !NO_LIST[f.replace(/\\/g, '/')];
     });
     expect(missing).toEqual([]);
+  });
+
+  it('reaches every row-menu action, or says why not', () => {
+    // Step 2: an action in a row's menu is also a command. A file whose menu
+    // items have handlers either registers controls itself, is covered by the
+    // page that mounts it, or is listed here with the reason it is not a
+    // list row the assistant should press.
+    const COVERED_BY: Record<string, string> = {
+      'src/components/messaging/ConversationList.tsx': 'src/app/messages/page.tsx',
+      'src/components/messaging/ChatWindow.tsx': 'src/app/messages/page.tsx',
+    };
+    const EXEMPT: Record<string, string> = {
+      'src/app/research/[boardId]/page.tsx': 'the canvas; board work is the canvas_command capability',
+      'src/components/research/BoardExport.tsx': 'an export-format menu inside the canvas',
+      'src/components/research/BoardSettingsPanel.tsx': 'canvas settings, not a list',
+      'src/components/builder/BranchPanel.tsx': 'builder branch tools, reached through the builder capabilities',
+      'src/components/social/ShareButton.tsx': 'share targets that leave the app',
+      'src/components/common/ThemeToggle.tsx': 'app chrome',
+      'src/components/layout/UserMenu.tsx': 'app chrome',
+      'src/components/layout/TopBar.tsx': 'app chrome',
+      'src/components/messaging/ConversationValidation.tsx': 'the open chat\'s validation tools (mode, export, hash), not a list row',
+      'src/components/discover/ProfileCard.tsx': 'the card owns its share and report dialogs; connect, message and save are /discover commands',
+      'src/components/feed/PostCard.tsx': 'not mounted (/feed and /groups/[groupId] render their own)',
+      'src/app/messages/components/EnhancedMessageThread.tsx': 'not mounted',
+      'src/components/messages/MessageThread.tsx': 'not mounted',
+      'src/app/matches/[userId]/page.tsx': "one match's detail page: copy its link, open the profile",
+      'src/components/builder/BuilderWorkspace.tsx': 'the builder workspace, reached through the builder capabilities',
+      'src/components/research/CanvasBranchSelector.tsx': 'canvas branch picker',
+      'src/components/search/AdvancedSearch.tsx': 'a filter menu inside the search panel, not a row',
+      'src/components/common/LanguagePreferenceToggle.tsx': 'app chrome',
+      'src/components/common/LanguageSwitcher.tsx': 'app chrome',
+      'src/components/theme/ThemeSwitcher.tsx': 'app chrome',
+    };
+    const menuFiles = walk('src').filter((f) => /DropdownMenuItem[^>]*on(Click|Select)=/.test(readFileSync(f, 'utf8')));
+    const uncovered = menuFiles
+      .map((f) => f.replace(/\\/g, '/'))
+      .filter((f) => !readFileSync(f, 'utf8').includes('usePageControls(['))
+      .filter((f) => !EXEMPT[f])
+      .filter((f) => !(COVERED_BY[f] && readFileSync(COVERED_BY[f], 'utf8').includes('usePageControls([')));
+    expect(uncovered).toEqual([]);
+    expect(menuFiles.length).toBeGreaterThan(40);
   });
 });

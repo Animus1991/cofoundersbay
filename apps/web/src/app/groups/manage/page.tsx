@@ -42,6 +42,7 @@ import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 type ManagedGroup = {
   id: string;
@@ -232,6 +233,23 @@ export default function ManageGroupsPage() {
 
   const totalMembers = groups.reduce((s, g) => s + g.memberCount, 0);
   const pendingTotal = groups.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
+
+  // Offered to the assistant: the card menu's invite link and delete (which
+  // asks, and refuses the sample communities).
+  usePageList([
+    {
+      id: 'managed_groups',
+      labelEn: 'Groups you manage',
+      labelEl: 'Ομάδες που διαχειρίζεστε',
+      rows: isLoading ? undefined : filtered.map((g) => `${g.name} · ${g.category} · ${g.privacy} · ${g.memberCount} members${g.pendingRequests ? ` · ${g.pendingRequests} pending` : ''} · you are ${g.role}`),
+      total: groups.length,
+      sample: showingSample,
+    },
+  ]);
+  usePageControls([
+    { id: 'copy_invite_link', labelEn: 'Copy a group invite link', labelEl: 'Αντιγραφή συνδέσμου πρόσκλησης ομάδας', writes: false, options: rowOptions(filtered, (g) => g.id, (g) => g.name), run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onInvite(g); } },
+    { id: 'delete_group', labelEn: 'Delete group', labelEl: 'Διαγραφή ομάδας', writes: true, options: rowOptions(filtered.filter((g) => g.role === 'owner'), (g) => g.id, (g) => g.name), unavailableEn: showingSample ? 'These are sample communities until you run one.' : undefined, unavailableEl: showingSample ? 'Είναι δείγματα κοινοτήτων μέχρι να δημιουργήσετε μία.' : undefined, run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onDelete(g); } },
+  ]);
 
   return (
     <AppShell
