@@ -38,6 +38,7 @@ import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls } from '@/lib/page-controls';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -761,6 +762,42 @@ export default function FeedPage() {
   const handlePreferencesUpdate = (newPrefs: Partial<FeedPreferences>) => {
     updatePrefsMutation.mutate(newPrefs);
   };
+
+  // The rows on screen - `posts` above, demo posts included.
+  const byAuthor = (list: FeedPost[]) => rowOptions(list, (p) => p.id, (p) => p.author?.displayName ?? 'Post');
+  usePageControls([
+    choiceControl('feed_tab', 'Feed', 'Ροή', [
+      { value: 'all', en: 'All', el: 'Όλα' },
+      { value: 'following', en: 'Following', el: 'Ακολουθώ' },
+      { value: 'trending', en: 'Trending', el: 'Τάσεις' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    { id: 'refresh', labelEn: 'Refresh the feed', labelEl: 'Ανανέωση ροής', writes: false, run: () => void refetchFeed() },
+    {
+      id: 'load_more',
+      labelEn: 'Load more posts',
+      labelEl: 'Φόρτωση περισσότερων αναρτήσεων',
+      writes: false,
+      unavailableEn: hasNextPage ? undefined : 'There are no more posts to load.',
+      unavailableEl: hasNextPage ? undefined : 'Δεν υπάρχουν άλλες αναρτήσεις.',
+      run: () => void fetchNextPage(),
+    },
+    { id: 'like_post', labelEn: 'Like post', labelEl: 'Μου αρέσει η ανάρτηση', writes: true, options: byAuthor(posts.filter((p) => !p.isLiked)), run: (v) => { if (v) handleLike(v, false); } },
+    { id: 'unlike_post', labelEn: 'Unlike post', labelEl: 'Αναίρεση «μου αρέσει»', writes: true, options: byAuthor(posts.filter((p) => p.isLiked)), run: (v) => { if (v) handleLike(v, true); } },
+    { id: 'save_post', labelEn: 'Save post', labelEl: 'Αποθήκευση ανάρτησης', writes: true, options: byAuthor(posts.filter((p) => !p.isBookmarked)), run: (v) => { if (v) handleBookmark(v, false); } },
+    { id: 'unsave_post', labelEn: 'Remove post from saved', labelEl: 'Αφαίρεση από αποθηκευμένα', writes: true, options: byAuthor(posts.filter((p) => p.isBookmarked)), run: (v) => { if (v) handleBookmark(v, true); } },
+    { id: 'share_post', labelEn: 'Copy a link to post', labelEl: 'Αντιγραφή συνδέσμου ανάρτησης', writes: false, options: byAuthor(posts), run: (v) => { if (v) handleShare(v); } },
+    {
+      id: 'report_author',
+      labelEn: 'Report post author',
+      labelEl: 'Αναφορά συντάκτη ανάρτησης',
+      writes: false,
+      options: rowOptions(posts, (p) => p.id, (p) => p.author?.displayName ?? 'Post'),
+      run: (v) => {
+        const post = posts.find((p) => p.id === v);
+        if (post) setReporting({ id: post.author.id, name: post.author.displayName });
+      },
+    },
+  ]);
 
   const rail: PageRailSection[] = [
     {

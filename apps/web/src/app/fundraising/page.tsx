@@ -54,6 +54,7 @@ import {
   type DataRoomDoc,
   type DocStatus,
 } from '@/lib/fundraising-demo';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 const ROUND_TONE: Record<string, StatusTone> = {
   planning: 'neutral',
@@ -627,6 +628,38 @@ export default function FundraisingPage() {
     refresh();
   }
 
+  const [view, setView] = useState('pipeline');
+  const stageName = (st: InvestorStatus) => {
+    const key = INVESTOR_STATUS_KEYS[st];
+    return { en: key ? fundraisingEn(key) : st, el: key ? fundraisingEl(key) : st };
+  };
+  usePageControls([
+    choiceControl('fundraising_view', 'Fundraising view', 'Προβολή γύρου', [
+      { value: 'pipeline', en: 'Pipeline', el: 'Pipeline' },
+      { value: 'kanban', en: 'Kanban', el: 'Kanban' },
+      { value: 'dataroom', en: 'Data room', el: 'Data room' },
+    ], view, setView),
+    {
+      id: 'add_lead',
+      labelEn: 'Add an investor lead',
+      labelEl: 'Προσθήκη υποψήφιου επενδυτή',
+      writes: false,
+      options: PIPELINE_STAGES.map((st) => ({ value: st, labelEn: stageName(st).en, labelEl: stageName(st).el })),
+      run: (value) => openAdd((value as InvestorStatus) ?? 'prospect'),
+    },
+    // One command per stage, over the leads not already in it: the same move
+    // the stage selector on each row makes. Leads are kept in this browser
+    // (the fundraising overlay), so the move is stored data.
+    ...PIPELINE_STAGES.map((st) => ({
+      id: `move_to_${st}`,
+      labelEn: `Move lead to ${stageName(st).en}`,
+      labelEl: `Μετακίνηση επενδυτή σε ${stageName(st).el}`,
+      writes: true,
+      options: leads.filter((l) => l.status !== st).map((l) => ({ value: l.id, labelEn: l.name, labelEl: l.name })),
+      run: (value?: string) => { if (value) handleMove(value, st); },
+    })),
+  ]);
+
   /*
    * The page rail: the pipeline totals and the resource links are about the
    * page, not the pipeline itself. The column keeps the round, the views and
@@ -775,7 +808,7 @@ export default function FundraisingPage() {
 
         {/* The round totals moved to the page rail ('round' section). */}
 
-        <Tabs defaultValue="pipeline">
+        <Tabs value={view} onValueChange={setView}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <TabsList className="rounded-xl">
               <TabsTrigger value="pipeline" className="rounded-xl">

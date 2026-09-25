@@ -70,6 +70,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 // Types
 interface Document {
@@ -337,6 +338,42 @@ export default function DataRoomPage() {
     const matchesFolder = selectedFolder ? doc.folderId === selectedFolder : true;
     return matchesSearch && matchesFolder;
   });
+
+  // Sample rows (no storage backend yet): the file commands say why they
+  // cannot run, the same reason their menu items give.
+  const SAMPLE_EN = 'Sample document - no file storage yet.';
+  const SAMPLE_EL = 'Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων.';
+  const docRows = documents.map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.name }));
+  usePageControls([
+    choiceControl('data_room_tab', 'Data room section', 'Ενότητα data room', [
+      { value: 'documents', en: 'Documents', el: 'Έγγραφα' },
+      { value: 'investors', en: 'Investors', el: 'Επενδυτές' },
+      { value: 'activity', en: 'Activity', el: 'Δραστηριότητα' },
+      { value: 'settings', en: 'Settings', el: 'Ρυθμίσεις' },
+    ], activeTab, setActiveTab),
+    choiceControl('view_mode', 'Document view', 'Προβολή εγγράφων', [
+      { value: 'list', en: 'List', el: 'Λίστα' },
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+    ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
+    choiceControl('folder', 'Folder', 'Φάκελος', [
+      { value: 'all', en: 'All documents', el: 'Όλα τα έγγραφα' },
+      ...folders.map((f) => ({ value: f.id, en: f.name, el: f.name })),
+    ], selectedFolder ?? 'all', (v) => setSelectedFolder(v === 'all' ? null : v)),
+    { id: 'share_access', labelEn: 'Share access with an investor', labelEl: 'Κοινοποίηση πρόσβασης σε επενδυτή', writes: false, run: () => setIsShareDialogOpen(true) },
+    { id: 'upload', labelEn: 'Upload documents', labelEl: 'Μεταφόρτωση εγγράφων', writes: false, run: () => setIsUploadDialogOpen(true) },
+    { id: 'download_document', labelEn: 'Download document', labelEl: 'Λήψη εγγράφου', writes: false, options: docRows, unavailableEn: SAMPLE_EN, unavailableEl: SAMPLE_EL, run: () => undefined },
+    { id: 'delete_document', labelEn: 'Delete document', labelEl: 'Διαγραφή εγγράφου', writes: true, options: docRows, unavailableEn: SAMPLE_EN, unavailableEl: SAMPLE_EL, run: () => undefined },
+    {
+      id: 'revoke_access',
+      labelEn: 'Revoke investor access',
+      labelEl: 'Ανάκληση πρόσβασης επενδυτή',
+      writes: true,
+      options: investors.map((i) => ({ value: i.id, labelEn: i.name, labelEl: i.name })),
+      unavailableEn: 'Sample investor - no access records yet.',
+      unavailableEl: 'Δείγμα - δεν υπάρχουν ακόμη εγγραφές πρόσβασης.',
+      run: () => undefined,
+    },
+  ]);
 
   const totalStorage = documents.reduce((sum, doc) => sum + doc.size, 0);
   const maxStorage = 1073741824; // 1GB

@@ -58,6 +58,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 type Startup = {
   id: string;
@@ -77,6 +78,20 @@ type Startup = {
   isFeatured: boolean;
   revenue: string;
 };
+
+/** The deal a scouted startup becomes - one shape for the card and the assistant. */
+function startupDeal(startup: Startup, pipelineStage?: 'reviewing') {
+  return {
+    name: startup.name,
+    tagline: startup.tagline,
+    industry: startup.industry,
+    location: startup.location,
+    companyStage: startup.stage,
+    teamSize: startup.teamSize,
+    tags: startup.tags,
+    ...(pipelineStage ? { pipelineStage } : {}),
+  };
+}
 
 function StartupCard({ startup, compact = false }: { startup: Startup; compact?: boolean }) {
   /*
@@ -106,15 +121,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
         await deleteInvestorDeal(existing.id);
         return false;
       }
-      await createInvestorDeal({
-        name: startup.name,
-        tagline: startup.tagline,
-        industry: startup.industry,
-        location: startup.location,
-        companyStage: startup.stage,
-        teamSize: startup.teamSize,
-        tags: startup.tags,
-      });
+      await createInvestorDeal(startupDeal(startup));
       return true;
     },
     onMutate: () => setPending(true),
@@ -141,16 +148,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
         await updateInvestorDeal(existing.id, { pipelineStage: 'reviewing' });
         return;
       }
-      await createInvestorDeal({
-        name: startup.name,
-        tagline: startup.tagline,
-        industry: startup.industry,
-        location: startup.location,
-        companyStage: startup.stage,
-        teamSize: startup.teamSize,
-        tags: startup.tags,
-        pipelineStage: 'reviewing',
-      });
+      await createInvestorDeal(startupDeal(startup, 'reviewing'));
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk('investor') });
@@ -315,6 +313,54 @@ export default function InvestorScoutingPage() {
   }, [startups, search, industry, stage, model, sortBy]);
 
   const featured = startups.filter(s => s.isFeatured);
+
+  // The same writes the cards make, from the page, so the assistant can
+  // scout by name: watch (a deal at Discovered), stop watching, or put a
+  // startup straight into Reviewing.
+  const qc = useQueryClient();
+  const { success, error: showError } = useToast();
+  const { data: watchedDeals } = useQuery({
+    queryKey: qk('investor', 'deals', 'discovered'),
+    queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const dealFor = (st: Startup) => watchedDeals?.deals?.find((deal) => deal.name === st.name);
+  const scout = async (st: Startup | undefined, action: 'watch' | 'unwatch' | 'pipeline') => {
+    if (!st) return;
+    const existing = dealFor(st);
+    try {
+      if (action === 'watch' && !existing) await createInvestorDeal(startupDeal(st));
+      if (action === 'unwatch' && existing) await deleteInvestorDeal(existing.id);
+      if (action === 'pipeline') {
+        if (existing) await updateInvestorDeal(existing.id, { pipelineStage: 'reviewing' });
+        else await createInvestorDeal(startupDeal(st, 'reviewing'));
+      }
+      success(action === 'watch' ? 'Added to your watchlist' : action === 'unwatch' ? 'Removed from your watchlist' : 'Added to your pipeline', st.name);
+    } catch (err) {
+      showError('Could not update your board', err instanceof Error ? err.message : undefined);
+    } finally {
+      void qc.invalidateQueries({ queryKey: qk('investor') });
+    }
+  };
+  const startupRows = (list: Startup[]) => list.map((st) => ({ value: st.id, labelEn: st.name, labelEl: st.name }));
+  const byId = (id?: string) => startups.find((st) => st.id === id);
+  usePageControls([
+    choiceControl('industry', 'Industry', 'Κλάδος', industries.map((i) => ({ value: i, en: i === 'all' ? 'All industries' : i, el: i === 'all' ? 'Όλοι οι κλάδοι' : i })), industry, setIndustry),
+    choiceControl('stage', 'Stage', 'Στάδιο', stages.map((i) => ({ value: i, en: i === 'all' ? 'All stages' : i, el: i === 'all' ? 'Όλα τα στάδια' : i })), stage, setStage),
+    choiceControl('sort', 'Sort startups', 'Ταξινόμηση startups', [
+      { value: 'match', en: 'Best match', el: 'Καλύτερο ταίριασμα' },
+      { value: 'readiness', en: 'Readiness', el: 'Ετοιμότητα' },
+      { value: 'name', en: 'Name', el: 'Όνομα' },
+    ], sortBy, setSortBy),
+    choiceControl('view_mode', 'Layout', 'Διάταξη', [
+      { value: 'list', en: 'List', el: 'Λίστα' },
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+    ], viewMode, (v) => setViewMode(v as 'list' | 'grid')),
+    { id: 'watch_startup', labelEn: 'Watch startup', labelEl: 'Παρακολούθηση startup', writes: true, options: startupRows(startups.filter((st) => !dealFor(st))), run: (v) => void scout(byId(v), 'watch') },
+    { id: 'unwatch_startup', labelEn: 'Stop watching startup', labelEl: 'Διακοπή παρακολούθησης startup', writes: true, options: startupRows(startups.filter((st) => dealFor(st))), run: (v) => void scout(byId(v), 'unwatch') },
+    { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(startups), run: (v) => void scout(byId(v), 'pipeline') },
+  ]);
   const activeFilters = [industry !== 'all' && industry, stage !== 'all' && stage, model !== 'all' && model].filter(Boolean) as string[];
 
   return (

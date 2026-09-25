@@ -28,6 +28,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -276,6 +277,34 @@ export default function InvestorPipelinePage() {
   const visibleStages = showPassed
     ? PIPELINE_STAGES
     : PIPELINE_STAGES.filter((s) => s.key !== 'passed' as PipelineStage);
+
+  const sampleEn = isLive ? undefined : 'These are sample deals; moving one needs a deal in your own pipeline.';
+  const sampleEl = isLive ? undefined : 'Είναι δείγματα· η μετακίνηση χρειάζεται συμφωνία από το δικό σας pipeline.';
+  usePageControls([
+    choiceControl('passed_deals', 'Passed deals', 'Απορριφθείσες συμφωνίες', [
+      { value: 'hide', en: 'Hide passed', el: 'Απόκρυψη' },
+      { value: 'show', en: 'Show passed', el: 'Εμφάνιση' },
+    ], showPassed ? 'show' : 'hide', (v) => setShowPassed(v === 'show')),
+    choiceControl('starred_only', 'Starred only', 'Μόνο με αστέρι', [
+      { value: 'off', en: 'All deals', el: 'Όλες οι συμφωνίες' },
+      { value: 'on', en: 'Starred only', el: 'Μόνο με αστέρι' },
+    ], starredOnly ? 'on' : 'off', (v) => setStarredOnly(v === 'on')),
+    // The same move the stage buttons on each card make; passing still asks
+    // first, as it does from the card.
+    ...[...PIPELINE_STAGES, { key: 'passed' as PipelineStage, label: 'Passed', color: '' }].map((stage) => ({
+      id: `move_to_${stage.key}`,
+      labelEn: stage.key === 'passed' ? 'Pass on deal' : `Move deal to ${stage.label}`,
+      labelEl: stage.key === 'passed' ? 'Απόρριψη συμφωνίας' : `Μετακίνηση συμφωνίας σε ${stage.label}`,
+      writes: true,
+      options: deals.filter((d) => d.pipelineStage !== stage.key).map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.name })),
+      unavailableEn: sampleEn,
+      unavailableEl: sampleEl,
+      run: (value?: string) => {
+        const deal = deals.find((d) => d.id === value);
+        if (deal) void moveDeal(deal, stage.key);
+      },
+    })),
+  ]);
 
   if (!isLoading && !showDemoData && deals.length === 0) {
     return (

@@ -34,8 +34,18 @@ import {
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 const ALL_STATUSES = 'all';
+
+/** Who a subscription belongs to, as the row and the assistant both name it. */
+function subscriptionOwner(sub: BillingSubscription): string {
+  const owner = (sub as Record<string, unknown>).user as { email?: string } | null
+    ?? (sub as Record<string, unknown>).tenant as { name?: string } | null;
+  return (owner as { email?: string })?.email
+    ?? (owner as { name?: string })?.name
+    ?? sub.userId ?? sub.tenantId ?? '—';
+}
 
 function SubRow({
   sub, plans, onExtendTrial, onCancel, onOverride,
@@ -46,11 +56,7 @@ function SubRow({
   onCancel: (id: string, immediate: boolean) => void;
   onOverride: (sub: BillingSubscription) => void;
 }) {
-  const owner = (sub as Record<string, unknown>).user as { email?: string } | null
-    ?? (sub as Record<string, unknown>).tenant as { name?: string } | null;
-  const ownerLabel = (owner as { email?: string })?.email
-    ?? (owner as { name?: string })?.name
-    ?? sub.userId ?? sub.tenantId ?? '—';
+  const ownerLabel = subscriptionOwner(sub);
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -139,6 +145,7 @@ export default function AdminBillingPage() {
   const [overridePlanId, setOverridePlanId] = useState('');
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [couponForm, setCouponForm] = useState({ code: '', discountType: 'percent', discountValue: 10, maxRedemptions: '' as string | number });
+  const [tab, setTab] = useState('subscriptions');
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: qk('admin', 'billing', 'stats'),
@@ -220,6 +227,63 @@ export default function AdminBillingPage() {
   const mrr = statsData?.mrrCents ?? 0;
   const arr = mrr * 12;
 
+  const subRow = (sub: BillingSubscription) => {
+    const name = `${subscriptionOwner(sub)} · ${sub.plan?.displayName ?? sub.planId}`;
+    return { value: sub.id, labelEn: name, labelEl: name };
+  };
+  usePageControls([
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: ALL_STATUSES, en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργή' },
+      { value: 'trialing', en: 'Trialing', el: 'Σε δοκιμή' },
+      { value: 'past_due', en: 'Past due', el: 'Ληξιπρόθεσμη' },
+      { value: 'canceled', en: 'Canceled', el: 'Ακυρωμένη' },
+    ], statusFilter, setStatusFilter),
+    choiceControl('billing_tab', 'Billing section', 'Ενότητα χρεώσεων', [
+      { value: 'subscriptions', en: 'Subscriptions', el: 'Συνδρομές' },
+      { value: 'invoices', en: 'Invoices', el: 'Τιμολόγια' },
+      { value: 'plans', en: 'Plans', el: 'Πακέτα' },
+      { value: 'coupons', en: 'Coupons', el: 'Κουπόνια' },
+    ], tab, setTab),
+    { id: 'refresh', labelEn: 'Refresh billing data', labelEl: 'Ανανέωση δεδομένων χρεώσεων', writes: false, run: () => void qc.invalidateQueries({ queryKey: qk('admin', 'billing') }) },
+    { id: 'new_coupon', labelEn: 'Open the new coupon form', labelEl: 'Άνοιγμα φόρμας νέου κουπονιού', writes: false, run: () => { setTab('coupons'); setShowCouponForm(true); } },
+    {
+      id: 'override_plan',
+      labelEn: 'Override a subscription plan',
+      labelEl: 'Αλλαγή πακέτου συνδρομής',
+      writes: false,
+      options: subs.map(subRow),
+      run: (value) => {
+        const sub = subs.find((s) => s.id === value);
+        if (sub) { setOverrideTarget(sub); setOverridePlanId(sub.planId); }
+      },
+    },
+    {
+      id: 'extend_trial',
+      labelEn: 'Extend trial by 7 days',
+      labelEl: 'Παράταση δοκιμής κατά 7 ημέρες',
+      writes: true,
+      options: subs.filter((s) => s.status === 'trialing').map(subRow),
+      run: (value) => { if (value) extendTrial(value); },
+    },
+    {
+      id: 'cancel_subscription',
+      labelEn: 'Cancel subscription',
+      labelEl: 'Ακύρωση συνδρομής',
+      writes: true,
+      options: subs.filter((s) => s.status !== 'canceled').map(subRow),
+      run: (value) => { if (value) cancelSub({ id: value, immediate: false }); },
+    },
+    {
+      id: 'deactivate_coupon',
+      labelEn: 'Deactivate coupon',
+      labelEl: 'Απενεργοποίηση κουπονιού',
+      writes: true,
+      options: coupons.map((c) => ({ value: c.id, labelEn: c.code, labelEl: c.code })),
+      run: (value) => { if (value) removeCoupon(value); },
+    },
+  ]);
+
   /*
    * The page rail: revenue figures, the status filter and Refresh are about
    * the lists, not the lists themselves. The column keeps the tabs, the
@@ -296,7 +360,7 @@ export default function AdminBillingPage() {
     <AppShell rail={rail}>
       <div className="py-6 space-y-6">
         {/* Tabs */}
-        <Tabs defaultValue="subscriptions">
+        <Tabs value={tab} onValueChange={setTab}>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <TabsList>
               <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>

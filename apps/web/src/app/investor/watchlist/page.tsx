@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -481,6 +482,26 @@ export default function InvestorWatchlistPage() {
 
   const alertCount = watched.filter(s => s.alertsEnabled).length;
 
+  const [tab, setTab] = useState('watchlist');
+  const liveOnlyEn = watchLive ? undefined : 'These are sample startups; the action needs a startup on your own watchlist.';
+  const liveOnlyEl = watchLive ? undefined : 'Είναι δείγματα· η ενέργεια χρειάζεται startup από τη δική σας λίστα.';
+  const startupRows = (list: WatchedStartup[]) => list.map((st) => ({ value: st.id, labelEn: st.name, labelEl: st.name }));
+  const byId = (id?: string) => watched.find((st) => st.id === id);
+  usePageControls([
+    choiceControl('watchlist_tab', 'Watchlist section', 'Ενότητα λίστας', [
+      { value: 'watchlist', en: 'My watchlist', el: 'Η λίστα μου' },
+      { value: 'activity', en: 'Recent activity', el: 'Πρόσφατη δραστηριότητα' },
+    ], tab, setTab),
+    choiceControl('alerts_only', 'Alerts filter', 'Φίλτρο ειδοποιήσεων', [
+      { value: 'off', en: 'All startups', el: 'Όλα τα startups' },
+      { value: 'on', en: 'Alerts on only', el: 'Μόνο με ειδοποιήσεις' },
+    ], alertsOnly ? 'on' : 'off', (v) => setAlertsOnly(v === 'on')),
+    { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onPromote(st); } },
+    { id: 'remove_from_watchlist', labelEn: 'Remove startup from watchlist', labelEl: 'Αφαίρεση startup από τη λίστα', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onRemove(st); } },
+    { id: 'alerts_on', labelEn: 'Turn alerts on for startup', labelEl: 'Ενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => !st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, true); } },
+    { id: 'alerts_off', labelEn: 'Turn alerts off for startup', labelEl: 'Απενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, false); } },
+  ]);
+
   return (
     <AppShell
       actions={
@@ -531,7 +552,7 @@ export default function InvestorWatchlistPage() {
           ))}
         </div>
 
-        <Tabs defaultValue="watchlist">
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value="watchlist">My Watchlist ({watched.length})</TabsTrigger>
             <TabsTrigger value="activity">Recent Activity ({activity.length})</TabsTrigger>

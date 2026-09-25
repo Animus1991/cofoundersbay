@@ -230,3 +230,26 @@ export function choiceControl(
     },
   };
 }
+
+/**
+ * A command's choices from the rows on screen, one per row.
+ *
+ * Labels are what a reader says ("like Elena Papadopoulos's post"), so they
+ * are short - a name, not a sentence - and a repeated label gets a number
+ * ("Elena Papadopoulos (2)") so every choice stays distinct.
+ */
+export function rowOptions<T>(
+  rows: readonly T[],
+  id: (row: T) => string,
+  labelEn: (row: T) => string,
+  labelEl: (row: T) => string = labelEn,
+): PageControlOption[] {
+  const seen = new Map<string, number>();
+  return rows.map((row) => {
+    const en = labelEn(row);
+    const n = (seen.get(en) ?? 0) + 1;
+    seen.set(en, n);
+    const suffix = n > 1 ? ` (${n})` : '';
+    return { value: id(row), labelEn: `${en}${suffix}`, labelEl: `${labelEl(row)}${suffix}` };
+  });
+}
