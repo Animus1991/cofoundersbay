@@ -225,7 +225,7 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="orgType">Organization Type</Label>
                     <Select value={orgType} onValueChange={setOrgType}>
-                      <SelectTrigger id="orgType">
+                      <SelectTrigger id="orgType" aria-label="Organization type">
                         <SelectValue placeholder="Choose a type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -242,7 +242,7 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
                     <Select value={country} onValueChange={setCountry}>
-                      <SelectTrigger id="country">
+                      <SelectTrigger id="country" aria-label="Country">
                         <SelectValue placeholder="Choose a country" />
                       </SelectTrigger>
                       <SelectContent>
@@ -256,7 +256,7 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
                     <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger id="timezone">
+                      <SelectTrigger id="timezone" aria-label="Timezone">
                         <SelectValue placeholder="Choose a timezone" />
                       </SelectTrigger>
                       <SelectContent>

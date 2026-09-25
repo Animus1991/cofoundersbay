@@ -280,7 +280,7 @@ export default function InvestorAnalyticsPage() {
           </TabsList>
 
           <TabsContent value="flow" className="mt-6">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
               <SectionCard title="Deals added per month" titleEl="Νέες συμφωνίες ανά μήνα" icon={BarChart3}>
                 {empty ? (
                   <EmptyLine en="Add a startup to your board and it is counted here." el="Προσθέστε μια startup στον πίνακα για να μετρηθεί εδώ." />

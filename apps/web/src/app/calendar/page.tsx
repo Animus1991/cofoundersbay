@@ -37,7 +37,7 @@ import { getUpcomingMentorshipSessions, listEvents, listMilestones, type EventIt
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, formatDate } from '@/lib/i18n/format';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -322,6 +322,11 @@ function MiniCalendar({
             <button
               key={day}
               onClick={() => onSelectDate(date)}
+              aria-label={bilingualAria(
+                formatDate(date, 'en', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                formatDate(date, 'el', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+              )}
+              aria-pressed={isSelected}
               className={cn(
                 'relative h-8 w-full rounded-md text-xs transition-all hover:bg-secondary',
                 isSelected && 'bg-primary text-primary-foreground hover:bg-primary/90',

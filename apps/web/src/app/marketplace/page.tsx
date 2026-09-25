@@ -140,11 +140,11 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
   return (
     <Card className={cn(
-      'group transition-all hover:shadow-md hover:border-primary/20',
+      'group flex flex-col transition-all hover:shadow-md hover:border-primary/20',
       featured && 'border-primary/30 bg-primary/[0.02]',
       !provider.isAvailable && 'surface-inactive',
     )}>
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="flex flex-1 flex-col gap-4 p-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -213,7 +213,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         </div>
 
         {/* Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border/40">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border/40">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Starting at</p>
             <p className="truncate font-semibold text-sm">{provider.pricing}</p>

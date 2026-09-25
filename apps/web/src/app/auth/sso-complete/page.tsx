@@ -12,12 +12,13 @@ export default function SSOCompletePage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const redirect = searchParams?.get('redirect') || '/dashboard';
-    const isNewUser = searchParams?.get('newUser') === '1';
-    const errorParam = searchParams?.get('error');
-    const message = searchParams?.get('message');
+  // searchParams identity can change between renders; depend on the primitive values instead.
+  const redirect = searchParams?.get('redirect') || '/dashboard';
+  const isNewUser = searchParams?.get('newUser') === '1';
+  const errorParam = searchParams?.get('error');
+  const message = searchParams?.get('message');
 
+  useEffect(() => {
     if (errorParam) {
       setStatus('error');
       setError(message || 'SSO authentication failed');
@@ -45,7 +46,7 @@ export default function SSOCompletePage() {
     };
 
     completeLogin();
-  }, [searchParams, router]);
+  }, [redirect, isNewUser, errorParam, message, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">

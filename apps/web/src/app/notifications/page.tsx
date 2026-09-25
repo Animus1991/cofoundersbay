@@ -382,10 +382,14 @@ export default function NotificationsPage() {
             {Object.entries(catCounts).map(([type, count]) => {
               const Icon = TYPE_ICONS[type] ?? Bell;
               const color = TYPE_COLORS[type] ?? TYPE_COLORS.system;
+              const tab = FILTER_TABS.find((t) => t.value === type);
+              const labelEn = tab?.labelEn ?? TYPE_LABELS[type] ?? type;
+              const labelEl = tab?.labelEl ?? TYPE_LABELS[type] ?? type;
               return (
                 <button
                   key={type}
                   onClick={() => { setActiveTab(type); setShowUnreadOnly(true); }}
+                  aria-label={bilingualAria(`${labelEn}: ${count} unread`, `${labelEl}: ${count} αδιάβαστες`)}
                   className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:opacity-80', color)}
                 >
                   <Icon className="icon-sm" />{count}

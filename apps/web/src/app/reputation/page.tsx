@@ -345,7 +345,7 @@ export default function ReputationPage() {
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
                   <Card className="lg:col-span-3">
                     <CardHeader>
                       <CardTitle className="text-base"><BilingualText en={reputationEn('how_xp_title')} el={reputationEl('how_xp_title')} /></CardTitle>

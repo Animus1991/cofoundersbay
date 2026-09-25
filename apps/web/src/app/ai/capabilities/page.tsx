@@ -159,7 +159,7 @@ export default function AICapabilitiesPage() {
               wrap
             />
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {reads.map((spec) => (
               <CapabilityCard key={spec.id} spec={spec} />
             ))}
@@ -177,7 +177,7 @@ export default function AICapabilitiesPage() {
               wrap
             />
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {mutations.map((spec) => (
               <CapabilityCard key={spec.id} spec={spec} />
             ))}

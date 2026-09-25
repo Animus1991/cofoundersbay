@@ -218,7 +218,7 @@ export default function TenantAnalyticsPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <SectionCard title="Program performance" titleEl="Απόδοση προγραμμάτων" action={{ href: '/tenant/programs', label: 'Programs', labelEl: 'Προγράμματα' }} contentClassName="space-y-4">
             {programsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}
             {programPerformance.map((program) => (
