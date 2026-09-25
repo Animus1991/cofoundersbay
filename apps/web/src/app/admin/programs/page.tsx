@@ -51,6 +51,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Program = {
   /** Set on live rows; the owning organisation's own programs page. */
@@ -238,9 +239,9 @@ export default function AdminProgramsPage() {
       return;
     }
     const ok = await confirm({
-      title: `Archive ${p.name}?`,
-      description: 'The programme stops taking applications and leaves active lists. Archived programmes stay readable.',
-      confirmLabel: 'Archive',
+      title: <BilingualText en={`Archive ${p.name}?`} el={`Αρχειοθέτηση: ${p.name};`} />,
+      description: <BilingualText en="The programme stops taking applications and leaves active lists. Archived programmes stay readable." el="Το πρόγραμμα σταματά να δέχεται αιτήσεις και φεύγει από τις ενεργές λίστες. Τα αρχειοθετημένα προγράμματα παραμένουν αναγνώσιμα." />,
+      confirmLabel: <BilingualText en="Archive" el="Αρχειοθέτηση" compact />,
     });
     if (!ok) return;
     try {
@@ -474,7 +475,7 @@ export default function AdminProgramsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search programs..."
+              placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
               aria-label="Search programs by name or organization"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

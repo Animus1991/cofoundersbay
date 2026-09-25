@@ -231,6 +231,7 @@ export default function ProviderDashboard() {
   return (
     <AppShell
       description="Inquiries, active projects, services and reviews - in one view."
+      descriptionEl="Αιτήματα, ενεργά έργα, υπηρεσίες και αξιολογήσεις — σε μία προβολή."
       actions={
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="gap-1.5">

@@ -402,7 +402,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 {data.startupCosts.map((cost, index) => (
                   <div key={index} className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder="Category"
+                      placeholder={bilingualInline("Category", "Κατηγορία")}
                       value={cost.category}
                       onChange={(e) => {
                         const newCosts = [...data.startupCosts];
@@ -411,7 +411,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       }}
                     />
                     <Input
-                      placeholder="Item name"
+                      placeholder={bilingualInline("Item name", "Όνομα στοιχείου")}
                       value={cost.name}
                       onChange={(e) => {
                         const newCosts = [...data.startupCosts];
@@ -422,7 +422,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <div className="flex gap-2">
                       <Input
                         type="number"
-                        placeholder="Amount"
+                        placeholder={bilingualInline("Amount", "Ποσό")}
                         value={cost.amount || ''}
                         onChange={(e) => {
                           const newCosts = [...data.startupCosts];
@@ -469,7 +469,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 {data.operatingCosts.map((cost, index) => (
                   <div key={index} className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder="Category"
+                      placeholder={bilingualInline("Category", "Κατηγορία")}
                       value={cost.category}
                       onChange={(e) => {
                         const newCosts = [...data.operatingCosts];
@@ -478,7 +478,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       }}
                     />
                     <Input
-                      placeholder="Item name"
+                      placeholder={bilingualInline("Item name", "Όνομα στοιχείου")}
                       value={cost.name}
                       onChange={(e) => {
                         const newCosts = [...data.operatingCosts];
@@ -489,7 +489,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <div className="flex gap-2">
                       <Input
                         type="number"
-                        placeholder="Amount"
+                        placeholder={bilingualInline("Amount", "Ποσό")}
                         value={cost.amount || ''}
                         onChange={(e) => {
                           const newCosts = [...data.operatingCosts];
@@ -548,7 +548,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                           newStreams[index] = { ...stream, name: e.target.value };
                           setData(prev => ({ ...prev, revenueStreams: newStreams }));
                         }}
-                        placeholder="Revenue stream name"
+                        placeholder={bilingualInline("Revenue stream name", "Όνομα πηγής εσόδων")}
                       />
                     </div>
                     <div>

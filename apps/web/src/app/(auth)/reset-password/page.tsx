@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
 import { resetPassword } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -127,7 +128,7 @@ export default function ResetPasswordPage() {
                       minLength={8}
                       autoComplete="new-password"
                       autoFocus
-                      placeholder="Min. 8 characters"
+                      placeholder={bilingualInline("Min. 8 characters", "Τουλάχιστον 8 χαρακτήρες")}
                       className="pr-16"
                     />
                     <button
@@ -167,7 +168,7 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setConfirm(e.target.value)}
                     required
                     autoComplete="new-password"
-                    placeholder="Repeat password"
+                    placeholder={bilingualInline("Repeat password", "Επανάληψη κωδικού")}
                     className={confirm && confirm !== password ? 'border-destructive focus-visible:ring-destructive/30' : undefined}
                   />
                   {confirm && confirm !== password && (

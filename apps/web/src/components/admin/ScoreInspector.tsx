@@ -15,6 +15,7 @@ import {
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  'bg-status-warning-bg text-status-warning',
@@ -121,7 +122,7 @@ export function ScoreInspector() {
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void runInspection()}
-            placeholder="Enter user ID…"
+            placeholder={bilingualInline("Enter user ID…", "Συμπληρώστε αναγνωριστικό χρήστη…")}
             className="w-full pl-9 pr-4 py-2.5 text-sm border border-border rounded-xl focus:outline-none"
           />
         </div>

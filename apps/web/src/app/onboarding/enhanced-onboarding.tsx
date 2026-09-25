@@ -44,6 +44,7 @@ import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const STEPS = [
   { id: 'welcome', title: 'Welcome to CoFounderBay', icon: Sparkles },
@@ -698,7 +699,7 @@ function ProfileStep({
             <Textarea
               value={data.bio}
               onChange={(e) => setData({ ...data, bio: e.target.value })}
-              placeholder="Tell us about your background, experience, and what you're looking for..."
+              placeholder={bilingualInline("Tell us about your background, experience, and what you're looking for…", "Πείτε μας για το υπόβαθρο, την εμπειρία σας και τι αναζητάτε…")}
               rows={4}
               maxLength={5000}
             />
@@ -721,7 +722,7 @@ function ProfileStep({
               <label className="block text-sm font-medium mb-2"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
               <Select value={data.timezone} onValueChange={(value) => setData({ ...data, timezone: value })}>
                 <SelectTrigger aria-label="Timezone">
-                  <SelectValue placeholder="Select timezone" />
+                  <SelectValue placeholder={bilingualInline("Select timezone", "Επιλογή ζώνης ώρας")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="UTC">UTC</SelectItem>
@@ -772,7 +773,7 @@ function SkillsStep({
         {/* Search and Filter */}
         <div className="space-y-4">
           <Input
-            placeholder="Search skills..."
+            placeholder={bilingualInline("Search skills…", "Αναζήτηση δεξιοτήτων…")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -897,7 +898,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
             }
           >
             <SelectTrigger aria-label="Commitment Level">
-              <SelectValue placeholder="Select commitment level" />
+              <SelectValue placeholder={bilingualInline("Select commitment level", "Επιλογή βαθμού δέσμευσης")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="part-time"><BilingualText en="Part-time" el="Μερική απασχόληση" compact /></SelectItem>
@@ -921,7 +922,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
             }
           >
             <SelectTrigger aria-label="Notification Frequency">
-              <SelectValue placeholder="Select notification frequency" />
+              <SelectValue placeholder={bilingualInline("Select notification frequency", "Επιλογή συχνότητας ειδοποιήσεων")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="real-time"><BilingualText en="Real-time" el="Σε πραγματικό χρόνο" compact /></SelectItem>

@@ -144,6 +144,7 @@ export default function TenantWebhooksPage() {
     <AppShell
       title="Webhooks"
       description="Send real-time event notifications to external services"
+      descriptionEl="Στείλτε ειδοποιήσεις συμβάντων σε πραγματικό χρόνο σε εξωτερικές υπηρεσίες"
       actions={
         // Had no handler; there is no webhook service to register one with.
         <UnavailableButton

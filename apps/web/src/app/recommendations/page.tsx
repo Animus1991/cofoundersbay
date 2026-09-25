@@ -557,7 +557,8 @@ export default function RecommendationsPage() {
   return (
     <AppShell
       title="For you"
-      description="AI-powered picks based on your profile, skills, and recent activity. Refreshes daily."
+      description="Picks ranked from your profile, skills, and recent activity, recalculated at least hourly."
+      descriptionEl="Επιλογές ταξινομημένες βάσει του προφίλ, των δεξιοτήτων και της πρόσφατης δραστηριότητάς σας, με επανυπολογισμό τουλάχιστον κάθε ώρα."
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="icon-sm mr-2" />

@@ -7,6 +7,8 @@ import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { toastEl } from '@/lib/i18n/strings-toasts';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -124,9 +126,15 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
       <Icon className="icon-md flex-shrink-0 mt-0.5" aria-hidden="true" />
       <div className="min-w-0 flex-1 space-y-1">
         <div role={urgent ? 'alert' : 'status'} aria-live={urgent ? 'assertive' : 'polite'} aria-atomic="true" className="space-y-1 break-words">
-          <p className="text-sm font-semibold text-foreground">{toast.title}</p>
+          {/* Call sites pass English; the catalog supplies the Greek, so a
+              toast reads in both languages without touching ~360 callers. */}
+          <p className="text-sm font-semibold text-foreground">
+            <BilingualText en={toast.title} el={toastEl(toast.title)} stacked wrap />
+          </p>
           {toast.description && (
-            <p className="text-sm text-muted-foreground">{toast.description}</p>
+            <p className="text-sm text-muted-foreground">
+              <BilingualText en={toast.description} el={toastEl(toast.description)} />
+            </p>
           )}
         </div>
         {toast.action && (

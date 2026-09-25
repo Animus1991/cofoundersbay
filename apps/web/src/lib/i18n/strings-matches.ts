@@ -167,3 +167,31 @@ export function matchesEn(key: keyof typeof MATCHES_STRINGS): string {
 export function matchesEl(key: keyof typeof MATCHES_STRINGS): string {
   return MATCHES_STRINGS[key].el;
 }
+
+/**
+ * Greek for the dimension labels the match endpoints return. The API names
+ * axes in English ("Skills & Expertise", "Location Fit"); pages show both.
+ */
+const MATCH_AXIS_EL: Record<string, string> = {
+  skills: 'Δεξιότητες',
+  'skills & expertise': 'Δεξιότητες & εμπειρία',
+  stage: 'Στάδιο',
+  industry: 'Κλάδος',
+  'industry alignment': 'Ταύτιση κλάδου',
+  'industry & stage': 'Κλάδος & στάδιο',
+  location: 'Τοποθεσία',
+  'location fit': 'Εγγύτητα τοποθεσίας',
+  values: 'Αξίες',
+  product: 'Προϊόν',
+  growth: 'Ανάπτυξη',
+  fundraising: 'Χρηματοδότηση',
+  'role complementarity': 'Συμπληρωματικότητα ρόλων',
+  'role fit': 'Ταίριασμα ρόλου',
+  'vision & goals': 'Όραμα & στόχοι',
+  'goals & vision': 'Στόχοι & όραμα',
+  'platform activity': 'Δραστηριότητα στην πλατφόρμα',
+};
+
+export function matchAxisEl(label: string | null | undefined): string | undefined {
+  return label ? MATCH_AXIS_EL[label.toLowerCase()] : undefined;
+}

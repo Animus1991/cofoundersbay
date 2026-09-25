@@ -135,6 +135,19 @@ export function ListEmptyState({
  * Helper: produces a "No results match your filters" empty state with a
  * Clear Filters secondary action. Use when filters are active.
  */
+/** Greek for the list names pages pass as `entity`. */
+const ENTITY_EL: Record<string, string> = {
+  applications: 'αιτήσεις',
+  cohorts: 'κοόρτες',
+  communities: 'κοινότητες',
+  events: 'εκδηλώσεις',
+  members: 'μέλη',
+  mentors: 'μέντορες',
+  programs: 'προγράμματα',
+  reports: 'αναφορές',
+  startups: 'νεοφυείς',
+};
+
 export function NoFilterResults({
   entity,
   onClear,
@@ -149,8 +162,20 @@ export function NoFilterResults({
   return (
     <ListEmptyState
       icon={Search}
-      title={`No ${entity} match your filters`}
-      description={description ?? 'Try a different search term, broaden your filters, or clear them to start over.'}
+      title={
+        <BilingualText
+          en={`No ${entity} match your filters`}
+          el={`Κανένα αποτέλεσμα (${ENTITY_EL[entity] ?? entity}) για αυτά τα φίλτρα`}
+          wrap
+        />
+      }
+      description={description ?? (
+        <BilingualText
+          en="Try a different search term, broaden your filters, or clear them to start over."
+          el="Δοκιμάστε άλλη αναζήτηση, πιο ευρεία φίλτρα ή καθαρίστε τα για να ξεκινήσετε από την αρχή."
+          wrap
+        />
+      )}
       action={onClear ? (
         <Button variant="secondary" size="sm" onClick={onClear} className="gap-1.5">
           <X className="icon-sm" />

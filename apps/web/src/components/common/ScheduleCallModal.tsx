@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ScheduleCallModalProps = {
   open: boolean;
@@ -335,7 +336,7 @@ export function ScheduleCallModal({
             <div className="space-y-2">
               <Label><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
               <Textarea
-                placeholder="Add a note about what you'd like to discuss..."
+                placeholder={bilingualInline("Add a note about what you'd like to discuss…", "Προσθέστε σημείωση για το τι θέλετε να συζητήσετε…")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}

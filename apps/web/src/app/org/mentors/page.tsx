@@ -34,6 +34,9 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 /**
  * The page's own row from the pool row.
@@ -120,7 +123,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                  {mentor.status}
+                  <StatusText value={mentor.status} />
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -130,12 +133,12 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/p/${mentor.userId}`}>View Profile</Link>
+                      <Link href={`/p/${mentor.userId}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
                     </DropdownMenuItem>
                     <UnavailableMenuItem en="Assign to Startup" el="Ανάθεση σε startup" reasonEn="Mentor assignments are not stored yet." reasonEl="Οι αναθέσεις μεντόρων δεν αποθηκεύονται ακόμη." />
                     <UnavailableMenuItem en="View Sessions" el="Συνεδρίες" reasonEn="No organisation-wide session view yet." reasonEl="Δεν υπάρχει ακόμη προβολή συνεδριών ανά οργανισμό." />
                     <DropdownMenuItem asChild>
-                      <Link href={`/messages?to=${mentor.userId}`}>Send Message</Link>
+                      <Link href={`/messages?to=${mentor.userId}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
                     </DropdownMenuItem>
                     <UnavailableMenuItem className="text-destructive-accessible" en="Remove from Pool" el="Αφαίρεση από τη δεξαμενή" reasonEn="The pool is read from mentor profiles; there is no pool membership to remove." reasonEl="Η δεξαμενή προκύπτει από τα προφίλ μεντόρων· δεν υπάρχει συμμετοχή για αφαίρεση." />
                   </DropdownMenuContent>
@@ -159,12 +162,16 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
-                {mentor.activeMentees}/{mentor.maxMentees} mentees
+                <BilingualText
+                  en={`${mentor.activeMentees}/${mentor.maxMentees} mentees`}
+                  el={`${mentor.activeMentees}/${mentor.maxMentees} καθοδηγούμενοι`}
+                  compact
+                />
               </span>
               {mentor.totalSessions != null && (
                 <span className="flex items-center gap-1">
                   <Calendar className="icon-sm" aria-hidden="true" />
-                  {mentor.totalSessions} sessions
+                  <BilingualText en={`${mentor.totalSessions} sessions`} el={`${mentor.totalSessions} συνεδρίες`} compact />
                 </span>
               )}
               {mentor.rating && (
@@ -288,6 +295,7 @@ export default function OrgMentorsPage() {
     <AppShell
       title="Mentor Pool"
       description="Manage mentors available to your cohorts. Find them in the platform's mentor directory."
+      descriptionEl="Διαχειριστείτε τους μέντορες των κοορτών σας. Βρείτε νέους στον κατάλογο μεντόρων της πλατφόρμας."
       actions={(
         // Linked to /org/mentors/invite, which never existed, and promised
         // email invites no endpoint sends. The directory is where a mentor is
@@ -295,7 +303,7 @@ export default function OrgMentorsPage() {
         <Button asChild>
           <Link href="/mentoring">
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
-            Find a mentor to invite
+            <BilingualText en="Find a mentor to invite" el="Βρείτε μέντορα για πρόσκληση" compact />
           </Link>
         </Button>
       )}
@@ -306,25 +314,25 @@ export default function OrgMentorsPage() {
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Mentors</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Mentors" el="Σύνολο μεντόρων" compact /></p>
               <p className="text-xl font-bold">{mentors.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργοί" compact /></p>
               <p className={cn('text-xl font-bold', STATUS.success.icon)}>{activeMentors.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Capacity</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></p>
               <p className="text-xl font-bold">{currentMentees}/{totalCapacity}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Sessions</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
               <p className="text-xl font-bold">
                 {mentors.some((m) => m.totalSessions == null) ? '\u2014' : mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}
               </p>
@@ -336,7 +344,8 @@ export default function OrgMentorsPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder="Search mentors by name or expertise..."
+            aria-label="Search mentors. Αναζήτηση μεντόρων"
+            placeholder={bilingualInline('Search mentors by name or expertise…', 'Αναζήτηση μεντόρων με όνομα ή εξειδίκευση…')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

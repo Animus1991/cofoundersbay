@@ -30,6 +30,8 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { MENTOR_DEMO_REVIEWS } from '@/lib/demo/mentor-world';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Review = {
   id: string;
@@ -82,13 +84,13 @@ function ReviewCard({ review }: { review: Review }) {
             <div className="flex items-center gap-4 mt-3">
               {/* Neither had a handler, and reviews have no helpful count or
                   reply field to write - the same as on the provider side. */}
-              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title="Reviews cannot be marked helpful yet">
+              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
                 <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
-                Helpful ({review.helpful})
+                <BilingualText en={`Helpful (${review.helpful})`} el={`Χρήσιμο (${review.helpful})`} compact />
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title="Replies to reviews are not stored yet">
+              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title={bilingualInline('Replies to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
                 <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                Reply
+                <BilingualText en="Reply" el="Απάντηση" compact />
               </Button>
             </div>
           </div>
@@ -165,7 +167,7 @@ export default function MentorReviewsPage() {
 
   if (!showDemoData && reviews.length === 0) {
     return (
-      <AppShell title="Reviews" description="Feedback from your mentoring sessions">
+      <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
         <EmptyState
           illustration="default"
           title="No reviews yet"
@@ -177,7 +179,7 @@ export default function MentorReviewsPage() {
   }
 
   return (
-    <AppShell title="Reviews" description="Feedback from your mentoring sessions">
+    <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
       <div className="space-y-6">
 
         {/* Stats */}
@@ -188,7 +190,7 @@ export default function MentorReviewsPage() {
                 <div className="text-center">
                   <p className="text-3xl font-bold">{avgRating}</p>
                   <StarRating rating={Math.round(parseFloat(avgRating))} />
-                  <p className="text-sm text-muted-foreground mt-1">{reviews.length} reviews</p>
+                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={`${reviews.length} reviews`} el={`${reviews.length} αξιολογήσεις`} compact /></p>
                 </div>
                 <div className="flex-1 space-y-2">
                   {ratingDistribution.map((item) => (
@@ -208,19 +210,19 @@ export default function MentorReviewsPage() {
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Sessions given</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Sessions given" el="Συνεδρίες που δόθηκαν" compact /></p>
                   <p className="text-xl font-bold tabular-nums">{stats?.totalSessions ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Active mentees</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Active mentees" el="Ενεργοί καθοδηγούμενοι" compact /></p>
                   <p className="text-xl font-bold tabular-nums">{stats?.activeMentees ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Mentorships completed</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Mentorships completed" el="Ολοκληρωμένες καθοδηγήσεις" compact /></p>
                   <p className="text-xl font-bold tabular-nums">{stats?.completedMentorships ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Helpful votes</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Helpful votes" el="Ψήφοι «χρήσιμο»" compact /></p>
                   <p className="text-xl font-bold tabular-nums">{helpfulVotes}</p>
                 </div>
               </div>
@@ -233,23 +235,23 @@ export default function MentorReviewsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder="Search reviews..."
+              placeholder={bilingualInline("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
           <Select value={ratingFilter} onValueChange={setRatingFilter}>
-            <SelectTrigger aria-label="Rating" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Rating" />
+            <SelectTrigger aria-label="Rating. Βαθμολογία" className="w-full sm:w-[150px]">
+              <SelectValue placeholder={bilingualInline("Rating", "Βαθμολογία")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Ratings</SelectItem>
-              <SelectItem value="5">5 Stars</SelectItem>
-              <SelectItem value="4">4 Stars</SelectItem>
-              <SelectItem value="3">3 Stars</SelectItem>
-              <SelectItem value="2">2 Stars</SelectItem>
-              <SelectItem value="1">1 Star</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Ratings" el="Όλες οι βαθμολογίες" compact /></SelectItem>
+              <SelectItem value="5"><BilingualText en="5 stars" el="5 αστέρια" compact /></SelectItem>
+              <SelectItem value="4"><BilingualText en="4 stars" el="4 αστέρια" compact /></SelectItem>
+              <SelectItem value="3"><BilingualText en="3 stars" el="3 αστέρια" compact /></SelectItem>
+              <SelectItem value="2"><BilingualText en="2 stars" el="2 αστέρια" compact /></SelectItem>
+              <SelectItem value="1"><BilingualText en="1 star" el="1 αστέρι" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -263,9 +265,9 @@ export default function MentorReviewsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No reviews found</h3>
+                <h3 className="font-medium"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters
+                  <BilingualText en="Try adjusting your filters" el="Δοκιμάστε άλλα φίλτρα" compact />
                 </p>
               </CardContent>
             </Card>

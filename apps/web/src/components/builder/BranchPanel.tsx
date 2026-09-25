@@ -47,6 +47,7 @@ import {
   type ArtifactBranch,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Branch Status helpers ──────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
           <div className="space-y-1.5">
             <Label><BilingualText en="Description (optional)" el="Περιγραφή (προαιρετικά)" compact /></Label>
             <Textarea
-              placeholder="What changes are you exploring in this variant?"
+              placeholder={bilingualInline("What changes are you exploring in this variant?", "Ποιες αλλαγές δοκιμάζετε σε αυτή την εκδοχή;")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -203,7 +204,7 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
           <div className="space-y-1.5">
             <Label><BilingualText en="Description" el="Περιγραφή" compact /></Label>
             <Textarea
-              placeholder="Summarise the changes you've made and why..."
+              placeholder={bilingualInline("Summarise the changes you've made and why…", "Συνοψίστε τις αλλαγές σας και τον λόγο…")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}

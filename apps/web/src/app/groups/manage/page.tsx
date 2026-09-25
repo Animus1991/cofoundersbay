@@ -44,6 +44,9 @@ import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type ManagedGroup = {
   id: string;
@@ -60,9 +63,9 @@ type ManagedGroup = {
 };
 
 const PRIVACY_CONFIG = {
-  public: { label: 'Public', icon: Globe, iconClass: STATUS.success.icon },
-  private: { label: 'Private', icon: Lock, iconClass: STATUS.warning.icon },
-  secret: { label: 'Secret', icon: Shield, iconClass: STATUS.danger.icon },
+  public: { label: 'Public', labelEl: 'Δημόσια', icon: Globe, iconClass: STATUS.success.icon },
+  private: { label: 'Private', labelEl: 'Ιδιωτική', icon: Lock, iconClass: STATUS.warning.icon },
+  secret: { label: 'Secret', labelEl: 'Μυστική', icon: Shield, iconClass: STATUS.danger.icon },
 };
 
 const MOCK_GROUPS: ManagedGroup[] = [
@@ -96,21 +99,21 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
                 <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                   {group.name}
                 </Link>
-                <Badge variant="secondary" className="text-xs">{group.category}</Badge>
+                <Badge variant="secondary" className="text-xs"><StatusText value={group.category} /></Badge>
                 <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.iconClass)}>
                   <PrivacyIcon className="icon-sm" />
-                  {privacyCfg.label}
+                  <BilingualText en={privacyCfg.label} el={privacyCfg.labelEl} compact />
                 </Badge>
-                <Badge variant="secondary" className="text-xs capitalize">{group.role}</Badge>
-                {!group.isActive && <Badge variant="secondary" className="text-xs text-muted-foreground">Archived</Badge>}
+                <Badge variant="secondary" className="text-xs capitalize"><StatusText value={group.role} /></Badge>
+                {!group.isActive && <Badge variant="secondary" className="text-xs text-muted-foreground"><BilingualText en="Archived" el="Αρχειοθετημένη" compact /></Badge>}
               </div>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{group.description}</p>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="icon-sm" />{group.memberCount.toLocaleString('en-GB')} members</span>
-                <span className="flex items-center gap-1"><MessageSquare className="icon-sm" />{group.postCount} posts</span>
-                <span className="flex items-center gap-1"><TrendingUp className="icon-sm" />Active {group.lastActivity}</span>
+                <span className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${group.memberCount.toLocaleString('en-GB')} members`} el={`${group.memberCount.toLocaleString('el-GR')} μέλη`} compact /></span>
+                <span className="flex items-center gap-1"><MessageSquare className="icon-sm" aria-hidden="true" /><BilingualText en={`${group.postCount} posts`} el={`${group.postCount} αναρτήσεις`} compact /></span>
+                <span className="flex items-center gap-1"><TrendingUp className="icon-sm" aria-hidden="true" /><BilingualText en={`Active ${group.lastActivity}`} el={`Δραστηριότητα ${group.lastActivity}`} compact /></span>
                 {group.pendingRequests && group.pendingRequests > 0 && (
-                  <Badge variant="destructive" className="text-xs">{group.pendingRequests} pending</Badge>
+                  <Badge variant="destructive" className="text-xs"><BilingualText en={`${group.pendingRequests} pending`} el={`${group.pendingRequests} σε αναμονή`} compact /></Badge>
                 )}
               </div>
             </div>
@@ -118,7 +121,7 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/groups/${group.id}`}>
-                <Eye className="mr-1.5 icon-sm" />View
+                <Eye className="mr-1.5 icon-sm" /><BilingualText en="View" el="Προβολή" compact />
               </Link>
             </Button>
             <DropdownMenu>
@@ -132,16 +135,16 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
                     the group itself; inviting shares its link; deleting is
                     the owner's, and the server enforces that. */}
                 <DropdownMenuItem asChild>
-                  <Link href={`/groups/${group.id}`}><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Group</Link>
+                  <Link href={`/groups/${group.id}`}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Group" el="Επεξεργασία κοινότητας" compact /></Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => onInvite(group)}><UserPlus className="mr-2 icon-sm" aria-hidden="true" />Invite Members</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onInvite(group)}><UserPlus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Invite Members" el="Πρόσκληση μελών" compact /></DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`/groups/${group.id}?section=members`}><Settings className="mr-2 icon-sm" aria-hidden="true" />Group Settings</Link>
+                  <Link href={`/groups/${group.id}?section=members`}><Settings className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Group Settings" el="Ρυθμίσεις κοινότητας" compact /></Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {group.role === 'owner' ? (
                   <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(group)}>
-                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete Group
+                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete Group" el="Διαγραφή κοινότητας" compact />
                   </DropdownMenuItem>
                 ) : (
                   <UnavailableMenuItem
@@ -215,9 +218,9 @@ export default function ManageGroupsPage() {
         return;
       }
       const ok = await confirm({
-        title: `Delete ${g.name}?`,
-        description: 'The group, its posts and its member list are removed. This cannot be undone.',
-        confirmLabel: 'Delete group',
+        title: <BilingualText en={`Delete ${g.name}?`} el={`Διαγραφή: ${g.name};`} />,
+        description: <BilingualText en="The group, its posts and its member list are removed. This cannot be undone." el="Η κοινότητα, οι αναρτήσεις και τα μέλη της αφαιρούνται. Δεν αναιρείται." />,
+        confirmLabel: <BilingualText en="Delete group" el="Διαγραφή κοινότητας" compact />,
       });
       if (!ok) return;
       try {
@@ -258,12 +261,14 @@ export default function ManageGroupsPage() {
   return (
     <AppShell
       title="Manage communities"
+      titleEl="Διαχείριση κοινοτήτων"
       description="Communities you own or administer — review members, pending requests, and activity at a glance."
+      descriptionEl="Κοινότητες που σας ανήκουν ή διαχειρίζεστε — μέλη, εκκρεμή αιτήματα και δραστηριότητα με μια ματιά."
       actions={(
         <Button asChild>
           <Link href="/groups">
             <Plus className="mr-2 icon-sm" />
-            Create community
+            <BilingualText en="Create community" el="Νέα κοινότητα" compact />
           </Link>
         </Button>
       )}
@@ -279,13 +284,13 @@ export default function ManageGroupsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
-            { label: 'Groups Managed', value: groups.length },
-            { label: 'Total Members', value: totalMembers.toLocaleString('en-GB') },
-            { label: 'Pending Requests', value: pendingTotal },
+            { label: 'Groups Managed', labelEl: 'Κοινότητες που διαχειρίζεστε', value: groups.length },
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: totalMembers.toLocaleString('en-GB') },
+            { label: 'Pending Requests', labelEl: 'Εκκρεμή αιτήματα', value: pendingTotal },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className="text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
@@ -295,7 +300,7 @@ export default function ManageGroupsPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder={bilingualInline("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {/* Groups */}
@@ -316,7 +321,7 @@ export default function ManageGroupsPage() {
                   <Button asChild className="gap-2">
                     <Link href="/groups">
                       <Plus className="icon-sm" />
-                      Create community
+                      <BilingualText en="Create community" el="Νέα κοινότητα" compact />
                     </Link>
                   </Button>
                 )}

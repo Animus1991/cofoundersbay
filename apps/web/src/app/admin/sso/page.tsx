@@ -38,6 +38,7 @@ import {
   type SSOAuthEvent,
   type SSODomainMapping,
 } from '@/lib/api';
+import { bilingualInline } from '@/lib/i18n/format';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
   if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border"><BilingualText en="SSO Required" el="SSO υποχρεωτικό" compact /></Badge>;
@@ -67,7 +68,9 @@ export default function SSOAdminPage() {
   return (
     <AppShell
       title="SSO Configuration"
+      titleEl="Ρύθμιση SSO"
       description="Configure Single Sign-On for organization tenants"
+      descriptionEl="Ρυθμίστε την ενιαία σύνδεση (SSO) για τους οργανισμούς"
     >
       {/* Stats row */}
       <div className="grid grid-cols-2 kpi-odd-span-lg gap-4 lg:grid-cols-4 mb-6">
@@ -657,9 +660,9 @@ function SSOConfigPanel({
                 {roleMappingRules.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
                     <input value={r.claim} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,claim:e.target.value} : x))}
-                      placeholder="Claim" className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
+                      placeholder={bilingualInline("Claim", "Ισχυρισμός")} className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
                     <input value={r.value} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,value:e.target.value} : x))}
-                      placeholder="Value" className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
+                      placeholder={bilingualInline("Value", "Τιμή")} className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
                     <select value={r.role} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,role:e.target.value} : x))}
                       className="h-8 rounded-xl border border-input bg-background px-2 text-xs">
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}

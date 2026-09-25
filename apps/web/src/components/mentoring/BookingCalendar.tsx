@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export type TimeSlot = {
   id: string;
@@ -376,7 +377,7 @@ export function BookingCalendar({
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Share your goals, challenges, or questions..."
+                  placeholder={bilingualInline("Share your goals, challenges, or questions…", "Μοιραστείτε στόχους, προκλήσεις ή ερωτήσεις…")}
                   rows={4}
                 />
               </div>

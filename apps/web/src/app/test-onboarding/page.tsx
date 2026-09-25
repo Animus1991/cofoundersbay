@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Circle, ArrowRight, Play, AlertCircle, Rocket } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -172,9 +173,9 @@ export default function TestOnboardingPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Production Readiness Tests</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2"><BilingualText en="Production Readiness Tests" el="Έλεγχοι ετοιμότητας παραγωγής" compact /></h1>
           <p className="text-muted-foreground">
-            Test all critical components before going to production
+            <BilingualText en="Test all critical components before going to production" el="Ελέγξτε όλα τα κρίσιμα στοιχεία πριν από την παραγωγή" wrap />
           </p>
         </div>
 
@@ -182,7 +183,7 @@ export default function TestOnboardingPage() {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Test Progress</h2>
+              <h2 className="text-lg font-semibold"><BilingualText en="Test Progress" el="Πρόοδος ελέγχων" compact /></h2>
               <Badge variant={hasErrors ? 'destructive' : progress === 100 ? 'default' : 'secondary'}>
                 {completedSteps}/{steps.length} Completed
               </Badge>
@@ -221,13 +222,13 @@ export default function TestOnboardingPage() {
                   
                   <div className="flex items-center gap-2">
                     {step.status === 'success' && (
-                      <Badge variant="default">Success</Badge>
+                      <Badge variant="default"><BilingualText en="Success" el="Επιτυχία" compact /></Badge>
                     )}
                     {step.status === 'error' && (
-                      <Badge variant="destructive">Failed</Badge>
+                      <Badge variant="destructive"><BilingualText en="Failed" el="Αποτυχία" compact /></Badge>
                     )}
                     {step.status === 'running' && (
-                      <Badge variant="secondary">Running</Badge>
+                      <Badge variant="secondary"><BilingualText en="Running" el="Εκτελείται" compact /></Badge>
                     )}
                     {step.status === 'pending' && (
                       <Button
@@ -236,7 +237,7 @@ export default function TestOnboardingPage() {
                         onClick={() => runTest(step.id)}
                         disabled={isRunning}
                       >
-                        Test
+                        <BilingualText en="Test" el="Έλεγχος" compact />
                       </Button>
                     )}
                   </div>
@@ -257,12 +258,12 @@ export default function TestOnboardingPage() {
             {isRunning ? (
               <>
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Running Tests...
+                <BilingualText en="Running Tests..." el="Εκτέλεση ελέγχων…" compact />
               </>
             ) : (
               <>
                 <Play className="icon-sm" />
-                Run All Tests
+                <BilingualText en="Run All Tests" el="Εκτέλεση όλων" compact />
               </>
             )}
           </Button>
@@ -275,7 +276,7 @@ export default function TestOnboardingPage() {
               setCurrentStepIndex(-1);
             }}
           >
-            Reset
+            <BilingualText en="Reset" el="Επαναφορά" compact />
           </Button>
         </div>
 
@@ -283,23 +284,23 @@ export default function TestOnboardingPage() {
         {completedSteps > 0 && (
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle>Test Results Summary</CardTitle>
+              <CardTitle><BilingualText en="Test Results Summary" el="Σύνοψη αποτελεσμάτων" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-status-success">{completedSteps}</div>
-                  <div className="text-sm text-muted-foreground">Tests Passed</div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Tests Passed" el="Επιτυχείς έλεγχοι" compact /></div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-status-danger">
                     {steps.filter(step => step.status === 'error').length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Tests Failed</div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Tests Failed" el="Αποτυχημένοι έλεγχοι" compact /></div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-status-info">{Math.round(progress)}%</div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Success Rate" el="Ποσοστό επιτυχίας" compact /></div>
                 </div>
               </div>
               
@@ -308,7 +309,7 @@ export default function TestOnboardingPage() {
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-status-success-bg rounded-lg">
                     <CheckCircle className="icon-md text-status-success" />
                     <span className="text-status-success font-medium">
-                      All tests passed! Ready for production.
+                      <BilingualText en="All tests passed! Ready for production." el="Όλοι οι έλεγχοι πέρασαν! Έτοιμο για παραγωγή." wrap />
                     </span>
                   </div>
                 </div>
@@ -319,7 +320,7 @@ export default function TestOnboardingPage() {
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-status-danger-bg rounded-lg">
                     <AlertCircle className="icon-md text-status-danger" />
                     <span className="text-status-danger font-medium">
-                      Some tests failed. Please check the errors above.
+                      <BilingualText en="Some tests failed. Please check the errors above." el="Κάποιοι έλεγχοι απέτυχαν. Δείτε τα σφάλματα παραπάνω." wrap />
                     </span>
                   </div>
                 </div>
@@ -340,7 +341,7 @@ export default function TestOnboardingPage() {
             <Button asChild>
               <Link href="/onboarding">
                 <Rocket className="icon-sm mr-2" />
-                Try Enhanced Onboarding
+                <BilingualText en="Try Enhanced Onboarding" el="Δοκιμάστε τη βελτιωμένη ένταξη" compact />
               </Link>
             </Button>
           )}

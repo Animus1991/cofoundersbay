@@ -225,6 +225,7 @@ export default function MentorDashboard() {
   return (
     <AppShell
       description="Sessions, mentee requests, reviews, and earnings at a glance."
+      descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
       actions={
         <Badge variant="outline" className="gap-1.5">
           <GraduationCap className="icon-sm" aria-hidden="true" />

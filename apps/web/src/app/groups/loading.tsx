@@ -8,7 +8,9 @@ export default function GroupsLoading() {
   return (
     <AppShell
       title="Groups"
+      titleEl="Κοινότητες"
       description="Join communities, share knowledge, and connect with like-minded founders"
+      descriptionEl="Γίνετε μέλος κοινοτήτων, μοιραστείτε γνώση και γνωρίστε ιδρυτές με κοινά ενδιαφέροντα"
       actions={
         // The loading shell's copy of the header action; the real one renders
         // with the page. Disabled so it is not a control that does nothing.

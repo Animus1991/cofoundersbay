@@ -23,6 +23,7 @@ import {
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /*
  * Workspace analytics, counted.
@@ -180,11 +181,13 @@ export default function TenantAnalyticsPage() {
   return (
     <AppShell
       title="Analytics"
+      titleEl="Αναλυτικά"
       description="Member growth, engagement, and program activity. Filter by time range to compare periods."
+      descriptionEl="Αύξηση μελών, συμμετοχή και δραστηριότητα προγραμμάτων. Φιλτράρετε ανά χρονικό διάστημα για να συγκρίνετε περιόδους."
       actions={(
         <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
           <SelectTrigger aria-label="Time period" className="w-[150px]">
-            <SelectValue placeholder="Time period" />
+            <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
           </SelectTrigger>
           <SelectContent>
             {PERIODS.map((p) => (

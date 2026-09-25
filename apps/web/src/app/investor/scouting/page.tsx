@@ -61,6 +61,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Startup = {
   id: string;
@@ -427,22 +428,22 @@ export default function InvestorScoutingPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-              <Input placeholder="Search by name, industry, or keyword..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+              <Input placeholder={bilingualInline("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder="Industry" /></SelectTrigger>
+              <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder={bilingualInline("Industry", "Κλάδος")} /></SelectTrigger>
               <SelectContent>
                 {industries.map(i => <SelectItem key={i} value={i}>{i === 'all' ? 'All Industries' : i}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger aria-label="Stage" className="w-full sm:w-[130px]"><SelectValue placeholder="Stage" /></SelectTrigger>
+              <SelectTrigger aria-label="Stage" className="w-full sm:w-[130px]"><SelectValue placeholder={bilingualInline("Stage", "Στάδιο")} /></SelectTrigger>
               <SelectContent>
                 {stages.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Stages' : s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger aria-label="Business model" className="w-full sm:w-[120px]"><SelectValue placeholder="Model" /></SelectTrigger>
+              <SelectTrigger aria-label="Business model" className="w-full sm:w-[120px]"><SelectValue placeholder={bilingualInline("Model", "Μοντέλο")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All Models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}

@@ -46,6 +46,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the admin row.
@@ -311,9 +312,9 @@ export default function AdminUsersPage() {
     if (!isLive) return refuseOnSeed();
     if (next === 'banned') {
       const ok = await confirm({
-        title: `Ban ${user.name}?`,
-        description: 'They are signed out and cannot sign back in until the ban is lifted from this menu.',
-        confirmLabel: 'Ban user',
+        title: <BilingualText en={`Ban ${user.name}?`} el={`Αποκλεισμός: ${user.name};`} />,
+        description: <BilingualText en="They are signed out and cannot sign back in until the ban is lifted from this menu." el="Αποσυνδέεται και δεν μπορεί να συνδεθεί ξανά μέχρι να αρθεί ο αποκλεισμός από αυτό το μενού." />,
+        confirmLabel: <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />,
       });
       if (!ok) return;
     }
@@ -581,7 +582,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search users..."
+              placeholder={bilingualInline("Search users…", "Αναζήτηση χρηστών…")}
               aria-label="Search users by name or email"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

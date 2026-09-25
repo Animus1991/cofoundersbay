@@ -39,6 +39,7 @@ import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -56,13 +57,13 @@ type OrgMember = {
   status: 'active' | 'invited' | 'inactive';
 };
 
-const ROLE_CONFIG: Record<MemberRole, { label: string; icon: React.ElementType; tone: StatusTone }> = {
-  owner: { label: 'Owner', icon: Crown, tone: 'warning' },
-  admin: { label: 'Admin', icon: ShieldCheck, tone: 'accent' },
-  manager: { label: 'Manager', icon: Shield, tone: 'info' },
-  member: { label: 'Member', icon: Users, tone: 'neutral' },
-  mentor: { label: 'Mentor', icon: Users, tone: 'success' },
-  viewer: { label: 'Viewer', icon: Users, tone: 'neutral' },
+const ROLE_CONFIG: Record<MemberRole, { label: string; labelEl: string; icon: React.ElementType; tone: StatusTone }> = {
+  owner: { label: 'Owner', labelEl: 'Ιδιοκτήτης', icon: Crown, tone: 'warning' },
+  admin: { label: 'Admin', labelEl: 'Διαχειριστής', icon: ShieldCheck, tone: 'accent' },
+  manager: { label: 'Manager', labelEl: 'Υπεύθυνος', icon: Shield, tone: 'info' },
+  member: { label: 'Member', labelEl: 'Μέλος', icon: Users, tone: 'neutral' },
+  mentor: { label: 'Mentor', labelEl: 'Μέντορας', icon: Users, tone: 'success' },
+  viewer: { label: 'Viewer', labelEl: 'Θεατής', icon: Users, tone: 'neutral' },
 };
 
 const ROLE_VALUES = ['owner', 'admin', 'manager', 'member', 'mentor', 'viewer'] as const;
@@ -132,13 +133,13 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
           <p className="text-xs text-muted-foreground truncate">{member.email}</p>
         ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
-          {roleCfg.label}{member.department ? ` · ${member.department}` : ''}
-          {member.joinedAt ? ` · joined ${member.joinedAt}` : ''}
+          <BilingualText en={roleCfg.label} el={roleCfg.labelEl} compact />{member.department ? ` · ${member.department}` : ''}
+          {member.joinedAt ? <> · <BilingualText en={`joined ${member.joinedAt}`} el={`μέλος από ${member.joinedAt}`} compact /></> : ''}
         </p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
         <RoleIcon className={cn('icon-sm', roleCfg.tone === 'neutral' && member.role === 'viewer' ? 'text-muted-foreground' : STATUS[roleCfg.tone].icon)} />
-        <span className="text-xs font-medium">{roleCfg.label}</span>
+        <span className="text-xs font-medium"><BilingualText en={roleCfg.label} el={roleCfg.labelEl} compact /></span>
       </div>
       <div className="hidden lg:block w-44 shrink-0">
         <p className="text-xs text-muted-foreground">{member.department ?? '—'}</p>
@@ -251,6 +252,7 @@ export default function OrgMembersPage() {
     <AppShell
       title="Team Members"
       description="Invite and manage who can run programs, review applications, and access workspace settings."
+      descriptionEl="Προσκαλέστε και ορίστε ποιοι τρέχουν προγράμματα, αξιολογούν αιτήσεις και έχουν πρόσβαση στις ρυθμίσεις."
       actions={(
         // Had no handler; invitations are sent from the organisation admin page.
         slug ? (
@@ -276,14 +278,14 @@ export default function OrgMembersPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
-            { label: 'Total Members', value: members.length },
-            { label: 'Admins', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },
-            { label: 'Mentors', value: roleCounts['mentor'] ?? 0 },
-            { label: 'Pending Invites', value: members.filter((m) => m.status === 'invited').length },
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length },
+            { label: 'Admins', labelEl: 'Διαχειριστές', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },
+            { label: 'Mentors', labelEl: 'Μέντορες', value: roleCounts['mentor'] ?? 0 },
+            { label: 'Pending Invites', labelEl: 'Εκκρεμείς προσκλήσεις', value: members.filter((m) => m.status === 'invited').length },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className="text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
@@ -293,7 +295,7 @@ export default function OrgMembersPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label="Search members. Αναζήτηση μελών" placeholder={bilingualInline('Search members…', 'Αναζήτηση μελών…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {/* Table */}
@@ -302,9 +304,9 @@ export default function OrgMembersPage() {
             {/* Counted over the members on screen - these read the sample
                 list, so a real organisation's tabs said 8 / 6 / 2 whatever
                 it held. */}
-            <TabsTrigger value="all">All ({members.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({members.filter(m => m.status === 'active').length})</TabsTrigger>
-            <TabsTrigger value="invited">Invited ({members.filter(m => m.status === 'invited').length})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${members.length})`} el={`Όλα (${members.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="active"><BilingualText en={`Active (${members.filter(m => m.status === 'active').length})`} el={`Ενεργά (${members.filter(m => m.status === 'active').length})`} compact /></TabsTrigger>
+            <TabsTrigger value="invited"><BilingualText en={`Invited (${members.filter(m => m.status === 'invited').length})`} el={`Προσκεκλημένα (${members.filter(m => m.status === 'invited').length})`} compact /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4">
             <Card>

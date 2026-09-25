@@ -57,6 +57,8 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -161,22 +163,22 @@ function ProgramCard({
                 {program.name}
               </Link>
               <Badge variant="outline" className={cn('text-xs capitalize', statusColors[program.status])}>
-                {program.status}
+                <StatusText value={program.status} />
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
               {program.description}
             </p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
-              <Badge variant="secondary" className="text-xs capitalize">{program.type.replace('_', ' ')}</Badge>
+              <Badge variant="secondary" className="text-xs capitalize"><StatusText value={program.type} /></Badge>
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
-                {program.startups} participants
+                <BilingualText en={`${program.startups} participants`} el={`${program.startups} συμμετέχοντες`} compact />
               </span>
               {typeof program.mentors === 'number' && (
                 <span className="flex items-center gap-1">
                   <Award className="icon-sm" aria-hidden="true" />
-                  {program.mentors} mentors
+                  <BilingualText en={`${program.mentors} mentors`} el={`${program.mentors} μέντορες`} compact />
                 </span>
               )}
               <span className="flex items-center gap-1">
@@ -450,7 +452,9 @@ export default function TenantProgramsPage() {
   return (
     <AppShell
       title="Programs"
+      titleEl="Προγράμματα"
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
+      descriptionEl="Οι χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, κοόρτες και δομημένη καθοδήγηση."
       rail={rail}
       actions={(
         <Button
@@ -480,7 +484,7 @@ export default function TenantProgramsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search programs..."
+            placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

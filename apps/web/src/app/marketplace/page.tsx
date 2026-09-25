@@ -29,6 +29,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -57,16 +58,16 @@ type ServiceProvider = {
 
 // ── Category Config ────────────────────────────────────────────────────────────
 
-const CAT_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  All: { label: 'All Services', icon: Store, color: 'text-foreground' },
-  legal: { label: 'Legal', icon: Scale, color: 'text-status-info' },
-  finance: { label: 'Finance', icon: Calculator, color: 'text-status-success' },
-  marketing: { label: 'Marketing', icon: Megaphone, color: 'text-status-warning' },
-  development: { label: 'Development', icon: Code2, color: 'text-status-accent' },
-  design: { label: 'Design', icon: Brush, color: 'text-status-accent' },
-  consulting: { label: 'Consulting', icon: BrainCircuit, color: 'text-status-warning' },
-  coaching: { label: 'Coaching', icon: GraduationCap, color: 'text-status-success' },
-  other: { label: 'Other', icon: Globe, color: 'text-muted-foreground' },
+const CAT_CONFIG: Record<string, { label: string; labelEl: string; icon: React.ElementType; color: string }> = {
+  All: { label: 'All Services', labelEl: 'Όλες οι υπηρεσίες', icon: Store, color: 'text-foreground' },
+  legal: { label: 'Legal', labelEl: 'Νομικά', icon: Scale, color: 'text-status-info' },
+  finance: { label: 'Finance', labelEl: 'Οικονομικά', icon: Calculator, color: 'text-status-success' },
+  marketing: { label: 'Marketing', labelEl: 'Μάρκετινγκ', icon: Megaphone, color: 'text-status-warning' },
+  development: { label: 'Development', labelEl: 'Ανάπτυξη λογισμικού', icon: Code2, color: 'text-status-accent' },
+  design: { label: 'Design', labelEl: 'Σχεδιασμός', icon: Brush, color: 'text-status-accent' },
+  consulting: { label: 'Consulting', labelEl: 'Συμβουλευτική', icon: BrainCircuit, color: 'text-status-warning' },
+  coaching: { label: 'Coaching', labelEl: 'Coaching', icon: GraduationCap, color: 'text-status-success' },
+  other: { label: 'Other', labelEl: 'Άλλο', icon: Globe, color: 'text-muted-foreground' },
 };
 
 const CATEGORIES = Object.keys(CAT_CONFIG);
@@ -205,11 +206,13 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         {/* Meta */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <div className="flex items-center gap-1"><Clock className="icon-sm" />{provider.responseTime}</div>
-          <div className="flex items-center gap-1"><Users className="icon-sm" />{provider.clientCount} clients</div>
+          <div className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact /></div>
           <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
           <div className="flex items-center gap-1">
             <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-green-500' : 'bg-gray-400')} />
-            {provider.isAvailable ? 'Available' : 'Fully booked'}
+            {provider.isAvailable
+              ? <BilingualText en="Available" el="Διαθέσιμος" compact />
+              : <BilingualText en="Fully booked" el="Πλήρης" compact />}
           </div>
         </div>
 
@@ -229,7 +232,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                 </a>
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled title="This provider has not listed a contact link">
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled title={bilingualInline('This provider has not listed a contact link', 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο επικοινωνίας')}>
                 <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
               </Button>
             )}
@@ -238,7 +241,9 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                 <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Request" el="Αίτημα" compact /></a>
               </Button>
             ) : (
-              <Button size="sm" className="h-8 text-xs" disabled title={provider.isAvailable ? 'This provider has not listed a request link' : 'Not taking new clients'}>
+              <Button size="sm" className="h-8 text-xs" disabled title={provider.isAvailable
+                ? bilingualInline('This provider has not listed a request link', 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο αιτήματος')
+                : bilingualInline('Not taking new clients', 'Δεν δέχεται νέους πελάτες')}>
                 <BilingualText en="Request" el="Αίτημα" compact />
               </Button>
             )}
@@ -251,12 +256,20 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
 // ── Stats Bar ──────────────────────────────────────────────────────────────────
 
-const MARKETPLACE_STATS = [
-  { label: 'Verified Providers', value: '120+', icon: ShieldCheck },
-  { label: 'Avg. Rating', value: '4.8 / 5', icon: Star },
-  { label: 'Response Time', value: '< 24h', icon: Zap },
-  { label: 'Startups Served', value: '500+', icon: Users },
-];
+// Counted from the listings on screen. The figures here were constants
+// ("120+ verified providers", "500+ startups served") that no data supported.
+function marketplaceStats(providers: ServiceProvider[]) {
+  const rated = providers.filter((p) => p.reviewCount > 0);
+  const avg = rated.length
+    ? (rated.reduce((acc, p) => acc + p.avgRating * p.reviewCount, 0) / rated.reduce((acc, p) => acc + p.reviewCount, 0)).toFixed(1)
+    : null;
+  return [
+    { label: 'Listings', labelEl: 'Καταχωρίσεις', value: String(providers.length), icon: Store },
+    { label: 'Verified providers', labelEl: 'Επαληθευμένοι πάροχοι', value: String(providers.filter((p) => p.isVerified).length), icon: ShieldCheck },
+    { label: 'Average rating', labelEl: 'Μέση βαθμολογία', value: avg ? `${avg} / 5` : '—', icon: Star },
+    { label: 'Taking new clients', labelEl: 'Δέχονται νέους πελάτες', value: String(providers.filter((p) => p.isAvailable).length), icon: Zap },
+  ];
+}
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
@@ -366,12 +379,12 @@ export default function MarketplacePage() {
       labelEl: 'Στατιστικά αγοράς',
       content: (
         <div className="space-y-2">
-          {MARKETPLACE_STATS.map(s => (
+          {marketplaceStats(allProviders).map(s => (
             <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border/60 p-3">
               <s.icon className="h-4 w-4 shrink-0 text-primary-accessible" aria-hidden="true" />
               <div>
                 <p className="text-sm font-bold">{s.value}</p>
-                <p className="text-2xs text-muted-foreground">{s.label}</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
               </div>
             </div>
           ))}
@@ -448,11 +461,11 @@ export default function MarketplacePage() {
         <div className="relative max-w-xl">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder="Search services, providers, specialties..."
+            placeholder={bilingualInline("Search services, providers, specialties…", "Αναζήτηση υπηρεσιών, παρόχων, ειδικοτήτων…")}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9"
-            aria-label="Search services, providers, specialties"
+            aria-label="Search services, providers, specialties. Αναζήτηση υπηρεσιών, παρόχων, ειδικοτήτων"
           />
         </div>
 
@@ -464,8 +477,8 @@ export default function MarketplacePage() {
               const CatIcon = cfg.icon;
               return (
                 <TabsTrigger key={cat} value={cat} className="gap-1.5 text-xs data-[state=active]:bg-background">
-                  <CatIcon className={cn('icon-sm', cfg.color)} />
-                  {cfg.label}
+                  <CatIcon className={cn('icon-sm', cfg.color)} aria-hidden="true" />
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
                 </TabsTrigger>
               );
             })}

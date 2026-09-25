@@ -17,6 +17,7 @@ import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -244,7 +245,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Textarea
                 value={replyBody}
                 onChange={(e) => setReplyBody(e.target.value)}
-                placeholder="Reply…"
+                placeholder={bilingualInline("Reply…", "Απάντηση…")}
                 rows={1}
                 className="text-2xs min-h-0 py-1.5 px-2 resize-none"
                 onKeyDown={(e) => {
@@ -473,7 +474,7 @@ export function CanvasCommentPins({
             <Textarea
               value={newPinBody}
               onChange={(e) => setNewPinBody(e.target.value)}
-              placeholder="Add a comment…"
+              placeholder={bilingualInline("Add a comment…", "Προσθήκη σχολίου…")}
               rows={2}
               className="text-xs min-h-0 resize-none mb-2"
               autoFocus

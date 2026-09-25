@@ -190,7 +190,7 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
           </Avatar>
           <div className="flex-1">
             <Textarea
-              placeholder="Share an update, ask a question, or celebrate a milestone..."
+              placeholder={bilingualInline("Share an update, ask a question, or celebrate a milestone…", "Μοιραστείτε νέα, κάντε μια ερώτηση ή γιορτάστε ένα ορόσημο…")}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onFocus={() => setIsExpanded(true)}

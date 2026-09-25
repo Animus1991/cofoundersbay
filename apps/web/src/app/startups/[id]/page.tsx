@@ -24,6 +24,7 @@ import {
 } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -133,9 +134,9 @@ export default function StartupDealPage() {
 
   const pass = async () => {
     const ok = await confirm({
-      title: `Pass on ${deal.name}?`,
-      description: 'It leaves the active pipeline. You can move it back to any stage from here.',
-      confirmLabel: 'Pass',
+      title: <BilingualText en={`Pass on ${deal.name}?`} el={`Απόρριψη: ${deal.name};`} />,
+      description: <BilingualText en="It leaves the active pipeline. You can move it back to any stage from here." el="Φεύγει από την ενεργή ροή. Μπορείτε να τη μεταφέρετε ξανά σε οποιοδήποτε στάδιο από εδώ." />,
+      confirmLabel: <BilingualText en="Pass" el="Απόρριψη" compact />,
     });
     if (ok) moveTo.mutate('passed');
   };
@@ -220,7 +221,7 @@ export default function StartupDealPage() {
                   rows={3}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Call notes, a concern, the next step…"
+                  placeholder={bilingualInline("Call notes, a concern, the next step…", "Σημειώσεις κλήσης, μια ανησυχία, το επόμενο βήμα…")}
                 />
                 <Button type="submit" size="sm" disabled={!note.trim() || addNote.isPending}>
                   <BilingualText en="Save note" el="Αποθήκευση σημείωσης" compact />

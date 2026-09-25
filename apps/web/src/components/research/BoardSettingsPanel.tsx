@@ -31,6 +31,7 @@ import {
   type OrgMembershipItem,
   type ResearchBoardVisibility,
 } from '@/lib/api';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface BoardSettingsPanelProps {
   board: ResearchBoard;
@@ -405,7 +406,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Input
-                        placeholder="Search users by name…"
+                        placeholder={bilingualInline("Search users by name…", "Αναζήτηση χρηστών με όνομα…")}
                         value={inviteQuery}
                         onChange={(e) => setInviteQuery(e.target.value)}
                         className="pr-3"

@@ -35,6 +35,7 @@ import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const ALL_STATUSES = 'all';
 
@@ -350,7 +351,7 @@ export default function AdminBillingPage() {
       content: (
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger aria-label="Subscription status">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL_STATUSES}><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -396,7 +397,7 @@ export default function AdminBillingPage() {
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
-                  placeholder="Search…"
+                  placeholder={bilingualInline("Search…", "Αναζήτηση…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-8 h-8 w-48 text-sm"
@@ -542,7 +543,7 @@ export default function AdminBillingPage() {
                       <Label className="text-xs"><BilingualText en="Max redemptions (optional)" el="Μέγιστες χρήσεις (προαιρετικά)" compact /></Label>
                       <Input
                         type="number"
-                        placeholder="Unlimited"
+                        placeholder={bilingualInline("Unlimited", "Απεριόριστο")}
                         value={couponForm.maxRedemptions}
                         onChange={e => setCouponForm(p => ({ ...p, maxRedemptions: e.target.value }))}
                       />
@@ -615,7 +616,7 @@ export default function AdminBillingPage() {
               <Label className="text-xs"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>
                 <SelectTrigger aria-label="New plan">
-                  <SelectValue placeholder="Select plan" />
+                  <SelectValue placeholder={bilingualInline("Select plan", "Επιλογή πακέτου")} />
                 </SelectTrigger>
                 <SelectContent>
                   {plans.map(p => (

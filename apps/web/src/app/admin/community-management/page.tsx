@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { listGroups } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { formatRelativeTime } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const PRIVACY_LABEL: Record<string, { en: string; el: string }> = {
   public: { en: 'Public', el: 'Δημόσια' },
@@ -75,7 +76,7 @@ export default function CommunityManagementPage() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search communities…"
+          placeholder={bilingualInline("Search communities…", "Αναζήτηση κοινοτήτων…")}
           aria-label="Search communities"
           className="pl-9"
         />

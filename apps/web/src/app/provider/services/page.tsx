@@ -11,7 +11,7 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  DollarSign,
+  Banknote,
   Clock,
   Star,
 } from 'lucide-react';
@@ -42,6 +42,9 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type Service = {
   id: string;
@@ -84,7 +87,7 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
             <div className="flex items-center gap-2">
               <h3 className="font-semibold">{service.name}</h3>
               <Badge variant={isActive ? 'default' : 'secondary'}>
-                {isActive ? 'Active' : 'Inactive'}
+                {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -92,9 +95,9 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
             </p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm">
               <span className="flex items-center gap-1 text-muted-foreground">
-                <DollarSign className="icon-sm" />
+                <Banknote className="icon-sm" aria-hidden="true" />
                 {service.price}
-                {service.priceType === 'hourly' && '/hr'}
+                {service.priceType === 'hourly' && <BilingualText en="/hr" el="/ώρα" compact />}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
                 <Clock className="icon-sm" />
@@ -114,20 +117,20 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
               ) : null}
             </div>
             <div className="flex items-center gap-4 mt-3">
-              <Badge variant="outline">{service.category}</Badge>
+              <Badge variant="outline"><StatusText value={service.category} /></Badge>
               {service.bookings > 0 ? (
                 <span className="text-xs text-muted-foreground">
-                  {service.bookings} bookings
+                  <BilingualText en={`${service.bookings} bookings`} el={`${service.bookings} κρατήσεις`} compact />
                 </span>
               ) : null}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {isActive ? 'Active' : 'Inactive'}
+              <span className="text-xs text-muted-foreground" aria-hidden="true">
+                {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
               </span>
-              <Switch checked={isActive} onCheckedChange={toggleActive} aria-label={`Active: ${service.name}`} />
+              <Switch checked={isActive} onCheckedChange={toggleActive} aria-label={bilingualAria(`Active: ${service.name}`, `Ενεργή: ${service.name}`)} />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -196,7 +199,7 @@ const MOCK_SERVICES: Service[] = [
       name: 'Startup Legal Package',
       description: 'Complete legal setup for startups including incorporation, founder agreements, and IP protection.',
       category: 'Legal',
-      price: '$2,500',
+      price: '€2,500',
       priceType: 'fixed',
       deliveryTime: '2 weeks',
       isActive: true,
@@ -209,7 +212,7 @@ const MOCK_SERVICES: Service[] = [
       name: 'Financial Model Creation',
       description: 'Professional financial model for fundraising with 3-5 year projections and scenario analysis.',
       category: 'Finance',
-      price: '$1,200',
+      price: '€1,200',
       priceType: 'fixed',
       deliveryTime: '1 week',
       isActive: true,
@@ -222,7 +225,7 @@ const MOCK_SERVICES: Service[] = [
       name: 'Contract Review',
       description: 'Review and markup of any business contract with legal recommendations.',
       category: 'Legal',
-      price: '$150',
+      price: '€150',
       priceType: 'hourly',
       deliveryTime: '48 hours',
       isActive: true,
@@ -288,9 +291,9 @@ export default function ProviderServicesPage() {
     },
     onDelete: async (svc) => {
       const ok = await confirm({
-        title: `Delete ${svc.name}?`,
-        description: 'The listing leaves the marketplace. Past inquiries keep their history.',
-        confirmLabel: 'Delete listing',
+        title: <BilingualText en={`Delete ${svc.name}?`} el={`Διαγραφή: ${svc.name};`} />,
+        description: <BilingualText en="The listing leaves the marketplace. Past inquiries keep their history." el="Η καταχώριση φεύγει από την αγορά. Τα παλαιότερα αιτήματα κρατούν το ιστορικό τους." />,
+        confirmLabel: <BilingualText en="Delete listing" el="Διαγραφή καταχώρισης" compact />,
       });
       if (!ok) return;
       try {
@@ -372,7 +375,9 @@ export default function ProviderServicesPage() {
   return (
     <AppShell
       title="My Services"
+      titleEl="Οι υπηρεσίες μου"
       description="Manage your service offerings"
+      descriptionEl="Διαχειριστείτε τις υπηρεσίες που προσφέρετε"
       actions={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
     >
       <div className="space-y-6">
@@ -390,7 +395,7 @@ export default function ProviderServicesPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search services..."
+            placeholder={bilingualInline("Search services…", "Αναζήτηση υπηρεσιών…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -459,7 +464,7 @@ export default function ProviderServicesPage() {
             {creating && (
               <div className="space-y-1.5">
                 <Label htmlFor="svc-provider"><BilingualText en="Provider name" el="Όνομα παρόχου" compact /></Label>
-                <Input id="svc-provider" value={draft.providerName} onChange={(e) => setDraft((d) => ({ ...d, providerName: e.target.value }))} placeholder="Your name or firm" required />
+                <Input id="svc-provider" value={draft.providerName} onChange={(e) => setDraft((d) => ({ ...d, providerName: e.target.value }))} placeholder={bilingualInline("Your name or firm", "Το όνομά σας ή η εταιρεία σας")} required />
               </div>
             )}
             <div className="space-y-1.5">

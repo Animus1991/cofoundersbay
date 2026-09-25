@@ -44,6 +44,7 @@ import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type Pu
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -708,7 +709,7 @@ export default function PitchDeckPage() {
                 id="cmsg"
                 value={contactForm.message}
                 onChange={(e) => setContactForm((f) => ({ ...f, message: e.target.value }))}
-                placeholder="Hi, I'd love to learn more about your company..."
+                placeholder={bilingualInline("Hi, I'd love to learn more about your company…", "Γεια σας, θα ήθελα να μάθω περισσότερα για την εταιρεία σας…")}
                 className="mt-1.5 min-h-[80px]"
               />
             </div>

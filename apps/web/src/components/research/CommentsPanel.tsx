@@ -16,6 +16,7 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface CommentsPanelProps {
   nodeId: string;
@@ -206,7 +207,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
                 handleSubmit();
               }
             }}
-            placeholder="Write a comment… (Enter to send)"
+            placeholder={bilingualInline("Write a comment… (Enter to send)", "Γράψτε ένα σχόλιο… (Enter για αποστολή)")}
             className="flex-1 resize-none text-sm bg-secondary/50 border-0 rounded-xl px-3 py-2 outline-none min-h-[36px] max-h-[120px] placeholder:text-muted-foreground/60"
             rows={1}
             style={{ height: 'auto' }}

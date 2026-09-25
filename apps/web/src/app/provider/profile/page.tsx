@@ -29,6 +29,7 @@ import { useSession } from '@/hooks/useSession';
 import { getMeProfile, getProviderSummary } from '@/lib/api';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
@@ -207,7 +208,7 @@ export default function ProviderProfilePage() {
                   <Textarea
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder="Describe your services, your process, and what makes you different..."
+                    placeholder={bilingualInline("Describe your services, your process, and what makes you different…", "Περιγράψτε τις υπηρεσίες, τη μέθοδό σας και τι σας ξεχωρίζει…")}
                     rows={5}
                     className="resize-none"
                   />

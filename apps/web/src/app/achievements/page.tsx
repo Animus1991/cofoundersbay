@@ -539,7 +539,9 @@ export default function AchievementsPage() {
   return (
     <AppShell
       title={achievementsEn('page_title')}
+      titleEl={achievementsEl('page_title')}
       description={achievementsEn('page_description')}
+      descriptionEl={achievementsEl('page_description')}
     >
       <div className="space-y-4 pb-10">
         {isLoading ? (

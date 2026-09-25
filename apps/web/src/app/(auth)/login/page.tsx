@@ -9,21 +9,28 @@ import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { useTenant } from '@/components/providers/TenantContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
+// No member counts here: the platform does not publish one, so a figure
+// would be invented. Each point describes something the product does.
 const HERO_POINTS = [
-  'Connect with 10,000+ founders & investors',
-  'AI-matched to your exact startup stage',
-  'Verified profiles, private by default',
+  { en: 'Meet founders, mentors and investors in one place', el: 'Γνωρίστε ιδρυτές, μέντορες και επενδυτές σε ένα μέρος' },
+  { en: 'Matches ranked for your stage and skills', el: 'Αντιστοιχίσεις ταξινομημένες για το στάδιο και τις δεξιότητές σας' },
+  { en: 'Verified profiles, private by default', el: 'Επαληθευμένα προφίλ, ιδιωτικά από προεπιλογή' },
 ];
+
+type Message = { en: string; el?: string };
 
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { activeTenant, branding } = useTenant();
+  const { primary } = useLanguagePreference();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<Message | null>(null);
   const [loading, setLoading] = useState(false);
   const [ssoDiscovery, setSsoDiscovery] = useState<SSODiscoveryResult | null>(null);
   const [checkingSSO, setCheckingSSO] = useState(false);
@@ -70,7 +77,7 @@ function LoginPageContent() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submittingRef.current) return;
-    setError('');
+    setError(null);
     if (!email.trim() || !password) return;
     submittingRef.current = true;
     setLoading(true);
@@ -86,11 +93,11 @@ function LoginPageContent() {
       submittingRef.current = false;
       const msg = err instanceof Error ? err.message : 'Login failed';
       if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
-        setError('Cannot reach server — check your connection or try again.');
+        setError({ en: 'Cannot reach server — check your connection or try again.', el: 'Δεν υπάρχει σύνδεση με τον διακομιστή — ελέγξτε τη σύνδεσή σας ή δοκιμάστε ξανά.' });
       } else if (msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials')) {
-        setError('Incorrect email or password.');
+        setError({ en: 'Incorrect email or password.', el: 'Λάθος email ή κωδικός πρόσβασης.' });
       } else {
-        setError(msg);
+        setError({ en: msg });
       }
     } finally {
       setLoading(false);
@@ -111,10 +118,20 @@ function LoginPageContent() {
           </Link>
 
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            {activeTenant ? `Welcome to ${activeTenant.displayName ?? activeTenant.name}` : 'Welcome back'}
+            {activeTenant ? (
+              <BilingualText
+                en={`Welcome to ${activeTenant.displayName ?? activeTenant.name}`}
+                el={`Καλώς ήρθατε στο ${activeTenant.displayName ?? activeTenant.name}`}
+                wrap
+              />
+            ) : (
+              <BilingualText en="Welcome back" el="Καλώς ήρθατε ξανά" wrap />
+            )}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {branding?.dashboardWelcomeText ?? 'Sign in to continue building your network.'}
+            {branding?.dashboardWelcomeText ?? (
+              <BilingualText en="Sign in to continue building your network." el="Συνδεθείτε για να συνεχίσετε να χτίζετε το δίκτυό σας." wrap />
+            )}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -124,7 +141,7 @@ function LoginPageContent() {
                 className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2"
               >
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
-                <span>{error}</span>
+                <span>{error.el ? <BilingualText en={error.en} el={error.el} wrap /> : error.en}</span>
               </div>
             )}
 
@@ -140,7 +157,9 @@ function LoginPageContent() {
                 placeholder="you@startup.com"
               />
               {checkingSSO && (
-                <p className="text-xs text-muted-foreground animate-pulse">Checking organization settings...</p>
+                <p className="text-xs text-muted-foreground animate-pulse">
+                  <BilingualText en="Checking organisation settings…" el="Έλεγχος ρυθμίσεων οργανισμού…" wrap />
+                </p>
               )}
             </div>
 
@@ -152,7 +171,11 @@ function LoginPageContent() {
                     SSO
                   </span>
                   <span className="font-medium text-sm">
-                    {ssoDiscovery.tenant?.name || 'Organization'} SSO detected
+                    <BilingualText
+                      en={`${ssoDiscovery.tenant?.name || 'Organisation'} SSO detected`}
+                      el={`Εντοπίστηκε SSO για ${ssoDiscovery.tenant?.name || 'τον οργανισμό'}`}
+                      wrap
+                    />
                   </span>
                 </div>
                 <Button
@@ -165,15 +188,15 @@ function LoginPageContent() {
                   {ssoDiscovery.provider.logoUrl && (
                     <img src={ssoDiscovery.provider.logoUrl} alt="" className="h-4 w-4" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={16} height={16} />
                   )}
-                  {ssoDiscovery.provider?.loginButtonText || 'Continue with SSO'}
+                  {ssoDiscovery.provider?.loginButtonText || <BilingualText en="Continue with SSO" el="Συνέχεια με SSO" compact />}
                 </Button>
                 {ssoDiscovery.ssoRequired && !ssoDiscovery.allowPasswordLogin ? (
                   <p className="text-xs text-muted-foreground text-center">
-                    Your organization requires SSO login
+                    <BilingualText en="Your organisation requires SSO sign-in" el="Ο οργανισμός σας απαιτεί σύνδεση μέσω SSO" wrap />
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground text-center">
-                    Or continue with password below
+                    <BilingualText en="Or continue with your password below" el="Ή συνεχίστε με τον κωδικό σας παρακάτω" wrap />
                   </p>
                 )}
               </div>
@@ -184,8 +207,8 @@ function LoginPageContent() {
               <>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="text-sm font-medium">Password</label>
-                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary-accessible transition-colors">Forgot password?</Link>
+                    <label htmlFor="password" className="text-sm font-medium"><BilingualText en="Password" el="Κωδικός" compact /></label>
+                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary-accessible transition-colors"><BilingualText en="Forgot password?" el="Ξεχάσατε τον κωδικό;" compact /></Link>
                   </div>
                   <div className="relative">
                     <Input
@@ -201,16 +224,17 @@ function LoginPageContent() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showPassword ? 'Hide password. Απόκρυψη κωδικού' : 'Show password. Εμφάνιση κωδικού'}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {/* One language only: the slot sits inside the input. */}
+                      {showPassword ? (primary === 'el' ? 'Απόκρυψη' : 'Hide') : (primary === 'el' ? 'Εμφάνιση' : 'Show')}
                     </button>
                   </div>
                 </div>
 
                 <Button type="submit" loading={loading} className="w-full" size="lg">
-                  {loading ? 'Signing in…' : 'Sign in'}
+                  {loading ? <BilingualText en="Signing in…" el="Σύνδεση…" compact /> : <BilingualText en="Sign in" el="Σύνδεση" compact />}
                 </Button>
               </>
             )}
@@ -220,9 +244,9 @@ function LoginPageContent() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{' '}
+            <BilingualText en="Don't have an account?" el="Δεν έχετε λογαριασμό;" compact />{' '}
             <Link href="/register" className="font-medium text-primary-accessible hover:underline">
-              Create one free
+              <BilingualText en="Create one free" el="Δημιουργήστε δωρεάν" compact />
             </Link>
           </p>
         </div>
@@ -241,18 +265,26 @@ function LoginPageContent() {
             )}
           </div>
           <h2 className="font-display text-3xl font-bold text-white">
-            {branding?.heroTitle ?? 'Your next co-founder is waiting'}
+            {branding?.heroTitle ?? <BilingualText en="Your next co-founder is waiting" el="Ο επόμενος συνιδρυτής σας σας περιμένει" wrap stacked secondaryClassName="text-white/70" />}
           </h2>
           <p className="mt-4 text-white/65 text-base leading-relaxed">
-            {branding?.heroSubtitle ?? 'Join thousands of founders, mentors, and investors building the future together.'}
+            {branding?.heroSubtitle ?? (
+              <BilingualText
+                en="Join founders, mentors, and investors building the future together."
+                el="Ενωθείτε με ιδρυτές, μέντορες και επενδυτές που χτίζουν μαζί το μέλλον."
+                wrap
+                stacked
+                secondaryClassName="text-white/60"
+              />
+            )}
           </p>
           <div className="mt-10 space-y-3 text-left">
-            {HERO_POINTS.map((text, index) => (
-              <div key={text} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
+            {HERO_POINTS.map((point, index) => (
+              <div key={point.en} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/15">
                   <span className="text-xs font-semibold text-white">{String(index + 1).padStart(2, '0')}</span>
                 </div>
-                <span className="text-sm text-white/85 font-medium">{text}</span>
+                <span className="text-sm text-white/85 font-medium"><BilingualText en={point.en} el={point.el} wrap stacked secondaryClassName="text-white/65" /></span>
               </div>
             ))}
           </div>

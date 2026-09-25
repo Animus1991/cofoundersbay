@@ -163,7 +163,7 @@ function SkillDialog({
             <label className="block text-sm font-medium mb-1"><BilingualText en="Category" el="Κατηγορία" compact /></label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger aria-label="Category">
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder={bilingualInline("Select category", "Επιλογή κατηγορίας")} />
               </SelectTrigger>
               <SelectContent>
                 {SKILL_CATEGORIES.map((c) => (
@@ -347,7 +347,7 @@ export default function AdminTaxonomyPage() {
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
-                  placeholder="Search skills..."
+                  placeholder={bilingualInline("Search skills…", "Αναζήτηση δεξιοτήτων…")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 h-9"

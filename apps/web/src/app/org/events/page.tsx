@@ -40,6 +40,8 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type OrgEvent = {
   id: string;
@@ -56,19 +58,19 @@ type OrgEvent = {
   description: string;
 };
 
-const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; tone: StatusTone }> = {
-  workshop: { label: 'Workshop', tone: 'info' },
-  demo_day: { label: 'Demo Day', tone: 'accent' },
-  networking: { label: 'Networking', tone: 'success' },
-  mentorship: { label: 'Mentorship', tone: 'warning' },
-  keynote: { label: 'Keynote', tone: 'danger' },
+const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; labelEl: string; tone: StatusTone }> = {
+  workshop: { label: 'Workshop', labelEl: 'Εργαστήριο', tone: 'info' },
+  demo_day: { label: 'Demo Day', labelEl: 'Demo Day', tone: 'accent' },
+  networking: { label: 'Networking', labelEl: 'Δικτύωση', tone: 'success' },
+  mentorship: { label: 'Mentorship', labelEl: 'Καθοδήγηση', tone: 'warning' },
+  keynote: { label: 'Keynote', labelEl: 'Κεντρική ομιλία', tone: 'danger' },
 };
 
-const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; tone: StatusTone }> = {
-  upcoming: { label: 'Upcoming', tone: 'info' },
-  ongoing: { label: 'Live', tone: 'success' },
-  completed: { label: 'Completed', tone: 'neutral' },
-  cancelled: { label: 'Cancelled', tone: 'danger' },
+const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; labelEl: string; tone: StatusTone }> = {
+  upcoming: { label: 'Upcoming', labelEl: 'Προσεχές', tone: 'info' },
+  ongoing: { label: 'Live', labelEl: 'Σε εξέλιξη', tone: 'success' },
+  completed: { label: 'Completed', labelEl: 'Ολοκληρώθηκε', tone: 'neutral' },
+  cancelled: { label: 'Cancelled', labelEl: 'Ακυρώθηκε', tone: 'danger' },
 };
 
 /**
@@ -199,7 +201,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
               <h3 className="font-semibold">{event.title}</h3>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 {event.status === 'ongoing' && <span className={cn('mr-1 inline-block h-1.5 w-1.5 rounded-full animate-pulse bg-status-success')} />}
-                {statusCfg.label}
+                <BilingualText en={statusCfg.label} el={statusCfg.labelEl} compact />
               </Badge>
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
@@ -214,7 +216,12 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
                 {event.location}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />{capped ? `${event.attendees}/${event.capacity}` : event.attendees} attending
+                <Users className="icon-sm" aria-hidden="true" />
+                <BilingualText
+                  en={`${capped ? `${event.attendees}/${event.capacity}` : event.attendees} attending`}
+                  el={`${capped ? `${event.attendees}/${event.capacity}` : event.attendees} συμμετέχουν`}
+                  compact
+                />
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
@@ -226,12 +233,14 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
               </div>
             )}
             <div className="flex items-center gap-3 mt-3">
-              <Badge variant="secondary" className={cn('text-xs border', typeColors.chip)}>{typeCfg.label}</Badge>
+              <Badge variant="secondary" className={cn('text-xs border', typeColors.chip)}><BilingualText en={typeCfg.label} el={typeCfg.labelEl} compact /></Badge>
               <span className="text-xs text-muted-foreground">
                 {capped ? (
-                  <>Capacity: <span className={cn('font-medium', fillColor)}>{fill}% full</span></>
+                  <span className={cn('font-medium', fillColor)}>
+                    <BilingualText en={`Capacity: ${fill}% full`} el={`Χωρητικότητα: ${fill}% πλήρης`} compact />
+                  </span>
                 ) : (
-                  'No attendance cap'
+                  <BilingualText en="No attendance cap" el="Χωρίς όριο συμμετοχής" compact />
                 )}
               </span>
             </div>
@@ -255,10 +264,10 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
                 reasonEl="Οι εκδηλώσεις δεν επεξεργάζονται ακόμη μετά τη δημιουργία."
               />
               <DropdownMenuItem disabled={!onDuplicate} onSelect={() => onDuplicate?.(event)}>
-                <Copy className="mr-2 icon-sm" aria-hidden="true" />Duplicate
+                <Copy className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Duplicate" el="Αντιγραφή" compact />
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/events/${event.id}`}><ExternalLink className="mr-2 icon-sm" aria-hidden="true" />View Public Page</Link>
+                <Link href={`/events/${event.id}`}><ExternalLink className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Public Page" el="Δημόσια σελίδα" compact /></Link>
               </DropdownMenuItem>
               <UnavailableMenuItem
                 className="text-destructive-accessible"
@@ -329,6 +338,8 @@ export default function OrgEventsPage() {
 
   const upcoming = events.filter(e => e.status === 'upcoming').length;
   const totalAttendees = events.reduce((s, e) => s + e.attendees, 0);
+  const activeCount = upcoming + events.filter(e => e.status === 'ongoing').length;
+  const completedCount = events.filter(e => e.status === 'completed').length;
 
   const filtersActive = !!search || activeTab !== 'all';
   const clearFilters = () => { setSearch(''); setActiveTab('all'); };
@@ -358,12 +369,13 @@ export default function OrgEventsPage() {
   return (
     <AppShell
       title="Organization Events"
-      description="Demo days, office hours, workshops, and pitch nights for your cohorts. Members RSVP automatically."
+      description="Demo days, office hours, workshops, and pitch nights for your cohorts."
+      descriptionEl="Demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων για τις κοόρτες σας."
       actions={(
         <Button asChild>
           <Link href="/events/create">
             <Plus className="mr-2 icon-sm" />
-            Create Event
+            <BilingualText en="Create Event" el="Νέα εκδήλωση" compact />
           </Link>
         </Button>
       )}
@@ -373,14 +385,15 @@ export default function OrgEventsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
-            { label: 'Upcoming Events', value: upcoming, icon: Calendar },
-            { label: 'Total Attendees (all)', value: totalAttendees, icon: Users },
-            { label: 'Events This Month', value: events.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
+            { label: 'Upcoming Events', labelEl: 'Προσεχείς εκδηλώσεις', value: upcoming, icon: Calendar },
+            { label: 'Total Attendees (all)', labelEl: 'Συνολικοί συμμετέχοντες', value: totalAttendees, icon: Users },
+            // Every event not cancelled — it was labelled "This Month" but never filtered by date.
+            { label: 'Events not cancelled', labelEl: 'Εκδηλώσεις σε ισχύ', value: events.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                   <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
@@ -395,15 +408,15 @@ export default function OrgEventsPage() {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Input aria-label="Search events. Αναζήτηση εκδηλώσεων" placeholder={bilingualInline('Search events…', 'Αναζήτηση εκδηλώσεων…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({events.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({upcoming + events.filter(e => e.status === 'ongoing').length})</TabsTrigger>
-            <TabsTrigger value="completed">Completed ({events.filter(e => e.status === 'completed').length})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${events.length})`} el={`Όλες (${events.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="active"><BilingualText en={`Active (${activeCount})`} el={`Ενεργές (${activeCount})`} compact /></TabsTrigger>
+            <TabsTrigger value="completed"><BilingualText en={`Completed (${completedCount})`} el={`Ολοκληρωμένες (${completedCount})`} compact /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(event => (

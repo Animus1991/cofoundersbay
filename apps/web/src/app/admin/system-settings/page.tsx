@@ -26,6 +26,7 @@ export default function SystemSettingsPage() {
     <AppShell
       title="System settings"
       description="Global platform switches — maintenance mode, signups, support contact, and defaults."
+      descriptionEl="Γενικοί διακόπτες της πλατφόρμας — λειτουργία συντήρησης, εγγραφές, επικοινωνία υποστήριξης και προεπιλογές."
       showHelp
       actions={
         <Button size="sm" onClick={save}>

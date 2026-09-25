@@ -24,6 +24,7 @@ import {
 } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Agent metadata ────────────────────────────────────────────────────────────
 
@@ -559,7 +560,7 @@ export function CanvasCopilotPanel({
             <input
               value={targetWorkspaceId}
               onChange={(e) => setTargetWorkspaceId(e.target.value)}
-              placeholder="Paste workspace UUID…"
+              placeholder={bilingualInline("Paste workspace UUID…", "Επικολλήστε το UUID του χώρου εργασίας…")}
               className="w-full text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50"
             />
           </div>
@@ -584,7 +585,7 @@ export function CanvasCopilotPanel({
             <input
               value={exportTitle}
               onChange={(e) => setExportTitle(e.target.value)}
-              placeholder="Auto-generated if empty"
+              placeholder={bilingualInline("Auto-generated if empty", "Δημιουργείται αυτόματα αν μείνει κενό")}
               className="w-full text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50"
             />
           </div>

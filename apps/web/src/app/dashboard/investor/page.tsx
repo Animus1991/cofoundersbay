@@ -201,6 +201,7 @@ export default function InvestorDashboard() {
   return (
     <AppShell
       description="Pipeline health, deal flow, and portfolio performance — in one view."
+      descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
       actions={
         <Badge variant="outline" className="gap-1.5">
           <DollarSign className="icon-sm" aria-hidden="true" />

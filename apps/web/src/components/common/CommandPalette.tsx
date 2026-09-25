@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type CommandItem = {
   id: string;
@@ -284,7 +285,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder="Type a command or search..."
+              placeholder={bilingualInline("Type a command or search…", "Πληκτρολογήστε εντολή ή αναζήτηση…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}

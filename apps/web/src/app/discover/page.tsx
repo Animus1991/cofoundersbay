@@ -280,7 +280,9 @@ export default function DiscoverPage() {
   return (
     <AppShell
       title={discoverEn('page_title')}
+      titleEl={discoverEl('page_title')}
       description={discoverEn('page_description')}
+      descriptionEl={discoverEl('page_description')}
       showHelp
       askAi={askAi}
       contentClassName="overflow-x-clip"

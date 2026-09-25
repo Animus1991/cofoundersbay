@@ -43,6 +43,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -298,9 +299,9 @@ export default function ProviderProjectsPage() {
   const [viewing, setViewing] = useState<Project | null>(null);
   const complete = async (p: Project) => {
     const ok = await confirm({
-      title: `Mark the project for ${p.clientName} complete?`,
-      description: 'The client can then leave a review.',
-      confirmLabel: 'Mark complete',
+      title: <BilingualText en={`Mark the project for ${p.clientName} complete?`} el={`Ολοκλήρωση του έργου για ${p.clientName};`} />,
+      description: <BilingualText en="The client can then leave a review." el="Ο πελάτης μπορεί έπειτα να αφήσει αξιολόγηση." />,
+      confirmLabel: <BilingualText en="Mark complete" el="Σήμανση ως ολοκληρωμένο" compact />,
     });
     if (!ok) return;
     try {
@@ -368,7 +369,7 @@ export default function ProviderProjectsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search projects..."
+            placeholder={bilingualInline("Search projects…", "Αναζήτηση έργων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

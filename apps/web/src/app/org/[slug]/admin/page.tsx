@@ -63,6 +63,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type OrgMember = {
   id: string;
@@ -336,9 +337,9 @@ export default function OrgAdminPage() {
     // other control on this page, so it asks.
     const name = members.find((m) => m.id === memberId)?.name ?? 'this member';
     const ok = await confirm({
-      title: `Remove ${name}?`,
-      description: 'They lose access to this organisation. Their account itself is not deleted.',
-      confirmLabel: 'Remove member',
+      title: <BilingualText en={`Remove ${name}?`} el={`Αφαίρεση: ${name};`} />,
+      description: <BilingualText en="They lose access to this organisation. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον οργανισμό. Ο λογαριασμός του/της δεν διαγράφεται." />,
+      confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
     });
     if (!ok) return;
     try {
@@ -464,7 +465,7 @@ export default function OrgAdminPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
-                <SelectValue placeholder="All roles" />
+                <SelectValue placeholder={bilingualInline("All roles", "Όλοι οι ρόλοι")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
@@ -481,7 +482,7 @@ export default function OrgAdminPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
-                <SelectValue placeholder="All statuses" />
+                <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -585,7 +586,7 @@ export default function OrgAdminPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input
-                placeholder="Search members..."
+                placeholder={bilingualInline("Search members…", "Αναζήτηση μελών…")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -789,7 +790,7 @@ export default function OrgAdminPage() {
               <Input
                 value={inviteUserId}
                 onChange={(e) => setInviteUserId(e.target.value)}
-                placeholder="The member's user ID"
+                placeholder={bilingualInline("The member's user ID", "Το αναγνωριστικό χρήστη του μέλους")}
                 className="mt-2"
               />
             </div>

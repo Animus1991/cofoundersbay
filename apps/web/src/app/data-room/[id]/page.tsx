@@ -517,7 +517,7 @@ export default function DataRoomPage() {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                     <Input
-                      placeholder="Search documents..."
+                      placeholder={bilingualInline("Search documents…", "Αναζήτηση εγγράφων…")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-9 w-full sm:w-[300px]"

@@ -26,6 +26,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type SecurityEvent = {
   id: string;
@@ -117,6 +118,7 @@ export default function SecurityMonitoringPage() {
     <AppShell
       title="Security monitoring"
       description="Authentication anomalies, API abuse signals, and SSO events in real time."
+      descriptionEl="Ανωμαλίες ταυτοποίησης, ενδείξεις κατάχρησης API και συμβάντα SSO σε πραγματικό χρόνο."
       showHelp
     >
       <HelpCallout id="admin-security" title="Security events">
@@ -150,13 +152,13 @@ export default function SecurityMonitoringPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search events…"
+            placeholder={bilingualInline("Search events…", "Αναζήτηση εκδηλώσεων…")}
             className="pl-9"
           />
         </div>
         <Select value={level} onValueChange={setLevel}>
           <SelectTrigger aria-label="Level" className="w-full sm:w-[160px]">
-            <SelectValue placeholder="Level" />
+            <SelectValue placeholder={bilingualInline("Level", "Επίπεδο")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All levels</SelectItem>

@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ConnectionRequestProps = {
   open: boolean;
@@ -137,7 +138,7 @@ export function ConnectionRequestDialog({
         {/* Message input */}
         <div className="space-y-2">
           <Textarea
-            placeholder="Write a personalized message explaining why you'd like to connect..."
+            placeholder={bilingualInline("Write a personalized message explaining why you'd like to connect…", "Γράψτε ένα προσωπικό μήνυμα για το γιατί θέλετε να συνδεθείτε…")}
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);

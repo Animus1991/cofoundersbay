@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { listAdminAuditLogs, type AdminAuditLogItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /*
  * The API writes dotted actions - `user.ban`, `report.resolve`,
@@ -200,7 +201,7 @@ export default function AdminAuditLogPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search by actor, entity, action..."
+              placeholder={bilingualInline("Search by actor, entity, action…", "Αναζήτηση με χρήστη, οντότητα, ενέργεια…")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               className="pl-9"
@@ -208,7 +209,7 @@ export default function AdminAuditLogPage() {
           </div>
           <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(0); }}>
             <SelectTrigger aria-label="Entity type" className="w-[160px]">
-              <SelectValue placeholder="Entity type" />
+              <SelectValue placeholder={bilingualInline("Entity type", "Τύπος οντότητας")} />
             </SelectTrigger>
             <SelectContent>
               {ENTITY_TYPES.map((t) => (
@@ -218,7 +219,7 @@ export default function AdminAuditLogPage() {
           </Select>
           <Select value={action} onValueChange={(v) => { setAction(v); setPage(0); }}>
             <SelectTrigger aria-label="Action" className="w-[160px]">
-              <SelectValue placeholder="Action" />
+              <SelectValue placeholder={bilingualInline("Action", "Ενέργεια")} />
             </SelectTrigger>
             <SelectContent>
               {ACTION_TYPES.map((a) => (

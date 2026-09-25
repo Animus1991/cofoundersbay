@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type FAQItem = {
   question: string;
@@ -310,7 +311,9 @@ export default function HelpPage() {
   return (
     <AppShell
       title="Help & Support"
+      titleEl="Βοήθεια & υποστήριξη"
       description="Find answers, guides, and get in touch with the CoFounderBay team"
+      descriptionEl="Βρείτε απαντήσεις και οδηγούς ή επικοινωνήστε με την ομάδα του CoFounderBay"
       actions={
         // A <button> nested in an <a> is two controls in one place
         // (axe nested-interactive); the link is the control.
@@ -335,7 +338,7 @@ export default function HelpPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search for help (e.g. matching, billing, profile...)"
+              placeholder={bilingualInline("Search for help (e.g. matching, billing, profile…)", "Αναζήτηση βοήθειας (π.χ. αντιστοιχίσεις, χρεώσεις, προφίλ…)")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-11 bg-background border-border/60"

@@ -47,6 +47,9 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 /**
  * The page's own row from the API row.
@@ -118,19 +121,21 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
             <div className="flex items-center gap-2">
               <span className="font-semibold">{cohort.name}</span>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                {cohort.status}
+                <StatusText value={cohort.status} />
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">{cohort.program}</p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
-                {cohort.startups} {cohort.mentors == null ? 'members' : 'startups'}
+                {cohort.mentors == null
+                  ? <BilingualText en={`${cohort.startups} members`} el={`${cohort.startups} μέλη`} compact />
+                  : <BilingualText en={`${cohort.startups} startups`} el={`${cohort.startups} νεοφυείς`} compact />}
               </span>
               {cohort.mentors != null && (
                 <span className="flex items-center gap-1">
                   <GraduationCap className="icon-sm" aria-hidden="true" />
-                  {cohort.mentors} mentors
+                  <BilingualText en={`${cohort.mentors} mentors`} el={`${cohort.mentors} μέντορες`} compact />
                 </span>
               )}
               <span className="flex items-center gap-1">
@@ -142,7 +147,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
               <div className="mt-3 space-y-2">
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">Program Progress</span>
+                    <span className="text-muted-foreground"><BilingualText en="Program Progress" el="Πρόοδος προγράμματος" compact /></span>
                     <span className="font-medium">{cohort.progress}%</span>
                   </div>
                   <Progress value={cohort.progress} className="h-1.5" />
@@ -150,7 +155,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 {cohort.avgReadiness != null && (
                   <div>
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Avg Readiness</span>
+                      <span className="text-muted-foreground"><BilingualText en="Avg Readiness" el="Μέση ετοιμότητα" compact /></span>
                       <span className="font-medium">{cohort.avgReadiness}%</span>
                     </div>
                     <Progress value={cohort.avgReadiness} className="h-1.5" />
@@ -176,7 +181,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
               <DropdownMenuItem asChild>
                 <Link href={`/org/cohorts/${cohort.id}`}>
                   <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                  View Details
+                  <BilingualText en="View Details" el="Λεπτομέρειες" compact />
                 </Link>
               </DropdownMenuItem>
               {/* Neither had a handler. Cohort writes exist only on the
@@ -257,10 +262,11 @@ export default function OrgCohortsPage() {
     <AppShell
       title="Cohorts"
       description="Manage program cohorts and participants"
+      descriptionEl="Διαχειριστείτε τις κοόρτες και τους συμμετέχοντες των προγραμμάτων"
       actions={
         // Had no handler; cohorts are created on the platform-admin route.
         <Button className="gap-1.5" disabled title="Cohorts are created by platform administrators for now">
-          <Plus className="icon-sm" aria-hidden="true" /> Create Cohort
+          <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέα κοόρτη" compact />
         </Button>
       }
     >
@@ -271,21 +277,22 @@ export default function OrgCohortsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search cohorts..."
+              aria-label="Search cohorts. Αναζήτηση κοορτών"
+              placeholder={bilingualInline('Search cohorts…', 'Αναζήτηση κοορτών…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger aria-label="Status. Κατάσταση" className="w-full sm:w-[150px]">
+              <SelectValue placeholder={bilingualInline('Status', 'Κατάσταση')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="recruiting">Recruiting</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+              <SelectItem value="recruiting"><BilingualText en="Recruiting" el="Δέχεται αιτήσεις" compact /></SelectItem>
+              <SelectItem value="active"><BilingualText en="Active" el="Ενεργές" compact /></SelectItem>
+              <SelectItem value="completed"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -293,17 +300,19 @@ export default function OrgCohortsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Cohorts', value: cohorts.length, icon: Award, tone: 'accent' as const },
-            { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
-            { label: totalMentors == null ? 'Cohort memberships' : 'Total Startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
-            { label: 'Total Mentors', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
-          ].map(({ label, value, icon: Icon, tone }) => (
+            { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length, icon: Award, tone: 'accent' as const },
+            { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
+            totalMentors == null
+              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κοόρτες', value: totalStartups, icon: Rocket, tone: 'info' as const }
+              : { label: 'Total Startups', labelEl: 'Σύνολο νεοφυών', value: totalStartups, icon: Rocket, tone: 'info' as const },
+            { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
+          ].map(({ label, labelEl, value, icon: Icon, tone }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>

@@ -330,7 +330,9 @@ export default function DomainsAdminPage() {
   return (
     <AppShell
       title="Domain Management"
+      titleEl="Διαχείριση τομέων"
       description="Configure subdomains and custom domains for each tenant organization."
+      descriptionEl="Ρυθμίστε υποτομείς και προσαρμοσμένους τομείς για κάθε οργανισμό."
     >
       <div className="space-y-6">
 

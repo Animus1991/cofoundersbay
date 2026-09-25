@@ -16,6 +16,7 @@ import {
 import { cn, errorStatus } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -260,7 +261,7 @@ export default function SharePage() {
               <Input
                 id="share-password"
                 type="password"
-                placeholder="Enter password…"
+                placeholder={bilingualInline("Enter password…", "Συμπληρώστε κωδικό…")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
