@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -277,7 +278,6 @@ export default function ProviderProjectsPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('active');
 
-  // Mock data
   const { data, isLoading } = useQuery({
     queryKey: qk('provider', 'projects'),
     queryFn: () => listServiceInquiries({ side: 'provider', kind: 'projects', limit: 100 }),
@@ -323,6 +323,38 @@ export default function ProviderProjectsPage() {
     on_hold: projects.filter((p) => p.status === 'on_hold').length,
     completed: projects.filter((p) => p.status === 'completed').length,
   };
+
+  // Offered to the assistant: the tab, View Details, and Mark Complete
+  // (which still asks, and is refused on the sample projects).
+  const byClient = (list: Project[]) => rowOptions(list, (p) => p.id, (p) => p.clientName);
+  usePageList([
+    {
+      id: 'projects',
+      labelEn: 'Client projects',
+      labelEl: 'Έργα πελατών',
+      rows: isLoading ? undefined : filteredProjects.map((p) => `${p.clientName}${p.clientCompany ? ` (${p.clientCompany})` : ''} · ${p.service} · ${p.status.replace('_', ' ')} · ${p.progress}% · due ${p.dueDate} · ${p.amount}`),
+      total: projects.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('project_tab', 'Project filter', 'Φίλτρο έργων', [
+      { value: 'active', en: 'Active', el: 'Ενεργά' },
+      { value: 'on_hold', en: 'On hold', el: 'Σε αναμονή' },
+      { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένα' },
+    ], activeTab, setActiveTab),
+    { id: 'view_project', labelEn: 'View project details', labelEl: 'Προβολή λεπτομερειών έργου', writes: false, options: byClient(filteredProjects), run: (v) => { const p = projects.find((x) => x.id === v); if (p) setViewing(p); } },
+    {
+      id: 'complete_project',
+      labelEn: 'Mark project complete',
+      labelEl: 'Ολοκλήρωση έργου',
+      writes: true,
+      options: byClient(filteredProjects.filter((p) => p.status !== 'completed')),
+      unavailableEn: live.length > 0 ? undefined : 'These projects are samples; there is nothing behind them to complete.',
+      unavailableEl: live.length > 0 ? undefined : 'Τα έργα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για ολοκλήρωση.',
+      run: (v) => { const p = projects.find((x) => x.id === v); if (p) void complete(p); },
+    },
+  ]);
 
   return (
     <AppShell>

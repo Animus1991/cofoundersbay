@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
@@ -388,6 +389,35 @@ export default function AutomationsPage() {
   const activeCount = rules.filter(r => r.status === 'active').length;
   const failureCount = rules.filter(r => r.failureCount > 0).length;
 
+  // Offered to the assistant: the tab, New Rule, and each rule's own
+  // buttons - edit, run now, pause, activate, delete (which still asks).
+  const ruleRows = (list: AutomationRuleItem[]) => rowOptions(list, (r) => r.id, (r) => r.name);
+  const ruleById = (id?: string) => rules.find((r) => r.id === id);
+  const deleteRule = async (rule: AutomationRuleItem) => {
+    if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
+  };
+  usePageList([
+    {
+      id: 'rules',
+      labelEn: 'Automation rules',
+      labelEl: 'Κανόνες αυτοματισμού',
+      rows: rulesLoading ? undefined : rules.map((r) => `${r.name} · ${r.status} · on ${r.triggerType}${r.failureCount ? ` · ${r.failureCount} failures` : ''}`),
+      total,
+    },
+  ]);
+  usePageControls([
+    choiceControl('automation_tab', 'Automation view', 'Προβολή αυτοματισμών', [
+      { value: 'rules', en: 'Rules', el: 'Κανόνες' },
+      { value: 'executions', en: 'Executions', el: 'Εκτελέσεις' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    { id: 'new_rule', labelEn: 'Open the new rule form', labelEl: 'Άνοιγμα φόρμας νέου κανόνα', writes: false, run: () => setShowCreate(true) },
+    { id: 'edit_rule', labelEn: 'Edit automation rule', labelEl: 'Επεξεργασία κανόνα', writes: false, options: ruleRows(rules), run: (v) => { const r = ruleById(v); if (r) setEditRule(r); } },
+    { id: 'trigger_rule', labelEn: 'Run automation rule now', labelEl: 'Εκτέλεση κανόνα τώρα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), run: (v) => { if (v) triggerMutation.mutate(v); } },
+    { id: 'pause_rule', labelEn: 'Pause automation rule', labelEl: 'Παύση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'paused' }); } },
+    { id: 'activate_rule', labelEn: 'Activate automation rule', labelEl: 'Ενεργοποίηση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status !== 'active')), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'active' }); } },
+    { id: 'delete_rule', labelEn: 'Delete automation rule', labelEl: 'Διαγραφή κανόνα', writes: true, options: ruleRows(rules), run: (v) => { const r = ruleById(v); if (r) void deleteRule(r); } },
+  ]);
+
   return (
     <AppShell
       actions={
@@ -540,7 +570,7 @@ export default function AutomationsPage() {
                       title="Delete"
                       aria-label={`Delete ${rule.name}`}
                       onClick={async () => {
-                        if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
+                        await deleteRule(rule);
                       }}
                     >
                       <Trash2 className="icon-sm" />

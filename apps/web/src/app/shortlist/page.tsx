@@ -28,6 +28,7 @@ import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
 import { formatDate } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   listShortlist,
   removeFromShortlist,
@@ -414,6 +415,47 @@ export default function ShortlistPage() {
     });
   }, []);
 
+  /*
+   * "Average match" was the constant '74%' on any non-empty shortlist. It is
+   * the mean of the engine's scores for the people saved here, over the ones
+   * it has scored; a dash when it has scored none.
+   */
+  const scoredSaved = rawItems.map((i) => matchScores.get(i.userId)).filter((n): n is number => n != null);
+  const avgMatch = scoredSaved.length ? Math.round(scoredSaved.reduce((a, b) => a + b, 0) / scoredSaved.length) : null;
+
+  // Offered to the assistant: role, sort, layout and compare, and each
+  // card's Remove - the same setters and mutation.
+  usePageList([
+    {
+      id: 'shortlist',
+      labelEn: 'Saved profiles',
+      labelEl: 'Αποθηκευμένα προφίλ',
+      rows: isLoading ? undefined : filtered.map((i) => {
+        const score = matchScores.get(i.userId);
+        return `${i.profile?.displayName ?? 'Member'} · ${i.profile?.role ?? 'member'}${i.profile?.headline ? ` · ${i.profile.headline}` : ''}${score != null ? ` · match ${score}%` : ''}${i.note ? ` · note: ${i.note}` : ''}`;
+      }),
+      total: rawItems.length,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_TABS.map((t) => ({ value: t.value, en: shortlistEn(t.key), el: shortlistEl(t.key) })), roleFilter, (v) => setRoleFilter(v as RoleFilter)),
+    choiceControl('sort', 'Sort saved profiles', 'Ταξινόμηση αποθηκευμένων', [
+      { value: 'saved_newest', en: shortlistEn('sort_newest'), el: shortlistEl('sort_newest') },
+      { value: 'saved_oldest', en: shortlistEn('sort_oldest'), el: shortlistEl('sort_oldest') },
+      { value: 'name_az', en: shortlistEn('sort_name'), el: shortlistEl('sort_name') },
+      { value: 'match_score', en: shortlistEn('sort_match'), el: shortlistEl('sort_match') },
+    ], sortBy, (v) => setSortBy(v as SortBy)),
+    choiceControl('view', 'Shortlist layout', 'Διάταξη λίστας', [
+      { value: 'list', en: 'List', el: 'Λίστα' },
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+    ], viewMode, (v) => setViewMode(v as ViewMode)),
+    choiceControl('compare_mode', 'Compare mode', 'Λειτουργία σύγκρισης', [
+      { value: 'off', en: 'Off', el: 'Ανενεργή' },
+      { value: 'on', en: 'On', el: 'Ενεργή' },
+    ], compareMode ? 'on' : 'off', (v) => { setCompareMode(v === 'on'); if (v !== 'on') setSelectedIds(new Set()); }),
+    { id: 'remove_saved', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: rowOptions(filtered, (i) => i.userId, (i) => i.profile?.displayName ?? 'Member'), run: (v) => { if (v) handleRemove(v); } },
+  ]);
+
   return (
     <AppShell title={shortlistEn('page_title')} description={shortlistEn('page_description')}>
       <div className="space-y-5 pb-10">
@@ -423,7 +465,7 @@ export default function ShortlistPage() {
           {[
             { key: 'stat_total', value: rawItems.length, icon: Bookmark, color: 'text-primary-accessible', bg: 'bg-primary/10' },
             { key: 'stat_notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-            { key: 'stat_avg_match', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { key: 'stat_avg_match', value: avgMatch == null ? '—' : `${avgMatch}%`, icon: Sparkles, color: 'text-status-success', bg: 'bg-status-success-bg' },
             { key: 'stat_roles', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
           ].map(({ key, value, icon: Icon, color, bg }) => (
             <Card key={key} className="shadow-sm border-border/50">

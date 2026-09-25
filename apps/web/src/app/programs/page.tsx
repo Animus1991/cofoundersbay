@@ -52,6 +52,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   listPrograms,
   getMyPrograms,
@@ -436,6 +437,30 @@ export default function ProgramsPage() {
     return d !== null && d >= 0 && d <= 14; // closing within 14 days = "featured/urgent"
   });
 
+  // Offered to the assistant: type and status, the list tab, Refresh, and
+  // Apply, which opens the same form (the application is sent from there).
+  const [tab, setTab] = useState('all');
+  const typeKeys = ['all', 'accelerator', 'incubator', 'bootcamp', 'competition', 'cohort'] as const;
+  const statusKeys = ['all', 'open', 'upcoming', 'active', 'closed'] as const;
+  usePageList([
+    {
+      id: 'programs',
+      labelEn: 'Programs',
+      labelEl: 'Προγράμματα',
+      rows: isLoading ? undefined : (tab === 'mine' ? myPrograms : tab === 'open' ? openPrograms : filtered).map((p) =>
+        `${p.title}${p.organization?.name ? ` · ${p.organization.name}` : ''} · ${p.programType} · ${p.status}${p.applicationDeadline ? ` · apply by ${p.applicationDeadline.slice(0, 10)}` : ''}${enrolledIds.has(p.id) ? ' · applied' : ''}`,
+      ),
+      total: data?.total,
+    },
+  ]);
+  usePageControls([
+    choiceControl('program_type', 'Program type', 'Τύπος προγράμματος', typeKeys.map((k) => ({ value: k, en: programsEn(`type_${k}`), el: programsEl(`type_${k}`) })), programType, setProgramType),
+    choiceControl('program_status', 'Program status', 'Κατάσταση προγράμματος', statusKeys.map((k) => ({ value: k, en: programsEn(`status_${k}`), el: programsEl(`status_${k}`) })), status, setStatus),
+    choiceControl('program_tab', 'Program list', 'Λίστα προγραμμάτων', (['all', 'open', 'mine'] as const).map((k) => ({ value: k, en: programsEn(`tab_${k}`), el: programsEl(`tab_${k}`) })), tab, setTab),
+    { id: 'refresh', labelEn: 'Refresh programs', labelEl: 'Ανανέωση προγραμμάτων', writes: false, run: () => void refetch() },
+    { id: 'apply_to_program', labelEn: 'Open the application for', labelEl: 'Άνοιγμα αίτησης για', writes: false, options: rowOptions(openPrograms.filter((p) => !enrolledIds.has(p.id)), (p) => p.id, (p) => p.title), run: (v) => { const p = allPrograms.find((x) => x.id === v); if (p) setApplyTarget(p); } },
+  ]);
+
   return (
     <AppShell
       showHelp
@@ -559,7 +584,7 @@ export default function ProgramsPage() {
         )}
 
         {/* Tabs: All / Open / My Applications */}
-        <Tabs defaultValue="all">
+        <Tabs value={tab} onValueChange={setTab}>
           <div className="flex items-center justify-between">
             <TabsList>
               <TabsTrigger value="all">

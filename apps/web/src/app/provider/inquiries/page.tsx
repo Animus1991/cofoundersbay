@@ -38,6 +38,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 type Inquiry = {
   id: string;
@@ -316,6 +317,49 @@ export default function ProviderInquiriesPage() {
     replied: inquiries.filter((i) => i.status === 'replied').length,
     converted: inquiries.filter((i) => i.status === 'converted').length,
   };
+
+  // Offered to the assistant: the tab and the card menu - reply (which
+  // opens the thread and marks the inquiry in discussion), convert, decline.
+  // The sample inquiries have no row behind them, as their menus say.
+  const sampleEn = live.length > 0 ? undefined : 'These inquiries are samples; there is nothing behind them to update.';
+  const sampleEl = live.length > 0 ? undefined : 'Τα αιτήματα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για ενημέρωση.';
+  const byClient = (list: Inquiry[]) => rowOptions(list, (i) => i.id, (i) => i.clientName);
+  const inquiryById = (id?: string) => inquiries.find((i) => i.id === id);
+  usePageList([
+    {
+      id: 'inquiries',
+      labelEn: 'Inquiries',
+      labelEl: 'Αιτήματα',
+      rows: isLoading ? undefined : filteredInquiries.map((i) => `${i.clientName}${i.clientCompany ? ` (${i.clientCompany})` : ''} · ${i.service} · ${i.status}${i.budget ? ` · budget ${i.budget}` : ''}`),
+      total: inquiries.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('inquiry_tab', 'Inquiry filter', 'Φίλτρο αιτημάτων', [
+      { value: 'all', en: 'All', el: 'Όλα' },
+      { value: 'new', en: 'New', el: 'Νέα' },
+      { value: 'replied', en: 'Replied', el: 'Απαντημένα' },
+      { value: 'converted', en: 'Converted', el: 'Μετατράπηκαν' },
+    ], activeTab, setActiveTab),
+    {
+      id: 'reply_inquiry',
+      labelEn: 'Reply to inquiry',
+      labelEl: 'Απάντηση σε αίτημα',
+      writes: true,
+      options: byClient(filteredInquiries.filter((i) => i.clientId)),
+      unavailableEn: sampleEn,
+      unavailableEl: sampleEl,
+      run: (v) => {
+        const inq = inquiryById(v);
+        if (!inq?.clientId) return;
+        void setStatus(inq, 'in_discussion');
+        window.location.assign(`/messages?to=${inq.clientId}`);
+      },
+    },
+    { id: 'convert_inquiry', labelEn: 'Mark inquiry as converted', labelEl: 'Σήμανση αιτήματος ως μετατροπής', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'converted')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); if (inq) void setStatus(inq, 'accepted'); } },
+    { id: 'decline_inquiry', labelEn: 'Decline inquiry', labelEl: 'Απόρριψη αιτήματος', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'declined')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); if (inq) void setStatus(inq, 'declined'); } },
+  ]);
 
   return (
     <AppShell

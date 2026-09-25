@@ -54,6 +54,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 /**
  * The page's own row from the tenant membership row.
@@ -368,6 +369,53 @@ export default function TenantMembersPage() {
     : null;
 
   const activeTab = roleFilter === 'all' ? 'all' : roleFilter;
+
+  // Offered to the assistant: role and status filters, Invite, and the card
+  // menu's role change and removal - the same actions, which refuse the
+  // sample rows exactly as the disabled menu items do.
+  const liveOnlyEn = memberActions.onRole ? undefined : 'These members are samples until the workspace roster loads.';
+  const liveOnlyEl = memberActions.onRole ? undefined : 'Τα μέλη είναι δείγματα μέχρι να φορτώσει το μητρώο του χώρου.';
+  const memberById = (id?: string) => members.find((m) => m.id === id);
+  usePageList([
+    {
+      id: 'members',
+      labelEn: 'Members',
+      labelEl: 'Μέλη',
+      rows: isLoading ? undefined : filteredMembers.map((m) => `${m.name} · ${m.email} · ${m.role} · ${m.status}`),
+      total: members.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', [{ value: 'all', en: 'All roles', el: 'Όλοι οι ρόλοι' }, ...roles.map((r) => ({ value: r, en: r, el: r }))], roleFilter, setRoleFilter),
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργά' },
+      { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+      { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+    ], statusFilter, setStatusFilter),
+    { id: 'invite_members', labelEn: 'Open the invite form', labelEl: 'Άνοιγμα φόρμας πρόσκλησης', writes: false, run: () => setShowInvite(true) },
+    ...TENANT_ROLES.map((role) => ({
+      id: `make_${role}`,
+      labelEn: `Change member role to ${role}`,
+      labelEl: `Αλλαγή ρόλου μέλους σε ${role}`,
+      writes: true,
+      options: rowOptions(filteredMembers.filter((m) => m.role !== role), (m) => m.id, (m) => m.name),
+      unavailableEn: liveOnlyEn,
+      unavailableEl: liveOnlyEl,
+      run: (v?: string) => { const m = memberById(v); if (m) void memberActions.onRole?.(m, role); },
+    })),
+    {
+      id: 'remove_member',
+      labelEn: 'Remove member',
+      labelEl: 'Αφαίρεση μέλους',
+      writes: true,
+      options: rowOptions(filteredMembers, (m) => m.id, (m) => m.name),
+      unavailableEn: liveOnlyEn,
+      unavailableEl: liveOnlyEl,
+      run: (v) => { const m = memberById(v); if (m) void memberActions.onRemove?.(m); },
+    },
+  ]);
 
   return (
     <AppShell

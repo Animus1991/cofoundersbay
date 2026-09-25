@@ -38,6 +38,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -210,6 +211,33 @@ export default function OrgMembersPage() {
   const filtersActive = !!search || activeTab !== 'all';
   const clearFilters = () => { setSearch(''); setActiveTab('all'); };
 
+  usePageList([
+    {
+      id: 'members',
+      labelEn: 'Team members',
+      labelEl: 'Μέλη ομάδας',
+      rows: isLoading ? undefined : filtered.map((m) => `${m.name} · ${m.email} · ${m.role}${m.department ? ` · ${m.department}` : ''} · ${m.status}`),
+      total: members.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('member_tab', 'Member filter', 'Φίλτρο μελών', [
+      { value: 'all', en: 'All', el: 'Όλα' },
+      { value: 'active', en: 'Active', el: 'Ενεργά' },
+      { value: 'invited', en: 'Invited', el: 'Προσκεκλημένα' },
+    ], activeTab, setActiveTab),
+    {
+      id: 'clear_filters',
+      labelEn: 'Clear the member filters',
+      labelEl: 'Καθαρισμός φίλτρων μελών',
+      writes: false,
+      unavailableEn: filtersActive ? undefined : 'No filter is set.',
+      unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.',
+      run: clearFilters,
+    },
+  ]);
+
   return (
     <AppShell
       title="Team Members"
@@ -262,9 +290,12 @@ export default function OrgMembersPage() {
         {/* Table */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({MOCK_MEMBERS.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({MOCK_MEMBERS.filter(m => m.status === 'active').length})</TabsTrigger>
-            <TabsTrigger value="invited">Invited ({MOCK_MEMBERS.filter(m => m.status === 'invited').length})</TabsTrigger>
+            {/* Counted over the members on screen - these read the sample
+                list, so a real organisation's tabs said 8 / 6 / 2 whatever
+                it held. */}
+            <TabsTrigger value="all">All ({members.length})</TabsTrigger>
+            <TabsTrigger value="active">Active ({members.filter(m => m.status === 'active').length})</TabsTrigger>
+            <TabsTrigger value="invited">Invited ({members.filter(m => m.status === 'invited').length})</TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4">
             <Card>

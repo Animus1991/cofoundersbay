@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -40,6 +40,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 type Service = {
   id: string;
@@ -64,6 +65,9 @@ type ServiceActions = {
 
 function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service } & ServiceActions) {
   const [isActive, setIsActive] = useState(service.isActive);
+  // Follow the listing when it changes from elsewhere - a refetch after the
+  // assistant publishes or hides it - rather than keeping the first value.
+  useEffect(() => setIsActive(service.isActive), [service.isActive]);
   // The switch moved local state and nothing else. On a live listing it now
   // writes isActive through PATCH /marketplace/:id.
   const toggleActive = (next: boolean) => {
@@ -337,6 +341,31 @@ export default function ProviderServicesPage() {
   const filteredServices = services.filter((s) =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Offered to the assistant: Add Service and the card's live switch, Edit
+  // and Delete (which still asks) - refused on the sample listings, whose
+  // menu items are disabled for the same reason.
+  const sampleEn = live.length > 0 ? undefined : 'These listings are samples; publish your own to manage it here.';
+  const sampleEl = live.length > 0 ? undefined : 'Οι καταχωρίσεις είναι δείγματα· δημοσιεύστε τη δική σας για να τη διαχειριστείτε.';
+  const byName = (list: Service[]) => rowOptions(list, (s) => s.id, (s) => s.name);
+  const serviceById = (id?: string) => services.find((s) => s.id === id);
+  usePageList([
+    {
+      id: 'services',
+      labelEn: 'Service listings',
+      labelEl: 'Καταχωρίσεις υπηρεσιών',
+      rows: isLoading ? undefined : filteredServices.map((s) => `${s.name} · ${s.category} · ${s.price} (${s.priceType}) · ${s.isActive ? 'live' : 'hidden'} · ${s.bookings} bookings`),
+      total: services.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    { id: 'add_service', labelEn: 'Open the new listing form', labelEl: 'Άνοιγμα φόρμας νέας καταχώρισης', writes: false, run: openCreate },
+    { id: 'publish_service', labelEn: 'Make listing live', labelEl: 'Δημοσίευση καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => !s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, true); } },
+    { id: 'hide_service', labelEn: 'Hide listing', labelEl: 'Απόκρυψη καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, false); } },
+    { id: 'edit_service', labelEn: 'Edit listing', labelEl: 'Επεξεργασία καταχώρισης', writes: false, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) serviceActions.onEdit?.(s); } },
+    { id: 'delete_service', labelEn: 'Delete listing', labelEl: 'Διαγραφή καταχώρισης', writes: true, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onDelete?.(s); } },
+  ]);
 
   return (
     <AppShell

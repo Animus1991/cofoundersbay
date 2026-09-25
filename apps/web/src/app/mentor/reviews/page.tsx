@@ -25,6 +25,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type Review = {
   id: string;
@@ -124,6 +125,25 @@ export default function MentorReviewsPage() {
     count: reviews.filter((r) => r.rating === rating).length,
     percentage: (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100,
   }));
+
+  // Offered to the assistant, above the empty return: the rating filter;
+  // the reviews on screen go out as a list.
+  usePageList([
+    {
+      id: 'reviews',
+      labelEn: 'Reviews',
+      labelEl: 'Κριτικές',
+      rows: filteredReviews.map((r) => `${r.rating}★ · ${r.mentee} · ${r.sessionType} · "${r.comment}"`),
+      total: reviews.length,
+      sample: showDemoData,
+    },
+  ]);
+  usePageControls([
+    choiceControl('rating_filter', 'Rating filter', 'Φίλτρο βαθμολογίας', [
+      { value: 'all', en: 'All ratings', el: 'Όλες οι βαθμολογίες' },
+      ...[5, 4, 3, 2, 1].map((n) => ({ value: String(n), en: `${n} stars`, el: `${n} αστέρια` })),
+    ], ratingFilter, setRatingFilter),
+  ]);
 
   if (!showDemoData && reviews.length === 0) {
     return (

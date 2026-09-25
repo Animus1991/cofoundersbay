@@ -43,6 +43,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -552,6 +553,37 @@ export default function OpportunitiesPage() {
       prev.map((p) => (p.id === id ? { ...p, status: 'declined' as const } : p)),
     );
   };
+
+  // Offered to the assistant: tab, type, remote only and Post; the sample
+  // proposals' Accept / Decline change this screen only, and say so.
+  const oppTypes = ['all', 'cofounder', 'job', 'investment', 'partnership', 'mentorship'] as const;
+  const pendingList = proposals.filter((p) => p.status === 'pending');
+  usePageList([
+    {
+      id: 'opportunities',
+      labelEn: 'Opportunities',
+      labelEl: 'Ευκαιρίες',
+      rows: oppLoading ? undefined : opportunities.map((o) => `${o.title}${o.company ? ` · ${o.company}` : ''} · ${o.type} · ${o.isRemote ? 'remote' : (o.location ?? 'on-site')}${o.deadline ? ` · closes ${o.deadline.slice(0, 10)}` : ''}`),
+    },
+    {
+      id: 'proposals',
+      labelEn: 'Proposals',
+      labelEl: 'Προτάσεις',
+      rows: proposals.map((p) => `${p.fromName} (${p.fromRole}) · ${p.scope} · ${p.timeframe} · ${p.compensation} · ${p.status}`),
+      sample: true,
+    },
+  ]);
+  usePageControls([
+    choiceControl('opportunity_tab', 'Opportunities section', 'Ενότητα ευκαιριών', (['listings', 'jobs', 'applications', 'proposals'] as const).map((k) => ({ value: k, en: opportunitiesEn(`tab_${k}`), el: opportunitiesEl(`tab_${k}`) })), activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('opportunity_type', 'Opportunity type', 'Τύπος ευκαιρίας', oppTypes.map((t) => ({ value: t, en: t === 'all' ? opportunitiesEn('all_types') : opportunitiesEn(OPP_TYPE_DISPLAY[t].labelKey), el: t === 'all' ? opportunitiesEl('all_types') : opportunitiesEl(OPP_TYPE_DISPLAY[t].labelKey) })), oppTypeFilter, (v) => setOppTypeFilter(v as typeof oppTypeFilter)),
+    choiceControl('remote_only', 'Remote only', 'Μόνο εξ αποστάσεως', [
+      { value: 'off', en: 'Any location', el: 'Οποιαδήποτε τοποθεσία' },
+      { value: 'on', en: 'Remote only', el: 'Μόνο εξ αποστάσεως' },
+    ], remoteOnly ? 'on' : 'off', (v) => setRemoteOnly(v === 'on')),
+    { id: 'post_opportunity', labelEn: 'Open the post form', labelEl: 'Άνοιγμα φόρμας δημοσίευσης', writes: false, run: () => setShowPostForm(true) },
+    { id: 'accept_proposal', labelEn: 'Accept sample proposal (this screen only)', labelEl: 'Αποδοχή δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleAcceptProposal(v); } },
+    { id: 'decline_proposal', labelEn: 'Decline sample proposal (this screen only)', labelEl: 'Απόρριψη δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleDeclineProposal(v); } },
+  ]);
 
   const tabs = [
     { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake },

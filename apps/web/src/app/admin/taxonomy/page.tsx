@@ -38,6 +38,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   adminListSkills,
   adminCreateSkill,
@@ -251,6 +252,27 @@ export default function AdminTaxonomyPage() {
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  // Offered to the assistant: the category filter, New Skill, and the row
+  // menu's Edit and Delete (which opens the same confirmation).
+  usePageList([
+    {
+      id: 'skills',
+      labelEn: 'Skills',
+      labelEl: 'Δεξιότητες',
+      rows: isLoading ? undefined : skills.map((sk) => `${sk.name} (${sk.slug}) · ${sk.category ?? 'uncategorised'} · used by ${sk.count}`),
+      total,
+    },
+  ]);
+  usePageControls([
+    choiceControl('category_filter', 'Category filter', 'Φίλτρο κατηγορίας', [
+      { value: 'all', en: 'All categories', el: 'Όλες οι κατηγορίες' },
+      ...SKILL_CATEGORIES.map((c) => ({ value: c, en: c, el: c })),
+    ], categoryFilter || 'all', (v) => setCategoryFilter(v === 'all' ? '' : v)),
+    { id: 'new_skill', labelEn: 'Open the new skill form', labelEl: 'Άνοιγμα φόρμας νέας δεξιότητας', writes: false, run: () => setEditTarget('new') },
+    { id: 'edit_skill', labelEn: 'Edit skill', labelEl: 'Επεξεργασία δεξιότητας', writes: false, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); if (sk) setEditTarget(sk); } },
+    { id: 'delete_skill', labelEn: 'Delete skill', labelEl: 'Διαγραφή δεξιότητας', writes: true, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); if (sk) setDeleteTarget(sk); } },
+  ]);
 
   return (
     <AppShell

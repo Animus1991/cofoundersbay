@@ -39,6 +39,7 @@ import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -237,6 +238,45 @@ export default function DiscoverPage() {
 
   const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${filteredHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
 
+
+  // Offered to the assistant: the tab, role, sort, layout and reset, and
+  // each result's Connect (which opens the same request dialog), Message
+  // and Save - over the people on the tab that is showing.
+  const shown = activeTab === 'search' ? filteredHits : suggestions;
+  const byName = (list: SearchHit[]) => rowOptions(list, (h) => h.id, (h) => h.displayName);
+  const hitById = (id?: string) => shown.find((h) => h.id === id);
+  usePageList([
+    {
+      id: 'people',
+      labelEn: activeTab === 'search' ? 'Search results' : 'Suggested people',
+      labelEl: activeTab === 'search' ? 'Αποτελέσματα αναζήτησης' : 'Προτεινόμενα άτομα',
+      rows: (activeTab === 'search' ? loading : suggestionsLoading) ? undefined : shown.map((h) =>
+        `${h.displayName}${h.role ? ` · ${h.role}` : ''}${h.headline ? ` · ${h.headline}` : ''}${h.location ? ` · ${h.location}` : ''}${h.matchScore != null ? ` · match ${h.matchScore}%` : ''}`,
+      ),
+      ...(activeTab === 'search' ? { total } : {}),
+    },
+  ]);
+  usePageControls([
+    choiceControl('discover_tab', 'Discover section', 'Ενότητα ανακάλυψης', [
+      { value: 'search', en: 'Search', el: 'Αναζήτηση' },
+      { value: 'suggestions', en: 'Suggestions', el: 'Προτάσεις' },
+      { value: 'matches', en: 'Matches', el: 'Αντιστοιχίσεις' },
+    ], activeTab, (v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }),
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_FILTERS.map((r) => ({ value: r.value, en: r.labelEn, el: r.labelEl })), roleFilter, (v) => setRoleFilter(v as RoleFilter)),
+    choiceControl('sort', 'Sort results', 'Ταξινόμηση αποτελεσμάτων', [
+      { value: 'relevance', en: 'Most relevant', el: 'Πιο σχετικά' },
+      { value: 'recent', en: 'Newest', el: 'Νεότερα' },
+      { value: 'active', en: 'Recently active', el: 'Πρόσφατα ενεργά' },
+    ], filters.sortBy, (v) => setFilters((f) => ({ ...f, sortBy: v as SearchFiltersValues['sortBy'] }))),
+    choiceControl('view', 'Results layout', 'Διάταξη αποτελεσμάτων', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as ViewMode)),
+    { id: 'reset_filters', labelEn: 'Reset the search filters', labelEl: 'Επαναφορά φίλτρων αναζήτησης', writes: false, run: () => setFilters(defaultFilters) },
+    { id: 'connect_with', labelEn: 'Open a connection request to', labelEl: 'Άνοιγμα αιτήματος σύνδεσης προς', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleConnect(hitToProfile(h)); } },
+    { id: 'message_person', labelEn: 'Message', labelEl: 'Μήνυμα σε', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleMessage(hitToProfile(h)); } },
+    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(shown), run: (v) => { const h = hitById(v); if (h) void handleBookmark(hitToProfile(h)); } },
+  ]);
   return (
     <AppShell
       title={discoverEn('page_title')}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -45,6 +45,9 @@ import {
   recordMatchFeedback,
   recordBehavioralSignal,
   getMatchingStats,
+  getShortlistIds,
+  saveToShortlist,
+  removeFromShortlist,
   type SearchHit,
   type MatchSuggestion,
   type MatchFeedbackType,
@@ -53,6 +56,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ROLE_ICON: Record<string, typeof Users> = {
   founder: Briefcase,
@@ -489,10 +493,64 @@ export default function RecommendationsPage() {
     queryClient.invalidateQueries({ queryKey: qk('weekly-digest') });
   };
 
+  /*
+   * Save was a set in component state: "Saved to your list" over a list that
+   * lived until the tab closed, beside a /shortlist that never heard of it.
+   * It is the shortlist now - the same ids /matches reads and the same write
+   * its bookmark makes - so the Saved tab and /shortlist agree.
+   */
+  const { data: shortlistIds } = useQuery({
+    queryKey: qk('shortlist', 'ids'),
+    queryFn: getShortlistIds,
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+  useEffect(() => {
+    if (shortlistIds?.ids) setSavedIds(new Set(shortlistIds.ids));
+  }, [shortlistIds]);
+
   const handleSave = (userId: string) => {
-    setSavedIds((prev) => { const s = new Set(prev); s.has(userId) ? s.delete(userId) : s.add(userId); return s; });
-    toastSuccess(savedIds.has(userId) ? 'Removed from saved' : 'Saved to your list');
+    const wasSaved = savedIds.has(userId);
+    setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.delete(userId); else next.add(userId); return next; });
+    void (wasSaved ? removeFromShortlist(userId) : saveToShortlist(userId))
+      .then(() => {
+        toastSuccess(wasSaved ? 'Removed from your shortlist' : 'Saved to your shortlist');
+        void queryClient.invalidateQueries({ queryKey: qk('shortlist') });
+      })
+      .catch(() => {
+        setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.add(userId); else next.delete(userId); return next; });
+        toastError('Could not update your shortlist', 'Please try again');
+      });
   };
+
+  // Offered to the assistant: the tab, the minimum score, Refresh, and each
+  // card's Connect, Save and "not relevant" - the same handlers.
+  const people = recommendations.map(normaliseHit);
+  const byName = (list: typeof people) => rowOptions(list, (p) => p.userId, (p) => p.displayName);
+  usePageList([
+    {
+      id: 'recommendations',
+      labelEn: 'Recommended people',
+      labelEl: 'Προτεινόμενα άτομα',
+      rows: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${p.role}` : ''}${p.headline ? ` · ${p.headline}` : ''} · match ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · saved' : ''}`),
+      total: allRecommendations.length,
+    },
+  ]);
+  usePageControls([
+    choiceControl('recommendation_tab', 'Recommendation filter', 'Φίλτρο προτάσεων', [
+      { value: 'all', en: 'All', el: 'Όλοι' },
+      { value: 'founders', en: 'Founders', el: 'Ιδρυτές' },
+      { value: 'mentors', en: 'Mentors', el: 'Μέντορες' },
+      { value: 'investors', en: 'Investors', el: 'Επενδυτές' },
+      { value: 'saved', en: 'Saved', el: 'Αποθηκευμένοι' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('min_score', 'Minimum match score', 'Ελάχιστη βαθμολογία', [0, 50, 65, 80].map((n) => ({ value: String(n), en: n ? `${n}% or more` : 'Any score', el: n ? `${n}% και πάνω` : 'Οποιαδήποτε' })), String(minScore), (v) => setMinScore(Number(v))),
+    { id: 'refresh', labelEn: 'Refresh recommendations', labelEl: 'Ανανέωση προτάσεων', writes: false, run: handleRefresh },
+    { id: 'connect_with', labelEn: 'Send a connection request to', labelEl: 'Αίτημα σύνδεσης προς', writes: true, options: byName(people), run: (v) => { if (v) connectMutation.mutate(v); } },
+    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(people.filter((p) => !savedIds.has(p.userId))), run: (v) => { if (v) handleSave(v); } },
+    { id: 'unsave_person', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: byName(people.filter((p) => savedIds.has(p.userId))), run: (v) => { if (v) handleSave(v); } },
+    { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: (v) => { if (v) feedbackMutation.mutate({ userId: v, fb: 'not_relevant' }); } },
+  ]);
 
   return (
     <AppShell

@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 /**
  * The page's own row from the organisation's member list.
@@ -243,7 +244,6 @@ export default function OrgStartupsPage() {
   const [program, setProgram] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
 
-  // Mock data - replace with actual API calls
   /*
    * The organisation's cohort members. The seed below is what an
    * organisation with an empty cohort sees, so the screen still teaches its
@@ -276,6 +276,28 @@ export default function OrgStartupsPage() {
 
   const filtersActive = !!search || program !== 'all' || status !== 'all';
   const clearFilters = () => { setSearch(''); setProgram('all'); setStatus('all'); };
+
+  usePageList([
+    {
+      id: 'startups',
+      labelEn: 'Portfolio startups',
+      labelEl: 'Startups οργανισμού',
+      rows: isLoading ? undefined : filteredStartups.map((s) => `${s.name} · ${s.industry}, ${s.stage} · ${s.program} · ${s.status} · progress ${s.progress}%`),
+      total: startups.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('program_filter', 'Program filter', 'Φίλτρο προγράμματος', [{ value: 'all', en: 'All programs', el: 'Όλα τα προγράμματα' }, ...programs.map((p) => ({ value: p, en: p, el: p }))], program, setProgram),
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργές' },
+      { value: 'graduated', en: 'Graduated', el: 'Αποφοιτήσασες' },
+      { value: 'paused', en: 'Paused', el: 'Σε παύση' },
+      { value: 'dropped', en: 'Dropped', el: 'Αποχωρήσασες' },
+    ], status, setStatus),
+    { id: 'clear_filters', labelEn: 'Clear the startup filters', labelEl: 'Καθαρισμός φίλτρων startups', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
+  ]);
 
   return (
     <AppShell

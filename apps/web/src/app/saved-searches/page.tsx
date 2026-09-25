@@ -45,6 +45,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { SAVED_SEARCHES_STRINGS, savedSearchesEn, savedSearchesEl } from '@/lib/i18n/strings-saved-searches';
 import { useRouter } from 'next/navigation';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 function SearchCard({
   search,
@@ -378,6 +379,27 @@ export default function SavedSearchesPage() {
   };
 
   const totalNewResults = searches.reduce((sum, s) => sum + (s.newResults || 0), 0);
+
+  // Offered to the assistant: New Search and each card's Run, alerts on /
+  // off, Edit and Delete (which opens the same confirmation).
+  const byName = (list: SavedSearch[]) => rowOptions(list, (x) => x.id, (x) => x.name);
+  const searchById = (id?: string) => searches.find((x) => x.id === id);
+  usePageList([
+    {
+      id: 'saved_searches',
+      labelEn: 'Saved searches',
+      labelEl: 'Αποθηκευμένες αναζητήσεις',
+      rows: isLoading ? undefined : searches.map((x) => `${x.name} · "${x.query}"${x.newResults ? ` · ${x.newResults} new results` : ''} · alerts ${x.alertsEnabled ? x.alertFrequency : 'off'}`),
+    },
+  ]);
+  usePageControls([
+    { id: 'new_search', labelEn: 'Start a new saved search', labelEl: 'Νέα αποθηκευμένη αναζήτηση', writes: false, run: handleCreateNew },
+    { id: 'run_search', labelEn: 'Run saved search', labelEl: 'Εκτέλεση αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) handleRun(x); } },
+    { id: 'alerts_on', labelEn: 'Turn search alerts on', labelEl: 'Ενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => !x.alertsEnabled)), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, false); } },
+    { id: 'alerts_off', labelEn: 'Turn search alerts off', labelEl: 'Απενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => x.alertsEnabled)), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, true); } },
+    { id: 'edit_search', labelEn: 'Edit saved search', labelEl: 'Επεξεργασία αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) setEditingSearch(x); } },
+    { id: 'delete_search', labelEn: 'Delete saved search', labelEl: 'Διαγραφή αποθηκευμένης αναζήτησης', writes: true, options: byName(searches), run: (v) => { if (v) setDeleteConfirm(v); } },
+  ]);
 
   return (
     <AppShell

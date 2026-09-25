@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS } from '@/lib/semantic-colors';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -149,6 +150,27 @@ export default function GroupsModerationPage() {
     const matchesTab = activeTab === 'all' || r.status === activeTab;
     return matchesSearch && matchesTab;
   });
+
+  // Offered to the assistant: the queue tab; the reports go out as a sample
+  // list, since there is no group moderation queue behind them yet.
+  usePageList([
+    {
+      id: 'reports',
+      labelEn: 'Group reports',
+      labelEl: 'Αναφορές ομάδων',
+      rows: filtered.map((r) => `${r.type} · ${r.contentType} by ${r.reportedUser} in ${r.groupName} · ${r.status} · ${r.priority} priority`),
+      total: MOCK_REPORTS.length,
+      sample: true,
+    },
+  ]);
+  usePageControls([
+    choiceControl('report_tab', 'Report queue', 'Ουρά αναφορών', [
+      { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+      { value: 'reviewed', en: 'Reviewed', el: 'Εξετασμένες' },
+      { value: 'resolved', en: 'Resolved', el: 'Επιλυμένες' },
+      { value: 'all', en: 'All', el: 'Όλες' },
+    ], activeTab, setActiveTab),
+  ]);
 
   return (
     <AppShell

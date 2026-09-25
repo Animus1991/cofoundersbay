@@ -32,6 +32,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 
 /**
  * The page's own row from the pool row.
@@ -234,7 +235,6 @@ const SEED_MENTORS: Mentor[] = [
 export default function OrgMentorsPage() {
   const [search, setSearch] = useState('');
 
-  // Mock data
   /*
    * The organisation's real pool. The seed below is what an organisation
    * with an empty pool sees, so the screen still teaches its shape.
@@ -262,6 +262,20 @@ export default function OrgMentorsPage() {
   const activeMentors = mentors.filter((m) => m.status === 'active');
   const totalCapacity = mentors.reduce((acc, m) => acc + m.maxMentees, 0);
   const currentMentees = mentors.reduce((acc, m) => acc + m.activeMentees, 0);
+
+  usePageList([
+    {
+      id: 'mentors',
+      labelEn: 'Mentor pool',
+      labelEl: 'Δεξαμενή μεντόρων',
+      rows: isLoading ? undefined : filteredMentors.map((m) => `${m.name}${m.headline ? ` · ${m.headline}` : ''} · ${m.expertise.slice(0, 3).join(', ')} · ${m.activeMentees}/${m.maxMentees} mentees · ${m.status}`),
+      total: mentors.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    { id: 'clear_search', labelEn: 'Clear the mentor search', labelEl: 'Καθαρισμός αναζήτησης μεντόρων', writes: false, unavailableEn: search ? undefined : 'No search is set.', unavailableEl: search ? undefined : 'Δεν υπάρχει αναζήτηση.', run: () => setSearch('') },
+  ]);
 
   return (
     <AppShell

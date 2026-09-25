@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   getMyReceivedMentorRequests,
   respondToMentorRequest,
@@ -191,6 +192,27 @@ export default function MentorRequestsPage() {
   const pendingRequests = requests.filter((r) => r.status === 'pending');
   const acceptedRequests = requests.filter((r) => r.status === 'accepted');
   const declinedRequests = requests.filter((r) => r.status === 'declined');
+
+  // Offered to the assistant, above the loading and error returns: the tab
+  // and Accept / Decline on a pending request - the card's own mutation.
+  const byRequester = (list: typeof requests) => rowOptions(list, (r) => r.id, (r) => r.requester?.displayName || 'Request');
+  usePageList([
+    {
+      id: 'requests',
+      labelEn: 'Mentorship requests',
+      labelEl: 'Αιτήματα mentoring',
+      rows: isLoading ? undefined : requests.map((r) => `${r.requester?.displayName || 'Unknown'}${r.requester?.headline ? ` · ${r.requester.headline}` : ''} · ${r.status}${r.focusAreas?.length ? ` · ${r.focusAreas.join(', ')}` : ''}`),
+    },
+  ]);
+  usePageControls([
+    choiceControl('request_tab', 'Request filter', 'Φίλτρο αιτημάτων', [
+      { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+      { value: 'accepted', en: 'Accepted', el: 'Αποδεκτά' },
+      { value: 'declined', en: 'Declined', el: 'Απορριφθέντα' },
+    ], activeTab, setActiveTab),
+    { id: 'accept_request', labelEn: 'Accept mentorship request', labelEl: 'Αποδοχή αιτήματος mentoring', writes: true, options: byRequester(pendingRequests), unavailableEn: pendingRequests.length ? undefined : 'No request is waiting.', unavailableEl: pendingRequests.length ? undefined : 'Κανένα αίτημα δεν περιμένει.', run: (v) => { if (v) respondMutation.mutate({ requestId: v, accept: true }); } },
+    { id: 'decline_request', labelEn: 'Decline mentorship request', labelEl: 'Απόρριψη αιτήματος mentoring', writes: true, options: byRequester(pendingRequests), unavailableEn: pendingRequests.length ? undefined : 'No request is waiting.', unavailableEl: pendingRequests.length ? undefined : 'Κανένα αίτημα δεν περιμένει.', run: (v) => { if (v) respondMutation.mutate({ requestId: v, accept: false }); } },
+  ]);
 
   if (!mounted) {
     return (

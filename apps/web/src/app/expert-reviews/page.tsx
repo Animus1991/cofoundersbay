@@ -29,6 +29,7 @@ import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -665,6 +666,24 @@ export default function ExpertReviewsPage() {
     const matchesDomain = selectedDomain === 'all' || e.domains.includes(selectedDomain);
     return matchesSearch && matchesDomain;
   });
+
+  // Offered to the assistant: the tab and the expertise filter; the reviews
+  // and the experts on screen go out as lists.
+  usePageList([
+    { id: 'my_reviews', labelEn: 'My reviews', labelEl: 'Οι αξιολογήσεις μου', rows: reviewsLoading ? undefined : myReviews.map((r) => `${r.expertName} · ${REVIEW_TYPE_CONFIG[r.reviewType]?.label ?? r.reviewType} · ${r.status}${r.scoreOverall != null ? ` · score ${r.scoreOverall}` : ''}${r.dueDate ? ` · due ${r.dueDate.slice(0, 10)}` : ''}`), sample: liveReviews.length === 0 },
+    { id: 'experts', labelEn: 'Experts', labelEl: 'Ειδικοί', rows: expertsLoading ? undefined : filteredExperts.map((e) => `${e.name} · ${e.title} · ${e.domains.map((d) => REVIEW_TYPE_CONFIG[d]?.label ?? d).join(', ')} · ${e.completedReviews} reviews${e.rating != null ? ` · ${e.rating.toFixed(1)}★` : ''}`), total: experts.length, sample: liveExperts.length === 0 },
+  ]);
+  usePageControls([
+    choiceControl('expert_tab', 'Expert reviews section', 'Ενότητα αξιολογήσεων', [
+      { value: 'my-reviews', en: 'My reviews', el: 'Οι αξιολογήσεις μου' },
+      { value: 'find-experts', en: 'Find experts', el: 'Εύρεση ειδικών' },
+      { value: 'insights', en: 'Insights', el: 'Αναλύσεις' },
+    ], activeTab, setActiveTab),
+    choiceControl('expertise', 'Expertise filter', 'Φίλτρο ειδίκευσης', [
+      { value: 'all', en: 'All areas', el: 'Όλοι οι τομείς' },
+      ...(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, (typeof REVIEW_TYPE_CONFIG)[ReviewType]][]).map(([key, cfg]) => ({ value: key, en: cfg.label, el: cfg.labelEl })),
+    ], selectedDomain, (v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }),
+  ]);
 
   const avgScore = submitted.length
     ? (submitted.filter((r) => r.scoreOverall).reduce((acc, r) => acc + (r.scoreOverall ?? 0), 0) / submitted.filter((r) => r.scoreOverall).length)

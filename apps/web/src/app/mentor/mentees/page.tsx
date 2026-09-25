@@ -22,6 +22,8 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
+import { useRouter } from 'next/navigation';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   getMyMentorships,
   type MentorshipRelationshipItem,
@@ -144,6 +146,23 @@ export default function MenteesPage() {
   const activeRelationships = relationships.filter((r) => r.status === 'active');
   const completedRelationships = relationships.filter((r) => r.status === 'completed');
   const pausedRelationships = relationships.filter((r) => r.status === 'paused');
+
+  // Offered to the assistant, above the loading and error returns: each
+  // card's Message and Schedule, which are links to the same places.
+  const router = useRouter();
+  const byMentee = (list: typeof relationships) => rowOptions(list, (r) => r.menteeId, (r) => r.mentee?.displayName || 'Mentee');
+  usePageList([
+    {
+      id: 'mentees',
+      labelEn: 'Mentees',
+      labelEl: 'Mentees',
+      rows: isLoading ? undefined : relationships.map((r) => `${r.mentee?.displayName || 'Unknown'} · ${r.status}${r.nextSessionAt ? ` · next session ${r.nextSessionAt.slice(0, 10)}` : ''}`),
+    },
+  ]);
+  usePageControls([
+    { id: 'message_mentee', labelEn: 'Message mentee', labelEl: 'Μήνυμα σε mentee', writes: false, options: byMentee(relationships), run: (v) => { if (v) router.push(`/messages?to=${v}`); } },
+    { id: 'schedule_with_mentee', labelEn: 'Schedule a session with', labelEl: 'Προγραμματισμός συνεδρίας με', writes: false, options: byMentee(activeRelationships), run: (v) => { if (v) router.push(`/mentor/sessions?new=1&mentee=${v}`); } },
+  ]);
 
   if (!mounted) {
     return (

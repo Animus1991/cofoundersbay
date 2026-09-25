@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   getUpcomingMentorshipSessions,
   updateMentorshipSession,
@@ -209,6 +210,30 @@ export default function MentorSessionsPage() {
   const sessions = data?.sessions || [];
   const upcomingSessions = sessions.filter((s) => s.status === 'scheduled');
   const pastSessions = sessions.filter((s) => s.status !== 'scheduled');
+
+  // Offered to the assistant, above the loading and error returns: the tab,
+  // Schedule, and each session's reschedule, notes and cancel (which asks).
+  const when = (s: MentorshipSessionItem) => `${s.title || 'Session'} · ${s.scheduledAt.slice(0, 16).replace('T', ' ')}`;
+  const sessionById = (id?: string) => sessions.find((s) => s.id === id);
+  usePageList([
+    {
+      id: 'sessions',
+      labelEn: 'Mentoring sessions',
+      labelEl: 'Συνεδρίες mentoring',
+      rows: isLoading ? undefined : (activeTab === 'past' ? pastSessions : upcomingSessions).map((s) => `${when(s)} · ${s.duration} min${s.meetingType ? ` · ${s.meetingType.replace('_', ' ')}` : ''} · ${s.status}`),
+      total: sessions.length,
+    },
+  ]);
+  usePageControls([
+    choiceControl('session_tab', 'Session filter', 'Φίλτρο συνεδριών', [
+      { value: 'upcoming', en: 'Upcoming', el: 'Επερχόμενες' },
+      { value: 'past', en: 'Past', el: 'Παρελθούσες' },
+    ], activeTab, setActiveTab),
+    { id: 'schedule_session', labelEn: 'Open the schedule session form', labelEl: 'Άνοιγμα φόρμας νέας συνεδρίας', writes: false, run: () => setScheduleOpen(true) },
+    { id: 'reschedule_session', labelEn: 'Reschedule session', labelEl: 'Αλλαγή ώρας συνεδρίας', writes: false, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setRescheduling(s); } },
+    { id: 'session_notes', labelEn: 'Open session notes', labelEl: 'Άνοιγμα σημειώσεων συνεδρίας', writes: false, options: rowOptions(sessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setNotesFor(s); } },
+    { id: 'cancel_session', labelEn: 'Cancel session', labelEl: 'Ακύρωση συνεδρίας', writes: true, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) void cancelSession(s); } },
+  ]);
 
   if (!mounted) {
     return (

@@ -22,6 +22,7 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-activity';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 // ── Type config ─────────────────────────────────────────────────────────────
 
@@ -280,7 +281,10 @@ export default function ActivityPage() {
 
   const markAll = useMutation({
     mutationFn: markAllNotificationsRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk('notifications', 'activity') }),
+    // The whole root, not this page's list: the bell and the sidebar read
+    // `notifications/unread-count`, and refreshing only this list left them
+    // counting notifications that had just been read.
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
   const activityItems = allItems;
@@ -292,6 +296,24 @@ export default function ActivityPage() {
     if (typeFilter === 'all') return activityItems;
     return activityItems.filter((i) => i.type === typeFilter);
   }, [activityItems, typeFilter]);
+
+  // Offered to the assistant: the tab, the type chips, Load more and Mark
+  // all read - the same setters and mutation; the tab's rows go out as a list.
+  usePageList([
+    activeTab === 'notifications'
+      ? { id: 'notifications', labelEn: 'Notifications', labelEl: 'Ειδοποιήσεις', rows: notifLoading ? undefined : notifications.map((n) => `${n.readAt ? '' : '(unread) '}${n.title} · ${n.createdAt.slice(0, 10)}`) }
+      : { id: 'activity', labelEn: 'Network activity', labelEl: 'Δραστηριότητα δικτύου', rows: activityLoading ? undefined : (activeTab === 'events' ? eventItems : filteredActivity).map((i) => `${i.title}${i.author ? ` · ${i.author}` : ''} · ${i.type} · ${i.createdAt.slice(0, 10)}`) },
+  ]);
+  usePageControls([
+    choiceControl('activity_tab', 'Activity section', 'Ενότητα δραστηριότητας', [
+      { value: 'network', en: 'Network', el: 'Δίκτυο' },
+      { value: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις' },
+      { value: 'events', en: 'Events', el: 'Εκδηλώσεις' },
+    ], activeTab, (v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }),
+    choiceControl('activity_type', 'Activity type', 'Τύπος δραστηριότητας', FEED_TYPE_FILTERS.map((f) => ({ value: f.value, en: activityEn(f.key), el: activityEl(f.key) })), typeFilter, (v) => setTypeFilter(v as ActivityType)),
+    { id: 'load_more', labelEn: 'Load more activity', labelEl: 'Φόρτωση περισσότερης δραστηριότητας', writes: false, unavailableEn: hasMore ? undefined : 'There is no more activity to load.', unavailableEl: hasMore ? undefined : 'Δεν υπάρχει άλλη δραστηριότητα.', run: () => void handleLoadMore() },
+    { id: 'mark_all_read', labelEn: 'Mark all notifications read', labelEl: 'Σήμανση όλων ως αναγνωσμένων', writes: true, unavailableEn: activeTab === 'notifications' && unreadCount === 0 ? 'Nothing is unread.' : undefined, unavailableEl: activeTab === 'notifications' && unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined, run: () => markAll.mutate() },
+  ]);
 
   // Group items by date
   const groupedActivity = useMemo(() => {

@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/dialog';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 /**
  * An application is a program participant whose status says so.
@@ -282,7 +283,6 @@ export default function OrgApplicationsPage() {
   const [program, setProgram] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('all');
 
-  // Mock data
   /*
    * Applications are participants at `applied`, across the organisation's
    * programs. One request per program because the endpoint is scoped to a
@@ -379,6 +379,39 @@ export default function OrgApplicationsPage() {
 
   const filtersActive = !!search || program !== 'all' || activeTab !== 'all';
   const clearFilters = () => { setSearch(''); setProgram('all'); setActiveTab('all'); };
+
+  // Offered to the assistant: status and program filters, opening a review,
+  // and accept / reject - the decision the review dialog records, refused on
+  // the illustrative rows, which have nothing behind them.
+  const undecided = filteredApplications.filter((a) => a.status !== 'accepted' && a.status !== 'rejected');
+  const byStartup = (list: Application[]) => rowOptions(list, (a) => a.id, (a) => a.startupName);
+  const sampleEn = isLive ? undefined : 'These applications are illustrative; there is nothing behind them to decide.';
+  const sampleEl = isLive ? undefined : 'Οι αιτήσεις είναι ενδεικτικές· δεν υπάρχει κάτι πίσω τους για απόφαση.';
+  usePageList([
+    {
+      id: 'applications',
+      labelEn: 'Applications',
+      labelEl: 'Αιτήσεις',
+      rows: filteredApplications.map((a) => `${a.startupName} · ${a.founderName} · ${a.program} · ${a.industry}, ${a.stage} · ${a.status.replace('_', ' ')}${a.score != null ? ` · score ${a.score}` : ''}`),
+      total: applications.length,
+      sample: !isLive,
+    },
+  ]);
+  usePageControls([
+    choiceControl('status_tab', 'Application status', 'Κατάσταση αίτησης', [
+      { value: 'all', en: 'All', el: 'Όλες' },
+      { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+      { value: 'under_review', en: 'Under review', el: 'Υπό αξιολόγηση' },
+      { value: 'shortlisted', en: 'Shortlisted', el: 'Προεπιλεγμένες' },
+      { value: 'accepted', en: 'Accepted', el: 'Εγκεκριμένες' },
+      { value: 'rejected', en: 'Rejected', el: 'Απορριφθείσες' },
+    ], activeTab, setActiveTab),
+    choiceControl('program_filter', 'Program filter', 'Φίλτρο προγράμματος', [{ value: 'all', en: 'All programs', el: 'Όλα τα προγράμματα' }, ...programNames.map((p) => ({ value: p, en: p, el: p }))], program, setProgram),
+    { id: 'clear_filters', labelEn: 'Clear the application filters', labelEl: 'Καθαρισμός φίλτρων αιτήσεων', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
+    { id: 'review_application', labelEn: 'Review application', labelEl: 'Αξιολόγηση αίτησης', writes: false, options: byStartup(filteredApplications), run: (v) => { const a = applications.find((x) => x.id === v); if (a) setReviewing(a); } },
+    { id: 'accept_application', labelEn: 'Accept application', labelEl: 'Αποδοχή αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); if (a) onDecide(a, 'accepted'); } },
+    { id: 'reject_application', labelEn: 'Reject application', labelEl: 'Απόρριψη αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); if (a) onDecide(a, 'rejected'); } },
+  ]);
 
   return (
     <AppShell

@@ -89,6 +89,8 @@ import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
   spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -452,6 +454,7 @@ function UserRow({
 export default function AdminPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('reports');
   const [userSearch, setUserSearch] = useState('');
   const [cohortSearch, setCohortSearch] = useState('');
@@ -605,6 +608,73 @@ export default function AdminPage() {
           (u.profile?.displayName ?? '').toLowerCase().includes(userSearch.toLowerCase()),
       )
     : users;
+
+  // A cohort delete used to run on the first click of a hover-only icon. It
+  // asks now, from the button and from the assistant alike.
+  const deleteCohort = async (cohort: { id: string; name: string }) => {
+    if (await confirm(deleteConfirmCopy({ en: 'cohort', el: 'κοορτής' }, cohort.name))) deleteCohortMutation.mutate(cohort.id);
+  };
+
+  // Offered to the assistant: the tab, Refresh, the audit export, and each
+  // row's actions on reports, users, cohorts, events and jobs - the same
+  // mutations the row buttons run.
+  const cohorts = cohortsData?.cohorts ?? [];
+  const events = eventsData?.events ?? [];
+  const jobs = jobsData?.jobs ?? [];
+  const openReportRows = reports.filter((r) => r.status === 'pending' || r.status === 'reviewed');
+  const reportLabel = (r: AdminReportItem) => `${r.type} — ${r.reported.name}`;
+  const userName = (u: (typeof users)[number]) => u.profile?.displayName || u.email;
+  usePageList([
+    { id: 'reports', labelEn: 'Reports', labelEl: 'Αναφορές', rows: reportsLoading ? undefined : reports.map((r) => `${reportLabel(r)} · ${r.status} · by ${r.reporter.name}: ${r.reason}`) },
+    { id: 'users', labelEn: 'Users', labelEl: 'Χρήστες', rows: usersLoading ? undefined : filteredUsers.map((u) => `${userName(u)} · ${u.email} · ${u.role} · ${u.moderationStatus}${u.reportsCount ? ` · ${u.reportsCount} reports` : ''}`) },
+    { id: 'cohorts', labelEn: 'Cohorts', labelEl: 'Κοόρτεις', rows: activeTab === 'cohorts' && !cohortsLoading ? cohorts.map((c) => `${c.name} · ${c.isActive ? 'active' : 'inactive'}${c.capacity ? ` · capacity ${c.capacity}` : ''}`) : undefined },
+    { id: 'events', labelEn: 'Events', labelEl: 'Εκδηλώσεις', rows: activeTab === 'content' && !eventsLoading ? events.map((e) => `${e.title} · ${e.startAt.slice(0, 10)}${e.isFeatured ? ' · featured' : ''}`) : undefined },
+    { id: 'jobs', labelEn: 'Jobs', labelEl: 'Αγγελίες', rows: activeTab === 'content' && !jobsLoading ? jobs.map((j) => `${j.title} · ${j.creator.displayName}${j.isFeatured ? ' · featured' : ''}`) : undefined },
+  ]);
+  usePageControls([
+    choiceControl('admin_tab', 'Admin section', 'Ενότητα διαχείρισης', [
+      { value: 'reports', en: 'Reports', el: 'Αναφορές' },
+      { value: 'users', en: 'Users', el: 'Χρήστες' },
+      { value: 'content', en: 'Content', el: 'Περιεχόμενο' },
+      { value: 'cohorts', en: 'Cohorts', el: 'Κοόρτεις' },
+      { value: 'analytics', en: 'Analytics', el: 'Στατιστικά' },
+      { value: 'audit', en: 'Audit log', el: 'Αρχείο ελέγχου' },
+      { value: 'email', en: 'Email templates', el: 'Πρότυπα email' },
+      { value: 'gamification', en: 'Gamification', el: 'Gamification' },
+      { value: 'score-inspector', en: 'Score inspector', el: 'Επιθεώρηση βαθμολογίας' },
+      { value: 'abuse', en: 'Abuse monitor', el: 'Παρακολούθηση κατάχρησης' },
+      { value: 'experiments', en: 'Experiments', el: 'Πειράματα' },
+      { value: 'behavior', en: 'Behavior AI', el: 'Behavior AI' },
+    ], activeTab, setActiveTab),
+    { id: 'refresh', labelEn: 'Refresh all admin data', labelEl: 'Ανανέωση όλων των δεδομένων', writes: false, run: () => { void refetchReports(); void refetchUsers(); void refetchStats(); } },
+    {
+      id: 'export_audit_log',
+      labelEn: 'Export the audit log as CSV',
+      labelEl: 'Εξαγωγή αρχείου ελέγχου σε CSV',
+      writes: false,
+      unavailableEn: auditData?.logs?.length ? undefined : 'Open the audit log first; nothing is loaded to export.',
+      unavailableEl: auditData?.logs?.length ? undefined : 'Ανοίξτε πρώτα το αρχείο ελέγχου· δεν έχει φορτωθεί τίποτα.',
+      run: exportAuditLogCSV,
+    },
+    { id: 'resolve_report', labelEn: 'Resolve report', labelEl: 'Επίλυση αναφοράς', writes: true, options: rowOptions(openReportRows, (r) => r.id, reportLabel), run: (v) => { if (v) reportMutation.mutate({ id: v, status: 'resolved' }); } },
+    { id: 'dismiss_report', labelEn: 'Dismiss report', labelEl: 'Απόρριψη αναφοράς', writes: true, options: rowOptions(openReportRows, (r) => r.id, reportLabel), run: (v) => { if (v) reportMutation.mutate({ id: v, status: 'dismissed' }); } },
+    {
+      id: 'ban_reported_user',
+      labelEn: 'Resolve report and ban the reported user',
+      labelEl: 'Επίλυση αναφοράς και αποκλεισμός χρήστη',
+      writes: true,
+      options: rowOptions(openReportRows, (r) => r.id, reportLabel),
+      run: (v) => { const r = reports.find((x) => x.id === v); if (r) reportMutation.mutate({ id: r.id, status: 'resolved', banUserId: r.reported.id }); },
+    },
+    { id: 'suspend_user', labelEn: 'Suspend user', labelEl: 'Αναστολή χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus === 'active'), (u) => u.id, userName), run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'suspended' }); } },
+    { id: 'reactivate_user', labelEn: 'Reactivate user', labelEl: 'Επανενεργοποίηση χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'active'), (u) => u.id, userName), run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'active' }); } },
+    { id: 'ban_user', labelEn: 'Ban user', labelEl: 'Αποκλεισμός χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'banned'), (u) => u.id, userName), run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'banned' }); } },
+    { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κοορτής', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κοόρτεις.', run: (v) => { const c = cohorts.find((x) => x.id === v); if (c) void deleteCohort(c); } },
+    { id: 'feature_event', labelEn: 'Feature or unfeature event', labelEl: 'Προβολή ή απόσυρση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { const e = events.find((x) => x.id === v); if (e) featureMutation.mutate({ type: 'event', id: e.id, featured: !e.isFeatured }); } },
+    { id: 'feature_job', labelEn: 'Feature or unfeature job', labelEl: 'Προβολή ή απόσυρση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { const j = jobs.find((x) => x.id === v); if (j) featureMutation.mutate({ type: 'job', id: j.id, featured: !j.isFeatured }); } },
+    { id: 'remove_event', labelEn: 'Remove event', labelEl: 'Αφαίρεση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'event', id: v }); } },
+    { id: 'remove_job', labelEn: 'Remove job', labelEl: 'Αφαίρεση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Content tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Περιεχόμενο.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'job', id: v }); } },
+  ]);
 
   /*
    * The six platform totals used to sit above the tabs, so the first thing an
@@ -1089,7 +1159,7 @@ export default function AdminPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-                        onClick={() => deleteCohortMutation.mutate(cohort.id)}
+                        onClick={() => void deleteCohort(cohort)}
                         disabled={deleteCohortMutation.isPending}
                       >
                         <Trash2 className="icon-sm" />
