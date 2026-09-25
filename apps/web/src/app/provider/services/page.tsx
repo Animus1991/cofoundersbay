@@ -41,6 +41,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type Service = {
   id: string;
@@ -140,17 +141,17 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
                     listing is the marketplace searched for this title. */}
                 <DropdownMenuItem disabled={!onEdit} onSelect={() => onEdit?.(service)}>
                   <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                  Edit Service
+                  <BilingualText en="Edit Service" el="Επεξεργασία υπηρεσίας" compact />
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={`/marketplace?q=${encodeURIComponent(service.name)}`}>
                     <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                    Preview
+                    <BilingualText en="Preview" el="Προεπισκόπηση" compact />
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-destructive-accessible" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
                   <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
-                  Delete
+                  <BilingualText en="Delete" el="Διαγραφή" compact />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -372,7 +373,7 @@ export default function ProviderServicesPage() {
     <AppShell
       title="My Services"
       description="Manage your service offerings"
-      actions={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Service</Button>}
+      actions={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
     >
       <div className="space-y-6">
         {!showDemoData && services.length === 0 && (
@@ -381,7 +382,7 @@ export default function ProviderServicesPage() {
             title="No services listed"
             description="Create your first service offering to start receiving bookings."
             askAiPrompt="I have not listed any services. Help me describe a first offering based on a typical service provider on CoFounderBay."
-            action={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Service</Button>}
+            action={<Button size="sm" onClick={openCreate}><Plus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add Service" el="Προσθήκη υπηρεσίας" compact /></Button>}
           />
         )}
 
@@ -400,13 +401,13 @@ export default function ProviderServicesPage() {
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Services</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Services" el="Σύνολο υπηρεσιών" compact /></p>
               <p className="text-xl font-bold">{services.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
               <p className="text-xl font-bold text-status-success">
                 {services.filter((s) => s.isActive).length}
               </p>
@@ -414,7 +415,7 @@ export default function ProviderServicesPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Bookings</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Bookings" el="Σύνολο κρατήσεων" compact /></p>
               <p className="text-xl font-bold">
                 {services.reduce((acc, s) => acc + s.bookings, 0)}
               </p>
@@ -431,9 +432,9 @@ export default function ProviderServicesPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Store className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No services found</h3>
+                <h3 className="font-medium"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your search or add a new service
+                  <BilingualText en="Try adjusting your search or add a new service" el="Δοκιμάστε άλλη αναζήτηση ή προσθέστε νέα υπηρεσία" wrap />
                 </p>
               </CardContent>
             </Card>
@@ -448,25 +449,25 @@ export default function ProviderServicesPage() {
           </DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void saveEdit(); }}>
             <div className="space-y-1.5">
-              <Label htmlFor="svc-title">Title</Label>
+              <Label htmlFor="svc-title"><BilingualText en="Title" el="Τίτλος" compact /></Label>
               <Input id="svc-title" value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="svc-description">Description</Label>
+              <Label htmlFor="svc-description"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
               <Textarea id="svc-description" rows={4} value={draft.description} onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))} />
             </div>
             {creating && (
               <div className="space-y-1.5">
-                <Label htmlFor="svc-provider">Provider name</Label>
+                <Label htmlFor="svc-provider"><BilingualText en="Provider name" el="Όνομα παρόχου" compact /></Label>
                 <Input id="svc-provider" value={draft.providerName} onChange={(e) => setDraft((d) => ({ ...d, providerName: e.target.value }))} placeholder="Your name or firm" required />
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="svc-pricing">Pricing</Label>
+              <Label htmlFor="svc-pricing"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></Label>
               <Input id="svc-pricing" value={draft.pricing} onChange={(e) => setDraft((d) => ({ ...d, pricing: e.target.value }))} placeholder="e.g. From €500" />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setEditing(null); setCreating(false); }}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => { setEditing(null); setCreating(false); }}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
               <Button type="submit" disabled={saving || !draft.title.trim() || (creating && !draft.providerName.trim())}>
                 {saving ? 'Saving…' : creating ? 'Publish' : 'Save'}
               </Button>

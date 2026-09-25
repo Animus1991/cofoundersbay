@@ -42,6 +42,7 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * The page's own row from the organisation's member list.
@@ -135,10 +136,10 @@ function StartupCard({ startup }: { startup: Startup }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/profiles/${startup.id}`}>View Details</Link>
+                      <Link href={`/profiles/${startup.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/builder">Open Workspace</Link>
+                      <Link href="/builder"><BilingualText en="Open Workspace" el="Άνοιγμα χώρου εργασίας" compact /></Link>
                     </DropdownMenuItem>
                     {/* A cohort "startup" is its member (id = user id, see
                         toStartup), so details are their profile and a message
@@ -151,7 +152,7 @@ function StartupCard({ startup }: { startup: Startup }) {
                       reasonEl="Οι αναθέσεις μεντόρων δεν αποθηκεύονται ακόμη."
                     />
                     <DropdownMenuItem asChild>
-                      <Link href={`/messages?to=${startup.id}`}>Send Message</Link>
+                      <Link href={`/messages?to=${startup.id}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -180,7 +181,7 @@ function StartupCard({ startup }: { startup: Startup }) {
                 {startup.progress != null && (
                   <div className="flex-1">
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Progress</span>
+                      <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                       <span className="font-medium">{startup.progress}%</span>
                     </div>
                     <Progress value={startup.progress} className="h-1.5" />
@@ -188,7 +189,7 @@ function StartupCard({ startup }: { startup: Startup }) {
                 )}
                 {startup.readinessScore != null && (
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground">Readiness</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></p>
                     <p className="text-sm font-medium">{startup.readinessScore}%</p>
                   </div>
                 )}
@@ -345,7 +346,7 @@ export default function OrgStartupsPage() {
       actions={(
         <Button asChild>
           <Link href="/org/applications">
-            Review Applications
+            <BilingualText en="Review Applications" el="Έλεγχος αιτήσεων" compact />
           </Link>
         </Button>
       )}
@@ -356,13 +357,13 @@ export default function OrgStartupsPage() {
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Startups</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Startups" el="Σύνολο startups" compact /></p>
               <p className="text-xl font-bold">{startups.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
               <p className={cn('text-xl font-bold', STATUS.success.icon)}>
                 {startups.filter((s) => s.status === 'active').length}
               </p>
@@ -370,7 +371,7 @@ export default function OrgStartupsPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Graduated</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></p>
               <p className={cn('text-xl font-bold', STATUS.info.icon)}>
                 {startups.filter((s) => s.status === 'graduated').length}
               </p>
@@ -378,7 +379,7 @@ export default function OrgStartupsPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Avg. Readiness</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Avg. Readiness" el="Μέση ετοιμότητα" compact /></p>
               <p className="text-xl font-bold">
                 {scored.length ? `${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%` : '\u2014'}
               </p>
@@ -402,7 +403,7 @@ export default function OrgStartupsPage() {
               <SelectValue placeholder="Program" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Programs</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>
               {programs.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
@@ -413,11 +414,11 @@ export default function OrgStartupsPage() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="graduated">Graduated</SelectItem>
-              <SelectItem value="paused">Paused</SelectItem>
-              <SelectItem value="dropped">Dropped</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+              <SelectItem value="active"><BilingualText en="Active" el="Ενεργά" compact /></SelectItem>
+              <SelectItem value="graduated"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></SelectItem>
+              <SelectItem value="paused"><BilingualText en="Paused" el="Σε παύση" compact /></SelectItem>
+              <SelectItem value="dropped"><BilingualText en="Dropped" el="Αποχώρησαν" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>

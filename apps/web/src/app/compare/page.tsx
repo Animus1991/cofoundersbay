@@ -19,6 +19,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getMatchBreakdown, sendConnectionRequest } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const ComparisonChart = dynamic(
   () => import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
@@ -99,7 +100,7 @@ function ProfileColumn({
       {profile.matchScore !== undefined && (
         <div className="mb-4 rounded-lg bg-primary/5 p-3 text-center">
           <p className="text-2xl font-bold text-primary-accessible">{profile.matchScore}%</p>
-          <p className="text-xs text-muted-foreground">Match Score</p>
+          <p className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
         </div>
       )}
 
@@ -109,13 +110,13 @@ function ProfileColumn({
           <Button variant="outline" size="sm" className="flex-1" asChild>
             <a href={`/messages?user=${profile.id}`}>
               <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
-              Message
+              <BilingualText en="Message" el="Μήνυμα" compact />
             </a>
           </Button>
         ) : profile.connectionStatus === 'pending' ? (
           <Button variant="outline" size="sm" className="flex-1" disabled>
             <Clock className="icon-sm mr-1" aria-hidden="true" />
-            Pending
+            <BilingualText en="Pending" el="Σε αναμονή" compact />
           </Button>
         ) : (
           <Button
@@ -126,47 +127,47 @@ function ProfileColumn({
             disabled={isConnecting}
           >
             <UserPlus className="icon-sm mr-1" aria-hidden="true" />
-            Connect
+            <BilingualText en="Connect" el="Σύνδεση" compact />
           </Button>
         )}
       </div>
 
       {/* Skills */}
       <div className="mb-4">
-        <p className="text-xs font-medium text-muted-foreground mb-2">Skills</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2"><BilingualText en="Skills" el="Δεξιότητες" compact /></p>
         <div className="flex flex-wrap gap-1">
           {profile.skills?.slice(0, 5).map((skill) => (
             <Badge key={skill.name} variant="secondary" className="text-xs">
               {skill.name}
             </Badge>
-          )) || <span className="text-xs text-muted-foreground">No skills listed</span>}
+          )) || <span className="text-xs text-muted-foreground"><BilingualText en="No skills listed" el="Δεν έχουν καταχωριστεί δεξιότητες" compact /></span>}
         </div>
       </div>
 
       {/* Industries */}
       <div className="mb-4">
-        <p className="text-xs font-medium text-muted-foreground mb-2">Industries</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2"><BilingualText en="Industries" el="Κλάδοι" compact /></p>
         <div className="flex flex-wrap gap-1">
           {profile.industries?.slice(0, 3).map((ind) => (
             <Badge key={ind} variant="outline" className="text-xs">
               {ind}
             </Badge>
-          )) || <span className="text-xs text-muted-foreground">Not specified</span>}
+          )) || <span className="text-xs text-muted-foreground"><BilingualText en="Not specified" el="Δεν έχει οριστεί" compact /></span>}
         </div>
       </div>
 
       {/* Stage & Availability */}
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Stage</span>
+          <span className="text-muted-foreground"><BilingualText en="Stage" el="Στάδιο" compact /></span>
           <span className="font-medium">{profile.stage || '—'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Availability</span>
+          <span className="text-muted-foreground"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></span>
           <span className="font-medium">{profile.availability || '—'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Languages</span>
+          <span className="text-muted-foreground"><BilingualText en="Languages" el="Γλώσσες" compact /></span>
           <span className="font-medium">{profile.languages?.join(', ') || '—'}</span>
         </div>
       </div>
@@ -183,8 +184,8 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
       <div className="rounded-full bg-primary/10 p-4 mb-3">
         <Plus className="icon-xl text-primary-accessible" />
       </div>
-      <p className="font-medium text-foreground">Add Profile</p>
-      <p className="text-sm text-muted-foreground mt-1">Select from matches or search</p>
+      <p className="font-medium text-foreground"><BilingualText en="Add Profile" el="Προσθήκη προφίλ" compact /></p>
+      <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Select from matches or search" el="Επιλέξτε από τις αντιστοιχίσεις ή αναζητήστε" compact /></p>
     </button>
   );
 }
@@ -202,7 +203,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Zap className="icon-md text-primary-accessible" />
-          Skills Comparison
+          <BilingualText en="Skills Comparison" el="Σύγκριση δεξιοτήτων" compact />
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -339,12 +340,12 @@ export default function ComparePage() {
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleShare}>
               <Share2 className="icon-sm mr-1" aria-hidden="true" />
-              Share
+              <BilingualText en="Share" el="Κοινοποίηση" compact />
             </Button>
             {profileIds.length < MAX_PROFILES && (
               <Button size="sm" onClick={handleAdd}>
                 <Plus className="icon-sm mr-1" aria-hidden="true" />
-                Add Profile
+                <BilingualText en="Add Profile" el="Προσθήκη προφίλ" compact />
               </Button>
             )}
           </div>
@@ -362,7 +363,7 @@ export default function ComparePage() {
             action={
               <Button onClick={handleAdd}>
                 <Plus className="icon-sm mr-2" aria-hidden="true" />
-                Add Profiles
+                <BilingualText en="Add Profiles" el="Προσθήκη προφίλ" compact />
               </Button>
             }
           />

@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/select';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
@@ -188,7 +189,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               {isOnline && (
                 <span className="flex items-center gap-1 text-status-success">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Online
+                  <BilingualText en="Online" el="Σε σύνδεση" compact />
                 </span>
               )}
             </div>
@@ -196,7 +197,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             {/* Contribution score */}
             <div className="w-full mb-3">
               <div className="flex items-center justify-between text-2xs mb-1">
-                <span className="text-muted-foreground">Profile completeness</span>
+                <span className="text-muted-foreground"><BilingualText en="Profile completeness" el="Πληρότητα προφίλ" compact /></span>
                 <span className={cn('font-semibold', scoreColor(completeness))}>{completeness}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
@@ -210,7 +211,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex gap-2 w-full">
               <Button size="sm" onClick={onConnect} className="flex-1 gap-1.5">
                 <UserPlus className="icon-sm" />
-                Connect
+                <BilingualText en="Connect" el="Σύνδεση" compact />
               </Button>
               <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                 <MessageCircle className="icon-sm" />
@@ -258,7 +259,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={onConnect} className="gap-1.5">
                   <UserPlus className="icon-sm" />
-                  Connect
+                  <BilingualText en="Connect" el="Σύνδεση" compact />
                 </Button>
                 <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                   <MessageCircle className="icon-sm" />
@@ -487,7 +488,7 @@ export function MembersPageClient() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Sparkles className="icon-sm text-primary-accessible" />
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Members</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><BilingualText en="Featured Members" el="Προτεινόμενα μέλη" compact /></h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {featuredMembers.map((member) => (
@@ -567,7 +568,7 @@ export function MembersPageClient() {
             <CardContent className="p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
+                  <label className="text-sm font-medium"><BilingualText en="Role" el="Ρόλος" compact /></label>
                   <Select
                     value={selectedRole}
                     onValueChange={(value) => setSelectedRole(value as (typeof ROLE_OPTIONS)[number]['value'])}
@@ -586,7 +587,7 @@ export function MembersPageClient() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Industry</label>
+                  <label className="text-sm font-medium"><BilingualText en="Industry" el="Κλάδος" compact /></label>
                   <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
                     <SelectTrigger aria-label="Industry">
                       <SelectValue />
@@ -602,7 +603,7 @@ export function MembersPageClient() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Location</label>
+                  <label className="text-sm font-medium"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
                   <Select value={selectedLocation} onValueChange={setSelectedLocation}>
                     <SelectTrigger aria-label="Location">
                       <SelectValue />
@@ -618,7 +619,7 @@ export function MembersPageClient() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Availability</label>
+                  <label className="text-sm font-medium"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></label>
                   <Select
                     value={selectedAvailability}
                     onValueChange={(value) => setSelectedAvailability(value as (typeof AVAILABILITY_OPTIONS)[number]['value'])}
@@ -644,7 +645,7 @@ export function MembersPageClient() {
                   </span>
                   <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
                     <X className="icon-sm" />
-                    Clear all
+                    <BilingualText en="Clear all" el="Καθαρισμός όλων" compact />
                   </Button>
                 </div>
               )}
@@ -663,9 +664,9 @@ export function MembersPageClient() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="relevance">Most Relevant</SelectItem>
-                <SelectItem value="recent">Newest First</SelectItem>
-                <SelectItem value="active">Most Active</SelectItem>
+                <SelectItem value="relevance"><BilingualText en="Most Relevant" el="Πιο σχετικά" compact /></SelectItem>
+                <SelectItem value="recent"><BilingualText en="Newest First" el="Νεότερα πρώτα" compact /></SelectItem>
+                <SelectItem value="active"><BilingualText en="Most Active" el="Πιο ενεργά" compact /></SelectItem>
               </SelectContent>
             </Select>
         </div>
@@ -675,8 +676,8 @@ export function MembersPageClient() {
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
               <Users className="icon-xl text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Failed to load members. Please check your connection.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load members. Please check your connection." el="Δεν ήταν δυνατή η φόρτωση των μελών. Ελέγξτε τη σύνδεσή σας." wrap /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
             </CardContent>
           </Card>
         ) : isLoading ? (
@@ -692,13 +693,13 @@ export function MembersPageClient() {
           <Card>
             <CardContent className="py-12 text-center">
               <Users className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-              <h3 className="text-lg font-semibold mb-2">No members found</h3>
+              <h3 className="text-lg font-semibold mb-2"><BilingualText en="No members found" el="Δεν βρέθηκαν μέλη" compact /></h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Try adjusting your search or filters
+                <BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap />
               </p>
               {activeFiltersCount > 0 && (
                 <Button variant="secondary" onClick={clearFilters}>
-                  Clear filters
+                  <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
                 </Button>
               )}
             </CardContent>

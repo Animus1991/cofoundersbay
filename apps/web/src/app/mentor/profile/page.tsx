@@ -30,6 +30,7 @@ import { getMeProfile, getMentorDashboardStats } from '@/lib/api';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { mentorDemoRating } from '@/lib/demo/mentor-world';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
@@ -138,7 +139,7 @@ export default function MentorProfilePage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
                   <BadgeCheck className="icon-sm text-primary-accessible" />
-                  <Badge variant="secondary" className="text-xs">Mentor</Badge>
+                  <Badge variant="secondary" className="text-xs"><BilingualText en="Mentor" el="Μέντορας" compact /></Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your headline below...'}
@@ -159,18 +160,18 @@ export default function MentorProfilePage() {
 
         <Tabs defaultValue="basics">
           <TabsList className="w-full sm:grid sm:grid-cols-3">
-            <TabsTrigger value="basics">Basics</TabsTrigger>
-            <TabsTrigger value="expertise">Expertise</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing & Formats</TabsTrigger>
+            <TabsTrigger value="basics"><BilingualText en="Basics" el="Βασικά" compact /></TabsTrigger>
+            <TabsTrigger value="expertise"><BilingualText en="Expertise" el="Εξειδίκευση" compact /></TabsTrigger>
+            <TabsTrigger value="pricing"><BilingualText en="Pricing & Formats" el="Τιμές & μορφές" compact /></TabsTrigger>
           </TabsList>
 
           {/* Basics */}
           <TabsContent value="basics" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">About You</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="About You" el="Σχετικά με εσάς" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Headline</Label>
+                  <Label><BilingualText en="Headline" el="Τίτλος" compact /></Label>
                   <Input
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
@@ -180,7 +181,7 @@ export default function MentorProfilePage() {
                   <p className="text-xs text-muted-foreground">{headline.length}/120 chars</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Mentoring Bio</Label>
+                  <Label><BilingualText en="Mentoring Bio" el="Βιογραφικό καθοδήγησης" compact /></Label>
                   <Textarea
                     value={bio}
                     onChange={e => setBio(e.target.value)}
@@ -191,7 +192,7 @@ export default function MentorProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Years of Experience</Label>
+                    <Label><BilingualText en="Years of Experience" el="Χρόνια εμπειρίας" compact /></Label>
                     <Select value={yearsExp} onValueChange={setYearsExp}>
                       <SelectTrigger aria-label="Years of Experience"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -202,7 +203,7 @@ export default function MentorProfilePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Hours Available / Week</Label>
+                    <Label><BilingualText en="Hours Available / Week" el="Διαθέσιμες ώρες / εβδομάδα" compact /></Label>
                     <Select value={hoursPerWeek} onValueChange={setHoursPerWeek}>
                       <SelectTrigger aria-label="Hours Available / Week"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -215,8 +216,8 @@ export default function MentorProfilePage() {
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <p className="text-sm font-medium">Accepting New Mentees</p>
-                    <p className="text-xs text-muted-foreground">Toggle visibility in mentee search</p>
+                    <p className="text-sm font-medium"><BilingualText en="Accepting New Mentees" el="Δέχεται νέους μαθητευόμενους" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Toggle visibility in mentee search" el="Εμφάνιση στην αναζήτηση μαθητευόμενων" wrap /></p>
                   </div>
                   <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Mentees" />
                 </div>
@@ -227,7 +228,7 @@ export default function MentorProfilePage() {
           {/* Expertise */}
           <TabsContent value="expertise" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Industries</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Industries" el="Κλάδοι" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
@@ -249,7 +250,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Startup Stages</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {STARTUP_STAGES.map(stage => (
@@ -271,7 +272,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Expertise Areas</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Expertise Areas" el="Πεδία εξειδίκευσης" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {EXPERTISE_AREAS.map(area => (
@@ -296,7 +297,7 @@ export default function MentorProfilePage() {
           {/* Pricing & Formats */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Session Formats</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Session Formats" el="Μορφές συνεδριών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {[
@@ -329,18 +330,18 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Pricing</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <p className="text-sm font-medium">Free Mentoring</p>
-                    <p className="text-xs text-muted-foreground">Offer sessions at no cost</p>
+                    <p className="text-sm font-medium"><BilingualText en="Free Mentoring" el="Δωρεάν καθοδήγηση" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Offer sessions at no cost" el="Συνεδρίες χωρίς χρέωση" compact /></p>
                   </div>
                   <Switch checked={isFree} onCheckedChange={setIsFree} aria-label="Free Mentoring" />
                 </div>
                 {!isFree && (
                   <div className="space-y-2">
-                    <Label>Hourly Rate (USD)</Label>
+                    <Label><BilingualText en="Hourly Rate (USD)" el="Ωριαία αμοιβή (USD)" compact /></Label>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">$</span>
                       <Input
@@ -356,7 +357,7 @@ export default function MentorProfilePage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label>Default Session Duration</Label>
+                  <Label><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                   <Select value={sessionDuration} onValueChange={setSessionDuration}>
                     <SelectTrigger aria-label="Default Session Duration" className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>

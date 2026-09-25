@@ -200,7 +200,7 @@ export default function UserBillingPage() {
               {subLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="icon-sm animate-spin" />
-                  <span className="text-sm">Loading subscription…</span>
+                  <span className="text-sm"><BilingualText en="Loading subscription…" el="Φόρτωση συνδρομής…" compact /></span>
                 </div>
               ) : sub ? (
                 <>
@@ -225,7 +225,7 @@ export default function UserBillingPage() {
                 </>
               ) : (
                 <div>
-                  <p className="text-lg font-semibold">Free</p>
+                  <p className="text-lg font-semibold"><BilingualText en="Free" el="Δωρεάν" compact /></p>
                   <p className="text-sm text-muted-foreground">$0/mo</p>
                 </div>
               )}
@@ -243,11 +243,11 @@ export default function UserBillingPage() {
                 <div>
                   <p className="text-lg font-semibold">Pro</p>
                   <p className="text-sm text-muted-foreground">
-                    Unlock more usage on matching, messages, and mentor booking.
+                    <BilingualText en="Unlock more usage on matching, messages, and mentor booking." el="Περισσότερη χρήση σε αντιστοιχίσεις, μηνύματα και κρατήσεις μεντόρων." wrap />
                   </p>
                 </div>
                 <Button size="sm" asChild>
-                  <Link href="/pricing">Upgrade</Link>
+                  <Link href="/pricing"><BilingualText en="Upgrade" el="Αναβάθμιση" compact /></Link>
                 </Button>
               </CardContent>
             </Card>
@@ -265,13 +265,13 @@ export default function UserBillingPage() {
           </p>
         )}
         {sub?.status === 'past_due' && (
-          <p className="text-sm text-status-danger">Payment failed. Update the payment method in Adjust plan.</p>
+          <p className="text-sm text-status-danger"><BilingualText en="Payment failed. Update the payment method in Adjust plan." el="Η πληρωμή απέτυχε. Ενημερώστε τον τρόπο πληρωμής στην Προσαρμογή πλάνου." wrap /></p>
         )}
 
         {sub?.plan?.features && (
           <Card className="border-border/50 shadow-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Included</CardTitle>
+              <CardTitle className="text-base"><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {Object.entries(sub.plan.features as Record<string, unknown>)
@@ -312,8 +312,8 @@ export default function UserBillingPage() {
           <CardHeader className="pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Billing Contact</CardTitle>
-                <CardDescription className="text-xs mt-0.5">Used on invoices and for tax compliance.</CardDescription>
+                <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
+                <CardDescription className="text-xs mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
                 {showContactForm ? 'Cancel' : (contactData as { billingContact?: BillingContact | null })?.billingContact ? 'Edit' : 'Add'}
@@ -334,7 +334,7 @@ export default function UserBillingPage() {
                 </>); })()}
               </div>
             ) : !showContactForm ? (
-              <p className="text-sm text-muted-foreground">No billing contact set.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No billing contact set." el="Δεν έχουν οριστεί στοιχεία τιμολόγησης." compact /></p>
             ) : null}
 
             {showContactForm && (
@@ -358,7 +358,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Company</Label>
+                    <Label className="text-xs"><BilingualText en="Company" el="Επωνυμία" compact /></Label>
                     <Input
                       placeholder="Acme Inc."
                       value={contactForm.company}
@@ -366,7 +366,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">VAT / Tax ID</Label>
+                    <Label className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
                     <Input
                       placeholder="EU123456789"
                       value={contactForm.vatId}
@@ -374,7 +374,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="col-span-2 space-y-1.5">
-                    <Label className="text-xs">Address</Label>
+                    <Label className="text-xs"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
                     <Input
                       placeholder="123 Main Street"
                       value={contactForm.addressLine1}
@@ -382,7 +382,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">City</Label>
+                    <Label className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
                     <Input
                       placeholder="Athens"
                       value={contactForm.city}
@@ -390,7 +390,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Postal Code</Label>
+                    <Label className="text-xs"><BilingualText en="Postal Code" el="Ταχυδρομικός κώδικας" compact /></Label>
                     <Input
                       placeholder="10431"
                       value={contactForm.postalCode}
@@ -407,7 +407,7 @@ export default function UserBillingPage() {
                     {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                     Save contact
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
               </div>
             )}
@@ -417,18 +417,18 @@ export default function UserBillingPage() {
         {/* Invoice history */}
         <Card className="border-border/50 shadow-none">
           <CardHeader className="pb-3 border-b border-border/50">
-            <CardTitle className="text-base">Invoice History</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {invoicesLoading ? (
               <div className="flex items-center justify-center p-8 gap-2 text-muted-foreground">
                 <Loader2 className="icon-sm animate-spin" />
-                <span className="text-sm">Loading invoices…</span>
+                <span className="text-sm"><BilingualText en="Loading invoices…" el="Φόρτωση τιμολογίων…" compact /></span>
               </div>
             ) : invoices.length === 0 ? (
               <div className="p-8 text-center">
                 <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
-                <p className="text-sm text-muted-foreground">No invoices yet</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
               </div>
             ) : (
               <div className="divide-y divide-border/50">

@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const DAYS = [
   { key: 0, label: 'Sunday',    short: 'Sun' },
@@ -154,7 +155,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Accepting Requests</span>
+                <span className="text-sm font-medium"><BilingualText en="Accepting Requests" el="Δέχεται αιτήματα" compact /></span>
                 <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests" />
               </div>
               <p className="text-xs text-muted-foreground">
@@ -166,7 +167,7 @@ export default function MentorAvailabilityPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="icon-sm text-primary-accessible" />
-                <span className="text-sm font-medium">Weekly Hours</span>
+                <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
               <p className="text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
               <p className="text-xs text-muted-foreground">across {slots.length} time blocks</p>
@@ -176,18 +177,18 @@ export default function MentorAvailabilityPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="icon-sm text-primary-accessible" />
-                <span className="text-sm font-medium">Timezone</span>
+                <span className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></span>
               </div>
               <p className="text-sm font-semibold truncate">{timezone.replace('/', ' / ')}</p>
-              <p className="text-xs text-muted-foreground">All times shown in local time</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="All times shown in local time" el="Όλες οι ώρες σε τοπική ώρα" compact /></p>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="schedule">
           <TabsList>
-            <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
-            <TabsTrigger value="preferences">Session Preferences</TabsTrigger>
+            <TabsTrigger value="schedule"><BilingualText en="Weekly Schedule" el="Εβδομαδιαίο πρόγραμμα" compact /></TabsTrigger>
+            <TabsTrigger value="preferences"><BilingualText en="Session Preferences" el="Προτιμήσεις συνεδριών" compact /></TabsTrigger>
           </TabsList>
 
           {/* Schedule Tab */}
@@ -195,7 +196,7 @@ export default function MentorAvailabilityPage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Timezone</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
@@ -226,11 +227,11 @@ export default function MentorAvailabilityPage() {
                               {daySlots.length} slot{daySlots.length > 1 ? 's' : ''}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs text-muted-foreground">Unavailable</Badge>
+                            <Badge variant="outline" className="text-xs text-muted-foreground"><BilingualText en="Unavailable" el="Μη διαθέσιμο" compact /></Badge>
                           )}
                         </div>
                         <Button size="sm" variant="ghost" onClick={() => addSlot(day.key)}>
-                          <Plus className="icon-sm mr-1" /> Add
+                          <Plus className="icon-sm mr-1" /> <BilingualText en="Add" el="Προσθήκη" compact />
                         </Button>
                       </div>
                       {daySlots.length > 0 && (
@@ -280,11 +281,11 @@ export default function MentorAvailabilityPage() {
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Session Settings</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Session Settings" el="Ρυθμίσεις συνεδριών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Default Session Duration</Label>
+                    <Label><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                     <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))}>
                       <SelectTrigger aria-label="Default Session Duration">
                         <SelectValue />
@@ -295,11 +296,11 @@ export default function MentorAvailabilityPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">Default length for new bookings</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Default length for new bookings" el="Προεπιλεγμένη διάρκεια νέων κρατήσεων" compact /></p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Buffer Between Sessions</Label>
+                    <Label><BilingualText en="Buffer Between Sessions" el="Διάλειμμα μεταξύ συνεδριών" compact /></Label>
                     <Select value={String(bufferTime)} onValueChange={v => setBufferTime(Number(v))}>
                       <SelectTrigger aria-label="Buffer Between Sessions">
                         <SelectValue />
@@ -310,11 +311,11 @@ export default function MentorAvailabilityPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">Gap between consecutive bookings</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Gap between consecutive bookings" el="Κενό μεταξύ διαδοχικών κρατήσεων" compact /></p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Minimum Notice Period</Label>
+                    <Label><BilingualText en="Minimum Notice Period" el="Ελάχιστη προειδοποίηση" compact /></Label>
                     <Select value={String(noticeHours)} onValueChange={v => setNoticeHours(Number(v))}>
                       <SelectTrigger aria-label="Minimum Notice Period">
                         <SelectValue />
@@ -325,7 +326,7 @@ export default function MentorAvailabilityPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">Advance booking notice required</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Advance booking notice required" el="Απαιτούμενη προειδοποίηση για κράτηση" compact /></p>
                   </div>
                 </div>
 

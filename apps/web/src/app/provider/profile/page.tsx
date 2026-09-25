@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile, getProviderSummary } from '@/lib/api';
 import { qk, queryKeys } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
@@ -161,28 +162,28 @@ export default function ProviderProfilePage() {
 
         <Tabs defaultValue="basics">
           <TabsList className="w-full sm:grid sm:grid-cols-3">
-            <TabsTrigger value="basics">Basics</TabsTrigger>
-            <TabsTrigger value="targeting">Targeting</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing</TabsTrigger>
+            <TabsTrigger value="basics"><BilingualText en="Basics" el="Βασικά" compact /></TabsTrigger>
+            <TabsTrigger value="targeting"><BilingualText en="Targeting" el="Στόχευση" compact /></TabsTrigger>
+            <TabsTrigger value="pricing"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></TabsTrigger>
           </TabsList>
 
           {/* Basics */}
           <TabsContent value="basics" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Company Info</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Company Info" el="Στοιχεία εταιρείας" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Company Name</Label>
+                    <Label><BilingualText en="Company Name" el="Επωνυμία" compact /></Label>
                     <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Legal Partners" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Website</Label>
+                    <Label><BilingualText en="Website" el="Ιστότοπος" compact /></Label>
                     <Input value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} placeholder="https://acmelegal.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Service Type</Label>
+                  <Label><BilingualText en="Service Type" el="Τύπος υπηρεσίας" compact /></Label>
                   <Select value={serviceType} onValueChange={setServiceType}>
                     <SelectTrigger aria-label="Service Type"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -193,7 +194,7 @@ export default function ProviderProfilePage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Headline</Label>
+                  <Label><BilingualText en="Headline" el="Τίτλος" compact /></Label>
                   <Input
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
@@ -202,7 +203,7 @@ export default function ProviderProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
+                  <Label><BilingualText en="Description" el="Περιγραφή" compact /></Label>
                   <Textarea
                     value={description}
                     onChange={e => setDescription(e.target.value)}
@@ -213,7 +214,7 @@ export default function ProviderProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Years in Business</Label>
+                    <Label><BilingualText en="Years in Business" el="Χρόνια λειτουργίας" compact /></Label>
                     <Select value={yearsInBusiness} onValueChange={setYearsInBusiness}>
                       <SelectTrigger aria-label="Years in Business"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -224,7 +225,7 @@ export default function ProviderProfilePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Clients Served</Label>
+                    <Label><BilingualText en="Clients Served" el="Πελάτες που εξυπηρετήθηκαν" compact /></Label>
                     <Input
                       type="number"
                       value={clientsServed}
@@ -235,8 +236,8 @@ export default function ProviderProfilePage() {
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <p className="text-sm font-medium">Accepting New Clients</p>
-                    <p className="text-xs text-muted-foreground">Show in service provider discovery</p>
+                    <p className="text-sm font-medium"><BilingualText en="Accepting New Clients" el="Δέχεται νέους πελάτες" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Show in service provider discovery" el="Εμφάνιση στην αναζήτηση παρόχων" wrap /></p>
                   </div>
                   <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Clients" />
                 </div>
@@ -247,7 +248,7 @@ export default function ProviderProfilePage() {
           {/* Targeting */}
           <TabsContent value="targeting" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Industries You Serve</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Industries You Serve" el="Κλάδοι που εξυπηρετείτε" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
@@ -269,7 +270,7 @@ export default function ProviderProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Startup Stages</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {STARTUP_STAGES.map(stage => (
@@ -294,7 +295,7 @@ export default function ProviderProfilePage() {
           {/* Pricing */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Pricing Model</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Pricing Model" el="Μοντέλο τιμολόγησης" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {PRICING_MODELS.map(pm => (
@@ -315,7 +316,7 @@ export default function ProviderProfilePage() {
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <Label>Starting Price (USD)</Label>
+                  <Label><BilingualText en="Starting Price (USD)" el="Αρχική τιμή (USD)" compact /></Label>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">$</span>
                     <Input
