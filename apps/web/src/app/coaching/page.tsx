@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -746,6 +746,23 @@ export default function CoachingPage() {
     { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
   ];
 
+  usePageList([
+    {
+      id: 'sessions',
+      labelEn: 'Coaching sessions',
+      labelEl: 'Συνεδρίες coaching',
+      rows: sessionsLoading ? undefined : sessions.map((s) => `${s.scheduledAt.slice(0, 10)} · ${s.title} · with ${s.coachName} · ${s.status} · ${s.durationMinutes} min`),
+      sample: liveSessions.length === 0 && showDemoData,
+    },
+    {
+      id: 'coaches',
+      labelEn: 'Coaches',
+      labelEl: 'Coaches',
+      rows: coachesLoading ? undefined : visibleCoaches.map((c) => `${c.name} · ${c.title}`),
+      total: coaches.length,
+      sample: liveCoaches.length === 0 && showDemoData,
+    },
+  ]);
   // Offered to the assistant: the tab and the rail's specialty filter, same
   // setters (the filter also jumps to the coach list, as the rail's does).
   usePageControls([

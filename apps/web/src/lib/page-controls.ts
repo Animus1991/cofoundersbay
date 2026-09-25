@@ -253,3 +253,137 @@ export function rowOptions<T>(
     return { value: id(row), labelEn: `${en}${suffix}`, labelEl: `${labelEl(row)}${suffix}` };
   });
 }
+
+/**
+ * What a list on the page shows, offered to the assistant.
+ *
+ * The controls told the assistant what it could press and nothing about what
+ * the reader was looking at: on /admin/users it could filter to suspended
+ * users but not say who they were, and "which deals are in due diligence?"
+ * on the pipeline had no answer short of a new read capability per page.
+ *
+ * A page publishes its visible rows here as one short line each - the words
+ * already on screen, never a second copy of the record. The packet carries at
+ * most `LIST_ROW_LIMIT` rows of at most `LIST_ROW_CHARS` characters per list,
+ * with the count shown and, when the page knows it, the total behind it, so
+ * "12 of 48" is said rather than implied to be everything. Anything the
+ * assistant needs in full it still reads through a declared capability.
+ */
+export const LIST_ROW_LIMIT = 15;
+export const LIST_ROW_CHARS = 110;
+
+export type PageListSummary = {
+  id: string;
+  labelEn: string;
+  labelEl: string;
+  /** Rows on screen now. */
+  shown: number;
+  /** Everything the list holds, when the page knows it (a server total). */
+  total?: number;
+  /** The first rows on screen, one line each, in screen order. */
+  rows: string[];
+  /** The rows are sample data, not the reader's account. */
+  sample?: boolean;
+};
+
+const listOwners = new Map<string, PageListSummary[]>();
+const listListeners = new Set<() => void>();
+let listSnapshot: readonly PageListSummary[] = [];
+let listSnapshotKey = '[]';
+
+function publishLists(): void {
+  const next: PageListSummary[] = [];
+  const seen = new Set<string>();
+  for (const lists of listOwners.values()) {
+    for (const list of lists) {
+      if (seen.has(list.id)) continue;
+      seen.add(list.id);
+      next.push(list);
+    }
+  }
+  const key = JSON.stringify(next);
+  if (key === listSnapshotKey) return;
+  listSnapshotKey = key;
+  listSnapshot = next;
+  for (const listener of listListeners) listener();
+}
+
+function subscribeLists(listener: () => void): () => void {
+  listListeners.add(listener);
+  return () => listListeners.delete(listener);
+}
+
+const getListSnapshot = () => listSnapshot;
+const NO_LISTS: readonly PageListSummary[] = [];
+const getServerListSnapshot = () => NO_LISTS;
+
+/** The lists on screen now, re-rendering when they change. */
+export function usePageListSummaries(): readonly PageListSummary[] {
+  return useSyncExternalStore(subscribeLists, getListSnapshot, getServerListSnapshot);
+}
+
+/** The lists on screen now, for code outside React. */
+export function currentPageLists(): readonly PageListSummary[] {
+  return listSnapshot;
+}
+
+function oneLine(text: string): string {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  return flat.length > LIST_ROW_CHARS ? `${flat.slice(0, LIST_ROW_CHARS - 1)}…` : flat;
+}
+
+export type PageList = {
+  id: string;
+  labelEn: string;
+  labelEl: string;
+  /**
+   * One line per row on screen, in screen order - after the page's own filter
+   * and sort - from what the row shows: name, status, the figure beside it.
+   * `undefined` while the list is loading.
+   */
+  rows: readonly string[] | undefined;
+  total?: number;
+  sample?: boolean;
+};
+
+/**
+ * Publish these lists for as long as the calling component is mounted.
+ *
+ * Pass `rows: undefined` while the list is loading: the assistant reading an
+ * empty list mid-load would tell the reader they have nothing. A list that has
+ * loaded and holds nothing is published with `rows: []`, which is an answer.
+ */
+export function usePageList(lists: readonly PageList[]): void {
+  const owner = useId();
+  const summaries: PageListSummary[] = [];
+  for (const list of lists) {
+    if (!list.rows) continue;
+    summaries.push({
+      id: list.id,
+      labelEn: list.labelEn,
+      labelEl: list.labelEl,
+      shown: list.rows.length,
+      ...(list.total !== undefined && list.total !== list.rows.length ? { total: list.total } : {}),
+      rows: list.rows.slice(0, LIST_ROW_LIMIT).map(oneLine),
+      ...(list.sample ? { sample: true } : {}),
+    });
+  }
+  const key = JSON.stringify(summaries);
+  useEffect(() => {
+    listOwners.set(owner, JSON.parse(key) as PageListSummary[]);
+    publishLists();
+  }, [owner, key]);
+  useEffect(
+    () => () => {
+      listOwners.delete(owner);
+      publishLists();
+    },
+    [owner],
+  );
+}
+
+/** For tests: forget every published list. */
+export function resetPageListsForTests(): void {
+  listOwners.clear();
+  publishLists();
+}

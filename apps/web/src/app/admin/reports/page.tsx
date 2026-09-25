@@ -24,7 +24,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
-import { choiceControl, usePageControls, type PageControl } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
@@ -499,6 +499,18 @@ export default function AdminReportsPage() {
     { value: 'all', en: 'All reports', el: 'Όλες οι αναφορές' },
   ];
   const openReports = reports.filter((r) => r.status === 'pending' || r.status === 'reviewing');
+  usePageList([
+    {
+      id: 'reports',
+      labelEn: 'Reports',
+      labelEl: 'Αναφορές',
+      rows: isLoading ? undefined : filteredReports.map((r) =>
+        `${r.reason} — ${r.targetName} (${r.targetType}) · ${r.status} · ${r.priority} priority · by ${r.reporterName}`,
+      ),
+      total: reports.length,
+      sample: !isLive,
+    },
+  ]);
   const reportRows = (list: Report[]) => list.map((r) => ({ value: r.id, labelEn: `${r.reason} — ${r.targetName}`, labelEl: `${r.reason} — ${r.targetName}` }));
   const resolution = (id: string, en: string, el: string, next: 'resolved' | 'dismissed'): PageControl => ({
     id,

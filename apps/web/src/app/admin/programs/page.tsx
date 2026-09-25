@@ -34,7 +34,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -406,6 +406,18 @@ export default function AdminProgramsPage() {
   // programme, and the card's Archive (which still asks first, and still
   // refuses sample rows).
   const programRows = programs.map((p) => ({ value: p.id, labelEn: p.name, labelEl: p.name }));
+  usePageList([
+    {
+      id: 'programs',
+      labelEn: 'Programs',
+      labelEl: 'Προγράμματα',
+      rows: isLoading ? undefined : filteredPrograms.map((p) =>
+        `${p.name} · ${p.organization} · ${p.type} · ${p.status} · ${p.startups} startups, ${p.mentors} mentors`,
+      ),
+      total: programs.length,
+      sample: showingSample,
+    },
+  ]);
   usePageControls([
     choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', STATUS_OPTIONS, statusFilter, setStatusFilter),
     choiceControl('type_filter', 'Type filter', 'Φίλτρο τύπου', [{ value: 'all', en: 'Any type', el: 'Οποιοσδήποτε τύπος' }, ...types.map((t) => ({ value: t, en: t, el: t }))], typeFilter, setTypeFilter),

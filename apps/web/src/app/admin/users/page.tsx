@@ -21,7 +21,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
-import { choiceControl, usePageControls, type PageControl } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -487,6 +487,18 @@ export default function AdminUsersPage() {
    * the row menu's Suspend, confirmed twice.
    */
   const userRows = users.map((u) => ({ value: u.id, labelEn: u.name, labelEl: u.name }));
+  usePageList([
+    {
+      id: 'users',
+      labelEn: 'Users',
+      labelEl: 'Χρήστες',
+      rows: isLoading ? undefined : filteredUsers.map((u) =>
+        `${u.name} · ${u.email} · ${u.role} · ${u.status}${u.verified ? ' · verified' : ''}${u.tenant ? ` · ${u.tenant}` : ''}`,
+      ),
+      total: users.length,
+      sample: !isLive,
+    },
+  ]);
   const onRows = isLive ? undefined : 'These rows are illustrative until the user directory loads.';
   const onRowsEl = isLive ? undefined : 'Οι γραμμές είναι ενδεικτικές μέχρι να φορτώσει ο κατάλογος χρηστών.';
   const moderationCommand = (id: string, en: string, el: string, next: 'active' | 'suspended' | 'banned'): PageControl => ({

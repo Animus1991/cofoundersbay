@@ -54,7 +54,7 @@ import {
   type DataRoomDoc,
   type DocStatus,
 } from '@/lib/fundraising-demo';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ROUND_TONE: Record<string, StatusTone> = {
   planning: 'neutral',
@@ -633,6 +633,15 @@ export default function FundraisingPage() {
     const key = INVESTOR_STATUS_KEYS[st];
     return { en: key ? fundraisingEn(key) : st, el: key ? fundraisingEl(key) : st };
   };
+  usePageList([
+    {
+      id: 'leads',
+      labelEn: 'Investor leads',
+      labelEl: 'Υποψήφιοι επενδυτές',
+      rows: leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).en} · ${l.checkSize}`),
+      sample: showDemoData,
+    },
+  ]);
   usePageControls([
     choiceControl('fundraising_view', 'Fundraising view', 'Προβολή γύρου', [
       { value: 'pipeline', en: 'Pipeline', el: 'Pipeline' },

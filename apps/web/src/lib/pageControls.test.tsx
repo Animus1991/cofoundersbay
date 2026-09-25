@@ -5,12 +5,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import {
   currentPageControls,
+  currentPageLists,
+  LIST_ROW_CHARS,
+  LIST_ROW_LIMIT,
   resetPageControlsForTests,
+  resetPageListsForTests,
   usePageControls,
+  usePageList,
   type PageControl,
 } from './page-controls';
 import { executeAction, getActionSpec } from './action-registry';
-import { pageControlFor } from './copilot-planner';
+import { pageControlFor, pageListFor } from './copilot-planner';
 import { runCopilotTurn } from './copilot-engine';
 
 /**
@@ -53,6 +58,7 @@ function Page({ onSuspend }: { onSuspend: (id?: string) => void }) {
 afterEach(() => {
   cleanup();
   resetPageControlsForTests();
+  resetPageListsForTests();
 });
 
 describe('the page-control registry', () => {
@@ -204,6 +210,67 @@ describe('an assistant turn on a page with controls', () => {
   });
 });
 
+describe('what a page’s lists show', () => {
+  function Deals({ rows, total }: { rows?: string[]; total?: number }) {
+    usePageList([{ id: 'deals', labelEn: 'Deals', labelEl: 'Συμφωνίες', rows, total }]);
+    return null;
+  }
+
+  it('publishes nothing while a list is loading, and an empty list once it has loaded', () => {
+    const view = render(<Deals />);
+    expect(currentPageLists()).toEqual([]);
+    view.rerender(<Deals rows={[]} />);
+    expect(currentPageLists()).toEqual([{ id: 'deals', labelEn: 'Deals', labelEl: 'Συμφωνίες', shown: 0, rows: [] }]);
+    view.unmount();
+    expect(currentPageLists()).toEqual([]);
+  });
+
+  it('caps the rows it carries and says how many are on screen and in all', () => {
+    const rows = Array.from({ length: 30 }, (_, i) => `Deal ${i + 1} · ${'x'.repeat(200)}`);
+    render(<Deals rows={rows} total={48} />);
+    const [list] = currentPageLists();
+    expect(list.shown).toBe(30);
+    expect(list.total).toBe(48);
+    expect(list.rows).toHaveLength(LIST_ROW_LIMIT);
+    expect(list.rows.every((r) => r.length <= LIST_ROW_CHARS)).toBe(true);
+  });
+
+  it('matches a question about a list by its name or by pointing at it, never a command', () => {
+    const lists = [{ id: 'users', label: 'Users' }, { id: 'invites', label: 'Pending invites' }];
+    expect(pageListFor('which users are suspended?', lists)?.id).toBe('users');
+    expect(pageListFor('how many pending invites are there', lists)?.id).toBe('invites');
+    expect(pageListFor('what is in this list?', lists)?.id).toBe('users');
+    expect(pageListFor('ποιοι είναι εδώ;', lists)?.id).toBe('users');
+    expect(pageListFor('suspend Mike Chen', lists)).toBeUndefined();
+    expect(pageListFor('what does suspended mean?', lists)).toBeUndefined();
+  });
+
+  it('answers from the rows on screen, with the count and what lies beyond them', async () => {
+    const context = {
+      route: '/investor/pipeline',
+      locale: 'en',
+      lists: [{ id: 'deals', label: 'Deals', shown: 16, total: 40, rows: Array.from({ length: 15 }, (_, i) => `Startup ${i + 1} · Due diligence`) }],
+    };
+    const turn = await runCopilotTurn('which deals are in due diligence?', context);
+    expect(turn.message).toContain('Deals: 16 on screen of 40.');
+    expect(turn.message).toContain('- Startup 1 · Due diligence');
+    expect(turn.message).toContain('…and 1 more on screen.');
+    expect(turn.usedTools).not.toContain('get_graph');
+  });
+
+  it('names each list with its count when asked about the page', async () => {
+    const context = { route: '/admin/users', locale: 'en', lists: [{ id: 'users', label: 'Users', shown: 3, rows: ['a', 'b', 'c'] }] };
+    const turn = await runCopilotTurn('what am I looking at?', context, { tools: [] });
+    expect(turn.message).toContain('Users: 3 on screen.');
+  });
+
+  it('says so when the rows are samples', async () => {
+    const context = { route: '/data-room/x', locale: 'en', lists: [{ id: 'docs', label: 'Documents', shown: 1, rows: ['Deck.pdf'], sample: true }] };
+    const turn = await runCopilotTurn('which documents are here?', context, { tools: [] });
+    expect(turn.message).toContain('These rows are sample data, not your account.');
+  });
+});
+
 describe('pages that offer controls', () => {
   function walk(dir: string): string[] {
     const out: string[] = [];
@@ -214,13 +281,16 @@ describe('pages that offer controls', () => {
     }
     return out;
   }
-  const users = walk('src').filter((f) => readFileSync(f, 'utf8').includes('usePageControls(['));
+  const users = walk('src').filter((f) => {
+    const s = readFileSync(f, 'utf8');
+    return s.includes('usePageControls([') || s.includes('usePageList([');
+  });
 
   it('finds the pages it is meant to check', () => {
     expect(users.length).toBeGreaterThan(10);
   });
 
-  it('calls usePageControls before any early return, so hook order is stable', () => {
+  it('calls usePageControls and usePageList before any early return, so hook order is stable', () => {
     // A component-level `return` before the hook changes how many hooks run
     // between renders (loading → loaded), which React rejects at runtime.
     // Lint would catch it; lint does not run here (AGENTS.md), so this does.
@@ -229,7 +299,7 @@ describe('pages that offer controls', () => {
       const s = readFileSync(file, 'utf8');
       let from = 0;
       for (;;) {
-        const i = s.indexOf('usePageControls([', from);
+        const i = [s.indexOf('usePageControls([', from), s.indexOf('usePageList([', from)].filter((n) => n !== -1).sort((a, b) => a - b)[0] ?? -1;
         if (i === -1) break;
         from = i + 1;
         const start = Math.max(s.lastIndexOf('export default function', i), s.lastIndexOf('\nfunction ', i), s.lastIndexOf('\nexport function ', i));
@@ -243,5 +313,22 @@ describe('pages that offer controls', () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  it('publishes what its list shows, unless it has no list', () => {
+    // A command whose choices are the rows on screen can be asked for by
+    // name only if the assistant can also answer "which ones are there?".
+    // So a page with controls publishes its list; the pages below show
+    // figures rather than rows and describe those in their snapshot.
+    const NO_LIST: Record<string, string> = {
+      'src/app/analytics/page.tsx': 'charts and totals, published as the page snapshot',
+      'src/app/provider/analytics/page.tsx': 'charts and totals for one period',
+      'src/app/readiness/page.tsx': 'a score and its dimensions, published as the page snapshot',
+    };
+    const missing = users.filter((f) => {
+      const s = readFileSync(f, 'utf8');
+      return s.includes('usePageControls([') && !s.includes('usePageList([') && !NO_LIST[f.replace(/\\/g, '/')];
+    });
+    expect(missing).toEqual([]);
   });
 });

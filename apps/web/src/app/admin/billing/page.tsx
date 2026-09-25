@@ -34,7 +34,7 @@ import {
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ALL_STATUSES = 'all';
 
@@ -231,6 +231,30 @@ export default function AdminBillingPage() {
     const name = `${subscriptionOwner(sub)} · ${sub.plan?.displayName ?? sub.planId}`;
     return { value: sub.id, labelEn: name, labelEl: name };
   };
+  usePageList([
+    {
+      id: 'subscriptions',
+      labelEn: 'Subscriptions',
+      labelEl: 'Συνδρομές',
+      rows: subsLoading ? undefined : subs.map((s) =>
+        `${subscriptionOwner(s)} · ${s.plan?.displayName ?? s.planId} · ${s.status}${s.cancelAtPeriodEnd ? ' (cancels at period end)' : ''}`,
+      ),
+    },
+    {
+      id: 'invoices',
+      labelEn: 'Invoices',
+      labelEl: 'Τιμολόγια',
+      rows: invoicesLoading ? undefined : invoices.map((i) => `${i.invoiceNumber} · ${formatCents(i.total, i.currency)} · ${i.status}`),
+    },
+    {
+      id: 'coupons',
+      labelEn: 'Coupons',
+      labelEl: 'Κουπόνια',
+      rows: couponsLoading ? undefined : coupons.map((c) =>
+        `${c.code} · ${c.discountType === 'percent' ? `${c.discountValue}% off` : formatCents(c.discountValue)} · ${c.timesRedeemed}${c.maxRedemptions ? `/${c.maxRedemptions}` : ''} redeemed`,
+      ),
+    },
+  ]);
   usePageControls([
     choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
       { value: ALL_STATUSES, en: 'All statuses', el: 'Όλες οι καταστάσεις' },

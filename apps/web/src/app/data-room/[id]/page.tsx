@@ -70,7 +70,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 // Types
 interface Document {
@@ -344,6 +344,23 @@ export default function DataRoomPage() {
   const SAMPLE_EN = 'Sample document - no file storage yet.';
   const SAMPLE_EL = 'Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων.';
   const docRows = documents.map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.name }));
+  usePageList([
+    {
+      id: 'documents',
+      labelEn: 'Documents',
+      labelEl: 'Έγγραφα',
+      rows: filteredDocuments.map((d) => `${d.name} · ${formatFileSize(d.size)} · ${d.viewCount} views · ${d.status}`),
+      total: documents.length,
+      sample: true,
+    },
+    {
+      id: 'investors',
+      labelEn: 'Investors with access',
+      labelEl: 'Επενδυτές με πρόσβαση',
+      rows: investors.map((i) => `${i.name}${i.firm ? ` (${i.firm})` : ''} · ${i.accessLevel} · ${i.documentsViewed} viewed`),
+      sample: true,
+    },
+  ]);
   usePageControls([
     choiceControl('data_room_tab', 'Data room section', 'Ενότητα data room', [
       { value: 'documents', en: 'Documents', el: 'Έγγραφα' },

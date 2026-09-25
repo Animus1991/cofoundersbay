@@ -53,7 +53,7 @@ import {
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
 
@@ -359,6 +359,38 @@ export default function TenantProgramsPage() {
       unavailableEn: organizationId ? undefined : 'Join an organisation to create programs.',
       unavailableEl: organizationId ? undefined : 'Γίνετε μέλος οργανισμού για να δημιουργήσετε προγράμματα.',
       run: () => { setForm(EMPTY_FORM); setFormOpen(true); },
+    },
+    // The card menu's Edit and Archive, over the programmes on screen, with
+    // the same reason the menu gives for a sample row.
+    {
+      id: 'edit_program',
+      labelEn: 'Edit program',
+      labelEl: 'Επεξεργασία προγράμματος',
+      writes: false,
+      options: rowOptions(filteredPrograms, (p) => p.id, (p) => p.name),
+      unavailableEn: isLive ? undefined : 'Illustrative row — there is nothing to edit',
+      unavailableEl: isLive ? undefined : 'Ενδεικτική γραμμή — δεν υπάρχει κάτι για επεξεργασία',
+      run: (v) => { const p = programs.find((row) => row.id === v); if (p) openEdit(p); },
+    },
+    {
+      id: 'archive_program',
+      labelEn: 'Archive program',
+      labelEl: 'Αρχειοθέτηση προγράμματος',
+      writes: true,
+      options: rowOptions(filteredPrograms.filter((p) => p.status !== 'archived'), (p) => p.id, (p) => p.name),
+      unavailableEn: isLive ? undefined : 'Illustrative row — there is nothing to archive',
+      unavailableEl: isLive ? undefined : 'Ενδεικτική γραμμή — δεν υπάρχει κάτι για αρχειοθέτηση',
+      run: (v) => { if (v) archiveMutation.mutate(v); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'programs',
+      labelEn: 'Programs',
+      labelEl: 'Προγράμματα',
+      rows: filteredPrograms.map((p) => `${p.name} · ${p.type} · ${p.status} · ${p.startups} startups${p.mentors ? `, ${p.mentors} mentors` : ''} · ${p.progress}%`),
+      total: programs.length,
+      sample: !isLive,
     },
   ]);
 

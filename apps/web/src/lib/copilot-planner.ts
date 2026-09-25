@@ -314,6 +314,35 @@ export function pageControlFor<T extends ControlLike>(
   return best ? { control: best.control, option: best.option } : undefined;
 }
 
+/**
+ * Which list on the page the reader asks about, if any.
+ *
+ * Pages publish what their lists show (`usePageList`). A message asks about
+ * one when it has a question word - what, which, who, how many, «ποιοι»,
+ * «πόσα» - and names the list by its label's words ("which deals…", «ποιοι
+ * χρήστες…»), or points at it ("the list", "here", «εδώ»). A request to act
+ * ("suspend Mike Chen") has no question word and never matches, so the page's
+ * commands still get it.
+ */
+const LIST_QUESTION =
+  /\b(what|which|who|whose|how many|list|read|name|tell me)\b|ποιο|ποια|ποιε|ποιοι|πόσ|ποσα|ποσοι|ποσες|τι έχει|τι εχει|τι δείχνει|τι δειχνει|τι υπάρχει|τι υπαρχει|διάβασ|διαβασ/i;
+const LIST_REFERENCE = /\b(list|shown|on screen|here|these|visible|in view)\b|λίστα|λιστα|εδώ|εδω|οθόνη|οθονη|αυτές|αυτες|αυτοί|αυτοι|αυτά/i;
+
+export function pageListFor<T extends { id: string; label: string }>(
+  message: string,
+  lists: readonly T[],
+): T | undefined {
+  if (!lists.length || !LIST_QUESTION.test(message)) return undefined;
+  const said = new Set(wordsOf(message).map(stem));
+  let best: { list: T; score: number } | undefined;
+  for (const list of lists) {
+    const score = wordsOf(list.label).filter((w) => said.has(stem(w))).length;
+    if (score > 0 && (!best || score > best.score)) best = { list, score };
+  }
+  if (best) return best.list;
+  return LIST_REFERENCE.test(message) ? lists[0] : undefined;
+}
+
 export function detectAnalyticsPeriod(message: string): string | undefined {
   return PERIOD_ALIASES.find((alias) => includesAny(message, alias.keys))?.period;
 }

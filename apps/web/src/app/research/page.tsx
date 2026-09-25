@@ -12,7 +12,7 @@ import { formatDistanceToNow, type Locale } from 'date-fns';
 import { el as elLocale, enUS } from 'date-fns/locale';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -354,6 +354,32 @@ export default function ResearchBoardsPage() {
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'list', en: 'List', el: 'Λίστα' },
     ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
+    // The board menu's own actions over the boards on screen - the same
+    // handlers, so Archive, Restore and Delete still ask first.
+    ...(() => {
+      const byTitle = (list: ResearchBoard[]) => rowOptions(list, (b) => b.id, (b) => b.title);
+      const board = (id?: string) => filteredBoards.find((b) => b.id === id);
+      const active = filteredBoards.filter((b) => !b.isArchived);
+      return [
+        { id: 'pin_board', labelEn: 'Pin board', labelEl: 'Καρφίτσωμα πίνακα', writes: true, options: byTitle(active.filter((b) => !b.isPinned)), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
+        { id: 'unpin_board', labelEn: 'Unpin board', labelEl: 'Ξεκαρφίτσωμα πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isPinned)), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
+        { id: 'duplicate_board', labelEn: 'Duplicate board', labelEl: 'Αντίγραφο πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); if (b) void handleDuplicate(b); } },
+        { id: 'archive_board', labelEn: 'Archive board', labelEl: 'Αρχειοθέτηση πίνακα', writes: true, options: byTitle(active), run: (v?: string) => { const b = board(v); if (b) void handleArchive(b); } },
+        { id: 'restore_board', labelEn: 'Restore archived board', labelEl: 'Επαναφορά αρχειοθετημένου πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isArchived)), run: (v?: string) => { const b = board(v); if (b) void handleRestore(b); } },
+        { id: 'delete_board', labelEn: 'Delete board', labelEl: 'Διαγραφή πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); if (b) void handleDelete(b); } },
+      ];
+    })(),
+  ]);
+  usePageList([
+    {
+      id: 'boards',
+      labelEn: 'Research boards',
+      labelEl: 'Πίνακες έρευνας',
+      rows: isLoading ? undefined : filteredBoards.map((b) =>
+        `${b.title} · ${b.nodeCount} nodes${b.isPinned ? ' · pinned' : ''}${b.isArchived ? ' · archived' : ''} · updated ${b.updatedAt.slice(0, 10)}`,
+      ),
+      total: boards.length,
+    },
   ]);
 
   const rail: PageRailSection[] = [

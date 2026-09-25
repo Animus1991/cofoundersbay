@@ -25,7 +25,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
 import { analytics } from '@/lib/analytics';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
@@ -183,6 +183,17 @@ export default function TenantsAdminPage() {
    * icons - and the badge is the suspended count, the one total that asks for
    * someone to look.
    */
+  usePageList([
+    {
+      id: 'tenants',
+      labelEn: 'Tenants',
+      labelEl: 'Tenants',
+      rows: isLoading ? undefined : visibleTenants.map((t) =>
+        `${t.displayName || t.name} (${t.slug}) · ${t.status}${t.logoUrl ? ' · branded' : ''}`,
+      ),
+      total: tenantList.length,
+    },
+  ]);
   // Offered to the assistant: the rail's two filters, refresh, export, and
   // opening the create form or a tenant's settings - the same handlers.
   usePageControls([

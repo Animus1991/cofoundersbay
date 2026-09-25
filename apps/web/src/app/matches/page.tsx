@@ -14,7 +14,7 @@ import {
 import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -692,6 +692,21 @@ export default function MatchesPage() {
     { value: 'grid3', en: 'Three-column grid', el: 'Πλέγμα τριών στηλών' },
     { value: 'list', en: 'List', el: 'Λίστα' },
   ];
+  usePageList([
+    {
+      id: 'matches',
+      labelEn: 'Matches',
+      labelEl: 'Αντιστοιχίσεις',
+      rows: !hasToken || isLoading ? undefined : filtered.map((s) =>
+        `${s.displayName} · ${s.role ?? 'member'} · match ${s.matchScore ?? '—'}%${s.headline ? ` · ${s.headline}` : ''}${s.location ? ` · ${s.location}` : ''}${savedIds.has(s.userId) ? ' · shortlisted' : ''}`,
+      ),
+      total: visible.length,
+    },
+  ]);
+  // The row's own buttons as commands, over the rows on screen: the same
+  // handlers the card and the list row call.
+  const hitRows = (list: SearchHit[]) => rowOptions(list, (h) => h.id, (h) => h.displayName);
+  const hitById = (id?: string) => filtered.find((h) => h.id === id);
   usePageControls([
     choiceControl('match_tier', 'Match strength filter', 'Φίλτρο ισχύος αντιστοίχισης', TIER_TABS, activeFilter, (v) => setActiveFilter(v as FilterKey)),
     choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_TABS, roleFilter, (v) => setRoleFilter(v as RoleFilter)),
@@ -716,6 +731,46 @@ export default function MatchesPage() {
           return next;
         });
       },
+    },
+    {
+      id: 'connect_with',
+      labelEn: 'Open a connection request to',
+      labelEl: 'Άνοιγμα αιτήματος σύνδεσης προς',
+      writes: false,
+      options: hitRows(filtered),
+      run: (v) => { const hit = hitById(v); if (hit) handleConnect(hitToProfile(hit)); },
+    },
+    {
+      id: 'message_match',
+      labelEn: 'Message match',
+      labelEl: 'Μήνυμα σε αντιστοίχιση',
+      writes: false,
+      options: hitRows(filtered),
+      run: (v) => { const hit = hitById(v); if (hit) handleMessage(hitToProfile(hit)); },
+    },
+    {
+      id: 'shortlist_match',
+      labelEn: 'Save match to shortlist',
+      labelEl: 'Αποθήκευση αντιστοίχισης στη λίστα',
+      writes: true,
+      options: hitRows(filtered.filter((h) => !savedIds.has(h.userId))),
+      run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
+    },
+    {
+      id: 'unshortlist_match',
+      labelEn: 'Remove match from shortlist',
+      labelEl: 'Αφαίρεση αντιστοίχισης από τη λίστα',
+      writes: true,
+      options: hitRows(filtered.filter((h) => savedIds.has(h.userId))),
+      run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
+    },
+    {
+      id: 'pass_match',
+      labelEn: 'Pass on match',
+      labelEl: 'Παράλειψη αντιστοίχισης',
+      writes: true,
+      options: hitRows(filtered),
+      run: (v) => { const hit = hitById(v); if (hit) handlePass(hit.id, hit.displayName, hit.userId); },
     },
   ]);
 

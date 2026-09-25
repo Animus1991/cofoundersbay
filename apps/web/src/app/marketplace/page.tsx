@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -322,6 +322,18 @@ export default function MarketplacePage() {
   const featured = filtered.filter(p => p.isFeatured);
   const regular = filtered.filter(p => !p.isFeatured);
 
+  usePageList([
+    {
+      id: 'services',
+      labelEn: 'Services',
+      labelEl: 'Υπηρεσίες',
+      rows: isLoading ? undefined : filtered.map((p) =>
+        `${p.title} · by ${p.providerName} · ${p.category} · ${p.pricing}${p.reviewCount ? ` · ${p.avgRating.toFixed(1)}★ (${p.reviewCount})` : ''}${p.isAvailable ? '' : ' · unavailable'}`,
+      ),
+      total: allProviders.length,
+      sample: backendProviders.length === 0,
+    },
+  ]);
   // Offered to the assistant: category, sort and the available-only switch,
   // through the same setters the rail and chips use.
   const CATEGORY_EL: Record<string, string> = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -243,8 +243,8 @@ export default function ConnectionsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [tab, setTab] = useState<'intros' | 'received' | 'sent' | 'accepted'>('intros');
-  // Offered to the assistant: the tab, through the same setter. Accepting or
-  // declining a request is respond_to_connection, a capability of its own.
+  // Offered to the assistant: the tab, through the same setter. Accepting and
+  // declining are offered below, once the rows are known.
   usePageControls([
     choiceControl('tab', 'Connections tab', 'Καρτέλα συνδέσεων', [
       { value: 'intros', en: 'Intros', el: 'Συστάσεις' },
@@ -311,6 +311,55 @@ export default function ConnectionsPage() {
   const introCount = connections.filter(
     (c) => c.receiverId === viewerId && c.status === 'pending',
   ).length;
+
+  // What the tab shows, and the row buttons as commands: Accept and Decline
+  // on a request someone sent the reader - the same mutation the buttons run.
+  const otherOf = (c: (typeof connections)[number]) => (c.requesterId === viewerId ? c.receiver : c.requester);
+  const incoming = connections.filter((c) => c.receiverId === viewerId && c.status === 'pending');
+  const respond = (id: string | undefined, status: 'accepted' | 'declined') => {
+    const c = incoming.find((row) => row.id === id);
+    if (!c) return;
+    const other = otherOf(c);
+    respondMutation.mutate({
+      id: c.id,
+      status,
+      otherUserId: c.requesterId,
+      acceptedUserInfo: { id: c.requesterId, displayName: other?.displayName ?? '', avatarUrl: other?.avatarUrl ?? null, role: other?.role, headline: other?.headline ?? null },
+    });
+  };
+  usePageList([
+    {
+      id: 'connections',
+      labelEn: 'Connections',
+      labelEl: 'Συνδέσεις',
+      rows: isLoading ? undefined : connections.map((c) => {
+        const other = otherOf(c);
+        return `${other?.displayName ?? 'Someone'}${other?.role ? ` · ${other.role}` : ''}${other?.headline ? ` · ${other.headline}` : ''} · ${c.status}`;
+      }),
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'accept_request',
+      labelEn: 'Accept connection request',
+      labelEl: 'Αποδοχή αιτήματος σύνδεσης',
+      writes: true,
+      options: rowOptions(incoming, (c) => c.id, (c) => otherOf(c)?.displayName ?? 'Request'),
+      unavailableEn: incoming.length ? undefined : 'No request is waiting on this tab.',
+      unavailableEl: incoming.length ? undefined : 'Κανένα αίτημα δεν περιμένει σε αυτή την καρτέλα.',
+      run: (v) => respond(v, 'accepted'),
+    },
+    {
+      id: 'decline_request',
+      labelEn: 'Decline connection request',
+      labelEl: 'Απόρριψη αιτήματος σύνδεσης',
+      writes: true,
+      options: rowOptions(incoming, (c) => c.id, (c) => otherOf(c)?.displayName ?? 'Request'),
+      unavailableEn: incoming.length ? undefined : 'No request is waiting on this tab.',
+      unavailableEl: incoming.length ? undefined : 'Κανένα αίτημα δεν περιμένει σε αυτή την καρτέλα.',
+      run: (v) => respond(v, 'declined'),
+    },
+  ]);
 
   return (
     <>

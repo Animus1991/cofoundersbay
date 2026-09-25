@@ -58,7 +58,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type Startup = {
   id: string;
@@ -345,6 +345,18 @@ export default function InvestorScoutingPage() {
   };
   const startupRows = (list: Startup[]) => list.map((st) => ({ value: st.id, labelEn: st.name, labelEl: st.name }));
   const byId = (id?: string) => startups.find((st) => st.id === id);
+  usePageList([
+    {
+      id: 'startups',
+      labelEn: 'Startups',
+      labelEl: 'Startups',
+      rows: filtered.map((s) =>
+        `${s.name} · ${s.industry}, ${s.stage}, ${s.businessModel} · ${s.location} · match ${s.matchScore}% · raising ${s.raisingAmount}${dealFor(s) ? ' · watched' : ''}`,
+      ),
+      total: startups.length,
+      sample: true,
+    },
+  ]);
   usePageControls([
     choiceControl('industry', 'Industry', 'Κλάδος', industries.map((i) => ({ value: i, en: i === 'all' ? 'All industries' : i, el: i === 'all' ? 'Όλοι οι κλάδοι' : i })), industry, setIndustry),
     choiceControl('stage', 'Stage', 'Στάδιο', stages.map((i) => ({ value: i, en: i === 'all' ? 'All stages' : i, el: i === 'all' ? 'Όλα τα στάδια' : i })), stage, setStage),

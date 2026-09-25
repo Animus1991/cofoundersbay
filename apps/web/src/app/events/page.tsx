@@ -1,6 +1,6 @@
 'use client';
 
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -128,6 +128,30 @@ export default function EventsPage() {
     navigator.clipboard.writeText(`${window.location.origin}/events/${event.id}`);
     success('Link copied', 'Event link copied to clipboard');
   };
+
+  usePageList([
+    {
+      id: 'events',
+      labelEn: 'Events',
+      labelEl: 'Εκδηλώσεις',
+      rows: loading ? undefined : eventsRaw.map((e) =>
+        `${e.title} · ${e.startAt.slice(0, 10)} · ${e.mode}${e.location ? ` · ${e.location}` : ''} · ${e.attendeesCount} going${e.viewerRsvp === 'going' ? ' (you are going)' : ''}`,
+      ),
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'share_event',
+      labelEn: 'Copy a link to event',
+      labelEl: 'Αντιγραφή συνδέσμου εκδήλωσης',
+      writes: false,
+      options: rowOptions(events, (e) => e.id, (e) => e.title),
+      run: (v) => {
+        const event = events.find((e) => e.id === v);
+        if (event) handleShare(event);
+      },
+    },
+  ]);
 
   return (
     <AppShell

@@ -28,7 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
@@ -444,6 +444,23 @@ export default function ProjectsPage() {
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'list', en: 'List', el: 'Λίστα' },
     ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
+    choiceControl('tab', 'Projects tab', 'Καρτέλα έργων', (['discover', 'mine', 'joined', 'starred'] as const).map((id) => ({ value: id, en: projectEn(`tab_${id}`), el: projectEl(`tab_${id}`) })), tab, (v) => setTab(v as TabId)),
+    // The card menu's own actions over the projects on this tab.
+    { id: 'star_project', labelEn: 'Star project', labelEl: 'Αστέρι σε έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => !p.isStarred), (p) => p.id, (p) => p.name), run: (v) => { if (v) handleStar(v); } },
+    { id: 'unstar_project', labelEn: 'Unstar project', labelEl: 'Αφαίρεση αστεριού από έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => p.isStarred), (p) => p.id, (p) => p.name), run: (v) => { if (v) handleStar(v); } },
+    { id: 'share_project', labelEn: 'Copy a link to project', labelEl: 'Αντιγραφή συνδέσμου έργου', writes: false, options: rowOptions(byTab[tab], (p) => p.id, (p) => p.name), run: (v) => { const p = projects.find((row) => row.id === v); if (p) handleShare(p); } },
+  ]);
+  usePageList([
+    {
+      id: 'projects',
+      labelEn: 'Projects',
+      labelEl: 'Έργα',
+      rows: byTab[tab].map((p) =>
+        `${p.name} · ${p.industry}, ${p.stage} · ${p.status} · team ${p.teamSize}/${p.maxTeamSize}${p.rolesNeeded.length ? ` · needs ${p.rolesNeeded.map((r) => r.title).join(', ')}` : ''}${p.isStarred ? ' · starred' : ''}`,
+      ),
+      total: counts[tab],
+      sample: true,
+    },
   ]);
 
   const rail: PageRailSection[] = [

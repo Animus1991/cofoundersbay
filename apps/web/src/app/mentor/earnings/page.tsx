@@ -10,7 +10,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -123,6 +123,16 @@ export default function MentorEarningsPage() {
   const paidCount = transactions.filter(t => t.status === 'paid').length;
   const avgPerSession = paidCount > 0 ? totalEarned / paidCount : 0;
 
+  usePageList([
+    {
+      id: 'sessions',
+      labelEn: 'Paid sessions',
+      labelEl: 'Πληρωμένες συνεδρίες',
+      rows: transactions.map((t) => `${t.date.slice(0, 10)} · ${t.mentee.name} · ${t.topic} · ${t.duration} min · $${t.amount} · ${t.status}`),
+      total: allTransactions.length,
+      sample: showDemoData,
+    },
+  ]);
   // Offered to the assistant: the rail's period and export. Above the
   // loading return: a hook after it runs on some renders and not others
   // (React #310 on this page in the round-12 sweep).

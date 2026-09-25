@@ -1,6 +1,6 @@
 'use client';
 
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -207,7 +207,8 @@ export default function GroupsPage() {
   const [sort, setSort] = useState<'popular' | 'recent' | 'trending'>('popular');
   const [typeFilter, setTypeFilter] = useState('all');
   // Offered to the assistant: tab, category, sort and type, and the create
-  // form, through the same setters. Joining and leaving stay on the cards.
+  // form, through the same setters. Joining and leaving are offered below,
+  // once the rows are known.
   usePageControls([
     choiceControl('tab', 'Communities tab', 'Καρτέλα κοινοτήτων', [
       { value: 'discover', en: 'Discover', el: 'Ανακάλυψη' },
@@ -290,6 +291,38 @@ export default function GroupsPage() {
     setSelectedCategory('All');
     setTypeFilter('all');
   }, []);
+
+  // What the tab shows, and the card's Join / Leave as commands - the same
+  // handler the card button calls.
+  const listLoading = activeTab === 'my-groups' ? myGroupsQuery.isLoading : discoverQuery.isLoading;
+  usePageList([
+    {
+      id: 'groups',
+      labelEn: activeTab === 'my-groups' ? 'My groups' : 'Groups',
+      labelEl: activeTab === 'my-groups' ? 'Οι ομάδες μου' : 'Ομάδες',
+      rows: listLoading ? undefined : displayGroups.map((g) =>
+        `${g.name}${g.category ? ` · ${g.category}` : ''} · ${g.privacy} · ${g.memberCount} members, ${g.postCount} posts${g.isMember ? ' · joined' : ''}`,
+      ),
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'join_group',
+      labelEn: 'Join group',
+      labelEl: 'Συμμετοχή σε ομάδα',
+      writes: true,
+      options: rowOptions(displayGroups.filter((g) => !g.isMember), (g) => g.id, (g) => g.name),
+      run: (v) => { if (v) void handleToggle(v, false); },
+    },
+    {
+      id: 'leave_group',
+      labelEn: 'Leave group',
+      labelEl: 'Αποχώρηση από ομάδα',
+      writes: true,
+      options: rowOptions(displayGroups.filter((g) => g.isMember), (g) => g.id, (g) => g.name),
+      run: (v) => { if (v) void handleToggle(v, true); },
+    },
+  ]);
 
   return (
     <AppShell

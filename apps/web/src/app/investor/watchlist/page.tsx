@@ -51,7 +51,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -413,7 +413,7 @@ export default function InvestorWatchlistPage() {
    * fixtures remain what an empty watchlist shows while the "demo data" switch
    * is on; a real one always wins.
    */
-  const { data: watchedPage } = useQuery({
+  const { data: watchedPage, isLoading: watchedLoading } = useQuery({
     queryKey: qk('investor', 'deals', 'discovered'),
     queryFn: () => listInvestorDeals({ pipelineStage: 'discovered', limit: 100 }),
     staleTime: 60_000,
@@ -487,6 +487,18 @@ export default function InvestorWatchlistPage() {
   const liveOnlyEl = watchLive ? undefined : 'Είναι δείγματα· η ενέργεια χρειάζεται startup από τη δική σας λίστα.';
   const startupRows = (list: WatchedStartup[]) => list.map((st) => ({ value: st.id, labelEn: st.name, labelEl: st.name }));
   const byId = (id?: string) => watched.find((st) => st.id === id);
+  usePageList([
+    {
+      id: 'watched',
+      labelEn: 'Watched startups',
+      labelEl: 'Startups υπό παρακολούθηση',
+      rows: watchedLoading ? undefined : filtered.map((s) =>
+        `${s.name} · ${s.industry}, ${s.stage} · ${s.location}${s.raisingAmount ? ` · raising ${s.raisingAmount}` : ''}${s.alertsEnabled ? ' · alerts on' : ''}`,
+      ),
+      total: watched.length,
+      sample: !watchLive,
+    },
+  ]);
   usePageControls([
     choiceControl('watchlist_tab', 'Watchlist section', 'Ενότητα λίστας', [
       { value: 'watchlist', en: 'My watchlist', el: 'Η λίστα μου' },

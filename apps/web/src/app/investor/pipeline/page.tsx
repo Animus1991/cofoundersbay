@@ -28,7 +28,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -280,6 +280,22 @@ export default function InvestorPipelinePage() {
 
   const sampleEn = isLive ? undefined : 'These are sample deals; moving one needs a deal in your own pipeline.';
   const sampleEl = isLive ? undefined : 'Είναι δείγματα· η μετακίνηση χρειάζεται συμφωνία από το δικό σας pipeline.';
+  usePageList([
+    {
+      id: 'deals',
+      labelEn: 'Pipeline deals',
+      labelEl: 'Συμφωνίες pipeline',
+      rows: isLoading ? undefined : filteredDeals
+        .filter((d) => showPassed || d.pipelineStage !== 'passed')
+        .map((d) => {
+          const stageLabel = PIPELINE_STAGES.find((s) => s.key === d.pipelineStage)?.label ?? d.pipelineStage;
+          const ask = d.askAmount ? ` · asking ${d.currency ?? '€'} ${d.askAmount.toLocaleString('en-US')}` : '';
+          return `${d.name} · ${stageLabel} · ${d.industry}, ${d.stage}${ask}${d.starred ? ' · starred' : ''}`;
+        }),
+      total: deals.length,
+      sample: !isLive,
+    },
+  ]);
   usePageControls([
     choiceControl('passed_deals', 'Passed deals', 'Απορριφθείσες συμφωνίες', [
       { value: 'hide', en: 'Hide passed', el: 'Απόκρυψη' },

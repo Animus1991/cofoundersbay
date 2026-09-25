@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createGroup, updateGroup, deleteGroup, listGroups, type GroupPrivacy, type GroupView } from '@/lib/api';
@@ -355,6 +355,18 @@ export default function AdminCommunitiesPage() {
 
   const activeFilterCount = (visibility !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
 
+  usePageList([
+    {
+      id: 'communities',
+      labelEn: 'Communities',
+      labelEl: 'Κοινότητες',
+      rows: isLoading ? undefined : filteredCommunities.map((c) =>
+        `${c.name} · ${c.category} · ${c.visibility} · ${c.status} · ${c.memberCount} members, ${c.postCount} posts`,
+      ),
+      total: communities.length,
+      sample: showingSeed,
+    },
+  ]);
   // Offered to the assistant: the rail's two filters, same setters.
   usePageControls([
     choiceControl('visibility_filter', 'Visibility filter', 'Φίλτρο ορατότητας', [

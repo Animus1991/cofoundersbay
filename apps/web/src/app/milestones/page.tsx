@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -479,6 +479,45 @@ export default function MilestonesPage() {
       { value: 'list', en: 'List', el: 'Λίστα' },
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
     ], viewMode, (v) => setViewMode(v as 'list' | 'grid')),
+    // The row menu's own actions over the rows on screen: set a status
+    // (the same update the status menu makes), edit, and delete - which
+    // still asks first.
+    ...(['todo', 'in_progress', 'blocked', 'completed'] as const).map((status) => {
+      const key = STATUS_CONFIG[status].statusKey;
+      return {
+        id: `mark_${status}`,
+        labelEn: `Mark milestone ${milestoneEn(key)}`,
+        labelEl: `Σήμανση ορόσημου ως ${milestoneEl(key)}`,
+        writes: true,
+        options: rowOptions(milestones.filter((m) => m.status !== status), (m) => m.id, (m) => m.title),
+        run: (v?: string) => { if (v) handleStatusChange(v, status); },
+      };
+    }),
+    {
+      id: 'edit_milestone',
+      labelEn: 'Edit milestone',
+      labelEl: 'Επεξεργασία ορόσημου',
+      writes: false,
+      options: rowOptions(milestones, (m) => m.id, (m) => m.title),
+      run: (v) => { const m = milestones.find((row) => row.id === v); if (m) setEditTarget(m); },
+    },
+    {
+      id: 'delete_milestone',
+      labelEn: 'Delete milestone',
+      labelEl: 'Διαγραφή ορόσημου',
+      writes: true,
+      options: rowOptions(milestones, (m) => m.id, (m) => m.title),
+      run: (v) => { if (v) void handleDelete(v); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'milestones',
+      labelEn: 'Milestones',
+      labelEl: 'Ορόσημα',
+      rows: waiting ? undefined : milestones.map((m) => `${m.title} · ${milestoneEn(STATUS_CONFIG[m.status]?.statusKey ?? 'status_todo')} · ${m.priority} priority${m.dueDate ? ` · due ${m.dueDate.slice(0, 10)}` : ''} · ${m.progress}%`),
+      total: summaryData?.total,
+    },
   ]);
 
   const rail: PageRailSection[] = [

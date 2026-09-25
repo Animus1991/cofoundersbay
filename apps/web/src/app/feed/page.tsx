@@ -38,7 +38,7 @@ import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -764,6 +764,22 @@ export default function FeedPage() {
   };
 
   // The rows on screen - `posts` above, demo posts included.
+  usePageList([
+    {
+      id: 'posts',
+      labelEn: 'Posts',
+      labelEl: 'Αναρτήσεις',
+      rows: feedLoading ? undefined : posts.map((p) =>
+        [
+          p.author?.displayName ?? 'Post',
+          p.type,
+          `"${p.content ?? ''}"`.slice(0, 60),
+          `${p.likes ?? 0} likes${p.isLiked ? ' (liked)' : ''}${p.isBookmarked ? ' (saved)' : ''}`,
+        ].join(' · '),
+      ),
+      sample: !feedData?.posts?.length && isPreviewDemo(),
+    },
+  ]);
   const byAuthor = (list: FeedPost[]) => rowOptions(list, (p) => p.id, (p) => p.author?.displayName ?? 'Post');
   usePageControls([
     choiceControl('feed_tab', 'Feed', 'Ροή', [

@@ -16,7 +16,7 @@ import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { planCopilotTools, detectPersonName, asksAboutThisPage, railSectionFor, pageControlFor } from '@/lib/copilot-planner';
+import { planCopilotTools, detectPersonName, asksAboutThisPage, railSectionFor, pageControlFor, pageListFor } from '@/lib/copilot-planner';
 import { AREA_READERS, isAreaRead } from '@/lib/copilot-reads';
 import type {
   CopilotAction,
@@ -62,6 +62,19 @@ export type PageContextPacket = {
     options?: { value: string; label: string }[];
     current?: string;
     unavailable?: string;
+  }[];
+  /**
+   * What the page's lists show (`usePageList`): the first rows on screen as
+   * one line each, how many are on screen, and the total behind them when
+   * the page knows it. `sample` marks showcase rows.
+   */
+  lists?: {
+    id: string;
+    label: string;
+    shown: number;
+    total?: number;
+    rows: string[];
+    sample?: boolean;
   }[];
   entity?: { type: string; id: string };
   role?: string | null;
@@ -536,12 +549,37 @@ export async function runCopilotTurn(
     }
   }
 
+  // What the page's lists show. Asked about directly ("which deals are in
+  // due diligence?", «ποιοι χρήστες είναι εδώ;») the rows on screen are the
+  // answer; asked about the page, each list is named with its count. The
+  // count says "of N" when the page holds more than it shows, so a first
+  // page is never passed off as everything.
+  const pageLists = pageContext?.lists ?? [];
+  const describeCount = (list: (typeof pageLists)[number]) =>
+    list.total !== undefined && list.total > list.shown
+      ? t('{list}: {shown} on screen of {total}.', { list: list.label, shown: list.shown, total: list.total })
+      : t('{list}: {shown} on screen.', { list: list.label, shown: list.shown });
+  const askedList = pageListFor(userMessage, pageLists);
+  if (askedList) {
+    const lines = [describeCount(askedList)];
+    if (askedList.shown === 0) lines.push(t('The list is empty right now.'));
+    lines.push(...askedList.rows.map((row) => `- ${row}`));
+    if (askedList.shown > askedList.rows.length) {
+      lines.push(t('…and {count} more on screen.', { count: askedList.shown - askedList.rows.length }));
+    }
+    if (askedList.sample) lines.push(t('These rows are sample data, not your account.'));
+    sections.push(lines.join('\n'));
+  } else if (pageLists.length > 0 && asksAboutThisPage(userMessage)) {
+    sections.push(pageLists.map(describeCount).join(' '));
+  }
+
   // A request this page answers itself - "show only suspended users",
   // "show me the filters" - needs nothing else. The planner adds a general
   // graph read to short turns because it cannot see the page; here the page
   // is known, and a briefing on readiness and intros under "Status filter:
   // Suspended" only buried the answer. The model's own reads are untouched.
-  const answeredByPage = actions.some((a) => a.tool === 'use_page_control' || a.tool === 'run_page_command' || a.tool === 'open_rail_section')
+  const answeredByPage = Boolean(askedList)
+    || actions.some((a) => a.tool === 'use_page_control' || a.tool === 'run_page_command' || a.tool === 'open_rail_section')
     || sections.some((line) => line.length > 0 && pageControls.some((c) => line.startsWith(c.label)));
   if (answeredByPage && !options?.tools) {
     planned = planned.filter((t) => t.name !== 'get_graph');

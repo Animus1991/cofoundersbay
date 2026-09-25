@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -323,6 +323,15 @@ export default function CalendarPage() {
   const sessionCount = thisMonthEvents.filter((e) => e.type === 'session').length;
   const milestoneCount = thisMonthEvents.filter((e) => e.type === 'milestone').length;
 
+  usePageList([
+    {
+      id: 'month',
+      labelEn: 'This month',
+      labelEl: 'Αυτός ο μήνας',
+      rows: thisMonthEvents.map((e) => `${e.date.slice(0, 10)}${e.time ? ` ${e.time}` : ''} · ${e.title} · ${e.type}${e.location ? ` · ${e.location}` : ''}`),
+      sample: true,
+    },
+  ]);
   // Offered to the assistant: the event-type filter, through the same setter.
   usePageControls([
     choiceControl('event_type', 'Event type filter', 'Φίλτρο τύπου εκδήλωσης', [

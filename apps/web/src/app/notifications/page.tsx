@@ -1,6 +1,6 @@
 'use client';
 
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useState, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -305,6 +305,36 @@ export default function NotificationsPage() {
 
   const handleRead = useCallback((id: string) => markRead.mutate(id), [markRead]);
   const handleDelete = useCallback((id: string) => deleteN.mutate(id), [deleteN]);
+
+  // What the list shows, and each row's Mark read / Delete as commands.
+  usePageList([
+    {
+      id: 'notifications',
+      labelEn: 'Notifications',
+      labelEl: 'Ειδοποιήσεις',
+      rows: isLoading ? undefined : notifications.map((n) =>
+        `${n.readAt ? '' : '(unread) '}${n.title}${n.body ? ` · ${n.body}` : ''} · ${n.type} · ${n.createdAt.slice(0, 10)}`,
+      ),
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'mark_read',
+      labelEn: 'Mark notification read',
+      labelEl: 'Σήμανση ειδοποίησης ως αναγνωσμένης',
+      writes: true,
+      options: rowOptions(notifications.filter((n) => !n.readAt), (n) => n.id, (n) => n.title),
+      run: (v) => { if (v) handleRead(v); },
+    },
+    {
+      id: 'delete_notification',
+      labelEn: 'Delete notification',
+      labelEl: 'Διαγραφή ειδοποίησης',
+      writes: true,
+      options: rowOptions(notifications, (n) => n.id, (n) => n.title),
+      run: (v) => { if (v) handleDelete(v); },
+    },
+  ]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
