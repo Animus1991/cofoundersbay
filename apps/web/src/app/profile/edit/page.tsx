@@ -1203,16 +1203,18 @@ export default function ProfileEditPage() {
 
               <div className="pt-4 border-t border-border/50 space-y-3">
                 <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
-                  {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
-                  Save Changes
+                  {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
+                  <BilingualText en="Save Changes" el="Αποθήκευση αλλαγών" compact />
                 </Button>
-                <div className="flex gap-2">
+                {/* Stacked: side by side in this ~250px card, the two bilingual
+                    labels pushed "Add Links" 116px past the page edge. */}
+                <div className="grid grid-cols-1 gap-2">
                   <Button variant="outline" className="w-full text-xs h-9" asChild>
-                    <Link href="/profile" className="flex-1">
+                    <Link href="/profile">
                       <BilingualText en="View Profile" el="Προβολή προφίλ" compact />
                     </Link>
                   </Button>
-                  <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
+                  <Button variant="outline" className="w-full text-xs h-9" onClick={() => setActiveTab('links')}>
                     <BilingualText en="Add Links" el="Προσθήκη συνδέσμων" compact />
                   </Button>
                 </div>

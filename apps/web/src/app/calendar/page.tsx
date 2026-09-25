@@ -321,7 +321,16 @@ function MiniCalendar({
           return (
             <button
               key={day}
+              type="button"
               onClick={() => onSelectDate(date)}
+              // A bare "15" told a screen reader nothing about which month or
+              // whether anything happens that day.
+              aria-label={bilingualAria(
+                `${date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' })}${hasEvents ? ', has events' : ''}`,
+                `${date.toLocaleDateString('el-GR', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' })}${hasEvents ? ', έχει εκδηλώσεις' : ''}`,
+              )}
+              aria-pressed={isSelected}
+              aria-current={isToday ? 'date' : undefined}
               className={cn(
                 'relative h-8 w-full rounded-md text-xs transition-all hover:bg-secondary',
                 isSelected && 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -330,7 +339,7 @@ function MiniCalendar({
             >
               {day}
               {hasEvents && !isSelected && (
-                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" />
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" aria-hidden="true" />
               )}
             </button>
           );

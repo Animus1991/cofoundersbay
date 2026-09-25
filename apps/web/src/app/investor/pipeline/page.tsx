@@ -29,6 +29,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { formatCompactMoney } from '@/lib/i18n/format';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -185,12 +186,7 @@ function toPageDeal(deal: InvestorDeal): Deal {
 
 /** Compact money, in the deal's own currency rather than a hard-coded dollar. */
 function formatAsk(amount: number, currency = 'EUR'): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency,
-    notation: 'compact',
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCompactMoney(amount, currency);
 }
 
 /**

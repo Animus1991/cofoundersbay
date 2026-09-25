@@ -53,6 +53,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { formatCompactMoney } from '@/lib/i18n/format';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -113,12 +114,7 @@ function toWatched(deal: InvestorDeal): WatchedStartup {
     matchScore: null,
     raisingAmount:
       deal.askAmountCents != null
-        ? new Intl.NumberFormat('en-GB', {
-            style: 'currency',
-            currency: deal.currency,
-            notation: 'compact',
-            maximumFractionDigits: 0,
-          }).format(deal.askAmountCents / 100)
+        ? formatCompactMoney(deal.askAmountCents / 100, deal.currency)
         : '\u2014',
     tags: deal.tags,
     watchedSince: deal.createdAt,
