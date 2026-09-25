@@ -19,7 +19,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { cn } from '@/lib/utils';
-import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import {
   getDashboardStats,
@@ -44,6 +44,7 @@ import {
 } from '@/components/gamification/OnboardingChecklist';
 import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
 import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
+import { MetricTile } from '@/components/dashboard/MetricTile';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
@@ -198,57 +199,6 @@ const QUICK_ACTIONS: { href: string; glyph: CfbGlyphName; labelEn: string; label
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function StatCard({
-  glyph, label, value, trend, href, caption, captionEl,
-}: {
-  glyph: CfbGlyphName; label: ReactNode; value: number | string;
-  trend?: { value: number; positive: boolean }; href?: string;
-  caption?: string; captionEl?: string;
-}) {
-  const content = (
-    <Card className="relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-border">
-      {/* Equal anatomy: every tile has a figure and a footer band of the same
-          height. Trend cards keep their week-over-week line; the other two
-          get a real caption (inbox state, next due date) — not a fake sparkline
-          and not a centred void. `mt-auto` pins that band to the bottom so a
-          short caption still sits where the trend sits. */}
-      <CardContent className="flex h-full flex-col p-4 sm:p-5">
-        <div className="flex w-full items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
-            <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">{value}</p>
-          </div>
-          <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
-        </div>
-        <div className="mt-auto min-h-[2.75rem] pt-2">
-          {trend ? (
-            <div className="space-y-0.5">
-              <p className={cn('text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
-                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
-              </p>
-              <p className="text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
-                <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} stacked wrap />
-              </p>
-            </div>
-          ) : caption ? (
-            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
-              <BilingualText en={caption} el={captionEl ?? caption} stacked wrap />
-            </p>
-          ) : null}
-        </div>
-      </CardContent>
-    </Card>
-  );
-  return href ? (
-    <Link
-      href={href}
-      className="group block min-w-0 w-full rounded-2xl focus-visible:outline-none"
-    >
-      {content}
-    </Link>
-  ) : content;
-}
-
 function AttentionChips({
   items,
 }: {
@@ -395,7 +345,9 @@ export default function FounderDashboardContent() {
 
   /** A change of exactly zero is a measurement; a missing one is not an arrow. */
   const trendOf = (change: number | null | undefined) =>
-    typeof change === 'number' ? { value: Math.abs(change), positive: change >= 0 } : undefined;
+    typeof change === 'number'
+      ? { value: Math.abs(change), positive: change >= 0, en: dashboardEn('this_week'), el: dashboardEl('this_week') }
+      : undefined;
 
   const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
@@ -738,32 +690,32 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <StatCard
+          <MetricTile
             glyph="profile"
-            label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />}
+            label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
             value={userMetrics?.profileViews ?? '—'}
             trend={trendOf(userMetrics?.profileViewsChange)}
             href="/analytics"
           />
           {/* No endpoint reports a week-over-week change for matches, so this
               tile carried a literal 3 as its arrow. It shows the count alone. */}
-          <StatCard
+          <MetricTile
             glyph="matches"
-            label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />}
+            label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
             value={stats?.matchesThisWeek ?? '—'}
             href="/matches"
           />
-          <StatCard
+          <MetricTile
             glyph="messages"
-            label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />}
+            label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
             value={unreadMessages}
             href="/messages"
             caption={messageCaption.en}
             captionEl={messageCaption.el}
           />
-          <StatCard
+          <MetricTile
             glyph="flag"
-            label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked wrap />}
+            label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
             value={`${completedMilestoneCount}/${milestones.length}`}
             href="/milestones"
             caption={milestoneCaption.en}

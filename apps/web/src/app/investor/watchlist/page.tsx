@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { companyStageLabel, formatRelativeTime } from '@/lib/utils';
 import {
   listInvestorDeals,
   getInvestorActivity,
@@ -103,7 +103,7 @@ function toWatched(deal: InvestorDeal): WatchedStartup {
     logoUrl: deal.logoUrl,
     tagline: deal.tagline ?? '',
     industry: deal.industry ?? '\u2014',
-    stage: deal.companyStage ?? '\u2014',
+    stage: companyStageLabel(deal.companyStage) || '\u2014',
     location: deal.location ?? '\u2014',
     teamSize: deal.teamSize ?? 0,
     // Neither is the investor's to see yet — see the note on `Deal` in

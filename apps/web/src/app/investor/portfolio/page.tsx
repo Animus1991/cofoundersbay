@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { companyStageLabel, formatRelativeTime } from '@/lib/utils';
 import {
   listInvestorDeals,
   getInvestorSummary,
@@ -115,7 +115,7 @@ function toInvestment(deal: InvestorDeal): Investment {
     amount: money(deal.investedCents, deal.currency),
     currentValue: money(deal.currentValueCents, deal.currency),
     returnPct: invested > 0 ? Math.round(((current - invested) / invested) * 100) : 0,
-    stage: deal.companyStage ?? '\u2014',
+    stage: companyStageLabel(deal.companyStage) || '\u2014',
     status: deal.status,
     teamSize: deal.teamSize ?? 0,
     lastUpdate: deal.lastActivityAt,

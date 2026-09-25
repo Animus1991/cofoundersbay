@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { companyStageLabel, formatRelativeTime } from '@/lib/utils';
 import { listInvestorDeals, updateInvestorDeal, type InvestorDeal } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
@@ -170,7 +170,7 @@ function toPageDeal(deal: InvestorDeal): Deal {
     name: deal.name,
     logoUrl: deal.logoUrl ?? undefined,
     industry: deal.industry ?? '—',
-    stage: deal.companyStage ?? '—',
+    stage: companyStageLabel(deal.companyStage) || '—',
     pipelineStage: deal.pipelineStage as PipelineStage,
     readinessScore: null,
     askAmount: deal.askAmountCents != null ? deal.askAmountCents / 100 : undefined,

@@ -2,11 +2,9 @@
 
 import Link from 'next/link';
 import {
-  ArrowRight,
   BarChart3,
   Briefcase,
   Building2,
-  ChevronRight,
   DollarSign,
   Eye,
   LineChart,
@@ -21,12 +19,14 @@ import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { useSession } from '@/hooks/useSession';
-import { cn } from '@/lib/utils';
+import { cn, companyStageLabel } from '@/lib/utils';
 import {
   getInvestorActivity,
   getInvestorSummary,
@@ -80,36 +80,36 @@ function money(cents: number | null | undefined, currency = 'EUR'): string {
   }).format(cents / 100);
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  subtext,
-  href,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: number | string;
-  subtext?: string;
-  href?: string;
-}) {
-  const content = (
-    <Card className="h-full transition-all hover:shadow-md">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold tabular-nums">{value}</p>
-            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
-          </div>
-          <div className="shrink-0 rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary-accessible" aria-hidden="true" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+/**
+ * How the board splits on one attribute: each value with its share drawn as a
+ * bar against the whole board, so "two of seven" reads at a glance instead of
+ * as a row of equal chips that hid the counts.
+ */
+function Distribution({ title, titleEl, rows, total }: { title: string; titleEl: string; rows: [string, number][]; total: number }) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium text-muted-foreground">
+        <BilingualText en={title} el={titleEl} />
+      </p>
+      {rows.length ? (
+        <ul className="space-y-2">
+          {rows.map(([value, count]) => (
+            <li key={value} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm">
+              <span className="truncate">{value}</span>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {count} / {total}
+              </span>
+              <span className="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                <span className="block h-full rounded-full bg-primary/70" style={{ width: `${total ? Math.round((count / total) * 100) : 0}%` }} />
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">{'—'}</p>
+      )}
+    </div>
   );
-  return href ? <Link href={href} className="block h-full rounded-xl focus-ring">{content}</Link> : content;
 }
 
 function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.ReactNode }) {
@@ -127,7 +127,7 @@ function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.React
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{deal.name}</p>
         <p className="truncate text-xs text-muted-foreground">
-          {[deal.industry, deal.companyStage].filter(Boolean).join(' · ') || deal.tagline || '—'}
+          {[deal.industry, companyStageLabel(deal.companyStage)].filter(Boolean).join(' · ') || deal.tagline || '—'}
         </p>
       </div>
       <div className="shrink-0 text-right">{trailing}</div>
@@ -180,10 +180,9 @@ export default function InvestorDashboard() {
       }, {}),
     )
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([v]) => v);
+      .slice(0, 4);
   const leaningIndustries = topOf(deals.map((d) => d.industry));
-  const leaningStages = topOf(deals.map((d) => d.companyStage));
+  const leaningStages = topOf(deals.map((d) => companyStageLabel(d.companyStage) || null));
 
   const multiple = (d: InvestorDeal) =>
     d.investedCents && d.currentValueCents != null ? d.currentValueCents / d.investedCents : null;
@@ -218,14 +217,24 @@ export default function InvestorDashboard() {
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          <StatCard icon={Briefcase} label="Deal flow" value={summary?.totalDeals ?? '—'} subtext="Deals on your board" href="/investor/pipeline" />
-          <StatCard icon={Target} label="Active deals" value={summary ? active.length : '—'} subtext="Reviewing to negotiating" href="/investor/pipeline" />
-          <StatCard icon={Building2} label="Portfolio" value={summary?.investments ?? '—'} subtext={summary ? `${money(summary.currentValueCents, currency)} current value` : undefined} href="/investor/portfolio" />
-          <StatCard
+          <MetricTile icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
+          <MetricTile icon={Target} label="Active deals" labelEl="Ενεργές συμφωνίες" value={summary ? active.length : '—'} caption="Reviewing to negotiating" captionEl="Από αξιολόγηση έως διαπραγμάτευση" href="/investor/pipeline" />
+          <MetricTile
+            icon={Building2}
+            label="Portfolio"
+            labelEl="Χαρτοφυλάκιο"
+            value={summary?.investments ?? '—'}
+            caption={summary ? `${money(summary.currentValueCents, currency)} current value` : undefined}
+            captionEl={summary ? `${money(summary.currentValueCents, currency)} τρέχουσα αξία` : undefined}
+            href="/investor/portfolio"
+          />
+          <MetricTile
             icon={TrendingUp}
             label="Return"
+            labelEl="Απόδοση"
             value={summary?.returnPct == null ? '—' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`}
-            subtext={summary ? `on ${money(summary.deployedCents, currency)} deployed` : undefined}
+            caption={summary ? `on ${money(summary.deployedCents, currency)} deployed` : undefined}
+            captionEl={summary ? `επί ${money(summary.deployedCents, currency)} επενδυμένων` : undefined}
             href="/investor/analytics"
           />
         </div>
@@ -233,200 +242,116 @@ export default function InvestorDashboard() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Active deals first: they are what needs a decision. */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <BarChart3 className="icon-sm text-primary-accessible" aria-hidden="true" />
-                    Active deals
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/investor/pipeline">
-                      Pipeline <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {dealsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
-                {!dealsLoading && active.map((deal) => (
+            <SectionCard title="Active deals" titleEl="Ενεργές συμφωνίες" icon={BarChart3} action={{ href: '/investor/pipeline', label: 'Pipeline', labelEl: 'Pipeline' }}>
+              {dealsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
+              {!dealsLoading && active.map((deal) => (
+                <DealRow
+                  key={deal.id}
+                  deal={deal}
+                  trailing={
+                    <>
+                      <Badge size="sm" className={cn(STAGE_TONE[deal.pipelineStage] ?? '')}>
+                        {STAGE_LABEL[deal.pipelineStage] ?? deal.pipelineStage}
+                      </Badge>
+                      {deal.askAmountCents != null && (
+                        <p className="mt-1 text-xs tabular-nums text-muted-foreground">asking {money(deal.askAmountCents, deal.currency)}</p>
+                      )}
+                    </>
+                  }
+                />
+              ))}
+              {!dealsLoading && active.length === 0 && (
+                <EmptyLine en="No deal is between review and term sheet right now." el="Καμία συμφωνία δεν είναι αυτή τη στιγμή μεταξύ αξιολόγησης και term sheet." />
+              )}
+            </SectionCard>
+
+            <SectionCard title="Portfolio" titleEl="Χαρτοφυλάκιο" icon={PieChart} action={{ href: '/investor/portfolio', label: 'All companies', labelEl: 'Όλες οι εταιρείες' }}>
+              {invested.map((deal) => {
+                const x = multiple(deal);
+                return (
                   <DealRow
                     key={deal.id}
                     deal={deal}
                     trailing={
                       <>
-                        <Badge size="sm" className={cn(STAGE_TONE[deal.pipelineStage] ?? '')}>
-                          {STAGE_LABEL[deal.pipelineStage] ?? deal.pipelineStage}
-                        </Badge>
-                        {deal.askAmountCents != null && (
-                          <p className="mt-1 text-xs text-muted-foreground">asking {money(deal.askAmountCents, deal.currency)}</p>
-                        )}
+                        <p className={cn('text-sm font-semibold tabular-nums', x == null ? 'text-muted-foreground' : x >= 1 ? 'text-status-success' : 'text-status-danger')}>
+                          {x == null ? '—' : `${x.toFixed(1)}x`}
+                        </p>
+                        <p className="text-xs tabular-nums text-muted-foreground">{money(deal.currentValueCents ?? deal.investedCents, deal.currency)}</p>
                       </>
                     }
                   />
-                ))}
-                {!dealsLoading && active.length === 0 && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    No deal is between review and term sheet right now.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                );
+              })}
+              {!dealsLoading && invested.length === 0 && (
+                <EmptyLine en="Mark a deal as invested in the pipeline to track it here." el="Σημειώστε μια συμφωνία ως επένδυση στο pipeline για να την παρακολουθείτε εδώ." />
+              )}
+            </SectionCard>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <PieChart className="icon-sm text-primary-accessible" aria-hidden="true" />
-                    Portfolio
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/investor/portfolio">
-                      All companies <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {invested.map((deal) => {
-                  const x = multiple(deal);
-                  return (
-                    <DealRow
-                      key={deal.id}
-                      deal={deal}
-                      trailing={
-                        <>
-                          <p className={cn('text-sm font-semibold tabular-nums', x == null ? 'text-muted-foreground' : x >= 1 ? 'text-status-success' : 'text-status-danger')}>
-                            {x == null ? '—' : `${x.toFixed(1)}x`}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{money(deal.currentValueCents ?? deal.investedCents, deal.currency)}</p>
-                        </>
-                      }
-                    />
-                  );
-                })}
-                {!dealsLoading && invested.length === 0 && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    Mark a deal as invested in the pipeline to track it here.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Rocket className="icon-sm text-primary-accessible" aria-hidden="true" />
-                    Recently discovered
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/investor/scouting">
-                      Scout more <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {discovered.map((deal) => (
-                  <DealRow
-                    key={deal.id}
-                    deal={deal}
-                    trailing={
-                      deal.askAmountCents != null ? (
-                        <p className="text-sm font-semibold text-primary-accessible">{money(deal.askAmountCents, deal.currency)}</p>
-                      ) : null
-                    }
-                  />
-                ))}
-                {!dealsLoading && discovered.length === 0 && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    Startups you watch from Scouting appear here first.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <SectionCard title="Recently discovered" titleEl="Πρόσφατες ανακαλύψεις" icon={Rocket} action={{ href: '/investor/scouting', label: 'Scout more', labelEl: 'Περισσότερα' }}>
+              {discovered.map((deal) => (
+                <DealRow
+                  key={deal.id}
+                  deal={deal}
+                  trailing={
+                    deal.askAmountCents != null ? (
+                      <p className="text-sm font-semibold tabular-nums text-primary-accessible">{money(deal.askAmountCents, deal.currency)}</p>
+                    ) : null
+                  }
+                />
+              ))}
+              {!dealsLoading && discovered.length === 0 && (
+                <EmptyLine en="Startups you watch from Scouting appear here first." el="Οι startups που παρακολουθείτε από την Ανίχνευση εμφανίζονται πρώτα εδώ." />
+              )}
+            </SectionCard>
           </div>
 
           <div className="space-y-6">
-            {/* A navigation list, not a stack of full-width outlined buttons. */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Go to</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2">
-                <nav aria-label="Investor pages" className="flex flex-col">
-                  {[
-                    { href: '/investor/scouting', icon: Search, label: 'Scout startups' },
-                    { href: '/investor/watchlist', icon: Star, label: 'Watchlist' },
-                    { href: '/investor/pipeline', icon: Target, label: 'Deal pipeline' },
-                    { href: '/investor/portfolio', icon: LineChart, label: 'Portfolio' },
-                    { href: '/investor/analytics', icon: BarChart3, label: 'Analytics' },
-                  ].map(({ href, icon: Icon, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className="group flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted/60"
-                    >
-                      <Icon className="icon-sm text-muted-foreground group-hover:text-primary-accessible" aria-hidden="true" />
-                      <span className="flex-1">{label}</span>
-                      <ChevronRight className="icon-sm text-muted-foreground/60" aria-hidden="true" />
-                    </Link>
-                  ))}
-                </nav>
-              </CardContent>
-            </Card>
+            <QuickLinks
+              label="Investor pages"
+              links={[
+                { href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Ανίχνευση startups' },
+                { href: '/investor/watchlist', icon: Star, label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' },
+                { href: '/investor/pipeline', icon: Target, label: 'Deal pipeline', labelEl: 'Pipeline συμφωνιών' },
+                { href: '/investor/portfolio', icon: LineChart, label: 'Portfolio', labelEl: 'Χαρτοφυλάκιο' },
+                { href: '/investor/analytics', icon: BarChart3, label: 'Analytics', labelEl: 'Αναλυτικά' },
+              ]}
+            />
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Where your board leans</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="mb-1.5 text-xs text-muted-foreground">Industries</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {leaningIndustries.length ? leaningIndustries.map((i) => <Badge key={i} variant="outline">{i}</Badge>) : <span className="text-sm text-muted-foreground">{'—'}</span>}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-1.5 text-xs text-muted-foreground">Company stages</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {leaningStages.length ? leaningStages.map((s) => <Badge key={s} variant="secondary">{s}</Badge>) : <span className="text-sm text-muted-foreground">{'—'}</span>}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Counted from the deals on your board. State your own focus on your profile.
-                </p>
-                <Button variant="secondary" size="sm" className="w-full" asChild>
-                  <Link href="/profile/edit">Edit investment focus</Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <SectionCard title="Board mix" titleEl="Σύνθεση πίνακα" contentClassName="space-y-4">
+              <Distribution title="Industries" titleEl="Κλάδοι" rows={leaningIndustries} total={deals.length} />
+              <Distribution title="Company stages" titleEl="Στάδια εταιρειών" rows={leaningStages} total={deals.length} />
+              <p className="text-xs text-muted-foreground">
+                <BilingualText
+                  en="Counted from the deals on your board. State your own focus on your profile."
+                  el="Μετρημένο από τις συμφωνίες του πίνακά σας. Δηλώστε τη δική σας εστίαση στο προφίλ."
+                  stacked
+                  wrap
+                />
+              </p>
+              <Button variant="secondary" size="sm" className="w-full" asChild>
+                <Link href="/profile/edit">
+                  <BilingualText en="Edit investment focus" el="Επεξεργασία εστίασης" />
+                </Link>
+              </Button>
+            </SectionCard>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Eye className="icon-sm" aria-hidden="true" />
-                  Recent activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {activity.map((a) => (
-                  <Link key={a.id} href={`/startups/${a.dealId}`} className="flex items-start gap-2 rounded-md text-sm hover:text-foreground">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" aria-hidden="true" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-foreground">{a.title}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {a.dealName} · <RelativeTime date={a.createdAt} />
-                      </span>
+            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} contentClassName="space-y-3">
+              {activity.map((a) => (
+                <Link key={a.id} href={`/startups/${a.dealId}`} className="flex items-start gap-2 rounded-md text-sm hover:text-foreground focus-ring">
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-foreground">{a.title}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {a.dealName} · <RelativeTime date={a.createdAt} />
                     </span>
-                  </Link>
-                ))}
-                {activity.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Moves, notes and meetings on your deals show up here.</p>
-                )}
-              </CardContent>
-            </Card>
+                  </span>
+                </Link>
+              ))}
+              {activity.length === 0 && (
+                <EmptyLine en="Moves, notes and meetings on your deals show up here." el="Κινήσεις, σημειώσεις και συναντήσεις στις συμφωνίες σας εμφανίζονται εδώ." />
+              )}
+            </SectionCard>
           </div>
         </div>
       </div>

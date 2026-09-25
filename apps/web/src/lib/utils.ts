@@ -79,3 +79,25 @@ export function initialsOf(name: string | null | undefined): string {
   const last = words.length > 1 ? words[words.length - 1][0] ?? '' : '';
   return (first + last).toUpperCase();
 }
+
+/**
+ * A company stage as people write it: "Pre-seed", "Seed", "Series A".
+ *
+ * The API stores stages as identifiers (`pre_seed`, `series_a`), and the
+ * investor pages printed them as stored, so one deal read "pre_seed" on the
+ * pipeline beside a sample row reading "Pre-seed". Already-written labels
+ * pass through unchanged; an empty stage stays empty for the caller's dash.
+ */
+export function companyStageLabel(stage: string | null | undefined): string {
+  const words = (stage ?? '').trim().split(/[_\s-]+/).filter(Boolean);
+  if (!words.length) return '';
+  if (words[0].toLowerCase() === 'mvp') return 'MVP';
+  if (words[0].toLowerCase() === 'pre' && words.length > 1) {
+    return `Pre-${words.slice(1).join(' ').toLowerCase()}`;
+  }
+  if (words[0].toLowerCase() === 'series' && words.length > 1) {
+    return `Series ${words.slice(1).join(' ').toUpperCase()}`;
+  }
+  const text = words.join(' ').toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
