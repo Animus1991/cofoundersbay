@@ -35,6 +35,12 @@ export class EndorsementsController {
     return { endorsements };
   }
 
+  @Get('given')
+  async getGiven(@CurrentUser() user: { id: string }) {
+    const endorsements = await this.endorsements.getGivenEndorsements(user.id);
+    return { endorsements };
+  }
+
   @Get('stats')
   async getStats(@CurrentUser() user: { id: string }) {
     const stats = await this.endorsements.getEndorsementStats(user.id);

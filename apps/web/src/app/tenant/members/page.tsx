@@ -52,7 +52,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
@@ -138,7 +138,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
           <div className="relative shrink-0">
             <Avatar className="h-12 w-12">
               <AvatarImage src={member.avatarUrl} />
-              <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
             </Avatar>
             {member.isOnline && (
               <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />

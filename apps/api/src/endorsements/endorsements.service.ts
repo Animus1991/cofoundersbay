@@ -12,6 +12,13 @@ export type EndorsementDto = {
     headline: string | null;
   };
   toUserId: string;
+  /** Present on the giver's list, where the other person is the recipient. */
+  toUser?: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
   skill: string | null;
   content: string;
   relationship: string | null;
@@ -19,6 +26,13 @@ export type EndorsementDto = {
   isApproved: boolean;
   createdAt: string;
 };
+
+const profileSelect = {
+  select: {
+    id: true,
+    profile: { select: { displayName: true, avatarUrl: true, headline: true } },
+  },
+} as const;
 
 @Injectable()
 export class EndorsementsService {
@@ -98,6 +112,47 @@ export class EndorsementsService {
         headline: e.fromUser.profile?.headline ?? null,
       },
       toUserId: e.toUserId,
+      skill: e.skill,
+      content: e.content,
+      relationship: e.relationship,
+      isPublic: e.isPublic,
+      isApproved: e.isApproved,
+      createdAt: e.createdAt.toISOString(),
+    }));
+  }
+
+  /**
+   * What the reader has written for others, approved or not. The count was
+   * already served by `getEndorsementStats` as `given`, but no read listed
+   * them, so the Given tab could only ever be empty for a real account.
+   * Only the giver asks for this, so unapproved and private ones are theirs
+   * to see; the recipient's approval state is carried so the list can say
+   * which are still waiting.
+   */
+  async getGivenEndorsements(userId: string): Promise<EndorsementDto[]> {
+    const endorsements = await this.prisma.endorsement.findMany({
+      where: { fromUserId: userId },
+      include: { fromUser: profileSelect, toUser: profileSelect },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    return endorsements.map((e) => ({
+      id: e.id,
+      fromUserId: e.fromUserId,
+      fromUser: {
+        id: e.fromUser.id,
+        displayName: e.fromUser.profile?.displayName ?? 'Unknown',
+        avatarUrl: e.fromUser.profile?.avatarUrl ?? null,
+        headline: e.fromUser.profile?.headline ?? null,
+      },
+      toUserId: e.toUserId,
+      toUser: {
+        id: e.toUser.id,
+        displayName: e.toUser.profile?.displayName ?? 'Unknown',
+        avatarUrl: e.toUser.profile?.avatarUrl ?? null,
+        headline: e.toUser.profile?.headline ?? null,
+      },
       skill: e.skill,
       content: e.content,
       relationship: e.relationship,

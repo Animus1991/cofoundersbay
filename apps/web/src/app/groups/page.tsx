@@ -39,6 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 import { STATUS, categoryChip } from '@/lib/semantic-colors';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import {
@@ -108,10 +109,10 @@ function GroupCard({
           )}
         </div>
       ) : (
-        <div className={cn('h-28 w-full rounded-t-xl relative', coverTone)}>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Users className="h-10 w-10 text-foreground/15" />
-          </div>
+        // No cover image: a thin tinted band carries the type chip. A 112px
+        // block with a faint icon was the tallest thing on the card and said
+        // nothing the card's own icon does not.
+        <div className={cn('h-10 w-full rounded-t-xl relative', coverTone)}>
           <div className="absolute top-2 left-2">
             <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
@@ -209,7 +210,7 @@ function GroupsGrid({
 }) {
   if (groups.length === 0) return null;
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {groups.map((g, i) => (
         <GroupCard key={g.id} group={g} onToggle={onToggle} loading={loadingId === g.id} index={offset + i} />
       ))}
@@ -489,9 +490,10 @@ export default function GroupsPage() {
           {activeTab === 'discover' && (
             <div className="space-y-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
-                  placeholder="Search communities by name, topic, or tags..."
+                  placeholder={bilingualInline('Search communities by name, topic or tag…', 'Αναζήτηση κοινοτήτων με όνομα, θέμα ή ετικέτα…')}
+                  aria-label={bilingualInline('Search communities', 'Αναζήτηση κοινοτήτων')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -529,7 +531,11 @@ export default function GroupsPage() {
 
           {/* Result count */}
           {!discoverQuery.isLoading && displayGroups.length > 0 && (
-            <p className="text-xs text-muted-foreground px-0.5">{displayGroups.length} {activeTab === 'my-groups' ? 'joined' : 'found'}</p>
+            <p className="text-xs text-muted-foreground px-0.5">
+              {activeTab === 'my-groups'
+                ? <BilingualText en={`${displayGroups.length} joined`} el={`${displayGroups.length} με συμμετοχή`} compact />
+                : <BilingualText en={`${displayGroups.length} found`} el={`${displayGroups.length} βρέθηκαν`} compact />}
+            </p>
           )}
 
           {/* Featured top row */}

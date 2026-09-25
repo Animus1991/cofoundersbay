@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
@@ -86,7 +86,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible">
-                {user.displayName[0]?.toUpperCase()}
+                {initialsOf(user.displayName)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 rounded-full bg-secondary/60 px-4 py-2.5 text-sm text-muted-foreground">
@@ -145,7 +145,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible">
-                {user.displayName[0]?.toUpperCase()}
+                {initialsOf(user.displayName)}
               </AvatarFallback>
             </Avatar>
             <div>

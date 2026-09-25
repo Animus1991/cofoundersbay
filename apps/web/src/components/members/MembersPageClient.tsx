@@ -41,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 
 type ViewMode = 'grid' | 'list';
@@ -133,7 +133,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={member.avatarUrl ?? undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-base">
-                  {member.displayName[0]?.toUpperCase()}
+                  {initialsOf(member.displayName)}
                 </AvatarFallback>
               </Avatar>
               {isOnline && (
@@ -230,7 +230,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
               <AvatarImage src={member.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
-                {member.displayName[0]?.toUpperCase()}
+                {initialsOf(member.displayName)}
               </AvatarFallback>
             </Avatar>
             {isOnline && (
@@ -495,7 +495,7 @@ export function MembersPageClient() {
                   <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
                     <Avatar className="h-10 w-10 ring-1 ring-primary/30">
                       <AvatarImage src={member.avatarUrl ?? undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">{initialsOf(member.displayName)}</AvatarFallback>
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">

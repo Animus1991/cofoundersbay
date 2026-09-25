@@ -37,7 +37,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getOrCreateDirectConversation } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,7 +151,7 @@ export function CollaborationStarter({
               <div className="relative">
                 <Avatar className="h-11 w-11 ring-2 ring-emerald-400/40">
                   <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
-                    {otherUser.displayName[0]?.toUpperCase()}
+                    {initialsOf(otherUser.displayName)}
                   </AvatarFallback>
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}
                 </Avatar>

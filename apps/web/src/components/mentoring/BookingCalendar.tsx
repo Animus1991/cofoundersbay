@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { RoleBadge } from '@/components/common/RoleBadge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 export type TimeSlot = {
   id: string;
@@ -164,7 +164,7 @@ export function BookingCalendar({
               <Avatar className="h-12 w-12">
                 <AvatarImage src={mentor.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
-                  {mentor.displayName[0]?.toUpperCase()}
+                  {initialsOf(mentor.displayName)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">

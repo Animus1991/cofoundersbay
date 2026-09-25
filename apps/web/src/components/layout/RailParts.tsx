@@ -37,8 +37,10 @@ export function RailStats({ items }: { items: RailStat[] }) {
           ) : null}
           <div className="min-w-0">
             <dd className="text-base font-semibold leading-none tabular-nums text-foreground">{value}</dd>
+            {/* Stacked: in a column this narrow an inline pair wraps and
+                leaves its "·" separator alone on a line. */}
             <dt className="mt-1 text-xs leading-snug text-muted-foreground">
-              <BilingualText en={label} el={labelEl} compact wrap />
+              <BilingualText en={label} el={labelEl} stacked wrap />
             </dt>
           </div>
         </div>

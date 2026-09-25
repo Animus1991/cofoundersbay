@@ -434,8 +434,10 @@ export default function InvestorsPage() {
         return matchSearch && matchType && matchStage && matchScout;
       })
       .sort((a, b) => {
+        // People who are really here come before the samples, in the
+        // search's own order; the sort ranks the samples by their figures.
+        if (a.sample !== b.sample) return a.sample ? 1 : -1;
         const pick = (i: Investor) => (sortBy === 'portfolio' ? i.portfolioCount : sortBy === 'views' ? i.viewCount : i.dealsThisYear);
-        // Unknown figures sort after known ones; real rows keep the search's order among themselves.
         return (pick(b) ?? -1) - (pick(a) ?? -1);
       });
   }, [directory, query, investorType, stage, scout, sortBy]);
@@ -575,7 +577,7 @@ export default function InvestorsPage() {
             )}
           </p>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-            <SelectTrigger aria-label={bilingualInline('Sort investors', 'Ταξινόμηση επενδυτών')} className="h-9 w-full sm:w-[190px]">
+            <SelectTrigger aria-label={bilingualInline('Sort investors', 'Ταξινόμηση επενδυτών')} className="h-9 w-full sm:w-auto sm:min-w-[17rem]">
               <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
               <SelectValue />
             </SelectTrigger>

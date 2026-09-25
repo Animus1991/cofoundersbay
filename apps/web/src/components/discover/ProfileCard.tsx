@@ -29,7 +29,7 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 
@@ -148,7 +148,7 @@ function ProfileCardInner({
               <Avatar className="h-10 w-10">
                 <AvatarImage src={profile.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm font-semibold">
-                  {profile.displayName[0]?.toUpperCase()}
+                  {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -197,7 +197,7 @@ function ProfileCardInner({
               <Avatar className="h-12 w-12 ring-2 ring-border/40 group-hover:ring-primary/40 transition-all">
                 <AvatarImage src={profile.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible text-base font-semibold">
-                  {profile.displayName[0]?.toUpperCase()}
+                  {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -375,7 +375,7 @@ function ProfileCardInner({
               <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                  {profile.displayName[0]?.toUpperCase()}
+                  {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
               {profile.isVerified && (

@@ -17,7 +17,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export type EventData = {
   id: string;
@@ -56,6 +57,19 @@ function formatEventTime(start: Date, end: Date): string {
   const startTime = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const endTime = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return `${startTime} - ${endTime}`;
+}
+
+const EVENT_TYPE_LABEL: Record<string, { en: string; el: string }> = {
+  online: { en: 'Online', el: 'Διαδικτυακή' },
+  'in-person': { en: 'In person', el: 'Δια ζώσης' },
+  in_person: { en: 'In person', el: 'Δια ζώσης' },
+  hybrid: { en: 'Hybrid', el: 'Υβριδική' },
+};
+
+/** The format as a word in the reader's language, not the API's identifier. */
+function EventTypeLabel({ type }: { type: string }) {
+  const label = EVENT_TYPE_LABEL[type];
+  return label ? <BilingualText en={label.en} el={label.el} compact /> : <>{type}</>;
 }
 
 function EventTypeIcon({ type }: { type: EventData['type'] }) {
@@ -131,7 +145,7 @@ export function EventCard({
               <div className="mt-1 flex items-center gap-2">
                 <Badge variant="outline" className="text-xs gap-1">
                   <EventTypeIcon type={event.type} />
-                  {event.type}
+                  <EventTypeLabel type={event.type} />
                 </Badge>
                 <span className="text-xs text-muted-foreground">
                   {event.attendeesCount} attending
@@ -191,7 +205,7 @@ export function EventCard({
             <div className="absolute top-4 right-4">
               <Badge variant="secondary" className="gap-1">
                 <EventTypeIcon type={event.type} />
-                {event.type}
+                <EventTypeLabel type={event.type} />
               </Badge>
             </div>
           </div>
@@ -228,7 +242,7 @@ export function EventCard({
             <Avatar className="h-8 w-8">
               <AvatarImage src={event.hostAvatar || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs">
-                {event.hostName[0]?.toUpperCase()}
+                {initialsOf(event.hostName)}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -322,7 +336,7 @@ export function EventCard({
               </Link>
               <Badge variant="outline" className="flex-shrink-0 gap-1">
                 <EventTypeIcon type={event.type} />
-                {event.type}
+                <EventTypeLabel type={event.type} />
               </Badge>
             </div>
             
@@ -345,7 +359,7 @@ export function EventCard({
                 <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage src={event.hostAvatar || undefined} />
                   <AvatarFallback className="bg-primary/20 text-primary-accessible text-2xs">
-                    {event.hostName[0]?.toUpperCase()}
+                    {initialsOf(event.hostName)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="min-w-0 truncate text-xs text-muted-foreground">by {event.hostName}</span>

@@ -37,7 +37,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -80,7 +80,7 @@ function ConnectionCard({
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
             <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-              {other.displayName[0]?.toUpperCase()}
+              {initialsOf(other.displayName)}
             </AvatarFallback>
           </Avatar>
         </Link>
@@ -170,7 +170,7 @@ function IntroRequestCard({
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {sender.displayName[0]?.toUpperCase()}
+                {initialsOf(sender.displayName)}
               </AvatarFallback>
             </Avatar>
           </Link>

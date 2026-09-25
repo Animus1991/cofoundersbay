@@ -42,7 +42,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -251,7 +251,7 @@ function JobCard({ job }: { job: JobPostingView }) {
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
               <AvatarFallback className="rounded-xl bg-primary/20 text-primary-accessible font-bold text-sm">
-                {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
+                {initialsOf(job.creator.displayName)}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -688,7 +688,9 @@ export default function OpportunitiesPage() {
       >
         <div className="space-y-5 pb-10">
         {/* Tabs */}
-        <div className="flex gap-1 rounded-xl bg-secondary/50 p-1 overflow-x-auto" role="group" aria-label={bilingualInline('Opportunities section', 'Ενότητα ευκαιριών')}>
+        {/* Wraps rather than scrolls: four bilingual labels are wider than the
+            column, and a scrolled strip hid the fourth (Proposals). */}
+        <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualInline('Opportunities section', 'Ενότητα ευκαιριών')}>
           {tabs.map(({ key, labelKey, icon: Icon, badge }) => (
             <button
               key={key}
@@ -771,9 +773,11 @@ export default function OpportunitiesPage() {
             ) : (
               <div className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  {opportunities.length === 1
-                    ? opportunitiesEn('count_one')
-                    : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
+                  <BilingualText
+                    en={opportunities.length === 1 ? opportunitiesEn('count_one') : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
+                    el={opportunities.length === 1 ? opportunitiesEl('count_one') : opportunitiesEl('count_many').replace('{n}', String(opportunities.length))}
+                    compact
+                  />
                 </p>
                 {opportunities.map((opp) => (
                   <OpportunityCard key={opp.id} opportunity={opp} />

@@ -64,7 +64,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
 
@@ -169,7 +169,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             <Avatar className="h-11 w-11 ring-2 ring-primary/20">
               <AvatarImage src={mentor.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
-                {mentor.displayName[0]?.toUpperCase()}
+                {initialsOf(mentor.displayName)}
               </AvatarFallback>
             </Avatar>
             {availCfg && <span className={cn('absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full ring-2 ring-background', availCfg.dot)} aria-hidden="true" />}
@@ -459,7 +459,7 @@ function BookingCard({
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
               <AvatarImage src={other.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {other.displayName[0]?.toUpperCase()}
+                {initialsOf(other.displayName)}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -828,8 +828,12 @@ export default function MentoringPage() {
         <RailStats
           items={[
             { key: 'mentors', label: 'Mentors shown', labelEl: 'Μέντορες που εμφανίζονται', value: mentorsQueryLoading ? '—' : filteredMentors.length, icon: GraduationCap, tone: 'bg-status-accent-bg text-status-accent' },
-            { key: 'rating', label: 'Average rating', labelEl: 'Μέση βαθμολογία', value: avgRating ? `${avgRating}★` : '—', icon: Star, tone: 'bg-status-warning-bg text-status-warning' },
-            { key: 'sessions', label: 'Sessions given', labelEl: 'Συνεδρίες που έγιναν', value: sessionsDone, icon: Users, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'free', label: 'Free to book', labelEl: 'Δωρεάν κράτηση', value: mentorsQueryLoading ? '—' : filteredMentors.filter((m) => !m.hourlyRate).length, icon: Users, tone: 'bg-status-success-bg text-status-success' },
+            // The directory search carries no ratings or session counts, so
+            // these appear only when some mentor on screen actually has one:
+            // a 0 here would read as "nobody has mentored", not "unknown".
+            ...(avgRating ? [{ key: 'rating', label: 'Average rating', labelEl: 'Μέση βαθμολογία', value: `${avgRating}★`, icon: Star, tone: 'bg-status-warning-bg text-status-warning' }] : []),
+            ...(sessionsDone > 0 ? [{ key: 'sessions', label: 'Sessions given', labelEl: 'Συνεδρίες που έγιναν', value: sessionsDone, icon: Users, tone: 'bg-status-info-bg text-status-info' }] : []),
             ...(upcomingCount > 0 ? [{ key: 'upcoming', label: 'Your upcoming sessions', labelEl: 'Οι επερχόμενες συνεδρίες σας', value: upcomingCount, icon: Calendar, tone: 'bg-status-info-bg text-status-info' }] : []),
           ]}
         />

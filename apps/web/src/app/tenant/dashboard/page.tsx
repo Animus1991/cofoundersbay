@@ -18,7 +18,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTenant } from '@/components/providers/TenantContext';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/api';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { MetricTile } from '@/components/dashboard/MetricTile';
@@ -186,7 +186,7 @@ export default function TenantDashboardPage() {
               <div key={member.id} className="flex items-center gap-3">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={member.avatarUrl} />
-                  <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{member.name}</p>

@@ -39,7 +39,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -78,7 +78,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
           <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
             <AvatarImage src={job.creator?.avatarUrl ?? undefined} />
             <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
-              {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
+              {initialsOf(job.creator.displayName)}
             </AvatarFallback>
           </Avatar>
 

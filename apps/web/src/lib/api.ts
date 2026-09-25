@@ -2654,6 +2654,13 @@ export type EndorsementItem = {
     headline: string | null;
   };
   toUserId: string;
+  /** On the giver's list (`getGivenEndorsements`), the person it was written for. */
+  toUser?: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
   skill: string | null;
   content: string;
   relationship: string | null;
@@ -2679,6 +2686,11 @@ export async function getEndorsementsForUser(
 
 export async function getPendingEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
   return apiRequest('/api/endorsements/pending');
+}
+
+/** What the signed-in user has written for others, approved or still waiting. */
+export async function getGivenEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
+  return apiRequest('/api/endorsements/given');
 }
 
 export async function getEndorsementStats(): Promise<{ stats: EndorsementStats }> {
@@ -4161,7 +4173,13 @@ export async function getTenantSSOConfig(tenantId: string): Promise<TenantSSOCon
   const res = await apiRequest<TenantSSOConfig | { config?: TenantSSOConfig } | null>(`/api/sso/tenants/${tenantId}/config`);
   const cfg = res && 'ssoMode' in res ? res : res && 'config' in res ? res.config ?? null : null;
   // No mode means no configuration row, not a configuration with empty fields.
-  return cfg && typeof cfg.ssoMode === 'string' ? { ...cfg, allowedDomains: Array.isArray(cfg.allowedDomains) ? cfg.allowedDomains : [] } : null;
+  return cfg && typeof cfg.ssoMode === 'string'
+    ? {
+        ...cfg,
+        allowedDomains: Array.isArray(cfg.allowedDomains) ? cfg.allowedDomains : [],
+        roleMappingRules: Array.isArray(cfg.roleMappingRules) ? cfg.roleMappingRules : [],
+      }
+    : null;
 }
 
 /** Upsert SSO config for a tenant (admin) */
@@ -4175,6 +4193,8 @@ export async function upsertTenantSSOConfig(tenantId: string, data: {
   allowPasswordFallback?: boolean;
   postLoginRedirect?: string;
   sessionDurationHours?: number;
+  /** Claim → role rules applied at SSO sign-in; the API stores them as given. */
+  roleMappingRules?: Array<{ claim: string; value: string; role: string }>;
 }): Promise<TenantSSOConfig> {
   return apiRequest(`/api/sso/tenants/${tenantId}/config`, { method: 'POST', body: JSON.stringify(data) });
 }

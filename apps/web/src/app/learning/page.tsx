@@ -515,7 +515,7 @@ export default function LearningPage() {
               <BilingualText en="paths" el="μονοπάτια" compact />
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
             {LEARNING_PATHS.map((path) => (
               <LearningPathCard
                 key={path.id}
@@ -582,7 +582,7 @@ export default function LearningPage() {
 
           {/* Loading skeleton */}
           {learningLoading && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-border p-5 space-y-3">
                   <div className="flex gap-3">
@@ -626,7 +626,7 @@ export default function LearningPage() {
                   <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
                 )}
               </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {regularResources.map((resource) => (
                   <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
