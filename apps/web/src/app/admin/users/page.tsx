@@ -572,7 +572,7 @@ export default function AdminUsersPage() {
 
   return (
     <AppShell rail={rail}>
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {/* Search stays in the column: it is how the list is used, not a
             setting on it. The filters live in the rail; the line below says
             which are on, because a short list with no stated reason reads as

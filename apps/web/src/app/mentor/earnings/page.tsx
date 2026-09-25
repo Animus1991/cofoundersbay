@@ -147,7 +147,7 @@ export default function MentorEarningsPage() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="py-6 space-y-6">
+        <div className="space-y-6">
           <Skeleton className="h-10 w-60" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
@@ -249,7 +249,7 @@ export default function MentorEarningsPage() {
 
   return (
     <AppShell rail={rail}>
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {showDemoData && (
           <SampleDataNotice
             surface="Earnings"

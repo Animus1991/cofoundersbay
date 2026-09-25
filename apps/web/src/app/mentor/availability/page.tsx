@@ -127,7 +127,7 @@ export default function MentorAvailabilityPage() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="py-6 space-y-6">
+        <div className="space-y-6">
           <Skeleton className="h-10 w-72" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24" />)}
@@ -148,7 +148,7 @@ export default function MentorAvailabilityPage() {
         </>
       }
     >
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {/* Status Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>

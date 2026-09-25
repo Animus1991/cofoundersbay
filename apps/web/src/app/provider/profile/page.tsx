@@ -96,7 +96,7 @@ export default function ProviderProfilePage() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="py-6 space-y-6">
+        <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-48 w-full" />
         </div>
@@ -117,7 +117,7 @@ export default function ProviderProfilePage() {
         </>
       }
     >
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {/* Preview Card */}
         <Card className="border-primary/20">
           <CardContent className="p-5">

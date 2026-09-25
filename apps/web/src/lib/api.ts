@@ -3742,8 +3742,31 @@ export type MatchBreakdown = {
   reasons?: string[];
 };
 
+/**
+ * `/recommendations/vs/:id` answers strengths as `{ icon, label }` and friction
+ * points as `{ icon, title, description }` (matching.service), the shape
+ * `getMatchVs` declares. This reader declared plain strings, and both screens
+ * that use it - the /matches compatibility dialog and /matches/compare -
+ * rendered each object as a React child, which throws. The two shapes meet
+ * here: an object becomes its words, a string passes through.
+ */
+export function breakdownText(item: unknown): string | null {
+  if (typeof item === 'string') return item;
+  if (item && typeof item === 'object') {
+    const o = item as { label?: unknown; title?: unknown; description?: unknown };
+    if (typeof o.label === 'string') return o.label;
+    if (typeof o.title === 'string') return typeof o.description === 'string' && o.description ? `${o.title}: ${o.description}` : o.title;
+  }
+  return null;
+}
+
 export async function getMatchBreakdown(targetUserId: string): Promise<MatchBreakdown> {
-  return apiRequest(`/api/recommendations/vs/${targetUserId}`);
+  const res = await apiRequest<MatchBreakdown & { sharedStrengths?: unknown[]; frictionPoints?: unknown[] }>(`/api/recommendations/vs/${targetUserId}`);
+  return {
+    ...res,
+    sharedStrengths: (res?.sharedStrengths ?? []).map(breakdownText).filter((t): t is string => Boolean(t)),
+    frictionPoints: (res?.frictionPoints ?? []).map(breakdownText).filter((t): t is string => Boolean(t)),
+  };
 }
 
 export async function submitMatchFeedback(

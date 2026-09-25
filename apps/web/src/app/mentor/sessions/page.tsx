@@ -286,7 +286,7 @@ export default function MentorSessionsPage() {
         </>
       }
     >
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>

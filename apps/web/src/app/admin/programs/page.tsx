@@ -451,7 +451,7 @@ export default function AdminProgramsPage() {
 
   return (
     <AppShell rail={rail}>
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {showingSample && (
           <SampleDataNotice
             surface="Programs"

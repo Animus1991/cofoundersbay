@@ -394,7 +394,7 @@ export default function InvestorScoutingPage() {
         </>
       }
     >
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {/* Featured */}
         {featured.length > 0 && (
           <Card className="border-primary/20 bg-primary/2">

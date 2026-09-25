@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, createContext, useContext, memo } from 'react';
+import { ReactNode, createContext, useContext, memo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
@@ -17,6 +17,7 @@ import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
 import { PageRail, type PageRailSection } from './PageRail';
 import { usePageRail } from './PageRailContext';
+import { PageHeaderSlot } from './PageHeaderSlot';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -28,6 +29,7 @@ const MemoMobileBottomNav = memo(MobileBottomNav);
  * from origin/claude/project-audit-upgrade-y2ebnr (029642e, 7c9c97d).
  */
 const InAppShellFrame = createContext(false);
+
 
 export type AppShellFrameProps = {
   children: ReactNode;
@@ -192,10 +194,13 @@ export function AppShell({
   const pageDescription = resolved.description;
   const pageDescriptionEl = resolved.descriptionEl;
   const showAskAi = Boolean(pageTitle) && askAi !== false;
+  const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
   const askAiPrompt =
     typeof askAi === 'string'
       ? askAi
       : `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`;
+
+  const headerShown = Boolean(pageTitle || pageDescription || actions || showAskAi || showHelp);
 
   const body = fullHeight ? (
     children
@@ -204,7 +209,7 @@ export function AppShell({
     // contentClassName (e.g. overflow-x-clip on /analytics, /discover,
     // /matches, pitch-deck) lands on this wrapper instead — same clipping.
     <div className={cn('space-y-5', insideFrame && contentClassName)}>
-      {(pageTitle || pageDescription || actions || showAskAi || showHelp) && (
+      {headerShown && (
         <header className="space-y-3">
           {/* Stacks under a pinned rail: at that width a side-by-side header
               gives the title about 90px and the Ask AI bar the rest. */}
@@ -250,12 +255,14 @@ export function AppShell({
               </div>
             )}
           </section>
-          {actions ? (
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
-          ) : null}
+          {/* Always present, hidden while empty: the header's actions, and the
+              slot page-level notes portal into (PageHeaderSlot). */}
+          <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden">
+            {actions}
+          </div>
         </header>
       )}
-      {children}
+      <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>{children}</PageHeaderSlot.Provider>
     </div>
   );
 

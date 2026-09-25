@@ -154,13 +154,20 @@ function PostCard({
           )}
         </div>
 
+        {/* The count and the verb read as one phrase: "6 Comment" put a
+            number in front of an imperative. */}
         <button
+          type="button"
+          aria-expanded={showComments}
           onClick={() => setShowComments((p) => !p)}
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
         >
-          <MessageCircle className="icon-sm" />
-          {post.commentCount > 0 && <span>{post.commentCount}</span>}
-          {showComments ? 'Hide' : 'Comment'}
+          <MessageCircle className="icon-sm" aria-hidden="true" />
+          {showComments
+            ? 'Hide comments'
+            : post.commentCount === 0
+              ? 'Comment'
+              : `${post.commentCount} ${post.commentCount === 1 ? 'comment' : 'comments'}`}
         </button>
       </div>
 

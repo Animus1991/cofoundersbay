@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PageHeaderSlot } from '@/components/layout/PageHeaderSlot';
 
 type SampleDataNoticeProps = {
   surface: string;
@@ -19,10 +21,11 @@ type SampleDataNoticeProps = {
 export function SampleDataNotice({ surface, detail, askAiPrompt, className }: SampleDataNoticeProps) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const { inHeader, slot } = useContext(PageHeaderSlot);
   const title = t('{surface} is showing sample items', { surface: t(surface) });
 
   if (!open) {
-    return (
+    const pill = (
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -36,6 +39,11 @@ export function SampleDataNotice({ surface, detail, askAiPrompt, className }: Sa
         <BilingualText en="Sample data" el="Δείγμα δεδομένων" compact />
       </button>
     );
+    // In a page header the pill joins the header's meta row instead of taking
+    // a row of its own above the content; until that row has mounted it
+    // renders nothing, so it never flashes in the body first.
+    if (inHeader) return slot ? createPortal(pill, slot) : null;
+    return pill;
   }
 
   return (

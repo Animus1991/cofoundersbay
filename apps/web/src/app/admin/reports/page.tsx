@@ -560,7 +560,7 @@ export default function AdminReportsPage() {
 
   return (
     <AppShell rail={rail}>
-      <div className="py-6 space-y-6">
+      <div className="space-y-6">
         {/* Tabs. Dismissed reports were reachable only under All. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex-wrap">
