@@ -58,3 +58,25 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
     return list as unknown as MediaQueryList;
   };
 }
+
+// nwsapi 2.2.27 (jsdom's selector engine) answers `:modal` and `:fullscreen`
+// by calling `element.matches` with the same pseudo-class again, which is
+// nwsapi itself: the call recurses until the stack overflows, the innermost
+// frame's catch returns false, and every frame on the way back starts another
+// descent. floating-ui asks `matches(':modal')` of each ancestor while it
+// positions a tooltip or popover, so one open tooltip cost seconds of CPU and
+// the mobile drawer's tests (a mode tooltip opens on the focused button) ran
+// past their 60s timeout. jsdom has no top layer and no Fullscreen API, so the
+// answer nwsapi would reach is "is this the fullscreen element", which is
+// never true here; that is returned without the descent. Every other selector
+// still goes through nwsapi.
+if (typeof Element !== 'undefined') {
+  const matches = Element.prototype.matches;
+  const topLayer = new Set([':modal', ':fullscreen']);
+  Element.prototype.matches = function patchedMatches(this: Element, selectors: string) {
+    if (typeof selectors === 'string' && topLayer.has(selectors.trim())) {
+      return (this.ownerDocument as Document & { fullscreenElement?: Element | null }).fullscreenElement === this;
+    }
+    return matches.call(this, selectors);
+  };
+}
