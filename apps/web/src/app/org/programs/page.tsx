@@ -14,7 +14,8 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
-import { getMyPrograms, updateProgram, type ProgramItem } from '@/lib/api';
+import { listOrganizationPrograms, updateProgram, type ProgramItem } from '@/lib/api';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from the API row.
@@ -43,7 +45,7 @@ function toPageProgram(item: ProgramItem): Program {
     id: item.id,
     name: item.title,
     type: item.programType,
-    status: (['draft', 'active', 'completed', 'archived'] as const).includes(
+    status: (['draft', 'upcoming', 'active', 'completed', 'archived'] as const).includes(
       item.status as Program['status'],
     )
       ? (item.status as Program['status'])
@@ -60,7 +62,9 @@ type Program = {
   id: string;
   name: string;
   type: string;
-  status: 'draft' | 'active' | 'completed' | 'archived';
+  // The schema's five (ProgramStatus). "upcoming" was missing, so a program
+  // taking applications for next season was shown as a draft.
+  status: 'draft' | 'upcoming' | 'active' | 'completed' | 'archived';
   startDate?: string;
   endDate?: string;
   capacity: number;
@@ -70,10 +74,26 @@ type Program = {
 
 const ORG_PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
   draft: 'neutral',
+  upcoming: 'info',
   active: 'success',
-  completed: 'info',
+  completed: 'neutral',
   archived: 'warning',
 };
+
+const STATUS_LABEL: Record<Program['status'], string> = {
+  draft: 'Draft',
+  upcoming: 'Upcoming',
+  active: 'Running',
+  completed: 'Completed',
+  archived: 'Archived',
+};
+
+/** "7 Sep 2026": the API sends ISO timestamps, which the card printed as they came. */
+function programDate(iso: string | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 function ProgramCard({ program }: { program: Program }) {
   /*
@@ -105,10 +125,10 @@ function ProgramCard({ program }: { program: Program }) {
                 {program.name}
               </Link>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                {program.status}
+                {STATUS_LABEL[program.status]}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">{program.type}</p>
+            <p className="text-sm text-muted-foreground mt-1 capitalize">{program.type}</p>
             {program.description && (
               <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{program.description}</p>
             )}
@@ -116,7 +136,7 @@ function ProgramCard({ program }: { program: Program }) {
               {program.startDate && (
                 <span className="flex items-center gap-1">
                   <Calendar className="icon-sm" aria-hidden="true" />
-                  {program.startDate} - {program.endDate || 'Ongoing'}
+                  {programDate(program.startDate)} – {program.endDate ? programDate(program.endDate) : 'Ongoing'}
                 </span>
               )}
               <span className="flex items-center gap-1">
@@ -210,6 +230,9 @@ const SEED_PROGRAMS: Program[] = [
 ];
 
 export default function OrgProgramsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -219,15 +242,18 @@ export default function OrgProgramsPage() {
    * array below is kept as what an organisation with none yet sees, so the
    * screen still teaches its shape rather than opening empty.
    */
+  const { membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
   const { data, isLoading } = useQuery({
-    queryKey: qk('programs', 'mine'),
-    queryFn: getMyPrograms,
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
     staleTime: 60_000,
     retry: 0,
   });
 
-  const live = useMemo(() => (data?.programs ?? []).map(toPageProgram), [data]);
-  const programs: Program[] = live.length > 0 ? live : isLoading ? [] : SEED_PROGRAMS;
+  const live = useMemo(() => (data ?? []).map(toPageProgram), [data]);
+  const programs: Program[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_PROGRAMS;
 
 
   const filteredPrograms = programs.filter((p) => {

@@ -41,6 +41,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from the organisation's member list.
@@ -240,6 +241,9 @@ const SEED_STARTUPS: Startup[] = [
 ];
 
 export default function OrgStartupsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [program, setProgram] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
@@ -259,7 +263,7 @@ export default function OrgStartupsPage() {
   });
 
   const live = useMemo(() => (data?.members ?? []).map(toStartup), [data]);
-  const startups: Startup[] = live.length > 0 ? live : isLoading ? [] : SEED_STARTUPS;
+  const startups: Startup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_STARTUPS;
 
 
   const filteredStartups = startups.filter((s) => {

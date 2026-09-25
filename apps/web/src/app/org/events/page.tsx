@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 type OrgEvent = {
   id: string;
@@ -276,6 +277,9 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
 }
 
 export default function OrgEventsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
@@ -287,7 +291,7 @@ export default function OrgEventsPage() {
   });
 
   const live = useMemo(() => (data?.events ?? []).map(toOrgEvent), [data]);
-  const events = live.length > 0 ? live : isLoading ? [] : MOCK_EVENTS;
+  const events = live.length > 0 ? live : isLoading || !showDemoData ? [] : MOCK_EVENTS;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
 

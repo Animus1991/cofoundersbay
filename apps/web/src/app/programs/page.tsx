@@ -55,6 +55,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   listPrograms,
+  acceptsApplications,
   getMyPrograms,
   applyToProgram,
   type ProgramItem,
@@ -276,7 +277,7 @@ function ProgramCard({
             )}
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
-              {program.applicationDeadline && program.status === 'open' && deadline !== null && (
+              {program.applicationDeadline && acceptsApplications(program) && deadline !== null && (
                 <span className={cn('flex items-center gap-1', deadline !== null && deadline <= 7 && deadlineUrgencyClass(deadline))}>
                   <Clock className="icon-sm" />
                   {deadline > 0 ? `${deadline}d to apply` : 'Deadline today'}
@@ -322,7 +323,7 @@ function ProgramCard({
             ) : null}
 
             <div className="flex items-center gap-2 mt-4">
-              {program.status === 'open' && !isEnrolled && !isFull && (
+              {acceptsApplications(program) && !isEnrolled && !isFull && (
                 <Button size="sm" onClick={(e) => { e.preventDefault(); onApply(program); }}>
                   <Zap className="icon-sm mr-1.5" aria-hidden="true" />
                   <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
@@ -384,10 +385,12 @@ export default function ProgramsPage() {
   const [applyTarget, setApplyTarget] = useState<ProgramItem | null>(null);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: qk('programs', programType, status),
+    // The public list is every upcoming and running program; the endpoint
+    // takes no status, so "open now" and "closed" are decided below from
+    // the same rule the API applies to an application.
+    queryKey: qk('programs', 'public', programType),
     queryFn: () => listPrograms({
       programType: programType !== 'all' ? programType : undefined,
-      status: status !== 'all' ? status : undefined,
       limit: 50,
     }),
     staleTime: 2 * 60 * 1000,
@@ -417,18 +420,24 @@ export default function ProgramsPage() {
 
   const allPrograms = data?.programs ?? [];
   const filtered = useMemo(() => {
-    if (!search) return allPrograms;
+    const byStatus = allPrograms.filter((p) =>
+      status === 'all' ? true
+        : status === 'open' ? acceptsApplications(p)
+          : status === 'closed' ? !acceptsApplications(p)
+            : p.status === status,
+    );
+    if (!search) return byStatus;
     const q = search.toLowerCase();
-    return allPrograms.filter(
+    return byStatus.filter(
       (p) =>
         p.title.toLowerCase().includes(q) ||
         (p.description ?? '').toLowerCase().includes(q) ||
         p.organization?.name?.toLowerCase().includes(q) ||
         p.industries.some((i) => i.toLowerCase().includes(q)),
     );
-  }, [allPrograms, search]);
+  }, [allPrograms, search, status]);
 
-  const openPrograms  = filtered.filter((p) => p.status === 'open');
+  const openPrograms  = filtered.filter((p) => acceptsApplications(p));
   const myPrograms    = (myData?.programs ?? []);
   const hasFilters    = programType !== 'all' || status !== 'all' || !!search;
 

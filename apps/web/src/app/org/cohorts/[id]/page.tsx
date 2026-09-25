@@ -516,10 +516,22 @@ export default function CohortDetailPage() {
             <Download className="icon-sm mr-2" aria-hidden="true" />
             <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
-          <Button size="sm" disabled title="Group messages to a whole cohort are not supported yet">
-            <Mail className="icon-sm mr-2" aria-hidden="true" />
-            <BilingualText en="Message All" el="Μήνυμα σε όλους" compact />
-          </Button>
+          {/* There is no group thread for a cohort, but every participant row
+              carries an address: one email with the cohort in Bcc reaches
+              everyone without exposing their addresses to each other. */}
+          {participants.some((pt) => pt.email) ? (
+            <Button size="sm" variant="outline" asChild>
+              <a href={`mailto:?bcc=${encodeURIComponent(participants.map((pt) => pt.email).filter(Boolean).join(','))}&subject=${encodeURIComponent(cohort.name)}`}>
+                <Mail className="icon-sm mr-2" aria-hidden="true" />
+                <BilingualText en="Email all" el="Email σε όλους" compact />
+              </a>
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" disabled title="Nobody in this cohort has an email address on file">
+              <Mail className="icon-sm mr-2" aria-hidden="true" />
+              <BilingualText en="Email all" el="Email σε όλους" compact />
+            </Button>
+          )}
         </div>
       }
     >
@@ -657,10 +669,12 @@ export default function CohortDetailPage() {
                     {formatDate(cohort.startDate)} - {formatDate(cohort.endDate)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="icon-sm text-muted-foreground" aria-hidden="true" />
-                  <span className="text-sm">{cohort.location}</span>
-                </div>
+                {cohort.location ? (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="icon-sm text-muted-foreground" aria-hidden="true" />
+                    <span className="text-sm">{cohort.location}</span>
+                  </div>
+                ) : null}
                 <div className="flex items-center gap-2">
                   <Award className="icon-sm text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm">{cohort.program}</span>
@@ -682,13 +696,13 @@ export default function CohortDetailPage() {
                   {matches.slice(0, 3).map((match) => (
                     <div key={match.id} className="flex items-center gap-3 p-3 border rounded-lg">
                       <div className="flex -space-x-2">
-                        <Avatar className="h-8 w-8 border-2 border-background">
-                          <AvatarFallback>
+                        <Avatar className="h-8 w-8 border-2 border-card">
+                          <AvatarFallback className="bg-muted text-2xs font-semibold">
                             {initialsOf(match.participant1.name)}
                           </AvatarFallback>
                         </Avatar>
-                        <Avatar className="h-8 w-8 border-2 border-background">
-                          <AvatarFallback>
+                        <Avatar className="h-8 w-8 border-2 border-card">
+                          <AvatarFallback className="bg-primary/15 text-2xs font-semibold text-primary-accessible">
                             {initialsOf(match.participant2.name)}
                           </AvatarFallback>
                         </Avatar>
@@ -852,13 +866,13 @@ export default function CohortDetailPage() {
                 {matches.map((match) => (
                   <div key={match.id} className="flex items-center gap-4 p-4 border rounded-lg">
                     <div className="flex -space-x-3">
-                      <Avatar className="h-12 w-12 border-2 border-background">
-                        <AvatarFallback className="text-lg">
+                      <Avatar className="h-12 w-12 border-2 border-card">
+                        <AvatarFallback className="bg-muted text-sm font-semibold">
                           {initialsOf(match.participant1.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <Avatar className="h-12 w-12 border-2 border-background">
-                        <AvatarFallback className="text-lg">
+                      <Avatar className="h-12 w-12 border-2 border-card">
+                        <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary-accessible">
                           {initialsOf(match.participant2.name)}
                         </AvatarFallback>
                       </Avatar>

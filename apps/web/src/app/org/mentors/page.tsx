@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from the pool row.
@@ -233,6 +234,9 @@ const SEED_MENTORS: Mentor[] = [
 ];
 
 export default function OrgMentorsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
   /*
@@ -250,7 +254,7 @@ export default function OrgMentorsPage() {
   });
 
   const live = useMemo(() => (data?.mentors ?? []).map(toPageMentor), [data]);
-  const mentors: Mentor[] = live.length > 0 ? live : isLoading ? [] : SEED_MENTORS;
+  const mentors: Mentor[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_MENTORS;
 
 
   const filteredMentors = mentors.filter((m) => {

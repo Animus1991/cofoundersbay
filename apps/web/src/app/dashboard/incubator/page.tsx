@@ -1,254 +1,179 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import {
-  ArrowRight,
-  Award,
   BarChart3,
   Building,
-  Calendar,
-  ChevronRight,
-  FileText,
-  Flag,
+  CalendarClock,
+  FolderKanban,
   GraduationCap,
   LayoutGrid,
   MessageCircle,
   Plus,
   Rocket,
   Settings,
-  Target,
-  TrendingUp,
   UserPlus,
   Users,
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { useSession } from '@/hooks/useSession';
-import { useDemoData } from '@/contexts/DemoDataContext';
-import { cn } from '@/lib/utils';
-import { ATTENTION_ROW, STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
-import { getMeProfile } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { useSession } from '@/hooks/useSession';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import {
+  getMeProfile,
+  getOrgMentorPool,
+  getProgramParticipants,
+  listOrganizationPrograms,
+  type ProgramItem,
+} from '@/lib/api';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
-import { queryKeys } from '@/lib/query-keys';
+import { qk, queryKeys } from '@/lib/query-keys';
+import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  subtext,
-  trend,
-  href,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: number | string;
-  subtext?: string;
-  trend?: { value: number; positive: boolean };
-  href?: string;
-}) {
-  const content = (
-    <Card className="relative overflow-hidden transition-all hover:shadow-md">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold tabular-nums">{value}</p>
-            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
-            {trend && (
-              <p className={cn('text-xs', trend.positive ? TREND.up : TREND.down)}>
-                {trend.positive ? '+' : ''}{trend.value}% vs last cohort
-              </p>
-            )}
-          </div>
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary-accessible" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+/*
+ * The organisation's home.
+ *
+ * Every figure here was a constant behind the sample-data switch: 3 programs,
+ * 42 startups "+15% vs last cohort", 28 mentors, 12 applications, a 67%
+ * average progress and an 85% graduation rate, with programs called "AI
+ * Accelerator 2025" and startups (NeuralFlow, GreenGrid, PayFlow) that no
+ * other page had heard of. Outside the showcase every one of them read 0.
+ *
+ * It now reads the same endpoints /org/programs, /org/applications,
+ * /org/startups and /org/mentors list from - the organisation's programs,
+ * their participants, its members and its mentor pool - so a figure here is
+ * the length of a list one click away. "Coming up" is taken from the
+ * programs' own dates rather than a milestone list nobody maintains.
+ */
 
-  return href ? <Link href={href}>{content}</Link> : content;
-}
+const DAY = 86_400_000;
+const ENROLLED = new Set(['accepted', 'active', 'completed']);
 
-const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
-  active: 'success',
-  upcoming: 'info',
-  completed: 'neutral',
-  draft: 'warning',
+const STATUS_BADGE: Record<string, { en: string; variant: 'success' | 'info' | 'secondary' | 'warning' }> = {
+  active: { en: 'Running', variant: 'success' },
+  upcoming: { en: 'Upcoming', variant: 'info' },
+  completed: { en: 'Completed', variant: 'secondary' },
+  draft: { en: 'Draft', variant: 'warning' },
+  archived: { en: 'Archived', variant: 'secondary' },
 };
 
-function ProgramCard({ program }: { program: any }) {
-  const statusColors = STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'];
-
-  return (
-    <Link
-      href={`/org/programs`}
-      className="group flex items-start gap-3 rounded-lg border p-4 transition-all hover:border-primary/30 hover:shadow-sm"
-    >
-      <div className="rounded-lg bg-primary/10 p-2">
-        <Rocket className="icon-md text-primary-accessible" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">{program.name}</p>
-          <Badge variant="outline" size="sm" className={cn('border', statusColors.chip)}>
-            {program.status}
-          </Badge>
-        </div>
-        <p className="text-xs text-muted-foreground mt-0.5">{program.cohort}</p>
-        <div className="flex items-center gap-4 mt-2">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="icon-sm" />
-            {program.startups} startups
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <GraduationCap className="icon-sm" />
-            {program.mentors} mentors
-          </div>
-        </div>
-      </div>
-      <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100" />
-    </Link>
-  );
+/** "Founder at Taverna OS" names the startup; a participant row carries no other field for it. */
+function startupOf(headline: string | null | undefined): string | null {
+  const match = headline?.match(/\bat\s+(.+)$/i);
+  return match ? match[1] : null;
 }
 
-function StartupCard({ startup }: { startup: any }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
-      <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={startup.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible">
-          {startup.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{startup.name}</p>
-        <p className="text-xs text-muted-foreground">{startup.program}</p>
-      </div>
-      <div className="text-right">
-        <div className="flex items-center gap-1">
-          <Progress value={startup.progress} className="w-16 h-1.5" />
-          <span className="text-xs text-muted-foreground">{startup.progress}%</span>
-        </div>
-      </div>
-    </div>
-  );
+function daysFromNow(iso: string | null, now: number): number | null {
+  if (!iso) return null;
+  return Math.round((Date.parse(iso) - now) / DAY);
 }
 
-function ApplicationCard({ application }: { application: any }) {
-  return (
-    <div className={cn('flex items-start gap-3', ATTENTION_ROW)}>
-      <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={application.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-muted text-foreground">
-          {application.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{application.name}</p>
-        <p className="text-xs text-muted-foreground">{application.industry} · {application.stage}</p>
-        <p className="text-xs text-muted-foreground mt-1">Applied for: {application.program}</p>
-        <div className="flex gap-2 mt-2">
-          {/* Neither had a handler. Applications are reviewed - and the
-              founder contacted - from the applications page. */}
-          <Button size="sm" variant="default" asChild>
-            <Link href="/org/applications">Review</Link>
-          </Button>
-          <Button size="sm" variant="outline" asChild>
-            <Link href="/messages">Schedule Call</Link>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MilestoneItem({ milestone }: { milestone: any }) {
-  return (
-    <div className="flex items-center gap-3 py-2">
-      <div className={cn('rounded-full p-1.5', milestone.completed ? STATUS.success.bg : 'bg-muted')}>
-        {milestone.completed ? (
-          <Award className={cn('icon-sm', STATUS.success.icon)} />
-        ) : (
-          <Target className="icon-sm text-muted-foreground" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm truncate">{milestone.title}</p>
-        <p className="text-xs text-muted-foreground">{milestone.startup}</p>
-      </div>
-      <span className="text-xs text-muted-foreground">{milestone.date}</span>
-    </div>
-  );
+function shortDate(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
 export default function IncubatorDashboard() {
   const { hasSession, mounted } = useSession();
-  const { showDemoData } = useDemoData();
+  const { membership, name: orgName, isLoading: orgLoading, isNone } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
-
   const displayName = profile?.profile?.displayName || 'Admin';
 
-  const incubatorStats = showDemoData ? {
-    activePrograms: 3,
-    totalStartups: 42,
-    activeMentors: 28,
-    pendingApplications: 12,
-    avgProgress: 67,
-    graduationRate: 85,
-  } : {
-    activePrograms: 0,
-    totalStartups: 0,
-    activeMentors: 0,
-    pendingApplications: 0,
-    avgProgress: 0,
-    graduationRate: 0,
-  };
+  const { data: programData, isLoading: programsLoading } = useQuery({
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const programs = useMemo(() => programData ?? [], [programData]);
 
-  const programs = showDemoData ? [
-    { id: '1', name: 'AI Accelerator 2025', cohort: 'Cohort 3', status: 'active', startups: 12, mentors: 8 },
-    { id: '2', name: 'FinTech Bootcamp', cohort: 'Spring 2025', status: 'upcoming', startups: 0, mentors: 6 },
-    { id: '3', name: 'Climate Innovation', cohort: 'Cohort 2', status: 'active', startups: 8, mentors: 5 },
-  ] : [];
+  const participantQueries = useQueries({
+    queries: programs.map((program) => ({
+      queryKey: qk('org', 'participants', program.id),
+      queryFn: () => getProgramParticipants(program.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
 
-  const topStartups = showDemoData ? [
-    { id: '1', name: 'NeuralFlow', program: 'AI Accelerator', progress: 85, logoUrl: null },
-    { id: '2', name: 'GreenGrid', program: 'Climate Innovation', progress: 72, logoUrl: null },
-    { id: '3', name: 'PayFlow', program: 'FinTech Bootcamp', progress: 68, logoUrl: null },
-  ] : [];
+  const { data: mentorData } = useQuery({
+    queryKey: qk('org', 'mentor-pool', organizationId),
+    queryFn: () => getOrgMentorPool(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
 
-  const pendingApplications = showDemoData ? [
-    { id: '1', name: 'DataVault', industry: 'Enterprise SaaS', stage: 'Seed', program: 'AI Accelerator', logoUrl: null },
-    { id: '2', name: 'EcoTrack', industry: 'CleanTech', stage: 'Pre-seed', program: 'Climate Innovation', logoUrl: null },
-  ] : [];
+  const now = Date.now();
+  const rows = participantQueries.flatMap((q, i) =>
+    (q.data?.participants ?? []).map((row) => ({ row, program: programs[i] as ProgramItem })),
+  );
+  const waiting = rows
+    .filter(({ row }) => row.status === 'applied')
+    .sort((a, b) => Date.parse(b.row.appliedAt) - Date.parse(a.row.appliedAt));
+  const decided = rows.filter(({ row }) => row.status !== 'applied');
+  const accepted = decided.filter(({ row }) => ENROLLED.has(row.status));
+  const inPrograms = rows.filter(({ row, program }) => (row.status === 'active' || row.status === 'accepted') && program.status === 'active');
+  const alumni = rows.filter(({ row }) => row.status === 'completed');
 
-  const upcomingMilestones = showDemoData ? [
-    { id: '1', title: 'Demo Day Presentation', startup: 'NeuralFlow', date: 'Feb 15', completed: false },
-    { id: '2', title: 'MVP Launch', startup: 'GreenGrid', date: 'Feb 18', completed: false },
-    { id: '3', title: 'Investor Pitch', startup: 'PayFlow', date: 'Feb 20', completed: false },
-  ] : [];
+  const running = programs.filter((p) => p.status === 'active');
+  const upcoming = programs.filter((p) => p.status === 'upcoming');
+  const completed = programs.filter((p) => p.status === 'completed');
+  const seats = running.reduce((s, p) => s + (p.capacity ?? 0), 0);
+  const filled = running.reduce((s, p) => s + p.participantCount, 0);
+
+  const mentors = mentorData?.mentors ?? [];
+  const menteeSlots = mentors.reduce((s, m) => s + (m.maxMentees ?? 0), 0);
+  const menteesTaken = mentors.reduce((s, m) => s + m.currentMentees, 0);
+
+  const nextClose = programs
+    .map((p) => ({ p, d: daysFromNow(p.applicationDeadline, now) }))
+    .filter((x): x is { p: ProgramItem; d: number } => x.d != null && x.d >= 0)
+    .sort((a, b) => a.d - b.d)[0];
+
+  // Dates the programs themselves carry: applications closing, starts, and
+  // the end of a running program (its demo day).
+  const comingUp = programs
+    .flatMap((p) => [
+      { id: `${p.id}-close`, en: 'Applications close', el: 'Κλείνουν οι αιτήσεις', program: p, iso: p.applicationDeadline },
+      { id: `${p.id}-start`, en: 'Program starts', el: 'Ξεκινά το πρόγραμμα', program: p, iso: p.startDate },
+      { id: `${p.id}-end`, en: p.programType === 'accelerator' ? 'Demo day' : 'Program ends', el: p.programType === 'accelerator' ? 'Demo day' : 'Λήξη προγράμματος', program: p, iso: p.endDate },
+    ])
+    .map((x) => ({ ...x, days: daysFromNow(x.iso, now) }))
+    .filter((x): x is typeof x & { days: number } => x.days != null && x.days >= 0)
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 4);
+
+  const loading = orgLoading || programsLoading;
+  const acceptance = decided.length ? Math.round((accepted.length / decided.length) * 100) : null;
+  const fill = seats ? Math.round((filled / seats) * 100) : null;
 
   if (!mounted) {
     return (
       <AppShell>
-        <div className="py-6 space-y-6">
+        <div className="space-y-6 py-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-24" />
+              <Skeleton key={i} className="h-28" />
             ))}
           </div>
         </div>
@@ -259,208 +184,235 @@ export default function IncubatorDashboard() {
   return (
     <AppShell
       actions={
-        <>
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
-            <Building className="icon-sm" />
-            Incubator Admin
+            <Building className="icon-sm" aria-hidden="true" />
+            {orgName ?? 'Incubator admin'}
           </Badge>
           <Button size="sm" asChild>
             <Link href="/tenant/programs">
-              <Plus className="mr-1.5 icon-sm" />
-              New Program
+              <Plus className="mr-1.5 icon-sm" aria-hidden="true" />
+              New program
             </Link>
           </Button>
-        </>
+        </div>
       }
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          <StatCard
+        {isNone && (
+          <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">
+            <EmptyLine
+              en="Programs, applications and cohorts appear here once your account belongs to an organisation."
+              el="Προγράμματα, αιτήσεις και cohorts εμφανίζονται εδώ όταν ο λογαριασμός σας ανήκει σε οργανισμό."
+            />
+          </SectionCard>
+        )}
+
+        {/* Four figures, each the length of a list one click away. */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
             icon={LayoutGrid}
-            label="Active Programs"
-            value={incubatorStats.activePrograms}
+            label="Running programs"
+            labelEl="Ενεργά προγράμματα"
+            value={loading ? '—' : running.length}
+            caption={`${upcoming.length} upcoming · ${completed.length} completed`}
+            captionEl={`${upcoming.length} προσεχώς · ${completed.length} ολοκληρωμένα`}
             href="/org/programs"
           />
-          <StatCard
+          <MetricTile
             icon={Rocket}
-            label="Portfolio Startups"
-            value={incubatorStats.totalStartups}
-            trend={{ value: 15, positive: true }}
+            label="Startups in programs"
+            labelEl="Startups σε προγράμματα"
+            value={loading ? '—' : inPrograms.length}
+            caption={`${alumni.length} alumni`}
+            captionEl={`${alumni.length} απόφοιτοι`}
+            href="/org/startups"
           />
-          <StatCard
+          <MetricTile
             icon={GraduationCap}
-            label="Active Mentors"
-            value={incubatorStats.activeMentors}
+            label="Mentors"
+            labelEl="Μέντορες"
+            value={mentorData ? mentors.length : '—'}
+            caption={menteeSlots ? `${menteesTaken} of ${menteeSlots} mentee places taken` : 'Your mentor pool'}
+            captionEl={menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις mentees` : 'Η ομάδα μεντόρων σας'}
+            href="/org/mentors"
           />
-          <StatCard
+          <MetricTile
             icon={UserPlus}
-            label="Applications"
-            value={incubatorStats.pendingApplications}
-            subtext="Pending review"
+            label="Applications waiting"
+            labelEl="Αιτήσεις σε αναμονή"
+            value={loading ? '—' : waiting.length}
+            caption={nextClose ? `${nextClose.p.title.split(' · ')[0]} closes in ${nextClose.d} days` : 'No round is open'}
+            captionEl={nextClose ? `Κλείνει σε ${nextClose.d} ημέρες` : 'Κανένας γύρος ανοιχτός'}
+            href="/org/applications"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Pending Applications */}
-            {pendingApplications.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <UserPlus className={cn('icon-sm', STATUS.warning.icon)} />
-                      Pending Applications ({pendingApplications.length})
-                    </CardTitle>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href="/org/applications">
-                        View all <ArrowRight className="ml-1 icon-sm" />
-                      </Link>
-                    </Button>
+          <div className="space-y-6 lg:col-span-2">
+            {/* Decisions first: each application waits on this organisation. */}
+            <SectionCard
+              title="Applications waiting"
+              titleEl="Αιτήσεις σε αναμονή"
+              icon={UserPlus}
+              action={{ href: '/org/applications', label: 'All applications', labelEl: 'Όλες οι αιτήσεις' }}
+            >
+              {loading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
+              {waiting.slice(0, 5).map(({ row, program }) => {
+                const name = row.user.profile?.displayName ?? 'Applicant';
+                const startup = startupOf(row.user.profile?.headline);
+                return (
+                  <div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 p-3 sm:flex-nowrap">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarFallback className="bg-muted text-foreground">{initialsOf(name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1 basis-40">
+                      <p className="truncate text-sm font-medium">
+                        {startup ?? name}
+                        {startup ? <span className="font-normal text-muted-foreground"> · {name}</span> : null}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {program.title} · <RelativeTime date={row.appliedAt} format={formatRelativeTime} />
+                        {row.score != null ? ` · score ${row.score}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href="/org/applications">Review</Link>
+                      </Button>
+                      <Button size="icon" variant="ghost" aria-label={`Message ${name} to schedule a call`} asChild>
+                        <Link href={`/messages?to=${row.userId}`}>
+                          <MessageCircle className="icon-sm" aria-hidden="true" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {pendingApplications.map((application) => (
-                    <ApplicationCard key={application.id} application={application} />
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+                );
+              })}
+              {!loading && waiting.length === 0 && (
+                <EmptyLine en="No application is waiting for a decision." el="Καμία αίτηση δεν περιμένει απόφαση." />
+              )}
+            </SectionCard>
 
-            {/* Programs */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <LayoutGrid className="icon-sm text-primary-accessible" />
-                    Your Programs
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/org/programs">
-                      Manage <ArrowRight className="ml-1 icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {programs.map((program) => (
-                  <ProgramCard key={program.id} program={program} />
-                ))}
-              </CardContent>
-            </Card>
+            <SectionCard title="Programs" titleEl="Προγράμματα" icon={FolderKanban} action={{ href: '/org/programs', label: 'Manage', labelEl: 'Διαχείριση' }}>
+              {loading && [0, 1].map((i) => <Skeleton key={i} className="h-20" />)}
+              {programs.map((program) => {
+                const badge = STATUS_BADGE[program.status] ?? STATUS_BADGE.draft;
+                const pct = program.capacity ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100)) : null;
+                return (
+                  <Link
+                    key={program.id}
+                    href={`/programs/${program.id}`}
+                    className="block rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
+                  >
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-sm font-medium">{program.title}</span>
+                      <Badge size="sm" variant={badge.variant}>{badge.en}</Badge>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {shortDate(program.startDate)} – {shortDate(program.endDate)} · {program.applicationCount} applications
+                    </p>
+                    {pct != null && (
+                      <div className="mt-2 flex items-center gap-3">
+                        <Progress value={pct} className="h-1.5 flex-1" aria-label={`${program.title}: ${program.participantCount} of ${program.capacity} places filled`} />
+                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                          {program.participantCount}/{program.capacity}
+                        </span>
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+              {!loading && programs.length === 0 && (
+                <EmptyLine en="Create a program to start taking applications." el="Δημιουργήστε ένα πρόγραμμα για να δέχεστε αιτήσεις." />
+              )}
+            </SectionCard>
 
-            {/* Top Performing Startups */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary-accessible" />
-                    Top Performing Startups
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/org/startups">
-                      View all <ArrowRight className="ml-1 icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {topStartups.map((startup) => (
-                  <StartupCard key={startup.id} startup={startup} />
-                ))}
-              </CardContent>
-            </Card>
+            <SectionCard title="Startups in programs" titleEl="Startups σε προγράμματα" icon={Rocket} action={{ href: '/org/startups', label: 'All startups', labelEl: 'Όλες οι startups' }}>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {inPrograms.map(({ row, program }) => {
+                  const name = row.user.profile?.displayName ?? 'Founder';
+                  const startup = startupOf(row.user.profile?.headline) ?? name;
+                  return (
+                    <div key={row.id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+                      <Avatar className="h-9 w-9 shrink-0 rounded-lg">
+                        <AvatarFallback className="rounded-lg bg-primary/10 font-semibold text-primary-accessible">{startup[0]?.toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{startup}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {name} · {program.title.split(' · ')[0]}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {!loading && inPrograms.length === 0 && (
+                <EmptyLine en="Accepted applicants appear here once their program starts." el="Οι αποδεκτοί εμφανίζονται εδώ όταν ξεκινά το πρόγραμμά τους." />
+              )}
+            </SectionCard>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/tenant/programs">
-                    <Plus className="mr-2 icon-sm" />
-                    Create Program
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/org/applications">
-                    <UserPlus className="mr-2 icon-sm" />
-                    Review Applications
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/org/mentors">
-                    <GraduationCap className="mr-2 icon-sm" />
-                    Manage Mentors
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/org/analytics">
-                    <BarChart3 className="mr-2 icon-sm" />
-                    Cohort Reports
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/org/settings">
-                    <Settings className="mr-2 icon-sm" />
-                    Organization Settings
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <QuickLinks
+              label="Organisation pages"
+              links={[
+                { href: '/tenant/programs', icon: Plus, label: 'Create program', labelEl: 'Νέο πρόγραμμα' },
+                { href: '/org/applications', icon: UserPlus, label: 'Review applications', labelEl: 'Αξιολόγηση αιτήσεων' },
+                { href: '/org/cohorts', icon: Users, label: 'Cohorts', labelEl: 'Cohorts' },
+                { href: '/org/mentors', icon: GraduationCap, label: 'Manage mentors', labelEl: 'Μέντορες' },
+                { href: '/org/analytics', icon: BarChart3, label: 'Cohort reports', labelEl: 'Αναφορές' },
+                { href: '/org/settings', icon: Settings, label: 'Organisation settings', labelEl: 'Ρυθμίσεις οργανισμού' },
+              ]}
+            />
 
-            {/* Upcoming Milestones */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="icon-sm" />
-                    Upcoming Milestones
-                  </CardTitle>
+            <SectionCard title="Coming up" titleEl="Επόμενα" icon={CalendarClock} contentClassName="space-y-3">
+              {comingUp.map((item) => (
+                <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
+                  <div className="min-w-0">
+                    <p className="font-medium">
+                      <BilingualText en={item.en} el={item.el} />
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">{item.program.title}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-xs font-medium tabular-nums">{shortDate(item.iso)}</p>
+                    <p className={cn('text-xs tabular-nums', item.days <= 7 ? 'text-status-warning' : 'text-muted-foreground')}>
+                      {item.days === 0 ? 'today' : `in ${item.days}d`}
+                    </p>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="divide-y">
-                {upcomingMilestones.map((milestone) => (
-                  <MilestoneItem key={milestone.id} milestone={milestone} />
-                ))}
-              </CardContent>
-            </Card>
+              ))}
+              {!loading && comingUp.length === 0 && (
+                <EmptyLine en="No program date is ahead." el="Καμία ημερομηνία προγράμματος μπροστά." />
+              )}
+            </SectionCard>
 
-            {/* Program Health */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Program Health</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Avg. Progress</span>
-                    <span className="font-medium">{incubatorStats.avgProgress}%</span>
+            <SectionCard title="Program health" titleEl="Υγεία προγραμμάτων" contentClassName="space-y-4">
+              {[
+                { en: 'Places filled', el: 'Πληρότητα θέσεων', value: fill, detail: seats ? `${filled} of ${seats} in running programs` : null },
+                { en: 'Acceptance rate', el: 'Ποσοστό αποδοχής', value: acceptance, detail: decided.length ? `${accepted.length} of ${decided.length} decided applications` : null },
+              ].map((row) => (
+                <div key={row.en} className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="text-muted-foreground">
+                      <BilingualText en={row.en} el={row.el} />
+                    </span>
+                    <span className="font-semibold tabular-nums">{row.value == null ? '—' : `${row.value}%`}</span>
                   </div>
-                  <Progress value={incubatorStats.avgProgress} className="h-2" />
+                  <Progress value={row.value ?? 0} className="h-1.5" aria-label={row.en} />
+                  {row.detail ? <p className="text-xs text-muted-foreground">{row.detail}</p> : null}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Graduation Rate</span>
-                    <span className="font-medium">{incubatorStats.graduationRate}%</span>
-                  </div>
-                  <Progress value={incubatorStats.graduationRate} className="h-2" />
-                </div>
-                <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Award className="icon-sm text-primary-accessible" />
-                    <span>12 startups graduated this year</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              ))}
+              <p className="flex items-center gap-1.5 border-t border-border/60 pt-3 text-sm">
+                <GraduationCap className="icon-sm text-muted-foreground" aria-hidden="true" />
+                <span className="tabular-nums">{alumni.length}</span>
+                <BilingualText en="startups graduated" el="startups αποφοίτησαν" />
+              </p>
+            </SectionCard>
           </div>
         </div>
       </div>

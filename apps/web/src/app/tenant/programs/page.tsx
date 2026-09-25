@@ -56,6 +56,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -249,6 +250,9 @@ const EMPTY_FORM: ProgramForm = {
 };
 
 export default function TenantProgramsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   // Archiving writes status 'archived', and until now nothing ever hid an
   // archived program: it stayed in the list next to the live ones. The
@@ -262,7 +266,7 @@ export default function TenantProgramsPage() {
   const { organizationId } = useCurrentOrgMembership();
 
   const programsQuery = useQuery({
-    queryKey: qk('tenant', 'programs', organizationId),
+    queryKey: qk('programs', 'organization', organizationId),
     queryFn: () => listOrganizationPrograms(organizationId!),
     enabled: Boolean(organizationId),
     staleTime: 30_000,
@@ -275,7 +279,7 @@ export default function TenantProgramsPage() {
     : [];
 
   // Illustrative until the organisation resolves — flagged as sample below.
-  const programs = isLive ? livePrograms : SAMPLE_PROGRAMS;
+  const programs = isLive ? livePrograms : showDemoData ? SAMPLE_PROGRAMS : [];
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -292,7 +296,7 @@ export default function TenantProgramsPage() {
       return createProgram(organizationId!, { ...body, slug: slugify(form.name) });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: qk('tenant', 'programs', organizationId) });
+      void qc.invalidateQueries({ queryKey: qk('programs') });
       success(form.id ? 'Program updated' : 'Program created');
       setFormOpen(false);
       setForm(EMPTY_FORM);
@@ -304,7 +308,7 @@ export default function TenantProgramsPage() {
   const archiveMutation = useMutation({
     mutationFn: (id: string) => updateProgram(id, { status: 'archived' }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: qk('tenant', 'programs', organizationId) });
+      void qc.invalidateQueries({ queryKey: qk('programs') });
       success('Program archived');
     },
     onError: (err) =>

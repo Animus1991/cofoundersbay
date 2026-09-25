@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from the admin row.
@@ -272,6 +273,9 @@ const SEED_USERS: User[] = [
 ];
 
 export default function AdminUsersPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [role, setRole] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
@@ -290,7 +294,7 @@ export default function AdminUsersPage() {
   });
 
   const live = useMemo(() => (data?.users ?? []).map(toPageUser), [data]);
-  const users: User[] = live.length > 0 ? live : isLoading ? [] : SEED_USERS;
+  const users: User[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_USERS;
   const isLive = live.length > 0;
   const queryClient = useQueryClient();
   const { success, error } = useToast();

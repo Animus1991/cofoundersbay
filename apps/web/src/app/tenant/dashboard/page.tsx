@@ -1,18 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+
 import Link from 'next/link';
 import {
   Building2,
   Users,
   Award,
-  TrendingUp,
   Calendar,
-  MoreVertical,
-  ChevronRight,
   Rocket,
   GraduationCap,
-  Target,
   Activity,
   Settings,
   UserPlus,
@@ -23,7 +19,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useTenant } from '@/components/providers/TenantContext';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime } from '@/lib/utils';
-import { getTenantMembers, listEvents } from '@/lib/api';
+import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/api';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,57 +43,16 @@ const ProgramEngagementChart = dynamic(
   { ssr: false, loading: ChartFallback },
 );
 
-function StatCard({
-  title,
-  value,
-  change,
-  icon: Icon,
-  iconColor,
-}: {
-  title: string;
-  value: string | number;
-  change?: string;
-  icon: React.ElementType;
-  iconColor?: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={cn('p-2 rounded-lg', iconColor || 'bg-primary/10')}>
-            <Icon className={cn('icon-md', iconColor ? 'text-white' : 'text-primary-accessible')} />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-xl font-bold">{value}</p>
-            {change && (
-              <p className="text-xs text-muted-foreground">{change}</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-/** Shown to a workspace whose programme calendar is still empty. */
-const SEED_PROGRAMS = [
-  { id: 'seed-1', name: 'Spring Accelerator 2025', startups: 12, progress: 65, status: 'active' },
-  { id: 'seed-2', name: 'AI Innovation Lab', startups: 8, progress: 30, status: 'active' },
-  { id: 'seed-3', name: 'Pre-seed Bootcamp', startups: 8, progress: 90, status: 'ending_soon' },
-];
-
 export default function TenantDashboardPage() {
   /*
-   * Four header figures, three recent members and three upcoming events, all
-   * written into the source. Members and events are read now — both endpoints
-   * and their clients have existed all along.
+   * The workspace's home, from its own reads.
    *
-   * Programme counts stay as the illustrative list: `Program` carries a
-   * `tenantId` but nothing queries by it yet, so there is no honest way to
-   * count a workspace's programmes from here. Startups and mentors read a
-   * dash for the same reason — a tenant membership records a role, not
-   * whether the person is a founder with a company or a mentor in a pool.
+   * Members and events were read already; the programme list, both charts
+   * and three of the four figures were constants ("Spring Accelerator 2025",
+   * a workspace growing to 156 members). Programmes come from the
+   * organisation that owns the workspace - the same list /tenant/programs and
+   * /org/programs show - and a tenant membership's role says who is a founder
+   * and who is a mentor, so all four figures are counted.
    */
   const { activeTenant } = useTenant();
   const tenantId = activeTenant?.id ?? null;
@@ -114,13 +72,40 @@ export default function TenantDashboardPage() {
   });
 
   const members = useMemo(() => (Array.isArray(membersData) ? membersData : []), [membersData]);
+  const { membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
+  const { data: programData, isLoading: programsLoading } = useQuery({
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const programs = useMemo(() => programData ?? [], [programData]);
+  const runningOrNext = programs.filter((p) => p.status === 'active' || p.status === 'upcoming');
 
   const stats = {
     totalMembers: members.length,
-    activePrograms: null as number | null,
-    startups: null as number | null,
+    activePrograms: programData ? programs.filter((p) => p.status === 'active').length : null,
+    startups: membersData ? members.filter((m) => m.role === 'founder').length : null,
     mentors: members.filter((m) => m.role === 'mentor').length,
   };
+
+  // Members at the end of each of the last six months, from join dates.
+  const now = Date.now();
+  const memberGrowth = Array.from({ length: 6 }, (_, i) => {
+    const end = new Date(now);
+    end.setDate(1);
+    end.setMonth(end.getMonth() - (5 - i) + 1);
+    end.setHours(0, 0, 0, 0);
+    const label = new Date(end.getTime() - 1).toLocaleDateString('en-GB', { month: 'short' });
+    return { month: label, members: members.filter((m) => Date.parse(m.joinedAt) < Math.min(end.getTime(), now + 1)).length };
+  });
+  const engagement = runningOrNext.map((p) => ({
+    name: p.title.split(' · ')[0].replace(/ (Accelerator|Bootcamp|Track)$/, '').slice(0, 14),
+    applications: p.applicationCount,
+    enrolled: p.participantCount,
+  }));
 
   const recentMembers = members
     .slice()
@@ -133,8 +118,6 @@ export default function TenantDashboardPage() {
       joinedAt: m.joinedAt,
       avatarUrl: m.user.profile?.avatarUrl ?? '',
     }));
-
-  const activePrograms = SEED_PROGRAMS;
 
   const upcomingEvents = (eventsData?.events ?? []).slice(0, 3).map((event) => ({
     id: event.id,
@@ -166,65 +149,38 @@ export default function TenantDashboardPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          <StatCard
-            title="Total Members"
-            value={stats.totalMembers}
-            icon={Users}
-          />
-          <StatCard
-            title="Active Programs"
-            value={stats.activePrograms ?? '—'}
-            icon={Award}
-            iconColor="bg-purple-500"
-          />
-          <StatCard
-            title="Startups"
-            value={stats.startups ?? '—'}
-            icon={Rocket}
-            iconColor="bg-blue-500"
-          />
-          <StatCard
-            title="Mentors"
-            value={stats.mentors}
-            icon={GraduationCap}
-            iconColor="bg-green-500"
-          />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile icon={Users} label="Members" labelEl="Μέλη" value={membersData ? stats.totalMembers : '\u2014'} caption="Everyone with a seat" captionEl="Όσοι έχουν θέση" href="/tenant/members" />
+          <MetricTile icon={Award} label="Running programs" labelEl="Ενεργά προγράμματα" value={stats.activePrograms ?? '\u2014'} caption={`${programs.filter((p) => p.status === 'upcoming').length} upcoming`} captionEl={`${programs.filter((p) => p.status === 'upcoming').length} προσεχώς`} href="/tenant/programs" />
+          <MetricTile icon={Rocket} label="Founders" labelEl="Ιδρυτές" value={stats.startups ?? '\u2014'} caption="Members with the founder role" captionEl="Μέλη με ρόλο ιδρυτή" href="/tenant/members" />
+          <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={membersData ? stats.mentors : '\u2014'} caption="Members with the mentor role" captionEl="Μέλη με ρόλο μέντορα" href="/tenant/members" />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Active Programs */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">Active Programs</CardTitle>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/tenant/programs">
-                  View All
-                  <ChevronRight className="ml-1 icon-sm" />
+          {/* Running and upcoming programs, with how full each is. */}
+          <SectionCard className="lg:col-span-2" title="Programs" titleEl="Προγράμματα" action={{ href: '/tenant/programs', label: 'Manage', labelEl: 'Διαχείριση' }} contentClassName="space-y-3">
+            {programsLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
+            {runningOrNext.map((program) => {
+              const fill = program.capacity ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100)) : 0;
+              return (
+                <Link key={program.id} href={`/programs/${program.id}`} className="block rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium">{program.title}</span>
+                      <Badge size="sm" variant={program.status === 'active' ? 'success' : 'info'}>{program.status === 'active' ? 'Running' : 'Upcoming'}</Badge>
+                    </span>
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {program.participantCount}/{program.capacity ?? '—'} places · {program.applicationCount} applications
+                    </span>
+                  </div>
+                  <Progress value={fill} className="h-1.5" aria-label={`${program.title}: ${fill}% of places filled`} />
                 </Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {activePrograms.map((program) => (
-                <div key={program.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{program.name}</span>
-                      <Badge variant={program.status === 'ending_soon' ? 'destructive' : 'secondary'} className="text-xs">
-                        {program.status === 'ending_soon' ? 'Ending Soon' : 'Active'}
-                      </Badge>
-                    </div>
-                    <span className="text-sm text-muted-foreground">{program.startups} startups</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={program.progress} className="h-2 flex-1" />
-                    <span className="text-xs text-muted-foreground w-10">{program.progress}%</span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+              );
+            })}
+            {!programsLoading && runningOrNext.length === 0 && (
+              <EmptyLine en="No program is running or taking applications." el="Κανένα πρόγραμμα σε εξέλιξη ή με ανοιχτές αιτήσεις." />
+            )}
+          </SectionCard>
 
           {/* Recent Members */}
           <Card>
@@ -264,19 +220,19 @@ export default function TenantDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <MemberGrowthChart />
+              <MemberGrowthChart data={memberGrowth} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Program Engagement</CardTitle>
-                <Badge variant="secondary" className="text-2xs">Active programs</Badge>
+                <CardTitle className="text-sm">Applications and places</CardTitle>
+                <Badge variant="secondary" className="text-2xs">Running and upcoming</Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <ProgramEngagementChart />
+              <ProgramEngagementChart data={engagement} />
             </CardContent>
           </Card>
         </div>

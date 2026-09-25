@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
-import { applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
+import { acceptsApplications, applyToProgram, getMyPrograms, getProgram } from '@/lib/api';
 import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
@@ -104,7 +104,10 @@ export default function ProgramDetailPage() {
 
   const deadlinePassed = program.applicationDeadline ? new Date(program.applicationDeadline).getTime() < Date.now() : false;
   const full = program.capacity != null && program.participantCount >= program.capacity;
-  const closed = program.status !== 'active' || deadlinePassed || full;
+  // The API takes applications while a program is upcoming or running and
+  // before its deadline (program.service `apply`); "active only" closed
+  // every upcoming program, which is when most applications arrive.
+  const closed = !acceptsApplications(program) || full;
 
   return (
     <AppShell

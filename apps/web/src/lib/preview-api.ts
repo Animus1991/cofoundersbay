@@ -3,6 +3,8 @@
 import { mergeNodeMetadata } from './canvas/canvas-geometry';
 import { DEMO_CRITERIA } from './readiness-demo';
 import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
+import { previewOrgApi } from './demo/org-api';
+import { ORG, ORG_SLUG } from './demo/org-world';
 
 const NOW = '2026-09-04T10:00:00.000Z';
 
@@ -842,6 +844,8 @@ const PREVIEW_OPPORTUNITIES = [
   { id: 'opp-angel-syndicate', title: 'Angel syndicate — pre-seed allocation', description: 'Open allocation alongside a lead. Greek and Cypriot SaaS teams with a paying design partner.', type: 'investment', company: 'Northbound', location: 'Remote', isRemote: true, url: null, tags: ['fundraising', 'pre-seed'], deadline: '2026-11-01T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Marcus Chen', avatarUrl: null }, createdAt: '2026-09-01T09:00:00.000Z' },
   { id: 'opp-design-partner', title: 'Design partner wanted — ops teams of 20 to 200', description: 'Free for six months in exchange for weekly feedback sessions and a public case study.', type: 'partnership', company: 'Harbor', location: 'Remote', isRemote: true, url: null, tags: ['partnership', 'b2b'], deadline: null, isActive: true, createdBy: { displayName: 'Elena Papadopoulos', avatarUrl: null }, createdAt: '2026-08-18T09:00:00.000Z' },
   { id: 'opp-mentor-ml', title: 'Mentorship — ML evaluation and cost control', description: 'Four sessions with a practitioner, for teams putting their first model in front of customers.', type: 'mentorship', company: null, location: 'Remote', isRemote: true, url: null, tags: ['ai', 'mentorship'], deadline: '2026-10-05T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Dr. Sarah Kim', avatarUrl: null }, createdAt: '2026-09-02T09:00:00.000Z' },
+  { id: 'opp-aegean-bootcamp', title: 'Pre-seed Bootcamp · Spring 2027 — applications open', description: 'Six weeks from idea to first paying customer, in Athens. Ten places; applications close three weeks from now.', type: 'other', company: 'Aegean Venture Lab', location: 'Athens, Greece', isRemote: false, url: null, tags: ['program', 'pre-seed'], deadline: '2026-10-16T00:00:00.000Z', isActive: true, createdBy: { displayName: 'Anna Lambrou', avatarUrl: null }, createdAt: '2026-09-15T09:00:00.000Z' },
+  { id: 'opp-aegean-mentors', title: 'Mentors wanted — fintech compliance and payments', description: 'Two hours a month with the Autumn 2026 cohort. Ledgerly and Thalia are both building on payments rails.', type: 'mentorship', company: 'Aegean Venture Lab', location: 'Athens, Greece', isRemote: true, url: null, tags: ['mentorship', 'fintech'], deadline: null, isActive: true, createdBy: { displayName: 'Anna Lambrou', avatarUrl: null }, createdAt: '2026-09-10T09:00:00.000Z' },
   { id: 'opp-gtm-advisor', title: 'GTM advisor — Southeast Europe expansion', description: 'Advisory shares for someone who has sold B2B software into Greece, Romania and Bulgaria.', type: 'other', company: 'Meltemi', location: 'Thessaloniki, Greece', isRemote: false, url: null, tags: ['gtm', 'advisory'], deadline: null, isActive: true, createdBy: { displayName: 'Nikos Andreou', avatarUrl: null }, createdAt: '2026-07-22T09:00:00.000Z' },
 ];
 
@@ -914,7 +918,7 @@ const PREVIEW_DEALS: PreviewDeal[] = [
     currency: 'EUR', askAmountCents: 60_000_000, investedCents: 10_000_000, currentValueCents: 14_500_000,
     investedAt: '2026-02-11T09:00:00.000Z', status: 'active',
     lastActivityAt: '2026-08-20T09:00:00.000Z', createdAt: '2025-11-03T09:00:00.000Z',
-    founder: null,
+    founder: { id: 'user-christina', displayName: 'Christina Mavrou', avatarUrl: null, headline: 'Founder at Aegis Health' },
     recentEvents: [
       { id: 'ev-a1', type: 'update', title: 'Q2 update: 3 clinics live', body: null, createdAt: '2026-08-20T09:00:00.000Z' },
     ],
@@ -1349,7 +1353,7 @@ const PREVIEW_ADMIN_USERS = [
   { id: 'user-dimitris', name: 'Dimitris Kostas', email: 'dimitris@oriongrid.example', role: 'founder', status: 'active', joined: -420, seen: -12 },
   { id: 'user-katerina', name: 'Katerina Nikolaou', email: 'katerina@ledgerly.example', role: 'founder', status: 'active', joined: -20, seen: -1 },
   { id: 'user-giorgos', name: 'Giorgos Vlachos', email: 'giorgos@agorab2b.example', role: 'founder', status: 'active', joined: -14, seen: -3 },
-  { id: 'user-anna', name: 'Anna Lambrou', email: 'anna@acmefounders.example', role: 'org', status: 'active', joined: -600, seen: -1 },
+  { id: 'user-anna', name: 'Anna Lambrou', email: 'anna@aegeanlab.example', role: 'org', status: 'active', joined: -600, seen: -1 },
   { id: 'user-spyros', name: 'Spyros Karras', email: 'deals@quickfunding.example', role: 'founder', status: 'suspended', joined: -9, seen: -8 },
 ] as const;
 function previewAdminUsers() {
@@ -1690,6 +1694,14 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   const pathname = pathnameOf(path);
   const method = (init?.method ?? 'GET').toUpperCase();
   const body = parseBody(init);
+
+  // The organisation, its programs and its tenant: one world, one module.
+  const orgAnswer = previewOrgApi(pathname, path, method, previewIsoInDays);
+  if (orgAnswer !== undefined) return orgAnswer;
+  if (pathname === `/api/org/${ORG_SLUG}/opportunities`) {
+    const opportunities = PREVIEW_OPPORTUNITIES.filter((o) => o.company === ORG.name);
+    return { opportunities, total: opportunities.length };
+  }
 
   if (pathname === '/api/auth/me') {
     return {
@@ -3106,15 +3118,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { opportunities, total: matched.length, hasMore: offset + opportunities.length < matched.length };
   }
 
-  /*
-   * The demo founder belongs to no organisation, so the tenant switcher should
-   * be absent rather than populated with an invented company. An empty list is
-   * the honest answer and the one the page already renders correctly; the
-   * generic fallback answered with a truthy object instead.
-   */
-  if (pathname === '/api/sso/memberships') {
-    return { memberships: [] };
-  }
+  // `/api/sso/memberships` is answered by previewOrgApi: the reader is a
+  // program partner at the demo's one organisation (demo/org-world.ts).
 
   if (pathname === '/api/admin/users') {
     const params = new URLSearchParams(path.split('?')[1] ?? '');

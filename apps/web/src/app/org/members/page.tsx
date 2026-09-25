@@ -14,12 +14,11 @@ import {
   Edit,
   Trash2,
   UserMinus,
-  Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
-import { getOrgMembers, type OrgMember as OrgMemberRow } from '@/lib/api';
+import { listOrganizationMembers, type OrgAdminMember } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +43,8 @@ type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer'
 
 type OrgMember = {
   id: string;
+  /** Who to message: the membership id is not a user id. */
+  userId: string;
   name: string;
   email: string;
   avatarUrl?: string;
@@ -65,41 +66,48 @@ const ROLE_CONFIG: Record<MemberRole, { label: string; icon: React.ElementType; 
 
 const ROLE_VALUES = ['owner', 'admin', 'manager', 'member', 'mentor', 'viewer'] as const;
 
+/** "12 Mar 2025" from the ISO timestamp the API sends. */
+function joinedOn(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 /**
- * The page's own row from the API row.
+ * The page's own row from the organisation's membership row.
  *
- * `/api/org/:slug/members` has existed all along; this page never called it.
- * Two columns have no source and say so rather than being filled: the
- * directory endpoint returns a public profile, so it carries no email address
- * and no last-seen — showing either would mean inventing it, and an email
- * address in particular is not a field to guess at.
+ * This is the team page - "who can run programs, review applications and
+ * access workspace settings" - but it listed the cohort directory
+ * (`/api/org/:slug/members`): every founder in every cohort, as "Member",
+ * with no email and an empty "last active". The organisation's own
+ * memberships (`/api/organizations/:id/members`, the rows the admin page
+ * edits) carry the role, title, department, join date and email this page
+ * has columns for. The founders are listed on /org/startups.
+ *
+ * An organisation with nobody loaded sees the empty state, not the six
+ * invented colleagues (Sarah Chen, "New Recruit") it used to.
  */
-function toPageMember(row: OrgMemberRow): OrgMember {
+function toPageMember(row: OrgAdminMember): OrgMember {
   const role = (ROLE_VALUES as readonly string[]).includes(row.role)
     ? (row.role as MemberRole)
     : 'member';
+  const profile = row.user?.profile;
+  const name = profile?.displayName
+    || [profile?.firstName, profile?.lastName].filter(Boolean).join(' ')
+    || row.user?.email
+    || 'Member';
   return {
     id: row.id,
-    name: row.displayName,
-    email: '',
-    avatarUrl: row.avatarUrl ?? undefined,
+    userId: row.userId,
+    name,
+    email: row.user?.email ?? '',
+    avatarUrl: profile?.avatarUrl ?? undefined,
     role,
-    department: row.cohortName || undefined,
-    joinedAt: row.joinedAt,
+    department: [row.title, row.department].filter(Boolean).join(' · ') || undefined,
+    joinedAt: joinedOn(row.joinedAt),
     lastActive: '',
-    status: 'active',
+    status: row.isActive ? 'active' : 'inactive',
   };
 }
-
-/** Shown to an organisation with no members loaded yet. */
-const MOCK_MEMBERS: OrgMember[] = [
-  { id: '1', name: 'Sarah Chen', email: 'sarah@accelerate.io', role: 'owner', department: 'Leadership', joinedAt: 'Jan 2024', lastActive: 'Today', status: 'active' },
-  { id: '2', name: 'Michael Torres', email: 'michael@accelerate.io', role: 'admin', department: 'Programs', joinedAt: 'Feb 2024', lastActive: 'Yesterday', status: 'active' },
-  { id: '3', name: 'Priya Patel', email: 'priya@accelerate.io', role: 'manager', department: 'Cohort Management', joinedAt: 'Mar 2024', lastActive: '2 days ago', status: 'active' },
-  { id: '4', name: 'James Wilson', email: 'james@accelerate.io', role: 'mentor', department: 'Mentorship Pool', joinedAt: 'Feb 2024', lastActive: '1 week ago', status: 'active' },
-  { id: '5', name: 'Anna Fischer', email: 'anna@accelerate.io', role: 'member', department: 'Operations', joinedAt: 'Apr 2024', lastActive: 'Today', status: 'active' },
-  { id: '6', name: 'New Recruit', email: 'recruit@startup.com', role: 'viewer', department: undefined, joinedAt: '—', lastActive: '—', status: 'invited' },
-];
 
 /** `live` rows carry user ids; `adminHref` is where memberships are managed. */
 function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boolean; adminHref: string | null }) {
@@ -124,21 +132,20 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
         ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
           {roleCfg.label}{member.department ? ` · ${member.department}` : ''}
-          {member.lastActive ? ` · ${member.lastActive}` : ''}
+          {member.joinedAt ? ` · joined ${member.joinedAt}` : ''}
         </p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
         <RoleIcon className={cn('icon-sm', roleCfg.tone === 'neutral' && member.role === 'viewer' ? 'text-muted-foreground' : STATUS[roleCfg.tone].icon)} />
         <span className="text-xs font-medium">{roleCfg.label}</span>
       </div>
-      <div className="hidden lg:block w-32 shrink-0">
+      <div className="hidden lg:block w-44 shrink-0">
         <p className="text-xs text-muted-foreground">{member.department ?? '—'}</p>
       </div>
-      <div className="hidden sm:flex items-center gap-1 w-24 shrink-0">
-        <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />
-        {member.lastActive ? (
-          <span className="text-xs text-muted-foreground">{member.lastActive}</span>
-        ) : null}
+      {/* No endpoint records when a member was last seen; the join date is
+          what the membership row carries. */}
+      <div className="hidden sm:block w-28 shrink-0">
+        <span className="text-xs tabular-nums text-muted-foreground">{member.joinedAt || '—'}</span>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -159,7 +166,7 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
           )}
           {live ? (
             <DropdownMenuItem asChild>
-              <Link href={`/messages?to=${member.id}`}><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</Link>
+              <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</Link>
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
@@ -184,17 +191,18 @@ export default function OrgMembersPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const { slug } = useCurrentOrg();
+  const { slug, membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
   const { data, isLoading } = useQuery({
-    queryKey: qk('org', 'members', slug),
-    queryFn: () => getOrgMembers(slug!, { limit: 100 }),
-    enabled: Boolean(slug),
+    queryKey: qk('org', 'admin-members', organizationId),
+    queryFn: () => listOrganizationMembers(organizationId!),
+    enabled: Boolean(organizationId),
     staleTime: 60_000,
     retry: 0,
   });
 
-  const live = useMemo(() => (data?.members ?? []).map(toPageMember), [data]);
-  const members = live.length > 0 ? live : isLoading ? [] : MOCK_MEMBERS;
+  const live = useMemo(() => (Array.isArray(data) ? data : []).map(toPageMember), [data]);
+  const members = live;
 
   const filtered = members.filter(m => {
     const q = search.toLowerCase();
@@ -267,10 +275,10 @@ export default function OrgMembersPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
-            { label: 'Total Members', value: data?.total ?? members.length },
+            { label: 'Total Members', value: members.length },
             { label: 'Admins', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },
             { label: 'Mentors', value: roleCounts['mentor'] ?? 0 },
-            { label: 'Pending Invites', value: MOCK_MEMBERS.filter(m => m.status === 'invited').length },
+            { label: 'Pending Invites', value: members.filter((m) => m.status === 'invited').length },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4">
@@ -304,8 +312,8 @@ export default function OrgMembersPage() {
                   <div className="w-9 shrink-0" />
                   <div className="flex-1">Name / Email</div>
                   <div className="w-28 shrink-0">Role</div>
-                  <div className="hidden lg:block w-32 shrink-0">Department</div>
-                  <div className="hidden sm:block w-24 shrink-0">Last Active</div>
+                  <div className="hidden lg:block w-44 shrink-0">Title</div>
+                  <div className="hidden sm:block w-28 shrink-0">Joined</div>
                   <div className="w-7 shrink-0" />
                 </div>
               </CardHeader>

@@ -106,9 +106,29 @@ describe('preview showcase areas', () => {
     expect(remote.opportunities.length).toBeLessThan(all.opportunities.length);
   });
 
-  it('says the demo founder belongs to no organisation, rather than inventing one', () => {
-    const res = resolvePreviewApi('/api/sso/memberships') as { memberships: unknown[] };
-    expect(Array.isArray(res.memberships)).toBe(true);
-    expect(res.memberships).toEqual([]);
+  /*
+   * The organisation screens (/org/*, /tenant/*, the incubator home) each
+   * invented an organisation, or said "No organization context" because the
+   * reader belonged to none. There is one: the org membership, the tenant
+   * membership and every count on those screens come from the same rows.
+   */
+  it('gives the reader one organisation, the same behind the org and tenant screens', () => {
+    const org = resolvePreviewApi('/api/org/my-memberships') as { memberships: { organizationId: string; organization: { slug: string; name: string } }[] };
+    const tenant = resolvePreviewApi('/api/sso/memberships') as { memberships: { tenant: { slug: string; name: string } }[] };
+    expect(org.memberships).toHaveLength(1);
+    expect(tenant.memberships).toHaveLength(1);
+    expect(tenant.memberships[0].tenant.slug).toBe(org.memberships[0].organization.slug);
+    expect(tenant.memberships[0].tenant.name).toBe(org.memberships[0].organization.name);
+  });
+
+  it("counts an organisation's programs from the participants it lists", () => {
+    const orgId = (resolvePreviewApi('/api/org/my-memberships') as { memberships: { organizationId: string }[] }).memberships[0].organizationId;
+    const programs = resolvePreviewApi(`/api/programs/organization/${orgId}`) as { id: string; currentParticipants: number; _count: { participants: number } }[];
+    expect(programs.length).toBeGreaterThan(0);
+    for (const program of programs) {
+      const { participants } = resolvePreviewApi(`/api/programs/${program.id}/participants`) as { participants: { status: string }[] };
+      expect(participants).toHaveLength(program._count.participants);
+      expect(participants.filter((p) => ['accepted', 'active', 'completed'].includes(p.status))).toHaveLength(program.currentParticipants);
+    }
   });
 });

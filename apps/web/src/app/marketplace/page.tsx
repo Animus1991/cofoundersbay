@@ -27,6 +27,7 @@ import { listMarketplaceServices, type MarketplaceCategory } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -259,6 +260,9 @@ const MARKETPLACE_STATS = [
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function MarketplacePage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [search, setSearch] = useState('');
   // ?q= seeds the search - a provider's "Preview" lands on their listing.
@@ -302,7 +306,7 @@ export default function MarketplacePage() {
     contactUrl: s.contactUrl ?? undefined,
   }));
 
-  const allProviders = backendProviders.length > 0 ? backendProviders : MOCK_PROVIDERS;
+  const allProviders = backendProviders.length > 0 ? backendProviders : showDemoData ? MOCK_PROVIDERS : [];
 
   const filtered = allProviders
     .filter(p => {

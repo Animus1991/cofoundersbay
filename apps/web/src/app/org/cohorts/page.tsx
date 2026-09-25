@@ -46,6 +46,7 @@ import { EmptyOrgCohorts } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from the API row.
@@ -202,6 +203,9 @@ const SEED_COHORTS: Cohort[] = [
 ];
 
 export default function OrgCohortsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -220,7 +224,7 @@ export default function OrgCohortsPage() {
   });
 
   const live = useMemo(() => (data?.cohorts ?? []).map(toPageCohort), [data]);
-  const cohorts: Cohort[] = live.length > 0 ? live : isLoading ? [] : SEED_COHORTS;
+  const cohorts: Cohort[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_COHORTS;
 
 
   const totalStartups = useMemo(() => cohorts.reduce((s, c) => s + c.startups, 0), []);

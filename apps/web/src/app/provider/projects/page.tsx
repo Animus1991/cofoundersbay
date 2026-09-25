@@ -41,6 +41,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -275,6 +276,9 @@ const SEED_PROJECTS: Project[] = [
 ];
 
 export default function ProviderProjectsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('active');
 
@@ -286,7 +290,7 @@ export default function ProviderProjectsPage() {
   });
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toProject), [data]);
-  const projects: Project[] = live.length > 0 ? live : isLoading ? [] : SEED_PROJECTS;
+  const projects: Project[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_PROJECTS;
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();

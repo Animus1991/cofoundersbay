@@ -5190,6 +5190,8 @@ export interface ProgramItem {
   };
   createdAt: string;
   updatedAt: string;
+  /** From `getMyPrograms`: the caller's own participant status in this program. */
+  myStatus?: string;
 }
 
 export interface ProgramParticipantItem {
@@ -5225,6 +5227,78 @@ export async function updateProgramParticipant(
   });
 }
 
+/**
+ * One program as the pages read it, from whatever the program endpoints send.
+ *
+ * The controller returns Prisma rows: `name` not `title`, participants
+ * counted under `_count` and `currentParticipants`, industries, location and
+ * remoteness inside the `settings` JSON, and `organization.type`. The web's
+ * `ProgramItem` was written against a shape no endpoint produces, and
+ * `apiRequest` casts without checking, so every program screen read
+ * `undefined` for the title and the counts against the real API. The shapes
+ * meet here, once. A row already in `ProgramItem` form passes through.
+ *
+ * `applicationCount` is every participant row (applicants included) and
+ * `participantCount` is the enrolled ones, the same split
+ * `/programs/:id/participants` makes by status.
+ */
+type RawProgram = Omit<Partial<ProgramItem>, 'organization' | 'benefits' | 'status' | 'programType'> & {
+  name?: string;
+  status?: string;
+  programType?: string;
+  benefits?: unknown;
+  currentParticipants?: number;
+  _count?: { participants?: number };
+  shortDescription?: string | null;
+  organization?: (Partial<ProgramItem['organization']> & { type?: string }) | null;
+  settings?: Record<string, unknown> | null;
+};
+
+const asStrings = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
+
+export function toProgramItem(raw: RawProgram): ProgramItem {
+  const settings = (raw.settings ?? {}) as Record<string, unknown>;
+  const org = raw.organization ?? null;
+  return {
+    id: raw.id ?? '',
+    slug: raw.slug ?? raw.id ?? '',
+    title: raw.title ?? raw.name ?? 'Untitled program',
+    description: raw.description ?? raw.shortDescription ?? null,
+    programType: raw.programType ?? 'accelerator',
+    status: raw.status ?? 'draft',
+    startDate: raw.startDate ?? null,
+    endDate: raw.endDate ?? null,
+    applicationDeadline: raw.applicationDeadline ?? null,
+    capacity: raw.capacity ?? null,
+    isRemote: raw.isRemote ?? settings.isRemote === true,
+    location: raw.location ?? (typeof settings.location === 'string' ? settings.location : null),
+    industries: raw.industries ?? asStrings(settings.industries),
+    benefits: Array.isArray(raw.benefits) ? asStrings(raw.benefits) : [],
+    requirements: raw.requirements ?? null,
+    curriculum: raw.curriculum ?? null,
+    settings: raw.settings ?? null,
+    applicationCount: raw.applicationCount ?? raw._count?.participants ?? 0,
+    participantCount: raw.participantCount ?? raw.currentParticipants ?? 0,
+    organization: {
+      id: org?.id ?? '',
+      name: org?.name ?? '',
+      slug: org?.slug ?? '',
+      logoUrl: org?.logoUrl ?? null,
+      organizationType: org?.organizationType ?? org?.type ?? 'organization',
+    },
+    createdAt: raw.createdAt ?? '',
+    updatedAt: raw.updatedAt ?? '',
+    ...(raw.myStatus ? { myStatus: raw.myStatus } : {}),
+  };
+}
+
+/** Upcoming and running programs take applications until their deadline (program.service `apply`). */
+export function acceptsApplications(program: Pick<ProgramItem, 'status' | 'applicationDeadline'>, now = Date.now()): boolean {
+  if (program.status !== 'upcoming' && program.status !== 'active') return false;
+  return !program.applicationDeadline || Date.parse(program.applicationDeadline) > now;
+}
+
 export async function listPrograms(params?: {
   programType?: string;
   status?: string;
@@ -5238,15 +5312,37 @@ export async function listPrograms(params?: {
   if (params?.search) q.set('search', params.search);
   if (params?.limit) q.set('limit', String(params.limit));
   if (params?.offset) q.set('offset', String(params.offset));
-  return apiRequest(`/api/programs?${q}`);
+  // The controller answers { programs, pagination: { total } }.
+  const res = await apiRequest<{ programs?: RawProgram[]; total?: number; pagination?: { total?: number } }>(`/api/programs?${q}`);
+  const programs = (res?.programs ?? []).map(toProgramItem);
+  return { programs, total: res?.total ?? res?.pagination?.total ?? programs.length };
 }
 
 export async function getProgram(id: string): Promise<{ program: ProgramItem }> {
-  return apiRequest(`/api/programs/${id}`);
+  // `GET /programs/:id` returns the row itself, not an envelope.
+  const res = await apiRequest<RawProgram & { program?: RawProgram }>(`/api/programs/${id}`);
+  return { program: toProgramItem(res?.program ?? res) };
 }
 
+/**
+ * The programs the caller takes part in, with their own status in each.
+ *
+ * `GET /programs/my-programs` answers with the caller's participant rows,
+ * each carrying its program, as a bare array. The client declared
+ * `{ programs }` and three organisation screens used it as "the
+ * organisation's programs", so against the API each read undefined. Those
+ * screens now ask `listOrganizationPrograms`; this one is what it says.
+ */
 export async function getMyPrograms(): Promise<{ programs: ProgramItem[] }> {
-  return apiRequest(`/api/programs/my-programs`);
+  const res = await apiRequest<Array<{ status?: string; program?: RawProgram }> | { programs?: RawProgram[] }>(`/api/programs/my-programs`);
+  if (Array.isArray(res)) {
+    return {
+      programs: res
+        .filter((row) => row?.program)
+        .map((row) => toProgramItem({ ...(row.program as RawProgram), myStatus: row.status })),
+    };
+  }
+  return { programs: (res?.programs ?? []).map(toProgramItem) };
 }
 
 /** The tenant-admin view: every program of the caller's organisation,
@@ -5258,7 +5354,8 @@ export async function listOrganizationPrograms(
   const q = new URLSearchParams();
   if (params?.status) q.set('status', params.status);
   if (params?.programType) q.set('programType', params.programType);
-  return apiRequest(`/api/programs/organization/${organizationId}${q.toString() ? `?${q}` : ''}`, undefined, { retryOn401: false });
+  const res = await apiRequest<RawProgram[] | { programs?: RawProgram[] }>(`/api/programs/organization/${organizationId}${q.toString() ? `?${q}` : ''}`, undefined, { retryOn401: false });
+  return (Array.isArray(res) ? res : res?.programs ?? []).map(toProgramItem);
 }
 
 export async function createProgram(
@@ -5273,10 +5370,11 @@ export async function createProgram(
     capacity?: number;
   },
 ): Promise<ProgramItem> {
-  return apiRequest(`/api/programs/organization/${organizationId}`, {
+  const res = await apiRequest<RawProgram>(`/api/programs/organization/${organizationId}`, {
     method: 'POST',
     body: JSON.stringify(body),
   });
+  return toProgramItem(res);
 }
 
 /**
@@ -5413,7 +5511,9 @@ export async function updateProgram(
     capacity: number;
   }>,
 ): Promise<{ program: ProgramItem }> {
-  return apiRequest(`/api/programs/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+  // The controller answers with the updated row itself.
+  const res = await apiRequest<RawProgram & { program?: RawProgram }>(`/api/programs/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+  return { program: toProgramItem(res?.program ?? res) };
 }
 
 export async function deleteProgram(id: string): Promise<{ ok: boolean }> {

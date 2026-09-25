@@ -19,6 +19,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 interface Resource {
   id: string;
@@ -327,6 +328,9 @@ function backendToResource(r: LearningResourceItem): Resource {
 }
 
 export default function LearningPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [typeFilter, setTypeFilter] = useState<TypeFilterKey>('all');
@@ -363,7 +367,7 @@ export default function LearningPage() {
   // Use backend data if available, fall back to DEMO_RESOURCES
   const allResources: Resource[] = learningData?.resources?.length
     ? learningData.resources.map(backendToResource)
-    : DEMO_RESOURCES;
+    : showDemoData ? DEMO_RESOURCES : [];
 
   const userRole = meData?.profile?.role ?? 'founder';
   const userSkills = meData?.profile?.skills?.map((s) => s.skillName.toLowerCase()) ?? [];

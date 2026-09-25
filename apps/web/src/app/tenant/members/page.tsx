@@ -78,7 +78,8 @@ function toPageMember(row: TenantMemberItem): Member {
     avatarUrl: row.user.profile?.avatarUrl ?? undefined,
     role: row.role,
     status: row.isActive ? 'active' : 'suspended',
-    joinedAt: row.joinedAt,
+    // The API sends an ISO timestamp, which the card printed as it came.
+    joinedAt: new Date(row.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
     lastActive: '',
   };
 }
@@ -272,17 +273,6 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   );
 }
 
-/** Shown to a tenant with no members loaded. */
-const SEED_MEMBERS: Member[] = [
-  { id: '1', name: 'John Doe',      email: 'john@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Jan 2025', lastActive: '2 hours ago',  engagementScore: 82, isOnline: true,  milestonesCompleted: 5, sessionsAttended: 8 },
-  { id: '2', name: 'Jane Smith',    email: 'jane@example.com',  role: 'Mentor',   status: 'active',    joinedAt: 'Feb 2025', lastActive: '1 day ago',    engagementScore: 91, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 14 },
-  { id: '3', name: 'Mike Johnson',  email: 'mike@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Feb 2025', lastActive: '3 days ago',   engagementScore: 56, isOnline: false, milestonesCompleted: 3, sessionsAttended: 4 },
-  { id: '4', name: 'Sarah Williams',email: 'sarah@example.com', role: 'Admin',    status: 'active',    joinedAt: 'Dec 2024', lastActive: '1 hour ago',   engagementScore: 95, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 22 },
-  { id: '5', name: 'Tom Brown',     email: 'tom@example.com',   role: 'Founder',  status: 'pending',   joinedAt: 'Mar 2025', lastActive: 'Never',        engagementScore: 12, isOnline: false, milestonesCompleted: 0, sessionsAttended: 0 },
-  { id: '6', name: 'Lisa Martinez', email: 'lisa@example.com',  role: 'Investor', status: 'active',    joinedAt: 'Jan 2025', lastActive: '1 week ago',   engagementScore: 44, isOnline: false, milestonesCompleted: 0, sessionsAttended: 3 },
-  { id: '7', name: 'Alex Chen',     email: 'alex@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Mar 2025', lastActive: '4 hours ago',  engagementScore: 73, isOnline: true,  milestonesCompleted: 2, sessionsAttended: 6 },
-  { id: '8', name: 'Nina Patel',    email: 'nina@example.com',  role: 'Mentor',   status: 'suspended', joinedAt: 'Nov 2024', lastActive: '2 weeks ago',  engagementScore: 20, isOnline: false, milestonesCompleted: 0, sessionsAttended: 1 },
-];
 
 export default function TenantMembersPage() {
   const [search, setSearch] = useState('');
@@ -308,7 +298,9 @@ export default function TenantMembersPage() {
     () => (Array.isArray(data) ? data : []).map(toPageMember),
     [data],
   );
-  const members: Member[] = live.length > 0 ? live : isLoading ? [] : SEED_MEMBERS;
+  // A workspace with nobody on its roster sees the empty state, not seven
+  // invented people (John Doe, Jane Smith) it used to.
+  const members: Member[] = live;
   const queryClient = useQueryClient();
   const { success: toastOk, error: toastFail } = useToast();
   const confirm = useConfirm();

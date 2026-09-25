@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 type ManagedGroup = {
   id: string;
@@ -162,6 +163,9 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
 }
 
 export default function ManageGroupsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
@@ -194,7 +198,7 @@ export default function ManageGroupsPage() {
     [data],
   );
   const showingSample = !isLoading && live.length === 0;
-  const groups: ManagedGroup[] = live.length > 0 ? live : isLoading ? [] : MOCK_GROUPS;
+  const groups: ManagedGroup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : MOCK_GROUPS;
 
   const actions: GroupActions = {
     onInvite: async (g) => {

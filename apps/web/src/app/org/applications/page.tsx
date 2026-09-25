@@ -11,14 +11,13 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Eye,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
-  getMyPrograms,
+  listOrganizationPrograms,
   getProgramParticipants,
   updateProgramParticipant,
   type ProgramParticipantItem,
@@ -72,21 +71,40 @@ const PARTICIPANT_TO_APPLICATION: Record<string, Application['status']> = {
   dropped: 'rejected',
 };
 
+/** "Founder at Taverna OS" names the startup; a participant row carries no other field for it. */
+function startupOf(headline: string | null | undefined): string | null {
+  const match = headline?.match(/\bat\s+(.+)$/i);
+  return match ? match[1] : null;
+}
+
+/** "23 Sep 2026" from the ISO timestamp the API sends. */
+function submittedOn(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function toApplication(
   row: ProgramParticipantItem,
   programTitle: string,
   programId: string,
 ): Application & { programId: string } {
+  const founder = row.user.profile?.displayName ?? '\u2014';
   return {
     id: row.id,
     programId,
-    startupName: row.user.profile?.displayName ?? 'Unnamed applicant',
-    founderName: row.user.profile?.displayName ?? '\u2014',
+    // The startup was the founder's name twice over ("Sofia Alexiou, by Sofia
+    // Alexiou"); the headline is where a participant row names it.
+    startupName: startupOf(row.user.profile?.headline) ?? row.user.profile?.displayName ?? 'Unnamed applicant',
+    founderName: founder,
     founderAvatar: row.user.profile?.avatarUrl ?? undefined,
     program: programTitle,
-    industry: row.user.profile?.headline ?? '\u2014',
-    stage: row.role ?? '\u2014',
-    submittedAt: row.appliedAt,
+    // A participant row has no industry or stage; `role` is "participant",
+    // which was printed where the stage belongs.
+    industry: '',
+    stage: '',
+    location: row.user.profile?.location ?? undefined,
+    submittedAt: submittedOn(row.appliedAt),
+    submittedIso: row.appliedAt,
     status: PARTICIPANT_TO_APPLICATION[row.status] ?? 'pending',
     score: row.score ?? undefined,
   };
@@ -101,8 +119,11 @@ type Application = {
   program: string;
   industry: string;
   stage: string;
+  location?: string;
   submittedAt: string;
-  status: 'pending' | 'under_review' | 'shortlisted' | 'accepted' | 'rejected';
+  submittedIso?: string;
+  /** The schema's three: applied (pending), accepted, rejected. */
+  status: 'pending' | 'accepted' | 'rejected';
   score?: number;
   reviewedBy?: string;
 };
@@ -111,8 +132,6 @@ type ApplicationStatus = Application['status'];
 
 const APPLICATION_STATUS: Record<ApplicationStatus, { tone: StatusTone; icon: React.ElementType }> = {
   pending: { tone: 'neutral', icon: Clock },
-  under_review: { tone: 'warning', icon: Eye },
-  shortlisted: { tone: 'info', icon: Star },
   accepted: { tone: 'success', icon: CheckCircle2 },
   rejected: { tone: 'danger', icon: XCircle },
 };
@@ -157,7 +176,7 @@ function ApplicationCard({
                   {application.startupName}
                 </button>
                 <p className="text-sm text-muted-foreground">
-                  by {application.founderName} · {application.industry}
+                  by {[application.founderName, application.industry, application.location].filter(Boolean).join(' · ')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -201,7 +220,7 @@ function ApplicationCard({
 
             <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
               <span>{application.program}</span>
-              <span>{application.stage}</span>
+              {application.stage ? <span>{application.stage}</span> : null}
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" aria-hidden="true" />
                 {application.submittedAt}
@@ -220,63 +239,6 @@ function ApplicationCard({
   );
 }
 
-/** Shown to an organisation with no applications yet. */
-const SEED_APPLICATIONS: Application[] = [
-  {
-    id: '1',
-    startupName: 'DataVault',
-    founderName: 'Alex Johnson',
-    program: 'AI Accelerator 2025',
-    industry: 'Enterprise SaaS',
-    stage: 'Pre-seed',
-    submittedAt: 'Mar 18, 2025',
-    status: 'pending',
-  },
-  {
-    id: '2',
-    startupName: 'EcoTrack',
-    founderName: 'Maria Garcia',
-    program: 'Climate Innovation',
-    industry: 'CleanTech',
-    stage: 'Seed',
-    submittedAt: 'Mar 17, 2025',
-    status: 'under_review',
-    score: 78,
-  },
-  {
-    id: '3',
-    startupName: 'HealthPulse',
-    founderName: 'James Chen',
-    program: 'AI Accelerator 2025',
-    industry: 'HealthTech',
-    stage: 'Pre-seed',
-    submittedAt: 'Mar 15, 2025',
-    status: 'shortlisted',
-    score: 85,
-  },
-  {
-    id: '4',
-    startupName: 'PayStream',
-    founderName: 'Sarah Williams',
-    program: 'FinTech Bootcamp',
-    industry: 'FinTech',
-    stage: 'Seed',
-    submittedAt: 'Mar 10, 2025',
-    status: 'accepted',
-    score: 92,
-  },
-  {
-    id: '5',
-    startupName: 'QuickShip',
-    founderName: 'Tom Brown',
-    program: 'AI Accelerator 2025',
-    industry: 'Logistics',
-    stage: 'Idea',
-    submittedAt: 'Mar 8, 2025',
-    status: 'rejected',
-    score: 45,
-  },
-];
 
 export default function OrgApplicationsPage() {
   const [search, setSearch] = useState('');
@@ -291,17 +253,19 @@ export default function OrgApplicationsPage() {
    * applications sees; they carry no decision handler, because there is
    * nothing behind them to write to.
    */
-  const { slug } = useCurrentOrg();
+  const { slug, membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
 
   const { data: programsData } = useQuery({
-    queryKey: qk('programs', 'mine'),
-    queryFn: getMyPrograms,
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
     staleTime: 60_000,
     retry: 0,
   });
-  const programs = useMemo(() => programsData?.programs ?? [], [programsData]);
+  const programs = useMemo(() => programsData ?? [], [programsData]);
 
   const participantQueries = useQueries({
     queries: programs.map((program) => ({
@@ -350,8 +314,21 @@ export default function OrgApplicationsPage() {
     decide.mutate({ programId, participantId: application.id, status });
   };
 
+  /*
+   * An organisation with no applications used to see five invented ones
+   * (DataVault, "AI Accelerator 2025") - outside the showcase too. It now
+   * sees the empty state; the showcase has real rows behind it.
+   */
   const isLive = live.length > 0;
-  const applications: Application[] = isLive ? live : SEED_APPLICATIONS;
+  const applications: Application[] = useMemo(
+    () =>
+      [...live].sort((a, b) =>
+        a.status === 'pending' && b.status !== 'pending' ? -1
+          : b.status === 'pending' && a.status !== 'pending' ? 1
+            : (b.submittedIso ?? '').localeCompare(a.submittedIso ?? ''),
+      ),
+    [live],
+  );
   void slug;
 
 
@@ -371,8 +348,6 @@ export default function OrgApplicationsPage() {
   const statusCounts = {
     all: applications.length,
     pending: applications.filter((a) => a.status === 'pending').length,
-    under_review: applications.filter((a) => a.status === 'under_review').length,
-    shortlisted: applications.filter((a) => a.status === 'shortlisted').length,
     accepted: applications.filter((a) => a.status === 'accepted').length,
     rejected: applications.filter((a) => a.status === 'rejected').length,
   };
@@ -401,8 +376,6 @@ export default function OrgApplicationsPage() {
     choiceControl('status_tab', 'Application status', 'Κατάσταση αίτησης', [
       { value: 'all', en: 'All', el: 'Όλες' },
       { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
-      { value: 'under_review', en: 'Under review', el: 'Υπό αξιολόγηση' },
-      { value: 'shortlisted', en: 'Shortlisted', el: 'Προεπιλεγμένες' },
       { value: 'accepted', en: 'Accepted', el: 'Εγκεκριμένες' },
       { value: 'rejected', en: 'Rejected', el: 'Απορριφθείσες' },
     ], activeTab, setActiveTab),
@@ -420,47 +393,30 @@ export default function OrgApplicationsPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-5">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-xl font-bold">{statusCounts.all}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className={cn('text-xl font-bold', STATUS.neutral.icon)}>{statusCounts.pending}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">In Review</p>
-              <p className={cn('text-xl font-bold', STATUS.warning.icon)}>{statusCounts.under_review}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Shortlisted</p>
-              <p className={cn('text-xl font-bold', STATUS.info.icon)}>{statusCounts.shortlisted}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Accepted</p>
-              <p className={cn('text-xl font-bold', STATUS.success.icon)}>{statusCounts.accepted}</p>
-            </CardContent>
-          </Card>
+        {/* Stats: the three states an application can be in, and the whole. */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          {[
+            { label: 'Total', value: statusCounts.all, tone: '' },
+            { label: 'Pending', value: statusCounts.pending, tone: STATUS.warning.icon },
+            { label: 'Accepted', value: statusCounts.accepted, tone: STATUS.success.icon },
+            { label: 'Rejected', value: statusCounts.rejected, tone: STATUS.danger.icon },
+          ].map((kpi) => (
+            <Card key={kpi.label}>
+              <CardContent className="p-4">
+                <p className="text-sm text-muted-foreground">{kpi.label}</p>
+                <p className={cn('text-xl font-semibold tabular-nums sm:text-2xl', kpi.tone)}>{kpi.value}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Tabs */}
+        {/* Tabs: In review and Shortlisted had no status behind them and read 0 forever. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
             <TabsTrigger value="pending">Pending ({statusCounts.pending})</TabsTrigger>
-            <TabsTrigger value="under_review">In Review ({statusCounts.under_review})</TabsTrigger>
-            <TabsTrigger value="shortlisted">Shortlisted ({statusCounts.shortlisted})</TabsTrigger>
+            <TabsTrigger value="accepted">Accepted ({statusCounts.accepted})</TabsTrigger>
+            <TabsTrigger value="rejected">Rejected ({statusCounts.rejected})</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -515,10 +471,18 @@ export default function OrgApplicationsPage() {
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <dt className="text-muted-foreground">Status</dt>
               <dd className="capitalize">{reviewing.status.replace('_', ' ')}</dd>
-              <dt className="text-muted-foreground">Industry</dt>
-              <dd>{reviewing.industry || '\u2014'}</dd>
-              <dt className="text-muted-foreground">Stage</dt>
-              <dd>{reviewing.stage || '\u2014'}</dd>
+              {reviewing.industry ? (
+                <>
+                  <dt className="text-muted-foreground">Industry</dt>
+                  <dd>{reviewing.industry}</dd>
+                </>
+              ) : null}
+              {reviewing.location ? (
+                <>
+                  <dt className="text-muted-foreground">Location</dt>
+                  <dd>{reviewing.location}</dd>
+                </>
+              ) : null}
               <dt className="text-muted-foreground">Submitted</dt>
               <dd>{reviewing.submittedAt}</dd>
               {reviewing.score != null && (

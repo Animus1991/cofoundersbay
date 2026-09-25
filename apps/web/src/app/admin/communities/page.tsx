@@ -54,6 +54,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from a group.
@@ -264,6 +265,9 @@ const SEED_COMMUNITIES: Community[] = [
 ];
 
 export default function AdminCommunitiesPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -340,7 +344,7 @@ export default function AdminCommunitiesPage() {
     });
     if (ok) deleteMutation.mutate(c.id);
   };
-  const communities: Community[] = live.length > 0 ? live : isLoading ? [] : SEED_COMMUNITIES;
+  const communities: Community[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_COMMUNITIES;
 
 
   const filteredCommunities = communities.filter((c) => {

@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 /**
  * The page's own row from the moderation queue row.
@@ -300,6 +301,9 @@ const PRIORITY_OPTIONS: { value: string; en: string; el: string }[] = [
 ];
 
 export default function AdminReportsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [viewing, setViewing] = useState<Report | null>(null);
   const [type, setType] = useState<string>('all');
@@ -324,7 +328,7 @@ export default function AdminReportsPage() {
 
   const live = useMemo(() => (data?.reports ?? []).map(toPageReport), [data]);
   const isLive = live.length > 0;
-  const reports: Report[] = isLive ? live : SEED_REPORTS;
+  const reports: Report[] = isLive ? live : showDemoData ? SEED_REPORTS : [];
 
   const resolve = useMutation({
     mutationFn: ({ id, resolution }: { id: string; resolution: 'resolved' | 'dismissed' }) =>

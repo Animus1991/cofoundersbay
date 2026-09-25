@@ -62,6 +62,7 @@ import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 type OrgMember = {
   id: string;
@@ -233,6 +234,9 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
 }
 
 export default function OrgAdminPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const params = useParams();
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -274,7 +278,7 @@ export default function OrgAdminPage() {
   const org = orgData
     ? { name: orgData.name, logo: orgData.logo ?? orgData.logoUrl ?? undefined }
     : MOCK_ORG;
-  const members = isLive ? (membersQuery.data ?? []).map(toViewMember) : MOCK_MEMBERS;
+  const members = isLive ? (membersQuery.data ?? []).map(toViewMember) : showDemoData ? MOCK_MEMBERS : [];
   const stats = {
     totalMembers: members.length,
     activeMembers: members.filter((m) => m.status === 'active').length,

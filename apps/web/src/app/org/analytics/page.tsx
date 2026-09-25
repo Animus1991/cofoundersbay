@@ -2,40 +2,31 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import {
-  BarChart3,
-  Rocket,
-  GraduationCap,
-  Target,
-  Calendar,
-  ArrowUpRight,
-  ArrowDownRight,
-  Download,
-  RefreshCw,
-} from 'lucide-react';
-import { AppShell } from '@/components/layout/AppShell';
-import { useQuery } from '@tanstack/react-query';
-import { useQueryClient } from '@tanstack/react-query';
-import { downloadCsv } from '@/lib/csv';
-import { useCurrentOrg } from '@/hooks/useCurrentOrg';
-import { getMyPrograms, getOrgMembers, getOrgMentorPool } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
+import { CalendarCheck, Download, GraduationCap, RefreshCw, Rocket, UserPlus } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BilingualText } from '@/components/common/BilingualText';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import {
+  getOrgCohortDetail,
+  getOrgCohorts,
+  getOrgMembers,
+  getOrgMentorPool,
+  getProgramParticipants,
+  listOrganizationPrograms,
+} from '@/lib/api';
+import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
+import { cn } from '@/lib/utils';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
 const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
@@ -52,125 +43,68 @@ const IndustryPieChart = dynamic(
   { ssr: false, loading: PieFallback },
 );
 
-function StatCard({
-  title,
-  value,
-  change,
-  changeType,
-  icon: Icon,
-}: {
-  title: string;
-  value: string | number;
-  change?: string;
-  changeType?: 'positive' | 'negative' | 'neutral';
-  icon: React.ElementType;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-xl font-bold mt-1">{value}</p>
-            {change && (
-              <div className={cn(
-                'flex items-center gap-1 text-xs mt-1',
-                changeType === 'positive' && TREND.up,
-                changeType === 'negative' && TREND.down,
-                changeType === 'neutral' && 'text-muted-foreground'
-              )}>
-                {changeType === 'positive' && <ArrowUpRight className="icon-sm" />}
-                {changeType === 'negative' && <ArrowDownRight className="icon-sm" />}
-                {change}
-              </div>
-            )}
-          </div>
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="icon-md text-primary-accessible" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+/*
+ * Organisation analytics, counted.
+ *
+ * Four tiles were live and everything under them was a fixed illustration
+ * behind a "sample data" note: an application trend peaking in March, 24
+ * sessions a month, a 4.8 rating, 78% utilisation, an 8/15/12/5 stage split,
+ * an AI/ML-led industry pie and a 120 -> 15 funnel through "Shortlisted" and
+ * "Interviewed" steps the schema does not have. The period selector changed
+ * nothing.
+ *
+ * Every panel now comes from the reads /org/programs, /org/applications,
+ * /org/members, /org/mentors and /org/cohorts already make - programs, their
+ * participants, the members, the mentor pool and each cohort's sessions - and
+ * the period sets the window for the counts that happen over time. Stage and
+ * industry are not recorded for a participant, so those two panels became
+ * what is: members by role and founders by city.
+ */
 
-function MetricBar({ label, value, max, color }: { label: string; value: number; max: number; color?: string }) {
-  const percentage = (value / max) * 100;
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">{value}</span>
-      </div>
-      <Progress value={percentage} className={cn('h-2', color)} />
-    </div>
-  );
-}
+const PERIODS = [
+  { value: '7d', en: 'Last 7 days', el: 'Τελευταίες 7 ημέρες', days: 7 },
+  { value: '30d', en: 'Last 30 days', el: 'Τελευταίες 30 ημέρες', days: 30 },
+  { value: '90d', en: 'Last 90 days', el: 'Τελευταίες 90 ημέρες', days: 90 },
+  { value: '1y', en: 'Last year', el: 'Τελευταίο έτος', days: 365 },
+  { value: 'all', en: 'All time', el: 'Όλη η περίοδος', days: Number.POSITIVE_INFINITY },
+] as const;
 
-const APPLICATIONS_TREND = [
-  { month: 'Oct', applications: 18, accepted: 5 },
-  { month: 'Nov', applications: 22, accepted: 7 },
-  { month: 'Dec', applications: 15, accepted: 4 },
-  { month: 'Jan', applications: 30, accepted: 9 },
-  { month: 'Feb', applications: 28, accepted: 8 },
-  { month: 'Mar', applications: 35, accepted: 12 },
-];
+const ENROLLED = new Set(['accepted', 'active', 'completed']);
+const DAY = 86_400_000;
 
-const SESSIONS_BY_MONTH = [
-  { month: 'Oct', sessions: 18 },
-  { month: 'Nov', sessions: 24 },
-  { month: 'Dec', sessions: 14 },
-  { month: 'Jan', sessions: 32 },
-  { month: 'Feb', sessions: 29 },
-  { month: 'Mar', sessions: 38 },
-];
-
-const CHART_SERIES_COLORS = [
+const SERIES_COLORS = [
   'hsl(var(--primary))',
   'hsl(var(--status-info-fg))',
   'hsl(var(--status-success-fg))',
   'hsl(var(--status-warning-fg))',
-  'hsl(var(--status-accent-fg))',
 ] as const;
 
-const INDUSTRY_PIE = [
-  { name: 'AI/ML',          value: 14, color: CHART_SERIES_COLORS[0] },
-  { name: 'FinTech',        value: 10, color: CHART_SERIES_COLORS[1] },
-  { name: 'HealthTech',     value: 8,  color: CHART_SERIES_COLORS[2] },
-  { name: 'CleanTech',      value: 7,  color: CHART_SERIES_COLORS[3] },
-  { name: 'SaaS',           value: 6,  color: CHART_SERIES_COLORS[4] },
-];
-
-const FUNNEL_STEPS = [
-  { label: 'Applications', value: 120, bar: 'bg-status-neutral' },
-  { label: 'Reviewed', value: 95, bar: 'bg-status-warning' },
-  { label: 'Shortlisted', value: 45, bar: 'bg-status-info' },
-  { label: 'Interviewed', value: 30, bar: 'bg-status-accent' },
-  { label: 'Accepted', value: 15, bar: 'bg-status-success' },
-] as const;
+function monthKey(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
 
 export default function OrgAnalyticsPage() {
-  const [period, setPeriod] = useState('30d');
-
-  /*
-   * These eight numbers were a fixed object. Four of them are counted now from
-   * the organisation's own rows — the same rows /org/members, /org/mentors and
-   * /org/programs list, so this page and those cannot disagree.
-   *
-   * The other four stay dashes on purpose. Mentorship sessions, average
-   * readiness and an application rate are facts the organisation endpoints do
-   * not return, and a readiness score in particular belongs to a founder's own
-   * workspace. A dash is the honest answer until there is a number behind it.
-   */
+  const [period, setPeriod] = useState<(typeof PERIODS)[number]['value']>('30d');
+  const windowDays = PERIODS.find((p) => p.value === period)?.days ?? 30;
   const { slug, membership } = useCurrentOrg();
   const organizationId = membership?.organizationId ?? null;
-
   const queryClient = useQueryClient();
-  const { data: programsData } = useQuery({
-    queryKey: qk('programs', 'mine'),
-    queryFn: getMyPrograms,
+
+  const { data: programsData, isLoading: programsLoading } = useQuery({
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
     staleTime: 60_000,
     retry: 0,
+  });
+  const programs = useMemo(() => programsData ?? [], [programsData]);
+  const participantQueries = useQueries({
+    queries: programs.map((program) => ({
+      queryKey: qk('org', 'participants', program.id),
+      queryFn: () => getProgramParticipants(program.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
   });
   const { data: membersData } = useQuery({
     queryKey: qk('org', 'members', slug),
@@ -186,47 +120,140 @@ export default function OrgAnalyticsPage() {
     staleTime: 60_000,
     retry: 0,
   });
+  const { data: cohortsData } = useQuery({
+    queryKey: qk('org', 'cohorts', slug),
+    queryFn: () => getOrgCohorts(slug!, { limit: 50 }),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const cohorts = useMemo(() => cohortsData?.cohorts ?? [], [cohortsData]);
+  const cohortQueries = useQueries({
+    queries: cohorts.map((cohort) => ({
+      queryKey: qk('org', slug, 'cohort', cohort.id),
+      queryFn: () => getOrgCohortDetail(slug!, cohort.id),
+      enabled: Boolean(slug),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
 
-  const orgPrograms = useMemo(() => programsData?.programs ?? [], [programsData]);
-  const mentors = useMemo(() => mentorsData?.mentors ?? [], [mentorsData]);
-
-  const stats = {
-    totalStartups: membersData?.total ?? 0,
-    activeStartups: membersData?.total ?? 0,
-    graduatedStartups: 0,
-    totalMentors: mentors.length,
-    // Mentors with at least one mentee: the pool records the count.
-    activeMentorships: mentors.reduce((sum, mentor) => sum + mentor.currentMentees, 0),
-    totalSessions: null as number | null,
-    avgReadinessScore: null as number | null,
-    applicationRate: null as number | null,
+  const now = Date.now();
+  const inWindow = (iso: string | null | undefined) => {
+    if (!iso) return false;
+    const age = now - Date.parse(iso);
+    return age >= 0 && age <= windowDays * DAY;
   };
 
-  const programMetrics = orgPrograms.map((program) => ({
+  const participants = participantQueries.flatMap((q, i) =>
+    (q.data?.participants ?? []).map((row) => ({ row, program: programs[i] })),
+  );
+  const sessions = cohortQueries.flatMap((q) => q.data?.sessions ?? []);
+  const members = membersData?.members ?? [];
+  const mentors = mentorsData?.mentors ?? [];
+
+  // ── Figures ─────────────────────────────────────────────────────────────
+  const inPrograms = participants.filter(({ row, program }) => (row.status === 'active' || row.status === 'accepted') && program?.status === 'active');
+  const graduated = participants.filter(({ row }) => row.status === 'completed');
+  const decided = participants.filter(({ row }) => row.status !== 'applied');
+  const accepted = decided.filter(({ row }) => ENROLLED.has(row.status));
+  const acceptance = decided.length ? Math.round((accepted.length / decided.length) * 100) : null;
+  const appsInWindow = participants.filter(({ row }) => inWindow(row.appliedAt));
+  const held = sessions.filter((s) => s.status === 'completed');
+  const heldInWindow = held.filter((s) => inWindow(s.scheduledAt));
+  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled' && Date.parse(s.scheduledAt) >= now);
+  const rated = held.filter((s) => s.rating != null);
+  const avgRating = rated.length ? Math.round((rated.reduce((sum, s) => sum + (s.rating ?? 0), 0) / rated.length) * 10) / 10 : null;
+  const slots = mentors.reduce((sum, m) => sum + (m.maxMentees ?? 0), 0);
+  const taken = mentors.reduce((sum, m) => sum + m.currentMentees, 0);
+  const activeMentors = mentors.filter((m) => m.currentMentees > 0).length;
+
+  // ── Six months, oldest first ────────────────────────────────────────────
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(1);
+    d.setMonth(d.getMonth() - (5 - i));
+    return d;
+  });
+  const trend = months.map((d) => ({
+    month: d.toLocaleDateString('en-GB', { month: 'short' }),
+    applications: participants.filter(({ row }) => monthKey(new Date(row.appliedAt)) === monthKey(d)).length,
+    accepted: participants.filter(({ row }) => row.acceptedAt && monthKey(new Date(row.acceptedAt)) === monthKey(d)).length,
+  }));
+  const sessionsByMonth = months.map((d) => ({
+    month: d.toLocaleDateString('en-GB', { month: 'short' }),
+    sessions: sessions.filter((s) => monthKey(new Date(s.scheduledAt)) === monthKey(d)).length,
+  }));
+  const recentMonths = sessionsByMonth.slice(-3);
+  const perMonth = Math.round(recentMonths.reduce((sum, m) => sum + m.sessions, 0) / recentMonths.length);
+
+  // ── Who is in the organisation ──────────────────────────────────────────
+  const byRole = (['founder', 'mentor', 'investor'] as const)
+    .map((role, i) => ({ name: role[0].toUpperCase() + role.slice(1) + 's', value: members.filter((m) => m.role === role).length, color: SERIES_COLORS[i] }))
+    .filter((r) => r.value > 0);
+  const cities = Object.entries(
+    members
+      .filter((m) => m.role === 'founder')
+      .reduce<Record<string, number>>((acc, m) => {
+        const city = m.location?.split(',')[0]?.trim() || 'Unknown';
+        acc[city] = (acc[city] ?? 0) + 1;
+        return acc;
+      }, {}),
+  ).sort((a, b) => b[1] - a[1]);
+  const maxCity = Math.max(1, ...cities.map(([, n]) => n));
+
+  const programMetrics = programs.map((program) => ({
+    id: program.id,
     name: program.title,
+    status: program.status,
     startups: program.participantCount,
-    // Filled share of the program's stated capacity — a fact it carries.
-    progress: program.capacity
-      ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100))
-      : 0,
+    capacity: program.capacity,
+    applications: program.applicationCount,
+    fill: program.capacity ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100)) : null,
   }));
 
-  const stageDistribution = [
-    { stage: 'Idea', count: 8 },
-    { stage: 'Pre-seed', count: 15 },
-    { stage: 'Seed', count: 12 },
-    { stage: 'Series A', count: 5 },
+  const funnel = [
+    { label: 'Applications', labelEl: 'Αιτήσεις', value: participants.length, bar: 'bg-status-neutral' },
+    { label: 'Decided', labelEl: 'Με απόφαση', value: decided.length, bar: 'bg-status-warning' },
+    { label: 'Accepted', labelEl: 'Εγκρίθηκαν', value: accepted.length, bar: 'bg-status-info' },
+    { label: 'Graduated', labelEl: 'Αποφοίτησαν', value: graduated.length, bar: 'bg-status-success' },
   ];
 
-  const industryDistribution = [
-    { industry: 'AI/ML', count: 14 },
-    { industry: 'FinTech', count: 10 },
-    { industry: 'HealthTech', count: 8 },
-    { industry: 'CleanTech', count: 7 },
-    { industry: 'Enterprise SaaS', count: 6 },
-  ];
+  const periodLabel = PERIODS.find((p) => p.value === period)?.en.toLowerCase() ?? '';
+  const loading = programsLoading;
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: qk('org') });
+    void queryClient.invalidateQueries({ queryKey: qk('programs') });
+  };
+  const exportCsv = () =>
+    downloadCsv('org-analytics', ['section', 'name', 'value'], [
+      ['summary', 'startups_in_programs', inPrograms.length],
+      ['summary', 'graduated', graduated.length],
+      ['summary', `applications_${period}`, appsInWindow.length],
+      ['summary', `sessions_held_${period}`, heldInWindow.length],
+      ['summary', 'acceptance_rate', acceptance ?? ''],
+      ['mentors', 'active_mentors', activeMentors],
+      ['mentors', 'mentee_places_taken', `${taken}/${slots}`],
+      ['mentors', 'avg_session_rating', avgRating ?? ''],
+      ...programMetrics.map((p) => ['program', p.name, `${p.startups}/${p.capacity ?? '-'} places, ${p.applications} applications`]),
+      ...trend.map((t) => ['applications_by_month', t.month, `${t.applications} applied, ${t.accepted} accepted`]),
+      ...sessionsByMonth.map((s) => ['sessions_by_month', s.month, s.sessions]),
+      ...funnel.map((f) => ['funnel', f.label, f.value]),
+    ]);
 
-  const maxIndustry = Math.max(...industryDistribution.map((i) => i.count));
+  usePageList([
+    {
+      id: 'org_programs',
+      labelEn: 'Program performance',
+      labelEl: 'Απόδοση προγραμμάτων',
+      rows: loading ? undefined : programMetrics.map((p) => `${p.name} · ${p.status} · ${p.startups}/${p.capacity ?? '—'} places · ${p.applications} applications`),
+    },
+  ]);
+  usePageControls([
+    choiceControl('period', 'Analytics period', 'Περίοδος αναλυτικών', PERIODS.map((p) => ({ value: p.value, en: p.en, el: p.el })), period, (v) => setPeriod(v as typeof period)),
+    { id: 'refresh', labelEn: 'Refresh the analytics', labelEl: 'Ανανέωση αναλυτικών', writes: false, run: refresh },
+    { id: 'export', labelEn: 'Export the analytics as CSV', labelEl: 'Εξαγωγή αναλυτικών σε CSV', writes: false, run: exportCsv },
+  ]);
 
   return (
     <AppShell
@@ -234,235 +261,186 @@ export default function OrgAnalyticsPage() {
       description="Cohort health, program impact, application funnel, and member growth in one dashboard."
       actions={(
         <>
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger aria-label="Time period" className="w-[140px]">
+          <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+            <SelectTrigger aria-label="Time period" className="w-[150px]">
               <SelectValue placeholder="Time period" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
-              <SelectItem value="all">All time</SelectItem>
+              {PERIODS.map((p) => (
+                <SelectItem key={p.value} value={p.value}>{p.en}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          {/* Both had no handler. */}
-          <Button
-            variant="outline"
-            size="icon"
-            title="Refresh"
-            aria-label="Refresh"
-            onClick={() => void queryClient.invalidateQueries({ queryKey: qk('org') })}
-          >
+          <Button variant="outline" size="icon" title="Refresh" aria-label="Refresh" onClick={refresh}>
             <RefreshCw className="icon-sm" aria-hidden="true" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() =>
-              downloadCsv('org-analytics', ['section', 'name', 'value'], [
-                ...Object.entries(stats).map(([k, v]) => ['summary', k, v ?? '']),
-                ...programMetrics.map((p) => ['program', p.name, `${p.startups} startups, ${p.progress}% of capacity`]),
-              ])
-            }
-          >
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={exportCsv}>
             <Download className="icon-sm" aria-hidden="true" /> Export
           </Button>
         </>
       )}
     >
       <div className="space-y-6">
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
-          <StatCard
-            title="Total Startups"
-            value={stats.totalStartups}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
             icon={Rocket}
+            label="Startups in programs"
+            labelEl="Startups σε προγράμματα"
+            value={loading ? '—' : inPrograms.length}
+            caption={`${graduated.length} graduated`}
+            captionEl={`${graduated.length} αποφοίτησαν`}
+            href="/org/startups"
           />
-          <StatCard
-            title="Active Mentorships"
-            value={stats.activeMentorships}
+          <MetricTile
+            icon={UserPlus}
+            label="Applications"
+            labelEl="Αιτήσεις"
+            value={loading ? '—' : appsInWindow.length}
+            caption={periodLabel}
+            captionEl={PERIODS.find((p) => p.value === period)?.el}
+            href="/org/applications"
+          />
+          <MetricTile
+            icon={CalendarCheck}
+            label="Mentor sessions held"
+            labelEl="Συνεδρίες μεντόρων"
+            value={cohortsData ? heldInWindow.length : '—'}
+            caption={`${upcomingSessions.length} scheduled ahead`}
+            captionEl={`${upcomingSessions.length} προγραμματισμένες`}
+            href="/org/cohorts"
+          />
+          <MetricTile
             icon={GraduationCap}
-          />
-          <StatCard
-            title="Avg. Readiness Score"
-            value={stats.avgReadinessScore == null ? '\u2014' : `${stats.avgReadinessScore}%`}
-            icon={Target}
-          />
-          <StatCard
-            title="Mentor Sessions"
-            value={stats.totalSessions ?? '\u2014'}
-            icon={Calendar}
+            label="Acceptance rate"
+            labelEl="Ποσοστό αποδοχής"
+            value={acceptance == null ? '—' : `${acceptance}%`}
+            caption={decided.length ? `${accepted.length} of ${decided.length} decided` : 'No decisions yet'}
+            captionEl={decided.length ? `${accepted.length} από ${decided.length} με απόφαση` : 'Καμία απόφαση ακόμα'}
+            href="/org/applications"
           />
         </div>
 
-        {/* The four figures above are counted from the organisation's rows,
-            and carry no change line: none of the endpoints report history, so
-            the "+5 this month" that stood under a live 0 was invented. The
-            trend, session, stage, industry and funnel panels below are fixed
-            illustrations until the API reports them, and say so here. */}
-        <SampleDataNotice
-          surface="Organisation analytics"
-          detail="The counts at the top are your organisation's own. The trend, session, stage, industry and funnel panels below are illustrative until the platform reports them."
-          askAiPrompt="Which of my organisation's analytics are live, and which are illustrative?"
-        />
-
-        {/* Charts Row */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Applications Trend */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Applications Trend</CardTitle>
-                <Badge variant="secondary" size="sm">6 months</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ApplicationsTrendChart data={APPLICATIONS_TREND} />
-            </CardContent>
-          </Card>
-
-          {/* Mentor Sessions Bar */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Mentor Sessions / Month</CardTitle>
-                <Badge variant="secondary" size="sm">6 months</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <MentorSessionsChart data={SESSIONS_BY_MONTH} />
-            </CardContent>
-          </Card>
+          <SectionCard title="Applications by month" titleEl="Αιτήσεις ανά μήνα" contentClassName="space-y-2">
+            <ApplicationsTrendChart data={trend} />
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Applications</span> received and <span className="font-medium text-status-success">accepted</span> in each of the last six months.
+            </p>
+          </SectionCard>
+          <SectionCard title="Mentor sessions by month" titleEl="Συνεδρίες ανά μήνα" contentClassName="space-y-2">
+            <MentorSessionsChart data={sessionsByMonth} />
+            <p className="text-xs text-muted-foreground">Held and scheduled sessions across every cohort.</p>
+          </SectionCard>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Program Performance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Program Performance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {programMetrics.length === 0 && (
-                <p className="py-6 text-center text-sm text-muted-foreground">
-                  No programmes yet. Each programme you run appears here with how full it is.{' '}
-                  <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline">Create a programme</Link>
-                </p>
-              )}
-              {programMetrics.map((program) => (
-                <div key={program.name} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{program.name}</span>
-                    <span className="text-muted-foreground">{program.startups} startups · {program.progress}%</span>
-                  </div>
-                  <Progress value={program.progress} className="h-2" />
+          <SectionCard title="Program performance" titleEl="Απόδοση προγραμμάτων" action={{ href: '/org/programs', label: 'Programs', labelEl: 'Προγράμματα' }} contentClassName="space-y-4">
+            {loading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}
+            {!loading && programMetrics.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                No programmes yet. Each programme you run appears here with how full it is.{' '}
+                <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline">Create a programme</Link>
+              </p>
+            )}
+            {programMetrics.map((program) => (
+              <div key={program.id} className="space-y-1.5">
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate">{program.name}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    {program.startups}/{program.capacity ?? '—'} places · {program.applications} applied
+                  </span>
+                </div>
+                <Progress value={program.fill ?? 0} className="h-1.5" aria-label={`${program.name}: ${program.fill ?? 0}% of places filled`} />
+              </div>
+            ))}
+          </SectionCard>
+
+          <SectionCard title="Mentor activity" titleEl="Δραστηριότητα μεντόρων" action={{ href: '/org/mentors', label: 'Mentors', labelEl: 'Μέντορες' }}>
+            <dl className="grid grid-cols-2 gap-3">
+              {[
+                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} of ${mentors.length}` : '—' },
+                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'last three months' },
+                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined },
+                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined },
+              ].map((cell) => (
+                <div key={cell.en} className="rounded-lg bg-muted/40 p-3">
+                  <dt className="text-xs text-muted-foreground">
+                    <BilingualText en={cell.en} el={cell.el} stacked wrap />
+                  </dt>
+                  <dd className="mt-1 text-lg font-semibold tabular-nums">{cell.value}</dd>
+                  {cell.note ? <dd className="text-xs text-muted-foreground">{cell.note}</dd> : null}
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </dl>
+          </SectionCard>
 
-          {/* Stage Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Stage Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stageDistribution.map((item) => (
-                  <MetricBar
-                    key={item.stage}
-                    label={item.stage}
-                    value={item.count}
-                    max={Math.max(...stageDistribution.map((s) => s.count))}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Industry Distribution — PieChart */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Industry Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <SectionCard title="Members by role" titleEl="Μέλη ανά ρόλο" action={{ href: '/org/members', label: 'Members', labelEl: 'Μέλη' }}>
+            {byRole.length ? (
               <div className="flex items-center gap-4">
-                <IndustryPieChart data={INDUSTRY_PIE} />
-                <div className="flex-1 space-y-2">
-                  {INDUSTRY_PIE.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
+                <IndustryPieChart data={byRole} />
+                <ul className="flex-1 space-y-2">
+                  {byRole.map((item) => (
+                    <li key={item.name} className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} aria-hidden="true" />
                         <span className="text-muted-foreground">{item.name}</span>
-                      </div>
+                      </span>
                       <span className="font-medium tabular-nums">{item.value}</span>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <EmptyLine en="Members appear once a cohort has started." el="Τα μέλη εμφανίζονται όταν ξεκινήσει ένα cohort." />
+            )}
+          </SectionCard>
 
-          {/* Mentor Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Mentor Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-secondary/50">
-                  <p className="text-sm text-muted-foreground">Active Mentors</p>
-                  <p className="text-xl font-bold">{stats.totalMentors}</p>
+          <SectionCard title="Founders by city" titleEl="Ιδρυτές ανά πόλη" contentClassName="space-y-3">
+            {cities.map(([city, count]) => (
+              <div key={city} className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{city}</span>
+                  <span className="font-medium tabular-nums">{count}</span>
                 </div>
-                <div className="p-4 rounded-lg bg-secondary/50">
-                  <p className="text-sm text-muted-foreground">Sessions/Month</p>
-                  <p className="text-xl font-bold">24</p>
-                </div>
-                <div className="p-4 rounded-lg bg-secondary/50">
-                  <p className="text-sm text-muted-foreground">Avg. Rating</p>
-                  <p className="text-xl font-bold">4.8</p>
-                </div>
-                <div className="p-4 rounded-lg bg-secondary/50">
-                  <p className="text-sm text-muted-foreground">Utilization</p>
-                  <p className="text-xl font-bold">78%</p>
-                </div>
+                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={`${city}: ${count} founders`} />
               </div>
-            </CardContent>
-          </Card>
+            ))}
+            {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." />}
+          </SectionCard>
         </div>
 
-        {/* Funnel */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Application Funnel</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* A funnel reads by length: each bar is its step's share of the
-                applications that entered, and the right column is how many of
-                the previous step went on. Equal-height tiles showed neither, and
-                five of them did not fit a phone. */}
-            <ol className="space-y-2.5">
-              {FUNNEL_STEPS.map((step, index) => {
-                const top = FUNNEL_STEPS[0]?.value || 1;
-                const prev = index > 0 ? FUNNEL_STEPS[index - 1]?.value : undefined;
-                return (
-                  <li key={step.label} className="grid grid-cols-[6.5rem_1fr_2.5rem_2.75rem] items-center gap-3 text-sm sm:grid-cols-[8rem_1fr_3rem_3rem]">
-                    <span className="truncate text-muted-foreground">{step.label}</span>
-                    <span className="h-2.5 overflow-hidden rounded-full bg-muted/50" aria-hidden="true">
-                      <span className={cn('block h-full rounded-full', step.bar)} style={{ width: `${Math.max(3, Math.round((step.value / top) * 100))}%` }} />
-                    </span>
-                    <span className="text-right font-semibold tabular-nums">{step.value}</span>
-                    <span className="text-right text-xs tabular-nums text-muted-foreground">
-                      {prev ? `${Math.round((step.value / prev) * 100)}%` : '—'}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          </CardContent>
-        </Card>
+        <SectionCard title="Application funnel" titleEl="Χωνί αιτήσεων" action={{ href: '/org/applications', label: 'Applications', labelEl: 'Αιτήσεις' }}>
+          {/* Each bar is its step's share of the applications that entered;
+              the right column is how many of the previous step went on. The
+              steps are the statuses a participant row can have. */}
+          <ol className="space-y-2.5">
+            {funnel.map((step, index) => {
+              const top = funnel[0]?.value || 1;
+              const prev = index > 0 ? funnel[index - 1]?.value : undefined;
+              return (
+                <li key={step.label} className="grid grid-cols-[6.5rem_1fr_2.5rem_2.75rem] items-center gap-3 text-sm sm:grid-cols-[8rem_1fr_3rem_3rem]">
+                  <span className="truncate text-muted-foreground">
+                    <BilingualText en={step.label} el={step.labelEl} />
+                  </span>
+                  <span className="h-2.5 overflow-hidden rounded-full bg-muted/50" aria-hidden="true">
+                    <span className={cn('block h-full rounded-full', step.bar)} style={{ width: `${Math.max(3, Math.round((step.value / top) * 100))}%` }} />
+                  </span>
+                  <span className="text-right font-semibold tabular-nums">{step.value}</span>
+                  <span className="text-right text-xs tabular-nums text-muted-foreground">
+                    {prev ? `${Math.round((step.value / prev) * 100)}%` : '—'}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {programs.filter((p) => p.status === 'upcoming').map((p) => (
+              <Badge key={p.id} variant="info" size="sm">
+                {p.title}: taking applications
+              </Badge>
+            ))}
+          </div>
+        </SectionCard>
       </div>
     </AppShell>
   );
