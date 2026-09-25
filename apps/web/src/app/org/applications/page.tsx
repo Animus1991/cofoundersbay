@@ -49,6 +49,7 @@ import {
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * An application is a program participant whose status says so.
@@ -191,7 +192,7 @@ function ApplicationCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => onReview(application)}>Review Application</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onReview(application)}><BilingualText en="Review Application" el="Έλεγχος αίτησης" compact /></DropdownMenuItem>
                     {/*
                       * "Mark as Shortlisted" and "Schedule Interview" are gone
                       * rather than left inert: the participant status enum has
@@ -204,14 +205,14 @@ function ApplicationCard({
                       disabled={!onDecide || application.status === 'accepted'}
                       onClick={() => onDecide?.(application, 'accepted')}
                     >
-                      Accept
+                      <BilingualText en="Accept" el="Αποδοχή" compact />
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive-accessible"
                       disabled={!onDecide || application.status === 'rejected'}
                       onClick={() => onDecide?.(application, 'rejected')}
                     >
-                      Reject
+                      <BilingualText en="Reject" el="Απόρριψη" compact />
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -436,7 +437,7 @@ export default function OrgApplicationsPage() {
               <SelectValue placeholder="Program" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Programs</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>
               {programNames.map((p) => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
@@ -469,25 +470,25 @@ export default function OrgApplicationsPage() {
           </DialogHeader>
           {reviewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
               <dd className="capitalize">{reviewing.status.replace('_', ' ')}</dd>
               {reviewing.industry ? (
                 <>
-                  <dt className="text-muted-foreground">Industry</dt>
+                  <dt className="text-muted-foreground"><BilingualText en="Industry" el="Κλάδος" compact /></dt>
                   <dd>{reviewing.industry}</dd>
                 </>
               ) : null}
               {reviewing.location ? (
                 <>
-                  <dt className="text-muted-foreground">Location</dt>
+                  <dt className="text-muted-foreground"><BilingualText en="Location" el="Τοποθεσία" compact /></dt>
                   <dd>{reviewing.location}</dd>
                 </>
               ) : null}
-              <dt className="text-muted-foreground">Submitted</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Submitted" el="Υποβλήθηκε" compact /></dt>
               <dd>{reviewing.submittedAt}</dd>
               {reviewing.score != null && (
                 <>
-                  <dt className="text-muted-foreground">Score</dt>
+                  <dt className="text-muted-foreground"><BilingualText en="Score" el="Βαθμός" compact /></dt>
                   <dd>{reviewing.score}</dd>
                 </>
               )}
@@ -501,17 +502,17 @@ export default function OrgApplicationsPage() {
                   disabled={reviewing.status === 'rejected'}
                   onClick={() => { onDecide(reviewing, 'rejected'); setReviewing(null); }}
                 >
-                  Reject
+                  <BilingualText en="Reject" el="Απόρριψη" compact />
                 </Button>
                 <Button
                   disabled={reviewing.status === 'accepted'}
                   onClick={() => { onDecide(reviewing, 'accepted'); setReviewing(null); }}
                 >
-                  Accept
+                  <BilingualText en="Accept" el="Αποδοχή" compact />
                 </Button>
               </>
             ) : (
-              <p className="text-xs text-muted-foreground">Sample application - decisions write only to live applications.</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Sample application - decisions write only to live applications." el="Δείγμα αίτησης — οι αποφάσεις γράφονται μόνο σε πραγματικές αιτήσεις." wrap /></p>
             )}
           </DialogFooter>
         </DialogContent>

@@ -31,6 +31,7 @@ import { formatCents, annualSavingsPct } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
 import { LandingNav } from '@/components/layout/LandingNav';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type PlanFeature = {
   name: string;
@@ -207,13 +208,13 @@ export default function PricingPage() {
         <div className="mx-auto max-w-7xl px-6 py-16 text-center">
           <Badge variant="secondary" className="mb-4">
             <Crown className="mr-1.5 icon-sm" />
-            Simple, transparent pricing
+            <BilingualText en="Simple, transparent pricing" el="Απλές, διαφανείς τιμές" compact />
           </Badge>
           <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Choose the plan that fits your journey
+            <BilingualText en="Choose the plan that fits your journey" el="Επιλέξτε το πλάνο που ταιριάζει στη διαδρομή σας" wrap />
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Start free and scale as you grow. All plans include a 14-day free trial.
+            <BilingualText en="Start free and scale as you grow. All plans include a 14-day free trial." el="Ξεκινήστε δωρεάν και μεγαλώστε μαζί μας. Όλα τα πλάνα έχουν δωρεάν δοκιμή 14 ημερών." wrap />
           </p>
 
           {/* Billing toggle */}
@@ -226,7 +227,7 @@ export default function PricingPage() {
                 !annual ? 'bg-background text-foreground' : 'text-muted-foreground',
               )}
             >
-              Monthly
+              <BilingualText en="Monthly" el="Μηνιαία" compact />
             </button>
             <button
               type="button"
@@ -236,7 +237,7 @@ export default function PricingPage() {
                 annual ? 'bg-background text-foreground' : 'text-muted-foreground',
               )}
             >
-              Annual
+              <BilingualText en="Annual" el="Ετήσια" compact />
             </button>
             {annual && (
               <span className="ml-2 pr-2 text-xs text-status-success">
@@ -267,7 +268,7 @@ export default function PricingPage() {
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground shadow-sm">Most Popular</Badge>
+                    <Badge className="bg-primary text-primary-foreground shadow-sm"><BilingualText en="Most Popular" el="Πιο δημοφιλές" compact /></Badge>
                   </div>
                 )}
 
@@ -283,7 +284,7 @@ export default function PricingPage() {
                   {/* Price */}
                   <div className="mb-6">
                     {isEnterprise ? (
-                      <div className="text-3xl font-bold text-foreground">Custom</div>
+                      <div className="text-3xl font-bold text-foreground"><BilingualText en="Custom" el="Κατά περίπτωση" compact /></div>
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-bold text-foreground">${price}</span>
@@ -329,7 +330,7 @@ export default function PricingPage() {
       <div className="border-t border-border/50 bg-secondary/20">
         <div className="mx-auto max-w-7xl px-6 py-16">
           <h2 className="mb-8 text-center font-display text-2xl font-bold text-foreground">
-            Compare all features
+            <BilingualText en="Compare all features" el="Σύγκριση όλων των δυνατοτήτων" compact />
           </h2>
 
           {/* A scroll container that a keyboard user cannot reach is a WCAG 2.1.1
@@ -345,10 +346,10 @@ export default function PricingPage() {
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
                 <tr className="border-b border-border/60">
-                  <th className="py-4 text-left text-sm font-semibold text-foreground">Feature</th>
-                  <th className="py-4 text-center text-sm font-semibold text-foreground">Free</th>
+                  <th className="py-4 text-left text-sm font-semibold text-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
+                  <th className="py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
                   <th className="py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
-                  <th className="py-4 text-center text-sm font-semibold text-foreground">Team</th>
+                  <th className="py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Team" el="Ομάδα" compact /></th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
                 </tr>
               </thead>
@@ -387,7 +388,7 @@ export default function PricingPage() {
       {/* FAQ Section */}
       <div className="mx-auto max-w-4xl px-6 py-16">
         <h2 className="mb-8 text-center font-display text-2xl font-bold text-foreground">
-          Frequently asked questions
+          <BilingualText en="Frequently asked questions" el="Συχνές ερωτήσεις" compact />
         </h2>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -429,20 +430,20 @@ export default function PricingPage() {
       <div className="border-t border-border/50 bg-gradient-to-t from-primary/5 to-transparent">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <h2 className="font-display text-3xl font-bold text-foreground">
-            Ready to accelerate your startup journey?
+            <BilingualText en="Ready to accelerate your startup journey?" el="Έτοιμοι να επιταχύνετε τη διαδρομή της startup σας;" wrap />
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Join thousands of founders, mentors, and investors building meaningful connections.
+            <BilingualText en="Join founders, mentors, and investors building meaningful connections." el="Ελάτε μαζί με ιδρυτές, μέντορες και επενδυτές που χτίζουν ουσιαστικές συνδέσεις." wrap />
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Button size="lg" className="gap-2" asChild>
               <Link href="/register">
-                Start free trial
+                <BilingualText en="Start free trial" el="Έναρξη δωρεάν δοκιμής" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise%20plan">Talk to sales</a>
+              <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise%20plan"><BilingualText en="Talk to sales" el="Μιλήστε με τις πωλήσεις" compact /></a>
             </Button>
           </div>
         </div>

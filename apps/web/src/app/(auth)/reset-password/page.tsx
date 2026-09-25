@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
 import { resetPassword } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -77,10 +78,10 @@ export default function ResetPasswordPage() {
             <Logo size="sm" />
           </Link>
           <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-            Set a new password
+            <BilingualText en="Set a new password" el="Ορίστε νέο κωδικό" compact />
           </h1>
           <p className="text-muted-foreground text-sm">
-            Choose a strong password to secure your account.
+            <BilingualText en="Choose a strong password to secure your account." el="Επιλέξτε ισχυρό κωδικό για την ασφάλεια του λογαριασμού σας." wrap />
           </p>
         </div>
 
@@ -89,9 +90,9 @@ export default function ResetPasswordPage() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg">
               <CheckCircle2 className="icon-lg text-status-success " />
             </div>
-            <h2 className="font-semibold text-foreground">Password updated!</h2>
+            <h2 className="font-semibold text-foreground"><BilingualText en="Password updated!" el="Ο κωδικός ενημερώθηκε!" compact /></h2>
             <p className="text-sm text-muted-foreground">
-              Your password has been reset. Redirecting you to sign in…
+              <BilingualText en="Your password has been reset. Redirecting you to sign in…" el="Ο κωδικός σας επαναφέρθηκε. Μεταφέρεστε στη σύνδεση…" wrap />
             </p>
           </div>
         ) : (
@@ -109,13 +110,13 @@ export default function ResetPasswordPage() {
                   href="/forgot-password"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
-                  Request a new reset link
+                  <BilingualText en="Request a new reset link" el="Ζητήστε νέο σύνδεσμο επαναφοράς" compact />
                 </Link>
               </div>
             ) : (
               <>
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium">New password</label>
+                  <label htmlFor="password" className="text-sm font-medium"><BilingualText en="New password" el="Νέος κωδικός" compact /></label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -158,7 +159,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="confirm" className="text-sm font-medium">Confirm password</label>
+                  <label htmlFor="confirm" className="text-sm font-medium"><BilingualText en="Confirm password" el="Επιβεβαίωση κωδικού" compact /></label>
                   <Input
                     id="confirm"
                     type={showPassword ? 'text' : 'password'}
@@ -170,7 +171,7 @@ export default function ResetPasswordPage() {
                     className={confirm && confirm !== password ? 'border-destructive focus-visible:ring-destructive/30' : undefined}
                   />
                   {confirm && confirm !== password && (
-                    <p className="text-xs text-destructive-accessible">Passwords don&apos;t match</p>
+                    <p className="text-xs text-destructive-accessible"><BilingualText en="Passwords don&apos;t match" el="Οι κωδικοί δεν ταιριάζουν" compact /></p>
                   )}
                 </div>
 
@@ -181,7 +182,7 @@ export default function ResetPasswordPage() {
                   size="lg"
                 >
                   {loading ? (
-                    <><Loader2 className="mr-2 icon-sm animate-spin" />Updating…</>
+                    <><Loader2 className="mr-2 icon-sm animate-spin" /><BilingualText en="Updating…" el="Ενημέρωση…" compact /></>
                   ) : 'Reset password'}
                 </Button>
               </>
@@ -191,7 +192,7 @@ export default function ResetPasswordPage() {
 
         <div className="text-center">
           <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Back to sign in
+            <BilingualText en="Back to sign in" el="Επιστροφή στη σύνδεση" compact />
           </Link>
         </div>
       </div>

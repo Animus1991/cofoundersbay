@@ -38,6 +38,7 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -124,7 +125,7 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium">{member.name}</p>
           {member.status === 'invited' && (
-            <Badge variant="outline" className={cn('text-xs border', STATUS.warning.chip)}>Invited</Badge>
+            <Badge variant="outline" className={cn('text-xs border', STATUS.warning.chip)}><BilingualText en="Invited" el="Προσκλήθηκε" compact /></Badge>
           )}
         </div>
         {member.email ? (
@@ -159,26 +160,26 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
               directory lists cohort members by user id. */}
           {adminHref ? (
             <DropdownMenuItem asChild>
-              <Link href={adminHref}><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</Link>
+              <Link href={adminHref}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Role" el="Επεξεργασία ρόλου" compact /></Link>
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem disabled><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</DropdownMenuItem>
+            <DropdownMenuItem disabled><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Role" el="Επεξεργασία ρόλου" compact /></DropdownMenuItem>
           )}
           {live ? (
             <DropdownMenuItem asChild>
-              <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</Link>
+              <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
+            <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           {adminHref ? (
             <DropdownMenuItem asChild className="text-destructive-accessible">
-              <Link href={adminHref}><UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member</Link>
+              <Link href={adminHref}><UserMinus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact /></Link>
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem disabled className="text-destructive-accessible">
-              <UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member
+              <UserMinus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact />
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -256,7 +257,7 @@ export default function OrgMembersPage() {
           <Button asChild>
             <Link href={`/org/${slug}/admin`}>
               <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
-              Invite Member
+              <BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact />
             </Link>
           </Button>
         ) : (
@@ -310,10 +311,10 @@ export default function OrgMembersPage() {
               <CardHeader className="pb-2">
                 <div className="hidden md:flex items-center gap-4 px-1 text-xs text-muted-foreground font-medium">
                   <div className="w-9 shrink-0" />
-                  <div className="flex-1">Name / Email</div>
-                  <div className="w-28 shrink-0">Role</div>
-                  <div className="hidden lg:block w-44 shrink-0">Title</div>
-                  <div className="hidden sm:block w-28 shrink-0">Joined</div>
+                  <div className="flex-1"><BilingualText en="Name / Email" el="Όνομα / Email" compact /></div>
+                  <div className="w-28 shrink-0"><BilingualText en="Role" el="Ρόλος" compact /></div>
+                  <div className="hidden lg:block w-44 shrink-0"><BilingualText en="Title" el="Τίτλος" compact /></div>
+                  <div className="hidden sm:block w-28 shrink-0"><BilingualText en="Joined" el="Εγγράφηκε" compact /></div>
                   <div className="w-7 shrink-0" />
                 </div>
               </CardHeader>

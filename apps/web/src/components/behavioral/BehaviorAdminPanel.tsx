@@ -25,6 +25,7 @@ import {
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const STATE_LABELS: Record<string, { label: string; color: string }> = {
   newly_onboarded:    { label: 'New Onboard',      color: 'bg-blue-500' },
@@ -62,7 +63,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
 function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; isLoading: boolean }) {
   const theme = useChartTheme();
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (!stats) return <div className="py-8 text-center text-sm text-muted-foreground">No stats yet.</div>;
+  if (!stats) return <div className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No stats yet." el="Δεν υπάρχουν στατιστικά ακόμα." compact /></div>;
 
   const chartData = stats.byKey.map(k => ({
     name: k.key.replace(/_/g, ' '),
@@ -82,7 +83,7 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
 
       {chartData.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">Nudge Performance by Key</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm"><BilingualText en="Nudge Performance by Key" el="Απόδοση υπενθυμίσεων ανά κλειδί" compact /></CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
@@ -131,7 +132,7 @@ function UserClassifyTab() {
           className="flex-1"
         />
         <Button onClick={() => setQueried(userId)} disabled={!userId.trim()}>
-          <Search className="mr-2 icon-sm" /> Classify
+          <Search className="mr-2 icon-sm" /> <BilingualText en="Classify" el="Κατάταξη" compact />
         </Button>
       </div>
 
@@ -165,7 +166,7 @@ function UserClassifyTab() {
       {logsLoading && <Skeleton className="h-32 w-full" />}
       {Array.isArray(logs) && logs.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">Recent Nudge Logs</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm"><BilingualText en="Recent Nudge Logs" el="Πρόσφατες υπενθυμίσεις" compact /></CardTitle></CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
               {logs.map((log) => (
@@ -197,25 +198,25 @@ export function BehaviorAdminPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Brain className="icon-md text-primary-accessible" /> Behavioral AI Optimizer
+            <Brain className="icon-md text-primary-accessible" /> <BilingualText en="Behavioral AI Optimizer" el="Βελτιστοποιητής συμπεριφοράς AI" compact />
           </h2>
           <p className="text-sm text-muted-foreground">
-            Platform-wide nudge performance, user state classification, and fatigue signals.
+            <BilingualText en="Platform-wide nudge performance, user state classification, and fatigue signals." el="Απόδοση υπενθυμίσεων, κατάταξη κατάστασης χρηστών και σήματα κόπωσης σε όλη την πλατφόρμα." wrap />
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
           <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} />
-          Refresh
+          <BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
       <Tabs defaultValue="stats">
         <TabsList>
           <TabsTrigger value="stats" className="gap-2">
-            <TrendingUp className="icon-sm" /> Nudge Stats
+            <TrendingUp className="icon-sm" /> <BilingualText en="Nudge Stats" el="Στατιστικά υπενθυμίσεων" compact />
           </TabsTrigger>
           <TabsTrigger value="classify" className="gap-2">
-            <Search className="icon-sm" /> Classify User
+            <Search className="icon-sm" /> <BilingualText en="Classify User" el="Κατάταξη χρήστη" compact />
           </TabsTrigger>
         </TabsList>
 

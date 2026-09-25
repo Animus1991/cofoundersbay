@@ -43,6 +43,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -191,7 +192,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
             {flag.status === 'rollout' && flag.rolloutPct !== undefined && (
               <div className="mt-3 space-y-1">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Rollout Progress</span>
+                  <span><BilingualText en="Rollout Progress" el="Πρόοδος διάθεσης" compact /></span>
                   <span>{flag.rolloutPct}%</span>
                 </div>
                 <Progress value={flag.rolloutPct} className="h-1.5" />
@@ -203,7 +204,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
                 <Users className="icon-sm" />
                 {flag.affectedUsers?.toLocaleString('en-GB') ?? 0} affected
               </span>
-              <span className="whitespace-nowrap">Updated <RelativeTime date={flag.updatedAt} format={formatRelativeTime} /></span>
+              <span className="whitespace-nowrap"><BilingualText en="Updated" el="Ενημερώθηκε" compact /> <RelativeTime date={flag.updatedAt} format={formatRelativeTime} /></span>
               <span className="min-w-0 truncate">By {flag.createdBy}</span>
             </div>
           </div>
@@ -216,10 +217,10 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
             <DropdownMenuContent align="end">
               {/* None of these four had a handler. The experiments API they
                   map to has PATCH and DELETE (admin.controller.ts). */}
-              <DropdownMenuItem onSelect={() => onEdit(flag, 'details')}><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Flag</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onEdit(flag, 'details')}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Flag" el="Επεξεργασία σημαίας" compact /></DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onEdit(flag, 'rollout')}><Percent className="mr-2 icon-sm" aria-hidden="true" />Set Rollout %</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onCopyKey(flag)}><Copy className="mr-2 icon-sm" aria-hidden="true" />Copy Key</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onCopyKey(flag)}><Copy className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Copy Key" el="Αντιγραφή κλειδιού" compact /></DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete" el="Διαγραφή" compact /></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -453,7 +454,7 @@ export default function AdminFeatureFlagsPage() {
           </TooltipProvider>
           <Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
-            New Flag
+            <BilingualText en="New Flag" el="Νέα σημαία" compact />
           </Button>
         </div>
       }
@@ -496,10 +497,10 @@ export default function AdminFeatureFlagsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">All ({flags.length})</TabsTrigger>
-            <TabsTrigger value="enabled">Enabled</TabsTrigger>
-            <TabsTrigger value="rollout">Rollout</TabsTrigger>
-            <TabsTrigger value="experiment">Experiments</TabsTrigger>
-            <TabsTrigger value="disabled">Disabled</TabsTrigger>
+            <TabsTrigger value="enabled"><BilingualText en="Enabled" el="Ενεργές" compact /></TabsTrigger>
+            <TabsTrigger value="rollout"><BilingualText en="Rollout" el="Σταδιακή διάθεση" compact /></TabsTrigger>
+            <TabsTrigger value="experiment"><BilingualText en="Experiments" el="Πειράματα" compact /></TabsTrigger>
+            <TabsTrigger value="disabled"><BilingualText en="Disabled" el="Ανενεργές" compact /></TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4 space-y-3">
@@ -507,8 +508,8 @@ export default function AdminFeatureFlagsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Zap className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                  <p className="font-medium">No flags found</p>
-                  <p className="text-sm text-muted-foreground mt-1">Try adjusting your search</p>
+                  <p className="font-medium"><BilingualText en="No flags found" el="Δεν βρέθηκαν σημαίες" compact /></p>
+                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact /></p>
                 </CardContent>
               </Card>
             ) : (
@@ -543,7 +544,7 @@ export default function AdminFeatureFlagsPage() {
           >
             {editing?.mode === 'rollout' ? (
               <div className="space-y-1.5">
-                <Label htmlFor="flag-rollout">Rollout (%)</Label>
+                <Label htmlFor="flag-rollout"><BilingualText en="Rollout (%)" el="Διάθεση (%)" compact /></Label>
                 <Input
                   id="flag-rollout"
                   type="number"
@@ -557,17 +558,17 @@ export default function AdminFeatureFlagsPage() {
             ) : (
               <>
                 <div className="space-y-1.5">
-                  <Label htmlFor="flag-name">Name</Label>
+                  <Label htmlFor="flag-name"><BilingualText en="Name" el="Όνομα" compact /></Label>
                   <Input id="flag-name" value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="flag-description">Description</Label>
+                  <Label htmlFor="flag-description"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
                   <Input id="flag-description" value={draft.description} onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))} />
                 </div>
               </>
             )}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setEditing(null)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
               <Button type="submit" disabled={saving || (editing?.mode === 'details' && !draft.name.trim())}>
                 {saving ? 'Saving…' : 'Save'}
               </Button>
@@ -578,28 +579,28 @@ export default function AdminFeatureFlagsPage() {
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>New flag</DialogTitle>
-            <DialogDescription>Created inactive. The key is what code reads, so it cannot change later.</DialogDescription>
+            <DialogTitle><BilingualText en="New flag" el="Νέα σημαία" compact /></DialogTitle>
+            <DialogDescription><BilingualText en="Created inactive. The key is what code reads, so it cannot change later." el="Δημιουργείται ανενεργή. Το κλειδί είναι αυτό που διαβάζει ο κώδικας, οπότε δεν αλλάζει αργότερα." wrap /></DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void createFlag(); }}>
             <div className="space-y-1.5">
-              <Label htmlFor="new-flag-key">Key</Label>
+              <Label htmlFor="new-flag-key"><BilingualText en="Key" el="Κλειδί" compact /></Label>
               <Input id="new-flag-key" value={newFlag.key} onChange={(e) => setNewFlag((f) => ({ ...f, key: e.target.value }))} placeholder="e.g. new_onboarding" required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-flag-name">Name</Label>
+              <Label htmlFor="new-flag-name"><BilingualText en="Name" el="Όνομα" compact /></Label>
               <Input id="new-flag-name" value={newFlag.name} onChange={(e) => setNewFlag((f) => ({ ...f, name: e.target.value }))} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-flag-description">Description</Label>
+              <Label htmlFor="new-flag-description"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
               <Input id="new-flag-description" value={newFlag.description} onChange={(e) => setNewFlag((f) => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-flag-rollout">Rollout (%)</Label>
+              <Label htmlFor="new-flag-rollout"><BilingualText en="Rollout (%)" el="Διάθεση (%)" compact /></Label>
               <Input id="new-flag-rollout" type="number" min={0} max={100} value={newFlag.rollout} onChange={(e) => setNewFlag((f) => ({ ...f, rollout: Number(e.target.value) }))} />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setCreating(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setCreating(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
               <Button type="submit" disabled={saving || !newFlag.key.trim() || !newFlag.name.trim()}>{saving ? 'Creating…' : 'Create flag'}</Button>
             </DialogFooter>
           </form>

@@ -35,10 +35,10 @@ import { qk } from '@/lib/query-keys';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1" size="sm"><CheckCircle2 className="icon-sm" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1" size="sm"><Clock className="icon-sm" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1" size="sm"><XCircle className="icon-sm" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1" size="sm"><XCircle className="icon-sm" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1" size="sm"><CheckCircle2 className="icon-sm" /><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>;
+    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1" size="sm"><Clock className="icon-sm" /><BilingualText en="Pending" el="Σε αναμονή" compact /></Badge>;
+    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1" size="sm"><XCircle className="icon-sm" /><BilingualText en="Failed" el="Απέτυχε" compact /></Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1" size="sm"><XCircle className="icon-sm" /><BilingualText en="Expired" el="Έληξε" compact /></Badge>;
   }
 }
 
@@ -62,14 +62,14 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
       <div className="flex items-start gap-2">
         <Info className="icon-sm text-status-warning mt-0.5 shrink-0" />
         <div>
-          <p className="font-semibold text-foreground">DNS Configuration Required</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay.</p>
+          <p className="font-semibold text-foreground"><BilingualText en="DNS Configuration Required" el="Απαιτείται ρύθμιση DNS" compact /></p>
+          <p className="text-xs text-muted-foreground mt-0.5"><BilingualText en="Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay." el="Προσθέστε αυτές τις εγγραφές στον πάροχο DNS για να επαληθεύσετε την κυριότητα και να δρομολογήσετε την κίνηση στο CoFounderBay." wrap /></p>
         </div>
       </div>
 
       {/* Step 1 — TXT verification */}
       <div className="space-y-1.5">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Step 1 — TXT Verification Record</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Step 1 — TXT Verification Record" el="Βήμα 1 — Εγγραφή TXT επαλήθευσης" compact /></p>
         <div className="rounded-md border border-border/60 bg-background overflow-hidden">
           <table className="w-full text-xs">
             <thead className="bg-muted/40">
@@ -100,7 +100,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
 
       {/* Step 2 — CNAME */}
       <div className="space-y-1.5">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Step 2 — CNAME Record</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Step 2 — CNAME Record" el="Βήμα 2 — Εγγραφή CNAME" compact /></p>
         <div className="rounded-md border border-border/60 bg-background overflow-hidden">
           <table className="w-full text-xs">
             <thead className="bg-muted/40">
@@ -223,13 +223,13 @@ function DomainRow({
                 {domain.domainName}
               </a>
               {domain.isPrimary && (
-                <Badge className="bg-primary/10 text-primary-accessible border-primary/20 text-xs">Primary</Badge>
+                <Badge className="bg-primary/10 text-primary-accessible border-primary/20 text-xs"><BilingualText en="Primary" el="Κύριος" compact /></Badge>
               )}
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs">Active</Badge>
-                : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
+                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
+                : <Badge variant="outline" className="text-xs text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργός" compact /></Badge>}
               {domain.sslStatus === 'active' && (
                 <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs gap-1">
                   <Shield className="h-2.5 w-2.5" />SSL
@@ -269,7 +269,7 @@ function DomainRow({
                 className="gap-1 h-7 text-xs"
               >
                 <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
-                Verify
+                <BilingualText en="Verify" el="Επαλήθευση" compact />
               </Button>
             </>
           )}
@@ -280,7 +280,7 @@ function DomainRow({
               disabled={setPrimary.isPending}
               className="gap-1 h-7 text-xs"
             >
-              <Star className="icon-sm" />Set Primary
+              <Star className="icon-sm" /><BilingualText en="Set Primary" el="Ορισμός ως κύριου" compact />
             </Button>
           )}
           <Button
@@ -353,7 +353,7 @@ export default function TenantDomainsPage() {
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
           <AlertTriangle className="h-10 w-10 text-muted-foreground" />
-          <p className="text-muted-foreground">No organization context. Please select or join an organization first.</p>
+          <p className="text-muted-foreground"><BilingualText en="No organization context. Please select or join an organization first." el="Δεν έχει επιλεγεί οργανισμός. Επιλέξτε ή ενταχθείτε σε έναν πρώτα." wrap /></p>
         </div>
       </AppShell>
     );
@@ -370,19 +370,19 @@ export default function TenantDomainsPage() {
         <div className="grid grid-cols-3 gap-3">
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
-              <p className="text-xs text-muted-foreground">Total Domains</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Total Domains" el="Σύνολο τομέων" compact /></p>
               <p className="text-2xl font-bold mt-0.5">{domains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Active" el="Ενεργός" compact /></p>
               <p className="text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
-              <p className="text-xs text-muted-foreground">Primary Domain</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Primary Domain" el="Κύριος τομέας" compact /></p>
               <p className="text-sm font-medium mt-0.5 truncate">
                 {primaryDomain?.domainName ?? <span className="text-muted-foreground">—</span>}
               </p>
@@ -393,9 +393,9 @@ export default function TenantDomainsPage() {
         {/* Domain list */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Your Domains</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Your Domains" el="Οι τομείς σας" compact /></CardTitle>
             <CardDescription className="text-xs">
-              Members can access your organization through any active domain. Set one as primary for a canonical URL.
+              <BilingualText en="Members can access your organization through any active domain. Set one as primary for a canonical URL." el="Τα μέλη μπαίνουν από οποιονδήποτε ενεργό τομέα. Ορίστε έναν ως κύριο για κανονικό URL." wrap />
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -420,7 +420,7 @@ export default function TenantDomainsPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Globe className="icon-sm text-primary-accessible" />
-              Platform Subdomain
+              <BilingualText en="Platform Subdomain" el="Υποτομέας πλατφόρμας" compact />
             </CardTitle>
             <CardDescription className="text-xs">
               Claim a subdomain on <code className="bg-muted px-1 rounded">cofounderbay.com</code>. Auto-verified, no DNS setup required.
@@ -456,7 +456,7 @@ export default function TenantDomainsPage() {
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Subdomains are instantly active and covered by the platform SSL certificate.
+              <BilingualText en="Subdomains are instantly active and covered by the platform SSL certificate." el="Οι υποτομείς ενεργοποιούνται αμέσως και καλύπτονται από το πιστοποιητικό SSL της πλατφόρμας." wrap />
             </p>
           </CardContent>
         </Card>
@@ -466,7 +466,7 @@ export default function TenantDomainsPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="icon-sm text-primary-accessible" />
-              Custom Domain
+              <BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact />
             </CardTitle>
             <CardDescription className="text-xs">
               Use your own domain like <code className="bg-muted px-1 rounded">founders.youruni.edu</code>. Requires DNS verification.
@@ -498,10 +498,10 @@ export default function TenantDomainsPage() {
             <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1 text-xs text-muted-foreground">
               <p className="font-medium text-foreground">How it works:</p>
               <ol className="list-decimal list-inside space-y-0.5 ml-0.5">
-                <li>Add your domain below — we generate DNS records for you</li>
-                <li>Add those records in your DNS provider (Cloudflare, Route 53, etc.)</li>
-                <li>Click &quot;Verify&quot; after DNS propagation (up to 48h)</li>
-                <li>Once verified, activate and optionally set as primary</li>
+                <li><BilingualText en="Add your domain below — we generate DNS records for you" el="Προσθέστε τον τομέα σας παρακάτω — δημιουργούμε τις εγγραφές DNS για εσάς" wrap /></li>
+                <li><BilingualText en="Add those records in your DNS provider (Cloudflare, Route 53, etc.)" el="Προσθέστε τις εγγραφές στον πάροχο DNS (Cloudflare, Route 53 κ.λπ.)" wrap /></li>
+                <li><BilingualText en="Click &quot;Verify&quot; after DNS propagation (up to 48h)" el="Πατήστε «Επαλήθευση» μετά τη διάδοση του DNS (έως 48 ώρες)" wrap /></li>
+                <li><BilingualText en="Once verified, activate and optionally set as primary" el="Μετά την επαλήθευση, ενεργοποιήστε και προαιρετικά ορίστε ως κύριο" wrap /></li>
               </ol>
             </div>
           </CardContent>

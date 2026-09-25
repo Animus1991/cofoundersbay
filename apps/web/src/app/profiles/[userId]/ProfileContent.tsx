@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
@@ -111,10 +112,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const [connecting, setConnecting] = useState(false);
   const [messaging, setMessaging] = useState(false);
 
-  const viewerId =
-    typeof window !== 'undefined'
-      ? (() => { try { return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null; } catch { return null; } })()
-      : null;
+  // Read after mount, so the server and the first client render agree on
+  // whether this is the reader's own profile.
+  const viewerId = useStoredUser()?.id ?? null;
   const hasToken = useIsAuthenticated();
 
   const { data: profile, isLoading, isError } = useQuery({

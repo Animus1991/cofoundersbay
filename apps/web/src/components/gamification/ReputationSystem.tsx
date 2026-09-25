@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { getMyXP, type GamificationRecentEvent } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface ReputationActivity {
   id: string;
@@ -234,17 +235,17 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="earn">How to Earn</TabsTrigger>
+          <TabsTrigger value="overview"><BilingualText en="Overview" el="Επισκόπηση" compact /></TabsTrigger>
+          <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
+          <TabsTrigger value="earn"><BilingualText en="How to Earn" el="Πώς κερδίζεται" compact /></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           {/* Level Progression */}
           <Card>
             <CardHeader>
-              <CardTitle>Level Progression</CardTitle>
-              <CardDescription>Your journey through the ranks</CardDescription>
+              <CardTitle><BilingualText en="Level Progression" el="Πρόοδος επιπέδων" compact /></CardTitle>
+              <CardDescription><BilingualText en="Your journey through the ranks" el="Η πορεία σας στα επίπεδα" compact /></CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -278,10 +279,10 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                         </div>
                       </div>
                       {isCurrentLevel && (
-                        <Badge variant="default">Current</Badge>
+                        <Badge variant="default"><BilingualText en="Current" el="Τρέχουσα" compact /></Badge>
                       )}
                       {isPastLevel && !isCurrentLevel && (
-                        <Badge variant="outline">Completed</Badge>
+                        <Badge variant="outline"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></Badge>
                       )}
                     </div>
                   );
@@ -294,13 +295,13 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
         <TabsContent value="activity" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest reputation changes</CardDescription>
+              <CardTitle><BilingualText en="Recent Activity" el="Πρόσφατη δραστηριότητα" compact /></CardTitle>
+              <CardDescription><BilingualText en="Your latest reputation changes" el="Οι πιο πρόσφατες αλλαγές φήμης" compact /></CardDescription>
             </CardHeader>
             <CardContent>
               {recentActivities.length === 0 && (
                 <div className="py-8 text-center text-sm text-muted-foreground">
-                  No XP activity yet. Start building to earn your first points.
+                  <BilingualText en="No XP activity yet. Start building to earn your first points." el="Δεν υπάρχει δραστηριότητα XP ακόμα. Ξεκινήστε για να κερδίσετε τους πρώτους πόντους." wrap />
                 </div>
               )}
               <div className="space-y-3">
@@ -349,8 +350,8 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
         <TabsContent value="earn" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Ways to Earn Points</CardTitle>
-              <CardDescription>Complete these actions to increase your reputation</CardDescription>
+              <CardTitle><BilingualText en="Ways to Earn Points" el="Τρόποι να κερδίσετε πόντους" compact /></CardTitle>
+              <CardDescription><BilingualText en="Complete these actions to increase your reputation" el="Ολοκληρώστε αυτές τις ενέργειες για να αυξήσετε τη φήμη σας" wrap /></CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -19,6 +19,7 @@ import { Logo } from '@/components/brand/Logo';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 function deriveProfileFields(profile: PublicProfile) {
   const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
@@ -156,10 +157,10 @@ export default function PublicProfilePage() {
           <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
             <Users className="icon-xl text-muted-foreground" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Profile not found</h2>
-          <p className="text-muted-foreground">This profile doesn&apos;t exist or may have been removed.</p>
+          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" compact /></h2>
+          <p className="text-muted-foreground"><BilingualText en="This profile doesn&apos;t exist or may have been removed." el="Αυτό το προφίλ δεν υπάρχει ή έχει αφαιρεθεί." wrap /></p>
           <Button variant="outline" asChild>
-            <Link href="/discover">Browse Profiles</Link>
+            <Link href="/discover"><BilingualText en="Browse Profiles" el="Περιήγηση προφίλ" compact /></Link>
           </Button>
         </div>
       </div>
@@ -178,10 +179,10 @@ export default function PublicProfilePage() {
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link href="/login">Sign In</Link>
+              <Link href="/login"><BilingualText en="Sign In" el="Σύνδεση" compact /></Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/register">Join Free</Link>
+              <Link href="/register"><BilingualText en="Join Free" el="Εγγραφή δωρεάν" compact /></Link>
             </Button>
           </div>
         </div>
@@ -239,7 +240,7 @@ export default function PublicProfilePage() {
                     {isAvailable && (
                       <Badge className="bg-status-success-bg text-status-success border-status-success-border">
                         <Zap className="icon-sm mr-1" />
-                        Open to Opportunities
+                        <BilingualText en="Open to Opportunities" el="Ανοιχτός/ή σε ευκαιρίες" compact />
                       </Badge>
                     )}
 
@@ -247,13 +248,13 @@ export default function PublicProfilePage() {
                       <Button className="gap-2" asChild>
                         <Link href={`/register?action=message&user=${username}`}>
                           <MessageSquare className="icon-sm" />
-                          Message
+                          <BilingualText en="Message" el="Μήνυμα" compact />
                         </Link>
                       </Button>
                       <Button variant="outline" className="gap-2" asChild>
                         <Link href={`/register?action=connect&user=${username}`}>
                           <UserPlus className="icon-sm" />
-                          Connect
+                          <BilingualText en="Connect" el="Σύνδεση" compact />
                         </Link>
                       </Button>
                       {/* Had no handler. */}
@@ -278,7 +279,7 @@ export default function PublicProfilePage() {
             {/* About */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">About</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="About" el="Σχετικά" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -295,7 +296,7 @@ export default function PublicProfilePage() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Target className="icon-md text-primary-accessible" />
-                    Looking For
+                    <BilingualText en="Looking For" el="Αναζητά" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -316,7 +317,7 @@ export default function PublicProfilePage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Briefcase className="icon-md" />
-                  Experience
+                  <BilingualText en="Experience" el="Εμπειρία" compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -345,7 +346,7 @@ export default function PublicProfilePage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <GraduationCap className="icon-md" />
-                  Education
+                  <BilingualText en="Education" el="Εκπαίδευση" compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -371,12 +372,12 @@ export default function PublicProfilePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Star className="icon-md text-status-warning" />
-                    Endorsements
+                    <BilingualText en="Endorsements" el="Συστάσεις" compact />
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-1.5 text-xs" asChild>
                     <Link href={`/register?action=endorse&user=${username}`}>
                       <PenLine className="icon-sm" />
-                      Write Endorsement
+                      <BilingualText en="Write Endorsement" el="Γράψτε σύσταση" compact />
                     </Link>
                   </Button>
                 </div>
@@ -394,7 +395,7 @@ export default function PublicProfilePage() {
                   <div className="text-center py-8">
                     <Star className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" aria-hidden="true" />
                     <p className="text-sm text-muted-foreground">
-                      No endorsements yet
+                      <BilingualText en="No endorsements yet" el="Δεν υπάρχουν συστάσεις ακόμα" compact />
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Be the first to endorse {firstName}
@@ -430,11 +431,11 @@ export default function PublicProfilePage() {
             {/* Skills */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Skills</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {skills.length === 0 && <p className="text-sm text-muted-foreground">No skills listed</p>}
+                  {skills.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText en="No skills listed" el="Δεν έχουν καταχωριστεί δεξιότητες" compact /></p>}
                   {skills.map((skill) => (
                     <Badge key={skill} variant="secondary">{skill}</Badge>
                   ))}
@@ -445,11 +446,11 @@ export default function PublicProfilePage() {
             {/* Interests */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Interests</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Interests" el="Ενδιαφέροντα" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {interests.length === 0 && <p className="text-sm text-muted-foreground">No interests listed</p>}
+                  {interests.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText en="No interests listed" el="Δεν έχουν καταχωριστεί ενδιαφέροντα" compact /></p>}
                   {interests.map((interest) => (
                     <Badge key={interest} variant="outline">{interest}</Badge>
                   ))}
@@ -463,7 +464,7 @@ export default function PublicProfilePage() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Award className="icon-md text-status-warning" />
-                    Achievements
+                    <BilingualText en="Achievements" el="Επιτεύγματα" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -482,11 +483,11 @@ export default function PublicProfilePage() {
             {/* Links */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Links</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Links" el="Σύνδεσμοι" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {!website && !linkedin && !twitter && !github && (
-                  <p className="text-sm text-muted-foreground">No links added</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="No links added" el="Δεν έχουν προστεθεί σύνδεσμοι" compact /></p>
                 )}
                 {website && (
                   <a href={website} target="_blank" rel="noopener noreferrer"
@@ -556,9 +557,9 @@ export default function PublicProfilePage() {
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} CoFounderBay. All rights reserved.</p>
           <div className="flex items-center justify-center gap-4 mt-2">
-            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="/help" className="hover:text-foreground transition-colors">Help</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors"><BilingualText en="Terms" el="Όροι" compact /></Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors"><BilingualText en="Privacy" el="Απόρρητο" compact /></Link>
+            <Link href="/help" className="hover:text-foreground transition-colors"><BilingualText en="Help" el="Βοήθεια" compact /></Link>
           </div>
         </div>
       </footer>

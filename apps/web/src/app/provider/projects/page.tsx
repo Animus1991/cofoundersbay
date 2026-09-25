@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -139,7 +140,7 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
                   {/* All four had no handler. A project is an accepted service
                       inquiry: it can be completed (status 'completed'), and
                       its client messaged; it has no progress field to set. */}
-                  <DropdownMenuItem onSelect={() => onView(project)}>View Details</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onView(project)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
                   <UnavailableMenuItem
                     en="Update Progress"
                     el="Ενημέρωση προόδου"
@@ -148,16 +149,16 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
                   />
                   {project.clientId ? (
                     <DropdownMenuItem asChild>
-                      <Link href={`/messages?to=${project.clientId}`}>Message Client</Link>
+                      <Link href={`/messages?to=${project.clientId}`}><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></Link>
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem disabled>Message Client</DropdownMenuItem>
+                    <DropdownMenuItem disabled><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></DropdownMenuItem>
                   )}
                   <DropdownMenuItem
                     disabled={!onComplete || project.status === 'completed'}
                     onSelect={() => onComplete?.(project)}
                   >
-                    Mark Complete
+                    <BilingualText en="Mark Complete" el="Σήμανση ως ολοκληρωμένο" compact />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -169,7 +170,7 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
 
             <div className="mt-3">
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Progress</span>
+                <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                 <span className="font-medium">{project.progress}%</span>
               </div>
               <Progress value={project.progress} className="h-2" />
@@ -193,16 +194,16 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
                 <Button size="sm" variant="outline" asChild>
                   <Link href={`/messages?to=${project.clientId}`}>
                     <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                    Message
+                    <BilingualText en="Message" el="Μήνυμα" compact />
                   </Link>
                 </Button>
               ) : (
                 <Button size="sm" variant="outline" disabled>
                   <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                  Message
+                  <BilingualText en="Message" el="Μήνυμα" compact />
                 </Button>
               )}
-              <Button size="sm" disabled title="Projects do not track progress yet">Update</Button>
+              <Button size="sm" disabled title="Projects do not track progress yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
             </div>
           </div>
         </div>
@@ -378,13 +379,13 @@ export default function ProviderProjectsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="active">
-              Active <Badge variant="secondary" className="ml-1">{counts.active}</Badge>
+              <BilingualText en="Active" el="Ενεργά" compact /> <Badge variant="secondary" className="ml-1">{counts.active}</Badge>
             </TabsTrigger>
             <TabsTrigger value="on_hold">
-              On Hold <Badge variant="secondary" className="ml-1">{counts.on_hold}</Badge>
+              <BilingualText en="On Hold" el="Σε αναμονή" compact /> <Badge variant="secondary" className="ml-1">{counts.on_hold}</Badge>
             </TabsTrigger>
             <TabsTrigger value="completed">
-              Completed <Badge variant="secondary" className="ml-1">{counts.completed}</Badge>
+              <BilingualText en="Completed" el="Ολοκληρωμένες" compact /> <Badge variant="secondary" className="ml-1">{counts.completed}</Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -396,7 +397,7 @@ export default function ProviderProjectsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No projects found</h3>
+                  <h3 className="font-medium"><BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     No {activeTab.replace('_', ' ')} projects
                   </p>
@@ -414,13 +415,13 @@ export default function ProviderProjectsPage() {
           </DialogHeader>
           {viewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
               <dd className="capitalize">{viewing.status.replace('_', ' ')}</dd>
-              <dt className="text-muted-foreground">Agreed price</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Agreed price" el="Συμφωνημένη τιμή" compact /></dt>
               <dd>{viewing.amount || '\u2014'}</dd>
-              <dt className="text-muted-foreground">Started</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Started" el="Έναρξη" compact /></dt>
               <dd><RelativeTime date={viewing.startDate} format={formatRelativeTime} /></dd>
-              <dt className="text-muted-foreground">Last update</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Last update" el="Τελευταία ενημέρωση" compact /></dt>
               <dd><RelativeTime date={viewing.lastUpdate} format={formatRelativeTime} /></dd>
             </dl>
           )}

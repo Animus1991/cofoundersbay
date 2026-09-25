@@ -31,6 +31,7 @@ import {
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
@@ -97,7 +98,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
         className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto"
       >
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 id="automation-rule-title" className="text-lg font-semibold">Create Automation Rule</h2>
+          <h2 id="automation-rule-title" className="text-lg font-semibold"><BilingualText en="Create Automation Rule" el="Δημιουργία κανόνα αυτοματισμού" compact /></h2>
           <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
@@ -106,11 +107,11 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
             <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this rule do?" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Trigger</label>
+            <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
@@ -120,7 +121,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Type</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
@@ -130,7 +131,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Params (JSON)</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
             <textarea
               value={actionParamsRaw}
               onChange={e => { setActionParamsRaw(e.target.value); setParamsError(''); }}
@@ -145,17 +146,17 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Delay (seconds)</label>
+              <label className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
               <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Priority (lower = first)</label>
+              <label className="text-sm font-medium"><BilingualText en="Priority (lower = first)" el="Προτεραιότητα (μικρότερη = πρώτα)" compact /></label>
               <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
             </div>
           </div>
         </div>
         <div className="p-5 border-t flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={() => create.mutate()} disabled={create.isPending || !name.trim()}>
             {create.isPending ? 'Creating…' : 'Create Rule'}
           </Button>
@@ -197,7 +198,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
       <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Edit Rule</h2>
+          <h2 className="text-lg font-semibold"><BilingualText en="Edit Rule" el="Επεξεργασία κανόνα" compact /></h2>
           <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
@@ -206,11 +207,11 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             <Input value={name} onChange={e => setName(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
             <Input value={description} onChange={e => setDescription(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Trigger</label>
+            <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
@@ -220,7 +221,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Type</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
@@ -230,7 +231,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Params (JSON)</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
             <textarea
               value={actionParamsRaw}
               onChange={e => setActionParamsRaw(e.target.value)}
@@ -240,17 +241,17 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Delay (seconds)</label>
+              <label className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
               <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Priority</label>
+              <label className="text-sm font-medium"><BilingualText en="Priority" el="Προτεραιότητα" compact /></label>
               <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
             </div>
           </div>
         </div>
         <div className="p-5 border-t flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim()}>
             {save.isPending ? 'Saving…' : 'Save Changes'}
           </Button>
@@ -313,11 +314,11 @@ function LogPanel({ executionId }: { executionId: string }) {
     enabled: !!executionId,
   });
 
-  if (isLoading) return <p className="text-xs text-muted-foreground animate-pulse">Loading logs…</p>;
+  if (isLoading) return <p className="text-xs text-muted-foreground animate-pulse"><BilingualText en="Loading logs…" el="Φόρτωση αρχείου…" compact /></p>;
 
   return (
     <div className="space-y-1 max-h-48 overflow-y-auto font-mono text-xs">
-      {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
+      {logs.length === 0 && <p className="text-muted-foreground"><BilingualText en="No logs" el="Δεν υπάρχουν εγγραφές" compact /></p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
           {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-accessible mt-0.5 shrink-0" />}
@@ -425,7 +426,7 @@ export default function AutomationsPage() {
       actions={
         <>
           <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
-            <Plus className="icon-sm" />New Rule
+            <Plus className="icon-sm" /><BilingualText en="New Rule" el="Νέος κανόνας" compact />
           </Button>
         </>
       }
@@ -482,11 +483,11 @@ export default function AutomationsPage() {
         {/* Rules tab */}
         {activeTab === 'rules' && (
           <div className="space-y-3">
-            {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading rules…</p>}
+            {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse"><BilingualText en="Loading rules…" el="Φόρτωση κανόνων…" compact /></p>}
             {!rulesLoading && rules.length === 0 && (
               <Card className="p-8 text-center">
                 <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">No automation rules defined yet.</p>
+                <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact /></p>
               </Card>
             )}
             {rules.map(rule => (
@@ -500,7 +501,7 @@ export default function AutomationsPage() {
                         {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
                       </Badge>
                       {rule.tenantId && (
-                        <Badge variant="secondary" className="text-xs">Tenant</Badge>
+                        <Badge variant="secondary" className="text-xs"><BilingualText en="Tenant" el="Οργανισμός" compact /></Badge>
                       )}
                     </div>
                     {rule.description && (
@@ -587,11 +588,11 @@ export default function AutomationsPage() {
         {/* Executions tab */}
         {activeTab === 'executions' && (
           <div className="space-y-2">
-            {execLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading executions…</p>}
+            {execLoading && <p className="text-muted-foreground text-sm animate-pulse"><BilingualText en="Loading executions…" el="Φόρτωση εκτελέσεων…" compact /></p>}
             {!execLoading && executions.length === 0 && (
               <Card className="p-8 text-center">
                 <Activity className="icon-xl text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">No executions yet.</p>
+                <p className="text-muted-foreground text-sm"><BilingualText en="No executions yet." el="Δεν υπάρχουν εκτελέσεις ακόμα." compact /></p>
               </Card>
             )}
             {executions.map(exec => (

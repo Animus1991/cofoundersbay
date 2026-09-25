@@ -2,7 +2,7 @@
 
 import { mergeNodeMetadata } from './canvas/canvas-geometry';
 import { DEMO_CRITERIA } from './readiness-demo';
-import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
+import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_EARNINGS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 import { previewOrgApi } from './demo/org-api';
 import { ORG, ORG_MENTORS, ORG_SLUG } from './demo/org-world';
 
@@ -425,6 +425,8 @@ const PEOPLE = [
     matchReasons: ['Stage fit'],
     lookingFor: 'deal flow',
     availability: 'flexible',
+    // The API filters `investmentStages` on the role payload's `stages`.
+    investmentStages: ['pre-seed', 'seed'],
     lastSeenSecondsAgo: null,
     joinedAt: '2026-09-01T09:00:00.000Z',
   },
@@ -1281,6 +1283,43 @@ function previewMentorSideSessions() {
       createdAt: previewIsoInDays(-7, 9),
     }));
 }
+/**
+ * The sessions each mentorship has already held - as many as its
+ * `totalSessions` says (4 + 3 + 2 + 6 = the 15 the mentor dashboard counts),
+ * the most recent carrying the topics /mentor/earnings bills for.
+ */
+function previewMentorSidePastSessions() {
+  return previewMentorSideRelationships().flatMap((r, ri) => {
+    const billed = MENTOR_DEMO_EARNINGS.filter((e) => e.menteeId === r.menteeId).sort((a, b) => a.ago - b.ago);
+    const first = r.mentee.displayName.split(' ')[0];
+    const lastDay = r.status === 'completed' ? 60 : 2 + ri * 2;
+    return Array.from({ length: r.totalSessions }, (_, k) => {
+      const bill = billed[k];
+      const ago = bill?.ago ?? lastDay + k * 12;
+      const duration = bill?.duration ?? 45;
+      return {
+        id: `preview-msess-${r.menteeId}-past-${k + 1}`,
+        relationshipId: r.id,
+        title: bill?.topic ?? `${r.focusAreas[k % Math.max(1, r.focusAreas.length)] ?? 'Check-in'} with ${first}`,
+        description: null,
+        scheduledAt: previewIsoInDays(-ago, 10 + (k % 3) * 2),
+        duration,
+        timezone: 'Europe/Athens',
+        meetingType: 'video' as const,
+        meetingUrl: null,
+        meetingLocation: null,
+        status: 'completed' as const,
+        agenda: null,
+        mentorNotes: null,
+        menteeNotes: null,
+        actionItems: [] as Record<string, unknown>[],
+        mentorRating: null,
+        menteeRating: null,
+        createdAt: previewIsoInDays(-ago - 7, 9),
+      };
+    });
+  });
+}
 /** Two founders waiting for an answer, and the request that became Sofia's mentorship. */
 function previewMentorRequests() {
   const req = (id: string, who: { id: string; name: string; headline: string }, status: 'pending' | 'accepted', days: number, message: string, focusAreas: string[]) => ({
@@ -1824,6 +1863,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     // `roles` narrows the directory the way the API does: /mentoring asks for
     // mentors and was shown every founder in the fixtures as one.
     const roles = (params.get('roles') ?? '').split(',').filter(Boolean);
+    const investmentStages = (params.get('investmentStages') ?? '').split(',').filter(Boolean);
     // The organisation's other mentors join the directory when mentors are
     // asked for, so /mentoring lists the coaches /org/mentors already shows.
     const orgMentorHits = ORG_MENTORS.filter((m) => m.id !== ME_ID && !PEOPLE.some((p) => p.userId === m.id)).map((m) => ({
@@ -1851,7 +1891,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       const qOk = !q || q.split(/\s+/).every((token) => blob.includes(token) || p.location.toLowerCase().includes(token));
       const locOk = !location || p.location.toLowerCase().includes(location) || blob.includes(location);
       const roleOk = !roles.length || roles.includes(p.role);
-      return qOk && locOk && roleOk;
+      const stages: readonly string[] = 'investmentStages' in p && Array.isArray(p.investmentStages) ? p.investmentStages : [];
+      const stageOk = !investmentStages.length || investmentStages.some((st) => stages.includes(st));
+      return qOk && locOk && roleOk && stageOk;
     });
     const peopleHits = people.map((p) => ({
       id: p.userId,
@@ -3013,7 +3055,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       sessions:
         mentorshipSessionsMatch[1] === PREVIEW_COACHING_REL_ID
           ? previewMentorshipSessions()
-          : previewMentorSideSessions().filter((x) => x.relationshipId === mentorshipSessionsMatch[1]),
+          : [...previewMentorSideSessions(), ...previewMentorSidePastSessions()].filter((x) => x.relationshipId === mentorshipSessionsMatch[1]),
     };
   }
   if (pathname === '/api/mentorship/sessions/upcoming') {

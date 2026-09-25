@@ -2654,6 +2654,13 @@ export type EndorsementItem = {
     headline: string | null;
   };
   toUserId: string;
+  /** On the giver's list (`getGivenEndorsements`), the person it was written for. */
+  toUser?: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
   skill: string | null;
   content: string;
   relationship: string | null;
@@ -2679,6 +2686,11 @@ export async function getEndorsementsForUser(
 
 export async function getPendingEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
   return apiRequest('/api/endorsements/pending');
+}
+
+/** What the signed-in user has written for others, approved or still waiting. */
+export async function getGivenEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
+  return apiRequest('/api/endorsements/given');
 }
 
 export async function getEndorsementStats(): Promise<{ stats: EndorsementStats }> {
@@ -4120,7 +4132,10 @@ export async function getSSOAuthEvents(params?: { tenantId?: string; eventType?:
 
 /** List identity providers for a tenant (admin) */
 export async function listSSOProviders(tenantId: string): Promise<IdentityProviderItem[]> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/providers`);
+  // An envelope or an error body is not a list: /tenant/sso called
+  // `providers.filter` on one and fell into its error boundary.
+  const res = await apiRequest<IdentityProviderItem[] | { providers?: IdentityProviderItem[] }>(`/api/sso/tenants/${tenantId}/providers`);
+  return Array.isArray(res) ? res : Array.isArray(res?.providers) ? res.providers : [];
 }
 
 /** Create identity provider for a tenant (admin) */
@@ -4155,7 +4170,16 @@ export async function deleteSSOProvider(providerId: string): Promise<void> {
 
 /** Get SSO config for a tenant (admin) */
 export async function getTenantSSOConfig(tenantId: string): Promise<TenantSSOConfig | null> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/config`);
+  const res = await apiRequest<TenantSSOConfig | { config?: TenantSSOConfig } | null>(`/api/sso/tenants/${tenantId}/config`);
+  const cfg = res && 'ssoMode' in res ? res : res && 'config' in res ? res.config ?? null : null;
+  // No mode means no configuration row, not a configuration with empty fields.
+  return cfg && typeof cfg.ssoMode === 'string'
+    ? {
+        ...cfg,
+        allowedDomains: Array.isArray(cfg.allowedDomains) ? cfg.allowedDomains : [],
+        roleMappingRules: Array.isArray(cfg.roleMappingRules) ? cfg.roleMappingRules : [],
+      }
+    : null;
 }
 
 /** Upsert SSO config for a tenant (admin) */
@@ -4169,6 +4193,8 @@ export async function upsertTenantSSOConfig(tenantId: string, data: {
   allowPasswordFallback?: boolean;
   postLoginRedirect?: string;
   sessionDurationHours?: number;
+  /** Claim → role rules applied at SSO sign-in; the API stores them as given. */
+  roleMappingRules?: Array<{ claim: string; value: string; role: string }>;
 }): Promise<TenantSSOConfig> {
   return apiRequest(`/api/sso/tenants/${tenantId}/config`, { method: 'POST', body: JSON.stringify(data) });
 }
@@ -4186,7 +4212,8 @@ export type SSODomainMapping = {
 };
 
 export async function listSSODomainMappings(tenantId: string): Promise<SSODomainMapping[]> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/domains`);
+  const res = await apiRequest<SSODomainMapping[] | { domains?: SSODomainMapping[] }>(`/api/sso/tenants/${tenantId}/domains`);
+  return Array.isArray(res) ? res : Array.isArray(res?.domains) ? res.domains : [];
 }
 
 export async function createSSODomainMapping(tenantId: string, domain: string, autoRedirectToSSO = false): Promise<SSODomainMapping> {
@@ -5362,7 +5389,12 @@ export async function listPrograms(params?: {
 export async function getProgram(id: string): Promise<{ program: ProgramItem }> {
   // `GET /programs/:id` returns the row itself, not an envelope.
   const res = await apiRequest<RawProgram & { program?: RawProgram }>(`/api/programs/${id}`);
-  return { program: toProgramItem(res?.program ?? res) };
+  const raw = res?.program ?? res;
+  // A body without an id is not a programme: normalising it drew an
+  // "Untitled program" with dashes for every field instead of the page's
+  // not-found state.
+  if (!raw || typeof (raw as { id?: unknown }).id !== 'string') throw new Error('Program not found');
+  return { program: toProgramItem(raw) };
 }
 
 /**

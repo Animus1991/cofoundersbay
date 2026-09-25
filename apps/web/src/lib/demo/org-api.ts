@@ -294,6 +294,24 @@ function tenantItem(iso: Iso) {
   };
 }
 
+function ssoProvider(iso: Iso) {
+  return {
+    id: 'idp-aegean-google',
+    tenantId: TENANT_ID,
+    providerType: 'oidc' as const,
+    providerName: 'Aegean Venture Lab Google Workspace',
+    isActive: true,
+    oidcIssuerUrl: 'https://accounts.google.com',
+    oidcClientId: 'aegean-lab.apps.googleusercontent.example',
+    oidcScopes: 'openid email profile',
+    loginButtonText: 'Sign in with Aegean Venture Lab',
+    loginButtonColor: '#2563eb',
+    logoUrl: null,
+    createdAt: iso(-121, 10),
+    updatedAt: iso(-30, 10),
+  };
+}
+
 /** Everyone with a seat in the tenant: staff, the mentor pool, and enrolled founders. */
 function tenantMembers(iso: Iso) {
   const rows = new Map<string, { role: string; joined: number; email: string; name: string; headline: string }>();
@@ -458,6 +476,33 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
         { id: 'tm-demo', tenantId: TENANT_ID, role: 'admin', isActive: true, joinedAt: iso(-400, 10), tenant: { id: t.id, slug: t.slug, name: t.name, displayName: t.displayName, logoUrl: null } },
       ],
     };
+  }
+  // Aegean Venture Lab signs its staff in with Google Workspace; founders and
+  // mentors keep passwords, so SSO is optional and the lab's domain is mapped.
+  if (pathname === `/api/sso/tenants/${TENANT_ID}/providers`) {
+    return [ssoProvider(iso)];
+  }
+  if (pathname === `/api/sso/tenants/${TENANT_ID}/config`) {
+    return {
+      id: 'sso-config-aegean',
+      tenantId: TENANT_ID,
+      identityProviderId: 'idp-aegean-google',
+      ssoMode: 'optional',
+      allowedDomains: ['aegeanlab.example'],
+      enforceEmailDomain: false,
+      autoProvisionEnabled: true,
+      defaultRole: 'member',
+      autoAssignToTenant: true,
+      roleMappingRules: [{ claim: 'groups', value: 'programs-team', role: 'admin' }],
+      postLoginRedirect: '/org/dashboard',
+      requireProfileCompletion: true,
+      sessionDurationHours: 24,
+      allowPasswordFallback: true,
+      identityProvider: ssoProvider(iso),
+    };
+  }
+  if (pathname === `/api/sso/tenants/${TENANT_ID}/domains`) {
+    return [{ id: 'sso-domain-aegean', domain: 'aegeanlab.example', tenantId: TENANT_ID, isVerified: true, autoRedirectToSSO: false, verifiedAt: iso(-120, 10), createdAt: iso(-121, 10) }];
   }
   // The platform's tenant list: the demo platform hosts one organisation, the
   // one every /org and /tenant screen is about.

@@ -79,7 +79,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/dashboard/mentor': 'Επισκόπηση',
   '/dashboard/provider': 'Επισκόπηση',
   '/discover': 'Εξερεύνηση',
-  '/endorsements': 'Συσστάσεις',
+  '/endorsements': 'Συστάσεις',
   '/events': 'Εκδηλώσεις',
   '/expert-reviews': 'Αξιολογήσεις ειδικών',
   '/feed': 'Ροή',

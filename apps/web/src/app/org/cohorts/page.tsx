@@ -57,6 +57,13 @@ import { useDemoData } from '@/contexts/DemoDataContext';
  * coverage are all facts about the startups in a cohort, and the cohort
  * endpoint returns membership counts, not their state.
  */
+/** "7 Sept 2026": the card printed the raw ISO timestamps. */
+function shortDay(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
 function toPageCohort(item: CohortItem): Cohort {
   const now = Date.now();
   const start = item.startDate ? new Date(item.startDate).getTime() : null;
@@ -65,11 +72,13 @@ function toPageCohort(item: CohortItem): Cohort {
     id: item.id,
     name: item.name,
     program: item.description ?? '\u2014',
-    status: !item.isActive ? 'completed' : start != null && start > now ? 'recruiting' : 'active',
+    // A cohort that has not started is recruiting whatever its flag says: the
+    // spring bootcamp, inactive until January, read as "completed".
+    status: start != null && start > now ? 'recruiting' : !item.isActive || (end != null && end < now) ? 'completed' : 'active',
     startups: item._count?.members ?? 0,
-    mentors: 0,
-    startDate: item.startDate ?? '',
-    endDate: item.endDate ?? '',
+    mentors: null,
+    startDate: shortDay(item.startDate),
+    endDate: shortDay(item.endDate),
     // Elapsed share of the cohort's own window — a fact its dates support.
     progress:
       start != null && end != null && end > start
@@ -84,7 +93,8 @@ type Cohort = {
   program: string;
   status: 'recruiting' | 'active' | 'completed';
   startups: number;
-  mentors: number;
+  /** Null for a live cohort: the endpoint counts members, not their roles. */
+  mentors: number | null;
   startDate: string;
   endDate: string;
   progress: number;
@@ -115,12 +125,14 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
-                {cohort.startups} startups
+                {cohort.startups} {cohort.mentors == null ? 'members' : 'startups'}
               </span>
-              <span className="flex items-center gap-1">
-                <GraduationCap className="icon-sm" aria-hidden="true" />
-                {cohort.mentors} mentors
-              </span>
+              {cohort.mentors != null && (
+                <span className="flex items-center gap-1">
+                  <GraduationCap className="icon-sm" aria-hidden="true" />
+                  {cohort.mentors} mentors
+                </span>
+              )}
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" aria-hidden="true" />
                 {cohort.startDate} - {cohort.endDate}
@@ -227,8 +239,10 @@ export default function OrgCohortsPage() {
   const cohorts: Cohort[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_COHORTS;
 
 
-  const totalStartups = useMemo(() => cohorts.reduce((s, c) => s + c.startups, 0), []);
-  const totalMentors = useMemo(() => cohorts.reduce((s, c) => s + c.mentors, 0), []);
+  // These were memoised with no dependencies, so they kept the counts of the
+  // first render (the loading state) for as long as the page was open.
+  const totalStartups = cohorts.reduce((s, c) => s + c.startups, 0);
+  const totalMentors = cohorts.some((c) => c.mentors == null) ? null : cohorts.reduce((s, c) => s + (c.mentors ?? 0), 0);
 
   const filteredCohorts = cohorts.filter((c) => {
     const matchesSearch =
@@ -281,8 +295,8 @@ export default function OrgCohortsPage() {
           {[
             { label: 'Total Cohorts', value: cohorts.length, icon: Award, tone: 'accent' as const },
             { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
-            { label: 'Total Startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
-            { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, tone: 'accent' as const },
+            { label: totalMentors == null ? 'Cohort memberships' : 'Total Startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
+            { label: 'Total Mentors', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
           ].map(({ label, value, icon: Icon, tone }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">

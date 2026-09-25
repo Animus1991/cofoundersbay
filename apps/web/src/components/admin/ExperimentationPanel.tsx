@@ -14,6 +14,8 @@ import {
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -148,7 +150,7 @@ function ExperimentCard({
         <div className="border-t border-border px-5 py-4 bg-muted">
           {metricsLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <RefreshCw className="icon-sm animate-spin" /> Loading metrics…
+              <RefreshCw className="icon-sm animate-spin" /> <BilingualText en="Loading metrics…" el="Φόρτωση μετρήσεων…" compact />
             </div>
           ) : metrics ? (
             <div className="space-y-4">
@@ -170,13 +172,13 @@ function ExperimentCard({
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">Variant A Config</p>
+                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide"><BilingualText en="Variant A Config" el="Ρύθμιση εκδοχής A" compact /></p>
                   <pre className="bg-white border border-border rounded p-2 text-xs overflow-auto max-h-28 font-mono">
                     {JSON.stringify(exp.variantA, null, 2)}
                   </pre>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">Variant B Config</p>
+                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide"><BilingualText en="Variant B Config" el="Ρύθμιση εκδοχής B" compact /></p>
                   <pre className="bg-white border border-border rounded p-2 text-xs overflow-auto max-h-28 font-mono">
                     {JSON.stringify(exp.variantB, null, 2)}
                   </pre>
@@ -188,7 +190,7 @@ function ExperimentCard({
               onClick={loadMetrics}
               className="text-sm text-status-accent hover:underline"
             >
-              Load metrics
+              <BilingualText en="Load metrics" el="Φόρτωση μετρήσεων" compact />
             </button>
           )}
         </div>
@@ -248,7 +250,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
         tabIndex={-1}
         className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6"
       >
-        <h3 id="new-experiment-title" className="text-lg font-semibold text-foreground mb-4">New Experiment</h3>
+        <h3 id="new-experiment-title" className="text-lg font-semibold text-foreground mb-4"><BilingualText en="New Experiment" el="Νέο πείραμα" compact /></h3>
         <div className="space-y-3">
           {[
             { label: 'Name', key: 'name', placeholder: 'e.g. Higher XP for artifacts' },
@@ -294,7 +296,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
             onClick={onClose}
             className="flex-1 py-2 border border-border rounded-xl text-sm text-muted-foreground hover:bg-muted"
           >
-            Cancel
+            <BilingualText en="Cancel" el="Ακύρωση" compact />
           </button>
           <button
             onClick={() => void submit()}
@@ -370,7 +372,7 @@ function ConfigEditor() {
             onChange={(e) => setCategory(e.target.value)}
             className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
           >
-            <option value="">All categories</option>
+            <option value="">{bilingualInline("All categories", "Όλες οι κατηγορίες")}</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <button aria-label="Refresh" onClick={load} className="text-muted-foreground hover:text-status-accent">
@@ -389,12 +391,12 @@ function ConfigEditor() {
 
       {loading && configs.length === 0 ? (
         <div className="flex items-center justify-center h-32 text-muted-foreground">
-          <RefreshCw className="icon-sm animate-spin mr-2" /> Loading…
+          <RefreshCw className="icon-sm animate-spin mr-2" /> <BilingualText en="Loading…" el="Φόρτωση…" compact />
         </div>
       ) : configs.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
           <Settings className="icon-xl mb-2 opacity-30" />
-          <p className="text-sm">No config keys found. Seed defaults to get started.</p>
+          <p className="text-sm"><BilingualText en="No config keys found. Seed defaults to get started." el="Δεν βρέθηκαν κλειδιά ρυθμίσεων. Φορτώστε τις προεπιλογές για να ξεκινήσετε." wrap /></p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -468,9 +470,9 @@ export function ExperimentationPanel() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Experimentation & Tuning</h2>
+          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Experimentation & Tuning" el="Πειράματα & ρυθμίσεις" compact /></h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            A/B experiments with sticky variant assignment + live config weight tuning.
+            <BilingualText en="A/B experiments with sticky variant assignment + live config weight tuning." el="Πειράματα A/B με σταθερή ανάθεση εκδοχής και ζωντανή ρύθμιση βαρών." wrap />
           </p>
         </div>
       </div>
@@ -510,19 +512,19 @@ export function ExperimentationPanel() {
                 onClick={() => setShowCreate(true)}
                 className="flex items-center gap-1.5 text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                <Plus className="icon-sm" /> New Experiment
+                <Plus className="icon-sm" /> <BilingualText en="New Experiment" el="Νέο πείραμα" compact />
               </button>
             </div>
           </div>
 
           {loading && experiments.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-muted-foreground">
-              <RefreshCw className="icon-md animate-spin mr-2" /> Loading…
+              <RefreshCw className="icon-md animate-spin mr-2" /> <BilingualText en="Loading…" el="Φόρτωση…" compact />
             </div>
           ) : experiments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-muted-foreground border-2 border-dashed border-border rounded-xl">
               <FlaskConical className="w-10 h-10 mb-2 opacity-30" />
-              <p className="text-sm">No experiments yet. Create one to start A/B testing.</p>
+              <p className="text-sm"><BilingualText en="No experiments yet. Create one to start A/B testing." el="Δεν υπάρχουν πειράματα ακόμα. Δημιουργήστε ένα για δοκιμές A/B." wrap /></p>
               <button
                 onClick={() => setShowCreate(true)}
                 className="mt-3 text-sm text-status-accent hover:underline"

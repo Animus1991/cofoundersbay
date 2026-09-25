@@ -28,6 +28,7 @@ import {
   getMyMentorships,
   type MentorshipRelationshipItem,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem }) {
   const mentee = relationship.mentee;
@@ -116,13 +117,13 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                 <Link href={`/messages?to=${relationship.menteeId}`}>
                   <MessageCircle className="icon-sm mr-1" />
-                  Message
+                  <BilingualText en="Message" el="Μήνυμα" compact />
                 </Link>
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                 <Link href={`/mentor/sessions?new=1&mentee=${relationship.menteeId}`}>
                   <Calendar className="icon-sm mr-1" />
-                  Schedule
+                  <BilingualText en="Schedule" el="Προγραμματισμός" compact />
                 </Link>
               </Button>
             </div>
@@ -181,13 +182,13 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium">Failed to load mentees</h3>
+              <h3 className="font-medium"><BilingualText en="Failed to load mentees" el="Δεν ήταν δυνατή η φόρτωση των μαθητευόμενων" compact /></h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
                 <RefreshCw className="icon-sm mr-2" />
-                Try Again
+                <BilingualText en="Try Again" el="Δοκιμάστε ξανά" compact />
               </Button>
             </CardContent>
           </Card>
@@ -204,7 +205,7 @@ export default function MenteesPage() {
         <>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
             <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
-            Refresh
+            <BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
         </>
       }
@@ -219,7 +220,7 @@ export default function MenteesPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{activeRelationships.length}</p>
-                <p className="text-sm text-muted-foreground">Active Mentees</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί μαθητευόμενοι" compact /></p>
               </div>
             </CardContent>
           </Card>
@@ -230,7 +231,7 @@ export default function MenteesPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{completedRelationships.length}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></p>
               </div>
             </CardContent>
           </Card>
@@ -241,7 +242,7 @@ export default function MenteesPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{totalSessions}</p>
-                <p className="text-sm text-muted-foreground">Total Sessions</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
               </div>
             </CardContent>
           </Card>
@@ -262,12 +263,12 @@ export default function MenteesPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No active mentees</h3>
+                <h3 className="font-medium"><BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί μαθητευόμενοι" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Accept mentorship requests to start mentoring
+                  <BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα mentoring για να ξεκινήσετε" wrap />
                 </p>
                 <Button className="mt-4" asChild>
-                  <Link href="/mentor/requests">View Requests</Link>
+                  <Link href="/mentor/requests"><BilingualText en="View Requests" el="Προβολή αιτημάτων" compact /></Link>
                 </Button>
               </CardContent>
             </Card>

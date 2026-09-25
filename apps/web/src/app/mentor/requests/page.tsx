@@ -20,7 +20,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { formatDate } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
@@ -37,14 +39,15 @@ type RequestCardProps = {
   isResponding?: boolean;
 };
 
+const STATUS_LABEL: Record<string, { en: string; el: string }> = {
+  pending: { en: 'Pending', el: 'Σε αναμονή' },
+  accepted: { en: 'Accepted', el: 'Αποδεκτό' },
+  declined: { en: 'Declined', el: 'Απορρίφθηκε' },
+};
+
 function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCardProps) {
   const displayName = request.requester?.displayName || 'Unknown';
-  const initials = displayName
-    .split(' ')
-    .map((n: string) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || '??';
+  const initials = initialsOf(displayName);
 
   const statusColors: Record<string, string> = {
     pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
@@ -52,9 +55,9 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
     declined: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
-  const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
-    day: 'numeric',
-    year: 'numeric' });
+  const formattedDate = formatDate(request.createdAt, 'en', { day: 'numeric', month: 'short', year: 'numeric' });
+  const formattedDateEl = formatDate(request.createdAt, 'el', { day: 'numeric', month: 'short', year: 'numeric' });
+  const statusLabel = STATUS_LABEL[request.status];
 
   return (
     <Card className={cn(
@@ -63,7 +66,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
     )}>
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <Link href={`/p/${request.requesterId}`}>
+          <Link href={`/profiles/${request.requesterId}`} aria-label={`${displayName}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={request.requester?.avatarUrl || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
@@ -73,8 +76,8 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <Link href={`/p/${request.requesterId}`} className="font-medium hover:text-primary-accessible transition-colors">
+              <div className="min-w-0">
+                <Link href={`/profiles/${request.requesterId}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {displayName}
                 </Link>
                 {request.requester?.headline && (
@@ -84,10 +87,10 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                 )}
               </div>
               <Badge variant="outline" className={cn('text-xs', statusColors[request.status])}>
-                {request.status === 'pending' && <Clock className="icon-sm mr-1" />}
-                {request.status === 'accepted' && <CheckCircle2 className="icon-sm mr-1" />}
-                {request.status === 'declined' && <XCircle className="icon-sm mr-1" />}
-                {request.status}
+                {request.status === 'pending' && <Clock className="icon-sm mr-1" aria-hidden="true" />}
+                {request.status === 'accepted' && <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />}
+                {request.status === 'declined' && <XCircle className="icon-sm mr-1" aria-hidden="true" />}
+                {statusLabel ? <BilingualText en={statusLabel.en} el={statusLabel.el} compact /> : request.status}
               </Badge>
             </div>
 
@@ -108,12 +111,14 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
               </div>
             )}
 
-            <div className="flex items-center justify-between mt-3">
+            {/* Wraps: at 390px the date and three buttons were 15px wider
+                than the card, and the page scrolled sideways. */}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs text-muted-foreground">
-                {formattedDate}
+                <BilingualText en={formattedDate} el={formattedDateEl} compact />
               </span>
               {request.status === 'pending' && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     size="sm" 
                     variant="default" 
@@ -122,11 +127,11 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                     disabled={isResponding}
                   >
                     {isResponding ? (
-                      <Loader2 className="icon-sm mr-1 animate-spin" />
+                      <Loader2 className="icon-sm mr-1 animate-spin" aria-hidden="true" />
                     ) : (
-                      <CheckCircle2 className="icon-sm mr-1" />
+                      <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />
                     )}
-                    Accept
+                    <BilingualText en="Accept" el="Αποδοχή" compact />
                   </Button>
                   <Button 
                     size="sm" 
@@ -135,12 +140,12 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
                     onClick={onDecline}
                     disabled={isResponding}
                   >
-                    Decline
+                    <BilingualText en="Decline" el="Απόρριψη" compact />
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 text-xs" asChild>
                     <Link href={`/messages?to=${request.requesterId}`}>
-                      <MessageCircle className="icon-sm mr-1" />
-                      Message
+                      <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
+                      <BilingualText en="Message" el="Μήνυμα" compact />
                     </Link>
                   </Button>
                 </div>
@@ -148,8 +153,8 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
               {request.status === 'accepted' && (
                 <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                   <Link href={`/mentor/sessions?new=1&mentee=${request.requesterId}`}>
-                    <Calendar className="icon-sm mr-1" />
-                    Schedule Session
+                    <Calendar className="icon-sm mr-1" aria-hidden="true" />
+                    <BilingualText en="Schedule a session" el="Προγραμματισμός συνεδρίας" compact />
                   </Link>
                 </Button>
               )}
@@ -231,13 +236,13 @@ export default function MentorRequestsPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium">Failed to load requests</h3>
+              <h3 className="font-medium"><BilingualText en="Requests could not be loaded" el="Δεν ήταν δυνατή η φόρτωση των αιτημάτων" /></h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {error instanceof Error ? error.message : 'An error occurred'}
+                {error instanceof Error ? error.message : <BilingualText en="An error occurred" el="Παρουσιάστηκε σφάλμα" compact />}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="icon-sm mr-2" />
-                Try Again
+                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
               </Button>
             </CardContent>
           </Card>
@@ -251,8 +256,8 @@ export default function MentorRequestsPage() {
       actions={
         <>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
-            Refresh
+            <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} aria-hidden="true" />
+            <BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
         </>
       }
@@ -267,7 +272,7 @@ export default function MentorRequestsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{pendingRequests.length}</p>
-                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Pending" el="Σε αναμονή" compact wrap /></p>
               </div>
             </CardContent>
           </Card>
@@ -278,7 +283,7 @@ export default function MentorRequestsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{acceptedRequests.length}</p>
-                <p className="text-sm text-muted-foreground">Accepted</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτά" compact wrap /></p>
               </div>
             </CardContent>
           </Card>
@@ -289,7 +294,7 @@ export default function MentorRequestsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{declinedRequests.length}</p>
-                <p className="text-sm text-muted-foreground">Declined</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Declined" el="Απορριφθέντα" compact wrap /></p>
               </div>
             </CardContent>
           </Card>
@@ -299,15 +304,15 @@ export default function MentorRequestsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="pending" className="gap-2">
-              Pending
+              <BilingualText en="Pending" el="Σε αναμονή" compact />
               {pendingRequests.length > 0 && (
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {pendingRequests.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="accepted">Accepted</TabsTrigger>
-            <TabsTrigger value="declined">Declined</TabsTrigger>
+            <TabsTrigger value="accepted"><BilingualText en="Accepted" el="Αποδεκτά" compact /></TabsTrigger>
+            <TabsTrigger value="declined"><BilingualText en="Declined" el="Απορριφθέντα" compact /></TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="space-y-3 mt-4">
@@ -329,9 +334,9 @@ export default function MentorRequestsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <UserPlus className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No pending requests</h3>
+                  <h3 className="font-medium"><BilingualText en="No pending requests" el="Δεν υπάρχουν αιτήματα σε αναμονή" /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    New mentorship requests will appear here
+                    <BilingualText en="New mentorship requests will appear here." el="Τα νέα αιτήματα mentoring θα εμφανίζονται εδώ." wrap />
                   </p>
                 </CardContent>
               </Card>
@@ -351,9 +356,9 @@ export default function MentorRequestsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No accepted requests</h3>
+                  <h3 className="font-medium"><BilingualText en="No accepted requests" el="Δεν υπάρχουν αποδεκτά αιτήματα" /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Accepted requests will appear here
+                    <BilingualText en="Accepted requests will appear here." el="Τα αποδεκτά αιτήματα θα εμφανίζονται εδώ." wrap />
                   </p>
                 </CardContent>
               </Card>
@@ -373,9 +378,9 @@ export default function MentorRequestsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <XCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No declined requests</h3>
+                  <h3 className="font-medium"><BilingualText en="No declined requests" el="Δεν υπάρχουν απορριφθέντα αιτήματα" /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Declined requests will appear here
+                    <BilingualText en="Declined requests will appear here." el="Τα απορριφθέντα αιτήματα θα εμφανίζονται εδώ." wrap />
                   </p>
                 </CardContent>
               </Card>

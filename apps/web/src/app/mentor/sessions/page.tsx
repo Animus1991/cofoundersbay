@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/toast';
 import { ScheduleSessionDialog, RescheduleSessionDialog, SessionNotesDialog } from '@/components/mentoring/SessionDialogs';
@@ -29,10 +29,13 @@ import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
+  getMentorshipSessions,
+  getMyMentorships,
   getUpcomingMentorshipSessions,
   updateMentorshipSession,
   type MentorshipSessionItem,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type SessionActions = {
   onReschedule: (s: MentorshipSessionItem) => void;
@@ -113,16 +116,16 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
                   <Button size="sm" variant="default" className="h-7 text-xs" asChild>
                     <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
                       <Video className="icon-sm mr-1" />
-                      Join Meeting
+                      <BilingualText en="Join Meeting" el="Συμμετοχή στη συνάντηση" compact />
                     </a>
                   </Button>
                 )}
                 {/* Both had no handler. */}
                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onReschedule(session)}>
-                  Reschedule
+                  <BilingualText en="Reschedule" el="Αλλαγή ώρας" compact />
                 </Button>
                 <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-accessible" onClick={() => onCancel(session)}>
-                  Cancel
+                  <BilingualText en="Cancel" el="Ακύρωση" compact />
                 </Button>
               </div>
             )}
@@ -130,7 +133,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
             {session.status === 'completed' && (
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onNotes(session)}>
-                  View Notes
+                  <BilingualText en="View Notes" el="Προβολή σημειώσεων" compact />
                 </Button>
               </div>
             )}
@@ -150,6 +153,23 @@ export default function MentorSessionsPage() {
     queryFn: getUpcomingMentorshipSessions,
     enabled: hasSession && mounted,
   });
+  // The upcoming endpoint returns only what is still scheduled, so "Past"
+  // and "Completed" could never show anything. Each mentorship's own session
+  // list carries its history; the mentees page reads the same relationships.
+  const { data: relData } = useQuery({
+    queryKey: qk('mentorships', 'mentor'),
+    queryFn: () => getMyMentorships('mentor'),
+    enabled: hasSession && mounted,
+  });
+  const historyQueries = useQueries({
+    queries: (relData?.relationships ?? []).map((r) => ({
+      queryKey: qk('mentorships', 'sessions', r.id),
+      queryFn: () => getMentorshipSessions(r.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+  const history = historyQueries.flatMap((q) => q.data?.sessions ?? []);
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const { success, error: toastError } = useToast();
@@ -157,7 +177,10 @@ export default function MentorSessionsPage() {
   const [menteeHint, setMenteeHint] = useState<string | null>(null);
   const [rescheduling, setRescheduling] = useState<MentorshipSessionItem | null>(null);
   const [notesFor, setNotesFor] = useState<MentorshipSessionItem | null>(null);
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions-upcoming') });
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions-upcoming') });
+    void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions') });
+  };
 
   // /mentor/sessions?new=1&mentee=<id> - how the mentees page asks for a new
   // session with a particular mentee. Read after mount so SSR and hydration
@@ -207,9 +230,11 @@ export default function MentorSessionsPage() {
     </>
   );
 
-  const sessions = data?.sessions || [];
-  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled');
-  const pastSessions = sessions.filter((s) => s.status !== 'scheduled');
+  const byId = new Map<string, MentorshipSessionItem>();
+  for (const x of [...(data?.sessions ?? []), ...history]) byId.set(x.id, x);
+  const sessions = [...byId.values()];
+  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled').sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+  const pastSessions = sessions.filter((s) => s.status !== 'scheduled').sort((a, b) => b.scheduledAt.localeCompare(a.scheduledAt));
 
   // Offered to the assistant, above the loading and error returns: the tab,
   // Schedule, and each session's reschedule, notes and cancel (which asks).
@@ -252,13 +277,13 @@ export default function MentorSessionsPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium">Failed to load sessions</h3>
+              <h3 className="font-medium"><BilingualText en="Failed to load sessions" el="Δεν ήταν δυνατή η φόρτωση των συνεδριών" compact /></h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
                 <RefreshCw className="icon-sm mr-2" />
-                Try Again
+                <BilingualText en="Try Again" el="Δοκιμάστε ξανά" compact />
               </Button>
             </CardContent>
           </Card>
@@ -276,11 +301,11 @@ export default function MentorSessionsPage() {
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
               <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
-              Refresh
+              <BilingualText en="Refresh" el="Ανανέωση" compact />
             </Button>
             <Button onClick={() => setScheduleOpen(true)}>
               <Plus className="mr-2 icon-sm" aria-hidden="true" />
-              Schedule Session
+              <BilingualText en="Schedule Session" el="Προγραμματισμός συνεδρίας" compact />
             </Button>
           </div>
         </>
@@ -296,7 +321,7 @@ export default function MentorSessionsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{upcomingSessions.length}</p>
-                <p className="text-sm text-muted-foreground">Upcoming</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
               </div>
             </CardContent>
           </Card>
@@ -309,7 +334,7 @@ export default function MentorSessionsPage() {
                 <p className="text-xl font-bold">
                   {sessions.filter((s) => s.status === 'completed').length}
                 </p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
               </div>
             </CardContent>
           </Card>
@@ -320,7 +345,7 @@ export default function MentorSessionsPage() {
               </div>
               <div>
                 <p className="text-xl font-bold">{totalDuration} min</p>
-                <p className="text-sm text-muted-foreground">Total Time</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Total Time" el="Συνολικός χρόνος" compact /></p>
               </div>
             </CardContent>
           </Card>
@@ -337,7 +362,7 @@ export default function MentorSessionsPage() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="past">Past Sessions</TabsTrigger>
+            <TabsTrigger value="past"><BilingualText en="Past Sessions" el="Παρελθούσες συνεδρίες" compact /></TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-3 mt-4">
@@ -353,13 +378,13 @@ export default function MentorSessionsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No upcoming sessions</h3>
+                  <h3 className="font-medium"><BilingualText en="No upcoming sessions" el="Δεν υπάρχουν επερχόμενες συνεδρίες" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Schedule a session with one of your mentees
+                    <BilingualText en="Schedule a session with one of your mentees" el="Προγραμματίστε συνεδρία με έναν μαθητευόμενο" wrap />
                   </p>
                   <Button className="mt-4" onClick={() => setScheduleOpen(true)}>
                     <Plus className="mr-2 icon-sm" aria-hidden="true" />
-                    Schedule Session
+                    <BilingualText en="Schedule Session" el="Προγραμματισμός συνεδρίας" compact />
                   </Button>
                 </CardContent>
               </Card>
@@ -379,9 +404,9 @@ export default function MentorSessionsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Clock className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium">No past sessions</h3>
+                  <h3 className="font-medium"><BilingualText en="No past sessions" el="Δεν υπάρχουν παρελθούσες συνεδρίες" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Completed sessions will appear here
+                    <BilingualText en="Completed sessions will appear here" el="Οι ολοκληρωμένες συνεδρίες θα εμφανίζονται εδώ" wrap />
                   </p>
                 </CardContent>
               </Card>

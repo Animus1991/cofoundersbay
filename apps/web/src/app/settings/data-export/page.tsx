@@ -17,6 +17,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type ExportStatus = 'idle' | 'processing' | 'ready' | 'expired';
 
@@ -159,7 +160,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <p className="font-medium text-foreground">Data Export</p>
+                <p className="font-medium text-foreground"><BilingualText en="Data Export" el="Εξαγωγή δεδομένων" compact /></p>
                 <Badge
                   variant="outline"
                   className={cn('text-xs', config.color)}
@@ -191,7 +192,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
             <Button asChild size="sm" className="gap-2">
               <a href={exportReq.downloadUrl} download>
                 <Download className="icon-sm" aria-hidden="true" />
-                Download
+                <BilingualText en="Download" el="Λήψη" compact />
               </a>
             </Button>
           )}
@@ -201,7 +202,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
           <div className="mt-4">
             <Progress value={33} className="h-1" />
             <p className="text-xs text-muted-foreground mt-2">
-              This may take a few minutes depending on the amount of data...
+              <BilingualText en="This may take a few minutes depending on the amount of data..." el="Μπορεί να πάρει λίγα λεπτά ανάλογα με τον όγκο των δεδομένων…" wrap />
             </p>
           </div>
         )}
@@ -295,7 +296,7 @@ export default function DataExportPage() {
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="icon-sm" />
-          Back to Settings
+          <BilingualText en="Back to Settings" el="Επιστροφή στις ρυθμίσεις" compact />
         </Link>
 
 
@@ -305,7 +306,7 @@ export default function DataExportPage() {
             <div className="flex items-start gap-3">
               <Shield className="icon-md text-primary-accessible shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-foreground mb-1">Your Data Rights</p>
+                <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact /></p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Under GDPR and similar regulations, you have the right to receive a copy of your personal data 
                   in a portable format. This export includes all data we store about you.
@@ -318,7 +319,7 @@ export default function DataExportPage() {
         {/* Previous Exports */}
         {exports.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-sm font-semibold text-foreground mb-3">Previous Exports</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3"><BilingualText en="Previous Exports" el="Προηγούμενες εξαγωγές" compact /></h2>
             <div className="space-y-3">
               {exports.map((exportReq) => (
                 <ExportCard key={exportReq.id} exportReq={exportReq} />
@@ -330,9 +331,9 @@ export default function DataExportPage() {
         {/* New Export Request */}
         <Card className="shadow-sm border-border/50">
           <CardHeader>
-            <CardTitle className="text-base">Request New Export</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Request New Export" el="Αίτημα νέας εξαγωγής" compact /></CardTitle>
             <CardDescription>
-              Select the data you want to include in your export
+              <BilingualText en="Select the data you want to include in your export" el="Επιλέξτε τα δεδομένα που θα περιλαμβάνει η εξαγωγή" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -404,7 +405,7 @@ export default function DataExportPage() {
             {hasActiveExport && (
               <p className="text-xs text-status-warning mt-3 flex items-center gap-1">
                 <AlertTriangle className="icon-sm" />
-                Please wait for the current export to complete before requesting a new one.
+                <BilingualText en="Please wait for the current export to complete before requesting a new one." el="Περιμένετε να ολοκληρωθεί η τρέχουσα εξαγωγή πριν ζητήσετε νέα." wrap />
               </p>
             )}
           </CardContent>
@@ -415,14 +416,14 @@ export default function DataExportPage() {
           <div className="flex items-start gap-3">
             <Trash2 className="icon-md text-destructive-accessible shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-foreground mb-1">Delete Your Account</p>
+              <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Delete Your Account" el="Διαγραφή του λογαριασμού σας" compact /></p>
               <p className="text-xs text-muted-foreground mb-3">
                 If you want to permanently delete your account and all associated data, 
                 you can do so from your account settings.
               </p>
               <Button variant="outline" size="sm" className="text-destructive-accessible border-destructive/30 hover:bg-destructive/10" asChild>
                 <Link href="/settings">
-                  Go to Account Settings
+                  <BilingualText en="Go to Account Settings" el="Μετάβαση στις ρυθμίσεις λογαριασμού" compact />
                 </Link>
               </Button>
             </div>

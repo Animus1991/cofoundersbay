@@ -123,13 +123,15 @@ export default function AllianceThemePage() {
                   </div>
                 </div>
                 <CardContent className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
+                  {/* Wraps on a phone: name, role and Connect in one row pushed
+                      Connect 80px past the card edge at 390px. */}
+                  <div className="mb-4 flex flex-wrap items-start gap-x-4 gap-y-2">
                     <div className="relative z-10 -mt-12 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-blue-400 to-purple-400 text-lg font-semibold text-white" aria-hidden="true">
                       {person.name.replace(/^Dr\.\s*/, '').split(' ').map((w) => w[0]).slice(0, 2).join('')}
                     </div>
-                    <div className="flex-1 pt-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-xl font-bold">{person.name}</h3>
+                    <div className="min-w-0 flex-1 basis-40 pt-2">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-bold sm:text-xl">{person.name}</h3>
                         <Badge variant="secondary" className="text-xs">
                           <Star className="icon-sm mr-1 fill-status-warning text-yellow-400" aria-hidden="true" />
                           {person.badge}
@@ -137,7 +139,7 @@ export default function AllianceThemePage() {
                       </div>
                       <p className="text-sm text-muted-foreground">{person.role}</p>
                     </div>
-                    <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="rounded-full">
+                    <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="shrink-0 rounded-full">
                       <Users className="icon-sm mr-2" />
                       Connect
                     </Button>

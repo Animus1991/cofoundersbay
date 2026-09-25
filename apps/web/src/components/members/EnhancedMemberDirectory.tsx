@@ -30,6 +30,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface Member {
   id: string;
@@ -139,7 +140,7 @@ export function EnhancedMemberDirectory() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Member Directory</h2>
+          <h2 className="text-3xl font-bold tracking-tight"><BilingualText en="Member Directory" el="Κατάλογος μελών" compact /></h2>
           <p className="text-muted-foreground">
             Discover and connect with {members.length}+ members
           </p>
@@ -195,7 +196,7 @@ export function EnhancedMemberDirectory() {
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
+                  <label className="text-sm font-medium"><BilingualText en="Role" el="Ρόλος" compact /></label>
                   <Select
                     value={filters.role}
                     onValueChange={(value) => setFilters({ ...filters, role: value })}
@@ -204,17 +205,17 @@ export function EnhancedMemberDirectory() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="Founder">Founders</SelectItem>
-                      <SelectItem value="Investor">Investors</SelectItem>
-                      <SelectItem value="Mentor">Mentors</SelectItem>
-                      <SelectItem value="Organization">Organizations</SelectItem>
+                      <SelectItem value="all"><BilingualText en="All Roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
+                      <SelectItem value="Founder"><BilingualText en="Founders" el="Ιδρυτές" compact /></SelectItem>
+                      <SelectItem value="Investor"><BilingualText en="Investors" el="Επενδυτές" compact /></SelectItem>
+                      <SelectItem value="Mentor"><BilingualText en="Mentors" el="Μέντορες" compact /></SelectItem>
+                      <SelectItem value="Organization"><BilingualText en="Organizations" el="Οργανισμοί" compact /></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Location</label>
+                  <label className="text-sm font-medium"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
                   <Select
                     value={filters.location}
                     onValueChange={(value) => setFilters({ ...filters, location: value })}
@@ -223,18 +224,18 @@ export function EnhancedMemberDirectory() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Locations</SelectItem>
-                      <SelectItem value="ny">New York</SelectItem>
-                      <SelectItem value="sf">San Francisco</SelectItem>
-                      <SelectItem value="austin">Austin</SelectItem>
-                      <SelectItem value="boston">Boston</SelectItem>
-                      <SelectItem value="remote">Remote</SelectItem>
+                      <SelectItem value="all"><BilingualText en="All Locations" el="Όλες οι τοποθεσίες" compact /></SelectItem>
+                      <SelectItem value="ny"><BilingualText en="New York" el="Νέα Υόρκη" compact /></SelectItem>
+                      <SelectItem value="sf"><BilingualText en="San Francisco" el="Σαν Φρανσίσκο" compact /></SelectItem>
+                      <SelectItem value="austin"><BilingualText en="Austin" el="Όστιν" compact /></SelectItem>
+                      <SelectItem value="boston"><BilingualText en="Boston" el="Βοστώνη" compact /></SelectItem>
+                      <SelectItem value="remote"><BilingualText en="Remote" el="Εξ αποστάσεως" compact /></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Experience</label>
+                  <label className="text-sm font-medium"><BilingualText en="Experience" el="Εμπειρία" compact /></label>
                   <Select
                     value={filters.experience}
                     onValueChange={(value) => setFilters({ ...filters, experience: value })}
@@ -243,7 +244,7 @@ export function EnhancedMemberDirectory() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Levels</SelectItem>
+                      <SelectItem value="all"><BilingualText en="All Levels" el="Όλα τα επίπεδα" compact /></SelectItem>
                       <SelectItem value="0-2">0-2 years</SelectItem>
                       <SelectItem value="3-5">3-5 years</SelectItem>
                       <SelectItem value="6-10">6-10 years</SelectItem>
@@ -253,7 +254,7 @@ export function EnhancedMemberDirectory() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Availability</label>
+                  <label className="text-sm font-medium"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></label>
                   <Select
                     value={filters.availability}
                     onValueChange={(value) => setFilters({ ...filters, availability: value })}
@@ -262,10 +263,10 @@ export function EnhancedMemberDirectory() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="online">Online Now</SelectItem>
-                      <SelectItem value="available">Available</SelectItem>
-                      <SelectItem value="busy">Busy</SelectItem>
+                      <SelectItem value="all"><BilingualText en="All" el="Όλα" compact /></SelectItem>
+                      <SelectItem value="online"><BilingualText en="Online Now" el="Σε σύνδεση τώρα" compact /></SelectItem>
+                      <SelectItem value="available"><BilingualText en="Available" el="Διαθέσιμος" compact /></SelectItem>
+                      <SelectItem value="busy"><BilingualText en="Busy" el="Απασχολημένος" compact /></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -279,7 +280,7 @@ export function EnhancedMemberDirectory() {
                     onChange={(e) => setFilters({ ...filters, verified: e.target.checked })}
                     className="rounded"
                   />
-                  Verified members only
+                  <BilingualText en="Verified members only" el="Μόνο επαληθευμένα μέλη" compact />
                 </label>
                 <Button
                   variant="ghost"
@@ -292,7 +293,7 @@ export function EnhancedMemberDirectory() {
                     verified: false,
                   })}
                 >
-                  Clear filters
+                  <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
                 </Button>
               </div>
             </CardContent>
@@ -310,10 +311,10 @@ export function EnhancedMemberDirectory() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="match">Best Match</SelectItem>
-            <SelectItem value="recent">Recently Joined</SelectItem>
-            <SelectItem value="connections">Most Connections</SelectItem>
-            <SelectItem value="name">Name (A-Z)</SelectItem>
+            <SelectItem value="match"><BilingualText en="Best Match" el="Καλύτερο ταίριασμα" compact /></SelectItem>
+            <SelectItem value="recent"><BilingualText en="Recently Joined" el="Πρόσφατες εγγραφές" compact /></SelectItem>
+            <SelectItem value="connections"><BilingualText en="Most Connections" el="Περισσότερες συνδέσεις" compact /></SelectItem>
+            <SelectItem value="name"><BilingualText en="Name (A-Z)" el="Όνομα (Α-Ω)" compact /></SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -408,13 +409,13 @@ export function EnhancedMemberDirectory() {
                     <Button size="sm" className="flex-1 gap-2" asChild>
                       <Link href={`/profiles/${member.id}`}>
                         <UserPlus className="icon-sm" aria-hidden="true" />
-                        Connect
+                        <BilingualText en="Connect" el="Σύνδεση" compact />
                       </Link>
                     </Button>
                     <Button size="sm" variant="outline" className="gap-2" asChild>
                       <Link href={`/messages?to=${member.id}`}>
                         <MessageSquare className="icon-sm" aria-hidden="true" />
-                        Message
+                        <BilingualText en="Message" el="Μήνυμα" compact />
                       </Link>
                     </Button>
                   </div>
@@ -433,9 +434,9 @@ export function EnhancedMemberDirectory() {
               <Users className="icon-xl text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">No members found</h3>
+              <h3 className="text-lg font-semibold"><BilingualText en="No members found" el="Δεν βρέθηκαν μέλη" compact /></h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Try adjusting your search or filters
+                <BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap />
               </p>
             </div>
             <Button onClick={() => {
@@ -448,7 +449,7 @@ export function EnhancedMemberDirectory() {
                 verified: false,
               });
             }}>
-              Clear all filters
+              <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
             </Button>
           </div>
         </Card>

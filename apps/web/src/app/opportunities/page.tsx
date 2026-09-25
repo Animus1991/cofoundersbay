@@ -30,6 +30,10 @@ import {
   listOpportunities, type OpportunityItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +42,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -247,7 +251,7 @@ function JobCard({ job }: { job: JobPostingView }) {
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
               <AvatarFallback className="rounded-xl bg-primary/20 text-primary-accessible font-bold text-sm">
-                {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
+                {initialsOf(job.creator.displayName)}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -516,8 +520,13 @@ export default function OpportunitiesPage() {
   const [search, setSearch] = useState('');
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [oppTypeFilter, setOppTypeFilter] = useState<OpportunityType | 'all'>('all');
-  const [proposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
+  const [sampleProposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
   const [showPostForm, setShowPostForm] = useState(false);
+  const { openRailSection } = usePageRail();
+  // Incoming proposals have no API yet. The two sample cards appear only when
+  // sample data is on, so a real account never counts invented proposals.
+  const { showDemoData } = useDemoData();
+  const proposals = showDemoData ? sampleProposals : [];
 
   const { data: opportunitiesData, isLoading: oppLoading, isError: oppError, refetch: refetchOpp } = useQuery({
     queryKey: qk('opportunities', { search, type: oppTypeFilter, isRemote: remoteOnly || undefined }),
@@ -585,6 +594,73 @@ export default function OpportunitiesPage() {
     { id: 'decline_proposal', labelEn: 'Decline sample proposal (this screen only)', labelEl: 'Απόρριψη δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleDeclineProposal(v); } },
   ]);
 
+  /*
+   * The column leads with the section tabs, the search and the listings. The
+   * counts describe the list, and the type and remote filters narrow it, so
+   * both live in the rail. The filters apply to the Listings section only.
+   */
+  const listingFilters = (oppTypeFilter !== 'all' ? 1 : 0) + (remoteOnly ? 1 : 0);
+  const listCount = (n: number) => (oppLoading || oppError ? '—' : n);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'briefcase',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'listings', label: 'Listings shown', labelEl: 'Καταχωρίσεις που εμφανίζονται', value: listCount(opportunities.length), icon: Briefcase, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'remote', label: opportunitiesEn('stat_remote'), labelEl: opportunitiesEl('stat_remote'), value: listCount(opportunities.filter((o) => o.isRemote).length), icon: Globe, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'cofounder', label: 'Co-founder roles', labelEl: 'Ρόλοι συνιδρυτή', value: listCount(opportunities.filter((o) => o.type === 'cofounder').length), icon: Handshake, tone: 'bg-status-info-bg text-status-info' },
+            ...(showDemoData ? [{ key: 'proposals', label: 'Sample proposals pending', labelEl: 'Δείγματα προτάσεων σε αναμονή', value: pendingProposals, icon: TrendingUp, tone: 'bg-status-warning-bg text-status-warning' }] : []),
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: listingFilters || null,
+      content: (
+        <div className="space-y-4">
+          {activeTab !== 'listings' && (
+            <p className="px-2.5 text-xs leading-relaxed text-muted-foreground">
+              <BilingualText en="These filters narrow the Listings section." el="Αυτά τα φίλτρα περιορίζουν την ενότητα Καταχωρίσεις." wrap />
+            </p>
+          )}
+          <RailOptions
+            title="Type"
+            titleEl="Τύπος"
+            options={oppTypes.map((t) => ({
+              value: t,
+              en: t === 'all' ? opportunitiesEn('all_types') : opportunitiesEn(OPP_TYPE_DISPLAY[t].labelKey),
+              el: t === 'all' ? opportunitiesEl('all_types') : opportunitiesEl(OPP_TYPE_DISPLAY[t].labelKey),
+              icon: t === 'all' ? Briefcase : OPP_TYPE_DISPLAY[t].icon,
+            }))}
+            value={oppTypeFilter}
+            onChange={(v) => { setOppTypeFilter(v); setActiveTab('listings'); }}
+          />
+          <RailOptions
+            title="Location"
+            titleEl="Τοποθεσία"
+            options={[
+              { value: 'off', en: 'Any location', el: 'Οποιαδήποτε τοποθεσία', icon: MapPin },
+              { value: 'on', en: opportunitiesEn('remote_only'), el: opportunitiesEl('remote_only'), icon: Globe },
+            ]}
+            value={remoteOnly ? 'on' : 'off'}
+            onChange={(v) => { setRemoteOnly(v === 'on'); setActiveTab('listings'); }}
+          />
+          {listingFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setOppTypeFilter('all'); setRemoteOnly(false); }} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   const tabs = [
     { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake },
     { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase },
@@ -602,6 +678,7 @@ export default function OpportunitiesPage() {
       )}
       <AppShell
         showHelp
+        rail={rail}
         actions={
           <Button className="gap-2" onClick={() => setShowPostForm(true)}>
             <Plus className="icon-sm" />
@@ -610,38 +687,15 @@ export default function OpportunitiesPage() {
         }
       >
         <div className="space-y-5 pb-10">
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { labelKey: 'stat_listings' as const, value: opportunities.length || '—', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-            { labelKey: 'stat_remote' as const, value: opportunities.filter((o) => o.isRemote).length || '—', icon: Globe, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { labelKey: 'stat_cofounder' as const, value: opportunities.filter((o) => o.type === 'cofounder').length || '—', icon: Handshake, color: 'text-status-info', bg: 'bg-status-info-bg' },
-            { labelKey: 'stat_proposals' as const, value: pendingProposals, icon: TrendingUp, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-          ].map((s) => {
-            const SIcon = s.icon;
-            return (
-              <Card key={s.labelKey} className="shadow-sm border-border/50">
-                <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                    <SIcon className="icon-sm" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-2xs text-muted-foreground">
-                      <BilingualText en={opportunitiesEn(s.labelKey)} el={opportunitiesEl(s.labelKey)} compact />
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
         {/* Tabs */}
-        <div className="flex gap-1 rounded-xl bg-secondary/50 p-1 mb-6 overflow-x-auto">
+        {/* Wraps rather than scrolls: four bilingual labels are wider than the
+            column, and a scrolled strip hid the fourth (Proposals). */}
+        <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualInline('Opportunities section', 'Ενότητα ευκαιριών')}>
           {tabs.map(({ key, labelKey, icon: Icon, badge }) => (
             <button
               key={key}
+              type="button"
+              aria-pressed={activeTab === key}
               onClick={() => setActiveTab(key)}
               className={cn(
                 'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all whitespace-nowrap',
@@ -650,7 +704,7 @@ export default function OpportunitiesPage() {
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              <Icon className="icon-sm" />
+              <Icon className="icon-sm" aria-hidden="true" />
               <BilingualText en={opportunitiesEn(labelKey)} el={opportunitiesEl(labelKey)} compact />
               {badge !== undefined && badge > 0 && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-accessible">
@@ -664,48 +718,15 @@ export default function OpportunitiesPage() {
         {/* Listings tab */}
         {activeTab === 'listings' && (
           <div className="space-y-6">
-            {/* Search + filter */}
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <div className="flex gap-2 flex-wrap items-center">
-                {(['all', 'cofounder', 'job', 'investment', 'partnership', 'mentorship'] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setOppTypeFilter(t)}
-                    className={cn(
-                      'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                      oppTypeFilter === t
-                        ? 'border-primary bg-primary/20 text-primary-accessible'
-                        : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                    )}
-                  >
-                    {t === 'all' ? (
-                      <BilingualText en={opportunitiesEn('all_types')} el={opportunitiesEl('all_types')} compact />
-                    ) : (
-                      <BilingualText en={opportunitiesEn(OPP_TYPE_DISPLAY[t].labelKey)} el={opportunitiesEl(OPP_TYPE_DISPLAY[t].labelKey)} compact />
-                    )}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setRemoteOnly((v) => !v)}
-                  className={cn(
-                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                    remoteOnly
-                      ? 'border-status-success-border bg-status-success-bg text-status-success '
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >
-                  <BilingualText en={opportunitiesEn('remote_only')} el={opportunitiesEl('remote_only')} compact />
-                </button>
-              </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Input
+                placeholder={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
+                aria-label={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
             </div>
 
             {oppError ? (
@@ -737,17 +758,26 @@ export default function OpportunitiesPage() {
                 <p className="text-sm mt-1">
                   <BilingualText en={opportunitiesEn('none_found_hint')} el={opportunitiesEl('none_found_hint')} compact />
                 </p>
-                <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
-                  <Plus className="icon-sm" />
-                  <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
-                </Button>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {listingFilters > 0 && (
+                    <Button variant="secondary" onClick={() => openRailSection('filters')}>
+                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                    </Button>
+                  )}
+                  <Button className="gap-2" onClick={() => setShowPostForm(true)}>
+                    <Plus className="icon-sm" />
+                    <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  {opportunities.length === 1
-                    ? opportunitiesEn('count_one')
-                    : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
+                  <BilingualText
+                    en={opportunities.length === 1 ? opportunitiesEn('count_one') : opportunitiesEn('count_many').replace('{n}', String(opportunities.length))}
+                    el={opportunities.length === 1 ? opportunitiesEl('count_one') : opportunitiesEl('count_many').replace('{n}', String(opportunities.length))}
+                    compact
+                  />
                 </p>
                 {opportunities.map((opp) => (
                   <OpportunityCard key={opp.id} opportunity={opp} />
@@ -761,9 +791,10 @@ export default function OpportunitiesPage() {
         {activeTab === 'jobs' && (
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
+                aria-label={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -843,11 +874,11 @@ export default function OpportunitiesPage() {
         {/* Proposals tab */}
         {activeTab === 'proposals' && (
           <div className="space-y-4">
-            <SampleDataNotice
+            {showDemoData && <SampleDataNotice
               surface="Proposals"
               detail="Incoming collaboration proposals are not a live API yet. These two cards show the layout so you can learn Accept and Decline."
               askAiPrompt="These collaboration proposals are samples. How should I evaluate a real co-founder or investment proposal when one arrives?"
-            />
+            />}
             {proposals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
                 <FileText className="h-10 w-10 mb-3 opacity-30" />

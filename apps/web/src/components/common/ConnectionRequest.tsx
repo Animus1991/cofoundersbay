@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 
 type ConnectionRequestProps = {
@@ -99,7 +99,7 @@ export function ConnectionRequestDialog({
           <Avatar className="h-12 w-12">
             <AvatarImage src={recipient.avatarUrl || undefined} />
             <AvatarFallback className="bg-primary/20 text-primary-accessible">
-              {recipient.displayName[0]?.toUpperCase()}
+              {initialsOf(recipient.displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">

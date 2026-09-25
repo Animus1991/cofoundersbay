@@ -43,6 +43,7 @@ import { useToast } from '@/components/ui/toast';
 import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -502,8 +503,8 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
-          <p className="text-sm text-muted-foreground">Failed to load your profile.</p>
-          <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}>Try again</Button>
+          <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load your profile." el="Δεν ήταν δυνατή η φόρτωση του προφίλ σας." compact /></p>
+          <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
         </div>
       </AppShell>
     );
@@ -595,9 +596,9 @@ export default function ProfileEditPage() {
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Camera className="icon-md text-primary-accessible" />
-                    Profile Photo
+                    <BilingualText en="Profile Photo" el="Φωτογραφία προφίλ" compact />
                   </CardTitle>
-                  <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
+                  <CardDescription><BilingualText en="A friendly face helps others recognize you and builds trust" el="Ένα φιλικό πρόσωπο βοηθά τους άλλους να σας αναγνωρίζουν και χτίζει εμπιστοσύνη" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -675,9 +676,9 @@ export default function ProfileEditPage() {
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
                         <User className="icon-md text-primary-accessible" />
-                        Personal Identity
+                        <BilingualText en="Personal Identity" el="Προσωπικά στοιχεία" compact />
                       </CardTitle>
-                      <CardDescription>How you'll appear across the platform</CardDescription>
+                      <CardDescription><BilingualText en="How you'll appear across the platform" el="Πώς θα εμφανίζεστε σε όλη την πλατφόρμα" wrap /></CardDescription>
                     </div>
                     <Button
                       type="button"
@@ -694,7 +695,7 @@ export default function ProfileEditPage() {
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name <span className="text-destructive-accessible">*</span></label>
+                    <label className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /> <span className="text-destructive-accessible">*</span></label>
                     <Input
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
@@ -703,17 +704,17 @@ export default function ProfileEditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Headline</label>
+                    <label className="text-sm font-medium"><BilingualText en="Headline" el="Τίτλος" compact /></label>
                     <Input
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
                       placeholder="e.g., 3x Founder | Building AI SaaS | ex-Google"
                     />
-                    <p className="text-xs text-muted-foreground">Appears directly below your name everywhere on the site.</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Appears directly below your name everywhere on the site." el="Εμφανίζεται κάτω από το όνομά σας σε όλη την πλατφόρμα." wrap /></p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium">About / Bio</label>
+                      <label className="text-sm font-medium"><BilingualText en="About / Bio" el="Σχετικά / Βιογραφικό" compact /></label>
                       <span className={cn("text-xs", form.bio.length > 400 ? "text-amber-500" : "text-muted-foreground")}>
                         {form.bio.length}/500
                       </span>
@@ -735,7 +736,7 @@ export default function ProfileEditPage() {
                           <div className="p-1.5 bg-primary/20 rounded-md">
                             <Sparkles className="icon-sm text-primary-accessible" />
                           </div>
-                          <span className="font-semibold text-foreground">AI Review</span>
+                          <span className="font-semibold text-foreground"><BilingualText en="AI Review" el="Αξιολόγηση AI" compact /></span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
                             {aiSuggestions.completionScore}% Optimization Score
                           </Badge>
@@ -748,14 +749,14 @@ export default function ProfileEditPage() {
                       <div className="space-y-4 pt-2">
                         {aiSuggestions.headline && (
                           <div className="space-y-2">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Suggested Headline</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Headline" el="Προτεινόμενος τίτλος" compact /></p>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                               <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border shadow-sm italic">
                                 "{aiSuggestions.headline}"
                               </p>
                               <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
                                 onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
-                                <CheckCircle2 className="icon-sm" /> Apply
+                                <CheckCircle2 className="icon-sm" /> <BilingualText en="Apply" el="Εφαρμογή" compact />
                               </Button>
                             </div>
                           </div>
@@ -763,14 +764,14 @@ export default function ProfileEditPage() {
 
                         {aiSuggestions.bio && (
                           <div className="space-y-2">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Suggested Bio</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Bio" el="Προτεινόμενο βιογραφικό" compact /></p>
                             <div className="flex flex-col gap-3">
                               <p className="text-sm text-foreground bg-background/80 rounded-lg px-4 py-3 border border-border shadow-sm whitespace-pre-wrap">
                                 {aiSuggestions.bio}
                               </p>
                               <Button size="sm" variant="secondary" className="gap-1.5 self-start"
                                 onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
-                                <CheckCircle2 className="icon-sm" /> Apply Bio
+                                <CheckCircle2 className="icon-sm" /> <BilingualText en="Apply Bio" el="Εφαρμογή βιογραφικού" compact />
                               </Button>
                             </div>
                           </div>
@@ -778,7 +779,7 @@ export default function ProfileEditPage() {
 
                         {aiSuggestions.improvements.length > 0 && (
                           <div className="space-y-2 pt-2 border-t border-border/50">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actionable Feedback</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Actionable Feedback" el="Πρακτικές παρατηρήσεις" compact /></p>
                             <ul className="space-y-2">
                               {aiSuggestions.improvements.map((imp, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -800,12 +801,12 @@ export default function ProfileEditPage() {
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <MapPin className="icon-md text-primary-accessible" />
-                    Location & Timezone
+                    <BilingualText en="Location & Timezone" el="Τοποθεσία & ζώνη ώρας" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">City, Country</label>
+                    <label className="text-sm font-medium"><BilingualText en="City, Country" el="Πόλη, χώρα" compact /></label>
                     <Input
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
@@ -813,7 +814,7 @@ export default function ProfileEditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Timezone</label>
+                    <label className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
                     <Input
                       value={form.timezone}
                       onChange={(e) => updateField('timezone', e.target.value)}
@@ -828,9 +829,9 @@ export default function ProfileEditPage() {
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Target className="icon-md text-primary-accessible" />
-                    Skills & Expertise
+                    <BilingualText en="Skills & Expertise" el="Δεξιότητες & εξειδίκευση" compact />
                   </CardTitle>
-                  <CardDescription>What are your core strengths and areas of focus?</CardDescription>
+                  <CardDescription><BilingualText en="What are your core strengths and areas of focus?" el="Ποια είναι τα βασικά σας δυνατά σημεία και πεδία εστίασης;" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                   <TagInput
@@ -870,9 +871,9 @@ export default function ProfileEditPage() {
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Briefcase className="icon-md text-primary-accessible" />
-                    Your Primary Role
+                    <BilingualText en="Your Primary Role" el="Ο κύριος ρόλος σας" compact />
                   </CardTitle>
-                  <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
+                  <CardDescription><BilingualText en="Select how you primarily participate in the ecosystem" el="Επιλέξτε πώς συμμετέχετε κυρίως στο οικοσύστημα" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -913,7 +914,7 @@ export default function ProfileEditPage() {
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                       <Rocket className="icon-sm" />
-                      Founder Details
+                      <BilingualText en="Founder Details" el="Στοιχεία ιδρυτή" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -946,7 +947,7 @@ export default function ProfileEditPage() {
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                       <GraduationCap className="icon-sm" />
-                      Mentor Details
+                      <BilingualText en="Mentor Details" el="Στοιχεία μέντορα" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -966,20 +967,20 @@ export default function ProfileEditPage() {
                     />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Meeting Preference</label>
+                        <label className="text-sm font-medium"><BilingualText en="Meeting Preference" el="Προτίμηση συνάντησης" compact /></label>
                         <select
                           value={form.meetingPreference}
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
                           className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
                         >
-                          <option value="">Select...</option>
-                          <option value="video">Video calls</option>
-                          <option value="in-person">In person</option>
-                          <option value="both">Both</option>
+                          <option value="">{bilingualInline("Select...", "Επιλέξτε…")}</option>
+                          <option value="video">{bilingualInline("Video calls", "Βιντεοκλήσεις")}</option>
+                          <option value="in-person">{bilingualInline("In person", "Δια ζώσης")}</option>
+                          <option value="both">{bilingualInline("Both", "Και τα δύο")}</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Hourly Rate (optional)</label>
+                        <label className="text-sm font-medium"><BilingualText en="Hourly Rate (optional)" el="Ωριαία αμοιβή (προαιρετικά)" compact /></label>
                         <Input
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
@@ -997,7 +998,7 @@ export default function ProfileEditPage() {
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                       <TrendingUp className="icon-sm" />
-                      Investor Details
+                      <BilingualText en="Investor Details" el="Στοιχεία επενδυτή" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -1017,7 +1018,7 @@ export default function ProfileEditPage() {
                     />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Min Check Size</label>
+                        <label className="text-sm font-medium"><BilingualText en="Min Check Size" el="Ελάχιστο ποσό επένδυσης" compact /></label>
                         <Input
                           value={form.checkSizeMin}
                           onChange={(e) => updateField('checkSizeMin', e.target.value)}
@@ -1025,7 +1026,7 @@ export default function ProfileEditPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Max Check Size</label>
+                        <label className="text-sm font-medium"><BilingualText en="Max Check Size" el="Μέγιστο ποσό επένδυσης" compact /></label>
                         <Input
                           value={form.checkSizeMax}
                           onChange={(e) => updateField('checkSizeMax', e.target.value)}
@@ -1051,7 +1052,7 @@ export default function ProfileEditPage() {
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                       <Building2 className="icon-sm" />
-                      Organization Details
+                      <BilingualText en="Organization Details" el="Στοιχεία οργανισμού" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -1079,15 +1080,15 @@ export default function ProfileEditPage() {
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Globe className="icon-md text-primary-accessible" />
-                    Web & Social Links
+                    <BilingualText en="Web & Social Links" el="Ιστότοπος & κοινωνικά δίκτυα" compact />
                   </CardTitle>
-                  <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
+                  <CardDescription><BilingualText en="Connect your other profiles so people can learn more about you" el="Συνδέστε τα άλλα προφίλ σας ώστε να σας γνωρίσουν καλύτερα" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Globe className="icon-sm text-muted-foreground" /> Personal Website
+                        <Globe className="icon-sm text-muted-foreground" /> <BilingualText en="Personal Website" el="Προσωπικός ιστότοπος" compact />
                       </label>
                       <Input
                         value={form.websiteUrl}
@@ -1140,12 +1141,12 @@ export default function ProfileEditPage() {
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-accessible mb-4">
                     <LayoutDashboard className="icon-xl" />
                   </div>
-                  <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
+                  <h3 className="text-xl font-semibold"><BilingualText en="Portfolio Builder Coming Soon" el="Η δημιουργία portfolio έρχεται σύντομα" compact /></h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    Soon you'll be able to add detailed case studies, pitch decks, past startups, and comprehensive project showcases to your profile.
+                    <BilingualText en="Soon you'll be able to add detailed case studies, pitch decks, past startups, and comprehensive project showcases to your profile." el="Σύντομα θα μπορείτε να προσθέτετε αναλυτικές μελέτες περίπτωσης, pitch decks, προηγούμενες startups και παρουσιάσεις έργων στο προφίλ σας." wrap />
                   </p>
                   <Button variant="outline" className="mt-4" onClick={() => setActiveTab('basic')}>
-                    Go back to Basic Info
+                    <BilingualText en="Go back to Basic Info" el="Επιστροφή στα βασικά στοιχεία" compact />
                   </Button>
                 </CardContent>
               </Card>
@@ -1157,13 +1158,13 @@ export default function ProfileEditPage() {
         <div className="space-y-6">
           <Card className="shadow-sm border-border/50 sticky top-6">
             <CardHeader className="pb-4 border-b border-border/50">
-              <CardTitle className="text-base font-semibold">Profile Strength</CardTitle>
+              <CardTitle className="text-base font-semibold"><BilingualText en="Profile Strength" el="Πληρότητα προφίλ" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
                   <span className="text-2xl font-bold text-primary-accessible">{completionPercentage}%</span>
-                  <span className="text-sm text-muted-foreground pb-1">Complete</span>
+                  <span className="text-sm text-muted-foreground pb-1"><BilingualText en="Complete" el="Ολοκληρωμένο" compact /></span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
                   <div 
@@ -1182,7 +1183,7 @@ export default function ProfileEditPage() {
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
                     <li className="flex items-center gap-2 text-sm text-status-success bg-status-success-bg p-2 rounded-md">
-                      <CheckCircle2 className="icon-sm" /> Your profile is fully complete!
+                      <CheckCircle2 className="icon-sm" /> <BilingualText en="Your profile is fully complete!" el="Το προφίλ σας είναι πλήρες!" compact />
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
@@ -1208,11 +1209,11 @@ export default function ProfileEditPage() {
                 <div className="flex gap-2">
                   <Button variant="outline" className="w-full text-xs h-9" asChild>
                     <Link href="/profile" className="flex-1">
-                      View Profile
+                      <BilingualText en="View Profile" el="Προβολή προφίλ" compact />
                     </Link>
                   </Button>
                   <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
-                    Add Links
+                    <BilingualText en="Add Links" el="Προσθήκη συνδέσμων" compact />
                   </Button>
                 </div>
               </div>

@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
@@ -133,7 +133,7 @@ export function PostCard({
               <Avatar className="h-11 w-11 ring-2 ring-border/40">
                 <AvatarImage src={author.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                  {author.displayName[0]?.toUpperCase()}
+                  {initialsOf(author.displayName)}
                 </AvatarFallback>
               </Avatar>
             </Link>

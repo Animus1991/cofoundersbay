@@ -25,6 +25,7 @@ import {
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 function SeatRow({
   seat, onRevoke, revoking,
@@ -127,7 +128,7 @@ export default function TenantBillingPage() {
       actions={(
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/pricing">
-            View plans
+            <BilingualText en="View plans" el="Προβολή πλάνων" compact />
             <ChevronRight className="icon-sm" />
           </Link>
         </Button>
@@ -138,13 +139,13 @@ export default function TenantBillingPage() {
         {/* Plan Overview */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Current Plan</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Current Plan" el="Τρέχον πλάνο" compact /></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {subLoading ? (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="icon-sm animate-spin" />
-                <span className="text-sm">Loading…</span>
+                <span className="text-sm"><BilingualText en="Loading…" el="Φόρτωση…" compact /></span>
               </div>
             ) : sub ? (
               <>
@@ -180,7 +181,7 @@ export default function TenantBillingPage() {
                 {sub.status === 'past_due' && (
                   <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
                     <AlertTriangle className="icon-sm shrink-0" />
-                    Payment overdue. Update your payment method to avoid service interruption.
+                    <BilingualText en="Payment overdue. Update your payment method to avoid service interruption." el="Η πληρωμή καθυστερεί. Ενημερώστε τον τρόπο πληρωμής για να μη διακοπεί η υπηρεσία." wrap />
                   </div>
                 )}
 
@@ -198,7 +199,7 @@ export default function TenantBillingPage() {
                     <Button size="sm" variant="outline" className="gap-2" asChild>
                       <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade Request">
                         <Crown className="icon-sm" />
-                        Request enterprise upgrade
+                        <BilingualText en="Request enterprise upgrade" el="Αίτημα αναβάθμισης enterprise" compact />
                       </a>
                     </Button>
                   )}
@@ -206,11 +207,11 @@ export default function TenantBillingPage() {
               </>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">No active subscription for this organization.</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="No active subscription for this organization." el="Δεν υπάρχει ενεργή συνδρομή για αυτόν τον οργανισμό." wrap /></p>
                 <Button size="sm" className="gap-2" asChild>
                   <Link href="/pricing">
                     <Building2 className="icon-sm" />
-                    See organization plans
+                    <BilingualText en="See organization plans" el="Πλάνα οργανισμών" compact />
                   </Link>
                 </Button>
               </div>
@@ -224,7 +225,7 @@ export default function TenantBillingPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">Seat Usage</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Seat Usage" el="Χρήση θέσεων" compact /></CardTitle>
                   <CardDescription className="text-xs mt-0.5">
                     {seatLimit ? `${seatUsage} of ${seatLimit} seats used` : `${seatUsage} seats active`}
                   </CardDescription>
@@ -261,15 +262,15 @@ export default function TenantBillingPage() {
               {seatLimit && seatUsage >= seatLimit && (
                 <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
                   <AlertTriangle className="icon-sm shrink-0" />
-                  Seat limit reached. Upgrade your plan or revoke unused seats to add more members.
+                  <BilingualText en="Seat limit reached. Upgrade your plan or revoke unused seats to add more members." el="Εξαντλήθηκαν οι θέσεις. Αναβαθμίστε το πλάνο ή ανακαλέστε αχρησιμοποίητες θέσεις." wrap />
                 </div>
               )}
 
               <div className="space-y-0.5">
                 {seatsLoading ? (
-                  <p className="text-sm text-muted-foreground p-3">Loading seats…</p>
+                  <p className="text-sm text-muted-foreground p-3"><BilingualText en="Loading seats…" el="Φόρτωση θέσεων…" compact /></p>
                 ) : seats.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-3">No seats allocated yet.</p>
+                  <p className="text-sm text-muted-foreground p-3"><BilingualText en="No seats allocated yet." el="Δεν έχουν δοθεί θέσεις ακόμα." compact /></p>
                 ) : (
                   seats.map(seat => (
                     <SeatRow
@@ -298,7 +299,7 @@ export default function TenantBillingPage() {
         {sub?.plan?.features && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Plan Features</CardTitle>
+              <CardTitle className="text-base"><BilingualText en="Plan Features" el="Δυνατότητες πλάνου" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
@@ -320,9 +321,9 @@ export default function TenantBillingPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Billing Contact</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  Used for invoices and legal/tax documentation.
+                  <BilingualText en="Used for invoices and legal/tax documentation." el="Χρησιμοποιούνται σε τιμολόγια και νομικά/φορολογικά έγγραφα." wrap />
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
@@ -345,7 +346,7 @@ export default function TenantBillingPage() {
                     {contactForm.vatId && <p>VAT: {contactForm.vatId}</p>}
                   </>
                 ) : (
-                  <p>No billing contact set. Click Edit to add one.</p>
+                  <p><BilingualText en="No billing contact set. Click Edit to add one." el="Δεν έχουν οριστεί στοιχεία τιμολόγησης. Πατήστε Επεξεργασία για προσθήκη." wrap /></p>
                 )}
               </div>
             ) : (
@@ -360,31 +361,31 @@ export default function TenantBillingPage() {
                     <Input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} placeholder="billing@org.com" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Company name</Label>
+                    <Label className="text-xs"><BilingualText en="Company name" el="Επωνυμία" compact /></Label>
                     <Input value={contactForm.company} onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))} placeholder="Acme Accelerator" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Legal entity name</Label>
+                    <Label className="text-xs"><BilingualText en="Legal entity name" el="Νομική επωνυμία" compact /></Label>
                     <Input value={contactForm.legalName} onChange={e => setContactForm(p => ({ ...p, legalName: e.target.value }))} placeholder="Acme Accelerator Ltd." />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">VAT / Tax ID</Label>
+                    <Label className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
                     <Input value={contactForm.vatId} onChange={e => setContactForm(p => ({ ...p, vatId: e.target.value }))} placeholder="EU123456789" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Country</Label>
+                    <Label className="text-xs"><BilingualText en="Country" el="Χώρα" compact /></Label>
                     <Input value={contactForm.country} onChange={e => setContactForm(p => ({ ...p, country: e.target.value }))} placeholder="US" maxLength={2} />
                   </div>
                   <div className="col-span-2 space-y-1.5">
-                    <Label className="text-xs">Street address</Label>
+                    <Label className="text-xs"><BilingualText en="Street address" el="Διεύθυνση" compact /></Label>
                     <Input value={contactForm.addressLine1} onChange={e => setContactForm(p => ({ ...p, addressLine1: e.target.value }))} placeholder="123 Innovation Blvd" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">City</Label>
+                    <Label className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
                     <Input value={contactForm.city} onChange={e => setContactForm(p => ({ ...p, city: e.target.value }))} placeholder="San Francisco" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Postal code</Label>
+                    <Label className="text-xs"><BilingualText en="Postal code" el="Ταχυδρομικός κώδικας" compact /></Label>
                     <Input value={contactForm.postalCode} onChange={e => setContactForm(p => ({ ...p, postalCode: e.target.value }))} placeholder="94107" />
                   </div>
                 </div>
@@ -397,7 +398,7 @@ export default function TenantBillingPage() {
                     {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                     Save contact
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
               </div>
             )}
@@ -412,15 +413,15 @@ export default function TenantBillingPage() {
                 <Shield className="icon-md text-primary-accessible" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Need enterprise features?</p>
+                <p className="font-semibold text-sm"><BilingualText en="Need enterprise features?" el="Χρειάζεστε δυνατότητες enterprise;" compact /></p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Custom domain, SSO, unlimited seats, white-labeling, dedicated support, and SLA guarantees.
+                  <BilingualText en="Custom domain, SSO, unlimited seats, white-labeling, dedicated support, and SLA guarantees." el="Προσαρμοσμένος τομέας, SSO, απεριόριστες θέσεις, white-labeling, αποκλειστική υποστήριξη και εγγυήσεις SLA." wrap />
                 </p>
               </div>
               <Button size="sm" variant="outline" className="shrink-0 gap-2" asChild>
                 <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade">
                   <Mail className="icon-sm" />
-                  Contact sales
+                  <BilingualText en="Contact sales" el="Επικοινωνία με πωλήσεις" compact />
                 </a>
               </Button>
             </CardContent>

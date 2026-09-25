@@ -254,13 +254,13 @@ export default function AISettingsPage() {
             <Button asChild variant="outline" className="gap-2">
               <Link href="/ai/capabilities">
                 <CfbGlyph name="spark" className="h-4 w-4" />
-                What it can do
+                <BilingualText en="What it can do" el="Τι μπορεί να κάνει" compact />
               </Link>
             </Button>
             <Button asChild variant="outline" className="gap-2">
               <Link href="/ai">
                 <Bot className="h-4 w-4" />
-                Open assistant
+                <BilingualText en="Open assistant" el="Άνοιγμα βοηθού" compact />
               </Link>
             </Button>
             <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
@@ -328,17 +328,17 @@ export default function AISettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="icon-md text-primary-accessible" />
-                Model Configuration
+                <BilingualText en="Model Configuration" el="Ρύθμιση μοντέλου" compact />
               </CardTitle>
               <CardDescription>
-                Choose which AI model to use and configure its behavior
+                <BilingualText en="Choose which AI model to use and configure its behavior" el="Επιλέξτε ποιο μοντέλο AI θα χρησιμοποιείται και ρυθμίστε τη συμπεριφορά του" wrap />
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Model Selection */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Preferred Model</Label>
+                  <Label><BilingualText en="Preferred Model" el="Προτιμώμενο μοντέλο" compact /></Label>
                   <Select
                     value={prefs.preferredModel}
                     onValueChange={(v) => updatePref('preferredModel', v)}
@@ -350,7 +350,7 @@ export default function AISettingsPage() {
                       {/* The built-in copilot is a real choice (the demo and
                           any deployment without a model service use it), and
                           without an item for it the select rendered empty. */}
-                      <SelectItem value="copilot">Built-in copilot · no model service</SelectItem>
+                      <SelectItem value="copilot"><BilingualText en="Built-in copilot · no model service" el="Ενσωματωμένος βοηθός · χωρίς υπηρεσία μοντέλου" wrap /></SelectItem>
                       {models.length > 0 ? (
                         models.map((m) => (
                           <SelectItem key={m.name} value={m.name}>
@@ -369,12 +369,12 @@ export default function AISettingsPage() {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    The AI model that powers your assistant
+                    <BilingualText en="The AI model that powers your assistant" el="Το μοντέλο AI που τροφοδοτεί τον βοηθό σας" wrap />
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Default Agent</Label>
+                  <Label><BilingualText en="Default Agent" el="Προεπιλεγμένος πράκτορας" compact /></Label>
                   <Select
                     value={prefs.defaultAgent}
                     onValueChange={(v) => updatePref('defaultAgent', v)}
@@ -391,16 +391,16 @@ export default function AISettingsPage() {
                         ))
                       ) : (
                         <>
-                          <SelectItem value="general">General Assistant</SelectItem>
-                          <SelectItem value="matching">Co-Founder Matching</SelectItem>
-                          <SelectItem value="pitch-coach">Pitch Coach</SelectItem>
-                          <SelectItem value="research">Research Assistant</SelectItem>
+                          <SelectItem value="general"><BilingualText en="General Assistant" el="Γενικός βοηθός" compact /></SelectItem>
+                          <SelectItem value="matching"><BilingualText en="Co-Founder Matching" el="Αντιστοίχιση συνιδρυτών" compact /></SelectItem>
+                          <SelectItem value="pitch-coach"><BilingualText en="Pitch Coach" el="Προπονητής pitch" compact /></SelectItem>
+                          <SelectItem value="research"><BilingualText en="Research Assistant" el="Βοηθός έρευνας" compact /></SelectItem>
                         </>
                       )}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    The default AI persona for new conversations
+                    <BilingualText en="The default AI persona for new conversations" el="Η προεπιλεγμένη περσόνα AI για νέες συνομιλίες" wrap />
                   </p>
                 </div>
               </div>
@@ -409,7 +409,7 @@ export default function AISettingsPage() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <ThermometerSun className="icon-sm text-muted-foreground" />
-                  Creativity (Temperature)
+                  <BilingualText en="Creativity (Temperature)" el="Δημιουργικότητα (θερμοκρασία)" compact />
                 </Label>
                 <Select
                   value={String(prefs.temperature)}
@@ -428,13 +428,13 @@ export default function AISettingsPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Higher values make responses more varied and creative
+                  <BilingualText en="Higher values make responses more varied and creative" el="Υψηλότερες τιμές δίνουν πιο ποικίλες και δημιουργικές απαντήσεις" wrap />
                 </p>
               </div>
 
               {/* Max Tokens */}
               <div className="space-y-2">
-                <Label>Max Response Length</Label>
+                <Label><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
                 <Select
                   value={String(prefs.maxTokens)}
                   onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
@@ -443,10 +443,10 @@ export default function AISettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="512">Short (512 tokens)</SelectItem>
-                    <SelectItem value="1024">Medium (1024 tokens)</SelectItem>
-                    <SelectItem value="2048">Long (2048 tokens)</SelectItem>
-                    <SelectItem value="4096">Very Long (4096 tokens)</SelectItem>
+                    <SelectItem value="512"><BilingualText en="Short (512 tokens)" el="Σύντομη (512 tokens)" compact /></SelectItem>
+                    <SelectItem value="1024"><BilingualText en="Medium (1024 tokens)" el="Μεσαία (1024 tokens)" compact /></SelectItem>
+                    <SelectItem value="2048"><BilingualText en="Long (2048 tokens)" el="Μεγάλη (2048 tokens)" compact /></SelectItem>
+                    <SelectItem value="4096"><BilingualText en="Very Long (4096 tokens)" el="Πολύ μεγάλη (4096 tokens)" compact /></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -458,10 +458,10 @@ export default function AISettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="icon-md text-blue-500" />
-                Response Style
+                <BilingualText en="Response Style" el="Ύφος απάντησης" compact />
               </CardTitle>
               <CardDescription>
-                Customize how the AI communicates with you
+                <BilingualText en="Customize how the AI communicates with you" el="Προσαρμόστε πώς επικοινωνεί μαζί σας το AI" wrap />
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -505,9 +505,9 @@ export default function AISettingsPage() {
               {/* Use Emoji */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="font-medium">Use Emojis</p>
+                  <p className="font-medium"><BilingualText en="Use Emojis" el="Χρήση emoji" compact /></p>
                   <p className="text-sm text-muted-foreground">
-                    Include emojis in AI responses for a friendlier tone
+                    <BilingualText en="Include emojis in AI responses for a friendlier tone" el="Emoji στις απαντήσεις για πιο φιλικό ύφος" wrap />
                   </p>
                 </div>
                 <Toggle
@@ -524,10 +524,10 @@ export default function AISettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sliders className="icon-md text-status-success" />
-                Features
+                <BilingualText en="Features" el="Λειτουργίες" compact />
               </CardTitle>
               <CardDescription>
-                Enable or disable AI assistant features
+                <BilingualText en="Enable or disable AI assistant features" el="Ενεργοποίηση ή απενεργοποίηση λειτουργιών του βοηθού" wrap />
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-1">
@@ -557,10 +557,10 @@ export default function AISettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="icon-md text-status-warning" />
-                Privacy & Data
+                <BilingualText en="Privacy & Data" el="Απόρρητο & δεδομένα" compact />
               </CardTitle>
               <CardDescription>
-                Control how your AI conversation data is handled
+                <BilingualText en="Control how your AI conversation data is handled" el="Ελέγξτε πώς χειρίζονται τα δεδομένα των συνομιλιών σας με το AI" wrap />
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-1">
@@ -589,10 +589,10 @@ export default function AISettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CfbGlyph name="spark" className="icon-md text-primary-accessible" />
-                Available AI Agents
+                <BilingualText en="Available AI Agents" el="Διαθέσιμοι πράκτορες AI" compact />
               </CardTitle>
               <CardDescription>
-                Specialized AI assistants for different tasks
+                <BilingualText en="Specialized AI assistants for different tasks" el="Εξειδικευμένοι βοηθοί AI για διαφορετικές εργασίες" wrap />
               </CardDescription>
             </CardHeader>
             <CardContent>

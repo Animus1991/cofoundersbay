@@ -46,6 +46,8 @@ import {
   adminDeleteSkill,
   type AdminSkillItem,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const SKILL_CATEGORIES = ['Technical', 'Business', 'Design', 'Marketing', 'Sales', 'Finance', 'Operations', 'Legal', 'Product', 'Data', 'Other'];
 
@@ -94,11 +96,11 @@ function SkillRow({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onEdit(skill)}>
             <Edit className="mr-2 icon-sm" aria-hidden="true" />
-            Edit
+            <BilingualText en="Edit" el="Επεξεργασία" compact />
           </DropdownMenuItem>
           <DropdownMenuItem className="text-destructive-accessible" onClick={() => onDelete(skill)}>
             <Trash2 className="mr-2 icon-sm" />
-            Delete
+            <BilingualText en="Delete" el="Διαγραφή" compact />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -155,10 +157,10 @@ function SkillDialog({
               onChange={(e) => { setSlug(e.target.value); setAutoSlug(false); }}
               placeholder="e.g. machine-learning"
             />
-            <p className="text-xs text-muted-foreground mt-1">URL-friendly identifier, must be unique</p>
+            <p className="text-xs text-muted-foreground mt-1"><BilingualText en="URL-friendly identifier, must be unique" el="Αναγνωριστικό για URL, μοναδικό" wrap /></p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Category</label>
+            <label className="block text-sm font-medium mb-1"><BilingualText en="Category" el="Κατηγορία" compact /></label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger aria-label="Category">
                 <SelectValue placeholder="Select category" />
@@ -172,7 +174,7 @@ function SkillDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancel</Button>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button
             onClick={() => onSave({ name: name.trim(), slug: slug.trim(), category })}
             disabled={isSaving || !name.trim() || !slug.trim()}
@@ -284,7 +286,7 @@ export default function AdminTaxonomyPage() {
             </Button>
             <Button onClick={() => setEditTarget('new')}>
               <Plus className="mr-2 icon-sm" aria-hidden="true" />
-              Add Skill
+              <BilingualText en="Add Skill" el="Προσθήκη δεξιότητας" compact />
             </Button>
           </div>
         </>
@@ -295,19 +297,19 @@ export default function AdminTaxonomyPage() {
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Skills</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Skills" el="Σύνολο δεξιοτήτων" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="text-xl font-bold">{total}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Categories</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Categories" el="Κατηγορίες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="text-xl font-bold">{categories.length}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Technical Skills</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Technical Skills" el="Τεχνικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
                 <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
               )}
@@ -315,7 +317,7 @@ export default function AdminTaxonomyPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Business Skills</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Business Skills" el="Επιχειρηματικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
                 <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
               )}
@@ -329,15 +331,15 @@ export default function AdminTaxonomyPage() {
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <Folder className="icon-md text-primary-accessible" />
-                <CardTitle className="text-lg">Skills</CardTitle>
+                <CardTitle className="text-lg"><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
               <Button size="sm" onClick={() => setEditTarget('new')}>
                 <Plus className="mr-2 icon-sm" aria-hidden="true" />
-                Add Skill
+                <BilingualText en="Add Skill" el="Προσθήκη δεξιότητας" compact />
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">Skills and expertise tags used across profiles</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="Skills and expertise tags used across profiles" el="Ετικέτες δεξιοτήτων και εξειδίκευσης σε όλα τα προφίλ" wrap /></p>
           </CardHeader>
           <CardContent className="p-0">
             {/* Filters */}
@@ -361,7 +363,7 @@ export default function AdminTaxonomyPage() {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option value="">All categories</option>
+                <option value="">{bilingualInline("All categories", "Όλες οι κατηγορίες")}</option>
                 {SKILL_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -370,8 +372,8 @@ export default function AdminTaxonomyPage() {
               {isError && (
                 <div className="flex items-center gap-2 p-6 text-destructive-accessible justify-center">
                   <AlertCircle className="icon-md" />
-                  <span className="text-sm">Failed to load skills.</span>
-                  <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
+                  <span className="text-sm"><BilingualText en="Failed to load skills." el="Δεν ήταν δυνατή η φόρτωση των δεξιοτήτων." compact /></span>
+                  <Button variant="outline" size="sm" onClick={() => refetch()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></Button>
                 </div>
               )}
 
@@ -437,14 +439,18 @@ export default function AdminTaxonomyPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Skill</DialogTitle>
+            <DialogTitle><BilingualText en="Delete Skill" el="Διαγραφή δεξιότητας" compact /></DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-2">
-            Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This will remove it from all profiles.
+            <BilingualText
+              en={`Delete "${deleteTarget?.name ?? ''}"? It is removed from every profile that lists it.`}
+              el={`Διαγραφή «${deleteTarget?.name ?? ''}»; Αφαιρείται από κάθε προφίλ που την αναφέρει.`}
+              wrap
+            />
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleteMutation.isPending}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button
               variant="destructive"

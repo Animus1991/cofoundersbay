@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { setupTwoFactor, verifyTwoFactor, regenerateBackupCodes as apiRegenerateBackupCodes, TwoFactorSetupResponse } from '@/lib/api';
 import { Shield, Copy, Check, RefreshCw, AlertTriangle } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface TwoFactorSetupProps {
   onEnabled?: () => void;
@@ -84,7 +85,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
         <div className="flex items-start gap-3 rounded-lg bg-status-warning-bg p-4 text-sm text-status-warning ">
           <AlertTriangle className="icon-md shrink-0" />
           <div>
-            <p className="font-medium">Secure your account</p>
+            <p className="font-medium"><BilingualText en="Secure your account" el="Ασφαλίστε τον λογαριασμό σας" compact /></p>
             <p className="mt-1">
               Two-factor authentication adds an extra layer of security by requiring a code from your authenticator app
               in addition to your password.
@@ -95,7 +96,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
         <div className="flex justify-end gap-2">
           {onCancel && (
             <Button variant="outline" onClick={onCancel}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
           )}
           <Button onClick={initiateSetup} disabled={isLoading}>
@@ -124,7 +125,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium">Can&apos;t scan the QR code?</p>
+          <p className="text-sm font-medium"><BilingualText en="Can&apos;t scan the QR code?" el="Δεν σαρώνεται ο κωδικός QR;" compact /></p>
           <div className="flex items-center gap-2">
             <code className="flex-1 rounded bg-secondary px-3 py-2 text-sm font-mono">
               {setupData?.secret}
@@ -134,12 +135,12 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter this secret manually in your authenticator app
+            <BilingualText en="Enter this secret manually in your authenticator app" el="Εισάγετε αυτό το μυστικό χειροκίνητα στην εφαρμογή ελέγχου ταυτότητας" wrap />
           </p>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Enter verification code</label>
+          <label className="text-sm font-medium"><BilingualText en="Enter verification code" el="Εισάγετε κωδικό επαλήθευσης" compact /></label>
           <Input
             type="text"
             inputMode="numeric"
@@ -150,13 +151,13 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
             className="text-center text-lg tracking-widest"
           />
           <p className="text-xs text-muted-foreground">
-            Enter the 6-digit code from your authenticator app to verify setup
+            <BilingualText en="Enter the 6-digit code from your authenticator app to verify setup" el="Εισάγετε τον 6ψήφιο κωδικό από την εφαρμογή για να επιβεβαιώσετε τη ρύθμιση" wrap />
           </p>
         </div>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => setStep('initial')} disabled={isLoading}>
-            Back
+            <BilingualText en="Back" el="Πίσω" compact />
           </Button>
           <Button onClick={verifyAndEnable} disabled={isLoading || verificationCode.length !== 6}>
             {isLoading ? 'Verifying...' : 'Verify & Enable'}
@@ -174,14 +175,14 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
           <div>
             <p className="font-medium">2FA Enabled Successfully</p>
             <p className="mt-1">
-              Your account is now protected with two-factor authentication.
+              <BilingualText en="Your account is now protected with two-factor authentication." el="Ο λογαριασμός σας προστατεύεται πλέον με έλεγχο δύο παραγόντων." wrap />
             </p>
           </div>
         </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Backup Codes</p>
+            <p className="text-sm font-medium"><BilingualText en="Backup Codes" el="Εφεδρικοί κωδικοί" compact /></p>
             <Button
               variant="ghost"
               size="sm"
@@ -190,7 +191,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
               className="gap-1"
             >
               <RefreshCw className="icon-sm" />
-              Regenerate
+              <BilingualText en="Regenerate" el="Επαναδημιουργία" compact />
             </Button>
           </div>
 
@@ -217,7 +218,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={onCancel}>Done</Button>
+          <Button onClick={onCancel}><BilingualText en="Done" el="Τέλος" compact /></Button>
         </div>
       </div>
     );

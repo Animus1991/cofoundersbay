@@ -166,7 +166,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <Link href={`/p/${user.id}`}>View Profile</Link>
+            <Link href={`/p/${user.id}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
           </DropdownMenuItem>
           {/* Every item below had no handler: Send Email, Change Role,
               Suspend, Reactivate and Ban closed the menu and did nothing.
@@ -175,13 +175,13 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
           <DropdownMenuItem asChild>
             <a href={`mailto:${user.email}`}>
               <Mail className="mr-2 icon-sm" aria-hidden="true" />
-              Send Email
+              <BilingualText en="Send Email" el="Αποστολή email" compact />
             </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <Shield className="icon-sm" aria-hidden="true" />
-            Change Role
+            <BilingualText en="Change Role" el="Αλλαγή ρόλου" compact />
           </DropdownMenuLabel>
           {ASSIGNABLE_ROLES.map((r) => {
             const current = user.role.toLowerCase() === r;
@@ -196,7 +196,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
           {user.status === 'active' && (
             <DropdownMenuItem className="text-status-warning" onSelect={() => onModerate(user, 'suspended')}>
               <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
-              Suspend User
+              <BilingualText en="Suspend User" el="Αναστολή χρήστη" compact />
             </DropdownMenuItem>
           )}
           {(user.status === 'suspended' || user.status === 'banned') && (
@@ -208,7 +208,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
           {user.status !== 'banned' && (
             <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onModerate(user, 'banned')}>
               <UserX className="mr-2 icon-sm" aria-hidden="true" />
-              Ban User
+              <BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact />
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -600,13 +600,13 @@ export default function AdminUsersPage() {
 
         {/* Users Table */}
         <Card>
-          <div className="hidden md:flex items-center gap-4 px-4 py-3 border-b text-sm font-medium text-muted-foreground">
+          <div data-column-headers className="hidden md:flex items-center gap-4 px-4 py-3 border-b text-sm font-medium text-muted-foreground">
             <div className="w-10" />
-            <div className="flex-1">User</div>
-            <div className="w-24">Role</div>
-            <div className="hidden lg:block w-32">Tenant</div>
-            <div className="w-28">Last Active</div>
-            <div className="w-24 text-center">Status</div>
+            <div className="flex-1"><BilingualText en="User" el="Χρήστης" compact /></div>
+            <div className="w-24"><BilingualText en="Role" el="Ρόλος" compact /></div>
+            <div className="hidden lg:block w-32"><BilingualText en="Tenant" el="Οργανισμός" compact /></div>
+            <div className="w-28"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></div>
+            <div className="w-24 text-center"><BilingualText en="Status" el="Κατάσταση" compact /></div>
             <div className="w-8" />
           </div>
           {filteredUsers.map((user) => (
@@ -615,9 +615,9 @@ export default function AdminUsersPage() {
           {filteredUsers.length === 0 && (
             <CardContent className="py-12 text-center">
               <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-              <h3 className="font-medium">No users found</h3>
+              <h3 className="font-medium"><BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact /></h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Try adjusting your filters
+                <BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact />
               </p>
               {activeFilterCount > 0 && (
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>

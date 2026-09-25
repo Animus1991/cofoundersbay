@@ -228,7 +228,7 @@ export function ConversationValidationMenu({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <div className="px-2 py-1.5">
-            <p className="text-xs font-medium text-foreground">Conversation Validation</p>
+            <p className="text-xs font-medium text-foreground"><BilingualText en="Conversation Validation" el="Επικύρωση συνομιλίας" compact /></p>
             <p className="text-xs text-muted-foreground">
               <BilingualText en={messagesEn(config.descKey)} el={messagesEl(config.descKey)} compact />
             </p>
@@ -237,7 +237,7 @@ export function ConversationValidationMenu({
           
           <DropdownMenuItem onClick={() => setShowModeDialog(true)}>
             <Shield className="mr-2 icon-sm" />
-            Change validation mode
+            <BilingualText en="Change validation mode" el="Αλλαγή λειτουργίας επικύρωσης" compact />
           </DropdownMenuItem>
           
           {validationState.transcriptAvailable && (
@@ -245,11 +245,11 @@ export function ConversationValidationMenu({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleExport('txt')}>
                 <FileText className="mr-2 icon-sm" />
-                Export as Text (.txt)
+                <BilingualText en="Export as Text (.txt)" el="Εξαγωγή ως κείμενο (.txt)" compact />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport('json')}>
                 <Download className="mr-2 icon-sm" />
-                Export as JSON (.json)
+                <BilingualText en="Export as JSON (.json)" el="Εξαγωγή ως JSON (.json)" compact />
               </DropdownMenuItem>
             </>
           )}
@@ -280,7 +280,7 @@ export function ConversationValidationMenu({
                 {otherUserName} requested two-party validation
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Both parties will be able to save and verify the conversation transcript
+                <BilingualText en="Both parties will be able to save and verify the conversation transcript" el="Και τα δύο μέρη θα μπορούν να αποθηκεύσουν και να επαληθεύσουν το αντίγραφο της συνομιλίας" wrap />
               </p>
               <div className="flex gap-2 mt-2">
                 <Button
@@ -303,7 +303,7 @@ export function ConversationValidationMenu({
                   onClick={() => declineMutation.mutate()}
                   disabled={declineMutation.isPending}
                 >
-                  Decline
+                  <BilingualText en="Decline" el="Απόρριψη" compact />
                 </Button>
               </div>
             </div>
@@ -317,10 +317,10 @@ export function ConversationValidationMenu({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="icon-md text-primary-accessible" />
-              Conversation Validation Mode
+              <BilingualText en="Conversation Validation Mode" el="Λειτουργία επικύρωσης συνομιλίας" compact />
             </DialogTitle>
             <DialogDescription>
-              Choose how this conversation should be validated
+              <BilingualText en="Choose how this conversation should be validated" el="Επιλέξτε πώς θα επικυρώνεται η συνομιλία" wrap />
             </DialogDescription>
           </DialogHeader>
 
@@ -351,7 +351,7 @@ export function ConversationValidationMenu({
                           <BilingualText en={messagesEn(modeConfig.labelKey)} el={messagesEl(modeConfig.labelKey)} compact />
                         </p>
                         {isActive && (
-                          <Badge variant="secondary" className="text-xs">Current</Badge>
+                          <Badge variant="secondary" className="text-xs"><BilingualText en="Current" el="Τρέχουσα" compact /></Badge>
                         )}
                       </div>
                       <p className="mt-0.5 text-sm text-muted-foreground">
@@ -374,11 +374,11 @@ export function ConversationValidationMenu({
             <div className="flex items-start gap-2">
               <Info className="icon-sm shrink-0 text-muted-foreground mt-0.5" />
               <div className="text-xs text-muted-foreground">
-                <p className="font-medium text-foreground mb-1">About validation modes</p>
+                <p className="font-medium text-foreground mb-1"><BilingualText en="About validation modes" el="Σχετικά με τις λειτουργίες επικύρωσης" compact /></p>
                 <ul className="space-y-1">
-                  <li><strong>Casual:</strong> Standard messaging, no records saved</li>
-                  <li><strong>One-Party:</strong> You can save transcripts; other party is notified</li>
-                  <li><strong>Two-Party:</strong> Both agree to validated, verifiable transcript</li>
+                  <li><strong>Casual:</strong> <BilingualText en="Standard messaging, no records saved" el="Απλά μηνύματα, χωρίς αποθήκευση αρχείου" wrap /></li>
+                  <li><strong>One-Party:</strong> <BilingualText en="You can save transcripts; other party is notified" el="Μπορείτε να αποθηκεύετε αντίγραφα· ο άλλος ειδοποιείται" wrap /></li>
+                  <li><strong>Two-Party:</strong> <BilingualText en="Both agree to validated, verifiable transcript" el="Και οι δύο συμφωνούν σε επικυρωμένο, επαληθεύσιμο αντίγραφο" wrap /></li>
                 </ul>
               </div>
             </div>
@@ -438,11 +438,11 @@ export function TranscriptExportButton({
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleExport('txt')}>
           <FileText className="mr-2 icon-sm" />
-          Plain Text (.txt)
+          <BilingualText en="Plain Text (.txt)" el="Απλό κείμενο (.txt)" compact />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport('json')}>
           <Download className="mr-2 icon-sm" />
-          JSON (.json)
+          <BilingualText en="JSON (.json)" el="JSON (.json)" compact />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

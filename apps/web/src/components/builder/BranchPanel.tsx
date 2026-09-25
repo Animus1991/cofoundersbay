@@ -46,6 +46,7 @@ import {
   createProposal,
   type ArtifactBranch,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Branch Status helpers ──────────────────────────────────────────────────
 
@@ -111,14 +112,14 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Draft Variant</DialogTitle>
+          <DialogTitle><BilingualText en="New Draft Variant" el="Νέα πρόχειρη εκδοχή" compact /></DialogTitle>
           <DialogDescription>
-            Create an isolated copy of this document to experiment with changes before proposing them.
+            <BilingualText en="Create an isolated copy of this document to experiment with changes before proposing them." el="Δημιουργήστε ανεξάρτητο αντίγραφο του εγγράφου για να δοκιμάσετε αλλαγές πριν τις προτείνετε." wrap />
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Name</Label>
+            <Label><BilingualText en="Name" el="Όνομα" compact /></Label>
             <Input
               placeholder="e.g. revised-financials, investor-v2..."
               value={name}
@@ -127,7 +128,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Description (optional)</Label>
+            <Label><BilingualText en="Description (optional)" el="Περιγραφή (προαιρετικά)" compact /></Label>
             <Textarea
               placeholder="What changes are you exploring in this variant?"
               value={description}
@@ -136,11 +137,11 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Branching from <strong>v{currentVersion}</strong> of the main document.
+            <BilingualText en={`Branching from v${currentVersion} of the main document.`} el={`Διακλάδωση από την έκδοση v${currentVersion} του κύριου εγγράφου.`} wrap />
           </p>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={handleCreate} disabled={loading || !name.trim()}>
             {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             Create Variant
@@ -189,18 +190,18 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Submit Change Proposal</DialogTitle>
+          <DialogTitle><BilingualText en="Submit Change Proposal" el="Υποβολή πρότασης αλλαγής" compact /></DialogTitle>
           <DialogDescription>
             Propose the changes from &ldquo;{branch.name}&rdquo; to be merged into the main document.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Proposal title</Label>
+            <Label><BilingualText en="Proposal title" el="Τίτλος πρότασης" compact /></Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Description</Label>
+            <Label><BilingualText en="Description" el="Περιγραφή" compact /></Label>
             <Textarea
               placeholder="Summarise the changes you've made and why..."
               value={description}
@@ -210,7 +211,7 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
             {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             Submit Proposal
@@ -275,7 +276,7 @@ export function BranchPanel({
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <GitBranch className="icon-sm text-primary-accessible" />
-              Draft Variants
+              <BilingualText en="Draft Variants" el="Πρόχειρες εκδοχές" compact />
             </SheetTitle>
             <SheetDescription>
               Isolated copies of &ldquo;{documentTitle ?? 'this document'}&rdquo; for safe experimentation.
@@ -342,7 +343,7 @@ export function BranchPanel({
                               {branch.status === 'open' && (
                                 <DropdownMenuItem onClick={() => setProposalBranch(branch)}>
                                   <GitPullRequest className="icon-sm mr-2" />
-                                  Submit Proposal
+                                  <BilingualText en="Submit Proposal" el="Υποβολή πρότασης" compact />
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
@@ -351,7 +352,7 @@ export function BranchPanel({
                                 onClick={() => handleClose(branch.id)}
                               >
                                 <XCircle className="icon-sm mr-2" />
-                                Close Variant
+                                <BilingualText en="Close Variant" el="Κλείσιμο εκδοχής" compact />
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -366,7 +367,7 @@ export function BranchPanel({
                           onClick={() => setProposalBranch(branch)}
                         >
                           <GitPullRequest className="icon-sm mr-1.5" />
-                          Submit as Change Proposal
+                          <BilingualText en="Submit as Change Proposal" el="Υποβολή ως πρόταση αλλαγής" compact />
                         </Button>
                       )}
                     </div>
@@ -376,8 +377,8 @@ export function BranchPanel({
             ) : (
               <div className="text-center py-6 text-muted-foreground">
                 <GitBranch className="icon-xl mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No active variants</p>
-                <p className="text-xs mt-1">Create a variant to experiment without affecting the main document.</p>
+                <p className="text-sm"><BilingualText en="No active variants" el="Δεν υπάρχουν ενεργές εκδοχές" compact /></p>
+                <p className="text-xs mt-1"><BilingualText en="Create a variant to experiment without affecting the main document." el="Δημιουργήστε εκδοχή για πειραματισμό χωρίς να αλλάξει το κύριο έγγραφο." wrap /></p>
               </div>
             )}
 
@@ -415,7 +416,7 @@ export function BranchPanel({
                 onClick={() => setShowCreateDialog(true)}
               >
                 <Plus className="icon-sm mr-2" />
-                New Draft Variant
+                <BilingualText en="New Draft Variant" el="Νέα πρόχειρη εκδοχή" compact />
               </Button>
             </div>
           )}

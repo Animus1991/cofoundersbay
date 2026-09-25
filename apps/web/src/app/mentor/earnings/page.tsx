@@ -271,16 +271,16 @@ export default function MentorEarningsPage() {
 
         <Tabs defaultValue="transactions">
           <TabsList>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="chart">Monthly Overview</TabsTrigger>
-            <TabsTrigger value="payout">Payout Settings</TabsTrigger>
+            <TabsTrigger value="transactions"><BilingualText en="Transactions" el="Συναλλαγές" compact /></TabsTrigger>
+            <TabsTrigger value="chart"><BilingualText en="Monthly Overview" el="Μηνιαία επισκόπηση" compact /></TabsTrigger>
+            <TabsTrigger value="payout"><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></TabsTrigger>
           </TabsList>
 
           {/* Transactions */}
           <TabsContent value="transactions">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Session History</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Session History" el="Ιστορικό συνεδριών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
@@ -311,7 +311,7 @@ export default function MentorEarningsPage() {
                           )}
                         >
                           {tx.status === 'paid' ? (
-                            <><CheckCircle2 className="icon-sm mr-1" />Paid</>
+                            <><CheckCircle2 className="icon-sm mr-1" /><BilingualText en="Paid" el="Πληρώθηκε" compact /></>
                           ) : 'Pending'}
                         </Badge>
                       </div>
@@ -327,7 +327,7 @@ export default function MentorEarningsPage() {
           <TabsContent value="chart">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Monthly Earnings</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Monthly Earnings" el="Μηνιαία έσοδα" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end gap-3 h-48">
@@ -351,13 +351,13 @@ export default function MentorEarningsPage() {
                   </div>
                   <div>
                     <p className="text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
-                    <p className="text-xs text-muted-foreground">Total sessions</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Total sessions" el="Σύνολο συνεδριών" compact /></p>
                   </div>
                   <div>
                     <p className="text-xl font-bold">
                       {(() => { const tot = monthlyData.reduce((s, m) => s + m.sessions, 0); return formatCurrency(tot ? monthlyData.reduce((s, m) => s + m.earned, 0) / tot : 0); })()}
                     </p>
-                    <p className="text-xs text-muted-foreground">Avg per session</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Avg per session" el="Μέσος όρος ανά συνεδρία" compact /></p>
                   </div>
                 </div>
               </CardContent>
@@ -367,24 +367,24 @@ export default function MentorEarningsPage() {
           {/* Payout */}
           <TabsContent value="payout">
             <Card>
-              <CardHeader><CardTitle className="text-base">Payout Settings</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
                   <CreditCard className="icon-xl text-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">No payout method connected</p>
-                    <p className="text-xs text-muted-foreground">Connect Stripe or bank account to receive payouts</p>
+                    <p className="text-sm font-medium"><BilingualText en="No payout method connected" el="Δεν έχει συνδεθεί τρόπος πληρωμής" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Connect Stripe or bank account to receive payouts" el="Συνδέστε Stripe ή τραπεζικό λογαριασμό για να πληρώνεστε" wrap /></p>
                   </div>
                   <Button size="sm" disabled title="Payout providers are not connected yet">
                     <ArrowUpRight className="mr-2 icon-sm" />
-                    Connect
+                    <BilingualText en="Connect" el="Σύνδεση" compact />
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {['Stripe Connect', 'Bank Transfer (SEPA)', 'PayPal', 'Wise'].map(method => (
                     <div key={method} className="flex items-center justify-between p-3 rounded-lg border">
                       <span className="text-sm font-medium">{method}</span>
-                      <Button variant="outline" size="sm" disabled title="Payout providers are not connected yet">Connect</Button>
+                      <Button variant="outline" size="sm" disabled title="Payout providers are not connected yet"><BilingualText en="Connect" el="Σύνδεση" compact /></Button>
                     </div>
                   ))}
                 </div>

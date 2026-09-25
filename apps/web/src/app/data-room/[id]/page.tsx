@@ -71,6 +71,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // Types
 interface Document {
@@ -482,21 +483,21 @@ export default function DataRoomPage() {
             onClick={() => setIsShareDialogOpen(true)}
           >
             <Share2 className="icon-sm mr-2" />
-            Share Access
+            <BilingualText en="Share Access" el="Κοινοποίηση πρόσβασης" compact />
           </Button>
           <Button size="sm" onClick={() => setIsUploadDialogOpen(true)}>
             <Upload className="icon-sm mr-2" />
-            Upload
+            <BilingualText en="Upload" el="Μεταφόρτωση" compact />
           </Button>
         </div>
       }
     >
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="documents"><BilingualText en="Documents" el="Έγγραφα" compact /></TabsTrigger>
           <TabsTrigger value="investors">Investors ({investors.length})</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
+          <TabsTrigger value="settings"><BilingualText en="Settings" el="Ρυθμίσεις" compact /></TabsTrigger>
         </TabsList>
 
         <TabsContent value="documents" className="space-y-6">
@@ -545,15 +546,15 @@ export default function DataRoomPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Size</TableHead>
+                        <TableHead><BilingualText en="Name" el="Όνομα" compact /></TableHead>
+                        <TableHead><BilingualText en="Type" el="Τύπος" compact /></TableHead>
+                        <TableHead><BilingualText en="Size" el="Μέγεθος" compact /></TableHead>
                         {/* Secondary columns from md: on a phone the name,
                             type and size are what tell documents apart, and
                             seven columns wrapped every cell a word a line. */}
-                        <TableHead className="hidden md:table-cell">Uploaded</TableHead>
-                        <TableHead className="hidden md:table-cell">Access</TableHead>
-                        <TableHead className="hidden md:table-cell">Views</TableHead>
+                        <TableHead className="hidden md:table-cell"><BilingualText en="Uploaded" el="Μεταφορτώθηκε" compact /></TableHead>
+                        <TableHead className="hidden md:table-cell"><BilingualText en="Access" el="Πρόσβαση" compact /></TableHead>
+                        <TableHead className="hidden md:table-cell"><BilingualText en="Views" el="Προβολές" compact /></TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -602,12 +603,12 @@ export default function DataRoomPage() {
                               {document.isPublic ? (
                                 <Badge variant="outline" className="bg-status-success-bg text-status-success border-status-success-border">
                                   <Unlock className="icon-sm mr-1" />
-                                  Public
+                                  <BilingualText en="Public" el="Δημόσιο" compact />
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="bg-status-warning-bg text-status-warning border-status-warning-border">
                                   <Lock className="icon-sm mr-1" />
-                                  Private
+                                  <BilingualText en="Private" el="Ιδιωτικό" compact />
                                 </Badge>
                               )}
                             </TableCell>
@@ -638,7 +639,7 @@ export default function DataRoomPage() {
                                   <UnavailableMenuItem icon={<Download className="icon-sm mr-2 mt-0.5" aria-hidden="true" />} en="Download" el="Λήψη" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                   <DropdownMenuItem onSelect={() => setIsShareDialogOpen(true)}>
                                     <Share2 className="icon-sm mr-2" aria-hidden="true" />
-                                    Share
+                                    <BilingualText en="Share" el="Κοινοποίηση" compact />
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <UnavailableMenuItem icon={<Edit className="icon-sm mr-2 mt-0.5" aria-hidden="true" />} en="Edit" el="Επεξεργασία" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
@@ -675,7 +676,7 @@ export default function DataRoomPage() {
                                 <DropdownMenuContent align="end">
                                   <UnavailableMenuItem en="View" el="Προβολή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                   <UnavailableMenuItem en="Download" el="Λήψη" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
-                                  <DropdownMenuItem onSelect={() => setIsShareDialogOpen(true)}>Share</DropdownMenuItem>
+                                  <DropdownMenuItem onSelect={() => setIsShareDialogOpen(true)}><BilingualText en="Share" el="Κοινοποίηση" compact /></DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <UnavailableMenuItem className="text-destructive-accessible" en="Delete" el="Διαγραφή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                 </DropdownMenuContent>
@@ -689,11 +690,11 @@ export default function DataRoomPage() {
                               <div className="flex items-center gap-2 mt-3">
                                 {document.isPublic ? (
                                   <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
-                                    Public
+                                    <BilingualText en="Public" el="Δημόσιο" compact />
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="text-xs bg-status-warning-bg text-status-warning border-status-warning-border">
-                                    Private
+                                    <BilingualText en="Private" el="Ιδιωτικό" compact />
                                   </Badge>
                                 )}
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -716,21 +717,21 @@ export default function DataRoomPage() {
         <TabsContent value="investors">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Investor Access</CardTitle>
+              <CardTitle><BilingualText en="Investor Access" el="Πρόσβαση επενδυτών" compact /></CardTitle>
               <Button size="sm" onClick={() => setIsShareDialogOpen(true)}>
                 <Users className="icon-sm mr-2" aria-hidden="true" />
-                Add Investor
+                <BilingualText en="Add Investor" el="Προσθήκη επενδυτή" compact />
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Investor</TableHead>
-                    <TableHead>Firm</TableHead>
-                    <TableHead>Access Level</TableHead>
-                    <TableHead>Last Active</TableHead>
-                    <TableHead>Activity</TableHead>
+                    <TableHead><BilingualText en="Investor" el="Επενδυτής" compact /></TableHead>
+                    <TableHead><BilingualText en="Firm" el="Εταιρεία" compact /></TableHead>
+                    <TableHead><BilingualText en="Access Level" el="Επίπεδο πρόσβασης" compact /></TableHead>
+                    <TableHead><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></TableHead>
+                    <TableHead><BilingualText en="Activity" el="Δραστηριότητα" compact /></TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -771,7 +772,7 @@ export default function DataRoomPage() {
                             {formatDate(investor.lastAccessed)}
                           </span>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Never</span>
+                          <span className="text-sm text-muted-foreground"><BilingualText en="Never" el="Ποτέ" compact /></span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -794,7 +795,7 @@ export default function DataRoomPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => setActiveTab('activity')}>View Activity</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setActiveTab('activity')}><BilingualText en="View Activity" el="Προβολή δραστηριότητας" compact /></DropdownMenuItem>
                             <UnavailableMenuItem en="Edit Access" el="Επεξεργασία πρόσβασης" reasonEn="Sample investor - no access records yet." reasonEl="Δείγμα - δεν υπάρχουν ακόμη εγγραφές πρόσβασης." />
                             <UnavailableMenuItem en="Resend Invite" el="Επαναποστολή πρόσκλησης" reasonEn="Sample investor - no access records yet." reasonEl="Δείγμα - δεν υπάρχουν ακόμη εγγραφές πρόσβασης." />
                             <DropdownMenuSeparator />
@@ -813,17 +814,17 @@ export default function DataRoomPage() {
         <TabsContent value="activity">
           <Card>
             <CardHeader>
-              <CardTitle>Access Log</CardTitle>
+              <CardTitle><BilingualText en="Access Log" el="Αρχείο πρόσβασης" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Investor</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Document</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>IP Address</TableHead>
+                    <TableHead><BilingualText en="Investor" el="Επενδυτής" compact /></TableHead>
+                    <TableHead><BilingualText en="Action" el="Ενέργεια" compact /></TableHead>
+                    <TableHead><BilingualText en="Document" el="Έγγραφο" compact /></TableHead>
+                    <TableHead><BilingualText en="Timestamp" el="Χρονοσφραγίδα" compact /></TableHead>
+                    <TableHead><BilingualText en="IP Address" el="Διεύθυνση IP" compact /></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -859,40 +860,40 @@ export default function DataRoomPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Access Settings</CardTitle>
+                <CardTitle><BilingualText en="Access Settings" el="Ρυθμίσεις πρόσβασης" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Require NDA</p>
+                    <p className="font-medium"><BilingualText en="Require NDA" el="Απαίτηση NDA" compact /></p>
                     <p className="text-sm text-muted-foreground">
-                      Require investors to sign NDA before accessing
+                      <BilingualText en="Require investors to sign NDA before accessing" el="Οι επενδυτές υπογράφουν NDA πριν την πρόσβαση" wrap />
                     </p>
                   </div>
                   <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    Configure
+                    <BilingualText en="Configure" el="Ρύθμιση" compact />
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Email Notifications</p>
+                    <p className="font-medium"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
                     <p className="text-sm text-muted-foreground">
-                      Notify when documents are accessed or downloaded
+                      <BilingualText en="Notify when documents are accessed or downloaded" el="Ειδοποίηση όταν τα έγγραφα ανοίγονται ή κατεβαίνουν" wrap />
                     </p>
                   </div>
                   <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    Configure
+                    <BilingualText en="Configure" el="Ρύθμιση" compact />
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Download Watermarking</p>
+                    <p className="font-medium"><BilingualText en="Download Watermarking" el="Υδατογράφημα λήψεων" compact /></p>
                     <p className="text-sm text-muted-foreground">
-                      Add investor email watermark to downloaded PDFs
+                      <BilingualText en="Add investor email watermark to downloaded PDFs" el="Υδατογράφημα με το email του επενδυτή στα PDF που κατεβαίνουν" wrap />
                     </p>
                   </div>
                   <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    Enable
+                    <BilingualText en="Enable" el="Ενεργοποίηση" compact />
                   </Button>
                 </div>
               </CardContent>
@@ -900,25 +901,25 @@ export default function DataRoomPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Room Information</CardTitle>
+                <CardTitle><BilingualText en="Room Information" el="Στοιχεία χώρου" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium">Room ID</p>
+                  <p className="text-sm font-medium"><BilingualText en="Room ID" el="Αναγνωριστικό χώρου" compact /></p>
                   <p className="text-sm text-muted-foreground">{roomId}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Created</p>
+                  <p className="text-sm font-medium"><BilingualText en="Created" el="Δημιουργήθηκε" compact /></p>
                   <p className="text-sm text-muted-foreground">March 1, 2026</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Owner</p>
+                  <p className="text-sm font-medium"><BilingualText en="Owner" el="Κάτοχος" compact /></p>
                   <p className="text-sm text-muted-foreground">Elena Papadopoulos</p>
                 </div>
                 <div className="pt-4 border-t">
                   <Button variant="destructive" size="sm" disabled title="The data room has no storage backend yet">
                     <Trash2 className="icon-sm mr-2" aria-hidden="true" />
-                    Delete Room
+                    <BilingualText en="Delete Room" el="Διαγραφή χώρου" compact />
                   </Button>
                 </div>
               </CardContent>
@@ -931,25 +932,25 @@ export default function DataRoomPage() {
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Upload Documents</DialogTitle>
+            <DialogTitle><BilingualText en="Upload Documents" el="Μεταφόρτωση εγγράφων" compact /></DialogTitle>
             <DialogDescription>
-              Drag and drop files or click to browse
+              <BilingualText en="Drag and drop files or click to browse" el="Σύρετε αρχεία ή πατήστε για αναζήτηση" wrap />
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 gap-4 py-4">
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
               <Upload className="icon-xl mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                Drop files here or click to browse
+                <BilingualText en="Drop files here or click to browse" el="Αφήστε αρχεία εδώ ή πατήστε για αναζήτηση" wrap />
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                PDF, DOC, XLS, PPT up to 100MB
+                <BilingualText en="PDF, DOC, XLS, PPT up to 100MB" el="PDF, DOC, XLS, PPT έως 100MB" compact />
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">Select Folder</p>
+              <p className="text-sm font-medium mb-2"><BilingualText en="Select Folder" el="Επιλογή φακέλου" compact /></p>
               <select className="w-full p-2 border rounded-xl">
-                <option>Root</option>
+                <option>{bilingualInline("Root", "Αρχικός φάκελος")}</option>
                 {folders.map((folder) => (
                   <option key={folder.id} value={folder.id}>
                     {folder.name}
@@ -960,15 +961,15 @@ export default function DataRoomPage() {
             <div className="flex items-center gap-2">
               <input type="checkbox" id="public" className="rounded" />
               <label htmlFor="public" className="text-sm">
-                Make documents public to all investors
+                <BilingualText en="Make documents public to all investors" el="Δημόσια έγγραφα για όλους τους επενδυτές" wrap />
               </label>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
-            <Button disabled title="The data room has no storage backend yet">Upload</Button>
+            <Button disabled title="The data room has no storage backend yet"><BilingualText en="Upload" el="Μεταφόρτωση" compact /></Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -977,38 +978,38 @@ export default function DataRoomPage() {
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Share Data Room</DialogTitle>
+            <DialogTitle><BilingualText en="Share Data Room" el="Κοινοποίηση data room" compact /></DialogTitle>
             <DialogDescription>
-              Invite investors to access this data room
+              <BilingualText en="Invite investors to access this data room" el="Προσκαλέστε επενδυτές σε αυτό το data room" wrap />
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 gap-4 py-4">
             <div>
-              <label htmlFor="dr-invite-email" className="text-sm font-medium mb-2 block">Email Address</label>
+              <label htmlFor="dr-invite-email" className="text-sm font-medium mb-2 block"><BilingualText en="Email Address" el="Διεύθυνση email" compact /></label>
               <Input id="dr-invite-email" type="email" placeholder="investor@firm.com" />
             </div>
             <div>
-              <label htmlFor="dr-invite-access" className="text-sm font-medium mb-2 block">Access Level</label>
+              <label htmlFor="dr-invite-access" className="text-sm font-medium mb-2 block"><BilingualText en="Access Level" el="Επίπεδο πρόσβασης" compact /></label>
               <select id="dr-invite-access" className="w-full p-2 border rounded-xl">
-                <option value="view">View Only</option>
-                <option value="download">View & Download</option>
-                <option value="admin">Admin Access</option>
+                <option value="view">{bilingualInline("View Only", "Μόνο προβολή")}</option>
+                <option value="download">{bilingualInline("View & Download", "Προβολή & λήψη")}</option>
+                <option value="admin">{bilingualInline("Admin Access", "Πρόσβαση διαχειριστή")}</option>
               </select>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="notify" className="rounded" defaultChecked />
               <label htmlFor="notify" className="text-sm">
-                Send email notification
+                <BilingualText en="Send email notification" el="Αποστολή ειδοποίησης email" compact />
               </label>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             {/* Every button that would write here had no handler; with no
                 storage behind the room they say so rather than pretend. */}
-            <Button disabled title="The data room has no storage backend yet">Send Invite</Button>
+            <Button disabled title="The data room has no storage backend yet"><BilingualText en="Send Invite" el="Αποστολή πρόσκλησης" compact /></Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

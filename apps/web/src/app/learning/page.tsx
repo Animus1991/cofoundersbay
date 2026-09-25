@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target } from 'lucide-react';
+import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
@@ -36,6 +39,8 @@ interface Resource {
   tags: string[];
   completedBy?: number;
 }
+
+const SAVED_KEY = 'cfb:learning-saved';
 
 const CATEGORIES = ['All', 'Fundraising', 'Product', 'Marketing', 'Sales', 'Leadership', 'Tech'];
 
@@ -170,10 +175,9 @@ const DIFFICULTY_CONFIG = {
   advanced: { labelKey: 'difficulty_advanced' as const, color: 'bg-status-danger-bg text-status-danger ' },
 };
 
-function ResourceCard({ resource }: { resource: Resource }) {
+function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; saved: boolean; onToggleSave: (id: string) => void }) {
   const typeConfig = TYPE_CONFIG[resource.type] ?? TYPE_CONFIG.article;
   const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
-  const [saved, setSaved] = React.useState(false);
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 flex flex-col">
@@ -203,7 +207,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
           </div>
           <button
             type="button"
-            onClick={() => setSaved(!saved)}
+            onClick={() => onToggleSave(resource.id)}
             aria-pressed={saved}
             aria-label={
               saved
@@ -332,9 +336,35 @@ export default function LearningPage() {
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
+  /*
+   * The bookmark on each card was its own state, lost on the next render of
+   * the list, and the Saved tab showed every resource regardless. There is no
+   * API for learning bookmarks, so they are kept on this device: the Saved
+   * tab lists what was bookmarked here, and says so.
+   */
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SAVED_KEY);
+      if (raw) setSavedIds(JSON.parse(raw) as string[]);
+    } catch {
+      /* storage unavailable: bookmarks last for this visit */
+    }
+  }, []);
+  const toggleSaved = (id: string) =>
+    setSavedIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      try {
+        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      } catch {
+        /* storage unavailable */
+      }
+      return next;
+    });
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [typeFilter, setTypeFilter] = useState<TypeFilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { openRailSection } = usePageRail();
 
   const { data: meData } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -391,11 +421,17 @@ export default function LearningPage() {
       resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       resource.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesType && matchesSearch;
+    const matchesTab = activeTab !== 'saved' || savedIds.includes(resource.id);
+    return matchesCategory && matchesType && matchesSearch && matchesTab;
   });
 
-  const featuredResources = filteredResources.filter((r) => r.isFeatured);
-  const regularResources = filteredResources.filter((r) => !r.isFeatured);
+  // Each resource appears once on the page: the same two guides used to show
+  // under Recommended, again under Featured, and again in the full list.
+  const recommendedShown = activeTab === 'all' ? new Set(recommendedResources.map((r) => r.id)) : new Set<string>();
+  const featuredResources = filteredResources.filter((r) => r.isFeatured && !recommendedShown.has(r.id));
+  const featuredShown = activeTab === 'all' ? new Set(featuredResources.map((r) => r.id)) : new Set<string>();
+  const regularResources = filteredResources.filter((r) => !recommendedShown.has(r.id) && !featuredShown.has(r.id));
+  const listedAbove = recommendedShown.size + featuredShown.size > 0;
 
   const inProgressPaths = LEARNING_PATHS.filter((p) => p.progress > 0 && p.progress < 100);
   const totalResourceCount = allResources.length;
@@ -405,36 +441,62 @@ export default function LearningPage() {
     return acc + (match ? parseFloat(match[1]) : 0);
   }, 0));
 
-  return (
-    <AppShell showHelp askAi="Which readiness gap should I study first, and which learning path or resource matches it?">
-      <div className="space-y-6 pb-10">
-      {/* Stats bar */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { labelKey: 'stat_resources' as const, value: totalResourceCount, icon: BookOpen, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          { labelKey: 'stat_courses' as const, value: courseCount, icon: Play, color: 'text-status-success', bg: 'bg-status-success-bg' },
-          { labelKey: 'stat_hours' as const, value: `${totalHours}h`, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
-          { labelKey: 'stat_progress' as const, value: inProgressPaths.length, icon: Flame, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-        ].map((s) => {
-          const SIcon = s.icon;
-          return (
-            <Card key={s.labelKey} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-2.5 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="icon-sm" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">
-                    <BilingualText en={learningEn(s.labelKey)} el={learningEl(s.labelKey)} compact />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+  /*
+   * The column leads with the paths, what is recommended, and the library.
+   * The four counts and the two chip rows (type, category) moved to the rail;
+   * the search stays with the list it searches.
+   */
+  const activeFilters = (typeFilter !== 'all' ? 1 : 0) + (selectedCategory !== 'All' ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'book',
+      labelEn: 'Library at a glance',
+      labelEl: 'Βιβλιοθήκη με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'resources', label: learningEn('stat_resources'), labelEl: learningEl('stat_resources'), value: totalResourceCount, icon: BookOpen, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'courses', label: learningEn('stat_courses'), labelEl: learningEl('stat_courses'), value: courseCount, icon: Play, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'hours', label: learningEn('stat_hours'), labelEl: learningEl('stat_hours'), value: `${totalHours}h`, icon: Clock, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'progress', label: learningEn('stat_progress'), labelEl: learningEl('stat_progress'), value: inProgressPaths.length, icon: Flame, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: activeFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Format"
+            titleEl="Μορφή"
+            options={TYPE_FILTERS.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) }))}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
+          <RailOptions
+            title="Topic"
+            titleEl="Θέμα"
+            options={allCategories.map((c) => ({ value: c, en: c === 'All' ? 'All topics' : c, el: c === 'All' ? 'Όλα τα θέματα' : c }))}
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+          />
+          {activeFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setTypeFilter('all'); setSelectedCategory('All'); }} />
+          )}
+        </div>
+      ),
+    },
+  ];
 
+  return (
+    <AppShell showHelp rail={rail} askAi="Which readiness gap should I study first, and which learning path or resource matches it?">
+      <div className="space-y-6 pb-10">
       {/* Learning Paths */}
       {activeTab === 'all' && (
         <div className="space-y-3">
@@ -453,7 +515,7 @@ export default function LearningPage() {
               <BilingualText en="paths" el="μονοπάτια" compact />
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
             {LEARNING_PATHS.map((path) => (
               <LearningPathCard
                 key={path.id}
@@ -480,7 +542,7 @@ export default function LearningPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {recommendedResources.map((resource) => (
-              <ResourceCard key={`rec-${resource.id}`} resource={resource} />
+              <ResourceCard key={`rec-${resource.id}`} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
             ))}
           </div>
         </div>
@@ -495,7 +557,10 @@ export default function LearningPage() {
           <TabsTrigger value="saved">
             <BilingualText en={learningEn('tab_saved')} el={learningEl('tab_saved')} compact />
           </TabsTrigger>
-          <TabsTrigger value="completed">
+          {/* Nothing records a resource as completed yet, so the tab cannot
+              list any; it stays visible and says why rather than showing
+              every resource under "Completed". */}
+          <TabsTrigger value="completed" disabled title="Completion is not recorded yet">
             <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
           </TabsTrigger>
         </TabsList>
@@ -513,44 +578,11 @@ export default function LearningPage() {
               />
             </div>
 
-            {/* Type filter chips */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {TYPE_FILTERS.map((tf) => (
-                <button
-                  key={tf.key}
-                  onClick={() => setTypeFilter(tf.key)}
-                  className={cn(
-                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
-                    typeFilter === tf.key
-                      ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >{<BilingualText en={learningEn(tf.labelKey)} el={learningEl(tf.labelKey)} compact />}</button>
-              ))}
-            </div>
-
-            {/* Category filters */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {allCategories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={cn(
-                    'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
-                    selectedCategory === category
-                      ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Loading skeleton */}
           {learningLoading && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-border p-5 space-y-3">
                   <div className="flex gap-3">
@@ -578,7 +610,7 @@ export default function LearningPage() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {featuredResources.map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
+                  <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
               </div>
             </div>
@@ -588,11 +620,15 @@ export default function LearningPage() {
           {!learningLoading && regularResources.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
+                {listedAbove ? (
+                  <BilingualText en="More resources" el="Περισσότεροι πόροι" compact />
+                ) : (
+                  <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
+                )}
               </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {regularResources.map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
+                  <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
               </div>
             </div>
@@ -602,12 +638,41 @@ export default function LearningPage() {
           {!learningLoading && filteredResources.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
-              <p className="font-medium text-foreground">
-                <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
-              </p>
+              {activeTab === 'saved' && savedIds.length === 0 ? (
+                <>
+                  <p className="font-medium text-foreground">
+                    <BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμα" compact />
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    <BilingualText en="Use the bookmark on a resource to keep it here. Bookmarks are kept on this device." el="Πατήστε τον σελιδοδείκτη σε έναν πόρο για να τον κρατήσετε εδώ. Οι σελιδοδείκτες μένουν σε αυτή τη συσκευή." wrap />
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium text-foreground">
+                    <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
+                  </p>
+                  {(searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All') && (
+                    <div className="mt-4 flex flex-wrap justify-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSelectedCategory('All'); }}
+                      >
+                        <BilingualText en="Show all resources" el="Εμφάνιση όλων των πόρων" compact />
+                      </Button>
+                      {(typeFilter !== 'all' || selectedCategory !== 'All') && (
+                        <Button variant="ghost" size="sm" onClick={() => openRailSection('filters')}>
+                          <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </TabsContent>

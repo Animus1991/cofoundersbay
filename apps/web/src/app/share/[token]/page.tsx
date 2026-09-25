@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { cn, errorStatus } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
     return (
       <div className="text-center py-8 text-muted-foreground">
         <FileText className="icon-xl mx-auto mb-2 opacity-30" />
-        <p className="text-sm">No content available in this version.</p>
+        <p className="text-sm"><BilingualText en="No content available in this version." el="Δεν υπάρχει περιεχόμενο σε αυτή την έκδοση." wrap /></p>
       </div>
     );
   }
@@ -228,7 +229,7 @@ export default function SharePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="icon-xl animate-spin mx-auto mb-3 text-primary-accessible" />
-          <p className="text-sm text-muted-foreground">Loading shared document…</p>
+          <p className="text-sm text-muted-foreground"><BilingualText en="Loading shared document…" el="Φόρτωση κοινόχρηστου εγγράφου…" compact /></p>
         </div>
       </div>
     );
@@ -246,7 +247,7 @@ export default function SharePage() {
                 <Lock className="icon-lg text-primary-accessible" />
               </div>
             </div>
-            <CardTitle>Password Protected</CardTitle>
+            <CardTitle><BilingualText en="Password Protected" el="Προστατεύεται με κωδικό" compact /></CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {linkInfo?.label
                 ? `"${linkInfo.label}" is password protected.`
@@ -255,7 +256,7 @@ export default function SharePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="share-password">Password</Label>
+              <Label htmlFor="share-password"><BilingualText en="Password" el="Κωδικός" compact /></Label>
               <Input
                 id="share-password"
                 type="password"
@@ -291,10 +292,10 @@ export default function SharePage() {
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
             <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-accessible" />
-            <h1 className="font-semibold mb-2">Link Unavailable</h1>
+            <h1 className="font-semibold mb-2"><BilingualText en="Link Unavailable" el="Ο σύνδεσμος δεν είναι διαθέσιμος" compact /></h1>
             <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
             <Button variant="outline" onClick={() => window.location.href = '/'}>
-              Go to CoFounderBay
+              <BilingualText en="Go to CoFounderBay" el="Μετάβαση στο CoFounderBay" compact />
             </Button>
           </CardContent>
         </Card>
@@ -336,7 +337,7 @@ export default function SharePage() {
               className="text-xs"
             >
               <ExternalLink className="icon-sm mr-1.5" />
-              Sign In
+              <BilingualText en="Sign In" el="Σύνδεση" compact />
             </Button>
           </div>
         </div>
@@ -408,7 +409,7 @@ export default function SharePage() {
               {document.completionPercent > 0 && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Completion</span>
+                    <span><BilingualText en="Completion" el="Ολοκλήρωση" compact /></span>
                     <span>{document.completionPercent}%</span>
                   </div>
                   <Progress value={document.completionPercent} className="h-1.5" />
@@ -422,7 +423,7 @@ export default function SharePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <FileText className="icon-sm" />
-                    Document Content
+                    <BilingualText en="Document Content" el="Περιεχόμενο εγγράφου" compact />
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
                     v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
@@ -438,7 +439,7 @@ export default function SharePage() {
             {linkInfo?.permissions === 'view' && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-lg p-3">
                 <Eye className="icon-sm shrink-0" />
-                You are viewing this document in read-only mode. To collaborate, request full access from the owner.
+                <BilingualText en="You are viewing this document in read-only mode. To collaborate, request full access from the owner." el="Βλέπετε το έγγραφο μόνο για ανάγνωση. Για συνεργασία, ζητήστε πλήρη πρόσβαση από τον κάτοχο." wrap />
               </div>
             )}
 
@@ -447,13 +448,13 @@ export default function SharePage() {
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="p-4 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium">Want to leave feedback?</p>
+                    <p className="text-sm font-medium"><BilingualText en="Want to leave feedback?" el="Θέλετε να αφήσετε σχόλιο;" compact /></p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Sign in or create a free account to comment on this document.
+                      <BilingualText en="Sign in or create a free account to comment on this document." el="Συνδεθείτε ή δημιουργήστε δωρεάν λογαριασμό για να σχολιάσετε αυτό το έγγραφο." wrap />
                     </p>
                   </div>
                   <Button size="sm" onClick={() => window.location.href = '/login'}>
-                    Sign In
+                    <BilingualText en="Sign In" el="Σύνδεση" compact />
                   </Button>
                 </CardContent>
               </Card>

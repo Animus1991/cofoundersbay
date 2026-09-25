@@ -14,6 +14,7 @@ import {
   AdminXPBreakdownItem,
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  'bg-status-warning-bg text-status-warning',
@@ -106,9 +107,9 @@ export function ScoreInspector() {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-foreground">Score Inspector</h2>
+        <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Score Inspector" el="Επιθεωρητής βαθμολογίας" compact /></h2>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Full per-user scoring audit: XP breakdown, badges, streak, contributions, anomaly flags.
+          <BilingualText en="Full per-user scoring audit: XP breakdown, badges, streak, contributions, anomaly flags." el="Πλήρης έλεγχος βαθμολογίας ανά χρήστη: ανάλυση XP, διακρίσεις, σερί, συνεισφορές, επισημάνσεις ανωμαλιών." wrap />
         </p>
       </div>
 
@@ -212,10 +213,10 @@ export function ScoreInspector() {
               <table className="w-full text-xs text-muted-foreground">
                 <thead>
                   <tr className="text-left border-b border-border">
-                    <th className="pb-1.5 font-medium">Event</th>
-                    <th className="pb-1.5 font-medium text-right">Events</th>
-                    <th className="pb-1.5 font-medium text-right">Total XP</th>
-                    <th className="pb-1.5 font-medium text-right">Avg XP</th>
+                    <th className="pb-1.5 font-medium"><BilingualText en="Event" el="Συμβάν" compact /></th>
+                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Events" el="Συμβάντα" compact /></th>
+                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Total XP" el="Σύνολο XP" compact /></th>
+                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Avg XP" el="Μέσο XP" compact /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,12 +239,12 @@ export function ScoreInspector() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-muted-foreground border-b border-border">
-                    <th className="pb-2 font-medium">Type</th>
-                    <th className="pb-2 font-medium">Base</th>
-                    <th className="pb-2 font-medium">Final</th>
-                    <th className="pb-2 font-medium">Mult</th>
-                    <th className="pb-2 font-medium">Flag</th>
-                    <th className="pb-2 font-medium">Explain</th>
+                    <th className="pb-2 font-medium"><BilingualText en="Type" el="Τύπος" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Base" el="Βάση" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Final" el="Τελικό" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Mult" el="Πολλ." compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Flag" el="Σήμανση" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Explain" el="Εξήγηση" compact /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -258,7 +259,7 @@ export function ScoreInspector() {
           {/* Badges */}
           <Section title={`Badges (${report.badges.length})`} icon={Award}>
             {report.badges.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No badges earned yet.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No badges earned yet." el="Δεν έχουν κερδηθεί διακρίσεις ακόμα." compact /></p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {report.badges.map((b) => (
@@ -283,15 +284,15 @@ export function ScoreInspector() {
             {report.streak ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground text-xs">Current Streak</p>
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Current Streak" el="Τρέχον σερί" compact /></p>
                   <p className="font-bold text-2xl text-status-accent">{report.streak.currentStreak}d</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Longest</p>
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Longest" el="Μεγαλύτερο" compact /></p>
                   <p className="font-semibold text-foreground">{report.streak.longestStreak}d</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Last Active</p>
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></p>
                   <p className="text-foreground">
                     {report.streak.lastActiveDate
                       ? new Date(report.streak.lastActiveDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })
@@ -299,7 +300,7 @@ export function ScoreInspector() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Grace Used</p>
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Grace Used" el="Χάρη που χρησιμοποιήθηκε" compact /></p>
                   <p className="text-foreground">
                     {report.streak.graceUsedAt
                       ? new Date(report.streak.graceUsedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })
@@ -308,14 +309,14 @@ export function ScoreInspector() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No streak record found.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No streak record found." el="Δεν βρέθηκε σερί." compact /></p>
             )}
           </Section>
 
           {/* Anomaly Flags */}
           <Section title={`Abuse Flags (${report.anomalies.length})`} icon={AlertTriangle}>
             {report.anomalies.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No abuse flags on this user.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No abuse flags on this user." el="Καμία επισήμανση κατάχρησης για αυτόν τον χρήστη." compact /></p>
             ) : (
               <div className="space-y-2">
                 {report.anomalies.map((a) => (
@@ -378,7 +379,7 @@ export function ScoreInspector() {
       {!report && !loading && !error && (
         <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
           <Search className="w-10 h-10 mb-3 opacity-30" />
-          <p className="text-sm">Enter a user ID above to inspect their scoring profile.</p>
+          <p className="text-sm"><BilingualText en="Enter a user ID above to inspect their scoring profile." el="Εισάγετε αναγνωριστικό χρήστη παραπάνω για να δείτε τη βαθμολογία του." wrap /></p>
         </div>
       )}
     </div>

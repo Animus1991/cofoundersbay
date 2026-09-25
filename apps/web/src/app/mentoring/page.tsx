@@ -27,10 +27,17 @@ import {
   FileText,
   BadgeCheck,
   Globe,
-  Filter,
+  X,
 } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, summarizeMeetingNotes, type MentorBookingItem, type SearchHit, type MeetingNotesSummary } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { bilingualInline } from '@/lib/i18n/format';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,7 +64,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
 
@@ -108,13 +115,32 @@ function hitToMentor(hit: SearchHit): Mentor {
 }
 
 const AVAIL_CONFIG = {
-  available: { label: 'Available', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-emerald-500' },
-  busy:      { label: 'Busy',      color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-red-500'     },
-  limited:   { label: 'Limited',   color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-amber-500'   },
+  available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-emerald-500' },
+  busy:      { en: 'Busy',      el: 'Απασχολημένος', color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-red-500'     },
+  limited:   { en: 'Limited',   el: 'Περιορισμένη', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-amber-500'   },
 } as const;
 
 const PRICE_FILTERS = ['Any', 'Free', 'Paid'] as const;
 type PriceFilter = typeof PRICE_FILTERS[number];
+const PRICE_OPTIONS = [
+  { value: 'Any', en: 'Any price', el: 'Οποιαδήποτε τιμή' },
+  { value: 'Free', en: 'Free', el: 'Δωρεάν' },
+  { value: 'Paid', en: 'Paid', el: 'Επί πληρωμή' },
+] as const satisfies ReadonlyArray<{ value: PriceFilter; en: string; el: string }>;
+
+const MEETING_TYPE_LABEL: Record<string, { en: string; el: string }> = {
+  video: { en: 'Video call', el: 'Βιντεοκλήση' },
+  chat: { en: 'Chat', el: 'Συνομιλία' },
+  in_person: { en: 'In person', el: 'Δια ζώσης' },
+};
+
+const BOOKING_STATUS_LABEL: Record<string, { en: string; el: string }> = {
+  requested: { en: 'Requested', el: 'Ζητήθηκε' },
+  confirmed: { en: 'Confirmed', el: 'Επιβεβαιώθηκε' },
+  completed: { en: 'Completed', el: 'Ολοκληρώθηκε' },
+  cancelled: { en: 'Cancelled', el: 'Ακυρώθηκε' },
+  declined: { en: 'Declined', el: 'Απορρίφθηκε' },
+};
 
 const EXPERTISE_FILTERS = [
   'All',
@@ -127,8 +153,9 @@ const EXPERTISE_FILTERS = [
 ];
 
 function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
-  const avail = mentor.availabilityStatus ?? 'available';
-  const availCfg = AVAIL_CONFIG[avail];
+  // Shown only when known: search results carry no availability, and a green
+  // "Available" on every card was a claim nothing had checked.
+  const availCfg = mentor.availabilityStatus ? AVAIL_CONFIG[mentor.availabilityStatus] : null;
   // No invented fallback: a mentor the engine has not scored shows no pill,
   // rather than a number between 70 and 95 that changes on every render.
   const matchPct = mentor.matchScore ?? null;
@@ -142,10 +169,10 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             <Avatar className="h-11 w-11 ring-2 ring-primary/20">
               <AvatarImage src={mentor.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
-                {mentor.displayName[0]?.toUpperCase()}
+                {initialsOf(mentor.displayName)}
               </AvatarFallback>
             </Avatar>
-            <span className={cn('absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full ring-2 ring-background', availCfg.dot)} />
+            {availCfg && <span className={cn('absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full ring-2 ring-background', availCfg.dot)} aria-hidden="true" />}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -153,10 +180,11 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               <Link href={`/profiles/${mentor.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
-              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />}
+              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-accessible shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
               {mentor.isFeatured && (
                 <Badge variant="secondary" className="gap-1 text-2xs px-1.5 py-0.5">
-                  <TrendingUp className="h-2.5 w-2.5" />Featured
+                  <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />
+                  <BilingualText en="Featured" el="Προτεινόμενος" compact />
                 </Badge>
               )}
             </div>
@@ -173,10 +201,10 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
                 </span>
               )}
               {mentor.location && (
-                <span className="flex items-center gap-1"><MapPin className="icon-sm" />{mentor.location}</span>
+                <span className="flex items-center gap-1"><MapPin className="icon-sm" aria-hidden="true" />{mentor.location}</span>
               )}
               {mentor.isRemote && (
-                <span className="flex items-center gap-1"><Globe className="icon-sm text-status-info" />Remote</span>
+                <span className="flex items-center gap-1"><Globe className="icon-sm text-status-info" aria-hidden="true" /><BilingualText en="Remote" el="Εξ αποστάσεως" compact /></span>
               )}
             </div>
           </div>
@@ -192,7 +220,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               )}>
                 {matchPct}%
               </div>
-              <span className="text-2xs text-muted-foreground">match</span>
+              <span className="text-2xs text-muted-foreground"><BilingualText en="match" el="ταίριασμα" compact /></span>
             </div>
           )}
         </div>
@@ -214,17 +242,23 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="flex items-center gap-2">
             {mentor.hourlyRate ? (
               <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
-                <DollarSign className="icon-sm text-primary-accessible" />{mentor.hourlyRate}/hr
+                <DollarSign className="icon-sm text-primary-accessible" aria-hidden="true" />{mentor.hourlyRate}
+                <BilingualText en="/hr" el="/ώρα" compact />
               </span>
             ) : (
-              <Badge variant="outline" className="text-2xs border-status-success-border text-status-success bg-status-success-bg">Free</Badge>
+              <Badge variant="outline" className="text-2xs border-status-success-border text-status-success bg-status-success-bg">
+                <BilingualText en="Free" el="Δωρεάν" compact />
+              </Badge>
             )}
-            <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
-              {availCfg.label}
-            </span>
+            {availCfg && (
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
+                <BilingualText en={availCfg.en} el={availCfg.el} compact />
+              </span>
+            )}
           </div>
-          <Button size="sm" onClick={onBook} className="gap-1.5 h-8 text-xs">
-            <Calendar className="icon-sm" />Book
+          <Button size="sm" onClick={onBook} className="gap-1.5 h-8 text-xs" aria-label={bilingualInline(`Book a session with ${mentor.displayName}`, `Κράτηση συνεδρίας με ${mentor.displayName}`)}>
+            <Calendar className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Book" el="Κράτηση" compact />
           </Button>
         </div>
       </CardContent>
@@ -262,7 +296,7 @@ function BookingModal({
       setDate(''); setTime(''); setNotes('');
       onClose();
     } catch (err) {
-      showError('Booking failed', err instanceof Error ? err.message : 'Please try again');
+      showError(bilingualInline('Booking failed', 'Η κράτηση απέτυχε'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά'));
     } finally {
       setSubmitting(false);
     }
@@ -274,16 +308,18 @@ function BookingModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Book a Session with {mentor.displayName}</DialogTitle>
+          <DialogTitle>
+            <BilingualText en={`Book a session with ${mentor.displayName}`} el={`Κράτηση συνεδρίας με ${mentor.displayName}`} />
+          </DialogTitle>
           <DialogDescription>
-            Choose your preferred date, time, and session details
+            <BilingualText en="Choose a date, a time and how you would like to meet. The mentor confirms the request." el="Επιλέξτε ημερομηνία, ώρα και τρόπο συνάντησης. Ο μέντορας επιβεβαιώνει το αίτημα." wrap />
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date"><BilingualText en="Date" el="Ημερομηνία" compact /></Label>
               <Input
                 id="date"
                 type="date"
@@ -295,7 +331,7 @@ function BookingModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="time">Time</Label>
+              <Label htmlFor="time"><BilingualText en="Time" el="Ώρα" compact /></Label>
               <Input
                 id="time"
                 type="time"
@@ -308,40 +344,40 @@ function BookingModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration</Label>
+              <Label htmlFor="duration"><BilingualText en="Duration" el="Διάρκεια" compact /></Label>
               <Select value={duration} onValueChange={setDuration}>
                 <SelectTrigger id="duration">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
-                  <SelectItem value="90">90 minutes</SelectItem>
-                  <SelectItem value="120">2 hours</SelectItem>
+                  <SelectItem value="30"><BilingualText en="30 minutes" el="30 λεπτά" compact /></SelectItem>
+                  <SelectItem value="60"><BilingualText en="60 minutes" el="60 λεπτά" compact /></SelectItem>
+                  <SelectItem value="90"><BilingualText en="90 minutes" el="90 λεπτά" compact /></SelectItem>
+                  <SelectItem value="120"><BilingualText en="2 hours" el="2 ώρες" compact /></SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="meeting-type">Meeting Type</Label>
+              <Label htmlFor="meeting-type"><BilingualText en="Meeting type" el="Τύπος συνάντησης" compact /></Label>
               <Select value={meetingType} onValueChange={(v) => setMeetingType(v as 'video' | 'in_person' | 'chat')}>
                 <SelectTrigger id="meeting-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="video">Video Call</SelectItem>
-                  <SelectItem value="chat">Chat</SelectItem>
-                  <SelectItem value="in_person">In Person</SelectItem>
+                  {(['video', 'chat', 'in_person'] as const).map((t) => (
+                    <SelectItem key={t} value={t}><BilingualText en={MEETING_TYPE_LABEL[t].en} el={MEETING_TYPE_LABEL[t].el} compact /></SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Label htmlFor="notes"><BilingualText en="Notes (optional)" el="Σημειώσεις (προαιρετικά)" compact /></Label>
             <Textarea
               id="notes"
-              placeholder="What would you like to discuss?"
+              placeholder={bilingualInline('What would you like to discuss?', 'Τι θα θέλατε να συζητήσετε;')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -351,7 +387,7 @@ function BookingModal({
           {mentor.hourlyRate && (
             <div className="rounded-lg bg-secondary/40 p-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Estimated Cost:</span>
+                <span className="text-muted-foreground"><BilingualText en="Estimated cost" el="Εκτιμώμενο κόστος" compact /></span>
                 <span className="font-semibold text-foreground">
                   ${((mentor.hourlyRate * parseInt(duration)) / 60).toFixed(0)}
                 </span>
@@ -361,11 +397,11 @@ function BookingModal({
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button type="submit" disabled={submitting} className="gap-2">
-              {submitting && <Loader2 className="icon-sm animate-spin" />}
-              Request Booking
+              {submitting && <Loader2 className="icon-sm animate-spin" aria-hidden="true" />}
+              <BilingualText en="Request booking" el="Αίτημα κράτησης" compact />
             </Button>
           </DialogFooter>
         </form>
@@ -409,7 +445,7 @@ function BookingCard({
       const { summary } = await summarizeMeetingNotes(sessionNotes);
       setAISummary(summary);
     } catch {
-      notifyError('AI unavailable', 'Could not generate summary right now.');
+      notifyError(bilingualInline('AI unavailable', 'Η τεχνητή νοημοσύνη δεν είναι διαθέσιμη'), bilingualInline('Could not generate a summary right now.', 'Δεν ήταν δυνατή η δημιουργία περίληψης αυτή τη στιγμή.'));
     } finally {
       setSummarizing(false);
     }
@@ -419,11 +455,11 @@ function BookingCard({
     <Card className="card-interactive">
       <CardContent className="p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Link href={`/profiles/${otherUserId}`}>
+          <Link href={`/profiles/${otherUserId}`} aria-label={bilingualInline(`Open ${other.displayName}'s profile`, `Άνοιγμα προφίλ: ${other.displayName}`)}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
               <AvatarImage src={other.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {other.displayName[0]?.toUpperCase()}
+                {initialsOf(other.displayName)}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -437,19 +473,23 @@ function BookingCard({
                 {other.displayName}
               </Link>
               <span className="text-xs text-muted-foreground">
-                {isMentor ? '(mentee)' : '(mentor)'}
+                {isMentor
+                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
+                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
               </span>
               <Badge
                 variant="outline"
                 className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
               >
-                {booking.status}
+                {BOOKING_STATUS_LABEL[booking.status]
+                  ? <BilingualText en={BOOKING_STATUS_LABEL[booking.status].en} el={BOOKING_STATUS_LABEL[booking.status].el} compact />
+                  : booking.status}
               </Badge>
             </div>
 
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
               </span>
               <span className="flex items-center gap-1">
@@ -459,8 +499,10 @@ function BookingCard({
                 <LocalTime value={end} />
               </span>
               <span className="flex items-center gap-1">
-                <Video className="icon-sm" />
-                {booking.meetingType}
+                <Video className="icon-sm" aria-hidden="true" />
+                {MEETING_TYPE_LABEL[booking.meetingType]
+                  ? <BilingualText en={MEETING_TYPE_LABEL[booking.meetingType].en} el={MEETING_TYPE_LABEL[booking.meetingType].el} compact />
+                  : booking.meetingType}
               </span>
             </div>
 
@@ -475,16 +517,18 @@ function BookingCard({
                 <button
                   type="button"
                   onClick={() => setShowNotes(!showNotes)}
+                  aria-expanded={showNotes}
                   className="flex items-center gap-1.5 text-xs font-medium text-primary-accessible hover:text-primary/80 transition-colors"
                 >
-                  <FileText className="icon-sm" />
-                  Session Notes & AI Summary
-                  {showNotes ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
+                  <FileText className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Session notes & AI summary" el="Σημειώσεις συνεδρίας & περίληψη AI" compact />
+                  {showNotes ? <ChevronUp className="icon-sm" aria-hidden="true" /> : <ChevronDown className="icon-sm" aria-hidden="true" />}
                 </button>
                 {showNotes && (
                   <div className="mt-2 space-y-2">
                     <Textarea
-                      placeholder="Add your session notes, key points, decisions..."
+                      placeholder={bilingualInline('Add your session notes, key points, decisions…', 'Προσθέστε σημειώσεις, βασικά σημεία, αποφάσεις…')}
+                      aria-label={bilingualInline('Session notes', 'Σημειώσεις συνεδρίας')}
                       value={sessionNotes}
                       onChange={(e) => setSessionNotes(e.target.value)}
                       rows={3}
@@ -497,19 +541,21 @@ function BookingCard({
                       onClick={handleSummarize}
                       disabled={summarizing || !sessionNotes.trim()}
                     >
-                      {summarizing ? <Loader2 className="icon-sm animate-spin" /> : <Sparkles className="icon-sm" />}
-                      {summarizing ? 'Summarizing...' : 'Summarize with AI'}
+                      {summarizing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Sparkles className="icon-sm" aria-hidden="true" />}
+                      {summarizing
+                        ? <BilingualText en="Summarising…" el="Δημιουργία περίληψης…" compact />
+                        : <BilingualText en="Summarise with AI" el="Περίληψη με AI" compact />}
                     </Button>
                     {aiSummary && (
                       <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
                         <div className="flex items-center gap-1.5">
                           <Sparkles className="icon-sm text-primary-accessible" />
-                          <span className="text-xs font-semibold text-primary-accessible">AI Summary</span>
+                          <span className="text-xs font-semibold text-primary-accessible"><BilingualText en="AI summary" el="Περίληψη AI" compact /></span>
                         </div>
                         <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>
                         {aiSummary.actionItems.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Action Items:</p>
+                            <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Action items" el="Ενέργειες" compact /></p>
                             <ul className="space-y-0.5">
                               {aiSummary.actionItems.map((item, i) => (
                                 <li key={i} className="flex items-start gap-1 text-xs text-foreground">
@@ -522,7 +568,7 @@ function BookingCard({
                         )}
                         {aiSummary.followUps.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Follow-ups:</p>
+                            <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Follow-ups" el="Επόμενα βήματα" compact /></p>
                             <ul className="space-y-0.5">
                               {aiSummary.followUps.map((f, i) => (
                                 <li key={i} className="text-xs text-muted-foreground">• {f}</li>
@@ -544,8 +590,8 @@ function BookingCard({
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-primary-accessible hover:underline"
               >
-                <ExternalLink className="icon-sm" />
-                Join meeting
+                <ExternalLink className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Join meeting" el="Συμμετοχή στη συνάντηση" compact />
               </a>
             )}
           </div>
@@ -555,25 +601,25 @@ function BookingCard({
               {isMentor && booking.status === 'requested' && (
                 <>
                   <Button size="sm" className="gap-1" onClick={onConfirm} disabled={isActing}>
-                    {isActing ? <Loader2 className="icon-sm animate-spin" /> : <CheckCircle className="icon-sm" />}
-                    Confirm
+                    {isActing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <CheckCircle className="icon-sm" aria-hidden="true" />}
+                    <BilingualText en="Confirm" el="Επιβεβαίωση" compact />
                   </Button>
-                  <Button aria-label="Decline" size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
+                  <Button aria-label={bilingualInline('Decline', 'Απόρριψη')} size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
                     className="text-muted-foreground hover:text-destructive-accessible">
-                    <XCircle className="icon-sm" />
+                    <XCircle className="icon-sm" aria-hidden="true" />
                   </Button>
                 </>
               )}
               {!isMentor && booking.status === 'requested' && (
                 <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
                   className="text-muted-foreground hover:text-destructive-accessible">
-                  Cancel
+                  <BilingualText en="Cancel request" el="Ακύρωση αιτήματος" compact />
                 </Button>
               )}
               {booking.status === 'confirmed' && (
                 <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
                   className="text-muted-foreground hover:text-destructive-accessible">
-                  Cancel
+                  <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />
                 </Button>
               )}
             </div>
@@ -631,17 +677,10 @@ export default function MentoringPage() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [mentorHits, setMentorHits] = useState<Mentor[]>([]);
-
-  const userId =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null;
-          } catch {
-            return null;
-          }
-        })()
-      : null;
+  const { openRailSection } = usePageRail();
+  // Read after mount: reading localStorage during render gave the server and
+  // the first client render different answers for "am I the mentor here?".
+  const userId = useStoredUser()?.id ?? null;
 
   // Load real mentors from search API
   const { isLoading: mentorsQueryLoading, isError: mentorsError } = useQuery({
@@ -673,10 +712,13 @@ export default function MentoringPage() {
       updateMentorBooking(bookingId, { status }),
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: qk('mentorships', 'bookings') });
-      const label = vars.status === 'confirmed' ? 'confirmed' : 'cancelled';
-      success(`Session ${label}`, `The booking has been ${label}.`);
+      if (vars.status === 'confirmed') {
+        success(bilingualInline('Session confirmed', 'Η συνεδρία επιβεβαιώθηκε'), bilingualInline('The booking has been confirmed.', 'Η κράτηση επιβεβαιώθηκε.'));
+      } else {
+        success(bilingualInline('Session cancelled', 'Η συνεδρία ακυρώθηκε'), bilingualInline('The booking has been cancelled.', 'Η κράτηση ακυρώθηκε.'));
+      }
     },
-    onError: (err) => showError('Action failed', err instanceof Error ? err.message : 'Please try again'),
+    onError: (err) => showError(bilingualInline('Action failed', 'Η ενέργεια απέτυχε'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά')),
   });
 
   const filteredMentors = mentorHits.filter((m) => {
@@ -718,24 +760,126 @@ export default function MentoringPage() {
   const handleCreateBooking = async (mentorId: string, startAt: string, endAt: string, meetingType: 'video' | 'in_person' | 'chat', notes: string) => {
     await createMentorBooking({ mentorId, startAt, endAt, meetingType, notes: notes || undefined });
     queryClient.invalidateQueries({ queryKey: qk('mentorships', 'bookings') });
-    success('Booking requested!', 'Your session request has been sent to the mentor.');
+    success(bilingualInline('Booking requested', 'Η κράτηση ζητήθηκε'), bilingualInline('Your session request has been sent to the mentor.', 'Το αίτημα στάλθηκε στον μέντορα.'));
   };
 
+  // Offered to the assistant: the two sections, the session filter and the
+  // rail's filters through the same setters, and Book, which opens the same
+  // booking form the card's button opens (the request itself is sent there).
+  const activeFilters = (priceFilter !== 'Any' ? 1 : 0) + (selectedExpertise !== 'All' ? 1 : 0);
+  const clearFilters = () => { setPriceFilter('Any'); setSelectedExpertise('All'); };
+  usePageControls([
+    choiceControl('mentoring_section', 'Mentoring section', 'Ενότητα καθοδήγησης', [
+      { value: 'find', en: 'Find mentors', el: 'Εύρεση μεντόρων' },
+      { value: 'sessions', en: 'My sessions', el: 'Οι συνεδρίες μου' },
+    ], mainTab, (v) => setMainTab(v as typeof mainTab)),
+    choiceControl('sessions_filter', 'Sessions shown', 'Συνεδρίες που εμφανίζονται', [
+      { value: 'upcoming', en: 'Upcoming', el: 'Επερχόμενες' },
+      { value: 'past', en: 'Past', el: 'Παρελθούσες' },
+      { value: 'all', en: 'All', el: 'Όλες' },
+    ], sessionsTab, (v) => setSessionsTab(v as typeof sessionsTab)),
+    choiceControl('mentor_price', 'Mentor price', 'Τιμή μέντορα', [...PRICE_OPTIONS], priceFilter, (v) => setPriceFilter(v as PriceFilter)),
+    choiceControl('mentor_expertise', 'Mentor expertise', 'Εξειδίκευση μέντορα', EXPERTISE_FILTERS.map((e) => ({ value: e, en: e === 'All' ? 'All areas' : e, el: e === 'All' ? 'Όλοι οι τομείς' : e })), selectedExpertise, setSelectedExpertise),
+    {
+      id: 'open_booking',
+      labelEn: 'Open the booking form for mentor',
+      labelEl: 'Άνοιγμα φόρμας κράτησης για μέντορα',
+      writes: false,
+      options: rowOptions(filteredMentors, (m) => m.id, (m) => m.displayName),
+      run: (v) => {
+        const mentor = filteredMentors.find((m) => m.id === v);
+        if (mentor) handleBookMentor(mentor);
+      },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'mentors',
+      labelEn: 'Mentors',
+      labelEl: 'Μέντορες',
+      rows: mentorsQueryLoading ? undefined : filteredMentors.map((m) =>
+        `${m.displayName}${m.location ? ` · ${m.location}` : ''}${m.expertise.length ? ` · ${m.expertise.join(', ')}` : ''} · ${m.hourlyRate ? `$${m.hourlyRate}/hr` : 'free'}${m.rating > 0 ? ` · ${m.rating.toFixed(1)}★` : ''}`,
+      ),
+    },
+    {
+      id: 'sessions',
+      labelEn: 'My sessions',
+      labelEl: 'Οι συνεδρίες μου',
+      rows: isLoading ? undefined : filteredBookings.map((b) => {
+        const mine = b.mentorId === userId;
+        const other = mine ? b.mentee : b.mentor;
+        return `${other?.displayName ?? 'Unknown'} (${mine ? 'mentee' : 'mentor'}) · ${b.startAt.slice(0, 16).replace('T', ' ')} UTC · ${b.meetingType} · ${b.status}`;
+      }),
+    },
+  ]);
+
+  /*
+   * The column leads with the two sections, the search and the mentors. The
+   * three directory figures, the price filter and the expertise chips are
+   * auxiliary, so they live in the rail.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'mentor',
+      labelEn: 'Mentors at a glance',
+      labelEl: 'Μέντορες με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'mentors', label: 'Mentors shown', labelEl: 'Μέντορες που εμφανίζονται', value: mentorsQueryLoading ? '—' : filteredMentors.length, icon: GraduationCap, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'free', label: 'Free to book', labelEl: 'Δωρεάν κράτηση', value: mentorsQueryLoading ? '—' : filteredMentors.filter((m) => !m.hourlyRate).length, icon: Users, tone: 'bg-status-success-bg text-status-success' },
+            // The directory search carries no ratings or session counts, so
+            // these appear only when some mentor on screen actually has one:
+            // a 0 here would read as "nobody has mentored", not "unknown".
+            ...(avgRating ? [{ key: 'rating', label: 'Average rating', labelEl: 'Μέση βαθμολογία', value: `${avgRating}★`, icon: Star, tone: 'bg-status-warning-bg text-status-warning' }] : []),
+            ...(sessionsDone > 0 ? [{ key: 'sessions', label: 'Sessions given', labelEl: 'Συνεδρίες που έγιναν', value: sessionsDone, icon: Users, tone: 'bg-status-info-bg text-status-info' }] : []),
+            ...(upcomingCount > 0 ? [{ key: 'upcoming', label: 'Your upcoming sessions', labelEl: 'Οι επερχόμενες συνεδρίες σας', value: upcomingCount, icon: Calendar, tone: 'bg-status-info-bg text-status-info' }] : []),
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: activeFilters || null,
+      content: (
+        <div className="space-y-4">
+          {mainTab !== 'find' && (
+            <p className="px-2.5 text-xs leading-relaxed text-muted-foreground">
+              <BilingualText en="These filters narrow Find mentors." el="Αυτά τα φίλτρα περιορίζουν την Εύρεση μεντόρων." wrap />
+            </p>
+          )}
+          <RailOptions title="Price" titleEl="Τιμή" options={PRICE_OPTIONS} value={priceFilter} onChange={(v) => { setPriceFilter(v); setMainTab('find'); }} />
+          <RailOptions
+            title="Expertise"
+            titleEl="Εξειδίκευση"
+            options={EXPERTISE_FILTERS.map((e) => ({ value: e, en: e === 'All' ? 'All areas' : e, el: e === 'All' ? 'Όλοι οι τομείς' : e }))}
+            value={selectedExpertise}
+            onChange={(v) => { setSelectedExpertise(v); setMainTab('find'); }}
+          />
+          {activeFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={clearFilters} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <AppShell
-      title="Mentoring"
-      description="Find expert mentors and manage your sessions"
-    >
+    <AppShell rail={rail}>
       <div className="pb-10">
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
         <TabsList>
           <TabsTrigger value="find" className="gap-2">
-            <Search className="icon-sm" />
-            Find Mentors
+            <Search className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Find mentors" el="Εύρεση μεντόρων" compact />
           </TabsTrigger>
           <TabsTrigger value="sessions" className="gap-2">
-            <Calendar className="icon-sm" />
-            My Sessions
+            <Calendar className="icon-sm" aria-hidden="true" />
+            <BilingualText en="My sessions" el="Οι συνεδρίες μου" compact />
             {upcomingCount > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                 {upcomingCount}
@@ -745,79 +889,28 @@ export default function MentoringPage() {
         </TabsList>
 
         <TabsContent value="find" className="space-y-4">
-          {/* Stats bar */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Expert Mentors', value: filteredMentors.length, icon: GraduationCap, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-              { label: 'Avg Rating', value: avgRating ? `${avgRating}★` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-              { label: 'Sessions Done', value: sessionsDone, icon: Users, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            ].map((s) => {
-              const SIcon = s.icon;
-              return (
-                <Card key={s.label} className="border-border/40">
-                  <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-2.5">
-                    <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                      <SIcon className="icon-sm" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                      <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
-                placeholder="Search mentors by name, expertise, or bio..."
+                placeholder={bilingualInline('Search mentors by name, expertise or bio…', 'Αναζήτηση μεντόρων με όνομα, εξειδίκευση ή βιογραφικό…')}
+                aria-label={bilingualInline('Search mentors', 'Αναζήτηση μεντόρων')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
               />
             </div>
 
-            {/* Price filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="icon-sm text-muted-foreground shrink-0" />
-              {PRICE_FILTERS.map((pf) => (
-                <button
-                  key={pf}
-                  onClick={() => setPriceFilter(pf)}
-                  className={cn(
-                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                    priceFilter === pf
-                      ? 'border-primary bg-primary/15 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >{pf}</button>
-              ))}
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {EXPERTISE_FILTERS.map((expertise) => (
-                <button
-                  key={expertise}
-                  onClick={() => setSelectedExpertise(expertise)}
-                  className={cn(
-                    'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
-                    selectedExpertise === expertise
-                      ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
-                  )}
-                >
-                  {expertise}
-                </button>
-              ))}
-            </div>
           </div>
 
           {mentorsError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load mentors.</p>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText en="Mentors could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των μεντόρων." wrap />
+              </p>
+              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: qk('mentors') })}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
             </CardContent></Card>
           ) : mentorsQueryLoading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -828,9 +921,9 @@ export default function MentoringPage() {
               {featuredMentors.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Award className="icon-sm text-primary-accessible" />
+                    <Award className="icon-sm text-primary-accessible" aria-hidden="true" />
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                      Featured Mentors
+                      <BilingualText en="Featured mentors" el="Προτεινόμενοι μέντορες" compact />
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -844,7 +937,9 @@ export default function MentoringPage() {
               {regularMentors.length > 0 && (
                 <div className="space-y-3">
                   {featuredMentors.length > 0 && (
-                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">All Mentors</h2>
+                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                      <BilingualText en="All mentors" el="Όλοι οι μέντορες" compact />
+                    </h2>
                   )}
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {regularMentors.map((mentor) => (
@@ -857,9 +952,26 @@ export default function MentoringPage() {
               {filteredMentors.length === 0 && (
                 <EmptyState
                   illustration="search"
-                  title="No mentors found"
-                  description="No mentor profiles have been created yet. Mentors who register and complete their profile will appear here."
+                  title={<BilingualText en="No mentors found" el="Δεν βρέθηκαν μέντορες" />}
+                  description={
+                    activeFilters > 0
+                      ? <BilingualText en="The price or expertise filter in the side panel may be hiding mentors." el="Το φίλτρο τιμής ή εξειδίκευσης στο πλευρικό πάνελ ίσως κρύβει μέντορες." />
+                      : searchQuery.trim()
+                        ? <BilingualText en="Try a different name or area of expertise." el="Δοκιμάστε άλλο όνομα ή τομέα εξειδίκευσης." />
+                        : <BilingualText en="No mentor profiles have been created yet. Mentors who register and complete their profile will appear here." el="Δεν υπάρχουν ακόμα προφίλ μεντόρων. Οι μέντορες που εγγράφονται και ολοκληρώνουν το προφίλ τους θα εμφανιστούν εδώ." />
+                  }
                   askAiPrompt="No mentors are listed. What kind of mentor should a first-time founder look for, and how do I book a session?"
+                  action={
+                    activeFilters > 0 ? (
+                      <Button variant="secondary" onClick={() => openRailSection('filters')}>
+                        <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                      </Button>
+                    ) : searchQuery.trim() ? (
+                      <Button variant="secondary" onClick={() => setSearchQuery('')}>
+                        <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                      </Button>
+                    ) : undefined
+                  }
                 />
               )}
             </>
@@ -870,8 +982,8 @@ export default function MentoringPage() {
           <Tabs value={sessionsTab} onValueChange={(v) => setSessionsTab(v as typeof sessionsTab)}>
             <TabsList>
               <TabsTrigger value="upcoming" className="gap-2">
-                <Calendar className="icon-sm" />
-                Upcoming
+                <Calendar className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                 {upcomingCount > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                     {upcomingCount}
@@ -879,10 +991,10 @@ export default function MentoringPage() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="past" className="gap-2">
-                <BookOpen className="icon-sm" />
-                Past
+                <BookOpen className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Past" el="Παρελθούσες" compact />
               </TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /></TabsTrigger>
             </TabsList>
 
             {(['upcoming', 'past', 'all'] as const).map((t) => (
@@ -892,18 +1004,22 @@ export default function MentoringPage() {
                 ) : filteredBookings.length === 0 ? (
                   <EmptyState
                     illustration="calendar"
-                    title={t === 'upcoming' ? 'No upcoming sessions' : t === 'past' ? 'No past sessions' : 'No sessions yet'}
+                    title={t === 'upcoming'
+                      ? <BilingualText en="No upcoming sessions" el="Δεν υπάρχουν επερχόμενες συνεδρίες" />
+                      : t === 'past'
+                        ? <BilingualText en="No past sessions" el="Δεν υπάρχουν παρελθούσες συνεδρίες" />
+                        : <BilingualText en="No sessions yet" el="Δεν υπάρχουν συνεδρίες ακόμα" />}
                     description={
                       t === 'upcoming'
-                        ? 'Browse mentors and request a session to get started.'
-                        : 'Your completed sessions will appear here.'
+                        ? <BilingualText en="Browse mentors and request a session to get started." el="Δείτε τους μέντορες και ζητήστε μια συνεδρία για να ξεκινήσετε." />
+                        : <BilingualText en="Your completed sessions will appear here." el="Οι ολοκληρωμένες συνεδρίες σας θα εμφανίζονται εδώ." />
                     }
                     askAiPrompt="I have no mentoring sessions. Recommend who to book and what to ask in the first call."
                     action={
                       t === 'upcoming' ? (
                         <Button variant="secondary" className="gap-2" onClick={() => setMainTab('find')}>
-                          <GraduationCap className="icon-sm" />
-                          Find a mentor
+                          <GraduationCap className="icon-sm" aria-hidden="true" />
+                          <BilingualText en="Find a mentor" el="Βρείτε μέντορα" compact />
                         </Button>
                       ) : undefined
                     }

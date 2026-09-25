@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 type NotificationType = 'message' | 'connection' | 'match' | 'event' | 'system';
 
@@ -104,7 +104,7 @@ function NotificationItem({
         <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage src={notification.actor?.avatarUrl || undefined} />
           <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
-            {notification.actor.name[0]?.toUpperCase()}
+            {initialsOf(notification.actor.name)}
           </AvatarFallback>
         </Avatar>
       ) : (

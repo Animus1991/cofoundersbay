@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface Invite {
   id: string;
@@ -110,9 +111,9 @@ export function InviteSystem() {
               <Gift className="icon-lg text-primary-accessible" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Invite Friends & Earn Rewards</h2>
+              <h2 className="text-xl font-bold"><BilingualText en="Invite Friends & Earn Rewards" el="Προσκαλέστε φίλους & κερδίστε ανταμοιβές" compact /></h2>
               <p className="text-sm text-muted-foreground">
-                Get premium features when your friends join
+                <BilingualText en="Get premium features when your friends join" el="Αποκτήστε premium δυνατότητες όταν εγγράφονται οι φίλοι σας" wrap />
               </p>
             </div>
           </div>
@@ -120,15 +121,15 @@ export function InviteSystem() {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <p className="text-xl font-bold">{stats?.totalInvites || 0}</p>
-              <p className="text-xs text-muted-foreground">Invites Sent</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Invites Sent" el="Προσκλήσεις που στάλθηκαν" compact /></p>
             </div>
             <div className="space-y-1">
               <p className="text-xl font-bold">{stats?.acceptedInvites || 0}</p>
-              <p className="text-xs text-muted-foreground">Accepted</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτές" compact /></p>
             </div>
             <div className="space-y-1">
               <p className="text-xl font-bold">{stats?.rewards || 0}</p>
-              <p className="text-xs text-muted-foreground">Rewards Earned</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Rewards Earned" el="Ανταμοιβές" compact /></p>
             </div>
           </div>
         </CardContent>
@@ -138,23 +139,23 @@ export function InviteSystem() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="email">
             <Mail className="icon-sm mr-2" />
-            Email Invite
+            <BilingualText en="Email Invite" el="Πρόσκληση με email" compact />
           </TabsTrigger>
           <TabsTrigger value="link">
             <Share2 className="icon-sm mr-2" />
-            Share Link
+            <BilingualText en="Share Link" el="Κοινοποίηση συνδέσμου" compact />
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="email" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Send Email Invitation</CardTitle>
+              <CardTitle className="text-lg"><BilingualText en="Send Email Invitation" el="Αποστολή πρόσκλησης email" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSendInvite} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email"><BilingualText en="Email Address" el="Διεύθυνση email" compact /></Label>
                   <div className="flex gap-2">
                     <Input
                       id="email"
@@ -169,7 +170,7 @@ export function InviteSystem() {
                       disabled={sendInviteMutation.isPending || !email}
                     >
                       <Send className="icon-sm mr-2" />
-                      Send
+                      <BilingualText en="Send" el="Αποστολή" compact />
                     </Button>
                   </div>
                 </div>
@@ -179,7 +180,7 @@ export function InviteSystem() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Sent Invitations</CardTitle>
+              <CardTitle className="text-lg"><BilingualText en="Sent Invitations" el="Απεσταλμένες προσκλήσεις" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -223,7 +224,7 @@ export function InviteSystem() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="mx-auto h-12 w-12 mb-2 opacity-40" aria-hidden="true" />
-                  <p>No invitations sent yet</p>
+                  <p><BilingualText en="No invitations sent yet" el="Δεν έχουν σταλεί προσκλήσεις ακόμα" compact /></p>
                 </div>
               )}
             </CardContent>
@@ -233,11 +234,11 @@ export function InviteSystem() {
         <TabsContent value="link" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Your Referral Link</CardTitle>
+              <CardTitle className="text-lg"><BilingualText en="Your Referral Link" el="Ο σύνδεσμος παραπομπής σας" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Share this link with friends</Label>
+                <Label><BilingualText en="Share this link with friends" el="Μοιραστείτε αυτόν τον σύνδεσμο με φίλους" compact /></Label>
                 <div className="flex gap-2">
                   <Input
                     value={inviteLink}
@@ -248,12 +249,12 @@ export function InviteSystem() {
                     {copied ? (
                       <>
                         <Check className="icon-sm mr-2 text-status-success" />
-                        Copied!
+                        <BilingualText en="Copied!" el="Αντιγράφηκε!" compact />
                       </>
                     ) : (
                       <>
                         <Copy className="icon-sm mr-2" />
-                        Copy
+                        <BilingualText en="Copy" el="Αντιγραφή" compact />
                       </>
                     )}
                   </Button>

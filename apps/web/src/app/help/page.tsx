@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type FAQItem = {
   question: string;
@@ -316,7 +317,7 @@ export default function HelpPage() {
         <Button asChild size="sm" className="gap-2">
           <a href="mailto:support@cofounderbay.com">
             <Mail className="icon-sm" aria-hidden="true" />
-            Contact Support
+            <BilingualText en="Contact Support" el="Επικοινωνία με υποστήριξη" compact />
           </a>
         </Button>
       }
@@ -328,8 +329,8 @@ export default function HelpPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
-          <p className="text-sm text-muted-foreground mb-4">Search our knowledge base or browse topics below</p>
+          <h2 className="text-xl font-bold text-foreground mb-1"><BilingualText en="How can we help you?" el="Πώς μπορούμε να βοηθήσουμε;" compact /></h2>
+          <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Search our knowledge base or browse topics below" el="Αναζητήστε στη βάση γνώσεων ή δείτε τα θέματα παρακάτω" wrap /></p>
           <div className="mx-auto max-w-lg relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
@@ -344,7 +345,7 @@ export default function HelpPage() {
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                Clear
+                <BilingualText en="Clear" el="Καθαρισμός" compact />
               </button>
             )}
           </div>
@@ -366,7 +367,7 @@ export default function HelpPage() {
                 : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
             )}
           >
-            All Topics
+            <BilingualText en="All Topics" el="Όλα τα θέματα" compact />
             <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-2xs', selectedCategory === null && 'bg-primary-foreground/20 text-primary-foreground')}>
               {faqCategories.reduce((sum, c) => sum + c.faqs.length, 0)}
             </Badge>
@@ -399,7 +400,7 @@ export default function HelpPage() {
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
               className="text-xs text-primary-accessible hover:underline"
             >
-              Clear all filters
+              <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
             </button>
           </div>
         )}
@@ -409,10 +410,10 @@ export default function HelpPage() {
           <Card className="shadow-sm border-border/50">
             <CardContent className="py-16 text-center">
               <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-foreground mb-2">No results found</h2>
-              <p className="text-sm text-muted-foreground mb-4">Try a different search term or browse all topics</p>
+              <h2 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h2>
+              <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Try a different search term or browse all topics" el="Δοκιμάστε άλλον όρο ή δείτε όλα τα θέματα" wrap /></p>
               <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}>
-                Clear search
+                <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
               </Button>
             </CardContent>
           </Card>
@@ -455,21 +456,21 @@ export default function HelpPage() {
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Mail className="icon-lg text-primary-accessible" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-1"><BilingualText en="Still need help?" el="Χρειάζεστε ακόμα βοήθεια;" compact /></h2>
             <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-              Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours.
+              <BilingualText en="Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours." el="Δεν βρίσκετε αυτό που ψάχνετε; Η ομάδα υποστήριξης απαντά συνήθως μέσα σε 24 ώρες." wrap />
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild className="gap-2">
                 <a href="mailto:support@cofounderbay.com">
                   <Mail className="icon-sm" aria-hidden="true" />
-                  Email Support
+                  <BilingualText en="Email Support" el="Υποστήριξη μέσω email" compact />
                 </a>
               </Button>
               <Button variant="outline" className="gap-2" asChild>
                 <Link href="/messages">
                   <MessageCircle className="icon-sm" />
-                  Live Chat
+                  <BilingualText en="Live Chat" el="Ζωντανή συνομιλία" compact />
                 </Link>
               </Button>
             </div>
@@ -482,8 +483,8 @@ export default function HelpPage() {
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5">Terms of Service</h3>
-                <p className="text-xs text-muted-foreground">Read our terms and conditions</p>
+                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h3>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Read our terms and conditions" el="Διαβάστε τους όρους χρήσης" compact /></p>
               </CardContent>
             </Card>
           </Link>
@@ -491,8 +492,8 @@ export default function HelpPage() {
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5">Privacy Policy</h3>
-                <p className="text-xs text-muted-foreground">Learn how we protect your data</p>
+                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h3>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Learn how we protect your data" el="Μάθετε πώς προστατεύουμε τα δεδομένα σας" compact /></p>
               </CardContent>
             </Card>
           </Link>
@@ -500,8 +501,8 @@ export default function HelpPage() {
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5">Account Settings</h3>
-                <p className="text-xs text-muted-foreground">Manage your preferences</p>
+                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Account Settings" el="Ρυθμίσεις λογαριασμού" compact /></h3>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Manage your preferences" el="Διαχειριστείτε τις προτιμήσεις σας" compact /></p>
               </CardContent>
             </Card>
           </Link>

@@ -370,7 +370,9 @@ export default function NotificationsPage() {
   return (
     <AppShell
       title={notificationsEn('page_title')}
+      titleEl={notificationsEl('page_title')}
       description={notificationsEn('page_description')}
+      descriptionEl={notificationsEl('page_description')}
     >
       <div className="">
         {/* Stats bar */}
@@ -382,17 +384,22 @@ export default function NotificationsPage() {
             {Object.entries(catCounts).map(([type, count]) => {
               const Icon = TYPE_ICONS[type] ?? Bell;
               const color = TYPE_COLORS[type] ?? TYPE_COLORS.system;
-              const tab = FILTER_TABS.find((t) => t.value === type);
-              const labelEn = tab?.labelEn ?? TYPE_LABELS[type] ?? type;
-              const labelEl = tab?.labelEl ?? TYPE_LABELS[type] ?? type;
+              // The chip is an icon and a number; its name says what both mean.
+              const tabLabel = FILTER_TABS.find((t) => t.value === type);
+              const labelEn = tabLabel?.labelEn ?? TYPE_LABELS[type] ?? type;
+              const labelEl = tabLabel?.labelEl ?? TYPE_LABELS[type] ?? type;
               return (
                 <button
                   key={type}
+                  type="button"
                   onClick={() => { setActiveTab(type); setShowUnreadOnly(true); }}
-                  aria-label={bilingualAria(`${labelEn}: ${count} unread`, `${labelEl}: ${count} αδιάβαστες`)}
+                  aria-label={bilingualAria(
+                    `Show ${count} unread: ${labelEn}`,
+                    `Εμφάνιση ${count} αδιάβαστων: ${labelEl}`,
+                  )}
                   className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:opacity-80', color)}
                 >
-                  <Icon className="icon-sm" />{count}
+                  <Icon className="icon-sm" aria-hidden="true" />{count}
                 </button>
               );
             })}
@@ -436,6 +443,8 @@ export default function NotificationsPage() {
               </Button>
             )}
             <button
+              type="button"
+              aria-pressed={bulkMode}
               onClick={() => { setBulkMode((v) => !v); setSelectedIds(new Set()); }}
               className={cn(
                 // Their 44px tap target, our contrast-safe accent token.
@@ -447,6 +456,8 @@ export default function NotificationsPage() {
               <BilingualText en={bulkMode ? notificationsEn('exit_select') : notificationsEn('select')} el={bulkMode ? notificationsEl('exit_select') : notificationsEl('select')} compact />
             </button>
             <button
+              type="button"
+              aria-pressed={showUnreadOnly}
               onClick={() => setShowUnreadOnly((v) => !v)}
               className={cn(
                 // Their 44px tap target, our contrast-safe accent token.
@@ -465,11 +476,11 @@ export default function NotificationsPage() {
                 <CheckCheck className="icon-sm" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh" aria-label={bilingualAria(notificationsEn('refresh'), notificationsEl('refresh'))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title={bilingualAria(notificationsEn('refresh'), notificationsEl('refresh'))} aria-label={bilingualAria(notificationsEn('refresh'), notificationsEl('refresh'))}>
               <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={bilingualAria('Open notification settings', 'Άνοιγμα ρυθμίσεων ειδοποιήσεων')}>
-              <Link href="/settings" title="Notification settings">
+              <Link href="/settings" title={bilingualAria('Notification settings', 'Ρυθμίσεις ειδοποιήσεων')}>
                 <Settings className="icon-sm" />
               </Link>
             </Button>

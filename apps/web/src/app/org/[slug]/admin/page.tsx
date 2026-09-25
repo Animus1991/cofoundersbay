@@ -461,32 +461,32 @@ export default function OrgAdminPage() {
       content: (
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
                 <SelectValue placeholder="All roles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All roles</SelectItem>
-                <SelectItem value="owner">Owner</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="program_manager">Program manager</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
-                <SelectItem value="reviewer">Reviewer</SelectItem>
-                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="all"><BilingualText en="All roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
+                <SelectItem value="owner"><BilingualText en="Owner" el="Κάτοχος" compact /></SelectItem>
+                <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
+                <SelectItem value="program_manager"><BilingualText en="Program manager" el="Υπεύθυνος προγράμματος" compact /></SelectItem>
+                <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
+                <SelectItem value="reviewer"><BilingualText en="Reviewer" el="Αξιολογητής" compact /></SelectItem>
+                <SelectItem value="member"><BilingualText en="Member" el="Μέλος" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
+                <SelectItem value="active"><BilingualText en="Active" el="Ενεργό" compact /></SelectItem>
+                <SelectItem value="suspended"><BilingualText en="Suspended" el="Σε αναστολή" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -539,13 +539,13 @@ export default function OrgAdminPage() {
             </Avatar>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{org.name}</h1>
-              <p className="text-muted-foreground">Organization Admin Dashboard</p>
+              <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact /></p>
             </div>
           </div>
           <Button variant="outline" asChild>
             <Link href="/org/settings">
               <Settings className="icon-sm mr-2" aria-hidden="true" />
-              Settings
+              <BilingualText en="Settings" el="Ρυθμίσεις" compact />
             </Link>
           </Button>
         </div>
@@ -563,19 +563,19 @@ export default function OrgAdminPage() {
           <TabsList>
             <TabsTrigger value="members" className="gap-2">
               <Users className="icon-sm" aria-hidden="true" />
-              Members
+              <BilingualText en="Members" el="Μέλη" compact />
             </TabsTrigger>
             <TabsTrigger value="invites" className="gap-2">
               <Mail className="icon-sm" aria-hidden="true" />
-              Invites
+              <BilingualText en="Invites" el="Προσκλήσεις" compact />
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="icon-sm" aria-hidden="true" />
-              Analytics
+              <BilingualText en="Analytics" el="Αναλυτικά" compact />
             </TabsTrigger>
             <TabsTrigger value="permissions" className="gap-2">
               <Shield className="icon-sm" aria-hidden="true" />
-              Permissions
+              <BilingualText en="Permissions" el="Δικαιώματα" compact />
             </TabsTrigger>
           </TabsList>
 
@@ -598,10 +598,10 @@ export default function OrgAdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Member</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Joined</TableHead>
+                    <TableHead><BilingualText en="Member" el="Μέλος" compact /></TableHead>
+                    <TableHead><BilingualText en="Role" el="Ρόλος" compact /></TableHead>
+                    <TableHead><BilingualText en="Status" el="Κατάσταση" compact /></TableHead>
+                    <TableHead><BilingualText en="Joined" el="Εγγράφηκε" compact /></TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -646,22 +646,22 @@ export default function OrgAdminPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => void handleRoleChange(member.id, 'admin')}>
                               <Shield className="icon-sm mr-2" aria-hidden="true" />
-                              Make Admin
+                              <BilingualText en="Make Admin" el="Ορισμός ως διαχειριστή" compact />
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => void handleRoleChange(member.id, 'member')}>
                               <Users className="icon-sm mr-2" aria-hidden="true" />
-                              Make Member
+                              <BilingualText en="Make Member" el="Ορισμός ως μέλους" compact />
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {member.status === 'active' ? (
                               <DropdownMenuItem onClick={() => void handleSetActive(member.id, false)}>
                                 <XCircle className="icon-sm mr-2" aria-hidden="true" />
-                                Suspend
+                                <BilingualText en="Suspend" el="Αναστολή" compact />
                               </DropdownMenuItem>
                             ) : member.status === 'suspended' ? (
                               <DropdownMenuItem onClick={() => void handleSetActive(member.id, true)}>
                                 <CheckCircle2 className="icon-sm mr-2" aria-hidden="true" />
-                                Reactivate
+                                <BilingualText en="Reactivate" el="Επανενεργοποίηση" compact />
                               </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem
@@ -669,7 +669,7 @@ export default function OrgAdminPage() {
                               className="text-destructive-accessible"
                             >
                               <UserMinus className="icon-sm mr-2" aria-hidden="true" />
-                              Remove
+                              <BilingualText en="Remove" el="Αφαίρεση" compact />
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -679,7 +679,7 @@ export default function OrgAdminPage() {
                   {filteredMembers.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                        No members match the current filters.
+                        <BilingualText en="No members match the current filters." el="Κανένα μέλος δεν ταιριάζει με τα φίλτρα." wrap />
                       </TableCell>
                     </TableRow>
                   )}
@@ -691,16 +691,16 @@ export default function OrgAdminPage() {
           <TabsContent value="invites">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Pending Invitations</CardTitle>
-                <CardDescription>Manage pending member invitations</CardDescription>
+                <CardTitle className="text-base"><BilingualText en="Pending Invitations" el="Εκκρεμείς προσκλήσεις" compact /></CardTitle>
+                <CardDescription><BilingualText en="Manage pending member invitations" el="Διαχείριση εκκρεμών προσκλήσεων" wrap /></CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8 text-muted-foreground">
                   <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" aria-hidden="true" />
-                  <p>No pending invitations</p>
+                  <p><BilingualText en="No pending invitations" el="Δεν υπάρχουν εκκρεμείς προσκλήσεις" compact /></p>
                   <Button className="mt-4" onClick={() => setInviteOpen(true)}>
                     <UserPlus className="icon-sm mr-2" aria-hidden="true" />
-                    Invite Members
+                    <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
                   </Button>
                 </div>
               </CardContent>
@@ -711,23 +711,23 @@ export default function OrgAdminPage() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Member Growth</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Member Growth" el="Αύξηση μελών" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <BarChart3 className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm">No growth data recorded yet.</p>
+                    <p className="text-sm"><BilingualText en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." compact /></p>
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Activity Overview</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Activity Overview" el="Επισκόπηση δραστηριότητας" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <TrendingUp className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm">No activity data recorded yet.</p>
+                    <p className="text-sm"><BilingualText en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." compact /></p>
                   </div>
                 </CardContent>
               </Card>
@@ -737,8 +737,8 @@ export default function OrgAdminPage() {
           <TabsContent value="permissions">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Role Permissions</CardTitle>
-                <CardDescription>What each role can do</CardDescription>
+                <CardTitle className="text-base"><BilingualText en="Role Permissions" el="Δικαιώματα ρόλων" compact /></CardTitle>
+                <CardDescription><BilingualText en="What each role can do" el="Τι μπορεί να κάνει κάθε ρόλος" compact /></CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {['owner', 'admin', 'member'].map((role) => (
@@ -781,11 +781,11 @@ export default function OrgAdminPage() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Invite member</DialogTitle>
+            <DialogTitle><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">User ID</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></p>
               <Input
                 value={inviteUserId}
                 onChange={(e) => setInviteUserId(e.target.value)}
@@ -794,17 +794,17 @@ export default function OrgAdminPage() {
               />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Role</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
               <Select value={inviteRole} onValueChange={setInviteRole}>
                 <SelectTrigger aria-label="Role" className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="program_manager">Program manager</SelectItem>
-                  <SelectItem value="mentor">Mentor</SelectItem>
-                  <SelectItem value="reviewer">Reviewer</SelectItem>
+                  <SelectItem value="member"><BilingualText en="Member" el="Μέλος" compact /></SelectItem>
+                  <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
+                  <SelectItem value="program_manager"><BilingualText en="Program manager" el="Υπεύθυνος προγράμματος" compact /></SelectItem>
+                  <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
+                  <SelectItem value="reviewer"><BilingualText en="Reviewer" el="Αξιολογητής" compact /></SelectItem>
                 </SelectContent>
               </Select>
             </div>

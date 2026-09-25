@@ -60,6 +60,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type Startup = {
   id: string;
@@ -175,8 +176,8 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                     {startup.name}
                   </Link>
-                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 gap-0.5 px-1.5"><Flame className="h-2.5 w-2.5" aria-hidden="true" />Hot</Badge>}
-                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30">Featured</Badge>}
+                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 gap-0.5 px-1.5"><Flame className="h-2.5 w-2.5" aria-hidden="true" /><BilingualText en="Hot" el="Δημοφιλές" compact /></Badge>}
+                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
@@ -193,10 +194,10 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       {/* A startup already on the board opens its deal. */}
-                      <Link href={`/startups/${existing?.id ?? startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" />View Details</Link>
+                      <Link href={`/startups/${existing?.id ?? startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem disabled={addToPipeline.isPending} onSelect={() => addToPipeline.mutate()}>
-                      <GanttChart className="mr-2 icon-sm" aria-hidden="true" />Add to Pipeline
+                      <GanttChart className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setInWatchlist()}>
                       <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
@@ -241,13 +242,13 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             <div className="flex items-center gap-4 mt-3">
               <div className="flex-1">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Readiness</span>
+                  <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
                   <span className="font-medium">{startup.readinessScore}%</span>
                 </div>
                 <Progress value={startup.readinessScore} className="h-1.5" />
               </div>
               <div className="text-right shrink-0">
-                <p className="text-xs text-muted-foreground">Match Score</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
                 <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
                   {startup.matchScore}%
                 </p>
@@ -256,15 +257,15 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
             <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border">
               <Button size="sm" variant="default" className="h-7 text-xs flex-1" asChild>
-                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" />View</Link>
+                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
               </Button>
               {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
                   and Intro has no founder account to reach yet. */}
               <Button size="sm" variant="outline" className="h-7 text-xs flex-1" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
-                <GanttChart className="mr-1 icon-sm" aria-hidden="true" />Pipeline
+                <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Pipeline" el="Pipeline" compact />
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs flex-1" disabled title="Scouted startups are not linked to founder accounts yet">
-                <MessageCircle className="mr-1 icon-sm" aria-hidden="true" />Intro
+                <MessageCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Intro" el="Γνωριμία" compact />
               </Button>
             </div>
           </div>
@@ -399,7 +400,7 @@ export default function InvestorScoutingPage() {
         {featured.length > 0 && (
           <Card className="border-primary/20 bg-primary/2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" />Featured Startups</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {featured.map(s => (
@@ -443,16 +444,16 @@ export default function InvestorScoutingPage() {
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger aria-label="Business model" className="w-full sm:w-[120px]"><SelectValue placeholder="Model" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Models</SelectItem>
+                <SelectItem value="all"><BilingualText en="All Models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger aria-label="Sort by" className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 icon-sm" /><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="match">Best Match</SelectItem>
-                <SelectItem value="readiness">Readiness</SelectItem>
-                <SelectItem value="name">Name A–Z</SelectItem>
+                <SelectItem value="match"><BilingualText en="Best Match" el="Καλύτερο ταίριασμα" compact /></SelectItem>
+                <SelectItem value="readiness"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></SelectItem>
+                <SelectItem value="name"><BilingualText en="Name A–Z" el="Όνομα Α–Ω" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -467,7 +468,7 @@ export default function InvestorScoutingPage() {
                   </button>
                 </Badge>
               ))}
-              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}>Clear all</Button>
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear all" el="Καθαρισμός όλων" compact /></Button>
             </div>
           )}
         </div>
@@ -479,7 +480,7 @@ export default function InvestorScoutingPage() {
             {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" />{ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
           </p>
           <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
-            <GanttChart className="icon-sm" />View Pipeline
+            <GanttChart className="icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact />
           </Link>
         </div>
 
@@ -492,9 +493,9 @@ export default function InvestorScoutingPage() {
             <Card className="col-span-2">
               <CardContent className="py-12 text-center">
                 <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <h3 className="font-medium">No startups found</h3>
-                <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search term</p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}>Clear Filters</Button>
+                <h3 className="font-medium"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
+                <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap /></p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
               </CardContent>
             </Card>
           )}

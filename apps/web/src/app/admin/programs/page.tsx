@@ -151,7 +151,7 @@ function ProgramCard({
             {program.status === 'active' && (
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Progress</span>
+                  <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                   <span className="font-medium">{program.progress}%</span>
                 </div>
                 <Progress value={program.progress} className="h-2" />
@@ -168,7 +168,7 @@ function ProgramCard({
               {/* The three items here had no handler. */}
               <DropdownMenuItem onSelect={() => onView(program)}>
                 <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                View Details
+                <BilingualText en="View Details" el="Λεπτομέρειες" compact />
               </DropdownMenuItem>
               {program.orgSlug ? (
                 <DropdownMenuItem asChild>
@@ -189,7 +189,7 @@ function ProgramCard({
               {program.status !== 'archived' && (
                 <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onArchive(program)}>
                   <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
-                  Archive
+                  <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -500,9 +500,9 @@ export default function AdminProgramsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No programs found</h3>
+                <h3 className="font-medium"><BilingualText en="No programs found" el="Δεν βρέθηκαν προγράμματα" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters
+                  <BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact />
                 </p>
                 {activeFilterCount > 0 && (
                   <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
@@ -523,17 +523,17 @@ export default function AdminProgramsPage() {
           </DialogHeader>
           {viewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
               <dd className="capitalize">{viewing.status}</dd>
-              <dt className="text-muted-foreground">Dates</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Dates" el="Ημερομηνίες" compact /></dt>
               <dd>{viewing.startDate} – {viewing.endDate}</dd>
-              <dt className="text-muted-foreground">Startups</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></dt>
               <dd>{viewing.startups}</dd>
-              <dt className="text-muted-foreground">Calendar elapsed</dt>
+              <dt className="text-muted-foreground"><BilingualText en="Calendar elapsed" el="Χρόνος που πέρασε" compact /></dt>
               <dd>{viewing.progress}%</dd>
               {viewing.description && (
                 <>
-                  <dt className="col-span-2 text-muted-foreground">Description</dt>
+                  <dt className="col-span-2 text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></dt>
                   <dd className="col-span-2 whitespace-pre-line">{viewing.description}</dd>
                 </>
               )}

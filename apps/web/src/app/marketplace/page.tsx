@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold leading-snug">{provider.providerName}</p>
                 {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" />}
-                {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
+                {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
               </div>
               {/* "Growth Marketing Strategist" is 170px against the 102px
                   this column gives it at 1024px — the trade an ellipsis makes
@@ -215,7 +216,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         {/* Footer */}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border/40">
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">Starting at</p>
+            <p className="text-xs text-muted-foreground"><BilingualText en="Starting at" el="Από" compact /></p>
             <p className="truncate font-semibold text-sm">{provider.pricing}</p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -224,21 +225,21 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             {provider.contactUrl ? (
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1" asChild>
                 <a href={provider.contactUrl} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="icon-sm" aria-hidden="true" />Message
+                  <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
                 </a>
               </Button>
             ) : (
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled title="This provider has not listed a contact link">
-                <MessageCircle className="icon-sm" aria-hidden="true" />Message
+                <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
               </Button>
             )}
             {provider.isAvailable && (provider.websiteUrl || provider.contactUrl) ? (
               <Button size="sm" className="h-8 text-xs" asChild>
-                <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer">Request</a>
+                <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Request" el="Αίτημα" compact /></a>
               </Button>
             ) : (
               <Button size="sm" className="h-8 text-xs" disabled title={provider.isAvailable ? 'This provider has not listed a request link' : 'Not taking new clients'}>
-                Request
+                <BilingualText en="Request" el="Αίτημα" compact />
               </Button>
             )}
           </div>
@@ -386,16 +387,16 @@ export default function MarketplacePage() {
       content: (
         <div className="space-y-3">
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Sort by</p>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Sort by" el="Ταξινόμηση" compact /></p>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger aria-label="Sort by" className="w-full">
                 <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="rating">Highest Rated</SelectItem>
-                <SelectItem value="reviews">Most Reviewed</SelectItem>
-                <SelectItem value="clients">Most Clients</SelectItem>
+                <SelectItem value="rating"><BilingualText en="Highest Rated" el="Υψηλότερη βαθμολογία" compact /></SelectItem>
+                <SelectItem value="reviews"><BilingualText en="Most Reviewed" el="Περισσότερες κριτικές" compact /></SelectItem>
+                <SelectItem value="clients"><BilingualText en="Most Clients" el="Περισσότεροι πελάτες" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -409,7 +410,7 @@ export default function MarketplacePage() {
             )}
           >
             <CheckCircle className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1">Available providers only</span>
+            <span className="min-w-0 flex-1"><BilingualText en="Available providers only" el="Μόνο διαθέσιμοι πάροχοι" compact /></span>
           </button>
         </div>
       ),
@@ -430,14 +431,14 @@ export default function MarketplacePage() {
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold">Are you a service provider?</p>
-              <p className="text-sm text-muted-foreground">List your services and reach 500+ founders on CoFounderBay</p>
+              <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
             </div>
             {/* Theirs turns a dead button into a real link to /provider/services;
                 our icon-size token is kept. */}
             <Button size="sm" className="shrink-0" asChild>
               <Link href="/provider/services">
-                <Plus className="mr-1.5 icon-sm" />List Your Service
+                <Plus className="mr-1.5 icon-sm" /><BilingualText en="List Your Service" el="Καταχώριση υπηρεσίας" compact />
               </Link>
             </Button>
           </CardContent>
@@ -488,7 +489,7 @@ export default function MarketplacePage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="icon-sm text-primary-accessible" />
-                      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Featured Providers</h2>
+                      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"><BilingualText en="Featured Providers" el="Προτεινόμενοι πάροχοι" compact /></h2>
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {featured.map(p => <ProviderCard key={p.id} provider={p} featured />)}
@@ -499,7 +500,7 @@ export default function MarketplacePage() {
                 {regular.length > 0 && (
                   <div className="space-y-3">
                     {featured.length > 0 && (
-                      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">All Providers</h2>
+                      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"><BilingualText en="All Providers" el="Όλοι οι πάροχοι" compact /></h2>
                     )}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {regular.map(p => <ProviderCard key={p.id} provider={p} />)}
@@ -510,8 +511,8 @@ export default function MarketplacePage() {
                 {filtered.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <Package className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
-                    <p className="font-medium">No services found</p>
-                    <p className="text-sm text-muted-foreground mt-1">Try adjusting your search or filters</p>
+                    <p className="font-medium"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></p>
+                    <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap /></p>
                   </div>
                 )}
               </>

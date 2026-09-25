@@ -21,6 +21,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface RevenueStream {
   name: string;
@@ -539,7 +540,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <Card key={index} className="p-4">
                   <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
-                      <Label>Name</Label>
+                      <Label><BilingualText en="Name" el="Όνομα" compact /></Label>
                       <Input
                         value={stream.name}
                         onChange={(e) => {
@@ -551,7 +552,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Type</Label>
+                      <Label><BilingualText en="Type" el="Τύπος" compact /></Label>
                       <select
                         value={stream.type}
                         onChange={(e) => {
@@ -561,15 +562,15 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                         }}
                         className="w-full px-3 py-2 border rounded-xl"
                       >
-                        <option value="subscription">Subscription</option>
-                        <option value="transaction">Transaction</option>
-                        <option value="one-time">One-time</option>
-                        <option value="advertising">Advertising</option>
-                        <option value="other">Other</option>
+                        <option value="subscription">{bilingualInline("Subscription", "Συνδρομή")}</option>
+                        <option value="transaction">{bilingualInline("Transaction", "Συναλλαγή")}</option>
+                        <option value="one-time">{bilingualInline("One-time", "Εφάπαξ")}</option>
+                        <option value="advertising">{bilingualInline("Advertising", "Διαφήμιση")}</option>
+                        <option value="other">{bilingualInline("Other", "Άλλο")}</option>
                       </select>
                     </div>
                     <div>
-                      <Label>Monthly Revenue</Label>
+                      <Label><BilingualText en="Monthly Revenue" el="Μηνιαία έσοδα" compact /></Label>
                       <Input
                         type="number"
                         value={stream.monthlyRevenue || ''}
@@ -582,7 +583,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Growth Rate (%/mo)</Label>
+                      <Label><BilingualText en="Growth Rate (%/mo)" el="Ρυθμός ανάπτυξης (%/μήνα)" compact /></Label>
                       <Input
                         type="number"
                         value={stream.growthRate || ''}
@@ -720,7 +721,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   )}>
                     {data.unitEconomics.ltvCacRatio.toFixed(1)}x
                   </div>
-                  <div className="text-sm text-muted-foreground">LTV/CAC Ratio</div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="LTV/CAC Ratio" el="Λόγος LTV/CAC" compact /></div>
                   <Verdict ok={data.unitEconomics.ltvCacRatio >= 3} warn={data.unitEconomics.ltvCacRatio >= 1}>
                     {data.unitEconomics.ltvCacRatio >= 3 ? 'Healthy (>3x)' :
                      data.unitEconomics.ltvCacRatio >= 1 ? 'Needs improvement' : 'Unsustainable'}
@@ -730,7 +731,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   <div className={cn(BUILDER_STAT, 'mb-2 text-status-info')}>
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
-                  <div className="text-sm text-muted-foreground">Payback Period</div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Payback Period" el="Περίοδος απόσβεσης" compact /></div>
                   <Verdict ok={data.unitEconomics.paybackPeriod <= 12} warn>
                     {data.unitEconomics.paybackPeriod <= 12 ? 'Good (<12 mo)' : 'Long payback'}
                   </Verdict>
@@ -739,7 +740,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   <div className={cn(BUILDER_STAT, 'mb-2 text-status-accent')}>
                     {data.unitEconomics.grossMargin}%
                   </div>
-                  <div className="text-sm text-muted-foreground">Gross Margin</div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Gross Margin" el="Μικτό περιθώριο" compact /></div>
                   <Verdict ok={data.unitEconomics.grossMargin >= 70} warn>
                     {data.unitEconomics.grossMargin >= 70 ? 'SaaS-level (>70%)' : 'Below SaaS average'}
                   </Verdict>
@@ -765,7 +766,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <Card key={index} className="p-4">
                   <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
-                      <Label>Stage</Label>
+                      <Label><BilingualText en="Stage" el="Στάδιο" compact /></Label>
                       <Input
                         value={round.stage}
                         onChange={(e) => {
@@ -777,7 +778,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Amount</Label>
+                      <Label><BilingualText en="Amount" el="Ποσό" compact /></Label>
                       <Input
                         type="number"
                         value={round.amount || ''}
@@ -790,7 +791,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Timeline</Label>
+                      <Label><BilingualText en="Timeline" el="Χρονοδιάγραμμα" compact /></Label>
                       <Input
                         value={round.timeline}
                         onChange={(e) => {
@@ -802,7 +803,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Dilution (%)</Label>
+                      <Label><BilingualText en="Dilution (%)" el="Αραίωση (%)" compact /></Label>
                       <Input
                         type="number"
                         value={round.dilution || ''}

@@ -4,7 +4,7 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
   UserCheck,
@@ -26,6 +26,7 @@ import {
   type ConnectionRequestItem,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,12 +37,12 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 
 const CollaborationStarter = dynamic(
@@ -79,7 +80,7 @@ function ConnectionCard({
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
             <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-              {other.displayName[0]?.toUpperCase()}
+              {initialsOf(other.displayName)}
             </AvatarFallback>
           </Avatar>
         </Link>
@@ -169,7 +170,7 @@ function IntroRequestCard({
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {sender.displayName[0]?.toUpperCase()}
+                {initialsOf(sender.displayName)}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -257,25 +258,38 @@ export default function ConnectionsPage() {
     id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null;
   } | null>(null);
 
-  const viewerId =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null;
-          } catch {
-            return null;
-          }
-        })()
-      : null;
+  // Read after mount, so the server and the first client render agree.
+  const viewerId = useStoredUser()?.id ?? null;
 
+  // Intros and Received are the same read (requests waiting on the reader),
+  // so they share one cache entry.
+  const listType = tab === 'intros' ? 'received' : tab;
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: qk('connections', tab),
-    queryFn: () =>
-      listConnectionRequests({
-        type: tab === 'intros' ? 'received' : tab,
-      }),
+    queryKey: qk('connections', listType),
+    queryFn: () => listConnectionRequests({ type: listType }),
     staleTime: 30_000,
   });
+
+  /*
+   * The network figures were counted from whichever tab was open: on Intros
+   * (requests received) "Sent, pending" was always 0 and "Connected" counted
+   * only accepted requests the reader had received. Each figure now comes
+   * from its own read - the same three the tabs use, so they share a cache.
+   */
+  const [receivedQ, sentQ, acceptedQ] = useQueries({
+    queries: (['received', 'sent', 'accepted'] as const).map((type) => ({
+      queryKey: qk('connections', type),
+      queryFn: () => listConnectionRequests({ type }),
+      staleTime: 30_000,
+    })),
+  });
+  const countOf = (q: typeof receivedQ) => {
+    const list = q.data?.connections;
+    return q.data ? (Array.isArray(list) ? list.length : 0) : null;
+  };
+  const receivedCount = countOf(receivedQ);
+  const sentCount = countOf(sentQ);
+  const acceptedCount = countOf(acceptedQ);
 
   const respondMutation = useMutation({
     mutationFn: ({ id, status, otherUserId }: { id: string; status: 'accepted' | 'declined'; otherUserId?: string; acceptedUserInfo?: { id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null } }) =>
@@ -285,11 +299,11 @@ export default function ConnectionsPage() {
       if (status === 'accepted' && otherUserId && acceptedUserInfo) {
         setJustAcceptedUser(acceptedUserInfo);
       } else if (status !== 'accepted') {
-        success('Request declined', 'The request has been removed.');
+        success(bilingualInline('Request declined', 'Το αίτημα απορρίφθηκε'), bilingualInline('The request has been removed.', 'Το αίτημα αφαιρέθηκε.'));
       }
     },
     onError: (err) => {
-      showError('Could not respond', err instanceof Error ? err.message : 'Please try again');
+      showError(bilingualInline('Could not respond', 'Δεν ήταν δυνατή η απάντηση'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά'));
     },
   });
 
@@ -308,9 +322,7 @@ export default function ConnectionsPage() {
       ? allConnections.filter((c) => c.receiverId === viewerId && c.status === 'pending')
       : allConnections;
 
-  const introCount = connections.filter(
-    (c) => c.receiverId === viewerId && c.status === 'pending',
-  ).length;
+  const introCount = receivedCount ?? 0;
 
   // What the tab shows, and the row buttons as commands: Accept and Decline
   // on a request someone sent the reader - the same mutation the buttons run.
@@ -361,6 +373,21 @@ export default function ConnectionsPage() {
     },
   ]);
 
+  // Unknown until its own read answers: a dash, never a 0 that means "loading".
+  const figure = (n: number | null) => (n == null ? '—' : n);
+  const networkStats = [
+    { labelEn: connectionsEn('stat_connected'), labelEl: connectionsEl('stat_connected'), value: figure(acceptedCount), icon: Users, tone: 'accent' as const },
+    { labelEn: connectionsEn('stat_intro_requests'), labelEl: connectionsEl('stat_intro_requests'), value: figure(receivedCount), icon: Handshake, tone: 'warning' as const },
+    { labelEn: connectionsEn('stat_sent_pending'), labelEl: connectionsEl('stat_sent_pending'), value: figure(sentCount), icon: Send, tone: 'info' as const },
+    {
+      labelEn: connectionsEn('stat_total_interactions'),
+      labelEl: connectionsEl('stat_total_interactions'),
+      value: receivedCount == null || sentCount == null || acceptedCount == null ? '—' : receivedCount + sentCount + acceptedCount,
+      icon: TrendingUp,
+      tone: 'success' as const,
+    },
+  ];
+
   return (
     <>
     {justAcceptedUser && (
@@ -381,48 +408,30 @@ export default function ConnectionsPage() {
       }
     >
       <div className="space-y-5 pb-10">
-      {/* Stats bar */}
-      {!isLoading && (
-        /* Four across waits for `md`. At 640px `sm:grid-cols-4` gave each tile
-           145px, which leaves a bilingual label about 80px — less than
-           "Σύνολο αλληλεπιδράσεων" can break to, and the page scrolled 20px
-           sideways because of it. Two columns hold to 768px.
-           A JS comment, not a JSX one: this is the single child of a `&&`
-           expression, where a braced JSX comment would be a second child and a
-           syntax error. */
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {[
-            { labelEn: connectionsEn('stat_connected'), labelEl: connectionsEl('stat_connected'), value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, tone: 'accent' as const },
-            { labelEn: connectionsEn('stat_intro_requests'), labelEl: connectionsEl('stat_intro_requests'), value: introCount, icon: Handshake, tone: 'warning' as const },
-            { labelEn: connectionsEn('stat_sent_pending'), labelEl: connectionsEl('stat_sent_pending'), value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, tone: 'info' as const },
-            { labelEn: connectionsEn('stat_total_interactions'), labelEl: connectionsEl('stat_total_interactions'), value: (data?.connections ?? []).length, icon: TrendingUp, tone: 'success' as const },
-          ].map((s) => {
-            const SIcon = s.icon;
-            const colors = STATUS[s.tone];
-            return (
-              <Card key={s.labelEn} className="shadow-sm border-border/50">
-                <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', colors.bg, colors.icon)}>
-                    <SIcon className="icon-sm" />
-                  </div>
-                  {/* min-w-0: without it this flex child sits at its min-content
-                      width, so `compact`'s truncation never engages and the tile
-                      pushed the page 166px sideways at 640-1024px. */}
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    {/* `wrap`: a quarter-width stat tile leaves this label
-                        about 100px, and the bilingual pair is longer than that
-                        in every one of the four. */}
-                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                      <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      {/* Four across waits for `md`: at 640px a quarter-width tile leaves a
+          bilingual label about 80px, and the page scrolled sideways. */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {networkStats.map((s) => {
+          const SIcon = s.icon;
+          const colors = STATUS[s.tone];
+          return (
+            <Card key={s.labelEn} className="shadow-sm border-border/50">
+              <CardContent className="flex items-center gap-2.5 p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', colors.bg, colors.icon)}>
+                  <SIcon className="icon-sm" aria-hidden="true" />
+                </div>
+                {/* min-w-0 lets the label wrap instead of widening the tile. */}
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground leading-none tabular-nums">{s.value}</p>
+                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
@@ -453,8 +462,8 @@ export default function ConnectionsPage() {
         <TabsContent value="intros" className="mt-6 space-y-3">
           {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load requests.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Requests could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των αιτημάτων." wrap /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
             </CardContent></Card>
           ) : isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
@@ -491,8 +500,8 @@ export default function ConnectionsPage() {
           <TabsContent key={t} value={t} className="mt-6 space-y-3">
             {isError && tab === t ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load connections.</p>
-                <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Connections could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των συνδέσεων." wrap /></p>
+                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
               </CardContent></Card>
             ) : isLoading && tab === t ? (
               Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)

@@ -16,7 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { RoleBadge } from '@/components/common/RoleBadge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export type TimeSlot = {
   id: string;
@@ -164,7 +165,7 @@ export function BookingCalendar({
               <Avatar className="h-12 w-12">
                 <AvatarImage src={mentor.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
-                  {mentor.displayName[0]?.toUpperCase()}
+                  {initialsOf(mentor.displayName)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -196,9 +197,9 @@ export function BookingCalendar({
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Calendar className="icon-md text-primary-accessible" />
-                Select a date
+                <BilingualText en="Select a date" el="Επιλέξτε ημερομηνία" compact />
               </CardTitle>
-              <CardDescription>Choose a date to see available time slots</CardDescription>
+              <CardDescription><BilingualText en="Choose a date to see available time slots" el="Επιλέξτε ημερομηνία για να δείτε τις διαθέσιμες ώρες" wrap /></CardDescription>
             </CardHeader>
             <CardContent>
               {/* Month navigation */}
@@ -265,14 +266,14 @@ export function BookingCalendar({
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Clock className="icon-md text-primary-accessible" />
-                    Select a time
+                    <BilingualText en="Select a time" el="Επιλέξτε ώρα" compact />
                   </CardTitle>
                   <CardDescription>
                     {selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </CardDescription>
                 </div>
                 <Button variant="ghost" onClick={() => setStep('date')}>
-                  Change date
+                  <BilingualText en="Change date" el="Αλλαγή ημερομηνίας" compact />
                 </Button>
               </div>
             </CardHeader>
@@ -296,7 +297,7 @@ export function BookingCalendar({
                 </div>
               ) : (
                 <p className="text-center text-sm text-muted-foreground py-8">
-                  No available slots for this date
+                  <BilingualText en="No available slots for this date" el="Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία" compact />
                 </p>
               )}
             </CardContent>
@@ -310,10 +311,10 @@ export function BookingCalendar({
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Check className="icon-md text-primary-accessible" />
-                  Confirm booking
+                  <BilingualText en="Confirm booking" el="Επιβεβαίωση κράτησης" compact />
                 </CardTitle>
                 <Button variant="ghost" onClick={() => setStep('slot')}>
-                  Change time
+                  <BilingualText en="Change time" el="Αλλαγή ώρας" compact />
                 </Button>
               </div>
             </CardHeader>
@@ -336,7 +337,7 @@ export function BookingCalendar({
 
               {/* Meeting type */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Meeting type</label>
+                <label className="text-sm font-medium text-foreground"><BilingualText en="Meeting type" el="Τύπος συνάντησης" compact /></label>
                 <div className="flex gap-2">
                   {mentor.meetingTypes.includes('video') && (
                     <button
@@ -349,7 +350,7 @@ export function BookingCalendar({
                       )}
                     >
                       <Video className="icon-sm" />
-                      Video call
+                      <BilingualText en="Video call" el="Βιντεοκλήση" compact />
                     </button>
                   )}
                   {mentor.meetingTypes.includes('in-person') && (
@@ -363,7 +364,7 @@ export function BookingCalendar({
                       )}
                     >
                       <MapPin className="icon-sm" />
-                      In person
+                      <BilingualText en="In person" el="Δια ζώσης" compact />
                     </button>
                   )}
                 </div>
@@ -371,7 +372,7 @@ export function BookingCalendar({
 
               {/* Notes */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">What would you like to discuss?</label>
+                <label className="text-sm font-medium text-foreground"><BilingualText en="What would you like to discuss?" el="Τι θα θέλατε να συζητήσετε;" compact /></label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -388,16 +389,16 @@ export function BookingCalendar({
       <div className="space-y-4">
         <Card className="sticky top-6">
           <CardHeader>
-            <CardTitle className="text-base">Booking Summary</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Booking Summary" el="Σύνοψη κράτησης" compact /></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Mentor</span>
+                <span className="text-muted-foreground"><BilingualText en="Mentor" el="Μέντορας" compact /></span>
                 <span className="font-medium text-foreground">{mentor.displayName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Date</span>
+                <span className="text-muted-foreground"><BilingualText en="Date" el="Ημερομηνία" compact /></span>
                 <span className="font-medium text-foreground">
                   {selectedDate
                     ? selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' })
@@ -405,7 +406,7 @@ export function BookingCalendar({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Time</span>
+                <span className="text-muted-foreground"><BilingualText en="Time" el="Ώρα" compact /></span>
                 <span className="font-medium text-foreground">
                   {selectedSlot ? formatTime(selectedSlot.startTime) : 'Not selected'}
                 </span>
@@ -414,7 +415,7 @@ export function BookingCalendar({
                 <>
                   <div className="border-t border-border/60 my-2" />
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Rate</span>
+                    <span className="text-muted-foreground"><BilingualText en="Rate" el="Αμοιβή" compact /></span>
                     <span className="font-semibold text-primary-accessible">{mentor.hourlyRate}</span>
                   </div>
                 </>
@@ -428,7 +429,7 @@ export function BookingCalendar({
                 disabled={!selectedDate}
                 onClick={() => setStep('slot')}
               >
-                Continue
+                <BilingualText en="Continue" el="Συνέχεια" compact />
               </Button>
             )}
             {step === 'slot' && (
@@ -437,7 +438,7 @@ export function BookingCalendar({
                 disabled={!selectedSlot}
                 onClick={() => setStep('confirm')}
               >
-                Continue
+                <BilingualText en="Continue" el="Συνέχεια" compact />
               </Button>
             )}
             {step === 'confirm' && (

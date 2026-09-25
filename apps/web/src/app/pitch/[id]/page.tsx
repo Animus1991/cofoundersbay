@@ -43,6 +43,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type PublicPitchDeck } from '@/lib/api';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -401,15 +402,15 @@ function AskSlide({ slide }: { slide: SlideBase }) {
       <div className="flex items-center gap-8 mb-8">
         <div>
           <p className="text-5xl font-bold text-primary-accessible">{c.amount}</p>
-          <p className="text-muted-foreground mt-1">Raising</p>
+          <p className="text-muted-foreground mt-1"><BilingualText en="Raising" el="Αναζητά" compact /></p>
         </div>
         <ArrowRight className="icon-xl text-muted-foreground" />
         <div>
           <p className="text-2xl font-semibold">{c.valuation}</p>
-          <p className="text-muted-foreground mt-1">Pre-money valuation</p>
+          <p className="text-muted-foreground mt-1"><BilingualText en="Pre-money valuation" el="Αποτίμηση pre-money" compact /></p>
         </div>
       </div>
-      <p className="text-lg font-medium mb-4">Use of Funds</p>
+      <p className="text-lg font-medium mb-4"><BilingualText en="Use of Funds" el="Χρήση κεφαλαίων" compact /></p>
       <div className="space-y-3">
         {c.use.map((item, i) => (
           <div key={i}>
@@ -523,11 +524,11 @@ export default function PitchDeckPage() {
               <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-              <Share2 className="icon-sm mr-1.5" />Share
+              <Share2 className="icon-sm mr-1.5" /><BilingualText en="Share" el="Κοινοποίηση" compact />
             </Button>
             {deck.allowContact && (
               <Button size="sm" onClick={() => setShowContact(true)}>
-                <Mail className="icon-sm mr-1.5" />Contact
+                <Mail className="icon-sm mr-1.5" /><BilingualText en="Contact" el="Επικοινωνία" compact />
               </Button>
             )}
           </div>
@@ -585,7 +586,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.max(s - 1, 0))}
               disabled={currentSlide === 0}
             >
-              <ChevronLeft className="icon-sm mr-1" />Previous
+              <ChevronLeft className="icon-sm mr-1" /><BilingualText en="Previous" el="Προηγούμενη" compact />
             </Button>
 
             <div className="flex items-center gap-1.5">
@@ -611,7 +612,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.min(s + 1, slides.length - 1))}
               disabled={currentSlide === slides.length - 1}
             >
-              Next<ChevronRight className="icon-sm ml-1" />
+              <BilingualText en="Next" el="Επόμενη" compact /><ChevronRight className="icon-sm ml-1" />
             </Button>
           </div>
 
@@ -638,22 +639,22 @@ export default function PitchDeckPage() {
             </div>
             {deck.allowContact && (
               <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="icon-sm mr-2" />Get in Touch
+                <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
               </Button>
             )}
           </div>
 
           <div className="rounded-xl border bg-card p-4 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Deck Stats</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Deck Stats" el="Στατιστικά deck" compact /></p>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Views</span><span className="font-medium">{deck.stats.views}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Shares</span><span className="font-medium">{deck.stats.shares}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Contacts</span><span className="font-medium">{deck.stats.contactRequests}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Views" el="Προβολές" compact /></span><span className="font-medium">{deck.stats.views}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Shares" el="Κοινοποιήσεις" compact /></span><span className="font-medium">{deck.stats.shares}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Contacts" el="Επαφές" compact /></span><span className="font-medium">{deck.stats.contactRequests}</span></div>
             </div>
           </div>
 
           <div className="rounded-xl border bg-card p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Share</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3"><BilingualText en="Share" el="Κοινοποίηση" compact /></p>
             <div className="flex gap-2">
               <Button aria-label="Share on X" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
@@ -681,7 +682,7 @@ export default function PitchDeckPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label htmlFor="cname">Your Name</Label>
+              <Label htmlFor="cname"><BilingualText en="Your Name" el="Το όνομά σας" compact /></Label>
               <Input
                 id="cname"
                 value={contactForm.name}
@@ -691,7 +692,7 @@ export default function PitchDeckPage() {
               />
             </div>
             <div>
-              <Label htmlFor="cemail">Email Address</Label>
+              <Label htmlFor="cemail"><BilingualText en="Email Address" el="Διεύθυνση email" compact /></Label>
               <Input
                 id="cemail"
                 type="email"
@@ -702,7 +703,7 @@ export default function PitchDeckPage() {
               />
             </div>
             <div>
-              <Label htmlFor="cmsg">Message (optional)</Label>
+              <Label htmlFor="cmsg"><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
               <Textarea
                 id="cmsg"
                 value={contactForm.message}
@@ -713,7 +714,7 @@ export default function PitchDeckPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowContact(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowContact(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button
               onClick={() => contactMutation.mutate(contactForm)}
               disabled={!contactForm.name || !contactForm.email || contactMutation.isPending}
@@ -728,11 +729,11 @@ export default function PitchDeckPage() {
       <Dialog open={showShare} onOpenChange={setShowShare}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Share Pitch Deck</DialogTitle>
+            <DialogTitle><BilingualText en="Share Pitch Deck" el="Κοινοποίηση pitch deck" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label>Link</Label>
+              <Label><BilingualText en="Link" el="Σύνδεσμος" compact /></Label>
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
                 <Button

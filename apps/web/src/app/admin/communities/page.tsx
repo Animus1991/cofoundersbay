@@ -155,17 +155,17 @@ function CommunityCard({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/groups/${community.id}`}>View Community</Link>
+                      <Link href={`/groups/${community.id}`}><BilingualText en="View Community" el="Προβολή κοινότητας" compact /></Link>
                     </DropdownMenuItem>
                     {/* All five below had no handler, and both links above
                         pointed at /communities/:id, a route that does not
                         exist - the groups surface is /groups/[groupId]. */}
-                    <DropdownMenuItem onSelect={() => onEdit(community)}>Edit Settings</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => onEdit(community)}><BilingualText en="Edit Settings" el="Επεξεργασία ρυθμίσεων" compact /></DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/groups/${community.id}?section=members`}>Manage Members</Link>
+                      <Link href={`/groups/${community.id}?section=members`}><BilingualText en="Manage Members" el="Διαχείριση μελών" compact /></Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/admin/reports">View Reports</Link>
+                      <Link href="/admin/reports"><BilingualText en="View Reports" el="Προβολή αναφορών" compact /></Link>
                     </DropdownMenuItem>
                     <UnavailableMenuItem
                       className="text-status-warning"
@@ -175,7 +175,7 @@ function CommunityCard({
                       reasonEl="Οι ομάδες δεν έχουν ακόμη κατάσταση αρχειοθέτησης."
                     />
                     <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(community)}>
-                      Delete
+                      <BilingualText en="Delete" el="Διαγραφή" compact />
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -419,30 +419,30 @@ export default function AdminCommunitiesPage() {
       content: (
         <div className="space-y-3">
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Visibility</p>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Visibility" el="Ορατότητα" compact /></p>
             <Select value={visibility} onValueChange={setVisibility}>
               <SelectTrigger aria-label="Visibility" className="w-full">
                 <SelectValue placeholder="Visibility" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="tenant">Tenant</SelectItem>
+                <SelectItem value="all"><BilingualText en="All" el="Όλες" compact /></SelectItem>
+                <SelectItem value="public"><BilingualText en="Public" el="Δημόσια" compact /></SelectItem>
+                <SelectItem value="private"><BilingualText en="Private" el="Ιδιωτική" compact /></SelectItem>
+                <SelectItem value="tenant"><BilingualText en="Tenant" el="Οργανισμού" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Status</p>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger aria-label="Status" className="w-full">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-                <SelectItem value="flagged">Flagged</SelectItem>
+                <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+                <SelectItem value="active"><BilingualText en="Active" el="Ενεργή" compact /></SelectItem>
+                <SelectItem value="archived"><BilingualText en="Archived" el="Αρχειοθετημένη" compact /></SelectItem>
+                <SelectItem value="flagged"><BilingualText en="Flagged" el="Επισημασμένη" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -452,7 +452,7 @@ export default function AdminCommunitiesPage() {
               onClick={() => { setVisibility('all'); setStatus('all'); }}
               className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
             >
-              <span className="min-w-0 flex-1">Clear filters</span>
+              <span className="min-w-0 flex-1"><BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact /></span>
             </button>
           )}
         </div>
@@ -466,7 +466,7 @@ export default function AdminCommunitiesPage() {
         <>
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="mr-2 icon-sm" aria-hidden="true" />
-            Create Community
+            <BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact />
           </Button>
         </>
       }
@@ -500,9 +500,9 @@ export default function AdminCommunitiesPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Users2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No communities found</h3>
+                <h3 className="font-medium"><BilingualText en="No communities found" el="Δεν βρέθηκαν κοινότητες" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters
+                  <BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact />
                 </p>
               </CardContent>
             </Card>
@@ -557,7 +557,7 @@ export default function AdminCommunitiesPage() {
             }}
           >
             <div className="space-y-1.5">
-              <label htmlFor="community-name" className="text-sm font-medium">Name</label>
+              <label htmlFor="community-name" className="text-sm font-medium"><BilingualText en="Name" el="Όνομα" compact /></label>
               <Input
                 id="community-name"
                 value={form.name}
@@ -567,7 +567,7 @@ export default function AdminCommunitiesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="community-description" className="text-sm font-medium">Description</label>
+              <label htmlFor="community-description" className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
               <Input
                 id="community-description"
                 value={form.description}
@@ -577,7 +577,7 @@ export default function AdminCommunitiesPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label htmlFor="community-category" className="text-sm font-medium">Category</label>
+                <label htmlFor="community-category" className="text-sm font-medium"><BilingualText en="Category" el="Κατηγορία" compact /></label>
                 <Input
                   id="community-category"
                   value={form.category}
@@ -586,21 +586,21 @@ export default function AdminCommunitiesPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="community-privacy" className="text-sm font-medium">Privacy</label>
+                <label htmlFor="community-privacy" className="text-sm font-medium"><BilingualText en="Privacy" el="Απόρρητο" compact /></label>
                 <Select value={form.privacy} onValueChange={(v) => setForm((f) => ({ ...f, privacy: v as GroupPrivacy }))}>
                   <SelectTrigger id="community-privacy">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="secret">Secret</SelectItem>
+                    <SelectItem value="public"><BilingualText en="Public" el="Δημόσια" compact /></SelectItem>
+                    <SelectItem value="private"><BilingualText en="Private" el="Ιδιωτική" compact /></SelectItem>
+                    <SelectItem value="secret"><BilingualText en="Secret" el="Μυστική" compact /></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
               <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending || !form.name.trim()}>
                 {editing
                   ? updateMutation.isPending ? 'Saving…' : 'Save'

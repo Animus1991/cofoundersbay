@@ -5,6 +5,7 @@ import { Target, TrendingUp, Users, MessageSquare, Zap } from 'lucide-react';
 import { useWorkspaceScoring } from '@/hooks/useGamification';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface WorkspaceScoringWidgetProps {
   workspaceId: string;
@@ -19,7 +20,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="icon-md" />
-            Workspace Scoring
+            <BilingualText en="Workspace Scoring" el="Βαθμολογία χώρου εργασίας" compact />
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -36,7 +37,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Target className="icon-md text-status-info" />
-          Workspace Scoring
+          <BilingualText en="Workspace Scoring" el="Βαθμολογία χώρου εργασίας" compact />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -46,7 +47,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Target className="icon-sm text-status-info" />
-                <span className="font-medium">Readiness Score</span>
+                <span className="font-medium"><BilingualText en="Readiness Score" el="Βαθμός ετοιμότητας" compact /></span>
               </div>
               <Badge variant={getScoreBadgeVariant(readiness.score)}>
                 {readiness.score}/100
@@ -74,7 +75,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="icon-sm text-status-success" />
-                <span className="font-medium text-sm">Team Momentum</span>
+                <span className="font-medium text-sm"><BilingualText en="Team Momentum" el="Ορμή ομάδας" compact /></span>
               </div>
               <Badge variant="outline" className="gap-1">
                 <Zap className="icon-sm" />
@@ -83,15 +84,15 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <div className="text-muted-foreground">Score</div>
+                <div className="text-muted-foreground"><BilingualText en="Score" el="Βαθμός" compact /></div>
                 <div className="font-semibold text-lg">{momentum.score}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Velocity</div>
+                <div className="text-muted-foreground"><BilingualText en="Velocity" el="Ταχύτητα" compact /></div>
                 <div className="font-semibold text-lg">{momentum.velocity.toFixed(1)}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Collab</div>
+                <div className="text-muted-foreground"><BilingualText en="Collab" el="Συνεργασία" compact /></div>
                 <div className="font-semibold text-lg">{(momentum.collaborationDensity * 100).toFixed(0)}%</div>
               </div>
             </div>
@@ -104,7 +105,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="icon-sm text-status-accent" />
-                <span className="font-medium text-sm">My Contribution</span>
+                <span className="font-medium text-sm"><BilingualText en="My Contribution" el="Η συνεισφορά μου" compact /></span>
               </div>
               <Badge variant="outline">
                 {myContribution.score}/100
@@ -112,15 +113,15 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <div className="text-muted-foreground">Created</div>
+                <div className="text-muted-foreground"><BilingualText en="Created" el="Δημιουργήθηκε" compact /></div>
                 <div className="font-semibold">{myContribution.breakdown.artifactsCreated}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Improved</div>
+                <div className="text-muted-foreground"><BilingualText en="Improved" el="Βελτιώθηκε" compact /></div>
                 <div className="font-semibold">{myContribution.breakdown.artifactsImproved}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Feedback</div>
+                <div className="text-muted-foreground"><BilingualText en="Feedback" el="Σχόλια" compact /></div>
                 <div className="font-semibold">{myContribution.breakdown.feedbackGiven}</div>
               </div>
             </div>
@@ -133,7 +134,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageSquare className="icon-sm text-status-warning" />
-                <span className="font-medium text-sm">Mentor Loop</span>
+                <span className="font-medium text-sm"><BilingualText en="Mentor Loop" el="Κύκλος μέντορα" compact /></span>
               </div>
               <Badge variant="outline">
                 {(mentorMetrics.appliedFeedbackRate * 100).toFixed(0)}% applied
@@ -141,15 +142,15 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <div className="text-muted-foreground">Received</div>
+                <div className="text-muted-foreground"><BilingualText en="Received" el="Ελήφθη" compact /></div>
                 <div className="font-semibold">{mentorMetrics.feedbackCount}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Applied</div>
+                <div className="text-muted-foreground"><BilingualText en="Applied" el="Εφαρμόστηκε" compact /></div>
                 <div className="font-semibold">{mentorMetrics.appliedFeedbackCount}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Pending</div>
+                <div className="text-muted-foreground"><BilingualText en="Pending" el="Σε αναμονή" compact /></div>
                 <div className="font-semibold">{mentorMetrics.unresolvedFeedback}</div>
               </div>
             </div>

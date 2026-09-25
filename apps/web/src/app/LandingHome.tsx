@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LandingNav } from '@/components/layout/LandingNav';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const FEATURES: Array<{ icon: LucideIcon; title: string; desc: string }> = [
   {
@@ -288,6 +289,126 @@ const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
   { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-status-danger'    },
 ];
 
+/**
+ * The Greek beside every string the sections above carry as data. Kept as one
+ * map keyed by the English, so the arrays stay readable and a string without
+ * an entry still renders (English only) instead of breaking the page.
+ */
+const LANDING_EL: Record<string, string> = {
+  "Smart matchmaking": "Έξυπνες αντιστοιχίσεις",
+  "AI-powered discovery surfaces the right co-founders, mentors, and investors based on role, skills, and stage.": "Η ανακάλυψη με AI φέρνει τους σωστούς συνιδρυτές, μέντορες και επενδυτές με βάση ρόλο, δεξιότητες και στάδιο.",
+  "Real-time messaging": "Μηνύματα σε πραγματικό χρόνο",
+  "Chat directly with anyone in the network. Threads are persistent, searchable, and support file attachments.": "Συνομιλήστε απευθείας με οποιονδήποτε στο δίκτυο. Οι συνομιλίες μένουν, αναζητούνται και δέχονται συνημμένα.",
+  "Mentoring & sessions": "Καθοδήγηση & συνεδρίες",
+  "Book 1:1 sessions with verified mentors. Integrated scheduling, video links, and session notes.": "Κλείστε συνεδρίες 1:1 με επαληθευμένους μέντορες. Ενσωματωμένος προγραμματισμός, σύνδεσμοι βίντεο και σημειώσεις.",
+  "Events & networking": "Εκδηλώσεις & δικτύωση",
+  "Discover meetups, webinars, and demo days. RSVP in one click and add them to your calendar.": "Βρείτε meetups, webinars και demo days. Δηλώστε συμμετοχή με ένα κλικ και προσθέστε τα στο ημερολόγιό σας.",
+  "Jobs & opportunities": "Θέσεις & ευκαιρίες",
+  "Startups post roles and equity opportunities. Apply directly through your profile.": "Οι startups δημοσιεύουν ρόλους και ευκαιρίες equity. Κάντε αίτηση απευθείας από το προφίλ σας.",
+  "Trust & safety": "Εμπιστοσύνη & ασφάλεια",
+  "Verified profiles, moderation tools, and privacy controls to keep the community quality high.": "Επαληθευμένα προφίλ, εργαλεία εποπτείας και έλεγχοι απορρήτου για μια ποιοτική κοινότητα.",
+  "Founder": "Ιδρυτής",
+  "Mentor": "Μέντορας",
+  "Investor": "Επενδυτής",
+  "Accelerator": "Επιταχυντής",
+  "Find your co-founder": "Βρείτε τον συνιδρυτή σας",
+  "Get matched with complementary skill sets": "Αντιστοιχίσεις με συμπληρωματικές δεξιότητες",
+  "Showcase traction, vision, and stage": "Δείξτε traction, όραμα και στάδιο",
+  "Access mentors and investors in one place": "Μέντορες και επενδυτές σε ένα σημείο",
+  "Scale your impact": "Πολλαπλασιάστε τον αντίκτυπό σας",
+  "Set availability and get booked instantly": "Ορίστε διαθεσιμότητα και δεχτείτε κρατήσεις αμέσως",
+  "Help vetted founders with real challenges": "Βοηθήστε ελεγμένους ιδρυτές σε πραγματικές προκλήσεις",
+  "Build your advisory portfolio": "Χτίστε το συμβουλευτικό σας portfolio",
+  "Source deals smarter": "Βρείτε ευκαιρίες πιο έξυπνα",
+  "Filter by stage, sector, and geography": "Φίλτρα ανά στάδιο, κλάδο και γεωγραφία",
+  "See warm intros through shared connections": "Γνωριμίες μέσα από κοινές επαφές",
+  "Track founders you're following": "Παρακολουθήστε τους ιδρυτές που σας ενδιαφέρουν",
+  "Run your cohort": "Τρέξτε την κοορτή σας",
+  "Organize events and office hours at scale": "Οργανώστε εκδηλώσεις και office hours σε κλίμακα",
+  "Connect portfolio founders with mentors": "Συνδέστε τους ιδρυτές του portfolio με μέντορες",
+  "Manage your community in one workspace": "Διαχειριστείτε την κοινότητά σας σε έναν χώρο",
+  "Build your profile": "Φτιάξτε το προφίλ σας",
+  "Complete your guided onboarding. Define your role, expertise, startup stage, work style, and what you're looking for in a co-founder or collaborator.": "Ολοκληρώστε την καθοδηγούμενη ένταξη. Ορίστε ρόλο, εξειδίκευση, στάδιο startup, τρόπο δουλειάς και τι ψάχνετε σε συνιδρυτή ή συνεργάτη.",
+  "Get matched intelligently": "Έξυπνες αντιστοιχίσεις",
+  "Our multi-dimension matching engine scores compatibility across skills, stage, industry, location, values, and goals — with full transparency on why each match appears.": "Η μηχανή αντιστοίχισης βαθμολογεί τη συμβατότητα σε δεξιότητες, στάδιο, κλάδο, τοποθεσία, αξίες και στόχους — και εξηγεί γιατί εμφανίζεται κάθε αντιστοίχιση.",
+  "Start building together": "Ξεκινήστε να χτίζετε μαζί",
+  "Send a connection request, open a private conversation, set shared milestones, and access mentors, investors, and communities — all in one workspace.": "Στείλτε αίτημα σύνδεσης, ανοίξτε ιδιωτική συνομιλία, ορίστε κοινά ορόσημα και βρείτε μέντορες, επενδυτές και κοινότητες — όλα σε έναν χώρο.",
+  "Active members": "Ενεργά μέλη",
+  "Connections made": "Συνδέσεις",
+  "Events hosted": "Εκδηλώσεις",
+  "Registered Members": "Εγγεγραμμένα μέλη",
+  "founders, mentors & investors": "ιδρυτές, μέντορες & επενδυτές",
+  "Successful Connections": "Επιτυχημένες συνδέσεις",
+  "meaningful introductions made": "ουσιαστικές γνωριμίες",
+  "Mentors Available": "Διαθέσιμοι μέντορες",
+  "across 40+ industries": "σε 40+ κλάδους",
+  "Profile Match Accuracy": "Ακρίβεια αντιστοίχισης",
+  "reported by users": "όπως αναφέρουν οι χρήστες",
+  "Events Hosted": "Εκδηλώσεις",
+  "online & in-person": "διαδικτυακές & δια ζώσης",
+  "Partner Organizations": "Συνεργαζόμενοι οργανισμοί",
+  "incubators & accelerators": "θερμοκοιτίδες & επιταχυντές",
+  "Co-founder Match": "Αντιστοίχιση συνιδρυτή",
+  "Mentor Experience": "Εμπειρία μέντορα",
+  "Co-founder Seeker": "Αναζήτηση συνιδρυτή",
+  "Investor Tools": "Εργαλεία επενδυτή",
+  "All-in-one Platform": "Όλα σε μία πλατφόρμα",
+  "Free": "Δωρεάν",
+  "Organization": "Οργανισμοί",
+  "forever": "για πάντα",
+  "per month": "τον μήνα",
+  "per cohort/year": "ανά κοορτή/έτος",
+  "Most popular": "Πιο δημοφιλές",
+  "Custom": "Κατά περίπτωση",
+  "Everything you need to get started and explore the ecosystem.": "Ό,τι χρειάζεστε για να ξεκινήσετε και να εξερευνήσετε το οικοσύστημα.",
+  "Full profile with skills & preferences": "Πλήρες προφίλ με δεξιότητες & προτιμήσεις",
+  "Up to 10 connection requests/month": "Έως 10 αιτήματα σύνδεσης/μήνα",
+  "Access to mentor directory": "Πρόσβαση στον κατάλογο μεντόρων",
+  "Join up to 3 communities": "Συμμετοχή σε έως 3 κοινότητες",
+  "Basic match discovery": "Βασική ανακάλυψη αντιστοιχίσεων",
+  "Milestone tracker (5 milestones)": "Παρακολούθηση ορόσημων (5 ορόσημα)",
+  "Start for free": "Ξεκινήστε δωρεάν",
+  "For founders and co-founders actively building their startup team.": "Για ιδρυτές και συνιδρυτές που χτίζουν ενεργά την ομάδα τους.",
+  "Unlimited connection requests": "Απεριόριστα αιτήματα σύνδεσης",
+  "Priority match placement": "Προτεραιότητα στις αντιστοιχίσεις",
+  "Full fundraising toolkit": "Πλήρη εργαλεία χρηματοδότησης",
+  "Unlimited communities & milestones": "Απεριόριστες κοινότητες & ορόσημα",
+  "Startup Builder & Pitch Deck tool": "Startup Builder & εργαλείο pitch deck",
+  "Direct messaging with read receipts": "Μηνύματα με επιβεβαίωση ανάγνωσης",
+  "Analytics dashboard": "Πίνακας αναλυτικών",
+  "AI Assistant (50 requests/month)": "Βοηθός AI (50 αιτήματα/μήνα)",
+  "Start Pro trial": "Δοκιμή Pro",
+  "For incubators, accelerators, universities, and innovation hubs.": "Για θερμοκοιτίδες, επιταχυντές, πανεπιστήμια και κόμβους καινοτομίας.",
+  "Branded tenant workspace": "Χώρος με την ταυτότητά σας",
+  "Program & cohort management": "Διαχείριση προγραμμάτων & κοορτών",
+  "Mentor pool with scheduling": "Δεξαμενή μεντόρων με προγραμματισμό",
+  "Event management at scale": "Διαχείριση εκδηλώσεων σε κλίμακα",
+  "Advanced analytics & reporting": "Προχωρημένα αναλυτικά & αναφορές",
+  "SSO & domain mapping": "SSO & αντιστοίχιση τομέων",
+  "API access & webhooks": "Πρόσβαση API & webhooks",
+  "Dedicated success manager": "Αποκλειστικός υπεύθυνος επιτυχίας",
+  "Contact us": "Επικοινωνία",
+  "Features": "Δυνατότητες",
+  "How it works": "Πώς λειτουργεί",
+  "Pricing": "Τιμές",
+  "Discover": "Ανακάλυψη",
+  "Events": "Εκδηλώσεις",
+  "Find a Mentor": "Βρείτε μέντορα",
+  "Communities": "Κοινότητες",
+  "Startup Jobs": "Θέσεις σε startups",
+  "Service Marketplace": "Αγορά υπηρεσιών",
+  "Learning Hub": "Κέντρο μάθησης",
+  "About us": "Σχετικά με εμάς",
+  "Blog": "Blog",
+  "Contact": "Επικοινωνία",
+  "Privacy Policy": "Πολιτική απορρήτου",
+  "Terms of Service": "Όροι χρήσης",
+};
+
+function L({ en, wrap }: { en: string; wrap?: boolean }) {
+  return <BilingualText en={en} el={LANDING_EL[en]} compact={!wrap} wrap={wrap} />;
+}
+
 export function LandingHome() {
   return (
     <div
@@ -308,7 +429,7 @@ export function LandingHome() {
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible">
               <Sparkles className="icon-sm" />
-              The startup ecosystem, connected
+              <BilingualText en="The startup ecosystem, connected" el="Το οικοσύστημα startups, συνδεδεμένο" compact />
             </span>
           </div>
 
@@ -341,20 +462,20 @@ export function LandingHome() {
           >
             <Button size="lg" className="gap-2 px-8 py-6 text-base" asChild>
               <Link href="/register">
-                Get started free
+                <BilingualText en="Get started free" el="Ξεκινήστε δωρεάν" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
             <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
               <Link href="/demo">
                 <Play className="icon-sm" />
-                Try Demo
+                <BilingualText en="Try Demo" el="Δοκιμάστε το demo" compact />
               </Link>
             </Button>
           </div>
           <p className="mt-4 text-sm">
             <Link href="/discover" className="text-muted-foreground hover:text-foreground hover:underline">
-              Explore profiles
+              <BilingualText en="Explore profiles" el="Εξερευνήστε προφίλ" compact />
             </Link>
           </p>
 
@@ -372,7 +493,7 @@ export function LandingHome() {
                 className="rounded-xl border border-border/50 bg-card/50 p-4 text-center backdrop-blur-sm"
               >
                 <p className="font-display text-2xl font-bold text-foreground">{value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+                <p className="mt-1 text-xs text-muted-foreground"><L en={label} /></p>
               </div>
             ))}
           </div>
@@ -383,7 +504,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 bg-secondary/10 px-6 py-10 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Trusted by founders from leading programs
+            <BilingualText en="Trusted by founders from leading programs" el="Το εμπιστεύονται ιδρυτές από κορυφαία προγράμματα" wrap />
           </p>
           {/* The row was blanket `opacity-60`, which dropped every label and
               wordmark in it below 4.5:1. The recessive feel now comes from a
@@ -403,9 +524,9 @@ export function LandingHome() {
       <section id="how-it-works" className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-14 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">How it works</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="How it works" el="Πώς λειτουργεί" compact /></Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              From profile to co-founder in 3 steps
+              <BilingualText en="From profile to co-founder in 3 steps" el="Από το προφίλ στον συνιδρυτή σε 3 βήματα" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
               CoFounderBay removes the guesswork from founder matching with structured profiles,
@@ -429,8 +550,8 @@ export function LandingHome() {
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-foreground">{title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                  <h3 className="font-semibold text-lg text-foreground"><L en={title} /></h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed"><L en={desc} wrap /></p>
                 </div>
               </div>
             ))}
@@ -442,12 +563,12 @@ export function LandingHome() {
       <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Roles</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Roles" el="Ρόλοι" compact /></Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              Built for every role in the ecosystem
+              <BilingualText en="Built for every role in the ecosystem" el="Φτιαγμένο για κάθε ρόλο του οικοσυστήματος" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Whether you&apos;re building, advising, investing, or supporting, CoFounderBay works for you.
+              <BilingualText en="Whether you&apos;re building, advising, investing, or supporting, CoFounderBay works for you." el="Είτε χτίζετε, είτε συμβουλεύετε, επενδύετε ή υποστηρίζετε, το CoFounderBay δουλεύει για εσάς." wrap />
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -463,15 +584,15 @@ export function LandingHome() {
                       <Icon className={`icon-md ${color}`} />
                     </div>
                     <Badge variant="outline" className={`mt-2 w-fit border-current text-xs ${color}`}>
-                      {role}
+                      <L en={role} />
                     </Badge>
-                    <CardTitle className="text-base">{headline}</CardTitle>
+                    <CardTitle className="text-base"><L en={headline} /></CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 pt-0">
                     {bullets.map((bullet) => (
                       <div key={bullet} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <CheckCircle className={`mt-0.5 icon-sm shrink-0 ${color}`} />
-                        {bullet}
+                        <L en={bullet} wrap />
                       </div>
                     ))}
                   </CardContent>
@@ -486,12 +607,12 @@ export function LandingHome() {
       <section id="features" className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Platform</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Platform" el="Πλατφόρμα" compact /></Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              Everything your startup network needs
+              <BilingualText en="Everything your startup network needs" el="Ό,τι χρειάζεται το δίκτυο της startup σας" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground">
-              One platform. No scattered tools. From introductions to signed term sheets.
+              <BilingualText en="One platform. No scattered tools. From introductions to signed term sheets." el="Μία πλατφόρμα. Χωρίς σκόρπια εργαλεία. Από τις γνωριμίες ως τα υπογεγραμμένα term sheets." wrap />
             </p>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -505,8 +626,8 @@ export function LandingHome() {
                   <Icon className="icon-md text-primary-accessible" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">{title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+                  <h3 className="font-semibold text-foreground"><L en={title} /></h3>
+                  <p className="mt-1 text-sm text-muted-foreground"><L en={desc} wrap /></p>
                 </div>
               </div>
             ))}
@@ -518,12 +639,12 @@ export function LandingHome() {
       <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">By the numbers</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="By the numbers" el="Σε αριθμούς" compact /></Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              A thriving ecosystem
+              <BilingualText en="A thriving ecosystem" el="Ένα ζωντανό οικοσύστημα" compact />
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Real impact, real connections, real outcomes — across the global startup community.
+              <BilingualText en="Real impact, real connections, real outcomes — across the global startup community." el="Πραγματικός αντίκτυπος, πραγματικές συνδέσεις, πραγματικά αποτελέσματα — σε όλη την κοινότητα startups." wrap />
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -534,8 +655,8 @@ export function LandingHome() {
                 style={{ animationDelay: `${index * 60}ms` }}
               >
                 <p className="font-display text-4xl font-bold text-primary-accessible">{value}</p>
-                <p className="mt-2 font-semibold text-foreground">{label}</p>
-                {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+                <p className="mt-2 font-semibold text-foreground"><L en={label} /></p>
+                {sub && <p className="mt-1 text-xs text-muted-foreground"><L en={sub} /></p>}
               </div>
             ))}
           </div>
@@ -546,12 +667,12 @@ export function LandingHome() {
       <section className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Testimonials</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Testimonials" el="Μαρτυρίες" compact /></Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              Loved by founders, mentors & investors
+              <BilingualText en="Loved by founders, mentors & investors" el="Αγαπημένο από ιδρυτές, μέντορες & επενδυτές" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Real stories from real members of the CoFounderBay community.
+              <BilingualText en="What founders, mentors and investors use CoFounderBay for." el="Για τι χρησιμοποιούν το CoFounderBay ιδρυτές, μέντορες και επενδυτές." wrap />
             </p>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -567,7 +688,7 @@ export function LandingHome() {
                       <Star key={i} className="icon-sm fill-status-warning text-amber-400" />
                     ))}
                   </div>
-                  <Badge variant="secondary" className="text-xs">{tag}</Badge>
+                  <Badge variant="secondary" className="text-xs"><L en={tag} /></Badge>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                   &ldquo;{quote}&rdquo;
@@ -591,12 +712,12 @@ export function LandingHome() {
       <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Pricing</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Pricing" el="Τιμές" compact /></Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-              Simple, transparent pricing
+              <BilingualText en="Simple, transparent pricing" el="Απλές, διαφανείς τιμές" compact />
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Start free. Upgrade when you need more firepower. No hidden fees.
+              <BilingualText en="Start free. Upgrade when you need more firepower. No hidden fees." el="Ξεκινήστε δωρεάν. Αναβαθμίστε όταν χρειαστείτε περισσότερα. Χωρίς κρυφές χρεώσεις." wrap />
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -612,28 +733,28 @@ export function LandingHome() {
               >
                 {badge && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground shadow-sm">
-                    {badge}
+                    <L en={badge} />
                   </Badge>
                 )}
                 <div className="mb-5">
-                  <h3 className="font-bold text-lg text-foreground">{name}</h3>
+                  <h3 className="font-bold text-lg text-foreground"><L en={name} /></h3>
                   <div className="mt-2 flex items-baseline gap-1">
-                    <span className="font-display text-3xl font-bold text-foreground">{price}</span>
-                    <span className="text-sm text-muted-foreground">/{period}</span>
+                    <span className="font-display text-3xl font-bold text-foreground">{price === 'Custom' ? <L en="Custom" /> : price}</span>
+                    <span className="text-sm text-muted-foreground">/<L en={period} /></span>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+                  <p className="mt-2 text-sm text-muted-foreground"><L en={desc} wrap /></p>
                 </div>
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
-                      {f}
+                      <L en={f} wrap />
                     </li>
                   ))}
                 </ul>
                 <Button variant={highlight ? 'default' : 'outline'} className="w-full" asChild>
                   <Link href={href}>
-                    {cta}
+                    <L en={cta} />
                     {highlight && <ArrowRight className="ml-1.5 icon-sm" />}
                   </Link>
                 </Button>
@@ -641,7 +762,7 @@ export function LandingHome() {
             ))}
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            All plans include a 14-day free trial of Pro features. No credit card required.
+            <BilingualText en="All plans include a 14-day free trial of Pro features. No credit card required." el="Όλα τα πλάνα περιλαμβάνουν δωρεάν δοκιμή 14 ημερών των δυνατοτήτων Pro. Χωρίς πιστωτική κάρτα." wrap />
           </p>
         </div>
       </section>
@@ -655,7 +776,7 @@ export function LandingHome() {
             </div>
           </div>
           <h2 className="font-display text-4xl font-bold text-foreground">
-            Ready to find your people?
+            <BilingualText en="Ready to find your people?" el="Έτοιμοι να βρείτε τους ανθρώπους σας;" compact />
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
             Join thousands of founders, mentors, and investors already building meaningful
@@ -664,20 +785,20 @@ export function LandingHome() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25" asChild>
               <Link href="/register">
-                Create free account
+                <BilingualText en="Create free account" el="Δημιουργία δωρεάν λογαριασμού" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base" asChild>
               <Link href="/discover">
                 <Users className="icon-sm" />
-                Browse profiles
+                <BilingualText en="Browse profiles" el="Περιήγηση προφίλ" compact />
               </Link>
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary-accessible hover:underline font-medium">Sign in</Link>
+            <Link href="/login" className="text-primary-accessible hover:underline font-medium"><BilingualText en="Sign in" el="Σύνδεση" compact /></Link>
           </p>
         </div>
       </section>
@@ -715,7 +836,7 @@ export function LandingHome() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-foreground">Product</h4>
+              <h4 className="font-semibold text-sm text-foreground"><BilingualText en="Product" el="Προϊόν" compact /></h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   { href: '#features',    label: 'Features' },
@@ -726,7 +847,7 @@ export function LandingHome() {
                 ].map(({ href, label }) => (
                   <li key={label}>
                     <Link href={href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {label}
+                      <L en={label} />
                     </Link>
                   </li>
                 ))}
@@ -734,7 +855,7 @@ export function LandingHome() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-foreground">Community</h4>
+              <h4 className="font-semibold text-sm text-foreground"><BilingualText en="Community" el="Κοινότητα" compact /></h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   { href: '/mentoring',   label: 'Find a Mentor' },
@@ -745,7 +866,7 @@ export function LandingHome() {
                 ].map(({ href, label }) => (
                   <li key={label}>
                     <Link href={href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {label}
+                      <L en={label} />
                     </Link>
                   </li>
                 ))}
@@ -753,7 +874,7 @@ export function LandingHome() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-foreground">Company</h4>
+              <h4 className="font-semibold text-sm text-foreground"><BilingualText en="Company" el="Εταιρεία" compact /></h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   { href: '/about',   label: 'About us' },
@@ -764,7 +885,7 @@ export function LandingHome() {
                 ].map(({ href, label }) => (
                   <li key={label}>
                     <Link href={href} className="text-muted-foreground hover:text-foreground transition-colors">
-                      {label}
+                      <L en={label} />
                     </Link>
                   </li>
                 ))}
@@ -778,7 +899,7 @@ export function LandingHome() {
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Zap className="icon-sm text-primary-accessible" />
-              Built for founders, by founders
+              <BilingualText en="Built for founders, by founders" el="Από ιδρυτές, για ιδρυτές" compact />
             </div>
           </div>
         </div>

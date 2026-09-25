@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 function hexToHsl(hex: string): string | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -129,13 +130,13 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
             <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2" asChild>
               <Link href="/login">
                 <LogIn className="icon-sm" />
-                Sign In
+                <BilingualText en="Sign In" el="Σύνδεση" compact />
               </Link>
             </Button>
           </div>
 
           {sso?.ssoRequired && (
-            <p className="mt-4 text-xs text-white/60">This organization requires SSO authentication for member access.</p>
+            <p className="mt-4 text-xs text-white/60"><BilingualText en="This organization requires SSO authentication for member access." el="Αυτός ο οργανισμός απαιτεί σύνδεση SSO για πρόσβαση μελών." wrap /></p>
           )}
         </div>
       </section>
@@ -189,7 +190,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               {b?.dashboardWelcomeText || `Ready to join ${tenantName}?`}
             </h2>
             <p className="text-muted-foreground mb-6">
-              Connect with the right people and build something great.
+              <BilingualText en="Connect with the right people and build something great." el="Συνδεθείτε με τους σωστούς ανθρώπους και φτιάξτε κάτι σπουδαίο." wrap />
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               {sso?.ssoAvailable && sso.provider && (
@@ -247,17 +248,17 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {b?.privacyPolicyUrl && (
                 <a href={b.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Privacy <ExternalLink className="icon-sm" />
+                  <BilingualText en="Privacy" el="Απόρρητο" compact /> <ExternalLink className="icon-sm" />
                 </a>
               )}
               {b?.termsUrl && (
                 <a href={b.termsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Terms <ExternalLink className="icon-sm" />
+                  <BilingualText en="Terms" el="Όροι" compact /> <ExternalLink className="icon-sm" />
                 </a>
               )}
               {b?.cookiePolicyUrl && (
                 <a href={b.cookiePolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Cookies <ExternalLink className="icon-sm" />
+                  <BilingualText en="Cookies" el="Cookies" compact /> <ExternalLink className="icon-sm" />
                 </a>
               )}
             </div>
@@ -310,10 +311,10 @@ export default function TenantPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
         <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Organization not found</h1>
-        <p className="text-muted-foreground max-w-sm">The ecosystem you&apos;re looking for doesn&apos;t exist or is not active.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground"><BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact /></h1>
+        <p className="text-muted-foreground max-w-sm"><BilingualText en="The ecosystem you&apos;re looking for doesn&apos;t exist or is not active." el="Το οικοσύστημα που ψάχνετε δεν υπάρχει ή δεν είναι ενεργό." wrap /></p>
         <Button variant="outline" asChild>
-          <Link href="/">Back to CoFounderBay</Link>
+          <Link href="/"><BilingualText en="Back to CoFounderBay" el="Επιστροφή στο CoFounderBay" compact /></Link>
         </Button>
       </div>
     );
