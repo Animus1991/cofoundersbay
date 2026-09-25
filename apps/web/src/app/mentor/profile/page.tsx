@@ -26,8 +26,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { getMeProfile, getMentorDashboardStats } from '@/lib/api';
+import { qk, queryKeys } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { mentorDemoRating } from '@/lib/demo/mentor-world';
 
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
@@ -70,6 +72,20 @@ export default function MentorProfilePage() {
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
+
+  // The header said "4.9 (12 reviews)" for every mentor. It reads the rating
+  // the mentor dashboard reads: the stats endpoint, or in the showcase the
+  // reviews /mentor/reviews lists.
+  const { showDemoData } = useDemoData();
+  const { data: stats } = useQuery({
+    queryKey: qk('mentorships', 'dashboard', 'mentor'),
+    queryFn: getMentorDashboardStats,
+    enabled: hasSession && mounted,
+    retry: 0,
+  });
+  const demoRating = showDemoData ? mentorDemoRating() : null;
+  const ratingValue = stats?.averageRating ?? demoRating?.average ?? null;
+  const ratingNote = demoRating ? ` (${demoRating.count} reviews)` : '';
 
   const displayName = profile?.profile?.displayName ?? 'Mentor';
   const avatarUrl = profile?.profile?.avatarUrl;
@@ -128,7 +144,7 @@ export default function MentorProfilePage() {
                   {headline || 'Add your headline below...'}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" /> 4.9 (12 reviews)</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" aria-hidden="true" /> {ratingValue != null ? `${ratingValue.toFixed(1)}${ratingNote}` : 'No reviews yet'}</span>
                   <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
                   <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
                   <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>

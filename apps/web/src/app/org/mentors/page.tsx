@@ -53,7 +53,7 @@ function toPageMentor(row: OrgMentorPoolItem): Mentor {
     expertise: row.expertiseAreas,
     activeMentees: row.currentMentees,
     maxMentees: row.maxMentees ?? 0,
-    totalSessions: 0,
+    totalSessions: null,
     status: row.isActive ? 'active' : 'inactive',
     isVerified: false,
   };
@@ -68,7 +68,8 @@ type Mentor = {
   expertise: string[];
   activeMentees: number;
   maxMentees: number;
-  totalSessions: number;
+  /** Null when the pool row carries no session count (the live endpoint). */
+  totalSessions: number | null;
   rating?: number;
   status: 'active' | 'inactive' | 'pending';
   isVerified: boolean;
@@ -160,10 +161,12 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                 <Users className="icon-sm" aria-hidden="true" />
                 {mentor.activeMentees}/{mentor.maxMentees} mentees
               </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {mentor.totalSessions} sessions
-              </span>
+              {mentor.totalSessions != null && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="icon-sm" aria-hidden="true" />
+                  {mentor.totalSessions} sessions
+                </span>
+              )}
               {mentor.rating && (
                 <span className="flex items-center gap-1">
                   <Star className={cn('icon-sm', STATUS.warning.icon)} />
@@ -323,7 +326,7 @@ export default function OrgMentorsPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Sessions</p>
               <p className="text-xl font-bold">
-                {mentors.reduce((acc, m) => acc + m.totalSessions, 0)}
+                {mentors.some((m) => m.totalSessions == null) ? '\u2014' : mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}
               </p>
             </CardContent>
           </Card>

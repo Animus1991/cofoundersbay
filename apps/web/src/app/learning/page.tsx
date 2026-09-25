@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -36,6 +36,8 @@ interface Resource {
   tags: string[];
   completedBy?: number;
 }
+
+const SAVED_KEY = 'cfb:learning-saved';
 
 const CATEGORIES = ['All', 'Fundraising', 'Product', 'Marketing', 'Sales', 'Leadership', 'Tech'];
 
@@ -170,10 +172,9 @@ const DIFFICULTY_CONFIG = {
   advanced: { labelKey: 'difficulty_advanced' as const, color: 'bg-status-danger-bg text-status-danger ' },
 };
 
-function ResourceCard({ resource }: { resource: Resource }) {
+function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; saved: boolean; onToggleSave: (id: string) => void }) {
   const typeConfig = TYPE_CONFIG[resource.type] ?? TYPE_CONFIG.article;
   const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
-  const [saved, setSaved] = React.useState(false);
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 flex flex-col">
@@ -203,7 +204,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
           </div>
           <button
             type="button"
-            onClick={() => setSaved(!saved)}
+            onClick={() => onToggleSave(resource.id)}
             aria-pressed={saved}
             aria-label={
               saved
@@ -332,6 +333,31 @@ export default function LearningPage() {
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
+  /*
+   * The bookmark on each card was its own state, lost on the next render of
+   * the list, and the Saved tab showed every resource regardless. There is no
+   * API for learning bookmarks, so they are kept on this device: the Saved
+   * tab lists what was bookmarked here, and says so.
+   */
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SAVED_KEY);
+      if (raw) setSavedIds(JSON.parse(raw) as string[]);
+    } catch {
+      /* storage unavailable: bookmarks last for this visit */
+    }
+  }, []);
+  const toggleSaved = (id: string) =>
+    setSavedIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      try {
+        window.localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      } catch {
+        /* storage unavailable */
+      }
+      return next;
+    });
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [typeFilter, setTypeFilter] = useState<TypeFilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -391,11 +417,17 @@ export default function LearningPage() {
       resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       resource.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesType && matchesSearch;
+    const matchesTab = activeTab !== 'saved' || savedIds.includes(resource.id);
+    return matchesCategory && matchesType && matchesSearch && matchesTab;
   });
 
-  const featuredResources = filteredResources.filter((r) => r.isFeatured);
-  const regularResources = filteredResources.filter((r) => !r.isFeatured);
+  // Each resource appears once on the page: the same two guides used to show
+  // under Recommended, again under Featured, and again in the full list.
+  const recommendedShown = activeTab === 'all' ? new Set(recommendedResources.map((r) => r.id)) : new Set<string>();
+  const featuredResources = filteredResources.filter((r) => r.isFeatured && !recommendedShown.has(r.id));
+  const featuredShown = activeTab === 'all' ? new Set(featuredResources.map((r) => r.id)) : new Set<string>();
+  const regularResources = filteredResources.filter((r) => !recommendedShown.has(r.id) && !featuredShown.has(r.id));
+  const listedAbove = recommendedShown.size + featuredShown.size > 0;
 
   const inProgressPaths = LEARNING_PATHS.filter((p) => p.progress > 0 && p.progress < 100);
   const totalResourceCount = allResources.length;
@@ -480,7 +512,7 @@ export default function LearningPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {recommendedResources.map((resource) => (
-              <ResourceCard key={`rec-${resource.id}`} resource={resource} />
+              <ResourceCard key={`rec-${resource.id}`} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
             ))}
           </div>
         </div>
@@ -495,7 +527,10 @@ export default function LearningPage() {
           <TabsTrigger value="saved">
             <BilingualText en={learningEn('tab_saved')} el={learningEl('tab_saved')} compact />
           </TabsTrigger>
-          <TabsTrigger value="completed">
+          {/* Nothing records a resource as completed yet, so the tab cannot
+              list any; it stays visible and says why rather than showing
+              every resource under "Completed". */}
+          <TabsTrigger value="completed" disabled title="Completion is not recorded yet">
             <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
           </TabsTrigger>
         </TabsList>
@@ -578,7 +613,7 @@ export default function LearningPage() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {featuredResources.map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
+                  <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
               </div>
             </div>
@@ -588,11 +623,15 @@ export default function LearningPage() {
           {!learningLoading && regularResources.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
+                {listedAbove ? (
+                  <BilingualText en="More resources" el="Περισσότεροι πόροι" compact />
+                ) : (
+                  <BilingualText en={learningEn('all_resources')} el={learningEl('all_resources')} compact />
+                )}
               </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {regularResources.map((resource) => (
-                  <ResourceCard key={resource.id} resource={resource} />
+                  <ResourceCard key={resource.id} resource={resource} saved={savedIds.includes(resource.id)} onToggleSave={toggleSaved} />
                 ))}
               </div>
             </div>
@@ -602,12 +641,25 @@ export default function LearningPage() {
           {!learningLoading && filteredResources.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
-              <p className="font-medium text-foreground">
-                <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
-              </p>
+              {activeTab === 'saved' && savedIds.length === 0 ? (
+                <>
+                  <p className="font-medium text-foreground">
+                    <BilingualText en="Nothing saved yet" el="Δεν έχετε αποθηκεύσει τίποτα ακόμα" compact />
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    <BilingualText en="Use the bookmark on a resource to keep it here. Bookmarks are kept on this device." el="Πατήστε τον σελιδοδείκτη σε έναν πόρο για να τον κρατήσετε εδώ. Οι σελιδοδείκτες μένουν σε αυτή τη συσκευή." wrap />
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium text-foreground">
+                    <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
+                  </p>
+                </>
+              )}
             </div>
           )}
         </TabsContent>

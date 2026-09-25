@@ -15,7 +15,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
-import { getOrgMembers, type OrgMember } from '@/lib/api';
+import { getOrgCohorts, getOrgMembers, type OrgMember } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,20 +52,27 @@ import { useDemoData } from '@/contexts/DemoDataContext';
  * than being filled — progress, team size, founding date and readiness are all
  * facts about a company the platform does not model yet.
  */
-function toStartup(member: OrgMember): Startup {
+/** "Founder at Meltemi" names the startup; the member row carries no other field for it. */
+function startupOf(headline: string | null | undefined): string | null {
+  const match = headline?.match(/\bat\s+(.+)$/i);
+  return match ? match[1] : null;
+}
+
+function toStartup(member: OrgMember, graduatedCohorts: ReadonlySet<string>): Startup {
   return {
     id: member.id,
-    name: member.displayName,
+    name: startupOf(member.headline) ?? member.displayName,
     logoUrl: member.avatarUrl ?? undefined,
-    industry: member.headline ?? '\u2014',
-    stage: '\u2014',
+    // The founder, and where they are: what the row actually knows.
+    industry: member.displayName,
+    stage: member.location ?? '\u2014',
     program: member.cohortName || '\u2014',
     cohort: member.cohortName || '\u2014',
-    progress: 0,
-    teamSize: 0,
+    progress: null,
+    teamSize: null,
     foundedAt: member.joinedAt,
-    status: 'active',
-    readinessScore: 0,
+    status: graduatedCohorts.has(member.cohortName) ? 'graduated' : 'active',
+    readinessScore: null,
   };
 }
 
@@ -77,11 +84,12 @@ type Startup = {
   stage: string;
   program: string;
   cohort: string;
-  progress: number;
-  teamSize: number;
+  /** Null where the platform has no figure for a company (see toStartup). */
+  progress: number | null;
+  teamSize: number | null;
   foundedAt: string;
   status: 'active' | 'graduated' | 'paused' | 'dropped';
-  readinessScore: number;
+  readinessScore: number | null;
 };
 
 const STARTUP_STATUS_TONE: Record<Startup['status'], StatusTone> = {
@@ -111,7 +119,8 @@ function StartupCard({ startup }: { startup: Startup }) {
                   {startup.name}
                 </Link>
                 <p className="text-sm text-muted-foreground">
-                  {startup.industry} · {startup.stage}
+                  {startup.industry}
+                  {startup.stage && startup.stage !== '\u2014' ? ` · ${startup.stage}` : ''}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -154,29 +163,37 @@ function StartupCard({ startup }: { startup: Startup }) {
                 <Rocket className="icon-sm" aria-hidden="true" />
                 {startup.program}
               </span>
-              <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />
-                {startup.teamSize} members
-              </span>
+              {startup.teamSize != null && (
+                <span className="flex items-center gap-1">
+                  <Users className="icon-sm" aria-hidden="true" />
+                  {startup.teamSize} members
+                </span>
+              )}
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" aria-hidden="true" />
                 {startup.cohort}
               </span>
             </div>
 
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{startup.progress}%</span>
-                </div>
-                <Progress value={startup.progress} className="h-1.5" />
+            {(startup.progress != null || startup.readinessScore != null) && (
+              <div className="flex items-center gap-4 mt-3">
+                {startup.progress != null && (
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Progress</span>
+                      <span className="font-medium">{startup.progress}%</span>
+                    </div>
+                    <Progress value={startup.progress} className="h-1.5" />
+                  </div>
+                )}
+                {startup.readinessScore != null && (
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Readiness</p>
+                    <p className="text-sm font-medium">{startup.readinessScore}%</p>
+                  </div>
+                )}
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Readiness</p>
-                <p className="text-sm font-medium">{startup.readinessScore}%</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -262,10 +279,28 @@ export default function OrgStartupsPage() {
     retry: 0,
   });
 
-  const live = useMemo(() => (data?.members ?? []).map(toStartup), [data]);
+  // A member of a cohort that has ended has graduated from it.
+  const { data: cohortData } = useQuery({
+    queryKey: qk('org', 'cohorts', slug),
+    queryFn: () => getOrgCohorts(slug!),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const graduatedCohorts = useMemo(
+    () => new Set<string>((cohortData?.cohorts ?? []).filter((c) => !c.isActive && c.endDate && Date.parse(c.endDate) < Date.now()).map((c) => c.name)),
+    [cohortData],
+  );
+  // Cohort members include the cohort's mentors and investors (the API
+  // returns every member with the user's role); a portfolio is its founders.
+  const live = useMemo(
+    () => (data?.members ?? []).filter((m) => m.role === 'founder').map((m) => toStartup(m, graduatedCohorts)),
+    [data, graduatedCohorts],
+  );
   const startups: Startup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_STARTUPS;
 
 
+  const scored = startups.filter((s) => s.readinessScore != null);
   const filteredStartups = startups.filter((s) => {
     const matchesSearch =
       !search ||
@@ -345,7 +380,7 @@ export default function OrgStartupsPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Avg. Readiness</p>
               <p className="text-xl font-bold">
-                {Math.round(startups.reduce((acc, s) => acc + s.readinessScore, 0) / startups.length)}%
+                {scored.length ? `${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%` : '\u2014'}
               </p>
             </CardContent>
           </Card>

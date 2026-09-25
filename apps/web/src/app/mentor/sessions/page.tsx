@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/toast';
 import { ScheduleSessionDialog, RescheduleSessionDialog, SessionNotesDialog } from '@/components/mentoring/SessionDialogs';
@@ -29,6 +29,8 @@ import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
+  getMentorshipSessions,
+  getMyMentorships,
   getUpcomingMentorshipSessions,
   updateMentorshipSession,
   type MentorshipSessionItem,
@@ -150,6 +152,23 @@ export default function MentorSessionsPage() {
     queryFn: getUpcomingMentorshipSessions,
     enabled: hasSession && mounted,
   });
+  // The upcoming endpoint returns only what is still scheduled, so "Past"
+  // and "Completed" could never show anything. Each mentorship's own session
+  // list carries its history; the mentees page reads the same relationships.
+  const { data: relData } = useQuery({
+    queryKey: qk('mentorships', 'mentor'),
+    queryFn: () => getMyMentorships('mentor'),
+    enabled: hasSession && mounted,
+  });
+  const historyQueries = useQueries({
+    queries: (relData?.relationships ?? []).map((r) => ({
+      queryKey: qk('mentorships', 'sessions', r.id),
+      queryFn: () => getMentorshipSessions(r.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+  const history = historyQueries.flatMap((q) => q.data?.sessions ?? []);
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const { success, error: toastError } = useToast();
@@ -157,7 +176,10 @@ export default function MentorSessionsPage() {
   const [menteeHint, setMenteeHint] = useState<string | null>(null);
   const [rescheduling, setRescheduling] = useState<MentorshipSessionItem | null>(null);
   const [notesFor, setNotesFor] = useState<MentorshipSessionItem | null>(null);
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions-upcoming') });
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions-upcoming') });
+    void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions') });
+  };
 
   // /mentor/sessions?new=1&mentee=<id> - how the mentees page asks for a new
   // session with a particular mentee. Read after mount so SSR and hydration
@@ -207,9 +229,11 @@ export default function MentorSessionsPage() {
     </>
   );
 
-  const sessions = data?.sessions || [];
-  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled');
-  const pastSessions = sessions.filter((s) => s.status !== 'scheduled');
+  const byId = new Map<string, MentorshipSessionItem>();
+  for (const x of [...(data?.sessions ?? []), ...history]) byId.set(x.id, x);
+  const sessions = [...byId.values()];
+  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled').sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+  const pastSessions = sessions.filter((s) => s.status !== 'scheduled').sort((a, b) => b.scheduledAt.localeCompare(a.scheduledAt));
 
   // Offered to the assistant, above the loading and error returns: the tab,
   // Schedule, and each session's reschedule, notes and cancel (which asks).

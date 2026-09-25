@@ -26,8 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { getMeProfile, getProviderSummary } from '@/lib/api';
+import { qk, queryKeys } from '@/lib/query-keys';
 
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
@@ -77,6 +77,15 @@ export default function ProviderProfilePage() {
     queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
+  });
+
+  // The header said "4.8 (8 reviews)" for every provider; it reads the rating
+  // the provider dashboard reads.
+  const { data: summary } = useQuery({
+    queryKey: qk('provider', 'summary'),
+    queryFn: getProviderSummary,
+    enabled: hasSession && mounted,
+    retry: 0,
   });
 
   const displayName = profile?.profile?.displayName ?? 'Provider';
@@ -138,7 +147,7 @@ export default function ProviderProfilePage() {
                   {headline || 'Add your service headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" /> 4.8 (8 reviews)</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" aria-hidden="true" /> {summary?.avgRating != null ? `${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)` : 'No reviews yet'}</span>
                   <span className="flex items-center gap-1"><Users className="icon-sm" /> {clientsServed || '?'} clients</span>
                   <span className="flex items-center gap-1"><TrendingUp className="icon-sm" /> {yearsInBusiness}y in business</span>
                   {companyWebsite && (

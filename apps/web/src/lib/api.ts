@@ -5362,7 +5362,12 @@ export async function listPrograms(params?: {
 export async function getProgram(id: string): Promise<{ program: ProgramItem }> {
   // `GET /programs/:id` returns the row itself, not an envelope.
   const res = await apiRequest<RawProgram & { program?: RawProgram }>(`/api/programs/${id}`);
-  return { program: toProgramItem(res?.program ?? res) };
+  const raw = res?.program ?? res;
+  // A body without an id is not a programme: normalising it drew an
+  // "Untitled program" with dashes for every field instead of the page's
+  // not-found state.
+  if (!raw || typeof (raw as { id?: unknown }).id !== 'string') throw new Error('Program not found');
+  return { program: toProgramItem(raw) };
 }
 
 /**

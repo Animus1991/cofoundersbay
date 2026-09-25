@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getMentorDashboardStats } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 import {
   Star,
   Search,
@@ -113,6 +116,16 @@ export default function MentorReviewsPage() {
   const [ratingFilter, setRatingFilter] = useState<string>('all');
 
   const reviews = showDemoData ? MOCK_REVIEWS : [];
+  // The four side figures were constants (48 sessions, 92% response rate, 15
+  // repeat mentees, 43 helpful votes) that disagreed with the mentor
+  // dashboard. They are the dashboard's own counts now, and helpful votes are
+  // summed from the reviews on this page.
+  const { data: stats } = useQuery({
+    queryKey: qk('mentorships', 'dashboard', 'mentor'),
+    queryFn: getMentorDashboardStats,
+    retry: 0,
+  });
+  const helpfulVotes = reviews.reduce((sum, r) => sum + (r.helpful ?? 0), 0);
 
   const filteredReviews = reviews.filter((r) => {
     const matchesSearch =
@@ -195,20 +208,20 @@ export default function MentorReviewsPage() {
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Sessions</p>
-                  <p className="text-xl font-bold">48</p>
+                  <p className="text-sm text-muted-foreground">Sessions given</p>
+                  <p className="text-xl font-bold tabular-nums">{stats?.totalSessions ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Response Rate</p>
-                  <p className="text-xl font-bold">92%</p>
+                  <p className="text-sm text-muted-foreground">Active mentees</p>
+                  <p className="text-xl font-bold tabular-nums">{stats?.activeMentees ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Repeat Mentees</p>
-                  <p className="text-xl font-bold">15</p>
+                  <p className="text-sm text-muted-foreground">Mentorships completed</p>
+                  <p className="text-xl font-bold tabular-nums">{stats?.completedMentorships ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Helpful Votes</p>
-                  <p className="text-xl font-bold">43</p>
+                  <p className="text-sm text-muted-foreground">Helpful votes</p>
+                  <p className="text-xl font-bold tabular-nums">{helpfulVotes}</p>
                 </div>
               </div>
             </CardContent>

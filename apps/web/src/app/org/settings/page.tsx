@@ -39,6 +39,36 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+/*
+ * The selects offered `gr` and `europe_athens` while the organisation stores
+ * ISO and IANA values (`GR`, `Europe/Athens`), so a saved country or timezone
+ * never showed as selected and a save wrote a code nothing else reads. The
+ * options are the canonical values now; older lowercase ones are mapped on
+ * load.
+ */
+const COUNTRIES: ReadonlyArray<readonly [string, string]> = [
+  ['GR', 'Greece'],
+  ['CY', 'Cyprus'],
+  ['GB', 'United Kingdom'],
+  ['DE', 'Germany'],
+  ['US', 'United States'],
+];
+const TIMEZONES = ['Europe/Athens', 'Europe/Nicosia', 'Europe/London', 'Europe/Berlin', 'America/New_York'] as const;
+
+function normalCountry(value: string | null | undefined): string {
+  const v = (value ?? '').trim().toUpperCase();
+  return v === 'UK' ? 'GB' : v;
+}
+
+function normalTimezone(value: string | null | undefined): string {
+  const v = (value ?? '').trim();
+  if (!v || v.includes('/')) return v;
+  // Legacy option values: europe_athens -> Europe/Athens, america_new_york -> America/New_York.
+  const [region, ...city] = v.split('_');
+  const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+  return `${cap(region)}/${city.map(cap).join('_')}`;
+}
+
 export default function OrgSettingsPage() {
   /*
    * The three fields opened with another organisation's details written into
@@ -96,8 +126,8 @@ export default function OrgSettingsPage() {
     setOrgDescription(org?.description ?? '');
     setWebsite(org?.website ?? '');
     if (org?.type) setOrgType(org.type);
-    setCountry(org?.country ?? '');
-    setTimezone(org?.timezone ?? '');
+    setCountry(normalCountry(org?.country));
+    setTimezone(normalTimezone(org?.timezone));
     if (org?.primaryColor) setPrimaryColor(org.primaryColor);
     const saved = (org?.settings as { policies?: Record<string, boolean> } | null)?.policies;
     if (saved) setPolicies((prev) => ({ ...prev, ...saved }));
@@ -246,10 +276,9 @@ export default function OrgSettingsPage() {
                         <SelectValue placeholder="Choose a country" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="gr">Greece</SelectItem>
-                        <SelectItem value="us">United States</SelectItem>
-                        <SelectItem value="uk">United Kingdom</SelectItem>
-                        <SelectItem value="de">Germany</SelectItem>
+                        {COUNTRIES.map(([code, name]) => (
+                          <SelectItem key={code} value={code}>{name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -260,9 +289,9 @@ export default function OrgSettingsPage() {
                         <SelectValue placeholder="Choose a timezone" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="europe_athens">Europe/Athens (GMT+2)</SelectItem>
-                        <SelectItem value="america_new_york">America/New_York (GMT-5)</SelectItem>
-                        <SelectItem value="europe_london">Europe/London (GMT)</SelectItem>
+                        {TIMEZONES.map((tz) => (
+                          <SelectItem key={tz} value={tz}>{tz.replace('_', ' ')}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
