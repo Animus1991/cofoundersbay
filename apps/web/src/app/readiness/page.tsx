@@ -1217,6 +1217,18 @@ export default function ReadinessPage() {
                     wrap
                   />
                 </p>
+                {/* Two scores, two questions. The dashboard's founder progress
+                    weighs activity on the platform; this one weighs the company
+                    against what investors check. Both linked here, and a reader
+                    saw 52 on the dashboard and 61 here with no word on why. */}
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  <BilingualText
+                    en="How ready the company is for investors. Your founder progress score on the dashboard measures your activity on the platform instead."
+                    el="Πόσο έτοιμη είναι η εταιρεία για επενδυτές. Ο βαθμός προόδου στον πίνακα ελέγχου μετρά τη δραστηριότητά σας στην πλατφόρμα."
+                    stacked
+                    wrap
+                  />
+                </p>
               </div>
               {nextOpen && (
                 <Link

@@ -641,11 +641,14 @@ export default function FounderDashboardContent() {
           <Badge variant="outline" className="gap-1.5">
             <CfbGlyph name="builder" className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
           </Badge>
+          {/* Jumps to the founder progress card below. It opened /readiness,
+              whose score is a different measure (the company's readiness for
+              investors), so "Progress: 52%" led to a page that said 61. */}
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
-            <Link href="/readiness">
+            <a href="#founder-progress">
               <CfbGlyph name="chart" className="icon-sm" />
-              <BilingualText en={`Progress: ${founderProgress}%`} el={`Πρόοδος: ${founderProgress}%`} compact />
-            </Link>
+              <BilingualText en={`Founder progress: ${founderProgress}%`} el={`Πρόοδος ιδρυτή: ${founderProgress}%`} compact />
+            </a>
           </Button>
         </>
       }
@@ -731,6 +734,7 @@ export default function FounderDashboardContent() {
                 link them. The three navigation actions that were unique to the
                 second card now sit in this card's footer, so nothing is lost. */}
             {vrs && (
+              <div id="founder-progress" className="scroll-mt-24">
               <VentureReadinessCard
                 data={vrs}
                 footer={
@@ -739,7 +743,7 @@ export default function FounderDashboardContent() {
                       <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/readiness" className="w-full">
                           <CfbGlyph name="chart" className="icon-sm" />
-                          <BilingualText en="Full report" el="Πλήρης αναφορά" compact wrap />
+                          <BilingualText en="Startup readiness" el="Ετοιμότητα startup" compact wrap />
                         </Link>
                       </Button>
                       <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
@@ -765,6 +769,7 @@ export default function FounderDashboardContent() {
                   </div>
                 }
               />
+              </div>
             )}
 
             {/* Fundraising widget */}
