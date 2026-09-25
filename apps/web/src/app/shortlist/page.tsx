@@ -43,11 +43,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -348,6 +350,7 @@ export default function ShortlistPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [compareMode, setCompareMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { openRailSection } = usePageRail();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qk('shortlist'),
@@ -494,40 +497,70 @@ export default function ShortlistPage() {
     { id: 'remove_saved', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: rowOptions(filtered, (i) => i.userId, (i) => i.profile?.displayName ?? 'Member'), run: (v) => { if (v) handleRemove(v); } },
   ]);
 
-  return (
-    <AppShell title={shortlistEn('page_title')} description={shortlistEn('page_description')}>
-      <div className="space-y-5 pb-10">
-
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { key: 'stat_total', value: rawItems.length, icon: Bookmark, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-            { key: 'stat_notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-            { key: 'stat_avg_match', value: avgMatch == null ? '—' : `${avgMatch}%`, icon: Sparkles, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { key: 'stat_roles', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
-          ].map(({ key, value, icon: Icon, color, bg }) => (
-            <Card key={key} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-3 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
-                  <Icon className="icon-sm" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground"><BilingualText en={shortlistEn(key)} el={shortlistEl(key)} compact /></p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+  /*
+   * The column leads with the search, the sort, the layout and compare, and
+   * the saved people. The four figures and the role filter are auxiliary, so
+   * they live in the rail.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'bookmark',
+      labelEn: 'Your shortlist',
+      labelEl: 'Η λίστα σας',
+      content: (
+        <RailStats
+          items={[
+            { key: 'stat_total', label: shortlistEn('stat_total'), labelEl: shortlistEl('stat_total'), value: rawItems.length, icon: Bookmark, tone: 'bg-primary/10 text-primary-accessible' },
+            { key: 'stat_notes', label: shortlistEn('stat_notes'), labelEl: shortlistEl('stat_notes'), value: rawItems.filter((i) => i.note).length, icon: Tag, tone: 'bg-status-warning-bg text-status-warning' },
+            { key: 'stat_avg_match', label: shortlistEn('stat_avg_match'), labelEl: shortlistEl('stat_avg_match'), value: avgMatch == null ? '—' : `${avgMatch}%`, icon: Sparkles, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'stat_roles', label: shortlistEn('stat_roles'), labelEl: shortlistEl('stat_roles'), value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, tone: 'bg-status-info-bg text-status-info' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: roleFilter !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Role"
+            titleEl="Ρόλος"
+            options={ROLE_TABS.map(({ value, key, icon }) => ({ value, en: shortlistEn(key), el: shortlistEl(key), icon, count: roleCounts[value] }))}
+            value={roleFilter}
+            onChange={setRoleFilter}
+          />
+          {roleFilter !== 'all' && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setRoleFilter('all')} />
+          )}
         </div>
+      ),
+    },
+  ];
+
+  return (
+    <AppShell
+      rail={rail}
+      title={shortlistEn('page_title')}
+      titleEl={shortlistEl('page_title')}
+      description={shortlistEn('page_description')}
+      descriptionEl={shortlistEl('page_description')}
+    >
+      <div className="space-y-5 pb-10">
 
         {/* Toolbar */}
         <div className="space-y-3">
           {/* Search + sort + view */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder={say(shortlistEn('search_placeholder'), shortlistEl('search_placeholder'))}
+                aria-label={say(shortlistEn('search_placeholder'), shortlistEl('search_placeholder'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -535,7 +568,7 @@ export default function ShortlistPage() {
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
               {/* w-44 is 176px, and "Newest first · Νεότερα πρώτα" is 76px past that. */}
-              <SelectTrigger aria-label="Sort by" className="h-9 w-auto min-w-[11rem] text-sm">
+              <SelectTrigger aria-label={bilingualAria('Sort by', 'Ταξινόμηση')} className="h-9 w-auto min-w-[11rem] text-sm">
                 <ArrowUpDown className="mr-1.5 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -569,22 +602,6 @@ export default function ShortlistPage() {
             </Button>
           </div>
 
-          {/* Role tabs */}
-          <Tabs value={roleFilter} onValueChange={(v) => setRoleFilter(v as RoleFilter)}>
-            <TabsList className="h-auto flex-wrap gap-1 bg-transparent p-0">
-              {ROLE_TABS.map(({ value, key, icon: Icon }) => (
-                <TabsTrigger key={value} value={value} className="h-8 gap-1.5 rounded-lg border border-border/60 bg-card px-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-                  <Icon className="icon-sm" />
-                  <BilingualText en={shortlistEn(key)} el={shortlistEl(key)} compact />
-                  {roleCounts[value] !== undefined && (
-                    <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-2xs font-semibold">
-                      {roleCounts[value]}
-                    </span>
-                  )}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
         </div>
 
         {/* Compare action bar */}
@@ -622,14 +639,32 @@ export default function ShortlistPage() {
             </div>
             <div>
               <p className="font-medium text-foreground">
-                {rawItems.length === 0 ? 'No saved profiles yet' : 'No profiles match your filters'}
+                {rawItems.length === 0
+                  ? <BilingualText en="No saved profiles yet" el="Δεν υπάρχουν αποθηκευμένα προφίλ ακόμα" />
+                  : <BilingualText en="No profiles match" el="Κανένα προφίλ δεν ταιριάζει" />}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {rawItems.length === 0
-                  ? 'Save profiles from Matches or Members to revisit them here.'
-                  : 'Try adjusting your filters or search query.'}
+                  ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
+                  : roleFilter !== 'all'
+                    ? <BilingualText en="The role filter in the side panel may be hiding people." el="Το φίλτρο ρόλου στο πλευρικό πάνελ ίσως κρύβει άτομα." wrap />
+                    : <BilingualText en="Try a different search." el="Δοκιμάστε διαφορετική αναζήτηση." wrap />}
               </p>
             </div>
+            {rawItems.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {roleFilter !== 'all' && (
+                  <Button size="sm" variant="secondary" onClick={() => openRailSection('filters')}>
+                    <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                  </Button>
+                )}
+                {searchQuery && (
+                  <Button size="sm" variant="ghost" onClick={() => setSearchQuery('')}>
+                    <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                  </Button>
+                )}
+              </div>
+            )}
             {rawItems.length === 0 && (
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button size="sm" className="gap-1.5" asChild>
@@ -637,8 +672,8 @@ export default function ShortlistPage() {
                 </Button>
                 <Button size="sm" variant="outline" className="gap-1.5" asChild>
                   <Link href={`/ai?q=${encodeURIComponent('I have no saved profiles. Who from my matches should I shortlist first?')}`}>
-                    <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-                    Ask AI
+                    <Sparkles className="h-3.5 w-3.5 text-violet-500" aria-hidden="true" />
+                    <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
                   </Link>
                 </Button>
               </div>

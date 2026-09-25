@@ -4,8 +4,12 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2 } from 'lucide-react';
+import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2, Layers, X } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import { bilingualInline } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,11 +21,17 @@ import { listEvents, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { BilingualText } from '@/components/common/BilingualText';
-import { Card, CardContent } from '@/components/ui/card';
 import { qk } from '@/lib/query-keys';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
+
+const FORMAT_OPTIONS = [
+  { value: 'all', en: 'Any format', el: 'Οποιαδήποτε μορφή', icon: Layers },
+  { value: 'online', en: 'Online', el: 'Διαδικτυακές', icon: Video },
+  { value: 'in-person', en: 'In-person', el: 'Δια ζώσης', icon: MapPin },
+  { value: 'hybrid', en: 'Hybrid', el: 'Υβριδικές', icon: Calendar },
+] as const satisfies ReadonlyArray<{ value: EventFilter; en: string; el: string; icon: unknown }>;
 
 function toEventData(item: EventItem): EventData {
   return {
@@ -51,6 +61,7 @@ export default function EventsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [filter, setFilter] = useState<EventFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { openRailSection } = usePageRail();
   // Offered to the assistant: the tab, the format filter and the layout,
   // through the same setters. RSVPs and creating events are capabilities of
   // their own (rsvp_event, create_event).
@@ -60,12 +71,8 @@ export default function EventsPage() {
       { value: 'my-events', en: 'My Events', el: 'Οι εκδηλώσεις μου' },
       { value: 'past', en: 'Past', el: 'Παρελθούσες' },
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
-    choiceControl('format', 'Event format filter', 'Φίλτρο μορφής εκδήλωσης', [
-      { value: 'all', en: 'Any format', el: 'Οποιαδήποτε μορφή' },
-      { value: 'online', en: 'Online', el: 'Διαδικτυακές' },
-      { value: 'in-person', en: 'In-person', el: 'Δια ζώσης' },
-      { value: 'hybrid', en: 'Hybrid', el: 'Υβριδικές' },
-    ], filter, (v) => setFilter(v as EventFilter)),
+    choiceControl('format', 'Event format filter', 'Φίλτρο μορφής εκδήλωσης',
+      FORMAT_OPTIONS.map(({ value, en, el }) => ({ value, en, el })), filter, (v) => setFilter(v as EventFilter)),
     choiceControl('view', 'Events layout', 'Διάταξη εκδηλώσεων', [
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'list', en: 'List', el: 'Λίστα' },
@@ -118,15 +125,20 @@ export default function EventsPage() {
           };
         },
       );
-      success('RSVP updated', nextStatus === 'going' ? 'You are going to this event' : 'RSVP removed');
+      success(
+        bilingualInline('RSVP updated', 'Η δήλωση ενημερώθηκε'),
+        nextStatus === 'going'
+          ? bilingualInline('You are going to this event', 'Θα παρευρεθείτε σε αυτή την εκδήλωση')
+          : bilingualInline('RSVP removed', 'Η δήλωση αφαιρέθηκε'),
+      );
     } catch (e) {
-      showError('RSVP failed', e instanceof Error ? e.message : 'Please try again');
+      showError(bilingualInline('RSVP failed', 'Η δήλωση απέτυχε'), e instanceof Error ? e.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά'));
     }
   };
 
   const handleShare = (event: EventData) => {
     navigator.clipboard.writeText(`${window.location.origin}/events/${event.id}`);
-    success('Link copied', 'Event link copied to clipboard');
+    success(bilingualInline('Link copied', 'Ο σύνδεσμος αντιγράφηκε'), bilingualInline('Event link copied to clipboard', 'Ο σύνδεσμος της εκδήλωσης αντιγράφηκε'));
   };
 
   usePageList([
@@ -153,8 +165,54 @@ export default function EventsPage() {
     },
   ]);
 
+  /*
+   * The column leads with the tabs, the search and the events. The counts
+   * describe the list shown and the format filter narrows it: both are
+   * auxiliary, so they live in the rail. The first card is labelled by what
+   * the API's order makes it (soonest upcoming, latest past), not "featured".
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'calendar',
+      labelEn: 'In this list',
+      labelEl: 'Σε αυτή τη λίστα',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Events shown', labelEl: 'Εκδηλώσεις που εμφανίζονται', value: events.length, icon: Calendar, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'online', label: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length, icon: Video, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'in-person', label: 'In-person', labelEl: 'Δια ζώσης', value: events.filter((e) => e.type === 'in-person').length, icon: MapPin, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'going', label: "You're going or interested", labelEl: 'Θα πάτε ή σας ενδιαφέρει', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: filter !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions title="Format" titleEl="Μορφή" options={FORMAT_OPTIONS} value={filter} onChange={setFilter} />
+          {filter !== 'all' && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setFilter('all')} />
+          )}
+        </div>
+      ),
+    },
+  ];
+  const firstLabel = activeTab === 'past'
+    ? { en: 'Most recent', el: 'Πιο πρόσφατη' }
+    : activeTab === 'my-events'
+      ? { en: 'First on your list', el: 'Πρώτη στη λίστα σας' }
+      : { en: 'Next up', el: 'Επόμενη' };
+
   return (
     <AppShell
+      rail={rail}
       actions={
         <Button className="gap-2" asChild>
           <Link href="/events/create">
@@ -165,35 +223,6 @@ export default function EventsPage() {
       }
     >
       <div className="space-y-6 pb-10">
-      {/* Stats bar */}
-      {/* Four across waits for `md`, as on /connections: at 640px each tile
-          is 145px and a bilingual label has about 80px to live in. */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { labelEn: 'Total Events', labelEl: 'Συνολικές εκδηλώσεις', value: events.length, icon: Calendar, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          { labelEn: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length, icon: Video, color: 'text-status-success', bg: 'bg-status-success-bg' },
-          { labelEn: 'In-Person', labelEl: 'Δια ζώσης', value: events.filter((e) => e.type === 'in-person').length, icon: MapPin, color: 'text-status-info', bg: 'bg-status-info-bg' },
-          { labelEn: "RSVP'd", labelEl: 'Δηλώσεις', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-        ].map((s) => {
-          const SIcon = s.icon;
-          return (
-            <Card key={s.labelEn} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-2.5 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
-                  <SIcon className="icon-sm" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without
@@ -213,7 +242,7 @@ export default function EventsPage() {
           </TabsList>
 
           <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1">
-            <Button aria-label="Grid view"
+            <Button aria-label={bilingualInline('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
               className="h-8 w-8"
@@ -221,7 +250,7 @@ export default function EventsPage() {
             >
               <Grid className="icon-sm" aria-hidden="true" />
             </Button>
-            <Button aria-label="List view"
+            <Button aria-label={bilingualInline('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'}
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
               className="h-8 w-8"
@@ -232,31 +261,16 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-4">
-          <div className="relative min-w-[220px] flex-1">
+        <div className="mt-5">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search events..."
+              placeholder={bilingualInline('Search events…', 'Αναζήτηση εκδηλώσεων…')}
+              aria-label={bilingualInline('Search events', 'Αναζήτηση εκδηλώσεων')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
             />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="shrink-0 text-sm text-muted-foreground">Filter:</span>
-            {(['all', 'online', 'in-person', 'hybrid'] as EventFilter[]).map((f) => (
-              <Button
-                key={f}
-                variant={filter === f ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setFilter(f)}
-                className="capitalize gap-1"
-              >
-                {f === 'online' && <Video className="icon-sm" aria-hidden="true" />}
-                {f === 'in-person' && <MapPin className="icon-sm" aria-hidden="true" />}
-                {f}
-              </Button>
-            ))}
           </div>
         </div>
 
@@ -264,8 +278,12 @@ export default function EventsPage() {
           <TabsContent key={tab} value={tab} className="mt-6">
             {isError ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load events.</p>
-                <button onClick={() => refetch()} className="text-sm text-primary-accessible hover:underline">Try again</button>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en="Events could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." wrap />
+                </p>
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+                </Button>
               </div>
             ) : loading ? (
               // Three columns at most: at four, each card kept ~170px beside
@@ -277,26 +295,38 @@ export default function EventsPage() {
               </div>
             ) : events.length === 0 ? (
               <EmptyState
-                title={tab === 'my-events' ? 'No events yet' : 'No events found'}
+                title={tab === 'my-events'
+                  ? <BilingualText en="No events yet" el="Δεν υπάρχουν εκδηλώσεις ακόμα" />
+                  : <BilingualText en="No events found" el="Δεν βρέθηκαν εκδηλώσεις" />}
                 description={
                   tab === 'my-events'
                     ? hasToken
-                      ? "You have not RSVP'd to any events yet."
-                      : 'Sign in to view your event activity.'
-                    : searchQuery || filter !== 'all'
-                      ? 'Try adjusting your filters'
-                      : 'No events available right now'
+                      ? <BilingualText en="You have not said you are going to, or interested in, any event yet." el="Δεν έχετε δηλώσει ακόμα συμμετοχή ή ενδιαφέρον για κάποια εκδήλωση." />
+                      : <BilingualText en="Sign in to view your event activity." el="Συνδεθείτε για να δείτε τις εκδηλώσεις σας." />
+                    : filter !== 'all'
+                      ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
+                      : searchQuery
+                        ? <BilingualText en="Try a different search." el="Δοκιμάστε διαφορετική αναζήτηση." />
+                        : <BilingualText en="No events are listed right now." el="Δεν υπάρχουν εκδηλώσεις αυτή τη στιγμή." />
                 }
                 illustration="calendar"
                 askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."
                 action={
                   tab === 'my-events' && !hasToken ? (
                     <Button asChild>
-                      <Link href="/login">Sign in</Link>
+                      <Link href="/login"><BilingualText en="Sign in" el="Σύνδεση" compact /></Link>
+                    </Button>
+                  ) : filter !== 'all' ? (
+                    <Button variant="secondary" onClick={() => openRailSection('filters')}>
+                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                    </Button>
+                  ) : searchQuery ? (
+                    <Button variant="secondary" onClick={() => setSearchQuery('')}>
+                      <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
                     </Button>
                   ) : (
                     <Button asChild>
-                      <Link href="/events/create">Create an event</Link>
+                      <Link href="/events/create"><BilingualText en="Create an event" el="Δημιουργία εκδήλωσης" compact /></Link>
                     </Button>
                   )
                 }
@@ -305,7 +335,9 @@ export default function EventsPage() {
               <>
                 {featured && (
                   <div className="mb-6">
-                    <h2 className="mb-4 text-lg font-semibold text-foreground">Featured</h2>
+                    <h2 className="mb-4 text-lg font-semibold text-foreground">
+                      <BilingualText en={firstLabel.en} el={firstLabel.el} compact />
+                    </h2>
                     <EventCard
                       event={featured}
                       variant="featured"

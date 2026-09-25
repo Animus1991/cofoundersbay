@@ -425,6 +425,8 @@ const PEOPLE = [
     matchReasons: ['Stage fit'],
     lookingFor: 'deal flow',
     availability: 'flexible',
+    // The API filters `investmentStages` on the role payload's `stages`.
+    investmentStages: ['pre-seed', 'seed'],
     lastSeenSecondsAgo: null,
     joinedAt: '2026-09-01T09:00:00.000Z',
   },
@@ -1861,6 +1863,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     // `roles` narrows the directory the way the API does: /mentoring asks for
     // mentors and was shown every founder in the fixtures as one.
     const roles = (params.get('roles') ?? '').split(',').filter(Boolean);
+    const investmentStages = (params.get('investmentStages') ?? '').split(',').filter(Boolean);
     // The organisation's other mentors join the directory when mentors are
     // asked for, so /mentoring lists the coaches /org/mentors already shows.
     const orgMentorHits = ORG_MENTORS.filter((m) => m.id !== ME_ID && !PEOPLE.some((p) => p.userId === m.id)).map((m) => ({
@@ -1888,7 +1891,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       const qOk = !q || q.split(/\s+/).every((token) => blob.includes(token) || p.location.toLowerCase().includes(token));
       const locOk = !location || p.location.toLowerCase().includes(location) || blob.includes(location);
       const roleOk = !roles.length || roles.includes(p.role);
-      return qOk && locOk && roleOk;
+      const stages: readonly string[] = 'investmentStages' in p && Array.isArray(p.investmentStages) ? p.investmentStages : [];
+      const stageOk = !investmentStages.length || investmentStages.some((st) => stages.includes(st));
+      return qOk && locOk && roleOk && stageOk;
     });
     const peopleHits = people.map((p) => ({
       id: p.userId,
