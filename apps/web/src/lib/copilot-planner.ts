@@ -419,6 +419,46 @@ export function detectQuotedName(rawMessage: string): string | undefined {
   return match?.[1].trim() || undefined;
 }
 
+const GROUP_NOUNS = ['group', 'community', 'ομάδα', 'ομαδα', 'κοινότητα', 'κοινοτητα'];
+const PROGRAM_NOUNS = ['programme', 'program', 'accelerator', 'incubator', 'bootcamp', 'πρόγραμμα', 'προγραμμα', 'επιταχυντ', 'θερμοκοιτίδ', 'θερμοκοιτιδ'];
+const MENTOR_REQUEST_NOUNS = ['mentoring request', 'mentorship request', 'mentor request', 'αίτημα mentoring', 'αιτημα mentoring', 'αίτημα καθοδήγησ', 'αιτημα καθοδηγησ'];
+
+/** An email address written in the message, as typed. */
+export function detectEmail(rawMessage: string): string | undefined {
+  return rawMessage.match(/[^\s@<>"'«»]+@[^\s@<>"'«»]+\.[^\s@<>"'«».,;:!?]+/)?.[0];
+}
+
+/**
+ * The group a join or leave names: quoted, or the words between the verb and
+ * "group" ("join the Athens Founders group"), or what follows «ομάδα».
+ */
+export function detectGroupName(rawMessage: string): string | undefined {
+  const quoted = detectQuotedName(rawMessage);
+  if (quoted) return quoted;
+  const en = rawMessage.match(/\b(?:join|leave|exit)\s+(?:the\s+)?(.+?)\s+(?:group|community)\b/i);
+  if (en?.[1]) return en[1].trim();
+  const el = rawMessage.match(/(?:ομάδα|ομαδα|κοινότητα|κοινοτητα)\s+(.+?)[.;;!?]*$/i);
+  return el?.[1]?.trim() || undefined;
+}
+
+/** The programme an application names: quoted, or what follows "apply to/for". */
+export function detectProgramTitle(rawMessage: string): string | undefined {
+  const quoted = detectQuotedName(rawMessage);
+  if (quoted) return quoted;
+  const en = rawMessage.match(/\bapply\s+(?:to|for)\s+(?:the\s+)?(.+?)(?:\s+(?:programme|program))?[.?!]*$/i);
+  if (en?.[1]) return en[1].trim();
+  const el = rawMessage.match(/(?:πρόγραμμα|προγραμμα)\s+(.+?)[.;;!?]*$/i);
+  return el?.[1]?.trim() || undefined;
+}
+
+/** Whose mentoring request is being answered: "accept Sofia's…", «…της Σοφίας». */
+export function detectRequesterName(rawMessage: string): string | undefined {
+  const en = rawMessage.match(/\b(?:[Aa]ccept|[Dd]ecline|[Rr]eject)\s+([\p{Lu}][\p{L}-]+(?:\s[\p{Lu}][\p{L}-]+)?)(?:'s|’s)\s/u);
+  if (en?.[1]) return en[1];
+  const el = rawMessage.match(/(?:του|της)\s+([\p{Lu}][\p{L}-]+)/u);
+  return el?.[1] || detectPersonName(rawMessage.toLowerCase());
+}
+
 export function detectLocation(message: string): string | undefined {
   const hit = LOCATION_ALIASES.find((alias) => includesAny(message, alias.keys));
   return hit?.value;
@@ -699,6 +739,43 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     // six dimensions rather than a half-formed write.
     add('readiness_tick_criterion', dimension ? { dimension } : {});
   }
+
+  // Wave C writes. Each needs its verb and its noun, like the intents above,
+  // and each replaces the read of the same area it would otherwise trigger:
+  // "join the Athens Founders group" is not also a question about groups.
+  const joinVerb = includesAny(message, ['join', 'μπες ', 'γίνε μέλος', 'γινε μελος', 'γράψε με', 'γραψε με']);
+  const leaveVerb = includesAny(message, ['leave', 'exit', 'αποχώρησ', 'αποχωρησ', 'βγες από', 'βγες απο', 'βγάλε με από', 'βγαλε με απο']);
+  const wantsJoinGroup = joinVerb && !leaveVerb && includesAny(message, GROUP_NOUNS);
+  const wantsLeaveGroup = leaveVerb && includesAny(message, GROUP_NOUNS);
+  const wantsApply =
+    includesAny(message, ['apply', 'κάνε αίτηση', 'κανε αιτηση', 'κάνε μου αίτηση', 'υπέβαλε αίτηση', 'υποβαλε αιτηση']) &&
+    includesAny(message, PROGRAM_NOUNS);
+  const email = detectEmail(rawMessage);
+  const wantsInvite = Boolean(email) && includesAny(message, ['invite', 'προσκάλεσε', 'προσκαλεσε', 'πρόσκληση', 'προσκληση']);
+  const acceptVerb = includesAny(message, ['accept', 'αποδέξου', 'αποδεξου', 'δέξου', 'δεξου']);
+  const declineVerb = includesAny(message, ['decline', 'reject', 'turn down', 'απόρριψε', 'απορριψε']);
+  const wantsMentorAnswer = (acceptVerb || declineVerb) && includesAny(message, MENTOR_REQUEST_NOUNS);
+
+  if (wantsJoinGroup || wantsLeaveGroup) {
+    const groupName = detectGroupName(rawMessage);
+    add(wantsLeaveGroup ? 'leave_group' : 'join_group', groupName ? { groupName } : {});
+  }
+  if (wantsApply) {
+    const programTitle = detectProgramTitle(rawMessage);
+    add('apply_to_program', programTitle ? { programTitle } : {});
+  }
+  if (wantsInvite && email) add('send_invite', { email });
+  if (wantsMentorAnswer) {
+    const requesterName = detectRequesterName(rawMessage);
+    add('respond_to_mentor_request', { decision: declineVerb ? 'decline' : 'accept', ...(requesterName ? { requesterName } : {}) });
+  }
+  const replacedReads = new Set<string>([
+    ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
+    ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
+    ...(wantsInvite ? ['get_invites'] : []),
+    ...(wantsMentorAnswer ? ['get_mentor_requests', 'get_mentorship_sessions'] : []),
+  ]);
+  for (let i = tools.length - 1; i >= 0; i--) if (replacedReads.has(tools[i].name)) tools.splice(i, 1);
 
   const canvasArgs = planCanvasCommandArgs(rawMessage);
   if (canvasArgs?.op) add('canvas_command', canvasArgs);

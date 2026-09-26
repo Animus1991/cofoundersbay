@@ -104,6 +104,12 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   // only shape that reaches every variant of it.
   milestones: [qk('milestones')],
   events: [qk('events')],
+  groups: [qk('groups')],
+  programs: [qk('programs')],
+  invites: [qk('invites')],
+  endorsements: [qk('endorsements')],
+  // Mentorship relationships and the mentor directory's counts both move.
+  mentorships: [qk('mentorships'), qk('mentors')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

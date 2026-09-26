@@ -3357,6 +3357,38 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // `/api/sso/memberships` is answered by previewOrgApi: the reader is a
   // program partner at the demo's one organisation (demo/org-world.ts).
 
+  // Writes the assistant can now make (Wave C), answered with the shapes the
+  // controllers return. Nothing here is stored: the demo's lists stay as they
+  // are, the way the invite POST below already behaves.
+  if (/^\/api\/programs\/[^/]+\/apply$/.test(pathname) && method === 'POST') {
+    const programId = pathname.split('/')[3];
+    return { participant: { id: `pp-${Date.now()}`, programId, userId: ME_ID, status: 'applied', appliedAt: new Date(previewNowMs()).toISOString() } };
+  }
+  if (pathname === '/api/endorsements' && method === 'POST') {
+    const sent = (body ?? {}) as { toUserId?: string; content?: string; skill?: string };
+    return {
+      endorsement: {
+        id: `end-${Date.now()}`,
+        fromUserId: ME_ID,
+        fromUser: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null, headline: 'Founder' },
+        toUserId: sent.toUserId ?? '',
+        skill: sent.skill ?? null,
+        content: sent.content ?? '',
+        relationship: null,
+        isPublic: true,
+        isApproved: false,
+        createdAt: new Date(previewNowMs()).toISOString(),
+      },
+    };
+  }
+  if (/^\/api\/endorsements\/[^/]+$/.test(pathname) && method === 'DELETE') {
+    return { ok: true };
+  }
+  if (/^\/api\/mentorship\/requests\/[^/]+\/respond$/.test(pathname) && method === 'POST') {
+    const sent = (body ?? {}) as { accept?: boolean };
+    return { request: { id: pathname.split('/')[4], status: sent.accept ? 'accepted' : 'declined' } };
+  }
+
   // The reader's weekly hours as a mentor. PUT replaces them, as the API does,
   // and keeps them for the rest of the preview session.
   if (pathname === '/api/mentor/availability') {

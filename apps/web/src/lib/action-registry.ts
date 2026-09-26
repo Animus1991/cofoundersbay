@@ -9,6 +9,19 @@ import {
   type UndoableActionId,
 } from '@cofounderbay/shared';
 import {
+  acceptsApplications,
+  applyToProgram,
+  cancelInvite,
+  createEndorsement,
+  createInvite,
+  deleteEndorsement,
+  getMyReceivedMentorRequests,
+  joinGroup,
+  leaveGroup,
+  listGroups,
+  getMyGroups,
+  listPrograms,
+  respondToMentorRequest,
   assessReadiness,
   createEvent,
   createMilestone,
@@ -504,7 +517,107 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     const eventId = created?.event?.id;
     return { ok: true, href: eventId ? `/events/${eventId}` : '/events' };
   },
+
+  // ── Wave C ───────────────────────────────────────────────────────────────
+
+  join_group: async (payload) => {
+    const groupId = await resolveGroupId(payload, 'any');
+    if (!groupId) return { ok: false, error: 'No group with that name' };
+    await joinGroup(groupId);
+    return { ok: true, href: `/groups/${groupId}`, undo: { groupId } };
+  },
+
+  leave_group: async (payload) => {
+    const groupId = await resolveGroupId(payload, 'mine');
+    if (!groupId) return { ok: false, error: 'You are not in a group with that name' };
+    await leaveGroup(groupId);
+    return { ok: true, href: `/groups/${groupId}` };
+  },
+
+  apply_to_program: async (payload) => {
+    let programId = requireString(payload, 'programId');
+    const list = await listPrograms({ limit: 50 });
+    const programs = Array.isArray(list?.programs) ? list.programs : [];
+    if (!programId) {
+      const title = requireString(payload, 'programTitle').trim().toLowerCase();
+      if (!title) return { ok: false, error: 'Missing programme' };
+      programId = byName(programs, (p) => p?.title, title)?.id ?? '';
+      if (!programId) return { ok: false, error: 'No single programme matches that title' };
+    }
+    const program = programs.find((p) => p?.id === programId);
+    // The page refuses a closed programme before the API does; so does this.
+    if (program && !acceptsApplications(program)) return { ok: false, error: 'This programme is not taking applications' };
+    const coverNote = requireString(payload, 'coverNote').trim();
+    await applyToProgram(programId, coverNote ? { coverNote } : undefined);
+    return { ok: true, href: `/programs/${programId}` };
+  },
+
+  send_invite: async (payload) => {
+    const email = requireString(payload, 'email').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: 'Missing or invalid email address' };
+    const message = requireString(payload, 'message').trim();
+    const created = await createInvite({ email, ...(message ? { message } : {}) });
+    const inviteId = created?.invite?.id;
+    return { ok: true, href: '/referrals', ...(inviteId ? { undo: { inviteId } } : {}) };
+  },
+
+  write_endorsement: async (payload) => {
+    const toUserId = requireString(payload, 'userId');
+    const content = requireString(payload, 'content').trim();
+    if (!toUserId) return { ok: false, error: 'Missing person' };
+    if (!content) return { ok: false, error: 'Missing endorsement text' };
+    const skill = requireString(payload, 'skill').trim();
+    const created = await createEndorsement({ toUserId, content, ...(skill ? { skill } : {}) });
+    const endorsementId = created?.endorsement?.id;
+    return { ok: true, href: `/profiles/${toUserId}`, ...(endorsementId ? { undo: { endorsementId } } : {}) };
+  },
+
+  respond_to_mentor_request: async (payload) => {
+    const decision = requireString(payload, 'decision');
+    if (decision !== 'accept' && decision !== 'decline') return { ok: false, error: 'Unknown decision' };
+    let requestId = requireString(payload, 'requestId');
+    if (!requestId) {
+      const name = requireString(payload, 'requesterName').trim().toLowerCase();
+      if (!name) return { ok: false, error: 'Missing request' };
+      const received = await getMyReceivedMentorRequests();
+      const pending = (Array.isArray(received?.requests) ? received.requests : []).filter((r) => r?.status === 'pending');
+      const matches = pending.filter((r) => r?.requester?.displayName?.toLowerCase().includes(name));
+      // Two people who share a first name are a question, not a guess.
+      if (matches.length !== 1) return { ok: false, error: matches.length ? 'More than one request matches that name' : 'No pending request from that person' };
+      requestId = matches[0].id;
+    }
+    await respondToMentorRequest(requestId, { accept: decision === 'accept' });
+    return { ok: true, href: '/mentor/requests' };
+  },
 };
+
+/**
+ * A group by id, or by exact name. Leaving looks only at the groups the
+ * reader is in; joining looks at every group they can see.
+ */
+async function resolveGroupId(payload: Record<string, unknown>, scope: 'any' | 'mine'): Promise<string> {
+  const id = requireString(payload, 'groupId');
+  if (id) return id;
+  const name = requireString(payload, 'groupName').trim().toLowerCase();
+  if (!name) return '';
+  const groups = scope === 'mine'
+    ? (await getMyGroups())?.groups
+    : (await listGroups({ search: name, limit: 20 }))?.groups;
+  return byName(Array.isArray(groups) ? groups : [], (g) => g?.name, name)?.id ?? '';
+}
+
+/**
+ * The one row whose name is the text, or else the one row whose name contains
+ * it. Two partial matches are a question for the person, not a guess.
+ */
+function byName<T>(rows: readonly T[], nameOf: (row: T) => string | undefined, text: string): T | undefined {
+  const wanted = text.trim().toLowerCase();
+  if (!wanted) return undefined;
+  const exact = rows.find((row) => nameOf(row)?.toLowerCase() === wanted);
+  if (exact) return exact;
+  const partial = rows.filter((row) => nameOf(row)?.toLowerCase().includes(wanted));
+  return partial.length === 1 ? partial[0] : undefined;
+}
 
 const ANALYTICS_PERIODS = ['7d', '14d', '30d', '90d'];
 const MILESTONE_STATUSES = ['todo', 'in_progress', 'blocked', 'completed', 'cancelled'];
@@ -676,6 +789,30 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     const status = RSVP_STATUSES.includes(prior) ? prior : 'not_going';
     await rsvpEvent(eventId, status as 'going' | 'interested' | 'not_going');
     return { ok: true, href: `/events/${eventId}` };
+  },
+
+  /** Leaves the group the executor joined; the join automation's effects stay (declared partial). */
+  join_group: async (_payload, context) => {
+    const groupId = requireString(context, 'groupId');
+    if (!groupId) return { ok: false, error: 'No group to leave' };
+    await leaveGroup(groupId);
+    return { ok: true, href: `/groups/${groupId}` };
+  },
+
+  /** Cancels the invitation it created; the email already went out (declared partial). */
+  send_invite: async (_payload, context) => {
+    const inviteId = requireString(context, 'inviteId');
+    if (!inviteId) return { ok: false, error: 'No invitation to cancel' };
+    await cancelInvite(inviteId);
+    return { ok: true, href: '/referrals' };
+  },
+
+  /** Deletes the endorsement it wrote; the recipient was already notified (declared partial). */
+  write_endorsement: async (_payload, context) => {
+    const endorsementId = requireString(context, 'endorsementId');
+    if (!endorsementId) return { ok: false, error: 'No endorsement to delete' };
+    await deleteEndorsement(endorsementId);
+    return { ok: true };
   },
 };
 

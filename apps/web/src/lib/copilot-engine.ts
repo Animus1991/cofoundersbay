@@ -276,6 +276,9 @@ function describeGraph(graph: CopilotGraph, t: Translator): string {
  * what makes a capability added in `@cofounderbay/shared` immediately
  * presentable here without a second place to edit.
  */
+/** Writes the rule planner proposes whose card is built from the declaration alone. */
+const WAVE_C_WRITES = new Set<string>(['join_group', 'leave_group', 'apply_to_program', 'send_invite', 'respond_to_mentor_request']);
+
 export function actionsFromToolCalls(
   proposals: readonly AIToolCallProposal[],
   locale?: string,
@@ -871,6 +874,17 @@ export async function runCopilotTurn(
           href: '/readiness',
         });
       }
+    }
+
+    // Wave C writes: the declaration's own bilingual label and description,
+    // with the thing it acts on named so two cards are never ambiguous.
+    if (WAVE_C_WRITES.has(tool.name)) {
+      const target = tool.args?.groupName || tool.args?.programTitle || tool.args?.email || tool.args?.requesterName || '';
+      actions.push(
+        ...actionsFromToolCalls([{ name: tool.name, args: tool.args ?? {}, writes: true, droppedArgs: [] }], replyLocale).map((action) =>
+          target ? { ...action, title: `${action.title}: ${target}` } : action,
+        ),
+      );
     }
 
     if (tool.name === 'canvas_command') {

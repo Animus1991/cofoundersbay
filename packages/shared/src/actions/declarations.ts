@@ -1391,6 +1391,172 @@ export const ACTION_DECLARATIONS = [
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Publish event', el: 'Δημοσίευση εκδήλωσης' },
   },
+  // ── Wave C: writes whose reversal was read from the controller first ──
+  {
+    id: 'join_group',
+    kind: 'mutation',
+    label: { en: 'Join a group', el: 'Συμμετοχή σε ομάδα' },
+    description: {
+      en: 'Join a community group as a member. The group can be named by id from a prior read of groups, or by exact name. Secret groups cannot be joined without an invitation.',
+      el: 'Εντάσσει τον χρήστη σε μια ομάδα κοινότητας ως μέλος. Η ομάδα δίνεται με id από προηγούμενη ανάγνωση ή με ακριβές όνομα. Στις μυστικές ομάδες δεν μπαίνει κανείς χωρίς πρόσκληση.',
+    },
+    params: [
+      { name: 'groupId', type: 'string', required: false, description: { en: 'Id of the group, from a prior read of groups.', el: 'Το id της ομάδας, από προηγούμενη ανάγνωση ομάδων.' } },
+      { name: 'groupName', type: 'string', required: false, description: { en: 'Exact group name, used when the id is not known.', el: 'Ακριβές όνομα ομάδας, όταν δεν είναι γνωστό το id.' } },
+    ],
+    writes: true,
+    invalidates: ['groups', 'graph'],
+    reversal: {
+      // GroupsService.joinGroup creates the membership as a plain member and
+      // fires the community-join automation; leaveGroup deletes the row. So
+      // leaving removes the membership but not what the automation did.
+      kind: 'partial',
+      explanation: {
+        en: 'Leaving removes your membership. Anything the group’s join automation did when you joined (a welcome message, points) stays.',
+        el: 'Η αποχώρηση αφαιρεί τη συμμετοχή σας. Ό,τι έκανε ο αυτοματισμός εισόδου της ομάδας όταν μπήκατε (μήνυμα καλωσορίσματος, πόντοι) παραμένει.',
+      },
+    },
+    auditSubject: { param: 'groupId', entityType: 'group' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Join group', el: 'Συμμετοχή' },
+  },
+  {
+    id: 'leave_group',
+    kind: 'mutation',
+    label: { en: 'Leave a group', el: 'Αποχώρηση από ομάδα' },
+    description: {
+      en: 'Leave a community group the user belongs to. The owner of a group cannot leave it.',
+      el: 'Αποχώρηση από μια ομάδα κοινότητας στην οποία ανήκει ο χρήστης. Ο ιδιοκτήτης μιας ομάδας δεν μπορεί να αποχωρήσει.',
+    },
+    params: [
+      { name: 'groupId', type: 'string', required: false, description: { en: 'Id of the group, from a prior read of groups.', el: 'Το id της ομάδας, από προηγούμενη ανάγνωση ομάδων.' } },
+      { name: 'groupName', type: 'string', required: false, description: { en: 'Exact group name, used when the id is not known.', el: 'Ακριβές όνομα ομάδας, όταν δεν είναι γνωστό το id.' } },
+    ],
+    writes: true,
+    invalidates: ['groups', 'graph'],
+    reversal: {
+      // leaveGroup deletes the membership row. Joining again creates a new one
+      // as a plain member with today's date: an admin or moderator would lose
+      // the role, and a secret group cannot be rejoined at all.
+      kind: 'none',
+      explanation: {
+        en: 'Your membership is deleted. You can join again, but as a new member: a moderator or admin role is not restored, and a secret group needs a new invitation.',
+        el: 'Η συμμετοχή σας διαγράφεται. Μπορείτε να ξαναμπείτε, αλλά ως νέο μέλος: ρόλος συντονιστή ή διαχειριστή δεν επανέρχεται και μια μυστική ομάδα θέλει νέα πρόσκληση.',
+      },
+    },
+    auditSubject: { param: 'groupId', entityType: 'group' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Leave group', el: 'Αποχώρηση' },
+  },
+  {
+    id: 'apply_to_program',
+    kind: 'mutation',
+    label: { en: 'Apply to a programme', el: 'Αίτηση σε πρόγραμμα' },
+    description: {
+      en: 'Apply to an accelerator, incubator or bootcamp programme that is taking applications, with an optional note about fit. Named by id from a prior read of programmes, or by exact title.',
+      el: 'Υποβάλλει αίτηση σε πρόγραμμα (επιταχυντή, θερμοκοιτίδα ή bootcamp) που δέχεται αιτήσεις, με προαιρετικό σημείωμα. Δίνεται με id από προηγούμενη ανάγνωση ή με ακριβή τίτλο.',
+    },
+    params: [
+      { name: 'programId', type: 'string', required: false, description: { en: 'Id of the programme, from a prior read of programmes.', el: 'Το id του προγράμματος, από προηγούμενη ανάγνωση προγραμμάτων.' } },
+      { name: 'programTitle', type: 'string', required: false, description: { en: 'Exact programme title, used when the id is not known.', el: 'Ακριβής τίτλος προγράμματος, όταν δεν είναι γνωστό το id.' } },
+      { name: 'coverNote', type: 'string', required: false, description: { en: 'Why the startup fits, in the founder’s words.', el: 'Γιατί ταιριάζει η startup, με τα λόγια του ιδρυτή.' } },
+    ],
+    writes: true,
+    invalidates: ['programs'],
+    reversal: {
+      // The programmes API has no withdraw: an application stays until the
+      // organisation accepts or rejects it.
+      kind: 'none',
+      explanation: {
+        en: 'There is no withdraw: the application stays with the organisation until they accept or reject it.',
+        el: 'Δεν υπάρχει απόσυρση: η αίτηση μένει στον οργανισμό μέχρι να την εγκρίνει ή να την απορρίψει.',
+      },
+    },
+    auditSubject: { param: 'programId', entityType: 'program' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Send application', el: 'Υποβολή αίτησης' },
+  },
+  {
+    id: 'send_invite',
+    kind: 'mutation',
+    label: { en: 'Invite someone to CoFounderBay', el: 'Πρόσκληση στο CoFounderBay' },
+    description: {
+      en: 'Email an invitation to join CoFounderBay to one address, with an optional personal note. Counts against the monthly invitation allowance.',
+      el: 'Στέλνει με email πρόσκληση για το CoFounderBay σε μία διεύθυνση, με προαιρετικό προσωπικό σημείωμα. Μετρά στο μηνιαίο όριο προσκλήσεων.',
+    },
+    params: [
+      { name: 'email', type: 'string', required: true, description: { en: 'The address to invite.', el: 'Η διεύθυνση που προσκαλείται.' } },
+      { name: 'message', type: 'string', required: false, description: { en: 'A short personal note included in the email.', el: 'Σύντομο προσωπικό σημείωμα μέσα στο email.' } },
+    ],
+    writes: true,
+    invalidates: ['invites'],
+    reversal: {
+      // InvitesService.createInvite queues the email; cancelInvite sets the
+      // row to cancelled (pending only), which also returns it to the monthly
+      // allowance because only pending and accepted invites count.
+      kind: 'partial',
+      explanation: {
+        en: 'Cancelling voids the invitation link and returns it to your monthly allowance. The email has already been sent and cannot be recalled.',
+        el: 'Η ακύρωση καταργεί τον σύνδεσμο της πρόσκλησης και την επιστρέφει στο μηνιαίο όριο. Το email έχει ήδη σταλεί και δεν ανακαλείται.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Send invitation', el: 'Αποστολή πρόσκλησης' },
+  },
+  {
+    id: 'write_endorsement',
+    kind: 'mutation',
+    label: { en: 'Endorse someone', el: 'Προσυπογραφή για κάποιον' },
+    description: {
+      en: 'Write an endorsement for another person, optionally for one skill. They are notified and choose whether it shows on their profile. The person must come from a prior search, shortlist or connections read.',
+      el: 'Γράφει μια προσυπογραφή για άλλο άτομο, προαιρετικά για μία δεξιότητα. Ειδοποιείται και επιλέγει αν θα εμφανίζεται στο προφίλ του. Το άτομο πρέπει να προκύπτει από προηγούμενη αναζήτηση, λίστα ή συνδέσεις.',
+    },
+    params: [
+      { name: 'userId', type: 'string', required: true, description: { en: 'Id of the person to endorse.', el: 'Το id του ατόμου.' } },
+      { name: 'content', type: 'string', required: true, description: { en: 'The endorsement itself, in the writer’s words.', el: 'Το κείμενο της προσυπογραφής, με τα λόγια του συντάκτη.' } },
+      { name: 'skill', type: 'string', required: false, description: { en: 'The skill it is for, if one.', el: 'Η δεξιότητα στην οποία αναφέρεται, αν υπάρχει.' } },
+    ],
+    writes: true,
+    invalidates: ['endorsements'],
+    reversal: {
+      // EndorsementsService.createEndorsement notifies the recipient; the
+      // giver may delete it (deleteEndorsement), which removes the row.
+      kind: 'partial',
+      explanation: {
+        en: 'Deleting removes the endorsement from their list and profile. They were notified when you wrote it.',
+        el: 'Η διαγραφή την αφαιρεί από τη λίστα και το προφίλ του. Έχει ήδη ειδοποιηθεί όταν τη γράψατε.',
+      },
+    },
+    auditSubject: { param: 'userId', entityType: 'user' },
+    confirmLabel: { en: 'Send endorsement', el: 'Αποστολή προσυπογραφής' },
+  },
+  {
+    id: 'respond_to_mentor_request',
+    kind: 'mutation',
+    label: { en: 'Answer a mentoring request', el: 'Απάντηση σε αίτημα mentoring' },
+    description: {
+      en: 'Accept or decline a pending mentoring request the signed-in mentor received. Accepting starts a mentorship with that person.',
+      el: 'Αποδέχεται ή απορρίπτει ένα εκκρεμές αίτημα mentoring που έλαβε ο μέντορας. Η αποδοχή ξεκινά mentoring με το άτομο.',
+    },
+    params: [
+      { name: 'decision', type: 'string', required: true, enumValues: ['accept', 'decline'], description: { en: 'Accept or decline.', el: 'Αποδοχή ή απόρριψη.' } },
+      { name: 'requestId', type: 'string', required: false, description: { en: 'Id of the request, from a prior read of mentoring requests.', el: 'Το id του αιτήματος, από προηγούμενη ανάγνωση αιτημάτων.' } },
+      { name: 'requesterName', type: 'string', required: false, description: { en: 'Name of the person who asked, when the id is not known.', el: 'Όνομα του ατόμου που ζήτησε, όταν δεν είναι γνωστό το id.' } },
+    ],
+    writes: true,
+    invalidates: ['mentorships', 'graph'],
+    reversal: {
+      // respondToMentorRequest refuses anything but a pending request, and on
+      // accept creates the relationship, bumps the mentor's counts and fires
+      // automation. There is no route back to pending.
+      kind: 'none',
+      explanation: {
+        en: 'A request can be answered once. Accepting starts the mentorship and notifies them; declining closes the request for good.',
+        el: 'Ένα αίτημα απαντιέται μία φορά. Η αποδοχή ξεκινά το mentoring και τους ειδοποιεί· η απόρριψη κλείνει το αίτημα οριστικά.',
+      },
+    },
+    confirmLabel: { en: 'Send answer', el: 'Αποστολή απάντησης' },
+  },
   {
     id: 'canvas_command',
     kind: 'mutation',

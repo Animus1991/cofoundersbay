@@ -70,6 +70,12 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   rsvp_event: { en: 'RSVP me as going to the demo day', el: 'Δήλωσέ με συμμετέχοντα στο demo day' },
   create_event: { en: 'Create a networking event next month', el: 'Δημιούργησε εκδήλωση networking τον επόμενο μήνα' },
   canvas_command: { en: 'Add a note on the canvas titled Pricing', el: 'Πρόσθεσε σημείωση στον καμβά «Τιμή»' },
+  join_group: { en: 'Join the Athens Founders group', el: 'Γράψε με στην ομάδα Athens Founders' },
+  leave_group: { en: 'Leave the Climate Builders group', el: 'Βγάλε με από την ομάδα Climate Builders' },
+  apply_to_program: { en: 'Apply to the Pre-seed Bootcamp', el: 'Κάνε αίτηση στο πρόγραμμα Pre-seed Bootcamp' },
+  send_invite: { en: 'Invite maria@example.com to CoFounderBay', el: 'Προσκάλεσε τη maria@example.com στο CoFounderBay' },
+  write_endorsement: { en: 'Endorse Elena for product strategy', el: 'Γράψε προσυπογραφή για την Elena στη στρατηγική προϊόντος' },
+  respond_to_mentor_request: { en: 'Accept Sofia’s mentoring request', el: 'Αποδέξου το αίτημα mentoring της Σοφίας' },
 };
 
 function reversalLabel(spec: ActionDeclaration): { en: string; el: string } | null {

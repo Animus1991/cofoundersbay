@@ -90,7 +90,12 @@ export type InvalidationTopic =
   | 'research'
   | 'profile'
   | 'milestones'
-  | 'events';
+  | 'events'
+  | 'groups'
+  | 'programs'
+  | 'invites'
+  | 'endorsements'
+  | 'mentorships';
 
 export type ActionDeclaration = {
   id: string;
