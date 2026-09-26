@@ -35,7 +35,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
@@ -240,7 +240,7 @@ export default function GroupsModerationPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input placeholder={bilingualInline("Search reports…", "Αναζήτηση αναφορών…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label={bilingualAria("Search reports", "Αναζήτηση αναφορών")} placeholder={bilingualInline("Search reports…", "Αναζήτηση αναφορών…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

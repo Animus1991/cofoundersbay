@@ -476,7 +476,7 @@ export default function GroupsPage() {
             <TabsTrigger value="my-groups">
               <BilingualText en="My Communities" el="Οι κοινότητές μου" compact />
               {myGroups.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-2xs text-primary-accessible">
+                <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-2xs text-primary-accessible">
                   {myGroups.length}
                 </span>
               )}

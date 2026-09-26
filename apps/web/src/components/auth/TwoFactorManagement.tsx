@@ -97,8 +97,9 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium"><BilingualText en="Verification Code" el="Κωδικός επαλήθευσης" compact /></label>
+                <label htmlFor="disable-verification-code" className="text-sm font-medium"><BilingualText en="Verification Code" el="Κωδικός επαλήθευσης" compact /></label>
                 <Input
+                  id="disable-verification-code"
                   type="text"
                   inputMode="numeric"
                   maxLength={6}

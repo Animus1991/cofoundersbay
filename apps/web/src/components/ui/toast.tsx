@@ -141,7 +141,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
           <button
             type="button"
             onClick={toast.action.onClick}
-            className="mt-2 rounded-xl text-sm font-medium underline underline-offset-2 focus-visible:outline-none"
+            className="mt-2 min-h-11 rounded-xl text-sm font-medium underline underline-offset-2 focus-ring"
           >
             {toast.action.label}
           </button>
@@ -151,7 +151,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         type="button"
         aria-label={dismissLabel}
         onClick={onRemove}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl hover:bg-secondary transition-colors focus-visible:outline-none"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl hover:bg-secondary transition-colors focus-ring"
       >
         <X className="icon-sm" aria-hidden="true" />
       </button>
@@ -177,7 +177,7 @@ function ToastPortal({ toasts, removeToast }: { toasts: Toast[]; removeToast: (i
        stays: it is what escalates an error from polite to assertive. */
     <div
       role="region"
-      aria-label="Notifications"
+      aria-label={bilingualAria('Notifications', 'Ειδοποιήσεις')}
       aria-live="polite"
       className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col gap-2 max-w-sm pointer-events-none sm:left-auto sm:right-4 sm:bottom-4"
     >

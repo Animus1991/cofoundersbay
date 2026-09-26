@@ -62,15 +62,15 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
             {apiKey.isActive ? (
               <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Active" el="Ενεργό" compact /></Badge>
             ) : (
-              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>
+              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <code className="text-xs font-mono bg-muted px-2 py-1 rounded">{revealed ? revealedKey : maskedKey}</code>
-            <Button aria-label={revealed ? 'Hide key. Απόκρυψη κλειδιού' : 'Show key. Εμφάνιση κλειδιού'} aria-pressed={revealed} variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
+            <code tabIndex={0} className="min-w-0 flex-1 overflow-x-auto text-xs font-mono bg-muted px-2 py-1 rounded">{revealed ? revealedKey : maskedKey}</code>
+            <Button className="shrink-0" aria-label={revealed ? 'Hide key. Απόκρυψη κλειδιού' : 'Show key. Εμφάνιση κλειδιού'} aria-pressed={revealed} variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
               {revealed ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
             </Button>
-            <Button aria-label="Copy key. Αντιγραφή κλειδιού" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(revealedKey)}><Copy className="icon-sm" aria-hidden="true" /></Button>
+            <Button className="shrink-0" aria-label="Copy key. Αντιγραφή κλειδιού" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(revealedKey)}><Copy className="icon-sm" aria-hidden="true" /></Button>
           </div>
           <div className="flex flex-wrap gap-1 mt-2">
             {apiKey.scopes.map(s => (

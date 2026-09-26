@@ -2263,3 +2263,12 @@ h3.page-section.text-sm {
     line-height: 1.60060976rem;
   }
 }
+
+/* Shared keyboard indicator: the previous 1px/22%-opacity stroke vanished on
+   light cards and form fields explicitly suppressed it. Keep a consistent
+   external indicator, including select triggers and toast actions. */
+:where(a, button, input, textarea, select, [role='combobox'], [role='button'], [tabindex]):focus-visible,
+.focus-ring:focus-visible {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 2px !important;
+}

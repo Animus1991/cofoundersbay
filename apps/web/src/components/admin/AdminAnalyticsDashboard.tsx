@@ -122,8 +122,8 @@ export function AdminAnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="icon-lg text-status-accent animate-spin" />
+      <div role="status" className="flex items-center justify-center h-64">
+        <RefreshCw aria-hidden="true" className="icon-lg text-status-accent animate-spin" />
         <span className="ml-2 text-muted-foreground"><BilingualText en="Loading analytics…" el="Φόρτωση αναλυτικών…" compact /></span>
       </div>
     );
@@ -132,8 +132,8 @@ export function AdminAnalyticsDashboard() {
   if (error) {
     return (
       <div className="rounded-xl border border-status-danger-border bg-status-danger-bg p-6 text-status-danger">
-        Failed to load analytics: {error}
-        <button onClick={load} className="ml-4 underline text-sm"><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button>
+        <p role="alert"><BilingualText en="Failed to load analytics:" el="Αποτυχία φόρτωσης αναλυτικών:" compact /> {error}</p>
+        <button type="button" onClick={load} className="mt-3 underline text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button>
       </div>
     );
   }
@@ -147,10 +147,11 @@ export function AdminAnalyticsDashboard() {
           <p className="text-sm text-muted-foreground mt-0.5"><BilingualText en="Platform-wide scoring health and engagement metrics" el="Υγεία βαθμολόγησης και μετρήσεις συμμετοχής σε όλη την πλατφόρμα" wrap /></p>
         </div>
         <button
+          type="button"
           onClick={load}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-          <RefreshCw className="icon-sm" />
+          <RefreshCw aria-hidden="true" className="icon-sm" />
           <BilingualText en="Refresh" el="Ανανέωση" compact />
         </button>
       </div>

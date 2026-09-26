@@ -29,20 +29,18 @@ export function RailStats({ items }: { items: RailStat[] }) {
   return (
     <dl className="space-y-2">
       {items.map(({ key, label, labelEl, value, icon: Icon, tone }) => (
-        <div key={key} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
-          {Icon ? (
-            <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', tone ?? 'bg-muted text-muted-foreground')} aria-hidden="true">
-              <Icon className="icon-sm" />
-            </span>
-          ) : null}
-          <div className="min-w-0">
-            <dd className="text-base font-semibold leading-none tabular-nums text-foreground">{value}</dd>
+        <div key={key} className={cn('relative flex min-w-0 flex-col rounded-lg border border-border/60 p-3', Icon && 'pl-[3.75rem]')}>
+          <dt className="order-2 mt-1 text-xs leading-snug text-muted-foreground">
+            {Icon ? (
+              <span className={cn('absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg', tone ?? 'bg-muted text-muted-foreground')} aria-hidden="true">
+                <Icon className="icon-sm" />
+              </span>
+            ) : null}
             {/* Stacked: in a column this narrow an inline pair wraps and
                 leaves its "·" separator alone on a line. */}
-            <dt className="mt-1 text-xs leading-snug text-muted-foreground">
-              <BilingualText en={label} el={labelEl} stacked wrap />
-            </dt>
-          </div>
+            <BilingualText en={label} el={labelEl} stacked wrap />
+          </dt>
+          <dd className="order-1 text-base font-semibold leading-none tabular-nums text-foreground">{value}</dd>
         </div>
       ))}
     </dl>

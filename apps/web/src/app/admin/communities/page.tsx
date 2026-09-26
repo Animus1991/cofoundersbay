@@ -55,7 +55,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 
 /**
@@ -486,6 +486,7 @@ export default function AdminCommunitiesPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
+            aria-label={bilingualAria("Search communities", "Αναζήτηση κοινοτήτων")}
             placeholder={bilingualInline("Search communities…", "Αναζήτηση κοινοτήτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

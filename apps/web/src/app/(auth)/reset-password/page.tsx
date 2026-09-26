@@ -99,7 +99,7 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
+              <div id="reset-error" role="alert" className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -123,6 +123,8 @@ export default function ResetPasswordPage() {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
+                      aria-invalid={error === 'Password must be at least 8 characters.' || undefined}
+                      aria-describedby={error === 'Password must be at least 8 characters.' ? 'reset-error' : undefined}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={8}
@@ -165,6 +167,8 @@ export default function ResetPasswordPage() {
                     id="confirm"
                     type={showPassword ? 'text' : 'password'}
                     value={confirm}
+                    aria-invalid={Boolean(confirm && confirm !== password) || error === 'Passwords do not match.'}
+                    aria-describedby={confirm && confirm !== password ? 'confirm-mismatch' : error === 'Passwords do not match.' ? 'reset-error' : undefined}
                     onChange={(e) => setConfirm(e.target.value)}
                     required
                     autoComplete="new-password"
@@ -172,7 +176,7 @@ export default function ResetPasswordPage() {
                     className={confirm && confirm !== password ? 'border-destructive focus-visible:ring-destructive/30' : undefined}
                   />
                   {confirm && confirm !== password && (
-                    <p className="text-xs text-destructive-accessible"><BilingualText en="Passwords don&apos;t match" el="Οι κωδικοί δεν ταιριάζουν" compact /></p>
+                    <p id="confirm-mismatch" className="text-xs text-destructive-accessible"><BilingualText en="Passwords don&apos;t match" el="Οι κωδικοί δεν ταιριάζουν" compact /></p>
                   )}
                 </div>
 

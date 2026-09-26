@@ -307,12 +307,12 @@ export default function ReputationPage() {
             <Card className="border-border/50 bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm">
               <CardContent className="p-4 md:p-6">
                 {loading || !xp.data ? (
-                  <div className="flex items-center gap-6" aria-busy="true">
+                  <div className="flex flex-col items-center gap-6 md:flex-row" aria-busy="true">
                     <div className="h-[140px] w-[140px] shrink-0 animate-pulse rounded-full bg-muted/40" />
-                    <div className="flex-1 space-y-3">
-                      <div className="h-6 w-48 animate-pulse rounded bg-muted/40" />
-                      <div className="h-4 w-72 animate-pulse rounded bg-muted/40" />
-                      <div className="h-8 w-56 animate-pulse rounded bg-muted/40" />
+                    <div className="w-full min-w-0 flex-1 space-y-3">
+                      <div className="h-6 w-48 max-w-full animate-pulse rounded bg-muted/40" />
+                      <div className="h-4 w-72 max-w-full animate-pulse rounded bg-muted/40" />
+                      <div className="h-8 w-56 max-w-full animate-pulse rounded bg-muted/40" />
                     </div>
                     <span className="sr-only">{t('loading')}</span>
                   </div>
@@ -431,7 +431,8 @@ export default function ReputationPage() {
                           </div>
                           {streakData.lastActiveDate && (
                             <div className="col-span-2 text-xs text-muted-foreground">
-                              {t('last_active')}: <RelativeTime date={streakData.lastActiveDate} />
+                              <dt className="inline">{t('last_active')}: </dt>
+                              <dd className="inline"><RelativeTime date={streakData.lastActiveDate} /></dd>
                             </div>
                           )}
                         </dl>

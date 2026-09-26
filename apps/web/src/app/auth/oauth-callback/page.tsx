@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getMe } from '@/lib/api';
+import { isPreviewDemo, PREVIEW_DEMO_USER } from '@/lib/preview-demo';
 
 export default function OAuthCallbackPage() {
   const router = useRouter();
@@ -15,32 +16,52 @@ export default function OAuthCallbackPage() {
   useEffect(() => {
     const provider = searchParams?.get('provider') ?? 'OAuth';
     const error = searchParams?.get('error');
+    let cancelled = false;
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
     if (error) {
       setStatus('error');
       setMessage(error);
-      return;
+      return () => { cancelled = true; };
     }
 
     // Cookies are already set by the backend redirect.
     // Verify by calling getMe() — uses the httpOnly cookie.
     getMe()
       .then(({ user }) => {
+        if (cancelled) return;
         // Store display data only (no tokens)
-        localStorage.setItem('user', JSON.stringify(user));
-        window.dispatchEvent(new CustomEvent('cfb:login'));
+        // A callback visited with an already-established preview session must
+        // not reset every query observer by broadcasting a second login.
+        let restoredPreview = false;
+        try {
+          const previousUser = localStorage.getItem('user');
+          restoredPreview = isPreviewDemo() && user.id === PREVIEW_DEMO_USER.id &&
+            previousUser != null && JSON.parse(previousUser)?.id === user.id;
+        } catch {
+          // Malformed or unavailable storage is not evidence of an existing session.
+        }
+        if (!restoredPreview) {
+          localStorage.setItem('user', JSON.stringify(user));
+          window.dispatchEvent(new CustomEvent('cfb:login'));
+        }
 
         setStatus('success');
         setMessage(`Signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
 
         // New user → onboarding; existing user → dashboard
         const destination = searchParams?.get('uid') ? '/' : '/';
-        setTimeout(() => router.push(destination), 1200);
+        redirectTimer = setTimeout(() => router.push(destination), 1200);
       })
       .catch(() => {
+        if (cancelled) return;
         setStatus('error');
         setMessage('Authentication failed. Please try again.');
       });
+    return () => {
+      cancelled = true;
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

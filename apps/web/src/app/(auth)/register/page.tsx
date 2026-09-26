@@ -225,13 +225,12 @@ export default function RegisterPage() {
                   minLength={8}
                   autoComplete="new-password"
                   placeholder={bilingualInline('Min 8 characters', 'Τουλάχιστον 8 χαρακτήρες')}
-                  className="pr-16"
+                  className="pr-24"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
+                  className="absolute right-0 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center px-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                   aria-label={showPassword ? 'Hide password. Απόκρυψη κωδικού' : 'Show password. Εμφάνιση κωδικού'}
                 >
                   {/* One language only: the slot sits inside the input. */}

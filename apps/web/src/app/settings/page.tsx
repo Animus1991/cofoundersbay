@@ -514,7 +514,9 @@ export default function SettingsPage() {
                 <CardContent>
                   <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
                     <div className="relative">
+                      <label htmlFor="settings-current-password" className="sr-only"><BilingualText en="Current password" el="Τρέχων κωδικός" compact /></label>
                       <Input
+                        id="settings-current-password"
                         type={showPw ? 'text' : 'password'}
                         placeholder={bilingualInline("Current password", "Τρέχων κωδικός")}
                         value={pwForm.current}
@@ -538,7 +540,9 @@ export default function SettingsPage() {
                         {showPw ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
                       </button>
                     </div>
+                    <label htmlFor="settings-new-password" className="sr-only"><BilingualText en="New password" el="Νέος κωδικός" compact /></label>
                     <Input
+                      id="settings-new-password"
                       type={showPw ? 'text' : 'password'}
                       placeholder={bilingualInline("New password (min 8 chars)", "Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)")}
                       value={pwForm.next}
@@ -547,7 +551,9 @@ export default function SettingsPage() {
                       minLength={8}
                       autoComplete="new-password"
                     />
+                    <label htmlFor="settings-confirm-password" className="sr-only"><BilingualText en="Confirm new password" el="Επιβεβαίωση νέου κωδικού" compact /></label>
                     <Input
+                      id="settings-confirm-password"
                       type={showPw ? 'text' : 'password'}
                       placeholder={bilingualInline("Confirm new password", "Επιβεβαίωση νέου κωδικού")}
                       value={pwForm.confirm}

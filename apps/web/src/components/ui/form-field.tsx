@@ -24,14 +24,17 @@ export function FormField({
 }: FormFieldProps) {
   const hintId = htmlFor ? `${htmlFor}-hint` : undefined;
   const errorId = htmlFor ? `${htmlFor}-error` : undefined;
-  const describedBy = [error ? errorId : null, hint && !error ? hintId : null]
+  const existingDescribedBy = React.isValidElement(children)
+    ? (children.props as { 'aria-describedby'?: string })['aria-describedby']
+    : undefined;
+  const describedBy = [existingDescribedBy, error ? errorId : null, hint && !error ? hintId : null]
     .filter(Boolean)
     .join(' ') || undefined;
 
   const control = React.isValidElement(children)
     ? React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
         id: htmlFor ?? (children.props as { id?: string }).id,
-        'aria-describedby': describedBy ?? (children.props as { 'aria-describedby'?: string })['aria-describedby'],
+        'aria-describedby': describedBy,
         'aria-invalid': error ? true : (children.props as { 'aria-invalid'?: boolean })['aria-invalid'],
         'aria-required': required || (children.props as { 'aria-required'?: boolean })['aria-required'],
       })

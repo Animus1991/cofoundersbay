@@ -61,7 +61,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 type Startup = {
   id: string;
@@ -178,7 +178,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                     {startup.name}
                   </Link>
                   {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 gap-0.5 px-1.5"><Flame className="h-2.5 w-2.5" aria-hidden="true" /><BilingualText en="Hot" el="Δημοφιλές" compact /></Badge>}
-                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
+                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-accessible border-primary/30"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
@@ -428,7 +428,7 @@ export default function InvestorScoutingPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-              <Input placeholder={bilingualInline("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+              <Input aria-label={bilingualAria("Search startups", "Αναζήτηση startups")} placeholder={bilingualInline("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
               <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder={bilingualInline("Industry", "Κλάδος")} /></SelectTrigger>

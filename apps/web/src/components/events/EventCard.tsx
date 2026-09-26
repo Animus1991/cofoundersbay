@@ -358,7 +358,7 @@ export function EventCard({
               <div className="flex min-w-0 items-center gap-2">
                 <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage src={event.hostAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary-accessible text-2xs">
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-2xs">
                     {initialsOf(event.hostName)}
                   </AvatarFallback>
                 </Avatar>

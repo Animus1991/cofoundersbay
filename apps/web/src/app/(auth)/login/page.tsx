@@ -219,13 +219,13 @@ function LoginPageContent() {
                       required={!ssoDiscovery?.ssoRequired}
                       autoComplete="current-password"
                       placeholder="••••••••"
-                      className="pr-16"
+                      className="pr-24"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? 'Hide password. Απόκρυψη κωδικού' : 'Show password. Εμφάνιση κωδικού'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-0 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center px-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {/* One language only: the slot sits inside the input. */}
                       {showPassword ? (primary === 'el' ? 'Απόκρυψη' : 'Hide') : (primary === 'el' ? 'Εμφάνιση' : 'Show')}

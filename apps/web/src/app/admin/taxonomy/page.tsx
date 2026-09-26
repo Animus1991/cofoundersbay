@@ -47,7 +47,7 @@ import {
   type AdminSkillItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 const SKILL_CATEGORIES = ['Technical', 'Business', 'Design', 'Marketing', 'Sales', 'Finance', 'Operations', 'Legal', 'Product', 'Data', 'Other'];
 
@@ -347,6 +347,7 @@ export default function AdminTaxonomyPage() {
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
+                  aria-label={bilingualAria("Search skills", "Αναζήτηση δεξιοτήτων")}
                   placeholder={bilingualInline("Search skills…", "Αναζήτηση δεξιοτήτων…")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -359,6 +360,7 @@ export default function AdminTaxonomyPage() {
                 )}
               </div>
               <select
+                aria-label={bilingualAria("Filter skills by category", "Φιλτράρισμα δεξιοτήτων ανά κατηγορία")}
                 className="h-9 rounded-xl border border-input bg-background px-3 text-sm"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}

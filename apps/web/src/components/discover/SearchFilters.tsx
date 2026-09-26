@@ -34,7 +34,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 export type SearchFiltersValues = {
   q: string;
@@ -225,6 +225,7 @@ export function SearchFilters({
           <div className="relative min-w-0 flex-1">
             <Input
               type="text"
+              aria-label={bilingualAria("Search profiles", "Αναζήτηση προφίλ")}
               placeholder={bilingualInline("Search by name, skills, industry…", "Αναζήτηση με όνομα, δεξιότητες, κλάδο…")}
               value={filters.q}
               onChange={(e) => updateFilter('q', e.target.value)}

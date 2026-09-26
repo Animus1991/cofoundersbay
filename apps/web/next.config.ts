@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-const allowedDevOrigins = ['localhost', '127.0.0.1', '*.trycloudflare.com'];
+const allowedDevOrigins = ['localhost', '127.0.0.1', '*.trycloudflare.com', '*.replit.dev'];
 
 const isProduction = process.env.NODE_ENV === 'production';
 

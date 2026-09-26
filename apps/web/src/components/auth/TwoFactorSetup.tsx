@@ -140,8 +140,9 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium"><BilingualText en="Enter verification code" el="Εισάγετε κωδικό επαλήθευσης" compact /></label>
+          <label htmlFor="setup-verification-code" className="text-sm font-medium"><BilingualText en="Enter verification code" el="Εισάγετε κωδικό επαλήθευσης" compact /></label>
           <Input
+            id="setup-verification-code"
             type="text"
             inputMode="numeric"
             maxLength={6}

@@ -46,7 +46,7 @@ function ColorField({
 }) {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label htmlFor={`color-${label}`}>{label}</Label>
       <div className="flex items-center gap-2">
         <div className="relative">
           <input
@@ -63,6 +63,7 @@ function ColorField({
           />
         </div>
         <Input
+          aria-label={`${label} hex code`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="#6366f1"

@@ -45,7 +45,7 @@ import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 
 type ManagedGroup = {
@@ -300,7 +300,7 @@ export default function ManageGroupsPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input placeholder={bilingualInline("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label={bilingualAria("Search groups", "Αναζήτηση κοινοτήτων")} placeholder={bilingualInline("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {/* Groups */}

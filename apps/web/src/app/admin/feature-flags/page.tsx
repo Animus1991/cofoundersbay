@@ -493,6 +493,7 @@ export default function AdminFeatureFlagsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
+            aria-label={bilingualAria("Search flags by name or key", "Αναζήτηση σημαιών με όνομα ή κλειδί")}
             placeholder={bilingualInline("Search flags by name or key…", "Αναζήτηση σημαιών με όνομα ή κλειδί…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

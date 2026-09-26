@@ -30,4 +30,19 @@ describe('FormField self-explanation', () => {
     expect(screen.getByRole('alert').textContent).toBe('Enter a valid email');
     expect(screen.queryByText('We never share this')).toBeNull();
   });
+
+  it('keeps an existing control description alongside a hint or validation error', () => {
+    const { rerender } = render(
+      <FormField htmlFor="name" label="Name" hint="Visible to collaborators">
+        <input aria-describedby="privacy-note" />
+      </FormField>,
+    );
+    expect(screen.getByRole('textbox').getAttribute('aria-describedby')).toBe('privacy-note name-hint');
+    rerender(
+      <FormField htmlFor="name" label="Name" hint="Visible to collaborators" error="Enter a name">
+        <input aria-describedby="privacy-note" />
+      </FormField>,
+    );
+    expect(screen.getByRole('textbox').getAttribute('aria-describedby')).toBe('privacy-note name-error');
+  });
 });

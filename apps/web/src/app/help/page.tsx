@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { HELP_FAQ_EL, HELP_TOPIC_EL } from '@/lib/i18n/strings-help';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
@@ -382,6 +382,7 @@ export default function HelpPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               type="text"
+              aria-label={bilingualAria("Search help", "Αναζήτηση βοήθειας")}
               placeholder={bilingualInline("Search for help (e.g. matching, billing, profile…)", "Αναζήτηση βοήθειας (π.χ. αντιστοιχίσεις, χρεώσεις, προφίλ…)")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -421,7 +422,7 @@ export default function HelpPage() {
             )}
           >
             <BilingualText en="All Topics" el="Όλα τα θέματα" compact />
-            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-2xs', selectedCategory === null && 'bg-primary-foreground/20 text-primary-foreground')}>
+            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-2xs', selectedCategory === null && 'bg-primary-foreground text-primary-accessible')}>
               {faqCategories.reduce((sum, c) => sum + c.faqs.length, 0)}
             </Badge>
           </button>

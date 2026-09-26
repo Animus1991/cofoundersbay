@@ -54,7 +54,7 @@
     "mermaid": "^11.13.0",
     "next": "^15.5.25",
     "postcss": "^8.5.8",
-    "posthog-js": "^1.364.1",
+    "posthog-js": "^1.434.15",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^2.15.4",
@@ -78,7 +78,8 @@
     "eslint-config-next": "^15.5.25",
     "jsdom": "26.1.0",
     "typescript": "^5.9.3",
-    "vitest": "4.0.18",
+    "vite": "^7.3.6",
+    "vitest": "5.0.2",
     "webpack": "^5.111.0",
     "wrangler": "^4.130.0"
   }

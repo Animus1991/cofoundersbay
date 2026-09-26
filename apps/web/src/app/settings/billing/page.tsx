@@ -341,16 +341,18 @@ export default function UserBillingPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Full name *</Label>
+                    <Label htmlFor="billing-contact-name" className="text-xs">Full name *</Label>
                     <Input
+                      id="billing-contact-name"
                       placeholder="Jane Doe"
                       value={contactForm.name}
                       onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Email *</Label>
+                    <Label htmlFor="billing-contact-email" className="text-xs">Email *</Label>
                     <Input
+                      id="billing-contact-email"
                       type="email"
                       placeholder="billing@company.com"
                       value={contactForm.email}
@@ -358,40 +360,45 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs"><BilingualText en="Company" el="Επωνυμία" compact /></Label>
+                    <Label htmlFor="billing-contact-company" className="text-xs"><BilingualText en="Company" el="Επωνυμία" compact /></Label>
                     <Input
+                      id="billing-contact-company"
                       placeholder="Acme Inc."
                       value={contactForm.company}
                       onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
+                    <Label htmlFor="billing-contact-vat" className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
                     <Input
+                      id="billing-contact-vat"
                       placeholder="EU123456789"
                       value={contactForm.vatId}
                       onChange={e => setContactForm(p => ({ ...p, vatId: e.target.value }))}
                     />
                   </div>
                   <div className="col-span-2 space-y-1.5">
-                    <Label className="text-xs"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
+                    <Label htmlFor="billing-contact-address" className="text-xs"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
                     <Input
+                      id="billing-contact-address"
                       placeholder="123 Main Street"
                       value={contactForm.addressLine1}
                       onChange={e => setContactForm(p => ({ ...p, addressLine1: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
+                    <Label htmlFor="billing-contact-city" className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
                     <Input
+                      id="billing-contact-city"
                       placeholder="Athens"
                       value={contactForm.city}
                       onChange={e => setContactForm(p => ({ ...p, city: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs"><BilingualText en="Postal Code" el="Ταχυδρομικός κώδικας" compact /></Label>
+                    <Label htmlFor="billing-contact-postal" className="text-xs"><BilingualText en="Postal Code" el="Ταχυδρομικός κώδικας" compact /></Label>
                     <Input
+                      id="billing-contact-postal"
                       placeholder="10431"
                       value={contactForm.postalCode}
                       onChange={e => setContactForm(p => ({ ...p, postalCode: e.target.value }))}

@@ -381,48 +381,54 @@ export default function AdminDashboardPage() {
                       <RelativeTime date={health.timestamp} format={formatRelativeTime} />
                     </span>
                   </div>
-                  <dl className="space-y-3 text-sm">
-                    <div className="flex items-center gap-3">
-                      <Database className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <dt className="min-w-0 flex-1 text-muted-foreground">
-                        <BilingualText en="Database round trip" el="Απόκριση βάσης δεδομένων" stacked wrap />
-                      </dt>
-                      <dd className="shrink-0 font-medium tabular-nums">
-                        {database?.status === 'down' ? (
-                          <BilingualText en="Down" el="Εκτός" compact />
-                        ) : database?.latency != null ? (
-                          `${database.latency} ms`
-                        ) : (
-                          dash
-                        )}
-                      </dd>
-                    </div>
-                    <div>
+                  <div className="space-y-3">
+                    <dl className="text-sm">
                       <div className="flex items-center gap-3">
-                        <HardDrive className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <Database className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                         <dt className="min-w-0 flex-1 text-muted-foreground">
-                          <BilingualText en="API heap in use" el="Μνήμη API σε χρήση" stacked wrap />
+                          <BilingualText en="Database round trip" el="Απόκριση βάσης δεδομένων" stacked wrap />
                         </dt>
                         <dd className="shrink-0 font-medium tabular-nums">
-                          {memory ? `${memory.used} / ${memory.total} MB` : dash}
+                          {database?.status === 'down' ? (
+                            <BilingualText en="Down" el="Εκτός" compact />
+                          ) : database?.latency != null ? (
+                            `${database.latency} ms`
+                          ) : (
+                            dash
+                          )}
                         </dd>
                       </div>
+                    </dl>
+                    <div className="space-y-2">
+                      <dl className="text-sm">
+                        <div className="flex items-center gap-3">
+                          <HardDrive className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                          <dt className="min-w-0 flex-1 text-muted-foreground">
+                            <BilingualText en="API heap in use" el="Μνήμη API σε χρήση" stacked wrap />
+                          </dt>
+                          <dd className="shrink-0 font-medium tabular-nums">
+                            {memory ? `${memory.used} / ${memory.total} MB` : dash}
+                          </dd>
+                        </div>
+                      </dl>
                       {memory ? (
                         <Progress
                           value={memory.percentage}
-                          className="ml-7 mt-2 h-1.5 w-[calc(100%-1.75rem)]"
+                          className="ml-7 h-1.5 w-[calc(100%-1.75rem)]"
                           aria-label={`API heap ${memory.percentage}% in use`}
                         />
                       ) : null}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Timer className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <dt className="min-w-0 flex-1 text-muted-foreground">
-                        <BilingualText en="API running since" el="Το API λειτουργεί από" stacked wrap />
-                      </dt>
-                      <dd className="shrink-0 font-medium tabular-nums">{since ?? dash}</dd>
-                    </div>
-                  </dl>
+                    <dl className="text-sm">
+                      <div className="flex items-center gap-3">
+                        <Timer className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <dt className="min-w-0 flex-1 text-muted-foreground">
+                          <BilingualText en="API running since" el="Το API λειτουργεί από" stacked wrap />
+                        </dt>
+                        <dd className="shrink-0 font-medium tabular-nums">{since ?? dash}</dd>
+                      </div>
+                    </dl>
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     <BilingualText
                       en={`Version ${health.version} · checked every 30 seconds while this tab is open.`}

@@ -54,7 +54,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { formatCompactMoney } from '@/lib/i18n/format';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -578,6 +578,7 @@ export default function InvestorWatchlistPage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
+                  aria-label={bilingualAria("Search watchlist", "Αναζήτηση στη λίστα παρακολούθησης")}
                   placeholder={bilingualInline("Search watchlist…", "Αναζήτηση στη λίστα παρακολούθησης…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}

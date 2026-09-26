@@ -60,7 +60,7 @@ export default function AllianceThemePage() {
             <div className="flex items-center justify-center gap-4">
               <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90" asChild>
                 <Link href="/register">
-                  <BilingualText en="Get Started" el="Ξεκινήστε" compact />
+                  <BilingualText en="Get Started" el="Ξεκινήστε" compact secondaryClassName="text-slate-700" />
                   <ChevronRight className="ml-2 icon-md" aria-hidden="true" />
                 </Link>
               </Button>
@@ -222,7 +222,7 @@ export default function AllianceThemePage() {
                   <BilingualText en="Unlock premium features and connect with top founders" el="Ξεκλειδώστε premium λειτουργίες και γνωρίστε κορυφαίους ιδρυτές" wrap />
                 </p>
                 <Button className="w-full bg-white text-slate-900 hover:bg-white/90" asChild>
-                  <Link href="/pricing"><BilingualText en="Get Started" el="Ξεκινήστε" compact /></Link>
+                  <Link href="/pricing"><BilingualText en="Get Started" el="Ξεκινήστε" compact secondaryClassName="text-slate-700" /></Link>
                 </Button>
               </CardContent>
             </Card>

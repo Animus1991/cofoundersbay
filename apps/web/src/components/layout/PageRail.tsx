@@ -141,7 +141,10 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   // overshooting a target by a few pixels, should not slam the panel shut.
   const closePeek = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setPeeked(false), 180);
+    closeTimer.current = setTimeout(() => {
+      // Pointer exit must not dismiss a panel while keyboard focus is in it.
+      if (!document.activeElement?.closest('[data-page-rail]')) setPeeked(false);
+    }, 180);
   };
 
   const active = sections.find((section) => section.id === activeId) ?? sections[0];
@@ -232,6 +235,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
       </div>
 
       <aside
+        data-page-rail=""
         aria-label={bilingualAria('Page tools', 'Εργαλεία σελίδας')}
         // Desktop only; below `lg` the sheet above carries the same sections.
         // Same layer as the left sidebar (SideNav is z-40): the two are the
@@ -243,6 +247,10 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
         style={{ paddingTop: 'var(--top-banner-stack, 0px)' }}
         onMouseEnter={openPeek}
         onMouseLeave={closePeek}
+        onFocusCapture={openPeek}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) closePeek();
+        }}
       >
         <div className="flex h-full">
           {/* The panel. Rendered to the left of the strip so the strip stays
@@ -274,7 +282,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                     ref={expandButton}
                     type="button"
                     onClick={() => setExpandedId(active.id)}
-                    className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                    className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-ring"
                     aria-label={bilingualAria(
                       `Open ${active.labelEn} at full size`,
                       `Άνοιγμα «${active.labelEl}» σε πλήρες μέγεθος`,
@@ -285,7 +293,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   <button
                     type="button"
                     onClick={togglePinned}
-                    className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                    className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-ring"
                     aria-pressed={pinned}
                     aria-label={
                       pinned
@@ -334,7 +342,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   type="button"
                   onClick={togglePinned}
                   className={cn(
-                    'mb-1 rounded-md p-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring',
+                    'mb-1 flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-ring',
                     pinned
                       ? 'bg-primary/10 text-primary-accessible'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -375,7 +383,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                       onFocus={openPeek}
                       onMouseEnter={() => setActiveId(section.id)}
                       className={cn(
-                        'relative rounded-md p-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring',
+                        'relative flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-ring',
                         isActive
                           ? 'bg-primary/10 text-primary-accessible'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground',

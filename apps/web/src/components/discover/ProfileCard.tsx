@@ -374,7 +374,7 @@ function ProfileCardInner({
             <div className="relative">
               <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible dark:text-indigo-300 font-semibold">
                   {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
@@ -404,7 +404,7 @@ function ProfileCardInner({
               </div>
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
-                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
+                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible dark:text-indigo-300">
                     <Star className="icon-sm fill-current" />
                     {profile.matchScore}%
                   </div>
@@ -423,10 +423,10 @@ function ProfileCardInner({
               </div>
             </div>
             {profile.headline && (
-              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{profile.headline}</p>
+              <p className="mt-1 text-sm text-muted-foreground dark:text-slate-400 line-clamp-2">{profile.headline}</p>
             )}
             {profile.location && (
-              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground dark:text-slate-400">
                 <MapPin className="icon-sm" />
                 {profile.location}
               </div>
