@@ -32,7 +32,7 @@ import {
 } from '@/lib/i18n/strings-application-questions';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 interface ApplicationGeneratorProps {
   onSave?: (data: ApplicationTemplate[]) => void | Promise<void>;
@@ -319,6 +319,19 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
       activeApp,
       setActiveApp,
     ),
+  ]);
+  // Each programme's draft with how far its required answers have got, so
+  // "which application is closest to done?" is answered from the page.
+  usePageList([
+    {
+      id: 'applications',
+      labelEn: 'Programme applications',
+      labelEl: 'Αιτήσεις σε προγράμματα',
+      rows: applications.map((app) =>
+        `${app.name} · ${deriveApplicationStatus(app)} · ${requiredCompletion(app)}% of required answers${app.id === activeApp ? ' · open' : ''}`,
+      ),
+      total: applications.length,
+    },
   ]);
 
   const rail: PageRailSection[] = [

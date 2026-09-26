@@ -29,7 +29,7 @@ import { useToast } from '@/components/ui/toast';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,13 +52,23 @@ const ROLE_OPTIONS = [
   { value: 'org', label: 'Organization', labelEl: 'Οργανισμός' },
 ] as const;
 const INDUSTRIES = ['All Industries', 'Technology', 'Healthcare', 'Finance', 'E-commerce', 'Education', 'Real Estate', 'SaaS', 'AI/ML', 'Blockchain'];
-const LOCATIONS = ['All Locations', 'Remote', 'San Francisco', 'New York', 'London', 'Berlin', 'Singapore', 'Austin', 'Seattle', 'Boston'];
+const INDUSTRY_EL: Record<string, string> = {
+  'All Industries': 'Όλοι οι κλάδοι', Technology: 'Τεχνολογία', Healthcare: 'Υγεία', Finance: 'Χρηματοοικονομικά',
+  'E-commerce': 'Ηλεκτρονικό εμπόριο', Education: 'Εκπαίδευση', 'Real Estate': 'Ακίνητα',
+};
+// The demo world lives in Greece and Cyprus; its cities come first, the
+// existing ones stay.
+const LOCATIONS = ['All Locations', 'Remote', 'Athens', 'Thessaloniki', 'Limassol', 'San Francisco', 'New York', 'London', 'Berlin', 'Singapore', 'Austin', 'Seattle', 'Boston'];
+const LOCATION_EL: Record<string, string> = {
+  'All Locations': 'Όλες οι τοποθεσίες', Remote: 'Εξ αποστάσεως', Athens: 'Αθήνα', Thessaloniki: 'Θεσσαλονίκη', Limassol: 'Λεμεσός',
+  'New York': 'Νέα Υόρκη', London: 'Λονδίνο', Berlin: 'Βερολίνο', Singapore: 'Σιγκαπούρη',
+};
 const AVAILABILITY_OPTIONS = [
-  { value: 'all', label: 'All' },
-  { value: 'full-time', label: 'Full-time' },
-  { value: 'part-time', label: 'Part-time' },
-  { value: 'weekends', label: 'Weekends only' },
-  { value: 'flexible', label: 'Flexible' },
+  { value: 'all', label: 'All', labelEl: 'Όλες' },
+  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση' },
+  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση' },
+  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα' },
+  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα' },
 ] as const;
 
 const SKILL_PILLS = [
@@ -433,7 +443,24 @@ export function MembersPageClient() {
       { value: 'recent', en: 'Newest First', el: 'Νεότερα πρώτα' },
       { value: 'active', en: 'Most Active', el: 'Πιο ενεργά' },
     ], sortBy, (v) => setSortBy(v as SortBy)),
+    // Every filter the rail offers, so the assistant can set any of them.
+    choiceControl('industry', 'Industry filter', 'Φίλτρο κλάδου', INDUSTRIES.map((i) => ({ value: i, en: i, el: INDUSTRY_EL[i] ?? i })), selectedIndustry, setSelectedIndustry),
+    choiceControl('location', 'Location filter', 'Φίλτρο τοποθεσίας', LOCATIONS.map((l) => ({ value: l, en: l, el: LOCATION_EL[l] ?? l })), selectedLocation, setSelectedLocation),
+    choiceControl('availability', 'Availability filter', 'Φίλτρο διαθεσιμότητας', AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.labelEl })), selectedAvailability, (v) => setSelectedAvailability(v as typeof selectedAvailability)),
+    choiceControl('skill', 'Skill filter', 'Φίλτρο δεξιότητας', SKILL_PILLS.map((s) => ({ value: s, en: s, el: s === 'All Skills' ? 'Όλες οι δεξιότητες' : s })), activeSkill, setActiveSkill),
     { id: 'clear_filters', labelEn: 'Clear member filters', labelEl: 'Καθαρισμός φίλτρων μελών', writes: false, run: clearFilters },
+  ]);
+  // The assistant sees the members the page shows, as the page shows them.
+  usePageList([
+    {
+      id: 'members',
+      labelEn: 'Members',
+      labelEl: 'Μέλη',
+      rows: isLoading ? undefined : members.map((m) =>
+        [m.displayName, m.headline, m.role, m.location].filter(Boolean).join(' · '),
+      ),
+      total,
+    },
   ]);
 
   const rail: PageRailSection[] = [
@@ -471,21 +498,21 @@ export function MembersPageClient() {
           <RailOptions
             title="Industry"
             titleEl="Κλάδος"
-            options={INDUSTRIES.map((industry) => ({ value: industry, en: industry, el: industry }))}
+            options={INDUSTRIES.map((industry) => ({ value: industry, en: industry, el: INDUSTRY_EL[industry] ?? industry }))}
             value={selectedIndustry}
             onChange={setSelectedIndustry}
           />
           <RailOptions
             title="Location"
             titleEl="Τοποθεσία"
-            options={LOCATIONS.map((location) => ({ value: location, en: location, el: location }))}
+            options={LOCATIONS.map((location) => ({ value: location, en: location, el: LOCATION_EL[location] ?? location }))}
             value={selectedLocation}
             onChange={setSelectedLocation}
           />
           <RailOptions
             title="Availability"
             titleEl="Διαθεσιμότητα"
-            options={AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.label }))}
+            options={AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.labelEl }))}
             value={selectedAvailability}
             onChange={(v) => setSelectedAvailability(v)}
           />
@@ -579,7 +606,9 @@ export function MembersPageClient() {
         {/* Results Header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`}
+            {isLoading
+              ? <BilingualText en="Loading…" el="Φόρτωση…" compact />
+              : <BilingualText en={`${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`} el={`${total.toLocaleString('el-GR')} ${total !== 1 ? 'μέλη' : 'μέλος'}`} compact />}
           </p>
         </div>
 

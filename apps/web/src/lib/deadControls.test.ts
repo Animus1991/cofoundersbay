@@ -68,7 +68,9 @@ describe('dead controls', () => {
 
   it('reads the menus it is meant to check', () => {
     const total = files.reduce((n, f) => n + Array.from(f.source.matchAll(ITEM)).length, 0);
-    expect(total).toBeGreaterThan(200);
+    // A floor that proves the scanner still finds menus, not a quota: 16 items
+    // (the research board's capture and align menus) became rail buttons.
+    expect(total).toBeGreaterThan(150);
   });
 
   it('gives every menu item an action, a link, or a stated reason it has none', () => {
