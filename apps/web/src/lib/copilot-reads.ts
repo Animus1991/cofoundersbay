@@ -1,5 +1,44 @@
 import type { ReadActionId } from '@cofounderbay/shared';
 import {
+  acceptsApplications,
+  discoverMentors,
+  getAdminStats,
+  getAnalyticsOverview,
+  getInviteStats,
+  getMyBadges,
+  getMyPrograms,
+  getMyReceivedMentorRequests,
+  getMySentMentorRequests,
+  getMyXP,
+  getOrgCohorts,
+  getOrgMembers,
+  getUserOrganizations,
+  getVentureReadiness,
+  listAdminReports,
+  listExpertReviews,
+  listInvites,
+  listLearningResources,
+  listMentorAvailability,
+  listMentorBookings,
+  listMyMarketplaceServices,
+  listPrograms,
+  listServiceInquiries,
+  type AdminReportItem,
+  type CohortItem,
+  type ExpertReviewItem,
+  type GamificationBadge,
+  type InviteItem,
+  type LearningResourceItem,
+  type MentorAvailabilitySlot,
+  type MentorBookingItem,
+  type MentorProfileItem,
+  type MentorRequestItem,
+  type OrgMember,
+  type OrgMembershipItem,
+  type ProgramItem,
+  type ServiceInquiryItem,
+  type MarketplaceServiceItem,
+  type VRSDimension,
   getEndorsementStats,
   getInvestorSummary,
   getMeProfile,
@@ -32,6 +71,7 @@ import {
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
+import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
 
 /**
  * What the assistant can read about the product areas it used to be blind to.
@@ -164,6 +204,118 @@ const OPPORTUNITY_TYPE: Record<string, string> = {
   mentorship: 'Mentorship',
   other: 'Other',
 };
+
+/** Programme kinds and application states in words the reply can translate. */
+const PROGRAM_TYPE: Record<string, string> = {
+  accelerator: 'accelerator',
+  incubator: 'incubator',
+  bootcamp: 'bootcamp',
+};
+
+const APPLICATION_STATE: Record<string, string> = {
+  applied: 'application sent',
+  pending: 'application sent',
+  accepted: 'accepted',
+  active: 'taking part',
+  completed: 'completed',
+  rejected: 'not accepted',
+  dropped: 'left the programme',
+  withdrawn: 'withdrawn',
+};
+
+const INVITE_STATE: Record<string, string> = {
+  pending: 'not joined yet',
+  accepted: 'joined',
+  expired: 'expired',
+  cancelled: 'cancelled',
+};
+
+const REQUEST_STATE: Record<string, string> = {
+  pending: 'waiting for an answer',
+  accepted: 'accepted',
+  declined: 'declined',
+  cancelled: 'cancelled',
+};
+
+const BOOKING_STATE: Record<string, string> = {
+  requested: 'requested',
+  confirmed: 'confirmed',
+  completed: 'completed',
+  cancelled: 'cancelled',
+};
+
+const INQUIRY_STATE: Record<string, string> = {
+  open: 'waiting for a reply',
+  in_discussion: 'in discussion',
+  accepted: 'accepted',
+  declined: 'declined',
+  completed: 'completed',
+  cancelled: 'cancelled',
+};
+
+const RESOURCE_TYPE: Record<string, string> = {
+  article: 'article',
+  video: 'video',
+  course: 'course',
+  template: 'template',
+  tool: 'tool',
+  book: 'book',
+  podcast: 'podcast',
+};
+
+const DIFFICULTY: Record<string, string> = {
+  beginner: 'beginner',
+  intermediate: 'intermediate',
+  advanced: 'advanced',
+};
+
+const REVIEW_STATE: Record<string, string> = {
+  requested: 'requested',
+  accepted: 'accepted',
+  in_progress: 'in progress',
+  submitted: 'submitted',
+  declined: 'declined',
+  expired: 'expired',
+};
+
+const REVIEW_TYPE: Record<string, string> = {
+  pitch_deck: 'Pitch deck review',
+  business_model: 'Business model review',
+  financial_model: 'Financial model review',
+  legal_structure: 'Legal structure review',
+  market_analysis: 'Market analysis review',
+  go_to_market: 'Go-to-market review',
+  technical_architecture: 'Technical architecture review',
+  product_strategy: 'Product strategy review',
+  general: 'General review',
+};
+
+const REPORT_TYPE: Record<string, string> = {
+  spam: 'Spam',
+  harassment: 'Harassment',
+  fake: 'Fake account',
+  inappropriate: 'Inappropriate content',
+  other: 'Other',
+};
+
+/** A weekday (0 = Sunday) in the reader’s language, from the platform’s own calendar. */
+function weekdayName(weekday: number, locale: string | undefined): string {
+  const tag = (locale && LOCALE_TAG[locale]) || locale || 'en-GB';
+  // 7 January 2024 was a Sunday.
+  const date = new Date(Date.UTC(2024, 0, 7 + weekday, 12));
+  try {
+    return date.toLocaleDateString(tag, { weekday: 'long', timeZone: 'UTC' });
+  } catch {
+    return date.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' });
+  }
+}
+
+/** The organisation the reader belongs to - the first membership, as /org/* screens use. */
+async function myOrganisationSlug(): Promise<string | null> {
+  const result = await getUserOrganizations().catch(() => null);
+  const memberships = asList<OrgMembershipItem>(result?.memberships);
+  return memberships[0]?.organization?.slug ?? null;
+}
 
 export const AREA_READERS: Record<AreaReadId, Reader> = {
   async get_investor_board(_args, { t, locale }) {
@@ -612,6 +764,397 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     }
 
     return { section: parts.join(' '), citations, actions };
+  },
+
+  // ── Wave B: eighteen more areas, each read through the client its page uses ──
+
+  async get_programs(_args, { t, locale }) {
+    const result = await listPrograms({ limit: 20 });
+    const open = asList<ProgramItem>(result?.programs).filter((program) => acceptsApplications(program)).slice(0, LIMIT);
+    const actions = [openArea(t, '/programs', t('Open programmes'), t('Browse programmes and apply.'))];
+    if (open.length === 0) {
+      return { section: t('No programme is taking applications right now.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = open.map((program) => {
+      citations.push({ type: 'route', id: program.id, label: program.title, href: `/programs/${program.id}` });
+      const left = program.capacity != null ? Math.max(0, program.capacity - (program.participantCount ?? 0)) : null;
+      const details = [
+        program.organization?.name ?? '',
+        t(PROGRAM_TYPE[program.programType] ?? 'programme'),
+        program.applicationDeadline ? t('apply by {date}', { date: formatWhen(program.applicationDeadline, locale, false) }) : '',
+        left != null ? t('{count} places left', { count: left }) : '',
+      ].filter(Boolean);
+      return `• **${program.title}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Programmes taking applications:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_my_programs(_args, { t }) {
+    const result = await getMyPrograms();
+    const programs = asList<ProgramItem>(result?.programs).slice(0, LIMIT);
+    const actions = [openArea(t, '/programs', t('Open programmes'), t('Browse programmes and apply.'))];
+    if (programs.length === 0) {
+      return { section: t('You have not applied to any programme yet.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = programs.map((program) => {
+      citations.push({ type: 'route', id: program.id, label: program.title, href: `/programs/${program.id}` });
+      const details = [program.organization?.name ?? '', program.myStatus ? t(APPLICATION_STATE[program.myStatus] ?? program.myStatus) : ''].filter(Boolean);
+      return `• **${program.title}**${details.length ? ` — ${details.join(' · ')}` : ''}`;
+    });
+    return { section: `${t('Your programmes:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_invites(_args, { t }) {
+    const [page, statsResult] = await Promise.all([listInvites({ limit: LIMIT }), getInviteStats().catch(() => null)]);
+    const invites = asList<InviteItem>(page?.invites).slice(0, LIMIT);
+    const stats = statsResult?.stats;
+    const actions = [openArea(t, '/referrals', t('Open invitations'), t('See who joined and invite more people.'))];
+    if (invites.length === 0) {
+      return { section: t('You have not invited anyone yet.'), citations: [], actions };
+    }
+    const headline = stats
+      ? t('{sent} sent · {joined} joined · {left} invitations left', { sent: stats.total, joined: stats.accepted, left: stats.remaining })
+      : '';
+    const lines = invites.map((invite) => `• **${invite.email}** — ${t(INVITE_STATE[invite.status] ?? invite.status)}`);
+    return { section: [headline, `${t('Recent invitations:')}\n${lines.join('\n')}`].filter(Boolean).join('\n'), citations: [], actions };
+  },
+
+  async get_reputation(_args, { t }) {
+    const [xp, badges] = await Promise.all([getMyXP(), getMyBadges().catch(() => [])]);
+    const recent = asList<GamificationBadge>(badges)
+      .slice()
+      .sort((a, b) => (b.awardedAt ?? '').localeCompare(a.awardedAt ?? ''))
+      .slice(0, LIMIT);
+    const actions = [openArea(t, '/reputation', t('Open reputation'), t('Your level, badges and XP history.'))];
+    const parts = [
+      t('Level {level} · {xp} XP · {next} XP to the next level', { level: xp?.level ?? 1, xp: xp?.totalXp ?? 0, next: xp?.xpToNextLevel ?? 0 }),
+      xp?.streak?.currentStreak ? t('{days}-day activity streak', { days: xp.streak.currentStreak }) : '',
+    ].filter(Boolean);
+    const badgeBlock = recent.length
+      ? `${t('Recent badges:')}\n${recent.map((badge) => `• **${badge.name}** — ${badge.description}`).join('\n')}`
+      : t('No badges yet.');
+    return { section: `${parts.join(' · ')}\n${badgeBlock}`, citations: [], actions };
+  },
+
+  async get_readiness(_args, { t, locale }) {
+    const readiness = await getVentureReadiness();
+    const dimensions = asList<VRSDimension>(readiness?.dimensions);
+    const actions = [openArea(t, '/readiness', t('Open readiness'), t('See what raises each score.'))];
+    if (typeof readiness?.overall !== 'number') {
+      return { section: t('Your readiness score is not available yet.'), citations: [], actions };
+    }
+    // The endpoint labels dimensions in English; Greek comes from the map
+    // every other readiness surface uses, keyed by the dimension's key.
+    const label = (dimension: VRSDimension) => (locale === 'el' ? ventureDimensionEl(dimension.key, dimension.label) : dimension.label);
+    const lines = dimensions.map((dimension) => `• **${label(dimension)}** — ${dimension.score}/100`);
+    const weakest = readiness.lowestDimension;
+    return {
+      section: [
+        t('Venture readiness: {score}/100', { score: Math.round(readiness.overall) }),
+        lines.join('\n'),
+        weakest ? t('Weakest: {label} ({score}/100). Start there.', { label: label(weakest), score: weakest.score }) : '',
+      ].filter(Boolean).join('\n'),
+      citations: [],
+      actions,
+    };
+  },
+
+  async get_analytics(_args, { t }) {
+    const overview = await getAnalyticsOverview('7d', 3);
+    const metrics = overview?.metrics;
+    const actions = [openArea(t, '/analytics', t('Open analytics'), t('Charts over 7, 14, 30 or 90 days.'))];
+    if (!metrics) {
+      return { section: t('Your activity figures are not available yet.'), citations: [], actions };
+    }
+    const change = (value: number | null) =>
+      value == null ? '' : ` (${t('{pct}% vs the week before', { pct: `${value > 0 ? '+' : ''}${Math.round(value)}` })})`;
+    return {
+      section: [
+        t('Last 7 days:'),
+        `• ${t('Profile views: {count}', { count: metrics.profileViews ?? 0 })}${change(metrics.profileViewsChange)}`,
+        `• ${t('New connections: {count}', { count: metrics.newConnections ?? 0 })}${change(metrics.newConnectionsChange)}`,
+        `• ${t('Messages sent: {count}', { count: metrics.messagesSent ?? 0 })}${change(metrics.messagesSentChange)}`,
+      ].join('\n'),
+      citations: [],
+      actions,
+    };
+  },
+
+  async get_mentors(_args, { t }) {
+    const result = await discoverMentors({ limit: 20 });
+    const mentors = asList<MentorProfileItem>(result?.mentors)
+      .filter((mentor) => mentor.availabilityStatus !== 'unavailable')
+      .sort((a, b) => (b.sessionCount ?? 0) - (a.sessionCount ?? 0))
+      .slice(0, LIMIT);
+    const actions = [openArea(t, '/coaching', t('Open the mentor directory'), t('Filter by expertise and book a session.'))];
+    if (mentors.length === 0) {
+      return { section: t('No mentors are taking sessions right now.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = mentors.map((mentor) => {
+      citations.push({ type: 'person', id: mentor.userId, label: mentor.displayName, href: `/profiles/${mentor.userId}` });
+      const details = [
+        mentor.headline ?? mentor.skills?.slice(0, 3).join(', ') ?? '',
+        mentor.rating != null && mentor.reviewCount > 0 ? `${mentor.rating.toFixed(1)}★ (${mentor.reviewCount})` : '',
+        mentor.isFree ? t('free') : mentor.hourlyRate ? t('{price} per hour', { price: `${mentor.currency ?? 'EUR'} ${mentor.hourlyRate}` }) : '',
+      ].filter(Boolean);
+      return `• **${mentor.displayName}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Mentors taking sessions:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_mentor_requests(_args, { t, locale }) {
+    const [received, sent] = await Promise.all([
+      getMyReceivedMentorRequests().catch(() => null),
+      getMySentMentorRequests().catch(() => null),
+    ]);
+    const waiting = asList<MentorRequestItem>(received?.requests).filter((request) => request.status === 'pending').slice(0, LIMIT);
+    const asked = asList<MentorRequestItem>(sent?.requests).slice(0, LIMIT);
+    const actions = [openArea(t, '/mentor/requests', t('Open mentoring requests'), t('Accept or decline requests.'))];
+    if (waiting.length === 0 && asked.length === 0) {
+      return { section: t('No mentoring requests.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const blocks: string[] = [];
+    if (waiting.length) {
+      blocks.push(`${t('Waiting for your answer:')}\n${waiting.map((request) => {
+        const name = request.requester?.displayName ?? t('Someone');
+        citations.push({ type: 'person', id: request.requester?.id ?? request.id, label: name, href: '/mentor/requests' });
+        const details = [request.focusAreas?.slice(0, 3).join(', ') ?? '', t('asked {when}', { when: formatWhen(request.createdAt, locale, false) })].filter(Boolean);
+        return `• **${name}** — ${details.join(' · ')}`;
+      }).join('\n')}`);
+    }
+    if (asked.length) {
+      blocks.push(`${t('Requests you sent:')}\n${asked.map((request) => {
+        const name = request.mentor?.displayName ?? t('A mentor');
+        return `• **${name}** — ${t(REQUEST_STATE[request.status] ?? request.status)}`;
+      }).join('\n')}`);
+    }
+    return { section: blocks.join('\n'), citations, actions };
+  },
+
+  async get_bookings(_args, { t, locale }) {
+    const result = await listMentorBookings('all');
+    const now = Date.now();
+    const bookings = asList<MentorBookingItem>(result?.bookings)
+      .filter((booking) => booking.status !== 'cancelled' && Date.parse(booking.endAt ?? booking.startAt) >= now)
+      .sort((a, b) => a.startAt.localeCompare(b.startAt))
+      .slice(0, LIMIT);
+    const actions = [openArea(t, '/calendar', t('Open the calendar'), t('Every booking and event in one place.'))];
+    if (bookings.length === 0) {
+      return { section: t('No upcoming bookings.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = bookings.map((booking) => {
+      citations.push({ type: 'session', id: booking.id, label: booking.mentor?.displayName ?? booking.id, href: '/calendar' });
+      const details = [
+        t('{mentor} with {mentee}', { mentor: booking.mentor?.displayName ?? '—', mentee: booking.mentee?.displayName ?? '—' }),
+        t(BOOKING_STATE[booking.status] ?? booking.status),
+        SESSION_MODE[booking.meetingType] ? t(SESSION_MODE[booking.meetingType]) : '',
+      ].filter(Boolean);
+      return `• **${formatWhen(booking.startAt, locale, true)}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Upcoming bookings:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_availability(_args, { t, locale }) {
+    const result = await listMentorAvailability();
+    const slots = asList<MentorAvailabilitySlot>(result?.slots)
+      .slice()
+      .sort((a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime));
+    const actions = [openArea(t, '/mentor/availability', t('Open availability'), t('Set the hours mentees can book.'))];
+    if (slots.length === 0) {
+      return { section: t('No weekly hours are saved yet.'), citations: [], actions };
+    }
+    const zone = slots.find((slot) => slot.timezone)?.timezone ?? '';
+    const lines = slots.map((slot) => `• **${weekdayName(slot.weekday, locale)}** ${slot.startTime}–${slot.endTime}`);
+    return {
+      section: `${zone ? t('Your weekly hours ({zone}):', { zone }) : t('Your weekly hours:')}\n${lines.join('\n')}`,
+      citations: [],
+      actions,
+    };
+  },
+
+  async get_services(_args, { t }) {
+    // The listings /provider/services and the provider dashboard show.
+    const result = await listMyMarketplaceServices({ limit: LIMIT });
+    const services = asList<MarketplaceServiceItem>(result?.services).slice(0, LIMIT);
+    const actions = [openArea(t, '/provider/services', t('Open your services'), t('Edit, pause or add an offer.'))];
+    if (services.length === 0) {
+      return { section: t('You have no service offers yet.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = services.map((service) => {
+      citations.push({ type: 'route', id: service.id, label: service.title, href: '/provider/services' });
+      const details = [
+        t(service.category),
+        service.pricing ?? '',
+        service.isActive === false ? t('paused') : t('live'),
+        service.isFeatured ? t('featured') : '',
+      ].filter(Boolean);
+      return `• **${service.title}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Your service offers:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_inquiries(_args, { t, locale }) {
+    const result = await listServiceInquiries({ side: 'provider', limit: LIMIT });
+    const inquiries = asList<ServiceInquiryItem>(result?.inquiries).slice(0, LIMIT);
+    const actions = [openArea(t, '/provider/inquiries', t('Open inquiries'), t('Reply, agree a scope or decline.'))];
+    if (inquiries.length === 0) {
+      return { section: t('No inquiries yet.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = inquiries.map((inquiry) => {
+      const name = inquiry.client?.displayName ?? t('A client');
+      citations.push({ type: 'person', id: inquiry.client?.id ?? inquiry.id, label: name, href: '/provider/inquiries' });
+      const details = [
+        inquiry.offer?.title ?? '',
+        t(INQUIRY_STATE[inquiry.status] ?? inquiry.status),
+        inquiry.budgetEstimate != null ? t('budget {price}', { price: `${inquiry.currency ?? 'EUR'} ${inquiry.budgetEstimate}` }) : '',
+        formatWhen(inquiry.createdAt, locale, false),
+      ].filter(Boolean);
+      return `• **${name}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Recent inquiries:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_learning(_args, { t }) {
+    const featured = await listLearningResources({ featured: true, limit: LIMIT });
+    let resources = asList<LearningResourceItem>(featured?.resources);
+    if (resources.length === 0) resources = asList<LearningResourceItem>((await listLearningResources({ limit: LIMIT }))?.resources);
+    resources = resources.slice(0, LIMIT);
+    const actions = [openArea(t, '/learning', t('Open the learning library'), t('Guides, videos and templates.'))];
+    if (resources.length === 0) {
+      return { section: t('No learning resources yet.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = resources.map((resource) => {
+      citations.push({ type: 'route', id: resource.id, label: resource.title, href: '/learning' });
+      const details = [
+        t(RESOURCE_TYPE[resource.type] ?? resource.type),
+        t(DIFFICULTY[resource.difficulty] ?? resource.difficulty),
+        resource.duration ? t('{minutes} min', { minutes: resource.duration }) : '',
+        resource.author ?? '',
+      ].filter(Boolean);
+      return `• **${resource.title}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Learning resources:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_expert_reviews(_args, { t, locale }) {
+    const [mine, forMe] = await Promise.all([
+      listExpertReviews({ side: 'requester', limit: LIMIT }).catch(() => null),
+      listExpertReviews({ side: 'expert', limit: LIMIT }).catch(() => null),
+    ]);
+    const requested = asList<ExpertReviewItem>(mine?.reviews);
+    const giving = asList<ExpertReviewItem>(forMe?.reviews);
+    const actions = [openArea(t, '/expert-reviews', t('Open expert reviews'), t('Request a review or answer one.'))];
+    if (requested.length === 0 && giving.length === 0) {
+      return { section: t('No expert reviews yet.'), citations: [], actions };
+    }
+    const line = (review: ExpertReviewItem, who: string) => {
+      const details = [
+        who,
+        t(REVIEW_STATE[review.status] ?? review.status),
+        review.dueDate ? t('due {date}', { date: formatWhen(review.dueDate, locale, false) }) : '',
+        review.scoreOverall != null ? t('score {score}', { score: review.scoreOverall }) : '',
+      ].filter(Boolean);
+      return `• **${t(REVIEW_TYPE[review.reviewType] ?? review.reviewType)}** — ${details.join(' · ')}`;
+    };
+    const blocks: string[] = [];
+    if (requested.length) blocks.push(`${t('Reviews you requested:')}\n${requested.slice(0, LIMIT).map((r) => line(r, r.expert?.displayName ?? '')).join('\n')}`);
+    if (giving.length) blocks.push(`${t('Reviews asked of you:')}\n${giving.slice(0, LIMIT).map((r) => line(r, r.requester?.displayName ?? '')).join('\n')}`);
+    return { section: blocks.join('\n'), citations: [], actions };
+  },
+
+  async get_org_cohorts(_args, { t, locale }) {
+    const slug = await myOrganisationSlug();
+    const actions = [openArea(t, '/org/cohorts', t('Open cohorts'), t('Participants, matches and sessions per cohort.'))];
+    if (!slug) return { section: t('You are not a member of an organisation.'), citations: [], actions };
+    const result = await getOrgCohorts(slug, { limit: 20 });
+    const cohorts = asList<CohortItem>(result?.cohorts).slice(0, LIMIT);
+    if (cohorts.length === 0) {
+      return { section: t('Your organisation has no cohorts yet.'), citations: [], actions };
+    }
+    const now = Date.now();
+    const citations: CopilotCitation[] = [];
+    const lines = cohorts.map((cohort) => {
+      citations.push({ type: 'route', id: cohort.id, label: cohort.name, href: `/org/cohorts/${cohort.id}` });
+      const start = cohort.startDate ? Date.parse(cohort.startDate) : null;
+      const end = cohort.endDate ? Date.parse(cohort.endDate) : null;
+      const state = start != null && start > now ? 'starting soon' : !cohort.isActive || (end != null && end < now) ? 'finished' : 'running';
+      const details = [
+        t(state),
+        cohort.startDate ? `${formatWhen(cohort.startDate, locale, false)} – ${formatWhen(cohort.endDate, locale, false)}` : '',
+        t('{count} members', { count: cohort._count?.members ?? 0 }),
+      ].filter(Boolean);
+      return `• **${cohort.name}** — ${details.join(' · ')}`;
+    });
+    return { section: `${t('Your organisation’s cohorts:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_org_members(_args, { t, locale }) {
+    const slug = await myOrganisationSlug();
+    const actions = [openArea(t, '/org/members', t('Open members'), t('Everyone in your organisation’s cohorts.'))];
+    if (!slug) return { section: t('You are not a member of an organisation.'), citations: [], actions };
+    const result = await getOrgMembers(slug, { limit: 100 });
+    const all = asList<OrgMember>(result?.members);
+    const members = all.slice().sort((a, b) => (b.joinedAt ?? '').localeCompare(a.joinedAt ?? '')).slice(0, LIMIT);
+    if (members.length === 0) {
+      return { section: t('Your organisation has no members yet.'), citations: [], actions };
+    }
+    const citations: CopilotCitation[] = [];
+    const lines = members.map((member) => {
+      citations.push({ type: 'person', id: member.id, label: member.displayName, href: `/profiles/${member.id}` });
+      const details = [t(member.role), member.cohortName ?? '', t('joined {when}', { when: formatWhen(member.joinedAt, locale, false) })].filter(Boolean);
+      return `• **${member.displayName}** — ${details.join(' · ')}`;
+    });
+    const total = typeof result?.total === 'number' ? result.total : all.length;
+    return { section: `${t('{count} members; the newest:', { count: total })}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_platform_stats(_args, { t }) {
+    const result = await getAdminStats();
+    const stats = result?.stats;
+    const actions = [openArea(t, '/admin/dashboard', t('Open the platform overview'), t('Figures, health and what needs attention.'))];
+    if (!stats) {
+      return { section: t('Platform figures are not available.'), citations: [], actions };
+    }
+    return {
+      section: [
+        t('{total} users · {fresh} new this week · {active} active this week', { total: stats.totalUsers ?? 0, fresh: stats.newUsersThisWeek ?? 0, active: stats.activeUsersThisWeek ?? 0 }),
+        t('{connections} connections · {messages} messages · {events} events · {groups} groups · {jobs} jobs', {
+          connections: stats.totalConnections ?? 0,
+          messages: stats.totalMessages ?? 0,
+          events: stats.totalEvents ?? 0,
+          groups: stats.totalGroups ?? 0,
+          jobs: stats.totalJobs ?? 0,
+        }),
+        t('{count} reports waiting for review', { count: stats.pendingReports ?? 0 }),
+      ].join('\n'),
+      citations: [],
+      actions,
+    };
+  },
+
+  async get_moderation_queue(_args, { t, locale }) {
+    const result = await listAdminReports({ status: 'pending', limit: 50 });
+    const reports = asList<AdminReportItem>(result?.reports)
+      .slice()
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .slice(0, LIMIT);
+    const actions = [openArea(t, '/admin/reports', t('Open reports'), t('Resolve or dismiss each report.'))];
+    if (reports.length === 0) {
+      return { section: t('The moderation queue is empty.'), citations: [], actions };
+    }
+    const lines = reports.map((report) => {
+      const who = report.reported?.name ?? report.reported?.email ?? t('Someone');
+      return `• **${t(REPORT_TYPE[report.type] ?? report.type)}** — ${who}: ${report.reason} · ${formatWhen(report.createdAt, locale, false)}`;
+    });
+    return { section: `${t('Oldest open reports:')}\n${lines.join('\n')}`, citations: [], actions };
   },
 };
 

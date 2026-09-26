@@ -3144,7 +3144,13 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
   if (pathname === '/api/expert-reviews') {
-    const reviews = previewExpertReviews();
+    // `side` picks whose reviews: the ones the reader asked for, or the ones
+    // asked of them. Every demo review is the reader's own request, so the
+    // expert side is empty rather than the same list twice.
+    const side = new URLSearchParams(path.split('?')[1] ?? '').get('side');
+    const reviews = previewExpertReviews().filter((r) =>
+      side === 'expert' ? r.expert?.id === ME_ID : side === 'requester' ? r.requester?.id === ME_ID : true,
+    );
     return { reviews, total: reviews.length };
   }
 

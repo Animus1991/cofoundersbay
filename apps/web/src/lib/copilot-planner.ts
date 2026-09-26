@@ -133,6 +133,52 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['my workspace', 'my workspaces', 'startup builder', 'builder workspace', 'χωρους εργασιας', 'χωρο εργασιας', 'χωροι εργασιας'],
     tool: 'get_builder_state',
   },
+  // Wave B. Each key names the area as a noun, as the ones above do.
+  {
+    keys: ['my program', 'my programme', 'my application', 'applied to', 'αιτησεις μου', 'αιτηση μου', 'προγραμματα μου'],
+    tool: 'get_my_programs',
+  },
+  {
+    keys: ['program', 'programme', 'accelerator', 'incubator', 'bootcamp', 'προγραμμα', 'επιταχυντ', 'θερμοκοιτιδ'],
+    tool: 'get_programs',
+  },
+  { keys: ['invite*', 'invitation*', 'referral*', 'προσκλησ', 'προσκαλεσ'], tool: 'get_invites' },
+  { keys: ['badge*', 'my level', 'xp', 'reputation', 'streak', 'σηματα', 'επιπεδο μου', 'φημη μου', 'σερι'], tool: 'get_reputation' },
+  { keys: ['readiness score', 'my readiness', 'how ready', 'investor ready', 'ετοιμοτητα'], tool: 'get_readiness' },
+  {
+    keys: ['profile view*', 'my analytics', 'my stats', 'my statistics', 'my activity', 'προβολες', 'στατιστικα μου', 'αναλυτικα μου', 'δραστηριοτητα μου'],
+    tool: 'get_analytics',
+  },
+  {
+    keys: ['mentor directory', 'available mentor*', 'which mentors', 'mentors taking', 'mentors available', 'καταλογο μεντορων', 'καταλογος μεντορων', 'διαθεσιμοι μεντορες', 'ποιοι μεντορες'],
+    tool: 'get_mentors',
+  },
+  {
+    keys: ['mentoring request*', 'mentorship request*', 'mentor request*', 'αιτηματα mentoring', 'αιτημα mentoring', 'αιτηματα καθοδηγησ'],
+    tool: 'get_mentor_requests',
+  },
+  { keys: ['booking*', 'booked', 'κρατησ', 'κλεισμεν'], tool: 'get_bookings' },
+  {
+    keys: ['my availability', 'my hours', 'weekly hours', 'bookable', 'διαθεσιμοτητα μου', 'ωρες μου', 'εβδομαδιαιες ωρες'],
+    tool: 'get_availability',
+  },
+  { keys: ['my service*', 'service offer*', 'my offer*', 'υπηρεσιες μου', 'προσφορες μου'], tool: 'get_services' },
+  { keys: ['inquir*', 'enquir*', 'αιτηματα πελατ', 'ερωτηματα πελατ'], tool: 'get_inquiries' },
+  { keys: ['learning', 'course', 'tutorial', 'εκπαιδευτικ', 'μαθηματα', 'μαθημα'], tool: 'get_learning' },
+  { keys: ['expert review*', 'αξιολογησεις ειδικ', 'αξιολογηση ειδικ', 'αξιολογησεων ειδικ'], tool: 'get_expert_reviews' },
+  { keys: ['cohort*', 'κοορτ'], tool: 'get_org_cohorts' },
+  {
+    keys: ['organisation member*', 'organization member*', 'org member*', 'members of my organi*', 'μελη του οργανισμου', 'μελη οργανισμου'],
+    tool: 'get_org_members',
+  },
+  {
+    keys: ['platform stat*', 'platform figure*', 'how many users', 'total users', 'στατιστικα πλατφορμας', 'ποσοι χρηστες', 'χρηστες της πλατφορμας'],
+    tool: 'get_platform_stats',
+  },
+  {
+    keys: ['moderation queue', 'open report*', 'pending report*', 'reported user*', 'ουρα ελεγχου', 'αναφορες σε αναμονη', 'ανοιχτες αναφορες'],
+    tool: 'get_moderation_queue',
+  },
 ];
 
 /**
@@ -169,7 +215,16 @@ const EXPLICIT_REMOVE_PHRASES = [
 
 export function detectAreaReads(message: string): AreaReadId[] {
   const lower = message.toLowerCase();
-  return AREA_READ_ALIASES.filter((alias) => includesWord(lower, alias.keys)).map((alias) => alias.tool);
+  const found = AREA_READ_ALIASES.filter((alias) => includesWord(lower, alias.keys)).map((alias) => alias.tool);
+  return found.filter((tool) => {
+    // "My programmes" is the narrower question; the open-programme list
+    // beside it would answer one nobody asked.
+    if (tool === 'get_programs' && found.includes('get_my_programs')) return false;
+    // A named window is analytics_set_period's job; a 7-day read beside it
+    // would report figures for a period the reader just moved away from.
+    if (tool === 'get_analytics' && detectAnalyticsPeriod(lower) !== undefined) return false;
+    return true;
+  });
 }
 
 /**
