@@ -22,6 +22,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { getOrgCohorts, type CohortItem } from '@/lib/api';
+import { demoCohortItems } from '@/lib/demo/org-api';
+import { useHydrated } from '@/components/common/RelativeTime';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -213,13 +215,6 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
 }
 
 /** Shown to an organisation that has not created a cohort yet. */
-const SEED_COHORTS: Cohort[] = [
-  { id: '1', name: 'Cohort 2025-A', program: 'Spring Accelerator 2025', status: 'active', startups: 12, mentors: 8, startDate: 'Jan 2025', endDate: 'Apr 2025', progress: 65, avgReadiness: 72, mentorCoverage: 92 },
-  { id: '2', name: 'AI Lab Cohort 1', program: 'AI Innovation Lab', status: 'active', startups: 8, mentors: 5, startDate: 'Feb 2025', endDate: 'Aug 2025', progress: 30, avgReadiness: 58, mentorCoverage: 75 },
-  { id: '3', name: 'Bootcamp March', program: 'Pre-seed Bootcamp', status: 'active', startups: 8, mentors: 4, startDate: 'Mar 2025', endDate: 'Mar 2025', progress: 90, avgReadiness: 81, mentorCoverage: 100 },
-  { id: '4', name: 'Cohort 2024-C', program: 'Fall Accelerator 2024', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100, avgReadiness: 88, mentorCoverage: 100 },
-  { id: '5', name: 'Summer 2025', program: 'Summer Accelerator 2025', status: 'recruiting', startups: 0, mentors: 0, startDate: 'Jun 2025', endDate: 'Sep 2025', progress: 0 },
-];
 
 export default function OrgCohortsPage() {
   // Illustrative rows are for the showcase; a real account with nothing
@@ -244,7 +239,15 @@ export default function OrgCohortsPage() {
   });
 
   const live = useMemo(() => (data?.cohorts ?? []).map(toPageCohort), [data]);
-  const cohorts: Cohort[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : SEED_COHORTS;
+  // Samples are the demo organisation's cohorts - the ones the preview API
+  // serves and /org/cohorts/[id] opens - stamped after mount because their
+  // dates and progress count from today.
+  const hydrated = useHydrated();
+  const samples = useMemo(
+    () => (hydrated && showDemoData ? demoCohortItems(Date.now()).map(toPageCohort) : []),
+    [hydrated, showDemoData],
+  );
+  const cohorts: Cohort[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : samples;
 
 
   // These were memoised with no dependencies, so they kept the counts of the
@@ -277,8 +280,9 @@ export default function OrgCohortsPage() {
       labelEl: 'Άνοιγμα κοόρτης',
       writes: false,
       options: rowOptions(filteredCohorts, (c) => c.id, (c) => c.name),
-      unavailableEn: live.length === 0 ? 'These are sample cohorts; they have no page.' : undefined,
-      unavailableEl: live.length === 0 ? 'Είναι δείγματα κοορτών· δεν έχουν σελίδα.' : undefined,
+      // A sample cohort opens the same sample on its own page.
+      unavailableEn: filteredCohorts.length === 0 ? 'No cohort is listed.' : undefined,
+      unavailableEl: filteredCohorts.length === 0 ? 'Δεν εμφανίζεται καμία κοόρτη.' : undefined,
       run: (id) => { if (id) router.push(`/org/cohorts/${id}`); },
     },
     {

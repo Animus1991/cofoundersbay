@@ -32,6 +32,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { BilingualText } from '@/components/common/BilingualText';
+import { usePageList } from '@/lib/page-controls';
 
 type WebhookItem = {
   id: string;
@@ -89,7 +90,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <code className="text-xs font-mono bg-muted px-2 py-0.5 rounded truncate max-w-xs">{truncUrl}</code>
-              <Button aria-label="Copy URL" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(webhook.url)}>
+              <Button aria-label="Copy URL. Αντιγραφή URL" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(webhook.url)}>
                 <Copy className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
@@ -102,7 +103,11 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
               {webhook.lastTriggered && <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" />{webhook.lastTriggered}</span>}
               <span className="flex items-center gap-1">
                 <Activity className="icon-sm" aria-hidden="true" />
-                {webhook.successRate}% success · {webhook.totalDeliveries} deliveries
+                <BilingualText
+                  en={`${webhook.successRate}% success · ${webhook.totalDeliveries} deliveries`}
+                  el={`${webhook.successRate}% επιτυχία · ${webhook.totalDeliveries} παραδόσεις`}
+                  compact
+                />
               </span>
             </div>
           </div>
@@ -110,7 +115,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
             <Switch checked={active} onCheckedChange={setActive} aria-label={`Deliver to ${truncUrl}`} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon">
+                <Button aria-label="More options. Περισσότερες επιλογές" variant="ghost" size="icon">
                   <MoreVertical className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
@@ -140,6 +145,20 @@ export default function TenantWebhooksPage() {
     ? Math.round(webhooks.reduce((s, w) => s + w.successRate, 0) / webhooks.length)
     : 0;
 
+  // Samples only: there is no webhook service, so nothing here can be
+  // operated, but the assistant can say what the page shows and that it is
+  // illustrative.
+  usePageList([
+    {
+      id: 'webhooks',
+      labelEn: 'Webhook endpoints',
+      labelEl: 'Endpoints webhooks',
+      rows: webhooks.map((w) => `${w.url} · ${w.isActive ? 'active' : 'paused'} · ${w.events.join(', ')}`),
+      total: webhooks.length,
+      sample: webhooks.length > 0,
+    },
+  ]);
+
   return (
     <AppShell
       title="Webhooks"
@@ -165,11 +184,11 @@ export default function TenantWebhooksPage() {
         )}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-3 md:grid-cols-3">
           {[
-            { label: 'Active Webhooks', value: webhooks.filter(w => w.isActive).length },
-            { label: 'Total Deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
-            { label: 'Avg Success Rate', value: `${avgSuccess}%` },
+            { label: 'Active Webhooks', labelEl: 'Ενεργά webhooks', value: webhooks.filter(w => w.isActive).length },
+            { label: 'Total Deliveries', labelEl: 'Σύνολο παραδόσεων', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
+            { label: 'Avg Success Rate', labelEl: 'Μέση επιτυχία', value: `${avgSuccess}%` },
           ].map(s => (
-            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
           ))}
         </div>
 

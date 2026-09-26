@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Clock, Plus, Trash2, Save, CheckCircle2, AlertCircle, Globe, Info, RefreshCw,
@@ -23,8 +23,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
+import { getMeProfile, listMentorAvailability, replaceMentorAvailability } from '@/lib/api';
+import { qk, queryKeys } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const DAYS = [
@@ -36,6 +37,10 @@ const DAYS = [
   { key: 5, label: 'Friday',    short: 'Fri' },
   { key: 6, label: 'Saturday',  short: 'Sat' },
 ];
+
+const DAY_EL: Record<number, string> = {
+  0: 'Κυριακή', 1: 'Δευτέρα', 2: 'Τρίτη', 3: 'Τετάρτη', 4: 'Πέμπτη', 5: 'Παρασκευή', 6: 'Σάββατο',
+};
 
 const TIMES = Array.from({ length: 48 }, (_, i) => {
   const h = Math.floor(i / 2);
@@ -76,11 +81,15 @@ const defaultSlots: TimeSlot[] = [
 
 export default function MentorAvailabilityPage() {
   const { hasSession, mounted } = useSession();
-  const { success } = useToast();
+  const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
 
-  const [slots, setSlots] = useState<TimeSlot[]>(defaultSlots);
-  const [timezone, setTimezone] = useState('Europe/Athens');
+  const [slots, setSlotsState] = useState<TimeSlot[]>(defaultSlots);
+  const [timezone, setTimezoneState] = useState('Europe/Athens');
+  // Edits since the hours were last read or saved.
+  const [dirty, setDirty] = useState(false);
+  const setSlots = (next: TimeSlot[] | ((prev: TimeSlot[]) => TimeSlot[])) => { setSlotsState(next); setDirty(true); };
+  const setTimezone = (tz: string) => { setTimezoneState(tz); setDirty(true); };
   const [sessionDuration, setSessionDuration] = useState(30);
   const [bufferTime, setBufferTime] = useState(15);
   const [isAccepting, setIsAccepting] = useState(true);
@@ -92,6 +101,32 @@ export default function MentorAvailabilityPage() {
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
+
+  /*
+   * The weekly hours are stored: `PUT /mentor/availability` replaces them and
+   * GET reads them back. Save used to wait 800ms and announce "Availability
+   * saved" without calling either, so nothing a mentor set here ever reached
+   * a mentee. The three slots below are a starting point shown only while
+   * nothing is stored, and the page says they are not saved yet.
+   */
+  const { data: stored, isLoading: storedLoading } = useQuery({
+    queryKey: qk('mentors', 'availability', 'mine'),
+    queryFn: () => listMentorAvailability(),
+    enabled: hasSession && mounted,
+    retry: 0,
+  });
+  const storedSlots = stored?.slots ?? null;
+  useEffect(() => {
+    if (!storedSlots || dirty) return;
+    if (storedSlots.length > 0) {
+      setSlotsState(storedSlots.map((sl) => ({ id: sl.id, weekday: sl.weekday, startTime: sl.startTime, endTime: sl.endTime })));
+      const tz = storedSlots.find((sl) => sl.timezone)?.timezone;
+      if (tz) setTimezoneState(tz);
+    }
+    // Only when a new read arrives; local edits win until they are saved.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedSlots]);
+  const unsaved = dirty || (storedSlots !== null && storedSlots.length === 0 && slots.length > 0);
 
   function addSlot(weekday: number) {
     const newSlot: TimeSlot = {
@@ -113,10 +148,72 @@ export default function MentorAvailabilityPage() {
 
   async function handleSave() {
     setIsSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    setIsSaving(false);
-    success('Availability saved', 'Your schedule has been updated.');
+    try {
+      const res = await replaceMentorAvailability(
+        slots.map((sl) => ({ weekday: sl.weekday, startTime: sl.startTime, endTime: sl.endTime, timezone })),
+      );
+      queryClient.setQueryData(qk('mentors', 'availability', 'mine'), res);
+      setDirty(false);
+      success('Availability saved', 'Your schedule has been updated.');
+    } catch (e) {
+      showError('Could not save your availability', e instanceof Error ? e.message : undefined);
+    } finally {
+      setIsSaving(false);
+    }
   }
+
+  // The schedule, offered to the assistant: save, clear a day, remove a slot,
+  // change the time zone. Saving replaces the stored week; the page keeps the
+  // previous week only until the next read, so none of these names an undo.
+  const dayName = (d: number) => DAYS.find((x) => x.key === d)?.label ?? String(d);
+  usePageControls([
+    {
+      id: 'save_availability',
+      labelEn: 'Save my weekly hours',
+      labelEl: 'Αποθήκευση εβδομαδιαίων ωρών',
+      writes: true,
+      unavailableEn: !hasSession ? 'Sign in first.' : undefined,
+      unavailableEl: !hasSession ? 'Συνδεθείτε πρώτα.' : undefined,
+      run: handleSave,
+    },
+    {
+      id: 'remove_slot',
+      labelEn: 'Remove a time slot (before saving)',
+      labelEl: 'Αφαίρεση χρονοθυρίδας (πριν την αποθήκευση)',
+      writes: false,
+      options: rowOptions(slots, (sl) => sl.id, (sl) => `${dayName(sl.weekday)} ${sl.startTime}-${sl.endTime}`),
+      unavailableEn: slots.length === 0 ? 'No slots are set.' : undefined,
+      unavailableEl: slots.length === 0 ? 'Δεν υπάρχουν χρονοθυρίδες.' : undefined,
+      run: (value) => { if (value) removeSlot(value); },
+    },
+    {
+      id: 'add_slot',
+      labelEn: 'Add a 9-10am slot on a day (before saving)',
+      labelEl: 'Προσθήκη χρονοθυρίδας 9-10 π.μ. σε μια ημέρα (πριν την αποθήκευση)',
+      writes: false,
+      options: DAYS.map((d) => ({ value: String(d.key), labelEn: d.label, labelEl: DAY_EL[d.key] })),
+      run: (value) => { if (value != null) addSlot(Number(value)); },
+    },
+    {
+      id: 'time_zone',
+      labelEn: 'Time zone of the hours',
+      labelEl: 'Ζώνη ώρας των ωρών',
+      writes: false,
+      options: TIMEZONES.map((tz) => ({ value: tz, labelEn: tz, labelEl: tz })),
+      current: timezone,
+      run: (value) => { if (value) setTimezone(value); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'availability_slots',
+      labelEn: unsaved ? 'Weekly hours (not saved yet)' : 'Weekly hours',
+      labelEl: unsaved ? 'Εβδομαδιαίες ώρες (δεν έχουν αποθηκευτεί)' : 'Εβδομαδιαίες ώρες',
+      rows: storedLoading ? undefined : [...slots].sort((a, b) => a.weekday - b.weekday || a.startTime.localeCompare(b.startTime)).map((sl) => `${dayName(sl.weekday)} ${sl.startTime}-${sl.endTime} (${timezone})`),
+      total: slots.length,
+      sample: false,
+    },
+  ]);
 
   const weeklyHours = slots.reduce((acc, slot) => {
     const [sh, sm] = slot.startTime.split(':').map(Number);
@@ -143,23 +240,43 @@ export default function MentorAvailabilityPage() {
       actions={
         <>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
-            Save Changes
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
+            <BilingualText en="Save Changes" el="Αποθήκευση" compact />
           </Button>
         </>
       }
     >
       <div className="space-y-6">
+        {unsaved && !storedLoading && (
+          <p role="status" className="rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-2.5 text-sm">
+            <BilingualText
+              en={storedSlots && storedSlots.length === 0 && !dirty
+                ? 'Nothing is saved yet - these hours are a starting point. Save to make them bookable.'
+                : 'You have changes that are not saved yet.'}
+              el={storedSlots && storedSlots.length === 0 && !dirty
+                ? 'Δεν έχει αποθηκευτεί τίποτα ακόμη - αυτές οι ώρες είναι μια αφετηρία. Αποθηκεύστε για να γίνουν διαθέσιμες για κρατήσεις.'
+                : 'Έχετε αλλαγές που δεν έχουν αποθηκευτεί.'}
+              wrap
+            />
+          </p>
+        )}
         {/* Status Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium"><BilingualText en="Accepting Requests" el="Δέχεται αιτήματα" compact /></span>
-                <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests" />
+                <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests. Δέχεται αιτήματα" />
               </div>
+              {/* No endpoint stores this yet, so it no longer claims to change
+                  who can see the mentor. */}
               <p className="text-xs text-muted-foreground">
-                {isAccepting ? 'You are visible to mentees' : 'Hidden from mentee discovery'}
+                <BilingualText
+                  en="Kept on this page only for now - it does not yet change your listing."
+                  el="Προς το παρόν μένει μόνο σε αυτή τη σελίδα - δεν αλλάζει ακόμη την καταχώρισή σας."
+                  compact
+                  wrap
+                />
               </p>
             </CardContent>
           </Card>
@@ -170,7 +287,7 @@ export default function MentorAvailabilityPage() {
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
               <p className="page-stat text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
-              <p className="text-xs text-muted-foreground">across {slots.length} time blocks</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en={`across ${slots.length} time blocks`} el={`σε ${slots.length} χρονοθυρίδες`} compact /></p>
             </CardContent>
           </Card>
           <Card>
@@ -281,7 +398,17 @@ export default function MentorAvailabilityPage() {
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Session Settings" el="Ρυθμίσεις συνεδριών" compact /></CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-base"><BilingualText en="Session Settings" el="Ρυθμίσεις συνεδριών" compact /></CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText
+                    en="Only the weekly hours and time zone are saved today; length, buffer and notice are not stored yet."
+                    el="Σήμερα αποθηκεύονται μόνο οι εβδομαδιαίες ώρες και η ζώνη ώρας· διάρκεια, διάλειμμα και προειδοποίηση δεν αποθηκεύονται ακόμη."
+                    compact
+                    wrap
+                  />
+                </p>
+              </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
@@ -335,8 +462,13 @@ export default function MentorAvailabilityPage() {
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-status-info-bg border border-status-info-border">
                   <Info className="icon-sm text-status-info mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground">
-                    Your availability will be shown to mentees in their local timezone. 
-                    Sessions are confirmed via email and appear in your upcoming sessions list.
+                    {/* Nothing on the booking side reads these hours yet, so
+                        this no longer promises mentees see them. */}
+                    <BilingualText
+                      en="Saved hours are stored with your mentor account. Bookings mentees make appear in your upcoming sessions."
+                      el="Οι αποθηκευμένες ώρες κρατιούνται στον λογαριασμό μέντορά σας. Οι κρατήσεις των mentees εμφανίζονται στις προσεχείς συνεδρίες σας."
+                      wrap
+                    />
                   </p>
                 </div>
               </CardContent>

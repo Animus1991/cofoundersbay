@@ -25,6 +25,7 @@ import {
 import { formatRelativeTime } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
+import { usePageControls } from '@/lib/page-controls';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -86,6 +87,51 @@ export default function StartupDealPage() {
     onSuccess: () => { setNote(''); success('Note added'); refresh(); },
     onError: (e) => showError('Could not add the note', e instanceof Error ? e.message : undefined),
   });
+
+  /*
+   * The stage buttons and the star, offered to the assistant. Both go through
+   * `updateDeal`, which writes the one field (and `lastActivityAt`); a stage
+   * change also appends a history event and the first move to "invested"
+   * stamps `investedAt`, which moving back does not clear - the same partial
+   * undo the pipeline board and the move_deal_stage capability declare.
+   */
+  const unloaded = !deal ? 'The deal has not loaded.' : undefined;
+  const unloadedEl = !deal ? 'Η συμφωνία δεν έχει φορτωθεί.' : undefined;
+  usePageControls([
+    {
+      id: 'move_deal_stage',
+      labelEn: 'Move this deal to a stage',
+      labelEl: 'Μετακίνηση συμφωνίας σε στάδιο',
+      writes: true,
+      options: PIPELINE_STAGES.filter((st) => st !== deal?.pipelineStage).map((st) => ({ value: st, labelEn: STAGE_LABEL[st].en, labelEl: STAGE_LABEL[st].el })),
+      current: deal?.pipelineStage,
+      unavailableEn: unloaded,
+      unavailableEl: unloadedEl,
+      undo: () => (deal ? { control: 'move_deal_stage', value: deal.pipelineStage } : undefined),
+      run: async (value) => {
+        if (!deal || !value || value === deal.pipelineStage) return;
+        if (value === 'passed') {
+          const ok = await confirm({
+            title: <BilingualText en={`Pass on ${deal.name}?`} el={`Απόρριψη: ${deal.name};`} />,
+            description: <BilingualText en="It leaves the active pipeline. You can move it back to any stage from here." el="Φεύγει από την ενεργή ροή. Μπορείτε να τη μεταφέρετε ξανά σε οποιοδήποτε στάδιο από εδώ." />,
+            confirmLabel: <BilingualText en="Pass" el="Απόρριψη" compact />,
+          });
+          if (!ok) return;
+        }
+        moveTo.mutate(value as PipelineStage);
+      },
+    },
+    ...([true, false] as const).map((on) => ({
+      id: on ? 'star_deal' : 'unstar_deal',
+      labelEn: on ? 'Star this deal' : 'Remove the star from this deal',
+      labelEl: on ? 'Αστέρι στη συμφωνία' : 'Αφαίρεση αστεριού από τη συμφωνία',
+      writes: true,
+      unavailableEn: unloaded ?? (deal && deal.starred === on ? (on ? 'The deal is already starred.' : 'The deal is not starred.') : undefined),
+      unavailableEl: unloadedEl ?? (deal && deal.starred === on ? (on ? 'Η συμφωνία έχει ήδη αστέρι.' : 'Η συμφωνία δεν έχει αστέρι.') : undefined),
+      undo: () => ({ control: on ? 'unstar_deal' : 'star_deal' }),
+      run: () => { star.mutate(on); },
+    })),
+  ]);
 
   if (isLoading) {
     return (
@@ -188,7 +234,7 @@ export default function StartupDealPage() {
               <CardTitle className="text-base"><BilingualText en="Stage" el="Στάδιο" compact /></CardTitle>
             </CardHeader>
             <CardContent>
-              <ol className="flex flex-wrap gap-2" aria-label="Pipeline stages">
+              <ol className="flex flex-wrap gap-2" aria-label="Pipeline stages. Στάδια ροής">
                 {PIPELINE_STAGES.map((s) => (
                   <li key={s}>
                     <button

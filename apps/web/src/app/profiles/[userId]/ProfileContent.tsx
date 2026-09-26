@@ -45,6 +45,7 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { usePageControls } from '@/lib/page-controls';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -165,6 +166,41 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     );
   };
 
+  /*
+   * Connect, message and share, offered to the assistant. Connecting names no
+   * page-level undo: the request's id is not known here until the status is
+   * read again, and the assistant's own send_connection action carries the
+   * partial withdraw the API allows (pending requests only).
+   */
+  const own = viewerId === userId;
+  const blocked = connStatus?.status === 'blocked';
+  const connected = connStatus?.status === 'accepted';
+  const pending = connStatus?.status === 'pending';
+  const noActor = !viewerId ? 'Sign in first.' : own ? 'This is your own profile.' : blocked ? 'This connection is blocked.' : undefined;
+  const noActorEl = !viewerId ? 'Συνδεθείτε πρώτα.' : own ? 'Αυτό είναι το δικό σας προφίλ.' : blocked ? 'Η σύνδεση είναι αποκλεισμένη.' : undefined;
+  usePageControls([
+    {
+      id: 'connect_with_person',
+      labelEn: 'Send a connection request',
+      labelEl: 'Αποστολή αιτήματος σύνδεσης',
+      writes: true,
+      unavailableEn: noActor ?? (connected ? 'You are already connected.' : pending ? 'A request is already pending.' : undefined),
+      unavailableEl: noActorEl ?? (connected ? 'Είστε ήδη συνδεδεμένοι.' : pending ? 'Υπάρχει ήδη εκκρεμές αίτημα.' : undefined),
+      run: handleConnect,
+    },
+    {
+      id: 'message_person',
+      labelEn: 'Open a conversation with this person',
+      labelEl: 'Άνοιγμα συνομιλίας με αυτό το άτομο',
+      // Opens the thread, creating it when there is none - a write.
+      writes: true,
+      unavailableEn: noActor,
+      unavailableEl: noActorEl,
+      run: handleMessage,
+    },
+    { id: 'copy_profile_link', labelEn: 'Copy the profile link', labelEl: 'Αντιγραφή συνδέσμου προφίλ', writes: false, run: handleShare },
+  ]);
+
   if (isLoading)
     return (
       <AppShell>
@@ -214,14 +250,15 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       return acc;
     }, []);
 
-  const connButtonLabel =
+  const connLabel: [string, string] =
     connStatus?.status === 'blocked'
-      ? 'Blocked'
+      ? ['Blocked', 'Αποκλεισμένο']
       : connStatus?.status === 'accepted'
-      ? 'Connected'
+      ? ['Connected', 'Συνδεδεμένοι']
       : connStatus?.status === 'pending' && connStatus.direction === 'sent'
-        ? 'Request sent'
-        : 'Connect';
+        ? ['Request sent', 'Το αίτημα στάλθηκε']
+        : ['Connect', 'Σύνδεση'];
+  const connButtonLabel = <BilingualText en={connLabel[0]} el={connLabel[1]} compact />;
 
   const isBlocked = connStatus?.status === 'blocked';
   const isConnected = connStatus?.status === 'accepted';
@@ -329,7 +366,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     ) : (
                       <MessageCircle className="icon-sm" aria-hidden="true" />
                     )}
-                    Message
+                    <BilingualText en="Message" el="Μήνυμα" compact />
                   </Button>
                   <AIInsightButton
                     prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
@@ -345,7 +382,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
               {isOwnProfile && (
                 <Button variant="secondary" className="w-full" asChild>
-                  <Link href="/profile/edit" className="w-full">Edit your profile</Link>
+                  <Link href="/profile/edit" className="w-full"><BilingualText en="Edit your profile" el="Επεξεργασία προφίλ" compact /></Link>
                 </Button>
               )}
             </CardContent>

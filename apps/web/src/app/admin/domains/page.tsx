@@ -24,6 +24,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   Globe,
   Plus,
@@ -244,6 +245,16 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
   });
 
   const domains = Array.isArray(data?.domains) ? data.domains : [];
+  usePageList([
+    {
+      id: 'organisation_domains',
+      labelEn: `Domains of ${tenant.displayName || tenant.name}`,
+      labelEl: `Domains του οργανισμού ${tenant.displayName || tenant.name}`,
+      rows: isLoading ? undefined : domains.map((d) => `${d.domainName} · ${d.domainType} · ${d.verificationStatus} · ${d.isActive ? 'active' : 'inactive'}${d.isPrimary ? ' · primary' : ''}`),
+      total: domains.length,
+      sample: false,
+    },
+  ]);
 
   return (
     <div className="space-y-4">
@@ -326,6 +337,32 @@ export default function DomainsAdminPage() {
 
   const tenants = Array.isArray(tenantsData) ? tenantsData : [];
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
+
+  // Picking an organisation is the page's one view control; its domains then
+  // publish themselves from the panel below.
+  usePageControls([
+    {
+      id: 'select_organisation',
+      labelEn: 'Organisation whose domains to show',
+      labelEl: 'Οργανισμός του οποίου τα domains εμφανίζονται',
+      writes: false,
+      options: rowOptions(tenants, (t) => t.id, (t) => t.displayName || t.name),
+      current: selectedTenantId ?? undefined,
+      unavailableEn: tenants.length === 0 ? 'No organisations are listed.' : undefined,
+      unavailableEl: tenants.length === 0 ? 'Δεν υπάρχουν οργανισμοί.' : undefined,
+      run: (value) => { if (value) setSelectedTenantId(value); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'organisations',
+      labelEn: 'Organisations',
+      labelEl: 'Οργανισμοί',
+      rows: isLoading ? undefined : tenants.map((t) => `${t.displayName || t.name} · /${t.slug}`),
+      total: tenants.length,
+      sample: false,
+    },
+  ]);
 
   return (
     <AppShell

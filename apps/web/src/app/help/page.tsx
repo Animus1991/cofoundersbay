@@ -16,6 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { HELP_FAQ_EL, HELP_TOPIC_EL } from '@/lib/i18n/strings-help';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type FAQItem = {
   question: string;
@@ -253,23 +255,26 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
   return (
     <div className="border-b border-border/50 last:border-0">
       <button
+        type="button"
+        aria-expanded={isOpen}
         onClick={onToggle}
         className={cn(
-          'flex w-full items-center justify-between py-4 text-left transition-colors',
+          'flex w-full items-center justify-between py-4 text-left transition-colors focus-ring rounded',
           isOpen ? 'text-primary-accessible' : 'hover:text-primary-accessible text-foreground',
         )}
       >
-        <span className="text-sm font-medium pr-4">{faq.question}</span>
+        <span className="text-sm font-medium pr-4"><BilingualText en={faq.question} el={HELP_FAQ_EL[faq.question]?.q} compact wrap /></span>
         <ChevronDown
           className={cn(
             'icon-sm shrink-0 text-muted-foreground transition-transform duration-200',
             isOpen && 'rotate-180 text-primary-accessible',
           )}
+          aria-hidden="true"
         />
       </button>
       {isOpen && (
         <div className="pb-4 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
-          <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed"><BilingualText en={faq.answer} el={HELP_FAQ_EL[faq.question]?.a} wrap /></p>
         </div>
       )}
     </div>
@@ -299,14 +304,53 @@ export default function HelpPage() {
     faqs: category.faqs.filter(
       (faq) =>
         !searchQuery ||
-        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+        [faq.question, faq.answer, HELP_FAQ_EL[faq.question]?.q ?? '', HELP_FAQ_EL[faq.question]?.a ?? '']
+          .some((text) => text.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
   })).filter((category) => category.faqs.length > 0);
 
   const displayCategories = selectedCategory
     ? filteredCategories.filter((c) => c.id === selectedCategory)
     : filteredCategories;
+
+  // Topic, opening a question and clearing, offered to the assistant; the
+  // questions on screen are published so it can answer from them.
+  const shown = displayCategories.flatMap((c) => c.faqs.map((faq) => ({ c, faq, key: `${c.id}-${c.faqs.indexOf(faq)}` })));
+  usePageControls([
+    choiceControl('help_topic', 'Help topic', 'Θέμα βοήθειας', [
+      { value: 'all', en: 'All topics', el: 'Όλα τα θέματα' },
+      ...faqCategories.map((c) => ({ value: c.id, en: c.title, el: HELP_TOPIC_EL[c.id]?.title ?? c.title })),
+    ], selectedCategory ?? 'all', (v) => setSelectedCategory(v === 'all' ? null : v)),
+    {
+      id: 'open_question',
+      labelEn: 'Open a question',
+      labelEl: 'Άνοιγμα ερώτησης',
+      writes: false,
+      options: shown.map(({ faq, key }) => ({ value: key, labelEn: faq.question, labelEl: HELP_FAQ_EL[faq.question]?.q ?? faq.question })),
+      unavailableEn: shown.length === 0 ? 'No question matches the search.' : undefined,
+      unavailableEl: shown.length === 0 ? 'Καμία ερώτηση δεν ταιριάζει με την αναζήτηση.' : undefined,
+      run: (value) => { if (value) setOpenFAQs((prev) => new Set(prev).add(value)); },
+    },
+    {
+      id: 'clear_filters',
+      labelEn: 'Clear the search and topic',
+      labelEl: 'Καθαρισμός αναζήτησης και θέματος',
+      writes: false,
+      unavailableEn: !searchQuery && !selectedCategory ? 'No filter is set.' : undefined,
+      unavailableEl: !searchQuery && !selectedCategory ? 'Δεν υπάρχει φίλτρο.' : undefined,
+      run: () => { setSearchQuery(''); setSelectedCategory(null); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'help_questions',
+      labelEn: 'Help questions',
+      labelEl: 'Ερωτήσεις βοήθειας',
+      rows: shown.map(({ c, faq }) => `${c.title}: ${faq.question} — ${faq.answer}`),
+      total: faqCategories.reduce((sum, c) => sum + c.faqs.length, 0),
+      sample: false,
+    },
+  ]);
 
   return (
     <AppShell
@@ -354,7 +398,11 @@ export default function HelpPage() {
           </div>
           {searchQuery && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {displayCategories.reduce((sum, c) => sum + c.faqs.length, 0)} result{displayCategories.reduce((sum, c) => sum + c.faqs.length, 0) !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
+              <BilingualText
+                en={`${shown.length} result${shown.length !== 1 ? 's' : ''} for “${searchQuery}”`}
+                el={`${shown.length} ${shown.length !== 1 ? 'αποτελέσματα' : 'αποτέλεσμα'} για «${searchQuery}»`}
+                compact
+              />
             </p>
           )}
         </div>
@@ -362,6 +410,8 @@ export default function HelpPage() {
         {/* Category Filter Pills */}
         <div className="flex flex-wrap gap-2">
           <button
+            type="button"
+            aria-pressed={selectedCategory === null}
             onClick={() => setSelectedCategory(null)}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
@@ -378,6 +428,8 @@ export default function HelpPage() {
           {faqCategories.map((category) => (
             <button
               key={category.id}
+              type="button"
+              aria-pressed={selectedCategory === category.id}
               onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id)}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
@@ -386,8 +438,8 @@ export default function HelpPage() {
                   : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
               )}
             >
-              <category.icon className="h-3 w-3" />
-              {category.title}
+              <category.icon className="h-3 w-3" aria-hidden="true" />
+              <BilingualText en={category.title} el={HELP_TOPIC_EL[category.id]?.title} compact />
             </button>
           ))}
         </div>
@@ -396,8 +448,12 @@ export default function HelpPage() {
         {(selectedCategory || searchQuery) && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Showing {displayCategories.length} topic{displayCategories.length !== 1 ? 's' : ''}
-              {selectedCategory && ` in "${faqCategories.find(c => c.id === selectedCategory)?.title}"`}
+              <BilingualText
+                en={`Showing ${displayCategories.length} topic${displayCategories.length !== 1 ? 's' : ''}${selectedCategory ? ` in "${faqCategories.find((c) => c.id === selectedCategory)?.title}"` : ''}`}
+                el={`${displayCategories.length} ${displayCategories.length !== 1 ? 'θέματα' : 'θέμα'}${selectedCategory ? ` στο «${HELP_TOPIC_EL[selectedCategory]?.title ?? ''}»` : ''}`}
+                compact
+                wrap
+              />
             </p>
             <button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
@@ -430,11 +486,11 @@ export default function HelpPage() {
                       <category.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm font-semibold">{category.title}</CardTitle>
-                      <p className="text-xs text-muted-foreground">{category.description}</p>
+                      <CardTitle className="text-sm font-semibold"><BilingualText en={category.title} el={HELP_TOPIC_EL[category.id]?.title} compact /></CardTitle>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={category.description} el={HELP_TOPIC_EL[category.id]?.description} compact wrap /></p>
                     </div>
                     <Badge variant="outline" className="text-2xs shrink-0">
-                      {category.faqs.length} FAQ{category.faqs.length !== 1 ? 's' : ''}
+                      <BilingualText en={`${category.faqs.length} FAQ${category.faqs.length !== 1 ? 's' : ''}`} el={`${category.faqs.length} ${category.faqs.length !== 1 ? 'ερωτήσεις' : 'ερώτηση'}`} compact />
                     </Badge>
                   </div>
                 </CardHeader>
@@ -471,9 +527,11 @@ export default function HelpPage() {
                 </a>
               </Button>
               <Button variant="outline" className="gap-2" asChild>
+                {/* It opens the reader's own inbox; there is no live support
+                    chat behind it, so it no longer says "Live chat". */}
                 <Link href="/messages">
-                  <MessageCircle className="icon-sm" />
-                  <BilingualText en="Live Chat" el="Ζωντανή συνομιλία" compact />
+                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Your messages" el="Τα μηνύματά σας" compact />
                 </Link>
               </Button>
             </div>

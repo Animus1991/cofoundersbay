@@ -1099,6 +1099,13 @@ function previewIsoInDays(days: number, hour = 14): string {
   return d.toISOString();
 }
 
+/** The demo mentor's weekly hours: the Tuesday and Thursday slots /mentor/* books into. */
+let previewAvailability: { id: string; mentorId: string; weekday: number; startTime: string; endTime: string; timezone: string | null }[] = [
+  { id: 'avail-1', mentorId: 'preview-demo-user', weekday: 2, startTime: '10:00', endTime: '13:00', timezone: 'Europe/Athens' },
+  { id: 'avail-2', mentorId: 'preview-demo-user', weekday: 4, startTime: '10:00', endTime: '14:00', timezone: 'Europe/Athens' },
+  { id: 'avail-3', mentorId: 'preview-demo-user', weekday: 5, startTime: '16:00', endTime: '18:00', timezone: 'Europe/Athens' },
+];
+
 const PREVIEW_COACHING_REL_ID = 'preview-rel-sarah';
 
 /**
@@ -3344,11 +3351,28 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // `/api/sso/memberships` is answered by previewOrgApi: the reader is a
   // program partner at the demo's one organisation (demo/org-world.ts).
 
+  // The reader's weekly hours as a mentor. PUT replaces them, as the API does,
+  // and keeps them for the rest of the preview session.
+  if (pathname === '/api/mentor/availability') {
+    if (method === 'PUT') {
+      const sent = (body ?? {}) as { slots?: { weekday: number; startTime: string; endTime: string; timezone?: string }[] };
+      previewAvailability = (sent.slots ?? []).map((slot, i) => ({
+        id: `avail-${i + 1}`,
+        mentorId: ME_ID,
+        weekday: slot.weekday,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        timezone: slot.timezone ?? null,
+      }));
+    }
+    return { slots: previewAvailability };
+  }
+
   // Invitations the demo account has sent: two joined, two pending, one
   // lapsed. Same people the organisation's roster and the pipeline use.
   if (pathname === '/api/invites' && method === 'POST') {
     // Sending an invite in the demo answers with the invite it would create;
-    // nothing is stored, so the list above does not grow.
+    // nothing is stored, so the list below does not grow.
     const sent = (body ?? {}) as { email?: string; message?: string };
     return { invite: { id: `inv-${Date.now()}`, email: sent.email ?? '', message: sent.message ?? null, status: 'pending', createdAt: new Date().toISOString(), acceptedAt: null, expiresAt: previewIsoInDays(30) } };
   }

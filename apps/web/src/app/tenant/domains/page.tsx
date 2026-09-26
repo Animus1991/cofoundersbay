@@ -17,6 +17,7 @@ import {
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -50,7 +51,7 @@ function CopyButton({ value }: { value: string }) {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
+    <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy" aria-label="Copy. Αντιγραφή">
       {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
     </button>
   );
@@ -225,7 +226,7 @@ function DomainRow({
               {domain.isPrimary && (
                 <Badge className="bg-primary/10 text-primary-accessible border-primary/20 text-xs"><BilingualText en="Primary" el="Κύριος" compact /></Badge>
               )}
-              <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
+              <Badge variant="outline" className="text-xs"><BilingualText en={domain.domainType === 'custom' ? 'Custom' : 'Subdomain'} el={domain.domainType === 'custom' ? 'Προσαρμοσμένο' : 'Υποτομέας'} compact /></Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
                 ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
@@ -238,12 +239,21 @@ function DomainRow({
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+                <BilingualText
+                  en={`Verified ${new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`}
+                  el={`Επαληθεύτηκε ${new Date(domain.verifiedAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`}
+                  compact
+                />
               </p>
             )}
             {domain.lastVerificationCheck && domain.verificationStatus === 'failed' && (
               <p className="text-xs text-status-danger">
-                Last check: {new Date(domain.lastVerificationCheck).toLocaleString('en-GB', { timeZone: 'UTC' })} — DNS record not found
+                <BilingualText
+                  en={`Last check: ${new Date(domain.lastVerificationCheck).toLocaleString('en-GB', { timeZone: 'UTC' })} — DNS record not found`}
+                  el={`Τελευταίος έλεγχος: ${new Date(domain.lastVerificationCheck).toLocaleString('el-GR', { timeZone: 'UTC' })} — δεν βρέθηκε εγγραφή DNS`}
+                  compact
+                  wrap
+                />
               </p>
             )}
           </div>
@@ -258,8 +268,8 @@ function DomainRow({
                 disabled={loadingDns}
                 className="gap-1 h-7 text-xs"
               >
-                <Link2 className="icon-sm" />
-                DNS Setup
+                <Link2 className="icon-sm" aria-hidden="true" />
+                <BilingualText en="DNS Setup" el="Ρύθμιση DNS" compact />
                 {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
               </Button>
               <Button
@@ -287,12 +297,14 @@ function DomainRow({
             size="sm" variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending || (domain.verificationStatus !== 'verified' && !domain.isActive)}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-status-warning' : 'text-status-success'}`}
           >
-            <Power className="icon-sm" />
-            {domain.isActive ? 'Deactivate' : 'Activate'}
+            <Power className="icon-sm" aria-hidden="true" />
+            {domain.isActive
+              ? <BilingualText en="Deactivate" el="Απενεργοποίηση" compact />
+              : <BilingualText en="Activate" el="Ενεργοποίηση" compact />}
           </Button>
-          <Button aria-label="Remove domain"
+          <Button aria-label={`Remove ${domain.domainName}. Αφαίρεση ${domain.domainName}`}
             size="sm" variant="ghost"
             onClick={() => void handleRemove()}
             disabled={remove.isPending}
@@ -347,6 +359,136 @@ export default function TenantDomainsPage() {
   const domains = data?.domains ?? [];
   const activeDomains = domains.filter(d => d.isActive);
   const primaryDomain = domains.find(d => d.isPrimary);
+
+  /*
+   * The row buttons, offered to the assistant. Read against
+   * TenantDomainService: `toggleDomainActive` writes only `isActive`, so
+   * activate and deactivate undo each other (activating still refuses an
+   * unverified domain). `setPrimaryDomain` clears every other primary and sets
+   * one, so setting the previous primary back restores exactly that state; a
+   * tenant that had none has nothing to go back to. Removing deletes the row.
+   */
+  const confirm = useConfirm();
+  const domainRows = (list: TenantDomainItem[]) => rowOptions(list, (d) => d.id, (d) => d.domainName);
+  const noDomains = domains.length === 0 ? 'No domains yet.' : undefined;
+  const noDomainsEl = domains.length === 0 ? 'Δεν υπάρχουν ακόμη domains.' : undefined;
+  const after = () => void refetch();
+  const activeCommand = (id: string, en: string, el: string, next: boolean, back: string) => {
+    const eligible = domains.filter((d) => d.isActive !== next && (!next || d.verificationStatus === 'verified'));
+    return {
+      id,
+      labelEn: en,
+      labelEl: el,
+      writes: true,
+      options: domainRows(eligible),
+      unavailableEn: eligible.length === 0 ? (next ? 'No verified domain is inactive.' : 'No domain is active.') : undefined,
+      unavailableEl: eligible.length === 0 ? (next ? 'Κανένα επαληθευμένο domain δεν είναι ανενεργό.' : 'Κανένα domain δεν είναι ενεργό.') : undefined,
+      undo: (value?: string) => (value ? { control: back, value } : undefined),
+      run: async (value?: string) => {
+        if (!value) return;
+        try {
+          await toggleTenantDomainActive(tenantId, value, next);
+          toastSuccess(next ? 'Domain activated' : 'Domain deactivated');
+        } catch (e) {
+          toastError((e as Error).message);
+        } finally {
+          after();
+        }
+      },
+    };
+  };
+  const unverified = domains.filter((d) => d.domainType === 'custom' && d.verificationStatus !== 'verified');
+  const primaryCandidates = domains.filter((d) => !d.isPrimary && d.isActive);
+  usePageControls([
+    {
+      id: 'verify_domain',
+      labelEn: 'Check a custom domain\'s DNS',
+      labelEl: 'Έλεγχος DNS για προσαρμοσμένο domain',
+      writes: true,
+      options: domainRows(unverified),
+      unavailableEn: unverified.length === 0 ? 'No custom domain is waiting for verification.' : undefined,
+      unavailableEl: unverified.length === 0 ? 'Κανένα προσαρμοσμένο domain δεν περιμένει επαλήθευση.' : undefined,
+      run: async (value) => {
+        if (!value) return;
+        try {
+          const res = await verifyTenantDomain(tenantId, value);
+          if (res.verified) toastSuccess('Domain verified successfully');
+          else toastError(res.message);
+        } catch (e) {
+          toastError((e as Error).message);
+        } finally {
+          after();
+        }
+      },
+    },
+    activeCommand('activate_domain', 'Activate a domain', 'Ενεργοποίηση domain', true, 'deactivate_domain'),
+    activeCommand('deactivate_domain', 'Deactivate a domain', 'Απενεργοποίηση domain', false, 'activate_domain'),
+    {
+      id: 'set_primary_domain',
+      labelEn: 'Make a domain the primary one',
+      labelEl: 'Ορισμός κύριου domain',
+      writes: true,
+      options: domainRows(primaryCandidates),
+      unavailableEn: primaryCandidates.length === 0 ? 'No other active domain to make primary.' : undefined,
+      unavailableEl: primaryCandidates.length === 0 ? 'Δεν υπάρχει άλλο ενεργό domain για κύριο.' : undefined,
+      undo: () => (primaryDomain ? { control: 'set_primary_domain', value: primaryDomain.id } : undefined),
+      run: async (value) => {
+        if (!value) return;
+        try {
+          await setTenantPrimaryDomain(tenantId, value);
+          toastSuccess('Primary domain updated');
+        } catch (e) {
+          toastError((e as Error).message);
+        } finally {
+          after();
+        }
+      },
+    },
+    {
+      id: 'remove_domain',
+      labelEn: 'Remove a domain',
+      labelEl: 'Αφαίρεση domain',
+      writes: true,
+      options: domainRows(domains),
+      unavailableEn: noDomains,
+      unavailableEl: noDomainsEl,
+      run: async (value) => {
+        const domain = domains.find((d) => d.id === value);
+        if (!domain) return;
+        const ok = await confirm({
+          title: <BilingualText en={`Remove domain “${domain.domainName}”?`} el={`Αφαίρεση domain “${domain.domainName}”;`} />,
+          description: (
+            <BilingualText
+              en="Sign-in and links on this domain will stop working for your members."
+              el="Η σύνδεση και οι σύνδεσμοι σε αυτό το domain θα σταματήσουν να λειτουργούν για τα μέλη σας."
+            />
+          ),
+          confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
+        });
+        if (!ok) return;
+        try {
+          await deleteTenantDomain(tenantId, domain.id);
+          toastSuccess('Domain removed');
+        } catch (e) {
+          toastError((e as Error).message);
+        } finally {
+          after();
+        }
+      },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'domains',
+      labelEn: 'Domains',
+      labelEl: 'Domains',
+      rows: data
+        ? domains.map((d) => `${d.domainName} · ${d.domainType} · ${d.verificationStatus} · ${d.isActive ? 'active' : 'inactive'}${d.isPrimary ? ' · primary' : ''}`)
+        : undefined,
+      total: domains.length,
+      sample: false,
+    },
+  ]);
 
   if (!tenantId) {
     return (

@@ -37,6 +37,7 @@ import {
   type AdminUserItem,
 } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
 
 // The API's Role enum; ChangeUserRoleDto accepts nothing else.
@@ -131,12 +132,16 @@ export default function AdminUserDetailPage() {
   const setStatus = async (next: AdminUserItem['moderationStatus']) => {
     if (next !== 'active') {
       const ok = await confirm({
-        title: next === 'banned' ? `Ban ${name}?` : `Suspend ${name}?`,
+        title: next === 'banned'
+          ? <BilingualText en={`Ban ${name}?`} el={`Αποκλεισμός: ${name};`} />
+          : <BilingualText en={`Suspend ${name}?`} el={`Αναστολή: ${name};`} />,
         description:
           next === 'banned'
-            ? 'They lose access to the platform until an admin reactivates the account.'
-            : 'They cannot sign in while suspended. Reactivate the account to restore access.',
-        confirmLabel: next === 'banned' ? 'Ban account' : 'Suspend account',
+            ? <BilingualText en="They lose access to the platform until an admin reactivates the account." el="Χάνει την πρόσβαση στην πλατφόρμα μέχρι να επανενεργοποιήσει τον λογαριασμό ένας διαχειριστής." />
+            : <BilingualText en="They cannot sign in while suspended. Reactivate the account to restore access." el="Δεν μπορεί να συνδεθεί όσο είναι σε αναστολή. Η επανενεργοποίηση επαναφέρει την πρόσβαση." />,
+        confirmLabel: next === 'banned'
+          ? <BilingualText en="Ban account" el="Αποκλεισμός λογαριασμού" compact />
+          : <BilingualText en="Suspend account" el="Αναστολή λογαριασμού" compact />,
       });
       if (!ok) return;
     }
@@ -144,6 +149,61 @@ export default function AdminUserDetailPage() {
   };
 
   const dash = '—';
+
+  /*
+   * Status and role, offered to the assistant. Each writes one field
+   * (admin.service `updateUserModeration`, `changeUserRole`), so setting the
+   * previous value back is the undo - the same one /admin/users names. The
+   * audit entry each write adds stays.
+   */
+  const unloaded = !user ? 'The account has not loaded.' : undefined;
+  const unloadedEl = !user ? 'Ο λογαριασμός δεν έχει φορτωθεί.' : undefined;
+  usePageControls([
+    {
+      id: 'set_account_status',
+      labelEn: 'Set the account status',
+      labelEl: 'Ορισμός κατάστασης λογαριασμού',
+      writes: true,
+      options: (Object.keys(STATUS) as AdminUserItem['moderationStatus'][])
+        .filter((k) => k !== user?.moderationStatus)
+        .map((k) => ({ value: k, labelEn: STATUS[k].en, labelEl: STATUS[k].el })),
+      current: user?.moderationStatus,
+      unavailableEn: unloaded,
+      unavailableEl: unloadedEl,
+      undo: () => (user ? { control: 'set_account_status', value: user.moderationStatus } : undefined),
+      run: async (value) => { if (value) await setStatus(value as AdminUserItem['moderationStatus']); },
+    },
+    {
+      id: 'change_role',
+      labelEn: 'Change the role',
+      labelEl: 'Αλλαγή ρόλου',
+      writes: true,
+      options: ROLES.filter((r) => r.value !== user?.role).map((r) => ({ value: r.value, labelEn: r.en, labelEl: r.el })),
+      current: user?.role,
+      unavailableEn: unloaded,
+      unavailableEl: unloadedEl,
+      undo: () => (user ? { control: 'change_role', value: user.role } : undefined),
+      run: (value) => { if (user && value && value !== user.role) role.mutate(value); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'reports_against',
+      labelEn: 'Reports against this account',
+      labelEl: 'Αναφορές κατά του λογαριασμού',
+      rows: reportsData ? against.map((r) => `${r.reason ?? 'report'} · ${r.status}`) : undefined,
+      total: against.length,
+      sample: false,
+    },
+    {
+      id: 'admin_history',
+      labelEn: 'Admin actions on this account',
+      labelEl: 'Διαχειριστικές ενέργειες στον λογαριασμό',
+      rows: auditData ? history.map((l) => `${l.action} · ${l.createdAt}`) : undefined,
+      total: history.length,
+      sample: false,
+    },
+  ]);
 
   return (
     <AppShell
@@ -160,11 +220,16 @@ export default function AdminUserDetailPage() {
         </Button>
       }
     >
-      <HelpCallout id="admin-user-detail" title="Admin user detail">
+      <HelpCallout id="admin-user-detail" title="Admin user detail" titleEl="Στοιχεία χρήστη">
         <p>
           Changes here affect platform access only; they do not delete the person&apos;s public profile or
           history. Use <strong>Suspend</strong> for a temporary lockout and <strong>Ban</strong> for a lasting one;
           both are undone with <strong>Reactivate</strong>.
+        </p>
+        <p lang="el" className="mt-2 text-muted-foreground">
+          Οι αλλαγές εδώ επηρεάζουν μόνο την πρόσβαση· δεν διαγράφουν το δημόσιο προφίλ ή το ιστορικό του ατόμου.
+          Η <strong>αναστολή</strong> είναι προσωρινή, ο <strong>αποκλεισμός</strong> διαρκής· και τα δύο
+          αναιρούνται με <strong>επανενεργοποίηση</strong>.
         </p>
       </HelpCallout>
 

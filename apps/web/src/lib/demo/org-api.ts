@@ -27,6 +27,7 @@ import {
   type OrgParticipant,
   type OrgProgram,
 } from './org-world';
+import type { CohortDetail, CohortItem } from '@/lib/api';
 
 type Iso = (days: number, hour?: number) => string;
 
@@ -334,6 +335,31 @@ function tenantMembers(iso: Iso) {
     provisionedViaSSO: r.email.endsWith('@aegeanlab.example'),
     user: { id: userId, email: r.email, role: r.role, profile: { displayName: r.name, avatarUrl: null, headline: r.headline } },
   }));
+}
+
+/** Offsets in days from `now`, at an hour in UTC - what the preview API's dates are. */
+function isoFrom(now: number): Iso {
+  return (days, hour = 14) => {
+    const d = new Date(now + days * 86_400_000);
+    d.setUTCHours(hour, 0, 0, 0);
+    return d.toISOString();
+  };
+}
+
+/**
+ * The organisation's cohorts, for a page showing samples outside the preview
+ * session (a real account with sample data on). The same rows the preview API
+ * serves, so both paths show one organisation. Call after mount: the dates
+ * are counted from `now`.
+ */
+export function demoCohortItems(now: number): CohortItem[] {
+  return ORG_PROGRAMS.map((p) => cohortItem(p, isoFrom(now)));
+}
+
+/** One cohort in the shape `GET /org/:slug/cohorts/:id` returns; the first when the id is not one of them. */
+export function demoCohortDetail(cohortId: string, now: number): CohortDetail {
+  const prog = ORG_PROGRAMS.find((p) => p.cohortId === cohortId || p.cohortId.replace(/^cohort-/, '') === cohortId) ?? ORG_PROGRAMS[0];
+  return cohortDetail(prog, isoFrom(now)) as CohortDetail;
 }
 
 export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso): unknown {

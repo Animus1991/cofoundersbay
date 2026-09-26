@@ -74,6 +74,7 @@ export const TOAST_EL: Record<string, string> = {
   "Could not add to pipeline": "Δεν προστέθηκε στη ροή επενδύσεων",
   "Could not add to the pipeline": "Δεν προστέθηκε στη ροή επενδύσεων",
   "Could not apply": "Η αίτηση δεν υποβλήθηκε",
+  "Could not save your availability": "Η διαθεσιμότητά σας δεν αποθηκεύτηκε",
   "Could not archive the program": "Το πρόγραμμα δεν αρχειοθετήθηκε",
   "Could not archive the programme": "Το πρόγραμμα δεν αρχειοθετήθηκε",
   "Could not cancel the session": "Η συνεδρία δεν ακυρώθηκε",

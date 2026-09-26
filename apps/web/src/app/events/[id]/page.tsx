@@ -15,6 +15,7 @@ import { useToast } from '@/components/ui/toast';
 import { getEvent, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { usePageControls } from '@/lib/page-controls';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -118,6 +119,49 @@ export default function EventDetailPage() {
       showError('Could not copy', 'The browser refused clipboard access.');
     }
   };
+
+  /*
+   * RSVP, calendar and share, offered to the assistant. `upsertRsvp` writes
+   * the status, and "going" also notifies the host and is capped by capacity,
+   * so an RSVP names its previous answer as the undo only when neither side
+   * is "going": interested and not going swap one field and nothing else.
+   */
+  const previous = event?.viewerRsvp ?? null;
+  const unloaded = !event ? 'The event has not loaded.' : undefined;
+  const unloadedEl = !event ? 'Η εκδήλωση δεν έχει φορτωθεί.' : undefined;
+  usePageControls([
+    {
+      id: 'rsvp',
+      labelEn: 'RSVP to this event',
+      labelEl: 'Απάντηση για την εκδήλωση',
+      writes: true,
+      options: RSVP_OPTIONS.map((o) => ({ value: o.value, labelEn: o.en, labelEl: o.el })),
+      current: previous ?? undefined,
+      unavailableEn: unloaded,
+      unavailableEl: unloadedEl,
+      undo: (value) =>
+        previous && previous !== 'going' && value && value !== 'going' && value !== previous
+          ? { control: 'rsvp', value: previous }
+          : undefined,
+      run: async (value) => { if (value) await respond(value as Rsvp); },
+    },
+    {
+      id: 'add_to_calendar',
+      labelEn: 'Download the event for my calendar (.ics)',
+      labelEl: 'Λήψη της εκδήλωσης για το ημερολόγιο (.ics)',
+      writes: false,
+      unavailableEn: unloaded,
+      unavailableEl: unloadedEl,
+      run: () => { if (event) downloadIcs(event); },
+    },
+    {
+      id: 'copy_event_link',
+      labelEn: 'Copy the event link',
+      labelEl: 'Αντιγραφή συνδέσμου εκδήλωσης',
+      writes: false,
+      run: share,
+    },
+  ]);
 
   if (isLoading) {
     return (

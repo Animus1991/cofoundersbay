@@ -28,6 +28,8 @@ import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { UnavailableButton } from '@/components/common/UnavailableButton';
+import { BilingualText } from '@/components/common/BilingualText';
+import { usePageList } from '@/lib/page-controls';
 
 type ApiKey = {
   id: string;
@@ -58,32 +60,32 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex items-center gap-2">
             <p className="font-medium">{apiKey.name}</p>
             {apiKey.isActive ? (
-              <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border"><CheckCircle className="mr-1 icon-sm" />Active</Badge>
+              <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Active" el="Ενεργό" compact /></Badge>
             ) : (
-              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-muted-foreground">Inactive</Badge>
+              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
             <code className="text-xs font-mono bg-muted px-2 py-1 rounded">{revealed ? revealedKey : maskedKey}</code>
-            <Button aria-label="Hide" variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
+            <Button aria-label={revealed ? 'Hide key. Απόκρυψη κλειδιού' : 'Show key. Εμφάνιση κλειδιού'} aria-pressed={revealed} variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
               {revealed ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
             </Button>
-            <Button aria-label="Copy key" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(revealedKey)}><Copy className="icon-sm" aria-hidden="true" /></Button>
+            <Button aria-label="Copy key. Αντιγραφή κλειδιού" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(revealedKey)}><Copy className="icon-sm" aria-hidden="true" /></Button>
           </div>
           <div className="flex flex-wrap gap-1 mt-2">
             {apiKey.scopes.map(s => (
               <Badge key={s} variant="secondary" size="sm">{s}</Badge>
             ))}
           </div>
-          <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" />Created {apiKey.createdAt}</span>
-            {apiKey.lastUsed && <span>Last used {apiKey.lastUsed}</span>}
-            {apiKey.expiresAt && <span className="text-status-warning">Expires {apiKey.expiresAt}</span>}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" /><BilingualText en={`Created ${apiKey.createdAt}`} el={`Δημιουργήθηκε ${apiKey.createdAt}`} compact /></span>
+            {apiKey.lastUsed && <span><BilingualText en={`Last used ${apiKey.lastUsed}`} el={`Τελευταία χρήση ${apiKey.lastUsed}`} compact /></span>}
+            {apiKey.expiresAt && <span className="text-status-warning"><BilingualText en={`Expires ${apiKey.expiresAt}`} el={`Λήγει ${apiKey.expiresAt}`} compact /></span>}
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
+            <Button aria-label="More options. Περισσότερες επιλογές" variant="ghost" size="icon" className="shrink-0">
               <MoreVertical className="icon-sm" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
@@ -102,6 +104,18 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
 export default function TenantApiKeysPage() {
   const { showDemoData } = useDemoData();
   const keys = showDemoData ? MOCK_KEYS : [];
+
+  // Names and scopes only - never a key, sample or not.
+  usePageList([
+    {
+      id: 'api_keys',
+      labelEn: 'API keys',
+      labelEl: 'Κλειδιά API',
+      rows: keys.map((k) => `${k.name} · ${k.isActive ? 'active' : 'inactive'} · ${k.scopes.join(', ')}`),
+      total: keys.length,
+      sample: keys.length > 0,
+    },
+  ]);
 
   return (
     <AppShell
@@ -128,8 +142,14 @@ export default function TenantApiKeysPage() {
         )}
         <Card className="border-status-warning-border bg-status-warning-bg">
           <CardContent className="p-4 flex items-center gap-3">
-            <Shield className="icon-md text-status-warning shrink-0" />
-            <p className="text-sm">API keys grant full access to your tenant's resources. Store them securely and never share them publicly.</p>
+            <Shield className="icon-md text-status-warning shrink-0" aria-hidden="true" />
+            <p className="text-sm">
+              <BilingualText
+                en="API keys grant full access to your tenant's resources. Store them securely and never share them publicly."
+                el="Τα κλειδιά API δίνουν πλήρη πρόσβαση στους πόρους του οργανισμού σας. Φυλάξτε τα με ασφάλεια και μην τα δημοσιεύετε ποτέ."
+                wrap
+              />
+            </p>
           </CardContent>
         </Card>
 

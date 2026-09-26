@@ -23,6 +23,7 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { usePageControls } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
@@ -227,6 +228,56 @@ export default function MatchDetailPage() {
     recordMatchFeedback({ targetUserId, feedback: 'accepted', connectionStarted: true }).catch(() => {});
   };
 
+  /*
+   * Shortlist, propose and copy, offered to the assistant. Saving is undone
+   * by removing (the shortlist_add declaration: `deleteMany`, nobody told);
+   * removing names no undo because it drops the entry's private note.
+   */
+  usePageControls([
+    {
+      id: 'save_to_shortlist',
+      labelEn: 'Save this person to my shortlist',
+      labelEl: 'Αποθήκευση στη λίστα επιλογών',
+      writes: true,
+      unavailableEn: shortlisted ? 'Already on your shortlist.' : undefined,
+      unavailableEl: shortlisted ? 'Είναι ήδη στη λίστα σας.' : undefined,
+      undo: () => ({ control: 'remove_from_shortlist' }),
+      run: () => { if (!shortlisted) void handleShortlist(); },
+    },
+    {
+      id: 'remove_from_shortlist',
+      labelEn: 'Remove this person from my shortlist',
+      labelEl: 'Αφαίρεση από τη λίστα επιλογών',
+      writes: true,
+      unavailableEn: !shortlisted ? 'Not on your shortlist.' : undefined,
+      unavailableEl: !shortlisted ? 'Δεν είναι στη λίστα σας.' : undefined,
+      run: () => { if (shortlisted) void handleShortlist(); },
+    },
+    {
+      id: 'propose_collaboration',
+      labelEn: 'Send a collaboration request',
+      labelEl: 'Αποστολή αιτήματος συνεργασίας',
+      writes: true,
+      unavailableEn: connectMutation.isSuccess ? 'The request was sent.' : undefined,
+      unavailableEl: connectMutation.isSuccess ? 'Το αίτημα στάλθηκε.' : undefined,
+      run: handlePropose,
+    },
+    {
+      id: 'copy_match_link',
+      labelEn: 'Copy the link to this comparison',
+      labelEl: 'Αντιγραφή συνδέσμου σύγκρισης',
+      writes: false,
+      run: async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          addToast({ type: 'success', title: bilingualInline('Link copied', 'Ο σύνδεσμος αντιγράφηκε') });
+        } catch {
+          addToast({ type: 'error', title: bilingualInline('Could not copy the link', 'Δεν αντιγράφηκε ο σύνδεσμος') });
+        }
+      },
+    },
+  ]);
+
   if (isLoading) {
     return (
       <AppShell>
@@ -253,8 +304,8 @@ export default function MatchDetailPage() {
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Info className="icon-xl text-muted-foreground" />
-          <p className="text-muted-foreground">Could not load compatibility data.</p>
-          <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
+          <p className="text-muted-foreground"><BilingualText en="Could not load compatibility data." el="Τα στοιχεία συμβατότητας δεν φορτώθηκαν." compact wrap /></p>
+          <Button variant="outline" onClick={() => router.back()}><BilingualText en="Go Back" el="Επιστροφή" compact /></Button>
         </div>
       </AppShell>
     );

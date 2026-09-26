@@ -401,6 +401,12 @@ describe('pages that offer controls', () => {
       'src/app/settings/notifications/page.tsx': 'switches per notification type; nothing is listed',
       'src/app/settings/ai/page.tsx': 'a preferences form; nothing is listed',
       'src/app/projects/[projectId]/page.tsx': 'one project, not a list',
+      'src/app/admin/analytics/page.tsx': 'platform totals and role charts, published as the page snapshot',
+      'src/app/events/[id]/page.tsx': 'one event, not a list',
+      'src/app/programs/[id]/page.tsx': 'one programme, not a list',
+      'src/app/startups/[id]/page.tsx': 'one deal: its stage and star, not a list',
+      'src/app/profiles/[userId]/ProfileContent.tsx': 'one person\'s profile, not a list',
+      'src/app/matches/[userId]/page.tsx': 'one pairing\'s compatibility, not a list',
     };
     const missing = users.filter((f) => {
       const s = readFileSync(f, 'utf8');

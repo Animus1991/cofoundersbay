@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/select';
 import { useState } from 'react';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const UserRoleChart = dynamic(
   () => import('../dashboard/Charts').then((m) => ({ default: m.UserRoleChart })),
@@ -80,6 +82,27 @@ export default function AdminAnalyticsPage() {
   };
   const dash = '\u2014';
 
+  const exportMetrics = () =>
+    downloadCsv('platform-analytics', ['metric', 'value'], [
+      ...Object.entries(METRICS).map(([k, v]) => [k, v ?? '']),
+      ...Object.entries(byRole).map(([role, n]) => [`users_${role}`, n as number]),
+    ]);
+  // The range, refresh and export, offered to the assistant. Analytics
+  // publish no list: the figures are the page snapshot.
+  usePageControls([
+    choiceControl('time_range', 'Time range', 'Χρονικό διάστημα', RANGES.map((r) => ({ value: r.value, en: r.en, el: r.el })), range, (v) => setRange(v as Range)),
+    { id: 'refresh', labelEn: 'Refresh the figures', labelEl: 'Ανανέωση στοιχείων', writes: false, run: () => { void refetch(); } },
+    {
+      id: 'export_csv',
+      labelEn: 'Export the figures (CSV)',
+      labelEl: 'Εξαγωγή στοιχείων (CSV)',
+      writes: false,
+      unavailableEn: !stats ? 'The figures have not loaded.' : undefined,
+      unavailableEl: !stats ? 'Τα στοιχεία δεν έχουν φορτωθεί.' : undefined,
+      run: exportMetrics,
+    },
+  ]);
+
   return (
     <AppShell
       title="Global analytics"
@@ -89,30 +112,25 @@ export default function AdminAnalyticsPage() {
       actions={
         <div className="flex flex-wrap gap-2">
           <Select value={range} onValueChange={(v) => setRange(v as Range)}>
-            <SelectTrigger aria-label="Time range" className="w-[150px] h-9">
+            <SelectTrigger aria-label="Time range. Χρονικό διάστημα" className="w-[150px] h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {RANGES.map((r) => (
-                <SelectItem key={r.value} value={r.value}>{r.en}</SelectItem>
+                <SelectItem key={r.value} value={r.value}><BilingualText en={r.en} el={r.el} compact /></SelectItem>
               ))}
             </SelectContent>
           </Select>
           {/* Both had no handler. */}
           <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-            <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" /> Refresh
+            <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" /> <BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              downloadCsv('platform-analytics', ['metric', 'value'], [
-                ...Object.entries(METRICS).map(([k, v]) => [k, v ?? '']),
-                ...Object.entries(byRole).map(([role, n]) => [`users_${role}`, n as number]),
-              ])
-            }
+            onClick={exportMetrics}
           >
-            <Download className="icon-sm mr-1.5" aria-hidden="true" /> Export
+            <Download className="icon-sm mr-1.5" aria-hidden="true" /> <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
         </div>
       }

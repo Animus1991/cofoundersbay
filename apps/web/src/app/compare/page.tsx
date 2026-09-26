@@ -19,6 +19,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getMatchBreakdown, sendConnectionRequest } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const ComparisonChart = dynamic(
@@ -332,6 +333,57 @@ export default function ComparePage() {
     navigator.clipboard.writeText(url);
     success('Comparison link copied to clipboard!');
   };
+
+  // The column's own actions, offered to the assistant, and the people being
+  // compared with the measure the table puts them side by side on.
+  const compared = profiles ?? [];
+  const personRows = rowOptions(compared, (p) => p.id, (p) => p.displayName);
+  const nobody = compared.length === 0 ? 'Nobody is being compared yet.' : undefined;
+  const nobodyEl = compared.length === 0 ? 'Δεν συγκρίνεται κανείς ακόμη.' : undefined;
+  usePageControls([
+    {
+      id: 'remove_from_comparison',
+      labelEn: 'Remove a person from the comparison',
+      labelEl: 'Αφαίρεση ατόμου από τη σύγκριση',
+      writes: false,
+      options: personRows,
+      unavailableEn: nobody,
+      unavailableEl: nobodyEl,
+      run: (value) => { if (value) handleRemove(value); },
+    },
+    {
+      id: 'add_to_comparison',
+      labelEn: 'Pick another person to compare',
+      labelEl: 'Επιλογή άλλου ατόμου για σύγκριση',
+      writes: false,
+      unavailableEn: profileIds.length >= MAX_PROFILES ? `The comparison holds ${MAX_PROFILES} people at most.` : undefined,
+      unavailableEl: profileIds.length >= MAX_PROFILES ? `Η σύγκριση χωράει έως ${MAX_PROFILES} άτομα.` : undefined,
+      run: handleAdd,
+    },
+    {
+      id: 'connect_with_person',
+      labelEn: 'Send a connection request to someone compared',
+      labelEl: 'Αίτημα σύνδεσης σε άτομο της σύγκρισης',
+      writes: true,
+      options: personRows,
+      unavailableEn: nobody,
+      unavailableEl: nobodyEl,
+      run: async (value) => { if (value) await handleConnect(value); },
+    },
+    { id: 'copy_comparison_link', labelEn: 'Copy the comparison link', labelEl: 'Αντιγραφή συνδέσμου σύγκρισης', writes: false, run: handleShare },
+  ]);
+  usePageList([
+    {
+      id: 'compared_people',
+      labelEn: 'People being compared',
+      labelEl: 'Άτομα σε σύγκριση',
+      rows: profileIds.length === 0 || profiles
+        ? compared.map((p) => `${p.displayName} · ${p.role}${p.matchScore != null ? ` · match ${p.matchScore}%` : ''}${p.location ? ` · ${p.location}` : ''}`)
+        : undefined,
+      total: compared.length,
+      sample: false,
+    },
+  ]);
 
   return (
     <AppShell

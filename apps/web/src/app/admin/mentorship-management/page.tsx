@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { GraduationCap, Calendar, Star, CircleSlash, ChevronRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -14,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { discoverMentors } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const AVAILABILITY: Record<string, { en: string; el: string; variant: 'success' | 'warning' | 'secondary' }> = {
   available: { en: 'Available', el: 'Διαθέσιμος', variant: 'success' },
@@ -49,6 +51,32 @@ export default function MentorshipManagementPage() {
   const sorted = [...mentors].sort((a, b) => (b.sessionCount ?? 0) - (a.sessionCount ?? 0));
   const dash = '—';
 
+  const router = useRouter();
+  usePageControls([
+    {
+      id: 'open_mentor',
+      labelEn: 'Open a mentor\'s profile',
+      labelEl: 'Άνοιγμα προφίλ μέντορα',
+      writes: false,
+      options: rowOptions(sorted, (m) => m.userId, (m) => m.displayName),
+      unavailableEn: mentors.length === 0 ? 'No mentor profiles yet.' : undefined,
+      unavailableEl: mentors.length === 0 ? 'Δεν υπάρχουν προφίλ μεντόρων ακόμα.' : undefined,
+      run: (value) => { if (value) router.push(`/profiles/${value}`); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'mentors',
+      labelEn: 'Mentor roster',
+      labelEl: 'Κατάλογος μεντόρων',
+      rows: isLoading
+        ? undefined
+        : sorted.map((m) => `${m.displayName} · ${m.sessionCount ?? 0} sessions · ${m.availabilityStatus}${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}`),
+      total: mentors.length,
+      sample: false,
+    },
+  ]);
+
   return (
     <AppShell
       title="Mentorship management"
@@ -57,10 +85,14 @@ export default function MentorshipManagementPage() {
       descriptionEl="Ο κατάλογος μεντόρων: ποιος είναι διαθέσιμος, ποιος έχει κρατήσεις και πώς αξιολογούνται οι συνεδρίες."
       showHelp
     >
-      <HelpCallout id="admin-mentorship" title="Mentorship oversight">
+      <HelpCallout id="admin-mentorship" title="Mentorship oversight" titleEl="Εποπτεία mentoring">
         <p>
           A mentor with no sessions has not been booked yet - worth a nudge or a featured slot. Ratings are averaged
           over reviews, so a mentor with many reviews weighs more than one with a single rating.
+        </p>
+        <p lang="el" className="mt-2 text-muted-foreground">
+          Ένας μέντορας χωρίς συνεδρίες δεν έχει κλειστεί ακόμα - αξίζει μια υπενθύμιση ή προβολή. Οι βαθμολογίες
+          σταθμίζονται με τις κριτικές, οπότε όποιος έχει πολλές κριτικές μετρά περισσότερο από όποιον έχει μία.
         </p>
       </HelpCallout>
 
@@ -107,13 +139,15 @@ export default function MentorshipManagementPage() {
               <div className="min-w-0 flex-1 basis-48">
                 <p className="truncate text-sm font-medium">{m.displayName}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {m.headline ?? m.skills.slice(0, 3).join(' · ')}
+                  {m.headline ?? m.skills?.slice(0, 3).join(' · ')}
                 </p>
               </div>
               <p className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                {m.sessionCount} sessions
-                {m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}
-                {m.isFree ? ' · free' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/h` : ''}
+                <BilingualText
+                  en={`${m.sessionCount ?? 0} sessions${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}${m.isFree ? ' · free' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/h` : ''}`}
+                  el={`${m.sessionCount ?? 0} συνεδρίες${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}${m.isFree ? ' · δωρεάν' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/ώρα` : ''}`}
+                  compact
+                />
               </p>
               <Badge variant={availability.variant} size="sm" className="shrink-0">
                 <BilingualText en={availability.en} el={availability.el} compact />

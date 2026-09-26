@@ -17,6 +17,7 @@ import { acceptsApplications, applyToProgram, getMyPrograms, getProgram } from '
 import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
+import { usePageControls } from '@/lib/page-controls';
 
 function formatDate(d: string | null): string {
   if (!d) return '—';
@@ -65,6 +66,22 @@ export default function ProgramDetailPage() {
     },
     onError: (e) => showError('Could not apply', e instanceof Error ? e.message : 'Sign in and try again.'),
   });
+
+  // Applying, offered to the assistant with whatever note the reader has
+  // typed. No undo: the programmes API has no withdraw, so an application
+  // stays until the organisation decides on it.
+  const open = program ? acceptsApplications(program) && !(program.capacity != null && program.participantCount >= program.capacity) : false;
+  usePageControls([
+    {
+      id: 'apply_to_program',
+      labelEn: 'Apply to this programme',
+      labelEl: 'Αίτηση στο πρόγραμμα',
+      writes: true,
+      unavailableEn: !program ? 'The programme has not loaded.' : enrolled ? 'You have already applied.' : !open ? 'This programme is not taking applications.' : undefined,
+      unavailableEl: !program ? 'Το πρόγραμμα δεν έχει φορτωθεί.' : enrolled ? 'Έχετε ήδη κάνει αίτηση.' : !open ? 'Το πρόγραμμα δεν δέχεται αιτήσεις.' : undefined,
+      run: () => { apply.mutate(); },
+    },
+  ]);
 
   if (isLoading) {
     return (

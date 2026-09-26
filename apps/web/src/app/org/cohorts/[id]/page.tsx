@@ -5,6 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useHydrated } from '@/components/common/RelativeTime';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { StatusText } from '@/components/common/StatusText';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { demoCohortDetail } from '@/lib/demo/org-api';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useRouter } from 'next/navigation';
 import {
   getOrgCohortDetail,
   type CohortParticipant,
@@ -39,6 +45,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { downloadCsv } from '@/lib/csv';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -127,165 +134,6 @@ interface CohortStats {
   successfulMatches: number;
   averageMatchScore: number;
 }
-
-// Mock data
-const DEMO_COHORT = {
-  id: '1',
-  name: 'Spring 2026 Accelerator',
-  program: 'CoFounderBay Accelerator',
-  // A spring cohort is not still running in the autumn. The live path derives
-  // this from `isActive`; the sample derives it from its own end date so the
-  // badge cannot outlive the programme.
-  status: new Date('2026-06-01T00:00:00Z') < new Date() ? 'completed' : 'active',
-  startDate: '2026-03-01',
-  endDate: '2026-06-01',
-  description: 'A 12-week intensive program for early-stage startups focusing on product-market fit, growth strategies, and fundraising.',
-  location: 'San Francisco, CA',
-};
-
-const DEMO_PARTICIPANTS: Participant[] = [
-  {
-    id: '1',
-    name: 'Elena Papadopoulos',
-    email: 'elena@techstart.io',
-    role: 'founder',
-    startup: 'TechStart',
-    status: 'active',
-    joinDate: '2026-03-01',
-    location: 'Athens, Greece',
-    phone: '+30 210 123 4567',
-    progress: 75,
-  },
-  {
-    id: '2',
-    name: 'Marcus Chen',
-    email: 'marcus@devstack.com',
-    role: 'founder',
-    startup: 'DevStack',
-    status: 'active',
-    joinDate: '2026-03-01',
-    location: 'San Francisco, CA',
-    phone: '+1 415 555 0123',
-    progress: 60,
-  },
-  {
-    id: '3',
-    name: 'Dr. Sarah Kim',
-    email: 'sarah@mentorpro.com',
-    role: 'mentor',
-    status: 'active',
-    joinDate: '2026-03-01',
-    location: 'Palo Alto, CA',
-    phone: '+1 650 555 0456',
-  },
-  {
-    id: '4',
-    name: 'Alex Dimitriou',
-    email: 'alex@investor.vc',
-    role: 'investor',
-    status: 'active',
-    joinDate: '2026-03-15',
-    location: 'London, UK',
-    phone: '+44 20 7946 0958',
-  },
-];
-
-const DEMO_MATCHES: Match[] = [
-  {
-    id: '1',
-    participant1: {
-      id: '1',
-      name: 'Elena Papadopoulos',
-      role: 'Founder',
-    },
-    participant2: {
-      id: '3',
-      name: 'Dr. Sarah Kim',
-      role: 'Mentor',
-    },
-    matchScore: 92,
-    status: 'accepted',
-    matchedDate: '2026-03-05',
-    interactions: 12,
-    lastInteraction: '2026-03-26',
-  },
-  {
-    id: '2',
-    participant1: {
-      id: '2',
-      name: 'Marcus Chen',
-      role: 'Founder',
-    },
-    participant2: {
-      id: '4',
-      name: 'Alex Dimitriou',
-      role: 'Investor',
-    },
-    matchScore: 85,
-    status: 'pending',
-    matchedDate: '2026-03-27',
-    interactions: 2,
-  },
-];
-
-const DEMO_MENTORING_SESSIONS: MentoringSession[] = [
-  {
-    id: '1',
-    mentor: {
-      id: '3',
-      name: 'Dr. Sarah Kim',
-    },
-    mentee: {
-      id: '1',
-      name: 'Elena Papadopoulos',
-    },
-    topic: 'Product Strategy & Market Fit',
-    scheduledDate: '2026-03-28T14:00:00Z',
-    duration: 60,
-    status: 'scheduled',
-  },
-  {
-    id: '2',
-    mentor: {
-      id: '3',
-      name: 'Dr. Sarah Kim',
-    },
-    mentee: {
-      id: '1',
-      name: 'Elena Papadopoulos',
-    },
-    topic: 'Fundraising Strategy',
-    scheduledDate: '2026-03-20T15:00:00Z',
-    duration: 90,
-    status: 'completed',
-    rating: 5,
-    notes: 'Excellent session. Discussed Series A preparation and investor outreach.',
-  },
-];
-
-/**
- * Counted from the three arrays above, not written beside them.
- *
- * These tiles used to claim 24 participants over a list of four and 45
- * sessions over two, sitting a few pixels from tab labels that counted the
- * same arrays correctly.
- */
-const DEMO_STATS: CohortStats = (() => {
-  const accepted = DEMO_MATCHES.filter((m) => m.status === 'accepted');
-  const scores = DEMO_MATCHES.map((m) => m.matchScore);
-  return {
-    totalParticipants: DEMO_PARTICIPANTS.length,
-    activeStartups: DEMO_PARTICIPANTS.filter((p) => p.role === 'founder').length,
-    totalMentors: DEMO_PARTICIPANTS.filter((p) => p.role === 'mentor').length,
-    completedSessions: DEMO_MENTORING_SESSIONS.filter((x) => x.status === 'completed').length,
-    upcomingSessions: DEMO_MENTORING_SESSIONS.filter((x) => x.status === 'scheduled').length,
-    totalMatches: DEMO_MATCHES.length,
-    successfulMatches: accepted.length,
-    averageMatchScore: scores.length
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : 0,
-  };
-})();
 
 /** The cohort's own people, in the shape this page has always rendered. */
 function toParticipant(row: CohortParticipant): Participant {
@@ -385,7 +233,20 @@ export default function CohortDetailPage() {
     retry: 0,
   });
 
-  const live = data ?? null;
+  /*
+   * Samples only with sample data on, and from the demo organisation the
+   * preview API serves - this page used to show a San Francisco cohort with
+   * four invented people to any organiser whose request failed, and showed
+   * it while the real one was still loading.
+   */
+  const { showDemoData } = useDemoData();
+  const hydrated = useHydrated();
+  const sample = useMemo(
+    () => (!data && !isLoading && showDemoData && hydrated ? demoCohortDetail(cohortId, Date.now()) : null),
+    [data, isLoading, showDemoData, hydrated, cohortId],
+  );
+  const live = data ?? sample;
+  const isSample = !data && sample != null;
 
   const cohort = live
     ? {
@@ -400,18 +261,18 @@ export default function CohortDetailPage() {
         // No column records where a cohort meets.
         location: '',
       }
-    : DEMO_COHORT;
+    : null;
 
   const participants = useMemo(
-    () => (live ? live.participants.map(toParticipant) : isLoading ? [] : DEMO_PARTICIPANTS),
+    () => (live?.participants ?? []).map(toParticipant),
     [live, isLoading],
   );
   const matches = useMemo(
-    () => (live ? live.matches.map(toMatch) : isLoading ? [] : DEMO_MATCHES),
+    () => (live?.matches ?? []).map(toMatch),
     [live, isLoading],
   );
   const sessions = useMemo(
-    () => (live ? live.sessions.map(toSession) : isLoading ? [] : DEMO_MENTORING_SESSIONS),
+    () => (live?.sessions ?? []).map(toSession),
     [live, isLoading],
   );
 
@@ -426,7 +287,7 @@ export default function CohortDetailPage() {
         successfulMatches: live.stats.connectedMatches,
         averageMatchScore: live.stats?.avgMatchScore ?? 0,
       }
-    : DEMO_STATS;
+    : { totalParticipants: 0, activeStartups: 0, totalMentors: 0, completedSessions: 0, upcomingSessions: 0, totalMatches: 0, successfulMatches: 0, averageMatchScore: 0 };
 
   /*
    * How far through the programme this cohort is.
@@ -436,15 +297,14 @@ export default function CohortDetailPage() {
    * otherwise disagree on "now" and React would discard the tree - and a
    * cohort with no dates has no progress to report rather than a default one.
    */
-  const hydrated = useHydrated();
   const programProgress = useMemo(() => {
-    if (!hydrated || !cohort.startDate || !cohort.endDate) return null;
+    if (!hydrated || !cohort?.startDate || !cohort?.endDate) return null;
     const start = new Date(cohort.startDate).getTime();
     const end = new Date(cohort.endDate).getTime();
     if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
     const ratio = (Date.now() - start) / (end - start);
     return Math.max(0, Math.min(100, Math.round(ratio * 100)));
-  }, [hydrated, cohort.startDate, cohort.endDate]);
+  }, [hydrated, cohort?.startDate, cohort?.endDate]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
@@ -465,7 +325,7 @@ export default function CohortDetailPage() {
     const config = variants[status] || variants.pending;
     return (
       <Badge variant={config.variant} className={config.className}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        <StatusText value={status} />
       </Badge>
     );
   };
@@ -479,10 +339,105 @@ export default function CohortDetailPage() {
 
     return (
       <Badge variant="outline" className={colors[role] || colors.founder}>
-        {role.charAt(0).toUpperCase() + role.slice(1)}
+        <StatusText value={role} />
       </Badge>
     );
   };
+
+  // Tabs, export, share and opening a participant, offered to the assistant;
+  // the rows each tab shows are published with them.
+  const router = useRouter();
+  const sampleEn = isSample ? 'These are sample people - there is no profile to open.' : undefined;
+  const sampleEl = isSample ? 'Είναι δείγματα - δεν υπάρχει προφίλ για άνοιγμα.' : undefined;
+  const exportParticipants = () =>
+    downloadCsv(
+      `cohort-${cohort?.name ?? cohortId}`,
+      ['name', 'email', 'role', 'startup', 'status', 'joined', 'location', 'progress'],
+      participants.map((pt) => [pt.name, pt.email, pt.role, pt.startup, pt.status, pt.joinDate, pt.location, pt.progress]),
+    );
+  const copyLink = () => void navigator.clipboard?.writeText(window.location.href);
+  usePageControls([
+    choiceControl('cohort_tab', 'Cohort tab', 'Καρτέλα κοόρτης', [
+      { value: 'overview', en: 'Overview', el: 'Επισκόπηση' },
+      { value: 'participants', en: 'Participants', el: 'Συμμετέχοντες' },
+      { value: 'matches', en: 'Matches', el: 'Αντιστοιχίσεις' },
+      { value: 'mentoring', en: 'Mentoring', el: 'Καθοδήγηση' },
+    ], activeTab, setActiveTab),
+    {
+      id: 'export_participants',
+      labelEn: 'Export the participants (CSV)',
+      labelEl: 'Εξαγωγή συμμετεχόντων (CSV)',
+      writes: false,
+      unavailableEn: participants.length === 0 ? 'Nobody to export.' : undefined,
+      unavailableEl: participants.length === 0 ? 'Δεν υπάρχει κανείς για εξαγωγή.' : undefined,
+      run: exportParticipants,
+    },
+    { id: 'copy_cohort_link', labelEn: 'Copy the cohort link', labelEl: 'Αντιγραφή συνδέσμου κοόρτης', writes: false, run: copyLink },
+    {
+      id: 'open_participant',
+      labelEn: 'Open a participant\'s profile',
+      labelEl: 'Άνοιγμα προφίλ συμμετέχοντα',
+      writes: false,
+      options: rowOptions(participants, (pt) => pt.id, (pt) => pt.name),
+      unavailableEn: sampleEn ?? (participants.length === 0 ? 'No participants yet.' : undefined),
+      unavailableEl: sampleEl ?? (participants.length === 0 ? 'Δεν υπάρχουν συμμετέχοντες.' : undefined),
+      run: (value) => { if (value) router.push(`/profiles/${value}`); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'cohort_participants',
+      labelEn: 'Cohort participants',
+      labelEl: 'Συμμετέχοντες κοόρτης',
+      rows: live ? participants.map((pt) => `${pt.name} · ${pt.role}${pt.startup ? ` · ${pt.startup}` : ''} · ${pt.status}`) : undefined,
+      total: participants.length,
+      sample: isSample,
+    },
+    {
+      id: 'cohort_matches',
+      labelEn: 'Matches in the cohort',
+      labelEl: 'Αντιστοιχίσεις στην κοόρτη',
+      rows: live ? matches.map((m) => `${m.participant1.name} ↔ ${m.participant2.name} · ${m.matchScore}% · ${m.status}`) : undefined,
+      total: matches.length,
+      sample: isSample,
+    },
+    {
+      id: 'cohort_sessions',
+      labelEn: 'Mentoring sessions',
+      labelEl: 'Συνεδρίες καθοδήγησης',
+      rows: live ? sessions.map((x) => `${x.mentor.name} → ${x.mentee.name} · ${x.topic} · ${x.status}`) : undefined,
+      total: sessions.length,
+      sample: isSample,
+    },
+  ]);
+
+  if (!cohort) {
+    return (
+      <AppShell title="Cohort" titleEl="Κοόρτη">
+        {isLoading || !hydrated ? (
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                <BilingualText
+                  en="This cohort could not be loaded. It may belong to another organisation, or you may not be a member of its organisation."
+                  el="Η κοόρτη δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού της."
+                  wrap
+                />
+              </p>
+              <Button variant="outline" className="mt-4 gap-2" asChild>
+                <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλες οι κοόρτες" compact /></Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
@@ -496,7 +451,7 @@ export default function CohortDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => void navigator.clipboard?.writeText(window.location.href)}
+            onClick={copyLink}
           >
             <Share2 className="icon-sm mr-2" aria-hidden="true" />
             <BilingualText en="Share" el="Κοινοποίηση" compact />
@@ -505,13 +460,7 @@ export default function CohortDetailPage() {
             variant="outline"
             size="sm"
             disabled={participants.length === 0}
-            onClick={() =>
-              downloadCsv(
-                `cohort-${cohort.name}`,
-                ['name', 'email', 'role', 'startup', 'status', 'joined', 'location', 'progress'],
-                participants.map((pt) => [pt.name, pt.email, pt.role, pt.startup, pt.status, pt.joinDate, pt.location, pt.progress]),
-              )
-            }
+            onClick={exportParticipants}
           >
             <Download className="icon-sm mr-2" aria-hidden="true" />
             <BilingualText en="Export" el="Εξαγωγή" compact />
@@ -519,7 +468,7 @@ export default function CohortDetailPage() {
           {/* There is no group thread for a cohort, but every participant row
               carries an address: one email with the cohort in Bcc reaches
               everyone without exposing their addresses to each other. */}
-          {participants.some((pt) => pt.email) ? (
+          {!isSample && participants.some((pt) => pt.email) ? (
             <Button size="sm" variant="outline" asChild>
               <a href={`mailto:?bcc=${encodeURIComponent(participants.map((pt) => pt.email).filter(Boolean).join(','))}&subject=${encodeURIComponent(cohort.name)}`}>
                 <Mail className="icon-sm mr-2" aria-hidden="true" />
@@ -527,7 +476,7 @@ export default function CohortDetailPage() {
               </a>
             </Button>
           ) : (
-            <Button size="sm" variant="outline" disabled title="Nobody in this cohort has an email address on file">
+            <Button size="sm" variant="outline" disabled title={isSample ? 'Sample people have no real address to write to' : 'Nobody in this cohort has an email address on file'}>
               <Mail className="icon-sm mr-2" aria-hidden="true" />
               <BilingualText en="Email all" el="Email σε όλους" compact />
             </Button>
@@ -535,6 +484,13 @@ export default function CohortDetailPage() {
         </div>
       }
     >
+      {isSample && (
+        <SampleDataNotice
+          surface="Cohort"
+          detail="This is a sample cohort from the demo organisation, shown because sample data is on and your organisation's cohort did not load."
+          askAiPrompt="Why am I seeing a sample cohort?"
+        />
+      )}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="overview">
@@ -819,7 +775,7 @@ export default function CohortDetailPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button aria-label="More options" variant="ghost" size="icon">
+                            <Button aria-label={`More options for ${participant.name}. Περισσότερες επιλογές`} variant="ghost" size="icon">
                               <MoreVertical className="icon-sm" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -827,12 +783,21 @@ export default function CohortDetailPage() {
                             {/* None had a handler. A participant's id is their
                                 user id (toParticipant), so profile and thread
                                 are addressable; progress is the row itself. */}
-                            <DropdownMenuItem asChild>
-                              <Link href={`/profiles/${participant.id}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/messages?to=${participant.id}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
-                            </DropdownMenuItem>
+                            {isSample ? (
+                              <>
+                                <UnavailableMenuItem en="View Profile" el="Προβολή προφίλ" reasonEn="A sample person has no profile." reasonEl="Ένα δείγμα δεν έχει προφίλ." />
+                                <UnavailableMenuItem en="Send Message" el="Αποστολή μηνύματος" reasonEn="A sample person cannot receive messages." reasonEl="Ένα δείγμα δεν λαμβάνει μηνύματα." />
+                              </>
+                            ) : (
+                              <>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/profiles/${participant.id}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/messages?to=${participant.id}`}><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             <UnavailableMenuItem
                               en="View Progress"
                               el="Πρόοδος"

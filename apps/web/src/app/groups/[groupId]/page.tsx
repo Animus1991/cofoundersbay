@@ -10,6 +10,8 @@ import {
   Settings, UserPlus, LogOut, CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,6 +35,7 @@ import {
   type GroupComment,
 } from '@/lib/api';
 import { bilingualInline } from '@/lib/i18n/format';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
 
@@ -314,6 +317,70 @@ export default function GroupDetailPage() {
     } catch {}
   };
 
+  /*
+   * The page's own buttons, offered to the assistant. Neither membership
+   * command names an undo: `GroupsService.joinGroup` creates the row as a
+   * plain member and fires the community-join automation, and `leaveGroup`
+   * deletes the row outright - so leaving after a join leaves the automation's
+   * effects behind, and joining after a leave loses the old role and join date.
+   */
+  const feed = postsQuery.data?.posts ?? [];
+  const ownPosts = currentUserId ? feed.filter((p) => p.author?.id === currentUserId) : [];
+  const groupMembers = group?.members ?? [];
+  usePageControls([
+    choiceControl('group_section', 'Group section', 'Ενότητα ομάδας', [
+      { value: 'feed', en: 'Feed', el: 'Ροή' },
+      { value: 'members', en: 'Members', el: 'Μέλη' },
+    ], activeSection, (v) => setActiveSection(v as typeof activeSection)),
+    {
+      id: isMember ? 'leave_group' : 'join_group',
+      labelEn: isMember ? 'Leave this group' : 'Join this group',
+      labelEl: isMember ? 'Αποχώρηση από την ομάδα' : 'Συμμετοχή στην ομάδα',
+      writes: true,
+      unavailableEn: !group ? 'The group has not loaded.' : memberRole === 'owner' ? 'The owner cannot leave; transfer ownership first.' : undefined,
+      unavailableEl: !group ? 'Η ομάδα δεν έχει φορτωθεί.' : memberRole === 'owner' ? 'Ο ιδιοκτήτης δεν μπορεί να αποχωρήσει· μεταβιβάστε πρώτα την ιδιοκτησία.' : undefined,
+      run: handleToggleMembership,
+    },
+    {
+      id: 'delete_own_post',
+      labelEn: 'Delete one of my posts in this group',
+      labelEl: 'Διαγραφή δημοσίευσής μου στην ομάδα',
+      writes: true,
+      options: rowOptions(ownPosts, (p) => p.id, (p) => (p.content ?? '').slice(0, 60)),
+      unavailableEn: ownPosts.length === 0 ? 'You have no posts in this group.' : undefined,
+      unavailableEl: ownPosts.length === 0 ? 'Δεν έχετε δημοσιεύσεις σε αυτή την ομάδα.' : undefined,
+      run: async (value) => { if (value) await handleDeletePost(value); },
+    },
+    {
+      id: 'open_member',
+      labelEn: 'Open a member\'s profile',
+      labelEl: 'Άνοιγμα προφίλ μέλους',
+      writes: false,
+      options: rowOptions(groupMembers, (m) => m.userId, (m) => m.user?.displayName ?? m.userId),
+      unavailableEn: groupMembers.length === 0 ? 'No members are listed.' : undefined,
+      unavailableEl: groupMembers.length === 0 ? 'Δεν εμφανίζονται μέλη.' : undefined,
+      run: (value) => { if (value) router.push(`/profiles/${value}`); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'group_posts',
+      labelEn: 'Group posts',
+      labelEl: 'Δημοσιεύσεις ομάδας',
+      rows: postsQuery.data ? feed.map((p) => `${p.author?.displayName ?? '—'}: ${(p.content ?? '').slice(0, 120)}`) : undefined,
+      total: feed.length,
+      sample: false,
+    },
+    {
+      id: 'group_members',
+      labelEn: 'Group members',
+      labelEl: 'Μέλη ομάδας',
+      rows: group ? groupMembers.map((m) => `${m.user?.displayName ?? m.userId} · ${m.role}`) : undefined,
+      total: group?.memberCount ?? groupMembers.length,
+      sample: false,
+    },
+  ]);
+
   if (groupQuery.isLoading) {
     return (
       <AppShell>
@@ -328,8 +395,8 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <p className="text-muted-foreground">Group not found</p>
-          <Button variant="outline" onClick={() => router.push('/groups')}>Back to Groups</Button>
+          <p className="text-muted-foreground"><BilingualText en="Group not found" el="Η ομάδα δεν βρέθηκε" compact /></p>
+          <Button variant="outline" onClick={() => router.push('/groups')}><BilingualText en="Back to Groups" el="Πίσω στις ομάδες" compact /></Button>
         </div>
       </AppShell>
     );
@@ -380,11 +447,11 @@ export default function GroupDetailPage() {
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="icon-sm" />
-                      {group.memberCount.toLocaleString('en-GB')} members
+                      <BilingualText en={`${group.memberCount.toLocaleString('en-GB')} members`} el={`${group.memberCount.toLocaleString('el-GR')} μέλη`} compact />
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MessageCircle className="icon-sm" />
-                      {group.postCount.toLocaleString('en-GB')} posts
+                      <BilingualText en={`${group.postCount.toLocaleString('en-GB')} posts`} el={`${group.postCount.toLocaleString('el-GR')} δημοσιεύσεις`} compact />
                     </span>
                   </div>
                 </div>
@@ -399,9 +466,9 @@ export default function GroupDetailPage() {
                 {togglingMembership ? (
                   <Loader2 className="icon-sm animate-spin" />
                 ) : isMember ? (
-                  <><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} /> Joined</>
+                  <><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" /> <BilingualText en="Joined" el="Μέλος" compact /></>
                 ) : (
-                  <><UserPlus className="icon-sm" /> Join Group</>
+                  <><UserPlus className="icon-sm" aria-hidden="true" /> <BilingualText en="Join Group" el="Συμμετοχή" compact /></>
                 )}
               </Button>
             </div>
@@ -410,7 +477,7 @@ export default function GroupDetailPage() {
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl">{group.description}</p>
             )}
 
-            {group.tags.length > 0 && (
+            {(group.tags?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {group.tags.map((tag) => (
                   <span key={tag} className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-xs text-muted-foreground">
@@ -422,7 +489,7 @@ export default function GroupDetailPage() {
 
             {group.category && (
               <div className="mt-3">
-                <Badge variant="secondary">{group.category}</Badge>
+                <Badge variant="secondary"><StatusText value={group.category} /></Badge>
               </div>
             )}
           </div>
@@ -433,15 +500,17 @@ export default function GroupDetailPage() {
           {(['feed', 'members'] as const).map((s) => (
             <button
               key={s}
+              type="button"
+              aria-pressed={activeSection === s}
               onClick={() => setActiveSection(s)}
               className={cn(
-                'rounded-lg px-4 py-2 text-sm font-medium capitalize transition-colors',
+                'rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-ring',
                 activeSection === s
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              {s}
+              {s === 'feed' ? <BilingualText en="Feed" el="Ροή" compact /> : <BilingualText en="Members" el="Μέλη" compact />}
               {s === 'members' && (
                 <span className="ml-1.5 text-xs opacity-70">({group.memberCount})</span>
               )}
@@ -541,11 +610,11 @@ export default function GroupDetailPage() {
               )}
 
               {/* Recent members */}
-              {group.members.length > 0 && (
+              {groupMembers.length > 0 && (
                 <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
-                  <h3 className="text-sm font-semibold">Members ({group.memberCount})</h3>
+                  <h3 className="text-sm font-semibold"><BilingualText en={`Members (${group.memberCount})`} el={`Μέλη (${group.memberCount})`} compact /></h3>
                   <div className="space-y-2">
-                    {group.members.slice(0, 6).map((m) => (
+                    {groupMembers.slice(0, 6).map((m) => (
                       <div key={m.userId} className="flex items-center gap-2">
                         <Avatar className="h-7 w-7 shrink-0">
                           <AvatarImage src={m.user?.avatarUrl ?? undefined} />
@@ -554,7 +623,7 @@ export default function GroupDetailPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-2xs text-primary-accessible capitalize">{m.role}</p>
+                            <p className="text-2xs text-primary-accessible"><StatusText value={m.role} /></p>
                           )}
                         </div>
                       </div>
@@ -562,10 +631,11 @@ export default function GroupDetailPage() {
                   </div>
                   {group.memberCount > 6 && (
                     <button
+                      type="button"
                       onClick={() => setActiveSection('members')}
-                      className="text-xs text-primary-accessible hover:underline"
+                      className="text-xs text-primary-accessible hover:underline focus-ring rounded"
                     >
-                      View all {group.memberCount} members →
+                      <BilingualText en={`View all ${group.memberCount} members →`} el={`Όλα τα ${group.memberCount} μέλη →`} compact />
                     </button>
                   )}
                 </div>
@@ -577,12 +647,13 @@ export default function GroupDetailPage() {
         {/* Members section */}
         {activeSection === 'members' && (
           <div className="rounded-xl border border-border/60 bg-card/70 p-4">
-            <h3 className="text-sm font-semibold mb-4">All Members ({group.memberCount})</h3>
+            <h3 className="text-sm font-semibold mb-4"><BilingualText en={`All Members (${group.memberCount})`} el={`Όλα τα μέλη (${group.memberCount})`} compact /></h3>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {group.members.map((m) => (
-                <div
+              {groupMembers.map((m) => (
+                <button
+                  type="button"
                   key={m.userId}
-                  className="flex items-center gap-3 rounded-xl border border-border/40 p-3 hover:border-primary/30 transition-colors cursor-pointer"
+                  className="flex w-full items-center gap-3 rounded-xl border border-border/40 p-3 text-left hover:border-primary/30 transition-colors focus-ring"
                   onClick={() => router.push(`/profiles/${m.userId}`)}
                 >
                   <Avatar className="h-10 w-10 shrink-0">
@@ -595,10 +666,10 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-2xs text-primary-accessible capitalize font-medium">{m.role}</span>
+                      <span className="text-2xs text-primary-accessible font-medium"><StatusText value={m.role} /></span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
