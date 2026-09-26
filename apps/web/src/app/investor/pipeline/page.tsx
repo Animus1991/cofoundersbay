@@ -154,7 +154,10 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
           {/* A count and an icon: "3 team · ομάδα 3" broke the founder's
               name across two lines in a 288px column. */}
           {deal.teamSize && (
-            <span className="flex shrink-0 items-center gap-0.5">
+            // `relative` keeps the sr-only text inside the card: absolutely
+            // positioned with no positioned ancestor in the scrolling board,
+            // it escaped the scroller and widened the page to 1668px on a phone.
+            <span className="relative flex shrink-0 items-center gap-0.5">
               · <Users className="h-3 w-3" aria-hidden="true" />{deal.teamSize}
               <span className="sr-only">{bilingualInline('people on the team', 'άτομα στην ομάδα')}</span>
             </span>

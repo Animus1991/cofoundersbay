@@ -337,6 +337,9 @@ test.describe('corner system', () => {
         const r = el.getBoundingClientRect();
         if (r.width < 2 || r.height < 2) continue;
         if (el.closest('svg')) continue;
+        // The brand mark scales its corner with its size (28%, app-icon
+        // geometry), so at 41px it is 11px. It is artwork, not a UI surface.
+        if (el.closest('[data-brand-mark]')) continue;
         for (const k of ['borderTopLeftRadius', 'borderTopRightRadius',
                          'borderBottomRightRadius', 'borderBottomLeftRadius'] as const) {
           const v = Math.round((parseFloat(cs[k]) || 0) * 100) / 100;
