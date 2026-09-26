@@ -406,7 +406,7 @@ export default function AdminCommunitiesPage() {
           ].map(({ label, labelEl, value, danger }) => (
             <div key={label} className="rounded-lg border border-border/60 p-3">
               <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              <p className={cn('mt-1 text-xl font-bold tabular-nums', danger && 'text-status-danger')}>{value}</p>
+              <p className={cn('page-stat mt-1 text-xl font-bold tabular-nums', danger && 'text-status-danger')}>{value}</p>
             </div>
           ))}
         </div>

@@ -407,13 +407,13 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Services" el="Σύνολο υπηρεσιών" compact /></p>
-              <p className="text-xl font-bold">{services.length}</p>
+              <p className="page-stat text-xl font-bold">{services.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
-              <p className="text-xl font-bold text-status-success">
+              <p className="page-stat text-xl font-bold text-status-success">
                 {services.filter((s) => s.isActive).length}
               </p>
             </CardContent>
@@ -421,7 +421,7 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Bookings" el="Σύνολο κρατήσεων" compact /></p>
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {services.reduce((acc, s) => acc + s.bookings, 0)}
               </p>
             </CardContent>

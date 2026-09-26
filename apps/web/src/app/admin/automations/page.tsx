@@ -458,7 +458,7 @@ export default function AutomationsPage() {
               <stat.icon className={`icon-md ${stat.color}`} />
               <div>
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
-                <p className="text-xl font-bold">{stat.value}</p>
+                <p className="page-stat text-xl font-bold">{stat.value}</p>
               </div>
             </Card>
           ))}

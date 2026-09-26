@@ -328,13 +328,13 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Programs" el="Σύνολο προγραμμάτων" compact /></p>
-              <p className="text-xl font-bold">{programs.length}</p>
+              <p className="page-stat text-xl font-bold">{programs.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
-              <p className={cn('text-xl font-bold', STATUS.success.icon)}>
+              <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -342,7 +342,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Enrolled" el="Σύνολο εγγεγραμμένων" compact /></p>
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.enrolled, 0)}
               </p>
             </CardContent>
@@ -350,7 +350,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένα" compact /></p>
-              <p className={cn('text-xl font-bold', STATUS.info.icon)}>
+              <p className={cn('page-stat text-xl font-bold', STATUS.info.icon)}>
                 {programs.filter((p) => p.status === 'completed').length}
               </p>
             </CardContent>

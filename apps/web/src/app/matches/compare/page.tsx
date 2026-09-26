@@ -237,7 +237,7 @@ export default function MatchComparePage() {
                         </div>
                       </div>
                       <div className="mt-3 flex items-baseline gap-2">
-                        <span className="text-2xl font-semibold tabular-nums text-primary-accessible">{scoreOf(i) ?? '—'}%</span>
+                        <span className="page-stat text-2xl font-semibold tabular-nums text-primary-accessible">{scoreOf(i) ?? '—'}%</span>
                         {overallLeader === i && (
                           <Badge variant="success" size="sm" className="gap-1"><Crown className="h-3 w-3" aria-hidden="true" /><BilingualText en="Highest" el="Υψηλότερη" compact /></Badge>
                         )}

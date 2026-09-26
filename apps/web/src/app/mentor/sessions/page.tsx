@@ -320,7 +320,7 @@ export default function MentorSessionsPage() {
                 <Calendar className="icon-md text-status-info" />
               </div>
               <div>
-                <p className="text-xl font-bold">{upcomingSessions.length}</p>
+                <p className="page-stat text-xl font-bold">{upcomingSessions.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
               </div>
             </CardContent>
@@ -331,7 +331,7 @@ export default function MentorSessionsPage() {
                 <CheckCircle2 className="icon-md text-status-success" />
               </div>
               <div>
-                <p className="text-xl font-bold">
+                <p className="page-stat text-xl font-bold">
                   {sessions.filter((s) => s.status === 'completed').length}
                 </p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
@@ -344,7 +344,7 @@ export default function MentorSessionsPage() {
                 <Clock className="icon-md text-primary-accessible" />
               </div>
               <div>
-                <p className="text-xl font-bold">{totalDuration} min</p>
+                <p className="page-stat text-xl font-bold">{totalDuration} min</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Total Time" el="Συνολικός χρόνος" compact /></p>
               </div>
             </CardContent>

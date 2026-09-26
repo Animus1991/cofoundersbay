@@ -241,7 +241,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
               </CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-xl font-bold">{earnedCount}/{totalCount}</div>
+              <div className="page-stat text-xl font-bold">{earnedCount}/{totalCount}</div>
               <div className="text-sm text-muted-foreground"><BilingualText en="Badges Earned" el="Διακρίσεις" compact /></div>
             </div>
           </div>

@@ -371,17 +371,17 @@ export function SmartRecommendations() {
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-1">
-              <p className="text-xl font-bold">{recommendations.length}</p>
+              <p className="page-stat text-xl font-bold">{recommendations.length}</p>
               <p className="text-sm text-muted-foreground"><BilingualText en="Active Recommendations" el="Ενεργές προτάσεις" compact /></p>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {Math.round(recommendations.reduce((acc, r) => acc + r.matchScore, 0) / recommendations.length)}%
               </p>
               <p className="text-sm text-muted-foreground"><BilingualText en="Average Match Score" el="Μέσος βαθμός ταιριάσματος" compact /></p>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-bold">{dismissedIds.size}</p>
+              <p className="page-stat text-xl font-bold">{dismissedIds.size}</p>
               <p className="text-sm text-muted-foreground"><BilingualText en="Dismissed Today" el="Απορρίφθηκαν σήμερα" compact /></p>
             </div>
           </div>

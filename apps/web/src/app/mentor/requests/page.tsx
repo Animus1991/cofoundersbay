@@ -271,7 +271,7 @@ export default function MentorRequestsPage() {
                 <Clock className="icon-md text-status-warning" />
               </div>
               <div>
-                <p className="text-xl font-bold">{pendingRequests.length}</p>
+                <p className="page-stat text-xl font-bold">{pendingRequests.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Pending" el="Σε αναμονή" compact wrap /></p>
               </div>
             </CardContent>
@@ -282,7 +282,7 @@ export default function MentorRequestsPage() {
                 <CheckCircle2 className="icon-md text-status-success" />
               </div>
               <div>
-                <p className="text-xl font-bold">{acceptedRequests.length}</p>
+                <p className="page-stat text-xl font-bold">{acceptedRequests.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτά" compact wrap /></p>
               </div>
             </CardContent>
@@ -293,7 +293,7 @@ export default function MentorRequestsPage() {
                 <XCircle className="icon-md text-status-danger" />
               </div>
               <div>
-                <p className="text-xl font-bold">{declinedRequests.length}</p>
+                <p className="page-stat text-xl font-bold">{declinedRequests.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Declined" el="Απορριφθέντα" compact wrap /></p>
               </div>
             </CardContent>

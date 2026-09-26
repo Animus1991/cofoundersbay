@@ -164,7 +164,7 @@ export function ProfileCompleteness({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Profile Completeness</CardTitle>
-          <span className={cn('text-2xl font-bold', getStatusColor(percentage))}>
+          <span className={cn('page-stat text-2xl font-bold', getStatusColor(percentage))}>
             {percentage}%
           </span>
         </div>

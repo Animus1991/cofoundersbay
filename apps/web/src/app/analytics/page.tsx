@@ -155,8 +155,8 @@ function MetricCard({
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
           </span>
         </div>
-        <h3 className="mb-1 text-xl font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
-        <p className="text-xs leading-snug text-muted-foreground">
+        <h3 className="page-stat mb-1 text-xl font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
+        <p className="page-stat-label text-xs leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
         </p>
         {sparkValues && sparkValues.length > 1 && (

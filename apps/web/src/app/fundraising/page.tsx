@@ -410,7 +410,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-xl font-bold tabular-nums text-primary-accessible">{docs.length ? Math.round((ready / docs.length) * 100) : 0}%</p>
+                <p className="page-stat text-xl font-bold tabular-nums text-primary-accessible">{docs.length ? Math.round((ready / docs.length) * 100) : 0}%</p>
                 <p className="text-2xs text-muted-foreground"><BilingualText en={fundraisingEn('dr_complete')} el={fundraisingEl('dr_complete')} compact /></p>
               </div>
               <Button

@@ -139,7 +139,7 @@ export default function SecurityMonitoringPage() {
               <Icon className="icon-md text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">{label}</p>
-                <p className="text-2xl font-bold">{value}</p>
+                <p className="page-stat text-2xl font-bold">{value}</p>
               </div>
             </CardContent>
           </Card>

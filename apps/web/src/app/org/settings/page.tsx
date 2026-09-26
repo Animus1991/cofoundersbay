@@ -505,15 +505,15 @@ export default function OrgSettingsPage() {
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="p-3 rounded-lg border">
                       <p className="text-sm text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></p>
-                      <p className="text-xl font-bold">32 / 50</p>
+                      <p className="page-stat text-xl font-bold">32 / 50</p>
                     </div>
                     <div className="p-3 rounded-lg border">
                       <p className="text-sm text-muted-foreground"><BilingualText en="Team Members" el="Μέλη ομάδας" compact /></p>
-                      <p className="text-xl font-bold">5 / 10</p>
+                      <p className="page-stat text-xl font-bold">5 / 10</p>
                     </div>
                     <div className="p-3 rounded-lg border">
                       <p className="text-sm text-muted-foreground"><BilingualText en="Programs" el="Προγράμματα" compact /></p>
-                      <p className="text-xl font-bold">4 / Unlimited</p>
+                      <p className="page-stat text-xl font-bold">4 / Unlimited</p>
                     </div>
                   </div>
                 </div>

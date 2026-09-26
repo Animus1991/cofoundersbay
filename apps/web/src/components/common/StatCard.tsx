@@ -25,7 +25,7 @@ export function StatCard({ label, value, icon, trend, className }: StatCardProps
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             {label}
           </p>
-          <p className="text-2xl font-bold text-foreground font-display">
+          <p className="page-stat text-2xl font-bold text-foreground font-display">
             {value}
           </p>
           {trend && (

@@ -409,7 +409,7 @@ export default function ResearchBoardsPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                  <span className="text-2xl font-bold tabular-nums">{boards.length}</span>
+                  <span className="page-stat text-2xl font-bold tabular-nums">{boards.length}</span>
                   <span className="mb-1 text-xs text-muted-foreground">
                     {pinnedCount}{' '}
                     <BilingualText
@@ -438,7 +438,7 @@ export default function ResearchBoardsPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                  <span className="text-2xl font-bold tabular-nums">{totalNodes}</span>
+                  <span className="page-stat text-2xl font-bold tabular-nums">{totalNodes}</span>
                   <span className="mb-1 text-xs text-muted-foreground">
                     <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
                   </span>

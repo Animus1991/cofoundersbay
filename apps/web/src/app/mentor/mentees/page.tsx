@@ -219,7 +219,7 @@ export default function MenteesPage() {
                 <Users className="icon-md text-primary-accessible" />
               </div>
               <div>
-                <p className="text-xl font-bold">{activeRelationships.length}</p>
+                <p className="page-stat text-xl font-bold">{activeRelationships.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί μαθητευόμενοι" compact /></p>
               </div>
             </CardContent>
@@ -230,7 +230,7 @@ export default function MenteesPage() {
                 <Target className="icon-md text-status-success" />
               </div>
               <div>
-                <p className="text-xl font-bold">{completedRelationships.length}</p>
+                <p className="page-stat text-xl font-bold">{completedRelationships.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></p>
               </div>
             </CardContent>
@@ -241,7 +241,7 @@ export default function MenteesPage() {
                 <TrendingUp className="icon-md text-status-info" />
               </div>
               <div>
-                <p className="text-xl font-bold">{totalSessions}</p>
+                <p className="page-stat text-xl font-bold">{totalSessions}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
               </div>
             </CardContent>

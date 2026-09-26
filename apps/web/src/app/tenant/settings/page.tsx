@@ -335,7 +335,7 @@ export default function TenantSettingsPage() {
                       <p className="font-semibold text-lg"><BilingualText en="Enterprise Plan" el="Πλάνο Enterprise" compact /></p>
                       <p className="text-sm text-muted-foreground"><BilingualText en="Up to 500 members, unlimited programs" el="Έως 500 μέλη, απεριόριστα προγράμματα" wrap /></p>
                     </div>
-                    <p className="text-xl font-bold">$499<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                    <p className="page-stat text-xl font-bold">$499<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
                   </div>
                 </div>
                 <div className="flex gap-2">

@@ -229,7 +229,7 @@ export function AppShell({
               />
               <div className="min-w-0">
                 {pageTitle && (
-                  <h1 className={cn('text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
+                  <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                     <BilingualText en={pageTitle} el={pageTitleEl} />
                   </h1>
                 )}

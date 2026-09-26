@@ -115,7 +115,7 @@ function MetricCard({
             <Icon className="icon-sm text-primary-accessible" />
           </div>
         </div>
-        <p className="text-2xl font-bold tabular-nums">{displayValue}{unit}</p>
+        <p className="page-stat text-2xl font-bold tabular-nums">{displayValue}{unit}</p>
         <div className={cn(
           'flex items-center gap-1 mt-1 text-xs',
           trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'

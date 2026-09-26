@@ -99,7 +99,7 @@ function ProfileColumn({
       {/* Match Score */}
       {profile.matchScore !== undefined && (
         <div className="mb-4 rounded-lg bg-primary/5 p-3 text-center">
-          <p className="text-2xl font-bold text-primary-accessible">{profile.matchScore}%</p>
+          <p className="page-stat text-2xl font-bold text-primary-accessible">{profile.matchScore}%</p>
           <p className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
         </div>
       )}

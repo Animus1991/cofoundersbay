@@ -343,8 +343,8 @@ function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; t
           <span className={cn('mx-auto mb-1 inline-flex', colors.icon)}>
             <CfbGlyph name={s.glyph} className="icon-sm" />
           </span>
-          <p className={cn('text-xl font-semibold tabular-nums', colors.icon)}>{s.value}</p>
-          <p className="text-2xs leading-snug text-muted-foreground">
+          <p className={cn('page-stat text-xl font-semibold tabular-nums', colors.icon)}>{s.value}</p>
+          <p className="page-stat-label text-2xs leading-snug text-muted-foreground">
             <BilingualText en={milestoneEn(s.labelKey)} el={milestoneEl(s.labelKey)} compact wrap />
           </p>
         </div>

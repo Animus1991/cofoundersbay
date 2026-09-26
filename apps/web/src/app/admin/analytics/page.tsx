@@ -140,7 +140,7 @@ export default function AdminAnalyticsPage() {
                 <Icon className="icon-sm" />
                 <span className="text-sm">{label}</span>
               </div>
-              <p className="mt-1 text-xl font-bold tabular-nums">{value.toLocaleString('en-GB')}</p>
+              <p className="page-stat mt-1 text-xl font-bold tabular-nums">{value.toLocaleString('en-GB')}</p>
             </CardContent>
           </Card>
         ))}

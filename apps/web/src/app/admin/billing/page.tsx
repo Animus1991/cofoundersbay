@@ -334,7 +334,7 @@ export default function AdminBillingPage() {
                 <Icon className={cn('icon-sm', color)} aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">{label}</p>
               </div>
-              <p className="text-xl font-bold mt-1">
+              <p className="page-stat text-xl font-bold mt-1">
                 {statsLoading ? <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /> : value}
               </p>
             </div>

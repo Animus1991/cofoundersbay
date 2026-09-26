@@ -217,19 +217,19 @@ export default function MentorReviewsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Sessions given" el="Συνεδρίες που δόθηκαν" compact /></p>
-                  <p className="text-xl font-bold tabular-nums">{stats?.totalSessions ?? '\u2014'}</p>
+                  <p className="page-stat text-xl font-bold tabular-nums">{stats?.totalSessions ?? '\u2014'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Active mentees" el="Ενεργοί καθοδηγούμενοι" compact /></p>
-                  <p className="text-xl font-bold tabular-nums">{stats?.activeMentees ?? '\u2014'}</p>
+                  <p className="page-stat text-xl font-bold tabular-nums">{stats?.activeMentees ?? '\u2014'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Mentorships completed" el="Ολοκληρωμένες καθοδηγήσεις" compact /></p>
-                  <p className="text-xl font-bold tabular-nums">{stats?.completedMentorships ?? '\u2014'}</p>
+                  <p className="page-stat text-xl font-bold tabular-nums">{stats?.completedMentorships ?? '\u2014'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Helpful votes" el="Ψήφοι «χρήσιμο»" compact /></p>
-                  <p className="text-xl font-bold tabular-nums">{helpfulVotes}</p>
+                  <p className="page-stat text-xl font-bold tabular-nums">{helpfulVotes}</p>
                 </div>
               </div>
             </CardContent>

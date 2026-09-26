@@ -286,7 +286,7 @@ export default function OrgMembersPage() {
             <Card key={stat.label}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                <p className="text-xl font-bold">{stat.value}</p>
+                <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
           ))}

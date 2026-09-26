@@ -372,13 +372,13 @@ export default function TenantDomainsPage() {
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
               <p className="text-xs text-muted-foreground"><BilingualText en="Total Domains" el="Σύνολο τομέων" compact /></p>
-              <p className="text-2xl font-bold mt-0.5">{domains.length}</p>
+              <p className="page-stat text-2xl font-bold mt-0.5">{domains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
               <p className="text-xs text-muted-foreground"><BilingualText en="Active" el="Ενεργός" compact /></p>
-              <p className="text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
+              <p className="page-stat text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">

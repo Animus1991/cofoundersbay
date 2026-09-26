@@ -133,7 +133,7 @@ function BreakdownModal({
         <div className="space-y-4">
           <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
             <span className="text-sm text-muted-foreground">Overall Match Score</span>
-            <span className={cn('text-2xl font-bold', color)}>{score}%</span>
+            <span className={cn('page-stat text-2xl font-bold', color)}>{score}%</span>
           </div>
           {explanation.length > 0 ? (
             <div>
@@ -581,7 +581,7 @@ export default function RecommendationsPage() {
                   <Icon className="icon-sm text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold leading-none">{value}</p>
+                  <p className="page-stat text-xl font-bold leading-none">{value}</p>
                   <p className="text-xs text-muted-foreground mt-0.5"><BilingualText en={labelEn} el={labelEl} compact /></p>
                 </div>
               </CardContent>

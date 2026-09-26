@@ -291,7 +291,7 @@ export const StatsCard = React.forwardRef<
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
+          <p className="page-stat text-2xl font-bold mt-1">{value}</p>
           {change && (
             <div className="flex items-center gap-1 mt-2">
               <span

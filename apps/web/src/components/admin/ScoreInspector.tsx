@@ -164,7 +164,7 @@ export function ScoreInspector() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-status-accent">{report.totalXp} XP</div>
+                <div className="page-stat text-2xl font-bold text-status-accent">{report.totalXp} XP</div>
                 <div className="text-sm text-muted-foreground">
                   Level {report.level} · {report.levelLabel}
                 </div>

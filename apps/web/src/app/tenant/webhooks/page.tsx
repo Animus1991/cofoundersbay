@@ -169,7 +169,7 @@ export default function TenantWebhooksPage() {
             { label: 'Total Deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
             { label: 'Avg Success Rate', value: `${avgSuccess}%` },
           ].map(s => (
-            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
           ))}
         </div>
 

@@ -2120,61 +2120,146 @@ html {
   padding-top: 0;
 }
 
-/* ── Founder overview type (listed copy only) ────────────────────────────
-   Title / stats / captions / $375K: −5% then −2% from that size; title and
-   figures then another −1%. Section titles: −2% then +21% then −1%.
-   Element+class so these beat later `sm:text-*` restatements of the ladder. */
+/* ── App chrome type (Overview standard, every page) ─────────────────────
+   Tuned on the founder Overview, then applied to AppShell titles, card
+   section headings and MetricTiles. The ladder itself is unchanged.
+   Element+class so these beat later `sm:text-*` restatements.
+   Rail titles stay on the pre-Overview card size — the 21px section step
+   does not fit a ~240px panel. */
+h1.page-title,
 h1.founder-dash-h1,
+p.page-stat,
+h3.page-stat,
+span.page-stat,
+div.page-stat,
+dd.page-stat,
 p.founder-dash-stat {
   font-size: calc(1.25rem * 0.95 * 0.98 * 0.99);
   line-height: calc(1.75rem * 0.95 * 0.98 * 0.99);
 }
+p.page-stat-label,
+p.page-stat-meta,
+span.page-stat-label,
 p.founder-dash-stat-label,
 p.founder-dash-stat-meta {
   font-size: calc(10.45px * 0.98);
   line-height: calc(1.25rem * 0.95 * 0.98);
 }
+h3.page-section,
 h3.founder-dash-section {
   font-size: calc(1.0201rem * 0.98 * 1.21 * 0.99);
   line-height: calc(1.5rem * 0.98 * 1.21 * 0.99);
 }
+p.page-figure,
 p.founder-dash-figure {
   font-size: calc(1.25rem * 0.98 * 0.98);
   line-height: calc(1.75rem * 0.98 * 0.98);
 }
 @media (min-width: 640px) {
+  h1.page-title,
   h1.founder-dash-h1,
+  p.page-stat,
+  h3.page-stat,
+  span.page-stat,
+  div.page-stat,
+  dd.page-stat,
   p.founder-dash-stat {
     font-size: calc(1.5rem * 0.95 * 0.98 * 0.99);
     line-height: calc(2rem * 0.95 * 0.98 * 0.99);
   }
+  p.page-stat-label,
+  p.page-stat-meta,
+  span.page-stat-label,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
     font-size: calc(0.82883125rem * 0.95 * 0.98);
     line-height: calc(1.25rem * 0.95 * 0.98);
   }
+  h3.page-section,
   h3.founder-dash-section {
     font-size: calc(1.125rem * 0.98 * 1.21 * 0.99);
     line-height: calc(1.625rem * 0.98 * 1.21 * 0.99);
   }
 }
 @media (min-width: 1024px) {
+  h1.page-title,
   h1.founder-dash-h1,
+  p.page-stat,
+  h3.page-stat,
+  span.page-stat,
+  div.page-stat,
+  dd.page-stat,
   p.founder-dash-stat {
     font-size: calc(1.82926829rem * 0.95 * 0.98 * 0.99);
     line-height: calc(2.43902439rem * 0.95 * 0.98 * 0.99);
   }
+  p.page-stat-label,
+  p.page-stat-meta,
+  span.page-stat-label,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
     font-size: calc(1.01076982rem * 0.95 * 0.98);
     line-height: calc(1.52439024rem * 0.95 * 0.98);
   }
+  h3.page-section,
   h3.founder-dash-section {
     font-size: calc(1.37195122rem * 0.98 * 1.21 * 0.99);
     line-height: calc(1.98170732rem * 0.98 * 1.21 * 0.99);
   }
+  p.page-figure,
   p.founder-dash-figure {
     font-size: calc(1.52439024rem * 0.98 * 0.98);
     line-height: calc(2.13414634rem * 0.98 * 0.98);
+  }
+}
+
+h3.page-section.page-section--compact,
+h3.page-section.text-sm {
+  font-size: 0.8925875rem;
+  line-height: 1.3125rem;
+}
+[data-rail-content] h3.page-section,
+[data-rail-content] h3.founder-dash-section {
+  font-size: 1.0201rem;
+  line-height: 1.5rem;
+}
+[data-rail-content] h3.page-section.page-section--compact,
+[data-rail-content] h3.page-section.text-sm {
+  font-size: 0.8925875rem;
+  line-height: 1.3125rem;
+}
+
+@media (min-width: 640px) {
+  h3.page-section.page-section--compact,
+  h3.page-section.text-sm {
+    font-size: 0.8925875rem;
+    line-height: 1.3125rem;
+  }
+  [data-rail-content] h3.page-section,
+  [data-rail-content] h3.founder-dash-section {
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+  }
+  [data-rail-content] h3.page-section.page-section--compact,
+  [data-rail-content] h3.page-section.text-sm {
+    font-size: 0.8925875rem;
+    line-height: 1.3125rem;
+  }
+}
+@media (min-width: 1024px) {
+  h3.page-section.page-section--compact,
+  h3.page-section.text-sm {
+    font-size: 1.08852134rem;
+    line-height: 1.60060976rem;
+  }
+  [data-rail-content] h3.page-section,
+  [data-rail-content] h3.founder-dash-section {
+    font-size: 1.37195122rem;
+    line-height: 1.98170732rem;
+  }
+  [data-rail-content] h3.page-section.page-section--compact,
+  [data-rail-content] h3.page-section.text-sm {
+    font-size: 1.08852134rem;
+    line-height: 1.60060976rem;
   }
 }

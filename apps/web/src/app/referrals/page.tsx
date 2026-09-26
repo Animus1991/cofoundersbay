@@ -339,7 +339,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <Users className="icon-md text-status-info" />
           </div>
           <div>
-            <p className="text-xl font-bold">{totalInvited}</p>
+            <p className="page-stat text-xl font-bold">{totalInvited}</p>
             <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_invited')} el={referralsEl('stat_invited')} compact wrap /></p>
           </div>
         </div>
@@ -350,7 +350,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <CheckCircle className="icon-md text-status-success" />
           </div>
           <div>
-            <p className="text-xl font-bold">{signedUp}</p>
+            <p className="page-stat text-xl font-bold">{signedUp}</p>
             <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_signed_up')} el={referralsEl('stat_signed_up')} compact wrap /></p>
           </div>
         </div>
@@ -361,7 +361,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <Gift className="icon-md text-status-accent" />
           </div>
           <div>
-            <p className="text-xl font-bold">{rewarded}</p>
+            <p className="page-stat text-xl font-bold">{rewarded}</p>
             <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_rewarded')} el={referralsEl('stat_rewarded')} compact wrap /></p>
           </div>
         </div>
@@ -372,7 +372,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <TrendingUp className="icon-md text-status-warning" />
           </div>
           <div>
-            <p className="text-xl font-bold">€{totalEarned}</p>
+            <p className="page-stat text-xl font-bold">€{totalEarned}</p>
             <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_earned')} el={referralsEl('stat_earned')} compact wrap /></p>
           </div>
         </div>

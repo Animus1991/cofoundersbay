@@ -188,7 +188,7 @@ export default function MentorEarningsPage() {
                 <Icon className={cn('icon-sm shrink-0', tone)} aria-hidden="true" />
                 <span className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact wrap /></span>
               </div>
-              <p className="mt-1 text-xl font-bold tabular-nums">{value}</p>
+              <p className="page-stat mt-1 text-xl font-bold tabular-nums">{value}</p>
               <p className="text-xs text-muted-foreground"><BilingualText en={subEn} el={subEl} compact wrap /></p>
             </li>
           ))}
@@ -346,15 +346,15 @@ export default function MentorEarningsPage() {
                 <div className="border-t border-border my-4" />
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-xl font-bold">{formatCurrency(monthlyData.reduce((s, m) => s + m.earned, 0))}</p>
+                    <p className="page-stat text-xl font-bold">{formatCurrency(monthlyData.reduce((s, m) => s + m.earned, 0))}</p>
                     <p className="text-xs text-muted-foreground">6-month total</p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
+                    <p className="page-stat text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Total sessions" el="Σύνολο συνεδριών" compact /></p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold">
+                    <p className="page-stat text-xl font-bold">
                       {(() => { const tot = monthlyData.reduce((s, m) => s + m.sessions, 0); return formatCurrency(tot ? monthlyData.reduce((s, m) => s + m.earned, 0) / tot : 0); })()}
                     </p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Avg per session" el="Μέσος όρος ανά συνεδρία" compact /></p>

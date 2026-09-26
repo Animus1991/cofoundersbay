@@ -315,25 +315,25 @@ export default function OrgMentorsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Mentors" el="Σύνολο μεντόρων" compact /></p>
-              <p className="text-xl font-bold">{mentors.length}</p>
+              <p className="page-stat text-xl font-bold">{mentors.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργοί" compact /></p>
-              <p className={cn('text-xl font-bold', STATUS.success.icon)}>{activeMentors.length}</p>
+              <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>{activeMentors.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></p>
-              <p className="text-xl font-bold">{currentMentees}/{totalCapacity}</p>
+              <p className="page-stat text-xl font-bold">{currentMentees}/{totalCapacity}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {mentors.some((m) => m.totalSessions == null) ? '\u2014' : mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}
               </p>
             </CardContent>

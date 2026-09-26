@@ -267,23 +267,23 @@ export default function ProviderReviewsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Total Reviews" el="Σύνολο αξιολογήσεων" compact /></p>
-                  <p className="text-xl font-bold">{reviews.length}</p>
+                  <p className="page-stat text-xl font-bold">{reviews.length}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="5-star reviews" el="Αξιολογήσεις 5 αστέρων" compact wrap /></p>
-                  <p className="text-xl font-bold text-status-warning">
+                  <p className="page-stat text-xl font-bold text-status-warning">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Response Rate" el="Ποσοστό απαντήσεων" compact /></p>
-                  <p className="text-xl font-bold">
+                  <p className="page-stat text-xl font-bold">
                     {Math.round((reviews.filter((r) => r.response).length / reviews.length) * 100)}%
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Helpful Votes" el="Ψήφοι «χρήσιμο»" compact /></p>
-                  <p className="text-xl font-bold">
+                  <p className="page-stat text-xl font-bold">
                     {reviews.reduce((acc, r) => acc + r.helpful, 0)}
                   </p>
                 </div>

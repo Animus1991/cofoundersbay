@@ -120,15 +120,15 @@ export function InviteSystem() {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <p className="text-xl font-bold">{stats?.totalInvites || 0}</p>
+              <p className="page-stat text-xl font-bold">{stats?.totalInvites || 0}</p>
               <p className="text-xs text-muted-foreground"><BilingualText en="Invites Sent" el="Προσκλήσεις που στάλθηκαν" compact /></p>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-bold">{stats?.acceptedInvites || 0}</p>
+              <p className="page-stat text-xl font-bold">{stats?.acceptedInvites || 0}</p>
               <p className="text-xs text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτές" compact /></p>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-bold">{stats?.rewards || 0}</p>
+              <p className="page-stat text-xl font-bold">{stats?.rewards || 0}</p>
               <p className="text-xs text-muted-foreground"><BilingualText en="Rewards Earned" el="Ανταμοιβές" compact /></p>
             </div>
           </div>

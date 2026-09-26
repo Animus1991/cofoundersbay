@@ -390,23 +390,23 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('total_points')} el={achievementsEl('total_points')} compact /></p>
-              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString('en-GB')}</p>
+              <p className="page-stat text-xl font-bold">{stats.totalPoints.toLocaleString('en-GB')}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('achievements')} el={achievementsEl('achievements')} compact /></p>
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {stats.achievementsUnlocked}/{stats.totalAchievements}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('completion')} el={achievementsEl('completion')} compact /></p>
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {Math.round((stats.achievementsUnlocked / stats.totalAchievements) * 100)}%
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('rank')} el={achievementsEl('rank')} compact /></p>
-              <p className="text-xl font-bold">#{stats.percentile}</p>
+              <p className="page-stat text-xl font-bold">#{stats.percentile}</p>
             </div>
           </div>
         </div>

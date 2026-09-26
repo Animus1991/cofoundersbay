@@ -168,7 +168,7 @@ export default function TenantBillingPage() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xl font-bold">
+                    <p className="page-stat text-xl font-bold">
                       {formatCents(
                         sub.billingCycle === 'annual' ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0),
                         sub.plan?.currency,

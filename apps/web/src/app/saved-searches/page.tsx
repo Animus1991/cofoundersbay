@@ -423,7 +423,7 @@ export default function SavedSearchesPage() {
                 <Search className="icon-md text-primary-accessible" />
               </div>
               <div>
-                <p className="text-xl font-bold">{searches.length}</p>
+                <p className="page-stat text-xl font-bold">{searches.length}</p>
                 <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={savedSearchesEn('stat_searches')} el={savedSearchesEl('stat_searches')} compact wrap /></p>
               </div>
             </div>
@@ -434,7 +434,7 @@ export default function SavedSearchesPage() {
                 <Bell className="icon-md text-status-success" />
               </div>
               <div>
-                <p className="text-xl font-bold">
+                <p className="page-stat text-xl font-bold">
                   {searches.filter((s) => s.alertsEnabled).length}
                 </p>
                 <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={savedSearchesEn('stat_alerts')} el={savedSearchesEl('stat_alerts')} compact wrap /></p>
@@ -447,7 +447,7 @@ export default function SavedSearchesPage() {
                 <Sparkles className="icon-md text-status-warning" />
               </div>
               <div>
-                <p className="text-xl font-bold">{totalNewResults}</p>
+                <p className="page-stat text-xl font-bold">{totalNewResults}</p>
                 <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={savedSearchesEn('stat_new')} el={savedSearchesEl('stat_new')} compact wrap /></p>
               </div>
             </div>

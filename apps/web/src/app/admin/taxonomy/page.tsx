@@ -298,20 +298,20 @@ export default function AdminTaxonomyPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Skills" el="Σύνολο δεξιοτήτων" compact /></p>
-              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="text-xl font-bold">{total}</p>}
+              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="page-stat text-xl font-bold">{total}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Categories" el="Κατηγορίες" compact /></p>
-              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="text-xl font-bold">{categories.length}</p>}
+              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="page-stat text-xl font-bold">{categories.length}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Technical Skills" el="Τεχνικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
+                <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
               )}
             </CardContent>
           </Card>
@@ -319,7 +319,7 @@ export default function AdminTaxonomyPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Business Skills" el="Επιχειρηματικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
+                <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
               )}
             </CardContent>
           </Card>

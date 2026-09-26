@@ -400,7 +400,7 @@ export default function AdminUserManagementPage() {
               <CardContent className="flex items-center justify-between p-4">
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                  <p className={cn('text-2xl font-bold', className)}>{value}</p>
+                  <p className={cn('page-stat text-2xl font-bold', className)}>{value}</p>
                 </div>
                 <Icon className={cn('icon-lg text-muted-foreground', className)} />
               </CardContent>

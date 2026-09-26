@@ -411,7 +411,7 @@ export default function InvestorPortfolioPage() {
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
-                  <p className="text-xl font-bold tabular-nums">{value}</p>
+                  <p className="page-stat text-xl font-bold tabular-nums">{value}</p>
                   <p className="text-xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>

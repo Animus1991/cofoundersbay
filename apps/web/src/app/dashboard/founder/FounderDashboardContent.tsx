@@ -749,8 +749,6 @@ export default function FounderDashboardContent() {
     <AppShell
       rail={rail}
       showHelp
-      titleClassName="founder-dash-h1"
-      contentClassName="founder-dash"
       // One Ask AI in the header, not three. AppShell renders its own whenever the
       // page has a title, and this page was additionally passing an AIInsightButton
       // and an AskAiButton through `actions` — on a 360px screen that stacked into
@@ -816,9 +814,6 @@ export default function FounderDashboardContent() {
             value={userMetrics?.profileViews ?? '—'}
             trend={trendOf(userMetrics?.profileViewsChange)}
             href="/analytics"
-            labelClassName="founder-dash-stat-label"
-            valueClassName="founder-dash-stat"
-            metaClassName="founder-dash-stat-meta"
           />
           {/* No endpoint reports a week-over-week change for matches, so this
               tile carried a literal 3 as its arrow. It shows the count alone. */}
@@ -827,9 +822,6 @@ export default function FounderDashboardContent() {
             label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
             value={stats?.matchesThisWeek ?? '—'}
             href="/matches"
-            labelClassName="founder-dash-stat-label"
-            valueClassName="founder-dash-stat"
-            metaClassName="founder-dash-stat-meta"
           />
           <MetricTile
             glyph="messages"
@@ -838,9 +830,6 @@ export default function FounderDashboardContent() {
             href="/messages"
             caption={messageCaption.en}
             captionEl={messageCaption.el}
-            labelClassName="founder-dash-stat-label"
-            valueClassName="founder-dash-stat"
-            metaClassName="founder-dash-stat-meta"
           />
           <MetricTile
             glyph="flag"
@@ -849,9 +838,6 @@ export default function FounderDashboardContent() {
             href="/milestones"
             caption={milestoneCaption.en}
             captionEl={milestoneCaption.el}
-            labelClassName="founder-dash-stat-label"
-            valueClassName="founder-dash-stat"
-            metaClassName="founder-dash-stat-meta"
           />
         </div>
 
@@ -869,7 +855,6 @@ export default function FounderDashboardContent() {
               <div id="founder-progress" className="scroll-mt-24">
               <VentureReadinessCard
                 data={vrs}
-                titleClassName="founder-dash-section"
                 footer={
                   <div className="space-y-2.5">
                     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -909,7 +894,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="founder-dash-section text-base flex items-center gap-2">
+                  <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
                   </CardTitle>
@@ -945,7 +930,7 @@ export default function FounderDashboardContent() {
                       <p className="text-xs text-muted-foreground">
                         {fundRound.name}
                       </p>
-                      <p className="founder-dash-figure text-xl font-bold text-foreground">
+                      <p className="page-figure text-xl font-bold text-foreground">
                         {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
                         <span className="text-sm font-normal text-muted-foreground ml-1">
                           / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
@@ -994,7 +979,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="founder-dash-section text-base flex items-center gap-2">
+                  <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
                   </CardTitle>
@@ -1051,7 +1036,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="founder-dash-section text-base flex items-center gap-2">
+                  <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
                   </CardTitle>
@@ -1094,7 +1079,7 @@ export default function FounderDashboardContent() {
                 Badges together where they belong. */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="founder-dash-section text-sm flex items-center gap-2">
+                <CardTitle className="text-sm flex items-center gap-2">
                   <CfbGlyph name="shield" className="icon-sm text-primary-accessible" />
                   <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
                 </CardTitle>

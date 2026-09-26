@@ -53,7 +53,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{title}</p>
-          <p className="text-xl font-bold text-foreground">{value}</p>
+          <p className="page-stat text-xl font-bold text-foreground">{value}</p>
           {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
         </div>
       </CardContent>

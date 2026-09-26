@@ -383,13 +383,13 @@ export default function ReputationPage() {
                         <dl className="grid grid-cols-2 gap-4">
                           <div className="rounded-xl border border-border/40 p-3">
                             <dt className="text-xs text-muted-foreground">{t('current')}</dt>
-                            <dd className="mt-1 text-2xl font-bold tabular-nums">
+                            <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
                               {streakData.currentStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.currentStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>
                           <div className="rounded-xl border border-border/40 p-3">
                             <dt className="text-xs text-muted-foreground">{t('longest')}</dt>
-                            <dd className="mt-1 text-2xl font-bold tabular-nums">
+                            <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
                               {streakData.longestStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.longestStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>

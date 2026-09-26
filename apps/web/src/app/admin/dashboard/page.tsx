@@ -325,7 +325,7 @@ export default function AdminDashboardPage() {
                     href={a.href}
                     className="rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
                   >
-                    <p className="text-xl font-semibold tabular-nums tracking-tight">
+                    <p className="page-stat text-xl font-semibold tabular-nums tracking-tight">
                       {statsLoading || a.value == null ? dash : a.value.toLocaleString('en-GB')}
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">

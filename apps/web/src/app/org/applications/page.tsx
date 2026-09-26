@@ -407,7 +407,7 @@ export default function OrgApplicationsPage() {
             <Card key={kpi.label}>
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground"><BilingualText en={kpi.label} el={kpi.labelEl} compact wrap /></p>
-                <p className={cn('text-xl font-semibold tabular-nums sm:text-2xl', kpi.tone)}>{kpi.value}</p>
+                <p className={cn('page-stat text-xl font-semibold tabular-nums sm:text-2xl', kpi.tone)}>{kpi.value}</p>
               </CardContent>
             </Card>
           ))}

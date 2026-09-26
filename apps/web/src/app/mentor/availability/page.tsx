@@ -169,7 +169,7 @@ export default function MentorAvailabilityPage() {
                 <Clock className="icon-sm text-primary-accessible" />
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
-              <p className="text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
+              <p className="page-stat text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
               <p className="text-xs text-muted-foreground">across {slots.length} time blocks</p>
             </CardContent>
           </Card>

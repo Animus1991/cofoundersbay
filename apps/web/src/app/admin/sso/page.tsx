@@ -87,7 +87,7 @@ export default function SSOAdminPage() {
             <CardContent>
               <div className="flex items-center gap-2">
                 <Icon className={`icon-md ${color}`} />
-                <span className="text-xl font-bold">{value}</span>
+                <span className="page-stat text-xl font-bold">{value}</span>
               </div>
             </CardContent>
           </Card>

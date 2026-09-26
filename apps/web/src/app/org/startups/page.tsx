@@ -361,13 +361,13 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Startups" el="Σύνολο startups" compact /></p>
-              <p className="text-xl font-bold">{startups.length}</p>
+              <p className="page-stat text-xl font-bold">{startups.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
-              <p className={cn('text-xl font-bold', STATUS.success.icon)}>
+              <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>
                 {startups.filter((s) => s.status === 'active').length}
               </p>
             </CardContent>
@@ -375,7 +375,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></p>
-              <p className={cn('text-xl font-bold', STATUS.info.icon)}>
+              <p className={cn('page-stat text-xl font-bold', STATUS.info.icon)}>
                 {startups.filter((s) => s.status === 'graduated').length}
               </p>
             </CardContent>
@@ -383,7 +383,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground"><BilingualText en="Avg. Readiness" el="Μέση ετοιμότητα" compact /></p>
-              <p className="text-xl font-bold">
+              <p className="page-stat text-xl font-bold">
                 {scored.length ? `${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%` : '\u2014'}
               </p>
             </CardContent>
