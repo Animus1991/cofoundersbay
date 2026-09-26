@@ -22,6 +22,8 @@ import { cn } from '@/lib/utils';
 import { listAdminAuditLogs, type AdminAuditLogItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /*
  * The API writes dotted actions - `user.ban`, `report.resolve`,
@@ -164,6 +166,47 @@ export default function AdminAuditLogPage() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  const exportCsv = () =>
+    downloadCsv(
+      'audit-log',
+      ['created_at', 'actor', 'action', 'entity_type', 'entity_id', 'meta'],
+      filtered.map((l) => [l.createdAt, l.actorEmail, l.action, l.entityType, l.entityId, JSON.stringify(l.meta ?? {})]),
+    );
+  // The filters, paging, refresh and export, offered to the assistant with
+  // the page's own handlers; the entries on screen go out as a list.
+  usePageControls([
+    choiceControl('entity_type', 'Entity type', 'Τύπος οντότητας', ENTITY_TYPES.map((t) => ({ value: t, en: t === 'all' ? 'All entities' : t, el: t === 'all' ? 'Όλες οι οντότητες' : t })), entityType, (v) => { setEntityType(v); setPage(0); }),
+    choiceControl('action_filter', 'Action', 'Ενέργεια', ACTION_TYPES.map((a) => ({ value: a, en: a === 'all' ? 'All actions' : a, el: a === 'all' ? 'Όλες οι ενέργειες' : a })), action, (v) => { setAction(v); setPage(0); }),
+    {
+      id: 'next_page', labelEn: 'Next page of entries', labelEl: 'Επόμενη σελίδα εγγραφών', writes: false,
+      unavailableEn: page >= totalPages - 1 ? 'This is the last page.' : undefined,
+      unavailableEl: page >= totalPages - 1 ? 'Αυτή είναι η τελευταία σελίδα.' : undefined,
+      run: () => setPage((p) => Math.min(totalPages - 1, p + 1)),
+    },
+    {
+      id: 'previous_page', labelEn: 'Previous page of entries', labelEl: 'Προηγούμενη σελίδα εγγραφών', writes: false,
+      unavailableEn: page === 0 ? 'This is the first page.' : undefined,
+      unavailableEl: page === 0 ? 'Αυτή είναι η πρώτη σελίδα.' : undefined,
+      run: () => setPage((p) => Math.max(0, p - 1)),
+    },
+    { id: 'refresh', labelEn: 'Refresh the audit log', labelEl: 'Ανανέωση αρχείου ελέγχου', writes: false, run: () => void refetch() },
+    {
+      id: 'export_csv', labelEn: 'Export the entries shown as CSV', labelEl: 'Εξαγωγή των εγγραφών σε CSV', writes: false,
+      unavailableEn: filtered.length === 0 ? 'No entry matches the current filters.' : undefined,
+      unavailableEl: filtered.length === 0 ? 'Καμία εγγραφή δεν ταιριάζει στα φίλτρα.' : undefined,
+      run: exportCsv,
+    },
+  ]);
+  usePageList([
+    {
+      id: 'entries',
+      labelEn: 'Audit entries',
+      labelEl: 'Εγγραφές ελέγχου',
+      rows: isLoading ? undefined : filtered.map((l) => [String(l.createdAt ?? '').slice(0, 16).replace('T', ' '), l.actorEmail, l.action, [l.entityType, l.entityId].filter(Boolean).join(' ')].filter(Boolean).join(' · ')),
+      total,
+    },
+  ]);
+
   return (
     <AppShell
       title="Audit log"
@@ -174,23 +217,17 @@ export default function AdminAuditLogPage() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} aria-hidden="true" />
-            Refresh
+            <BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
           {/* Had no handler. Exports the rows the filters show. */}
           <Button
             variant="outline"
             size="sm"
             disabled={filtered.length === 0}
-            onClick={() =>
-              downloadCsv(
-                'audit-log',
-                ['created_at', 'actor', 'action', 'entity_type', 'entity_id', 'meta'],
-                filtered.map((l) => [l.createdAt, l.actorEmail, l.action, l.entityType, l.entityId, JSON.stringify(l.meta ?? {})]),
-              )
-            }
+            onClick={exportCsv}
           >
             <Download className="mr-2 icon-sm" aria-hidden="true" />
-            Export
+            <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
         </div>
       }
@@ -208,22 +245,22 @@ export default function AdminAuditLogPage() {
             />
           </div>
           <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(0); }}>
-            <SelectTrigger aria-label="Entity type" className="w-[160px]">
+            <SelectTrigger aria-label="Entity type. Τύπος οντότητας" className="w-[160px]">
               <SelectValue placeholder={bilingualInline("Entity type", "Τύπος οντότητας")} />
             </SelectTrigger>
             <SelectContent>
               {ENTITY_TYPES.map((t) => (
-                <SelectItem key={t} value={t}>{t === 'all' ? 'All Entities' : t}</SelectItem>
+                <SelectItem key={t} value={t}>{t === 'all' ? <BilingualText en="All entities" el="Όλες οι οντότητες" compact /> : t}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={action} onValueChange={(v) => { setAction(v); setPage(0); }}>
-            <SelectTrigger aria-label="Action" className="w-[160px]">
+            <SelectTrigger aria-label="Action. Ενέργεια" className="w-[160px]">
               <SelectValue placeholder={bilingualInline("Action", "Ενέργεια")} />
             </SelectTrigger>
             <SelectContent>
               {ACTION_TYPES.map((a) => (
-                <SelectItem key={a} value={a}>{a === 'all' ? 'All Actions' : a}</SelectItem>
+                <SelectItem key={a} value={a}>{a === 'all' ? <BilingualText en="All actions" el="Όλες οι ενέργειες" compact /> : a}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -234,9 +271,9 @@ export default function AdminAuditLogPage() {
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <Shield className="icon-sm text-primary-accessible" />
-              Activity Log
+              <BilingualText en="Activity log" el="Καταγραφή δραστηριότητας" compact />
             </CardTitle>
-            <span className="text-xs text-muted-foreground">{total} total entries</span>
+            <span className="text-xs text-muted-foreground"><BilingualText en={`${total} total entries`} el={`${total} εγγραφές συνολικά`} compact /></span>
           </CardHeader>
           <CardContent className="p-4">
             {isLoading ? (

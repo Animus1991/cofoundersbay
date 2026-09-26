@@ -31,6 +31,7 @@ import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const TRIGGER_LABELS: Record<string, { en: string; el: string }> = {
   user_signup: { en: 'User Signup', el: 'Εγγραφή χρήστη' },
@@ -268,6 +269,87 @@ export default function TenantAutomationPage() {
   const activeCount = rules.filter(r => r.status === 'active').length;
   const totalRuns = rules.reduce((s, r) => s + r.executionCount, 0);
   const failureRules = rules.filter(r => r.failureCount > 0).length;
+
+  // The rule actions the rows offer, reachable by the assistant with the same
+  // endpoints. setRuleStatus writes one field (`status`), so pausing and
+  // activating undo each other exactly; running a rule and deleting one have
+  // no opposite.
+  const { success: toastOk, error: toastFail } = useToast();
+  const confirm = useConfirm();
+  const ruleRows = (list: typeof rules) => rowOptions(list, (r) => r.id, (r) => r.name);
+  const noRules = rules.length === 0 ? 'No rule is listed.' : undefined;
+  const noRulesEl = rules.length === 0 ? 'Δεν εμφανίζεται κανένας κανόνας.' : undefined;
+  const statusCommand = (id: string, en: string, el: string, next: 'active' | 'paused', from: 'active' | 'paused', back: string) => ({
+    id,
+    labelEn: en,
+    labelEl: el,
+    writes: true,
+    options: ruleRows(rules.filter((r) => r.status === from)),
+    unavailableEn: noRules,
+    unavailableEl: noRulesEl,
+    undo: (value?: string) => (value ? { control: back, value } : undefined),
+    run: async (value?: string) => {
+      if (!value) return;
+      try {
+        await setAutomationRuleStatus(value, next);
+        toastOk(next === 'active' ? 'Rule activated' : 'Rule paused');
+      } catch {
+        toastFail('Failed to update rule');
+      } finally {
+        void refetch();
+      }
+    },
+  });
+  usePageControls([
+    choiceControl('automation_tab', 'Automation tab', 'Καρτέλα αυτοματισμών', [
+      { value: 'rules', en: 'Rules', el: 'Κανόνες' },
+      { value: 'settings', en: 'Settings', el: 'Ρυθμίσεις' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('rule_filter', 'Rule status', 'Κατάσταση κανόνα', [
+      { value: 'all', en: 'All', el: 'Όλοι' },
+      { value: 'active', en: 'Active', el: 'Ενεργοί' },
+      { value: 'paused', en: 'Paused', el: 'Σε παύση' },
+    ], filter, (v) => setFilter(v as typeof filter)),
+    statusCommand('pause_rule', 'Pause a rule', 'Παύση κανόνα', 'paused', 'active', 'activate_rule'),
+    statusCommand('activate_rule', 'Activate a rule', 'Ενεργοποίηση κανόνα', 'active', 'paused', 'pause_rule'),
+    {
+      id: 'run_rule',
+      labelEn: 'Run a rule now',
+      labelEl: 'Εκτέλεση κανόνα τώρα',
+      writes: true,
+      options: ruleRows(rules),
+      unavailableEn: noRules,
+      unavailableEl: noRulesEl,
+      run: async (value) => {
+        if (!value) return;
+        try { await triggerAutomationRule(value); toastOk('Rule triggered manually'); } catch { toastFail('Failed to trigger rule'); }
+      },
+    },
+    {
+      id: 'delete_rule',
+      labelEn: 'Delete a rule',
+      labelEl: 'Διαγραφή κανόνα',
+      writes: true,
+      options: ruleRows(rules.filter((r) => r.tenantId !== null)),
+      unavailableEn: rules.every((r) => r.tenantId === null) ? 'Only platform rules are listed; they cannot be deleted here.' : undefined,
+      unavailableEl: rules.every((r) => r.tenantId === null) ? 'Εμφανίζονται μόνο κανόνες πλατφόρμας· δεν διαγράφονται από εδώ.' : undefined,
+      run: async (value) => {
+        const rule = rules.find((r) => r.id === value);
+        if (!rule) return;
+        if (!(await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name)))) return;
+        try { await deleteAutomationRule(rule.id); toastOk('Rule deleted'); } catch { toastFail('Failed to delete rule'); } finally { void refetch(); }
+      },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'rules',
+      labelEn: 'Automation rules',
+      labelEl: 'Κανόνες αυτοματισμού',
+      rows: isLoading ? undefined : rules.map((r) => `${r.name} · ${r.status} · ${TRIGGER_LABELS[r.triggerType]?.en ?? r.triggerType} · ${r.executionCount} runs${r.failureCount ? ` · ${r.failureCount} failures` : ''}${r.tenantId === null ? ' · platform' : ''}`),
+      total: rules.length,
+    },
+  ]);
 
   if (!tenantId) {
     // This was a dead end: an icon and one sentence, with nothing to act on and

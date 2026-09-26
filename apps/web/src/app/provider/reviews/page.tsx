@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { usePageList } from '@/lib/page-controls';
 
 type Review = {
   id: string;
@@ -206,6 +207,19 @@ export default function ProviderReviewsPage() {
     count: reviews.filter((r) => r.rating === rating).length,
     percentage: (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100,
   }));
+
+  // The reviews on screen, for the assistant. Replies and "helpful" have no
+  // endpoint (the buttons say so), so there is nothing to offer as a command.
+  usePageList([
+    {
+      id: 'reviews',
+      labelEn: 'Client reviews',
+      labelEl: 'Αξιολογήσεις πελατών',
+      rows: isLoading ? undefined : filteredReviews.map((r) => `${r.clientName} · ${r.service} · ${r.rating}/5${r.response ? ' · answered' : ''}`),
+      total: reviews.length,
+      sample: live.length === 0 && reviews.length > 0,
+    },
+  ]);
 
   if (!isLoading && !showDemoData && reviews.length === 0) {
     return (

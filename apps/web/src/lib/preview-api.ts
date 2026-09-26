@@ -3344,6 +3344,30 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // `/api/sso/memberships` is answered by previewOrgApi: the reader is a
   // program partner at the demo's one organisation (demo/org-world.ts).
 
+  // Invitations the demo account has sent: two joined, two pending, one
+  // lapsed. Same people the organisation's roster and the pipeline use.
+  if (pathname === '/api/invites' && method === 'POST') {
+    // Sending an invite in the demo answers with the invite it would create;
+    // nothing is stored, so the list above does not grow.
+    const sent = (body ?? {}) as { email?: string; message?: string };
+    return { invite: { id: `inv-${Date.now()}`, email: sent.email ?? '', message: sent.message ?? null, status: 'pending', createdAt: new Date().toISOString(), acceptedAt: null, expiresAt: previewIsoInDays(30) } };
+  }
+  if (/^\/api\/invites\/[^/]+$/.test(pathname) && method === 'DELETE') {
+    return { ok: true };
+  }
+  if (pathname === '/api/invites/stats') {
+    return { stats: { total: 5, pending: 2, accepted: 2, remaining: 45 } };
+  }
+  if (pathname === '/api/invites') {
+    const invites = [
+      { id: 'inv-ioanna', email: 'ioanna@aegeanlab.example', message: null, status: 'accepted', createdAt: previewIsoInDays(-220), acceptedAt: previewIsoInDays(-219), expiresAt: null },
+      { id: 'inv-thanos', email: 'thanos@rigas.energy', message: null, status: 'accepted', createdAt: previewIsoInDays(-160), acceptedAt: previewIsoInDays(-150), expiresAt: null },
+      { id: 'inv-eleni', email: 'eleni@anemosstorage.example', message: 'Join the climate track cohort channel here.', status: 'pending', createdAt: previewIsoInDays(-6), acceptedAt: null, expiresAt: previewIsoInDays(24) },
+      { id: 'inv-petros', email: 'petros@kymaenergy.example', message: null, status: 'pending', createdAt: previewIsoInDays(-2), acceptedAt: null, expiresAt: previewIsoInDays(28) },
+      { id: 'inv-old', email: 'hello@old-venture.example', message: null, status: 'expired', createdAt: previewIsoInDays(-120), acceptedAt: null, expiresAt: previewIsoInDays(-90) },
+    ];
+    return { invites, total: invites.length };
+  }
   if (pathname === '/api/admin/users') {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const q = params.get('q')?.toLowerCase() ?? '';

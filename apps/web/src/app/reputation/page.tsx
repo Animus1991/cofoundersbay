@@ -27,6 +27,7 @@ import {
 } from '@/lib/i18n/strings-reputation';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { cn } from '@/lib/utils';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 /*
  * Every number on this page comes from `GET /api/gamification/users/me/{xp,
@@ -209,6 +210,41 @@ export default function ReputationPage() {
   const failed = xp.isError;
 
   const levelEl = xp.data ? LEVEL_LABEL_EL[xp.data.level] ?? xp.data.levelLabel : '';
+
+  // The tab, marking badges seen, and what the page lists, for the assistant.
+  // Marking seen stamps `seenAt` and has no way back, so it has no undo.
+  usePageControls([
+    choiceControl('reputation_tab', 'Reputation tab', 'Καρτέλα φήμης', [
+      { value: 'overview', en: 'Overview', el: 'Επισκόπηση' },
+      { value: 'badges', en: 'Badges', el: 'Διακρίσεις' },
+      { value: 'history', en: 'History', el: 'Ιστορικό' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    {
+      id: 'mark_badges_seen',
+      labelEn: 'Mark new badges as seen',
+      labelEl: 'Σήμανση νέων διακρίσεων ως αναγνωσμένων',
+      writes: true,
+      unavailableEn: unseen === 0 ? 'No badge is new.' : undefined,
+      unavailableEl: unseen === 0 ? 'Καμία διάκριση δεν είναι νέα.' : undefined,
+      run: () => markSeen.mutate(),
+    },
+  ]);
+  usePageList([
+    {
+      id: 'badges',
+      labelEn: 'Badges',
+      labelEl: 'Διακρίσεις',
+      rows: badges.isLoading ? undefined : badgeList.map((b) => `${b.name}${b.seenAt ? '' : ' · new'}`),
+      total: badgeList.length,
+    },
+    {
+      id: 'xp_history',
+      labelEn: 'Recent XP',
+      labelEl: 'Πρόσφατοι πόντοι εμπειρίας',
+      rows: xp.isLoading ? undefined : events.map((ev) => `${ev.eventType.toLowerCase().replace(/_/g, ' ')} · +${ev.xpAmount} XP`),
+      total: events.length,
+    },
+  ]);
 
   return (
     <AppShell

@@ -18,6 +18,7 @@ import { listGroups } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { formatRelativeTime } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
+import { usePageList } from '@/lib/page-controls';
 
 const PRIVACY_LABEL: Record<string, { en: string; el: string }> = {
   public: { en: 'Public', el: 'Δημόσια' },
@@ -48,6 +49,16 @@ export default function CommunityManagementPage() {
   const posts = groups.reduce((sum, g) => sum + (g.postCount ?? 0), 0);
   const closed = groups.filter((g) => g.privacy !== 'public').length;
   const dash = '—';
+  // The groups on screen, for the assistant; editing lives on /admin/communities.
+  usePageList([
+    {
+      id: 'communities',
+      labelEn: 'Communities',
+      labelEl: 'Κοινότητες',
+      rows: isLoading ? undefined : filtered.map((g) => `${g.name}${g.category ? ` · ${g.category}` : ''} · ${g.privacy} · ${g.memberCount ?? 0} members · ${g.postCount ?? 0} posts`),
+      total: groups.length,
+    },
+  ]);
 
   return (
     <AppShell

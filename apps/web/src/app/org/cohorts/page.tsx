@@ -50,6 +50,8 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useRouter } from 'next/navigation';
 
 /**
  * The page's own row from the API row.
@@ -223,6 +225,7 @@ export default function OrgCohortsPage() {
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -257,6 +260,49 @@ export default function OrgCohortsPage() {
     const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Offered to the assistant: the status filter, opening a cohort, and the
+  // cohorts on screen. Editing and archiving stay with platform admins (the
+  // row menu says so), so there is no write to offer here.
+  usePageControls([
+    choiceControl('status_filter', 'Cohort status', 'Κατάσταση κοόρτης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'recruiting', en: 'Recruiting', el: 'Δέχεται αιτήσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργές' },
+      { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένες' },
+    ], statusFilter, setStatusFilter),
+    {
+      id: 'open_cohort',
+      labelEn: 'Open a cohort',
+      labelEl: 'Άνοιγμα κοόρτης',
+      writes: false,
+      options: rowOptions(filteredCohorts, (c) => c.id, (c) => c.name),
+      unavailableEn: live.length === 0 ? 'These are sample cohorts; they have no page.' : undefined,
+      unavailableEl: live.length === 0 ? 'Είναι δείγματα κοορτών· δεν έχουν σελίδα.' : undefined,
+      run: (id) => { if (id) router.push(`/org/cohorts/${id}`); },
+    },
+    {
+      id: 'clear_filters',
+      labelEn: 'Clear the cohort filters',
+      labelEl: 'Καθαρισμός φίλτρων κοορτών',
+      writes: false,
+      unavailableEn: statusFilter === 'all' && !search ? 'No filter is set.' : undefined,
+      unavailableEl: statusFilter === 'all' && !search ? 'Δεν υπάρχει φίλτρο.' : undefined,
+      run: () => { setStatusFilter('all'); setSearch(''); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'cohorts',
+      labelEn: 'Cohorts',
+      labelEl: 'Κοόρτες',
+      rows: isLoading ? undefined : filteredCohorts.map((c) =>
+        `${c.name} · ${c.program} · ${c.status} · ${c.startups} ${c.mentors == null ? 'members' : 'startups'} · ${c.startDate} – ${c.endDate} · ${c.progress}%`,
+      ),
+      total: cohorts.length,
+      sample: live.length === 0 && cohorts.length > 0,
+    },
+  ]);
 
   return (
     <AppShell

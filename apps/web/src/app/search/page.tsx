@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 type SearchCategory = SearchCategoryKey;
 
@@ -424,6 +425,42 @@ export default function SearchPage() {
     mentors: 0,
     opportunities: 0,
   };
+
+  // The category, a recent search, and opening a result, for the assistant;
+  // the results on screen go out as a list.
+  const CATEGORY_VALUES: SearchCategory[] = ['all', 'people', 'jobs', 'events', 'groups', 'mentors', 'opportunities'];
+  usePageControls([
+    choiceControl('category', 'Search category', 'Κατηγορία αναζήτησης', CATEGORY_VALUES.map((c) => ({ value: c, en: categoryLabelEn(c), el: categoryLabelEl(c) })), category, (v) => setCategory(v as SearchCategory)),
+    {
+      id: 'recent_search',
+      labelEn: 'Run a recent search',
+      labelEl: 'Επανάληψη πρόσφατης αναζήτησης',
+      writes: false,
+      options: recentSearches.map((q) => ({ value: q, labelEn: q, labelEl: q })),
+      unavailableEn: recentSearches.length === 0 ? 'There are no recent searches on this device.' : undefined,
+      unavailableEl: recentSearches.length === 0 ? 'Δεν υπάρχουν πρόσφατες αναζητήσεις σε αυτή τη συσκευή.' : undefined,
+      run: (q) => { if (q) { setQuery(q); setDebouncedQuery(q); } },
+    },
+    {
+      id: 'open_result',
+      labelEn: 'Open a search result',
+      labelEl: 'Άνοιγμα αποτελέσματος αναζήτησης',
+      writes: false,
+      options: rowOptions(results, (r) => r.href, (r) => r.title),
+      unavailableEn: results.length === 0 ? 'No result is shown.' : undefined,
+      unavailableEl: results.length === 0 ? 'Δεν εμφανίζεται αποτέλεσμα.' : undefined,
+      run: (href) => { if (href) router.push(href); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'results',
+      labelEn: 'Search results',
+      labelEl: 'Αποτελέσματα αναζήτησης',
+      rows: debouncedQuery.length < 2 ? [] : isLoading ? undefined : results.map((r) => [r.title, r.subtitle, r.type].filter(Boolean).join(' · ')),
+      total,
+    },
+  ]);
 
   return (
     <AppShell>

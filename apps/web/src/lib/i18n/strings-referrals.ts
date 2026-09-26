@@ -20,13 +20,18 @@ export const REFERRALS_STRINGS: Record<string, BilingualPair> = {
   stat_earned: { en: 'Earned', el: 'Κερδίσατε' },
 
   // ── The link ──
-  link_title: { en: 'Your Referral Link', el: 'Ο σύνδεσμος σύστασής σας' },
+  link_title: { en: 'Invite people', el: 'Προσκαλέστε ανθρώπους' },
+  invite_by_email: { en: 'Invite by email', el: 'Πρόσκληση με email' },
+  rewards_note: {
+    en: 'Rewards are planned, not live: no credit is paid yet. The tier shows how far your invitations have gone.',
+    el: 'Οι ανταμοιβές είναι σχεδιασμένες, όχι ενεργές: δεν καταβάλλεται ακόμη πίστωση. Η βαθμίδα δείχνει πόσο έχουν προχωρήσει οι προσκλήσεις σας.',
+  },
   link_description: {
-    en: 'Share this link with friends and earn rewards when they join',
-    el: 'Μοιραστείτε τον σύνδεσμο και κερδίστε ανταμοιβές όταν εγγραφούν',
+    en: 'Share the sign-up link, or invite someone by email so the invitation is tracked below.',
+    el: 'Μοιραστείτε τον σύνδεσμο εγγραφής ή προσκαλέστε κάποιον με email, ώστε η πρόσκληση να φαίνεται παρακάτω.',
   },
   copy: { en: 'Copy', el: 'Αντιγραφή' },
-  copied: { en: 'Referral link copied!', el: 'Ο σύνδεσμος αντιγράφηκε!' },
+  copied: { en: 'Link copied!', el: 'Ο σύνδεσμος αντιγράφηκε!' },
   share_email: { en: 'Email', el: 'Email' },
   share_subject: { en: 'Join CoFounderBay', el: 'Ελάτε στο CoFounderBay' },
   share_text: {
@@ -68,18 +73,18 @@ export const REFERRALS_STRINGS: Record<string, BilingualPair> = {
   how_title: { en: 'How It Works', el: 'Πώς λειτουργεί' },
   step1_title: { en: 'Share your link', el: 'Μοιραστείτε τον σύνδεσμό σας' },
   step1_body: {
-    en: 'Send your unique referral link to friends',
-    el: 'Στείλτε τον μοναδικό σας σύνδεσμο σε γνωστούς σας',
+    en: 'Share the sign-up link, or send an email invite that is tracked here',
+    el: 'Μοιραστείτε τον σύνδεσμο εγγραφής ή στείλτε πρόσκληση με email που καταγράφεται εδώ',
   },
   step2_title: { en: 'They sign up', el: 'Εγγράφονται' },
   step2_body: {
-    en: 'Your friend creates an account using your link',
-    el: 'Δημιουργούν λογαριασμό μέσα από τον σύνδεσμό σας',
+    en: 'An email invite shows as signed up once they create their account',
+    el: 'Μια πρόσκληση με email εμφανίζεται ως εγγραφή μόλις δημιουργήσουν λογαριασμό',
   },
-  step3_title: { en: 'Both get rewarded', el: 'Ανταμείβεστε και οι δύο' },
+  step3_title: { en: 'Rewards come later', el: 'Οι ανταμοιβές έρχονται αργότερα' },
   step3_body: {
-    en: 'You both receive credits when they become active',
-    el: 'Παίρνετε και οι δύο πιστώσεις όταν γίνουν ενεργοί',
+    en: 'Credits are planned; for now your tier records how far your invitations have gone',
+    el: 'Οι πιστώσεις είναι σχεδιασμένες· προς το παρόν η βαθμίδα καταγράφει πόσο έχουν προχωρήσει οι προσκλήσεις σας',
   },
 };
 

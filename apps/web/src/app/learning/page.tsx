@@ -23,6 +23,7 @@ import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 interface Resource {
   id: string;
@@ -447,6 +448,49 @@ export default function LearningPage() {
    * the search stays with the list it searches.
    */
   const activeFilters = (typeFilter !== 'all' ? 1 : 0) + (selectedCategory !== 'All' ? 1 : 0);
+
+  // The assistant uses the same filters and bookmarks as the page. Bookmarks
+  // live on this device (no API), so saving one is a view change, not a write.
+  usePageControls([
+    choiceControl('learning_tab', 'Learning tab', 'Καρτέλα μάθησης', [
+      { value: 'all', en: 'All resources', el: 'Όλοι οι πόροι' },
+      { value: 'saved', en: 'Saved on this device', el: 'Αποθηκευμένα σε αυτή τη συσκευή' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('category', 'Category', 'Κατηγορία', allCategories.map((c) => ({ value: c, en: c, el: c === 'All' ? 'Όλες' : c })), selectedCategory, setSelectedCategory),
+    choiceControl('resource_type', 'Resource type', 'Τύπος πόρου', TYPE_FILTERS.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) })), typeFilter, (v) => setTypeFilter(v as TypeFilterKey)),
+    {
+      id: 'toggle_saved',
+      labelEn: 'Save or unsave a resource on this device',
+      labelEl: 'Αποθήκευση ή αφαίρεση πόρου σε αυτή τη συσκευή',
+      writes: false,
+      options: rowOptions(filteredResources, (r) => r.id, (r) => r.title),
+      unavailableEn: filteredResources.length === 0 ? 'No resource is listed.' : undefined,
+      unavailableEl: filteredResources.length === 0 ? 'Δεν εμφανίζεται κανένας πόρος.' : undefined,
+      run: (id) => { if (id) toggleSaved(id); },
+    },
+    {
+      id: 'clear_filters',
+      labelEn: 'Clear the learning filters',
+      labelEl: 'Καθαρισμός φίλτρων μάθησης',
+      writes: false,
+      unavailableEn: activeFilters === 0 && !searchQuery ? 'No filter is set.' : undefined,
+      unavailableEl: activeFilters === 0 && !searchQuery ? 'Δεν υπάρχει φίλτρο.' : undefined,
+      run: () => { setTypeFilter('all'); setSelectedCategory('All'); setSearchQuery(''); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'resources',
+      labelEn: 'Learning resources',
+      labelEl: 'Πόροι μάθησης',
+      rows: learningLoading ? undefined : filteredResources.map((r) =>
+        [r.title, r.type, r.category, r.duration, savedIds.includes(r.id) ? 'saved' : ''].filter(Boolean).join(' · '),
+      ),
+      total: allResources.length,
+      sample: !learningData?.resources?.length && showDemoData,
+    },
+  ]);
+
   const rail: PageRailSection[] = [
     {
       id: 'summary',

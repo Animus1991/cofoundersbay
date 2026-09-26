@@ -27,6 +27,9 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type SecurityEvent = {
   id: string;
@@ -80,6 +83,7 @@ const LEVEL_TONE: Record<SecurityEvent['level'], StatusTone> = {
 };
 
 export default function SecurityMonitoringPage() {
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('all');
 
@@ -105,14 +109,41 @@ export default function SecurityMonitoringPage() {
     () => (flagsData?.flags ?? []).map(toSecurityEvent),
     [flagsData],
   );
-  const events = live.length > 0 ? live : EVENTS;
+  // Samples only with sample data on; an account with no flags sees none.
   const isLive = live.length > 0;
+  const events = isLive ? live : showDemoData ? EVENTS : [];
 
   const filtered = events.filter(
     (e) =>
       (level === 'all' || e.level === level) &&
       (!search || e.message.toLowerCase().includes(search.toLowerCase())),
   );
+
+  const LEVELS = [
+    { value: 'all', en: 'All levels', el: 'Όλα τα επίπεδα' },
+    { value: 'critical', en: 'Critical', el: 'Κρίσιμο' },
+    { value: 'warning', en: 'Warning', el: 'Προειδοποίηση' },
+    { value: 'info', en: 'Info', el: 'Πληροφορία' },
+  ];
+  usePageControls([
+    choiceControl('level_filter', 'Severity level', 'Επίπεδο σοβαρότητας', LEVELS, level, setLevel),
+    {
+      id: 'clear_filters', labelEn: 'Clear the security filters', labelEl: 'Καθαρισμός φίλτρων ασφαλείας', writes: false,
+      unavailableEn: level === 'all' && !search ? 'No filter is set.' : undefined,
+      unavailableEl: level === 'all' && !search ? 'Δεν υπάρχει φίλτρο.' : undefined,
+      run: () => { setLevel('all'); setSearch(''); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'security_events',
+      labelEn: 'Security events',
+      labelEl: 'Συμβάντα ασφαλείας',
+      rows: filtered.map((ev) => `${ev.level} · ${ev.category} · ${ev.message}`),
+      total: events.length,
+      sample: !isLive && events.length > 0,
+    },
+  ]);
 
   return (
     <AppShell
@@ -121,24 +152,30 @@ export default function SecurityMonitoringPage() {
       descriptionEl="Ανωμαλίες ταυτοποίησης, ενδείξεις κατάχρησης API και συμβάντα SSO σε πραγματικό χρόνο."
       showHelp
     >
-      <HelpCallout id="admin-security" title="Security events">
+      <HelpCallout id="admin-security" title="Security events" titleEl="Συμβάντα ασφαλείας">
         <p>
           <strong>Critical</strong> events need immediate review. Failed-login clusters may indicate credential
           stuffing; export spikes may indicate data exfiltration attempts. Cross-check with audit log for context.
+        </p>
+        <p lang="el" className="mt-2 text-muted-foreground">
+          Τα <strong>κρίσιμα</strong> συμβάντα θέλουν άμεσο έλεγχο. Ομάδες αποτυχημένων συνδέσεων μπορεί να δείχνουν
+          δοκιμή κλεμμένων κωδικών· αιχμές εξαγωγών μπορεί να δείχνουν απόπειρα διαρροής. Διασταυρώστε με το αρχείο ελέγχου.
         </p>
       </HelpCallout>
 
       <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
         {[
-          { label: 'Flags', value: isLive ? (abuseStats?.totalFlags ?? events.length) : events.length, icon: Activity },
-          { label: 'Pending', value: isLive ? (abuseStats?.pendingFlags ?? 0) : events.filter((e) => e.level === 'critical').length, icon: AlertTriangle },
-          { label: 'Actioned', value: isLive ? (abuseStats?.actionedFlags ?? 0) : events.filter((e) => e.category === 'Auth').length, icon: Lock },
-        ].map(({ label, value, icon: Icon }) => (
+          // Samples carry no review state, so pending/actioned are only
+          // counted for real flags; they used to show critical and Auth rows.
+          { label: 'Flags', labelEl: 'Σημάνσεις', value: isLive ? (abuseStats?.totalFlags ?? events.length) : events.length, icon: Activity },
+          { label: 'Pending', labelEl: 'Σε αναμονή', value: isLive ? (abuseStats?.pendingFlags ?? 0) : '—', icon: AlertTriangle },
+          { label: 'Actioned', labelEl: 'Με ενέργεια', value: isLive ? (abuseStats?.actionedFlags ?? 0) : '—', icon: Lock },
+        ].map(({ label, labelEl, value, icon: Icon }) => (
           <Card key={label}>
             <CardContent className="flex items-center gap-3 p-4">
-              <Icon className="icon-md text-muted-foreground" />
+              <Icon className="icon-md text-muted-foreground" aria-hidden="true" />
               <div>
-                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 <p className="page-stat text-2xl font-bold">{value}</p>
               </div>
             </CardContent>
@@ -152,24 +189,29 @@ export default function SecurityMonitoringPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={bilingualInline("Search events…", "Αναζήτηση εκδηλώσεων…")}
+            aria-label="Search security events. Αναζήτηση συμβάντων ασφαλείας"
+            placeholder={bilingualInline('Search security events…', 'Αναζήτηση συμβάντων ασφαλείας…')}
             className="pl-9"
           />
         </div>
         <Select value={level} onValueChange={setLevel}>
-          <SelectTrigger aria-label="Level" className="w-full sm:w-[160px]">
+          <SelectTrigger aria-label="Level. Επίπεδο" className="w-full sm:w-[160px]">
             <SelectValue placeholder={bilingualInline("Level", "Επίπεδο")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All levels</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
-            <SelectItem value="warning">Warning</SelectItem>
-            <SelectItem value="info">Info</SelectItem>
+            {LEVELS.map((l) => (
+              <SelectItem key={l.value} value={l.value}><BilingualText en={l.en} el={l.el} compact /></SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       <Card className="mt-4">
+        {filtered.length === 0 && (
+          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+            <BilingualText en="No security events match." el="Κανένα συμβάν ασφαλείας δεν ταιριάζει." wrap />
+          </CardContent>
+        )}
         {filtered.map((e) => (
           <div key={e.id} className="flex flex-wrap items-start gap-3 border-b px-4 py-3 last:border-b-0">
             <Shield className="icon-sm mt-0.5 text-muted-foreground shrink-0" />
@@ -182,7 +224,7 @@ export default function SecurityMonitoringPage() {
                   : e.time}
               </p>
             </div>
-            <Badge variant="outline" className={cn('border capitalize', STATUS[LEVEL_TONE[e.level]].chip)}>{e.level}</Badge>
+            <Badge variant="outline" className={cn('border capitalize', STATUS[LEVEL_TONE[e.level]].chip)}><BilingualText en={e.level} el={LEVELS.find((l) => l.value === e.level)?.el} compact /></Badge>
           </div>
         ))}
       </Card>
