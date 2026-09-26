@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getMentorDashboardStats } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
@@ -101,23 +101,29 @@ function ReviewCard({ review }: { review: Review }) {
 }
 
 // The mentees whose sessions /mentor/earnings lists (demo/mentor-world),
-// dated relative to today rather than to March 2025.
-const MOCK_REVIEWS: Review[] = MENTOR_DEMO_REVIEWS.map((r) => ({
-  id: r.id,
-  mentee: r.mentee,
-  rating: r.rating,
-  comment: r.comment,
-  date: new Date(Date.now() - r.ago * 86_400_000).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }),
-  sessionType: r.sessionType,
-  helpful: r.helpful,
-}));
+// dated relative to today rather than to March 2025. The date is stamped from
+// `now`, which is set after mount: the page is prerendered, and a date worked
+// out at build time disagreed with the browser once the day changed (#418).
+function sampleReviews(now: number | null): Review[] {
+  return MENTOR_DEMO_REVIEWS.map((r) => ({
+    id: r.id,
+    mentee: r.mentee,
+    rating: r.rating,
+    comment: r.comment,
+    date: now == null ? '' : new Date(now - r.ago * 86_400_000).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }),
+    sessionType: r.sessionType,
+    helpful: r.helpful,
+  }));
+}
 
 export default function MentorReviewsPage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [ratingFilter, setRatingFilter] = useState<string>('all');
 
-  const reviews = showDemoData ? MOCK_REVIEWS : [];
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => setNow(Date.now()), []);
+  const reviews = useMemo(() => (showDemoData ? sampleReviews(now) : []), [showDemoData, now]);
   // The four side figures were constants (48 sessions, 92% response rate, 15
   // repeat mentees, 43 helpful votes) that disagreed with the mentor
   // dashboard. They are the dashboard's own counts now, and helpful votes are

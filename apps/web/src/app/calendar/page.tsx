@@ -38,6 +38,7 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useHydrated } from '@/components/common/RelativeTime';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,15 +115,15 @@ function d(day: number, hour = 10, min = 0) {
 
 const DEMO_EVENTS: CalendarEvent[] = [
   { id: '1',  title: 'MVP Sprint Review',           titleEl: 'Ανασκόπηση sprint MVP',           type: 'milestone', date: d(2),  priority: 'high',   status: 'in_progress', href: '/milestones' },
-  { id: '2',  title: 'Mentor Session — Sarah Lee',  titleEl: 'Συνεδρία μέντορα — Sarah Lee',    type: 'session',   date: d(4, 14), time: '14:00', endTime: '15:00', participants: ['Sarah Lee'], href: '/mentor/sessions' },
+  { id: '2',  title: 'Mentor Session — Dr. Sarah Kim', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Kim',    type: 'session',   date: d(4, 14), time: '14:00', endTime: '15:00', participants: ['Dr. Sarah Kim'], href: '/mentor/sessions' },
   { id: '3',  title: 'Pitch Deck Deadline',          titleEl: 'Προθεσμία pitch deck',             type: 'deadline',  date: d(7),  priority: 'high',   href: '/builder/pitch-deck' },
   { id: '4',  title: 'Startup Meetup Athens',        titleEl: 'Meetup νεοφυών Αθήνα',             type: 'event',     date: d(9, 18), time: '18:00', endTime: '21:00', location: 'Impact Hub Athens', locationEl: 'Impact Hub Αθήνα', href: '/events' },
-  { id: '5',  title: 'Team Standup',                 titleEl: 'Standup ομάδας',                   type: 'meeting',   date: d(10, 9, 30), time: '09:30', endTime: '10:00', participants: ['Alex', 'Maria', 'Nikos'] },
+  { id: '5',  title: 'Team Standup',                 titleEl: 'Standup ομάδας',                   type: 'meeting',   date: d(10, 9, 30), time: '09:30', endTime: '10:00', participants: ['Alex Demo', 'Maria Georgiou', 'Marcus Chen'] },
   { id: '6',  title: 'Seed Round Application',       titleEl: 'Αίτηση Seed round',                type: 'deadline',  date: d(12), priority: 'high',   href: '/fundraising' },
-  { id: '7',  title: 'Co-founder Interview',         titleEl: 'Συνέντευξη συνιδρυτή',             type: 'meeting',   date: d(14, 11), time: '11:00', endTime: '11:45', participants: ['Dimitris K.'] },
+  { id: '7',  title: 'Co-founder Interview',         titleEl: 'Συνέντευξη συνιδρυτή',             type: 'meeting',   date: d(14, 11), time: '11:00', endTime: '11:45', participants: ['Marcus Chen'] },
   { id: '8',  title: 'Accelerator Demo Day',         titleEl: 'Demo Day επιταχυντή',              type: 'event',     date: d(18, 16), time: '16:00', endTime: '20:00', location: 'Online (Zoom)', locationEl: 'Διαδικτυακά (Zoom)', href: '/events' },
   { id: '9',  title: 'Market Analysis Due',          titleEl: 'Λήξη ανάλυσης αγοράς',             type: 'milestone', date: d(20), priority: 'medium', status: 'pending', href: '/milestones' },
-  { id: '10', title: 'Advisor Call — Dr. Papadakis', titleEl: 'Κλήση συμβούλου — Δρ. Παπαδάκης', type: 'session',   date: d(22, 15), time: '15:00', endTime: '15:30', participants: ['Dr. Papadakis'] },
+  { id: '10', title: 'Investor Call — Nikos Andreou', titleEl: 'Κλήση με επενδυτή — Nikos Andreou', type: 'session',   date: d(22, 15), time: '15:00', endTime: '15:30', participants: ['Nikos Andreou'] },
   { id: '11', title: 'Grant Submission Deadline',    titleEl: 'Προθεσμία υποβολής grant',         type: 'deadline',  date: d(25), priority: 'high',   href: '/fundraising' },
   { id: '12', title: 'User Testing Round 2',         titleEl: 'Δοκιμές χρηστών γύρος 2',          type: 'milestone', date: d(27), priority: 'medium', status: 'pending' },
   { id: '13', title: 'Community AMA',                titleEl: 'AMA κοινότητας',                   type: 'event',     date: d(28, 19), time: '19:00', endTime: '20:00', location: 'Discord', href: '/events' },
@@ -353,6 +354,11 @@ function MiniCalendar({
 
 export default function CalendarPage() {
   const { primary } = useLanguagePreference();
+  // The page is prerendered at build time, and "today" then is not today when
+  // it is read: after the date changed, the grid, the today highlight and the
+  // sample dates all disagreed with the browser and React #418 fired on every
+  // visit. Nothing dated renders until the client has its own clock.
+  const hydrated = useHydrated();
   const [currentMonth, setCurrentMonth] = useState(now.getUTCMonth());
   const [currentYear, setCurrentYear] = useState(now.getUTCFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
@@ -502,6 +508,17 @@ export default function CalendarPage() {
       ),
     },
   ];
+
+  if (!hydrated) {
+    return (
+      <AppShell showHelp askAi="What is coming up on my calendar this week, and what should I prepare first?">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]" aria-busy="true">
+          <div className="h-80 animate-pulse rounded-xl bg-muted/40" />
+          <div className="h-[32rem] animate-pulse rounded-xl bg-muted/40" />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell

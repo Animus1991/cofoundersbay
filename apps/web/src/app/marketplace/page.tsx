@@ -84,7 +84,7 @@ const MOCK_PROVIDERS: ServiceProvider[] = [
   },
   {
     id: '2', providerName: 'Mark Thompson', providerTitle: 'CFO-as-a-Service',
-    title: 'Financial Modeling & Fundraising Prep', description: 'Build investor-grade financial models, cap tables, and fundraising narratives. YC/Techstars alumni advising 50+ startups.',
+    title: 'Financial Modeling & Fundraising Prep', description: 'Build investor-grade financial models, cap tables, and fundraising narratives. Former accelerator CFO advising early-stage teams.',
     category: 'finance', specialties: ['Financial Modeling', 'Cap Table', 'Pitch Financials', 'Due Diligence'],
     pricing: 'From €800/mo', pricingTier: 'paid', avgRating: 4.8, reviewCount: 34, clientCount: 61,
     responseTime: '< 48h', location: 'London, UK', isVerified: true, isFeatured: true, isAvailable: true,
@@ -104,7 +104,7 @@ const MOCK_PROVIDERS: ServiceProvider[] = [
     responseTime: '< 24h', location: 'Berlin, DE', isVerified: true, isFeatured: true, isAvailable: false,
   },
   {
-    id: '5', providerName: 'Nikos Andreou', providerTitle: 'Brand & UX Designer',
+    id: '5', providerName: 'Pavlos Georgiadis', providerTitle: 'Brand & UX Designer',
     title: 'Brand Identity & Product Design', description: 'End-to-end brand and product design. Logo, design system, UI/UX for web and mobile. Previously led design at 2 unicorns.',
     category: 'design', specialties: ['Brand Identity', 'UI/UX', 'Design Systems', 'Figma'],
     pricing: 'From €1.5K', pricingTier: 'paid', avgRating: 4.9, reviewCount: 63, clientCount: 90,

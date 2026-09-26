@@ -64,7 +64,7 @@ const PIPELINE_STAGES: { key: PipelineStage; label: string; labelEl: string; col
   { key: 'discovered', label: 'Discovered', labelEl: 'Εντοπίστηκε', color: 'bg-gray-500' },
   { key: 'reviewing', label: 'Reviewing', labelEl: 'Υπό εξέταση', color: 'bg-blue-500' },
   { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-purple-500' },
-  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Έλεγχος δέουσας επιμέλειας', color: 'bg-amber-500' },
+  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-amber-500' },
   { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-orange-500' },
   { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-green-500' },
 ];
@@ -140,7 +140,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
       <div className="flex items-center gap-2 mt-2">
         <Badge variant="secondary" className="text-2xs">{deal.stage}</Badge>
         {deal.readinessScore != null && (
-          <span className="text-2xs text-muted-foreground">{deal.readinessScore}% ready</span>
+          <span className="text-2xs text-muted-foreground"><BilingualText en={`${deal.readinessScore}% ready`} el={`${deal.readinessScore}% έτοιμη`} compact /></span>
         )}
         {deal.askAmount ? (
           <span className="text-2xs font-medium text-status-success ml-auto">
@@ -149,9 +149,16 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
         ) : null}
       </div>
       {deal.founderName && (
-        <p className="text-2xs text-muted-foreground mt-1.5 flex items-center gap-1">
-          <span>👤 {deal.founderName}</span>
-          {deal.teamSize && <span>· <BilingualText en={`${deal.teamSize} team`} el={`ομάδα ${deal.teamSize}`} compact /></span>}
+        <p className="text-2xs text-muted-foreground mt-1.5 flex min-w-0 items-center gap-1">
+          <span className="min-w-0 truncate">👤 {deal.founderName}</span>
+          {/* A count and an icon: "3 team · ομάδα 3" broke the founder's
+              name across two lines in a 288px column. */}
+          {deal.teamSize && (
+            <span className="flex shrink-0 items-center gap-0.5">
+              · <Users className="h-3 w-3" aria-hidden="true" />{deal.teamSize}
+              <span className="sr-only">{bilingualInline('people on the team', 'άτομα στην ομάδα')}</span>
+            </span>
+          )}
         </p>
       )}
       <p className="text-2xs text-muted-foreground mt-1">
@@ -421,7 +428,7 @@ export default function InvestorPipelinePage() {
               <div key={stage.key} className="flex-shrink-0 w-72">
                 <div className="flex items-center gap-2 mb-3">
                   <div className={cn('w-2 h-2 rounded-full', stage.color)} />
-                  <h3 className="font-medium text-sm"><BilingualText en={stage.label} el={stage.labelEl} compact /></h3>
+                  <h3 className="min-w-0 truncate font-medium text-sm"><BilingualText en={stage.label} el={stage.labelEl} compact /></h3>
                   <Badge variant="secondary" className="text-xs ml-auto">
                     {stageDeals.length}
                   </Badge>
@@ -432,7 +439,7 @@ export default function InvestorPipelinePage() {
                   ))}
                   {stageDeals.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-8">
-                      <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact />
+                      <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
                     </p>
                   )}
                 </div>

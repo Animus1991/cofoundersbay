@@ -293,9 +293,11 @@ export default function RegisterPage() {
                       >
                         {r.badge}
                       </span>
-                      <div>
-                        <p className="font-medium leading-tight"><BilingualText en={r.label} el={r.labelEl} wrap /></p>
-                        <p className="text-xs text-muted-foreground leading-tight mt-0.5"><BilingualText en={r.description} el={r.descriptionEl} wrap /></p>
+                      {/* Stacked: a 2-column grid of cards is too narrow for
+                          "Organization · Οργανισμός" on one line. */}
+                      <div className="min-w-0">
+                        <p className="font-medium"><BilingualText en={r.label} el={r.labelEl} stacked wrap keepSecondaryOnMobile /></p>
+                        <p className="text-xs text-muted-foreground mt-1"><BilingualText en={r.description} el={r.descriptionEl} stacked wrap /></p>
                       </div>
                     </button>
                   );

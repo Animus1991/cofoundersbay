@@ -476,8 +476,8 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
     <ListEmptyState
       icon={Layers}
       tone="primary"
-      title="No programs yet"
-      description="Launch your first accelerator, bootcamp, or incubator program. Track applications, cohorts, and outcomes in one place."
+      title={<BilingualText en="No programs yet" el="Δεν υπάρχουν ακόμη προγράμματα" wrap />}
+      description={<BilingualText en="Launch your first accelerator, bootcamp, or incubator program. Track applications, cohorts, and outcomes in one place." el="Ξεκινήστε το πρώτο σας πρόγραμμα επιτάχυνσης, bootcamp ή θερμοκοιτίδας. Παρακολουθήστε αιτήσεις, κοόρτες και αποτελέσματα σε ένα σημείο." wrap />}
       action={(
         <Button asChild>
           <Link href="/tenant/programs">
@@ -496,8 +496,8 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, acti
     <ListEmptyState
       icon={Users}
       tone="info"
-      title="No cohorts yet"
-      description="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days."
+      title={<BilingualText en="No cohorts yet" el="Δεν υπάρχουν ακόμη κοόρτες" wrap />}
+      description={<BilingualText en="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days." el="Μια κοόρτη ομαδοποιεί νεοφυείς που περνούν μαζί ένα πρόγραμμα. Δημιουργήστε μία για να αναθέσετε μέντορες, να παρακολουθείτε ορόσημα και να οργανώνετε demo days." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Create cohort" el="Δημιουργία κοορτής" compact />
@@ -514,8 +514,8 @@ export function EmptyOrgApplications({ filtersActive, onClearFilters, className 
     <ListEmptyState
       icon={FileText}
       tone="info"
-      title="No applications yet"
-      description="Once you publish a program with open applications, submissions will appear here for review and scoring."
+      title={<BilingualText en="No applications yet" el="Δεν υπάρχουν ακόμη αιτήσεις" wrap />}
+      description={<BilingualText en="Once you publish a program with open applications, submissions will appear here for review and scoring." el="Μόλις δημοσιεύσετε πρόγραμμα με ανοιχτές αιτήσεις, οι υποβολές θα εμφανίζονται εδώ για έλεγχο και βαθμολόγηση." wrap />}
       secondary={(
         <Button asChild variant="outline">
           <Link href="/org/programs"><BilingualText en="View programs" el="Προβολή προγραμμάτων" compact /></Link>
@@ -532,8 +532,8 @@ export function EmptyOrgMembers({ filtersActive, onClearFilters, className, acti
     <ListEmptyState
       icon={Users}
       tone="primary"
-      title="No team members yet"
-      description="Invite colleagues to help run programs, review applications, and manage cohorts. Roles control who can do what."
+      title={<BilingualText en="No team members yet" el="Δεν υπάρχουν ακόμη μέλη ομάδας" wrap />}
+      description={<BilingualText en="Invite colleagues to help run programs, review applications, and manage cohorts. Roles control who can do what." el="Προσκαλέστε συνεργάτες να τρέχουν προγράμματα, να αξιολογούν αιτήσεις και να διαχειρίζονται κοόρτες. Οι ρόλοι ορίζουν ποιος κάνει τι." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <UserPlus className="mr-1.5 icon-sm" /> <BilingualText en="Invite member" el="Πρόσκληση μέλους" compact />
@@ -550,8 +550,8 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
     <ListEmptyState
       icon={GraduationCap}
       tone="success"
-      title="No mentors invited yet"
-      description="Mentors are vetted advisors you can assign to startups in your cohorts. Find them in the platform's mentor directory."
+      title={<BilingualText en="No mentors invited yet" el="Δεν έχουν προσκληθεί ακόμη μέντορες" wrap />}
+      description={<BilingualText en="Mentors are vetted advisors you can assign to startups in your cohorts. Find them in the platform's mentor directory." el="Οι μέντορες είναι ελεγμένοι σύμβουλοι που αναθέτετε σε νεοφυείς των κοορτών σας. Θα τους βρείτε στον κατάλογο μεντόρων της πλατφόρμας." wrap />}
       action={(
         <Button asChild>
           <Link href="/mentoring">
@@ -575,8 +575,8 @@ export function EmptyOrgStartups({ filtersActive, onClearFilters, className, act
     <ListEmptyState
       icon={Rocket}
       tone="info"
-      title="No startups in portfolio yet"
-      description="Startups accepted into a program appear here. You can also import existing portfolio companies."
+      title={<BilingualText en="No startups in portfolio yet" el="Δεν υπάρχουν ακόμη νεοφυείς στο χαρτοφυλάκιο" wrap />}
+      description={<BilingualText en="Startups accepted into a program appear here." el="Οι νεοφυείς που γίνονται δεκτές σε πρόγραμμα εμφανίζονται εδώ." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Add startup" el="Προσθήκη startup" compact />
@@ -593,8 +593,8 @@ export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: Fil
     <ListEmptyState
       icon={Calendar}
       tone="primary"
-      title="No events scheduled"
-      description="Demo days, office hours, workshops, and pitch nights live here. Members of your programs get RSVPs automatically."
+      title={<BilingualText en="No events scheduled" el="Δεν έχουν προγραμματιστεί εκδηλώσεις" wrap />}
+      description={<BilingualText en="Demo days, office hours, workshops, and pitch nights live here." el="Εδώ βρίσκονται demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων." wrap />}
       action={(
         <Button asChild>
           <Link href="/events/create">
@@ -613,8 +613,8 @@ export function EmptyTenantMembers({ filtersActive, onClearFilters, className, a
     <ListEmptyState
       icon={Users}
       tone="primary"
-      title="No members in this workspace yet"
-      description="Invite people via email or share your invitation link. Roles determine access to billing, branding, and admin tools."
+      title={<BilingualText en="No members in this workspace yet" el="Δεν υπάρχουν ακόμη μέλη σε αυτόν τον χώρο εργασίας" wrap />}
+      description={<BilingualText en="Invite people via email or share your invitation link. Roles determine access to billing, branding, and admin tools." el="Προσκαλέστε με email ή μοιραστείτε τον σύνδεσμο πρόσκλησης. Οι ρόλοι ορίζουν την πρόσβαση σε χρεώσεις, ταυτότητα και εργαλεία διαχείρισης." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <UserPlus className="mr-1.5 icon-sm" /> <BilingualText en="Invite member" el="Πρόσκληση μέλους" compact />
@@ -631,8 +631,8 @@ export function EmptyTenantPrograms({ filtersActive, onClearFilters, className, 
     <ListEmptyState
       icon={Award}
       tone="primary"
-      title="No programs published"
-      description="Workspaces with programs unlock applications, cohorts, and structured mentoring. Publish one to invite startups."
+      title={<BilingualText en="No programs published" el="Δεν έχουν δημοσιευτεί προγράμματα" wrap />}
+      description={<BilingualText en="Workspaces with programs unlock applications, cohorts, and structured mentoring. Publish one to invite startups." el="Οι χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, κοόρτες και δομημένη καθοδήγηση. Δημοσιεύστε ένα για να προσκαλέσετε νεοφυείς." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="New program" el="Νέο πρόγραμμα" compact />
@@ -649,8 +649,8 @@ export function EmptyTenantWebhooks({ className, actionHref, onAction }: { class
       icon={Webhook}
       tone="info"
       variant="dashed"
-      title="No webhooks configured"
-      description="Webhooks push real-time events (signups, payments, applications) to Zapier, Slack, or any HTTPS endpoint. Add one to start receiving events."
+      title={<BilingualText en="No webhooks configured" el="Δεν έχουν ρυθμιστεί webhooks" wrap />}
+      description={<BilingualText en="Webhooks push real-time events (signups, payments, applications) to Zapier, Slack, or any HTTPS endpoint. Add one to start receiving events." el="Τα webhooks στέλνουν συμβάντα σε πραγματικό χρόνο (εγγραφές, πληρωμές, αιτήσεις) σε Zapier, Slack ή οποιοδήποτε HTTPS endpoint. Προσθέστε ένα για να αρχίσετε να λαμβάνετε συμβάντα." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction} size="sm">
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Add webhook" el="Προσθήκη webhook" compact />
@@ -667,8 +667,8 @@ export function EmptyTenantApiKeys({ className, actionHref, onAction }: { classN
       icon={KeyRound}
       tone="warning"
       variant="dashed"
-      title="No API keys yet"
-      description="API keys grant programmatic access to your workspace. Scope each key to specific permissions and rotate regularly."
+      title={<BilingualText en="No API keys yet" el="Δεν υπάρχουν ακόμη κλειδιά API" wrap />}
+      description={<BilingualText en="API keys grant programmatic access to your workspace. Scope each key to specific permissions and rotate regularly." el="Τα κλειδιά API δίνουν προγραμματιστική πρόσβαση στον χώρο εργασίας σας. Περιορίστε κάθε κλειδί σε συγκεκριμένα δικαιώματα και ανανεώνετέ τα τακτικά." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction} size="sm">
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Create API key" el="Δημιουργία κλειδιού API" compact />
@@ -685,8 +685,8 @@ export function EmptyTenantDomains({ className }: { className?: string }) {
       icon={Globe}
       tone="info"
       variant="dashed"
-      title="No domains configured yet"
-      description="Add a subdomain (your-org.cofounderbay.app) or connect a custom domain. SSL is provisioned automatically once DNS verifies."
+      title={<BilingualText en="No domains configured yet" el="Δεν έχουν ρυθμιστεί ακόμη τομείς" wrap />}
+      description={<BilingualText en="Add a subdomain (your-org.cofounderbay.app) or connect a custom domain. SSL is provisioned automatically once DNS verifies." el="Προσθέστε υποτομέα (your-org.cofounderbay.app) ή συνδέστε δικό σας τομέα. Το SSL ενεργοποιείται αυτόματα μόλις επαληθευτεί το DNS." wrap />}
       size="compact"
       className={className}
     />
@@ -699,8 +699,8 @@ export function EmptyTenantAutomations({ className }: { className?: string }) {
       icon={Workflow}
       tone="info"
       variant="dashed"
-      title="No automation rules yet"
-      description="Rules trigger actions when events happen — send Slack pings on signups, auto-assign mentors on acceptance, or notify admins on flags."
+      title={<BilingualText en="No automation rules yet" el="Δεν υπάρχουν ακόμη κανόνες αυτοματισμού" wrap />}
+      description={<BilingualText en="Rules trigger actions when events happen — send Slack pings on signups, auto-assign mentors on acceptance, or notify admins on flags." el="Οι κανόνες εκτελούν ενέργειες όταν συμβαίνει κάτι — ειδοποίηση Slack σε εγγραφές, αυτόματη ανάθεση μεντόρων σε αποδοχές ή ειδοποίηση διαχειριστών σε σημάνσεις." wrap />}
       className={className}
     />
   );
