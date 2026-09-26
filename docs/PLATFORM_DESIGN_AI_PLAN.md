@@ -933,3 +933,145 @@ Production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-ap
 | `/admin/tenants` `.map is not a function` | οι επιλογές διάβαζαν το ωμό payload αντί για το `tenantList` που η σελίδα ήδη φρουρεί | `tenantList` | sweep |
 
 Τι **δεν** αποδεικνύουν: το mock API σερβίρει κενές συλλογές, άρα οι εντολές σε `/admin/users` αρνούνται (σωστά) πάνω στα δείγματα· μια *πραγματική* αναστολή/επίλυση φτάνει στο endpoint μόνο με ζωντανά δεδομένα, και persistence, JWT, Redis δεν ελέγχονται εδώ. Το μοντέλο δεν τρέχει στο stub· οι δικές του κλήσεις `use_page_control`/`run_page_command` περνούν από τους ίδιους executors (unit tests), όχι από e2e. Lint δεν αναφέρεται — το `next lint` δεν έχει flat config (AGENTS.md).
+
+## 26. Γύρος 13 — σχεδιαστικό πέρασμα, δεξί rail όπου χρειάζεται, ελληνικά παντού, ειλικρινή νούμερα (2026-09-26)
+
+### 26.1 Έλεγχος branches
+
+`git fetch --all --prune` (2026-09-26): **κανένα** remote branch δεν έχει commit που μας λείπει.
+
+| branch | μας λείπουν | είναι πίσω από εμάς |
+|---|---|---|
+| `integration/ai-platform-upgrade` | 0 | 16 |
+| `cursor/ui-upgrade-cloudflare-preview-53e0` | 0 | 51 |
+| `cursor/ai-os-fullpage-chat-53e0` | 0 | 179 |
+| `main` | 0 | 312 |
+
+Δεν υπάρχει τίποτα για merge ή cherry-pick· η δουλειά των άλλων μοντέλων είναι ήδη μέσα (§25.1). Το `integration` μπορεί να γίνει fast-forward στο δικό μας HEAD — δεν έγινε, γιατί είναι άλλο branch και θέλει ρητή άδεια.
+
+### 26.2 Τα βήματα 1–6 του §25.4 — ολοκληρώθηκαν
+
+| # | στόχος (§25.4) | αποτέλεσμα |
+|---|---|---|
+| 1 | σελίδες με `usePageControls` 21 → 60+ | **75 αρχεία** |
+| 2 | κάθε row-menu handler προσβάσιμος ως εντολή ή καταγεγραμμένος με λόγο | guard στο `pageControls.test.tsx` |
+| 3 | ο assistant βλέπει τι δείχνει η λίστα | `usePageList` σε **67 αρχεία**· οι υπόλοιπες με controls στο `NO_LIST` με λόγο |
+| 4 | undo μόνο με επαληθευμένη αντίθετη εντολή | `undo: (value) => …` ρωτιέται *πριν* τρέξει η εντολή· moderation/role ναι, milestone complete και shortlist remove όχι (χάνουν πεδία) — AGENTS.md |
+| 5 | όλα τα query keys από factory | `qk(root, …)`· `queryKeyFactory.test.ts` αποτυγχάνει σε array-literal key και σε write που δεν ταιριάζει σε κανένα key |
+| 6 | κάθε μετρητής αδιάβαστων από μία πηγή | ένα hook ανά μετρητή |
+
+### 26.3 Δεξί rail — μόνο όπου το ζητά η σελίδα
+
+Ανατομία κοινή, στο `components/layout/RailParts.tsx`: `RailStats` (αριθμοί, δίγλωσσα, αναδίπλωση), `RailOptions` (ένα-από-πολλά με `aria-pressed` και προαιρετικά counts), `RailAction` (καθαρισμός/εξαγωγή). Όταν ένα φίλτρο του rail αδειάζει τη λίστα, το empty state το λέει και προσφέρει `openRailSection('filters')` — ποτέ δεύτερο αντίγραφο του control.
+
+**Νέα rails (κύμα 6):** `/jobs`, `/groups`, `/learning`, `/events`, `/opportunities`, `/investors`, `/mentoring`, `/shortlist`, `/endorsements`. Σύνολο σελίδων με rail: **34**.
+
+**Απορρίφθηκαν με λόγο:** `/connections` — το μόνο βοηθητικό περιεχόμενο είναι μια λωρίδα μετρητών· ένα rail χρειάζεται ≥2 γνήσια sections, οπότε οι (διορθωμένοι) μετρητές μένουν στη στήλη. `/notifications` — τα φίλτρα *είναι* η κύρια λειτουργία της σελίδας.
+
+**Guard:** ο κανόνας «ένα control ζει στη στήλη ή στο rail, ποτέ και στα δύο» έμεινε ίδιος, αλλά σταμάτησε να μετρά ως control ό,τι δεν είναι: headings, `CardTitle`, `TableHead`, `DialogTitle`, περιεχόμενο `<Dialog>`, και γραμμές `data-column-headers`. Επαληθεύτηκε με αρνητική probe σελίδα (διπλό control → αποτυγχάνει) πριν αφαιρεθεί.
+
+### 26.4 Ειλικρίνεια δεδομένων — τι έλεγε η οθόνη και δεν ίσχυε
+
+| σελίδα | πριν | τώρα |
+|---|---|---|
+| `/login`, `/register` | «Connect with 10,000+ founders», «10K+ members / 3.2K+ startups / 80+ countries» | τι κάνει το προϊόν· κανένας αριθμός που δεν υπάρχει |
+| `/marketplace` | «120+ verified providers», «500+ startups served» (σταθερές) | μετρημένα από τις καταχωρίσεις στην οθόνη |
+| `/investor/pipeline` | άθροιζε asks σε € κάτω από «$» | άθροισμα ανά νόμισμα |
+| `/org/events` | «Events This Month» — δεν φιλτράριζε ημερομηνία | «Events not cancelled» — ό,τι μετρά |
+| `/org/events`, empty states | «Members RSVP automatically» | αφαιρέθηκε — τίποτα δεν κάνει RSVP για λογαριασμό τους |
+| `/recommendations` | «Refreshes daily» | «recalculated at least hourly» — cache 1 ώρας (`matching.service`) |
+| `/org/startups` empty | «You can also import existing portfolio companies» | αφαιρέθηκε — δεν υπάρχει import |
+| `/groups/moderation` | επινοημένες αναφορές ακόμη και με τα δείγματα κλειστά | gated σε `showDemoData`, από τον demo κόσμο |
+| `/investors` | — | πραγματικοί επενδυτές πρώτοι, δείγματα μόνο στο demo |
+| `/endorsements` | μόνο όσα λάβατε | και όσα δώσατε: `GET /endorsements/given` |
+| `/connections` | μετρητές που ακολουθούσαν την καρτέλα | ένα query ανά τύπο |
+| `/tenant/sso` | οι κανόνες ρόλων δεν αποθηκεύονταν | `roleMappingRules` στην αποθήκευση· φόρτωση `postLoginRedirect` |
+| `/settings/data-export` | κάλεσε endpoint που δεν υπήρχε (timeout) | `GET /api/account/export`: χτίζεται κατά το αίτημα, τίποτα αποθηκευμένο, χωρίς credentials, οι schema-only πίνακες αναφέρονται στο `unavailable` |
+| δείγματα calendar/marketplace | «Sarah Lee», «Dr. Papadakis», ο Nikos Andreou ως designer, «YC/Techstars alumni» | πρόσωπα του demo κόσμου στους ρόλους τους· καμία πραγματική εταιρεία |
+
+**Δεν άλλαξαν — απόφαση ιδιοκτήτη:** landing «12,400+» και «95% reported by users»· testimonials (αφαιρέθηκε μόνο η λέξη «real»)· «Trusted by» Y Combinator, Techstars, EIT Digital, Innovate UK, Google for Startups, MIT Delta v· tenant settings «Enterprise Plan 500 members» hard-coded· system settings με σταθερές για session/rate-limit· η διαγραφή λογαριασμού είναι toast προς υποστήριξη· τα νομικά κείμενα (`/terms`, `/privacy`) μόνο στα αγγλικά — η μετάφρασή τους θέλει νομικό έλεγχο· `/themes/alliance` προεπισκόπηση θέματος με δείγματα στατιστικών.
+
+### 26.5 Ελληνικά σε κάθε σελίδα
+
+| μέτρηση | πριν | μετά |
+|---|---|---|
+| routes με <15% ελληνικά (sweep 1440, >30 λέξεις) | **28** | **2** (`/terms`, `/privacy` — §26.4) |
+| JSX text nodes μόνο στα αγγλικά | 2491 | ~1400, από τα οποία ~830 templates του research canvas ή ήδη δίγλωσση contextual help |
+| page headers που έπεφταν στα αγγλικά (custom title χωρίς `titleEl`) | 42 σελίδες | 0 |
+| toasts | αγγλικά, ~360 call sites | κατάλογος 361 φράσεων στο `strings-toasts.ts`, render-time lookup στο `ToastItem`· `toastCatalog.test.ts` αποτυγχάνει σε νέο toast χωρίς ελληνικά |
+| placeholders αναζήτησης/επιλογής | αγγλικά | 166 σε 88 αρχεία (`bilingualInline`) |
+| confirm dialogs | αγγλικά | 30 call sites / 36 πεδία |
+| status/ρόλοι/κατηγορίες από το API | ωμό enum | `StatusText` (EN + EL) |
+| σχετικός χρόνος | «3d ago» παντού | `RelativeTime` αλλάζει formatter και locale του date-fns για Έλληνα αναγνώστη |
+
+Κανόνας που κράτησε: πρόταση γράφεται ολόκληρη σε κάθε γλώσσα, ποτέ κολλημένα κομμάτια («Showing N of M», «Branching from v…», η σύνοψη της σύγκρισης αντιστοιχιών). Σε στενή θέση (κουμπί μέσα σε input, timestamp) μία γλώσσα, η κύρια του αναγνώστη.
+
+### 26.6 Σφάλματα που βρέθηκαν και διορθώθηκαν
+
+| εύρημα | αιτία | διόρθωση | guard |
+|---|---|---|---|
+| `/investor/pipeline` React #418 μετά από επίσκεψη στο `/settings` | Node ICU γράφει «€500k», Chromium «€500K» (Intl compact) | `formatCompactMoney` — δικό μας K/M/B | 4 unit tests |
+| `/calendar`, `/mentor/reviews` #418 σε κάθε επίσκεψη μετά τα μεσάνυχτα | prerender στο build· «σήμερα» υπολογιζόταν στο render | το ημερολόγιο σχεδιάζεται με το ρολόι του client· ημερομηνίες δειγμάτων μετά το mount | **clock probe**: όλα τα 142 routes με το ρολόι του browser +50 ημέρες από τον server → 0 σφάλματα |
+| `/investor/pipeline` 1668px σε κινητό 412px | δικό μας `sr-only` span, `absolute` χωρίς positioned πρόγονο μέσα στον scroller | `relative` στο wrapper | `phone-layout.spec.ts` |
+| `/profile/edit` οριζόντια υπερχείλιση 116px | κουμπιά sidebar χωρίς grid | `grid grid-cols-1` | `layoutGuards` |
+| `/calendar` 30 κελιά ημέρας χωρίς όνομα | κουμπιά μόνο με αριθμό | `aria-label` πλήρης ημερομηνία, `aria-pressed`, `aria-current` | sweep |
+| `/register` «Organization · Οργανισμός» έξω από την κάρτα | inline δίγλωσσο σε πλέγμα 2 στηλών | stacked | οπτικός έλεγχος |
+| pipeline: επικεφαλίδα στήλης πάνω στην επόμενη | μακρύ ελληνικό χωρίς truncate | `min-w-0 truncate`, «Δέουσα επιμέλεια» | οπτικός έλεγχος |
+
+### 26.7 Αλλαγές ανά route (συνοπτικά)
+
+| route | αλλαγή |
+|---|---|
+| `/jobs`, `/groups`, `/learning`, `/events`, `/opportunities`, `/investors`, `/mentoring`, `/shortlist`, `/endorsements` | rail (§26.3), controls και λίστες για τον assistant, φίλτρα με counts, empty state που ξέρει για το φίλτρο |
+| `/login`, `/register` | δίγλωσσα· χωρίς επινοημένους αριθμούς· σφάλματα φόρμας EN/EL· OAuth κουμπιά |
+| `/investor/pipeline` | στάδια, στατιστικά, κάρτες EN/EL· αξία ανά νόμισμα· κινητό |
+| `/org/*` (applications, events, members, mentors, programs, startups, cohorts) | status/ρόλοι/καρτέλες/μετρητές EN/EL· ειλικρινείς ετικέτες |
+| `/tenant/*` (members, programs, automation, sso) | ίδιο· automation: triggers, κατηγορίες, διακόπτες EN/EL, `aria-pressed` στις καρτέλες |
+| `/provider/*`, `/mentor/reviews` | κριτικές, αιτήματα, υπηρεσίες EN/EL· προϋπολογισμοί σε € |
+| `/groups/manage`, `/groups/moderation` | EN/EL· δείγματα gated |
+| `/admin/feature-flags`, `/admin/user-management`, `/admin/communities` | EN/EL· help callout και στις δύο γλώσσες |
+| `/marketplace`, `/matches/compare` | μετρημένα στατιστικά· άξονες αντιστοίχισης EN/EL, σύνοψη ως ολόκληρες προτάσεις |
+| `/calendar`, `/mentor/reviews` | hydration (§26.6)· πρόσωπα demo κόσμου |
+| `/settings/data-export` | πραγματική εξαγωγή (§26.4) |
+| landing, onboarding, pricing, help, cookie banner, shared modals | EN/EL |
+
+### 26.8 Πλάνο AI-first — κάθε στοιχείο και δεδομένο προσβάσιμο από τον assistant
+
+**Απογραφή σήμερα.** 38 δηλωμένες ενέργειες στο `packages/shared/src/actions/declarations.ts` (22 ανάγνωσης, 16 εγγραφής· reversal: 10 full, 4 partial, 7 none). Page controls σε 75 αρχεία, λίστες σε 67, από 160 `page.tsx`. Το `lib/api.ts` εξάγει 446 συναρτήσεις. Ο assistant φτάνει *κάθε σελίδα* μέσω `navigate`, *κάθε section rail* μέσω `open_rail_section`, *κάθε φίλτρο/εντολή που δηλώνει μια σελίδα* μέσω `use_page_control`/`run_page_command` — όχι όμως οντότητες εκτός της σελίδας που είναι ανοιχτή.
+
+Κάθε κύμα ξεκινά με ανάγνωση του controller. Κανένα `reversal` δεν δηλώνεται από πρόθεση (AGENTS.md).
+
+| κύμα | τι | πώς | μέτρηση / πύλη |
+|---|---|---|---|
+| **A. Απογραφή κάλυψης** | ένα script που για κάθε `page.tsx` λέει: controls, λίστα, rail, ή λόγο που δεν έχει | επέκταση του `platform-inventory.cjs` με τα `usePageControls`/`usePageList`/`NO_LIST` | κάθε σελίδα: κάλυψη ή τεκμηριωμένος λόγος· 0 «άγνωστο» |
+| **B. Αναγνώσεις οντοτήτων** | `get_program`, `get_cohort`, `get_application`, `get_deal`, `get_service`, `get_inquiry`, `get_review`, `get_group_posts`, `get_learning_path`, `get_data_room` | δήλωση στο shared, executor ανά app, ίδιο normaliser με τη σελίδα (`lib/api.ts`) | reads που φτάνει ο assistant: 22 → 40· κάθε read έχει unit test με μερικό payload |
+| **C. Εγγραφές με επαληθευμένη αναστροφή** | join/leave κοινότητα, apply/withdraw σε πρόγραμμα, accept/decline αίτημα καθοδήγησης, endorse/un-endorse, save search/delete, star/unstar deal | ζεύγη εντολών μόνο όπου ο controller επαναφέρει *ακριβώς* ό,τι άλλαξε· αλλιώς `none` | 0 δηλώσεις `full` χωρίς test που τρέχει εντολή→αναστροφή πάνω στο mock |
+| **D. Φόρμες ως πρόταση** | δημιουργία εκδήλωσης, προγράμματος, milestone, επεξεργασία προφίλ | ο assistant συμπληρώνει τα πεδία και δείχνει κάρτα με diff· υποβάλλει ο χρήστης· ποτέ αυτόματη υποβολή | κάθε φόρμα: e2e «ζητώ → βλέπω τα πεδία → υποβάλλω → βλέπω το αποτέλεσμα» |
+| **E. Δικαιώματα και ίχνος** | κάθε δήλωση λέει ποιοι ρόλοι· ο server ελέγχει στο `tool-calls.ts` ότι η πρόταση ταιριάζει στη δήλωση· κάθε mutation από τον assistant γράφεται σε `AuditLog` | `AuditLog` είναι schema-only — θέλει `prisma db push` στο περιβάλλον (όχι χειρόγραφο migration) | 0 mutation χωρίς guard στο endpoint· audit entry ανά εκτέλεση (έλεγχος σε πραγματική βάση, όχι στο mock) |
+| **F. Αξιολόγηση** | 60 αιτήματα EN/EL με αναμενόμενη ενέργεια/control, ως fixture· e2e ανά κύμα όπως `assistant-page-controls.spec.ts` | planner τοπικά· μοντέλο σε ξεχωριστή, μη-CI σουίτα | ακρίβεια planner ≥ 95% στο fixture· 0 εγγραφή χωρίς κάρτα επιβεβαίωσης |
+
+Σειρά: A → B → C → D, με E να συνοδεύει κάθε εγγραφή από το C και F να μεγαλώνει με κάθε κύμα.
+
+### 26.9 Πύλες
+
+Στο τελικό δέντρο: production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-api.mjs`.
+
+| πύλη | αποτέλεσμα |
+|---|---|
+| web typecheck | 0 errors |
+| api typecheck | 0 errors |
+| web vitest | 67 αρχεία, **583/583** (ήταν 531 στον γύρο 12) |
+| api vitest | 17 αρχεία, **240/240** (+ `endorsements.service`, `account-export.service`) |
+| script tests (`deploy`, `platform-inventory`) | 12/12 |
+| sweep 142 static routes @1440 | 0 non-200 · 0 page errors · 0 οριζόντια υπερχείλιση · 0 controls χωρίς όνομα · routes <15% ελληνικά: **2** (`/terms`, `/privacy`) |
+| sweep 142 static routes @390 | 0 non-200 · 0 page errors · 0 οριζόντια υπερχείλιση · 0 controls χωρίς όνομα |
+| clock probe (ρολόι browser +50 ημέρες) | 142 routes, **0** σφάλματα (`scripts/clock-probe.mjs`) |
+| Playwright `test:a11y` (axe WCAG A/AA, corner system, phone layout, assistant e2e) — desktop + mobile | 96 passed / 18 skipped / 2 failed στο πλήρες τρέξιμο· τα 2 πέρασαν 6/6 το καθένα σε επανάληψη (§26.10) |
+
+### 26.10 Τι δεν αποδεικνύουν — και τι μένει ανοιχτό
+
+- **Διακοπτόμενο e2e:** `provider dashboard` (desktop) βρήκε *δύο* `main#main-content` για μια στιγμή (strict-mode violation) σε 1 από 5 τρεξίματα· το `pills keep a circular corner` (mobile) μέτρησε 0 squircles σε 1 από 6. Δεν αναπαράγονται σε `--repeat-each=3`. Η αιτία του διπλού `main` **δεν βρέθηκε** — δεν υπάρχει redirect στο `/dashboard/provider` και το frame τοποθετείται μία φορά από το `dashboard/layout.tsx`. Χρειάζεται trace από αποτυχημένο τρέξιμο.
+- Τα δύο sweeps του τελικού build κράτησαν ~25 λεπτά το καθένα αντί για ~9, με παύσεις λεπτών και CPU σε αδράνεια· μεμονωμένες διαδρομές (και οι ίδιες ακολουθίες πλοήγησης) φορτώνουν σε ~1s. Δεν εξηγήθηκε.
+- Οι μετρήσεις τρέχουν ως `platform_admin` σε demo mode, με το preview να απαντά στον browser· persistence, JWT, Redis και οι πραγματικοί controllers ελέγχονται μόνο από τα api tests (mocked Prisma).
+- Lint δεν αναφέρεται — το `next lint` δεν έχει flat config (AGENTS.md).
+- Τα ελληνικά των νομικών σελίδων και οι ισχυρισμοί του §26.4 που δεν άλλαξαν περιμένουν απόφαση ιδιοκτήτη.
