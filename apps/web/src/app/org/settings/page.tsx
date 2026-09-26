@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 /*
  * The selects offered `gr` and `europe_athens` while the organisation stores
@@ -256,8 +257,8 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="orgType"><BilingualText en="Organization Type" el="Τύπος οργανισμού" compact /></Label>
                     <Select value={orgType} onValueChange={setOrgType}>
-                      <SelectTrigger id="orgType" aria-label="Organization type">
-                        <SelectValue placeholder="Choose a type" />
+                      <SelectTrigger id="orgType" aria-label={bilingualAria('Organization type', 'Τύπος οργανισμού')}>
+                        <SelectValue placeholder={bilingualInline("Choose a type", "Επιλέξτε τύπο")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="incubator"><BilingualText en="Incubator" el="Θερμοκοιτίδα" compact /></SelectItem>
@@ -273,8 +274,8 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="country"><BilingualText en="Country" el="Χώρα" compact /></Label>
                     <Select value={country} onValueChange={setCountry}>
-                      <SelectTrigger id="country" aria-label="Country">
-                        <SelectValue placeholder="Choose a country" />
+                      <SelectTrigger id="country" aria-label={bilingualAria('Country', 'Χώρα')}>
+                        <SelectValue placeholder={bilingualInline("Choose a country", "Επιλέξτε χώρα")} />
                       </SelectTrigger>
                       <SelectContent>
                         {COUNTRIES.map(([code, name]) => (
@@ -286,8 +287,8 @@ export default function OrgSettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="timezone"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></Label>
                     <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger id="timezone" aria-label="Timezone">
-                        <SelectValue placeholder="Choose a timezone" />
+                      <SelectTrigger id="timezone" aria-label={bilingualAria('Timezone', 'Ζώνη ώρας')}>
+                        <SelectValue placeholder={bilingualInline("Choose a timezone", "Επιλέξτε ζώνη ώρας")} />
                       </SelectTrigger>
                       <SelectContent>
                         {TIMEZONES.map((tz) => (

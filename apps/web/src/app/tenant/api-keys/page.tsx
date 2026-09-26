@@ -107,6 +107,7 @@ export default function TenantApiKeysPage() {
     <AppShell
       title="API Keys"
       description="Manage API keys for programmatic access to your tenant data"
+      descriptionEl="Διαχειριστείτε κλειδιά API για προγραμματιστική πρόσβαση στα δεδομένα του οργανισμού σας"
       actions={
         // Had no handler; there is no key-issuing service behind this page.
         <UnavailableButton

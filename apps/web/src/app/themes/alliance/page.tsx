@@ -22,6 +22,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * Four different people from the demo world, so the specimen shows how the
@@ -48,23 +49,23 @@ export default function AllianceThemePage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
               <Sparkles className="icon-sm" />
-              <span className="text-sm font-medium">Alliance theme preview · sample content</span>
+              <span className="text-sm font-medium"><BilingualText en="Alliance theme preview · sample content" el="Προεπισκόπηση θέματος Alliance · δείγμα περιεχομένου" wrap /></span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-              Connect. Collaborate. Succeed.
+              <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact />
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join the premier network for startup founders, investors, and innovators
+              <BilingualText en="Join the premier network for startup founders, investors, and innovators" el="Μπείτε στο δίκτυο για ιδρυτές νεοφυών, επενδυτές και καινοτόμους" wrap />
             </p>
             <div className="flex items-center justify-center gap-4">
               <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90" asChild>
                 <Link href="/register">
-                  Get Started
+                  <BilingualText en="Get Started" el="Ξεκινήστε" compact />
                   <ChevronRight className="ml-2 icon-md" aria-hidden="true" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
-                <Link href="/pricing">Learn More</Link>
+                <Link href="/pricing"><BilingualText en="Learn More" el="Μάθετε περισσότερα" compact /></Link>
               </Button>
             </div>
           </div>
@@ -119,7 +120,7 @@ export default function AllianceThemePage() {
                 <div className={cn('h-32 bg-gradient-to-br relative', person.banner)}>
                   <div className="absolute inset-0 bg-black/20"></div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-slate-900 hover:bg-white">Featured</Badge>
+                    <Badge className="bg-white/90 text-slate-900 hover:bg-white"><BilingualText en="Featured" el="Προβεβλημένο" compact /></Badge>
                   </div>
                 </div>
                 <CardContent className="p-6">
@@ -141,7 +142,7 @@ export default function AllianceThemePage() {
                     </div>
                     <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="shrink-0 rounded-full">
                       <Users className="icon-sm mr-2" />
-                      Connect
+                      <BilingualText en="Connect" el="Σύνδεση" compact />
                     </Button>
                   </div>
 
@@ -171,15 +172,15 @@ export default function AllianceThemePage() {
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
                     <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <Heart className="icon-sm mr-2" />
-                      Like
+                      <BilingualText en="Like" el="Μου αρέσει" compact />
                     </Button>
                     <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <MessageSquare className="icon-sm mr-2" />
-                      Message
+                      <BilingualText en="Message" el="Μήνυμα" compact />
                     </Button>
                     <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <Share2 className="icon-sm mr-2" />
-                      Share
+                      <BilingualText en="Share" el="Κοινοποίηση" compact />
                     </Button>
                   </div>
                 </CardContent>
@@ -190,7 +191,7 @@ export default function AllianceThemePage() {
           <div className="space-y-6">
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Trending Topics</h3>
+                <h3 className="font-bold text-lg mb-4"><BilingualText en="Trending Topics" el="Δημοφιλή θέματα" compact /></h3>
                 <div className="space-y-3">
                   {[
                     { tag: '#AIStartups', count: '2.5K posts' },
@@ -216,19 +217,19 @@ export default function AllianceThemePage() {
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white">
               <CardContent className="p-6">
                 <Sparkles className="icon-xl mb-3" />
-                <h3 className="font-bold text-lg mb-2">Upgrade to Pro</h3>
+                <h3 className="font-bold text-lg mb-2"><BilingualText en="Upgrade to Pro" el="Αναβάθμιση σε Pro" compact /></h3>
                 <p className="text-sm text-blue-100 mb-4">
-                  Unlock premium features and connect with top founders
+                  <BilingualText en="Unlock premium features and connect with top founders" el="Ξεκλειδώστε premium λειτουργίες και γνωρίστε κορυφαίους ιδρυτές" wrap />
                 </p>
                 <Button className="w-full bg-white text-slate-900 hover:bg-white/90" asChild>
-                  <Link href="/pricing">Get Started</Link>
+                  <Link href="/pricing"><BilingualText en="Get Started" el="Ξεκινήστε" compact /></Link>
                 </Button>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Upcoming Events</h3>
+                <h3 className="font-bold text-lg mb-4"><BilingualText en="Upcoming Events" el="Προσεχείς εκδηλώσεις" compact /></h3>
                 <div className="space-y-3">
                   {[
                     { title: 'Startup Pitch Night', date: 'Tomorrow, 6 PM' },

@@ -57,6 +57,7 @@ import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -397,7 +398,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
         <Label className="text-xs font-medium">Save current state</Label>
         <div className="flex gap-2">
           <Input
-            placeholder="Label (optional)…"
+            placeholder={bilingualInline("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
             value={snapshotLabel}
             onChange={(e) => setSnapshotLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -586,7 +587,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
         <Label className="text-xs font-medium">Commit current state</Label>
         <div className="flex gap-2">
           <Input
-            placeholder="Commit message (optional)…"
+            placeholder={bilingualInline("Commit message (optional)…", "Μήνυμα αλλαγής (προαιρετικά)…")}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -759,7 +760,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Input
-            placeholder="Description (optional)…"
+            placeholder={bilingualInline("Description (optional)…", "Περιγραφή (προαιρετικά)…")}
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             className="text-sm h-8"

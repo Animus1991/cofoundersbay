@@ -91,6 +91,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
   spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -943,7 +944,7 @@ export default function AdminPage() {
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
-                    placeholder="Search users…"
+                    placeholder={bilingualInline("Search users…", "Αναζήτηση χρηστών…")}
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                     className="pl-9"
@@ -1101,7 +1102,7 @@ export default function AdminPage() {
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
-                placeholder="Search cohorts…"
+                placeholder={bilingualInline("Search cohorts…", "Αναζήτηση κοορτών…")}
                 value={cohortSearch}
                 onChange={(e) => setCohortSearch(e.target.value)}
                 className="pl-9"
@@ -1143,7 +1144,7 @@ export default function AdminPage() {
                   </div>
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-                    <Input placeholder="Short description…" value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
+                    <Input placeholder={bilingualInline("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
                   </div>
                 </div>
                 <div className="flex gap-2 pt-1">

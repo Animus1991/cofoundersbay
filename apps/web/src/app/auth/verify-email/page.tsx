@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { errorMessage as readErrorMessage } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'no-token';
 
@@ -191,7 +192,7 @@ export default function VerifyEmailPage() {
                         <Input
                           id="email"
                           type="email"
-                          placeholder="Enter your email address"
+                          placeholder={bilingualInline("Enter your email address", "Συμπληρώστε το email σας")}
                           value={resendEmail}
                           onChange={(e) => setResendEmail(e.target.value)}
                           required

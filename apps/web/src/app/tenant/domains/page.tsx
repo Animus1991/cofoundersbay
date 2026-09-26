@@ -362,6 +362,7 @@ export default function TenantDomainsPage() {
   return (
     <AppShell
       title="Domain Management"
+      titleEl="Διαχείριση τομέων"
       description="Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies."
     >
       <div className="space-y-6">

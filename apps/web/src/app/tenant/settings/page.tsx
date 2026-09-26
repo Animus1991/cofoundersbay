@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export default function TenantSettingsPage() {
   /*
@@ -129,7 +130,7 @@ export default function TenantSettingsPage() {
                   <Label htmlFor="timezone"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></Label>
                   <Select value={timezone} onValueChange={setTimezone}>
                     <SelectTrigger id="timezone">
-                      <SelectValue placeholder="Select timezone" />
+                      <SelectValue placeholder={bilingualInline("Select timezone", "Επιλογή ζώνης ώρας")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="utc">UTC</SelectItem>
@@ -143,7 +144,7 @@ export default function TenantSettingsPage() {
                   <Label htmlFor="language"><BilingualText en="Default Language" el="Προεπιλεγμένη γλώσσα" compact /></Label>
                   <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger id="language">
-                      <SelectValue placeholder="Select language" />
+                      <SelectValue placeholder={bilingualInline("Select language", "Επιλογή γλώσσας")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en"><BilingualText en="English" el="Αγγλικά" compact /></SelectItem>
@@ -157,7 +158,7 @@ export default function TenantSettingsPage() {
                   <Label htmlFor="currency"><BilingualText en="Currency" el="Νόμισμα" compact /></Label>
                   <Select value={currency} onValueChange={setCurrency}>
                     <SelectTrigger id="currency">
-                      <SelectValue placeholder="Select currency" />
+                      <SelectValue placeholder={bilingualInline("Select currency", "Επιλογή νομίσματος")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="usd">USD ($)</SelectItem>
@@ -219,7 +220,7 @@ export default function TenantSettingsPage() {
                   <Label><BilingualText en="SSO Provider" el="Πάροχος SSO" compact /></Label>
                   <Select defaultValue="none">
                     <SelectTrigger aria-label="SSO Provider">
-                      <SelectValue placeholder="Select provider" />
+                      <SelectValue placeholder={bilingualInline("Select provider", "Επιλογή παρόχου")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none"><BilingualText en="None" el="Κανένας" compact /></SelectItem>

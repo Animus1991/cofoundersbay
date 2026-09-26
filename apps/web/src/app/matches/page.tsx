@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 const MatchCompatibilityChart = dynamic(
@@ -821,7 +822,7 @@ export default function MatchesPage() {
           <div className="relative">
           <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
           <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-          placeholder="City or country..."
+          placeholder={bilingualInline("City or country…", "Πόλη ή χώρα…")}
           className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
           {locationFilter && (
           <button aria-label="Clear location filter" onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -904,7 +905,9 @@ export default function MatchesPage() {
     <AppShell
       rail={rail}
       title={matchesEn('page_title')}
+      titleEl={matchesEl('page_title')}
       description={matchesEn('page_description')}
+      descriptionEl={matchesEl('page_description')}
       showHelp
       askAi={askAi}
       contentClassName="overflow-x-clip"
@@ -1135,7 +1138,7 @@ export default function MatchesPage() {
                 <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
-                    placeholder="Search by name, headline, or skill..." className="min-h-10 pl-9 text-sm" autoFocus />
+                    placeholder={bilingualInline("Search by name, headline, or skill…", "Αναζήτηση με όνομα, τίτλο ή δεξιότητα…")} className="min-h-10 pl-9 text-sm" autoFocus />
                   {nameSearch && (
                     <button onClick={() => setNameSearch('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">

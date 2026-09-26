@@ -18,6 +18,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface MarketData {
   // TAM/SAM/SOM Analysis
@@ -553,7 +554,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 <div>
                   <Label><BilingualText en={builderEn('mkt_demo')} el={builderEl('mkt_demo')} compact /></Label>
                   <Textarea
-                    placeholder="Age, location, company size, industry..."
+                    placeholder={bilingualInline("Age, location, company size, industry…", "Ηλικία, τοποθεσία, μέγεθος εταιρείας, κλάδος…")}
                     value={data.idealCustomerProfile.demographics}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -564,7 +565,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 <div>
                   <Label><BilingualText en={builderEn('mkt_psycho')} el={builderEl('mkt_psycho')} compact /></Label>
                   <Textarea
-                    placeholder="Values, motivations, behaviors..."
+                    placeholder={bilingualInline("Values, motivations, behaviors…", "Αξίες, κίνητρα, συμπεριφορές…")}
                     value={data.idealCustomerProfile.psychographics}
                     onChange={(e) => setData(prev => ({
                       ...prev,
@@ -575,7 +576,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 <div>
                   <Label><BilingualText en={builderEn('mkt_buying')} el={builderEl('mkt_buying')} compact /></Label>
                   <Textarea
-                    placeholder="How do they make purchasing decisions?"
+                    placeholder={bilingualInline("How do they make purchasing decisions?", "Πώς παίρνουν αποφάσεις αγοράς;")}
                     value={data.idealCustomerProfile.buyingBehavior}
                     onChange={(e) => setData(prev => ({
                       ...prev,

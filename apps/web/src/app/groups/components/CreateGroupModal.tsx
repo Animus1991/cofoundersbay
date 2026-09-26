@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { cn } from '@/lib/utils';
 import { createGroup, type GroupPrivacy } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
+import { bilingualInline } from '@/lib/i18n/format';
+import { statusEl } from '@/components/common/StatusText';
 
 const CATEGORIES = ['Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
@@ -96,7 +98,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className="w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none"
               rows={3}
-              placeholder="What is this group about?"
+              placeholder={bilingualInline("What is this group about?", "Ποιο είναι το θέμα της κοινότητας;")}
             />
           </div>
 
@@ -110,7 +112,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               >
                 <option value="">None</option>
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{bilingualInline(c, statusEl(c))}</option>
                 ))}
               </select>
             </div>

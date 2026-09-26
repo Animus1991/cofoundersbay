@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -385,7 +386,7 @@ export function ConversationalOnboarding() {
                 ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Tell us about yourself..."
+                placeholder={bilingualInline("Tell us about yourself…", "Πείτε μας για εσάς…")}
                 rows={3}
                 autoFocus
               />

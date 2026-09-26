@@ -53,6 +53,8 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { formatCompactMoney } from '@/lib/i18n/format';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -113,12 +115,7 @@ function toWatched(deal: InvestorDeal): WatchedStartup {
     matchScore: null,
     raisingAmount:
       deal.askAmountCents != null
-        ? new Intl.NumberFormat('en-GB', {
-            style: 'currency',
-            currency: deal.currency,
-            notation: 'compact',
-            maximumFractionDigits: 0,
-          }).format(deal.askAmountCents / 100)
+        ? formatCompactMoney(deal.askAmountCents / 100, deal.currency)
         : '\u2014',
     tags: deal.tags,
     watchedSince: deal.createdAt,
@@ -447,9 +444,9 @@ export default function InvestorWatchlistPage() {
     },
     onRemove: async (st) => {
       const ok = await confirm({
-        title: `Remove ${st.name} from your watchlist?`,
-        description: 'The deal and its notes are deleted from your board.',
-        confirmLabel: 'Remove',
+        title: <BilingualText en={`Remove ${st.name} from your watchlist?`} el={`Αφαίρεση του ${st.name} από τη λίστα παρακολούθησης;`} />,
+        description: <BilingualText en="The deal and its notes are deleted from your board." el="Η ευκαιρία και οι σημειώσεις της διαγράφονται από τον πίνακά σας." />,
+        confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
       });
       if (!ok) return;
       try {
@@ -581,7 +578,7 @@ export default function InvestorWatchlistPage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
-                  placeholder="Search watchlist..."
+                  placeholder={bilingualInline("Search watchlist…", "Αναζήτηση στη λίστα παρακολούθησης…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-9"

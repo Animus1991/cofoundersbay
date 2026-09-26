@@ -116,3 +116,49 @@ export function formatShortDate(
     ...(sameYear ? {} : { year: 'numeric' }),
   });
 }
+
+const COMPACT_TIERS: Array<[number, string]> = [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+
+/**
+ * Money in the short form a board or card shows: "€500K", "€1.5M".
+ *
+ * Not `Intl.NumberFormat({ notation: 'compact' })`: its suffixes come from
+ * the runtime's ICU data, and Node's (78) writes en-GB thousands as "€500k"
+ * while Chromium writes "€500K". A server-rendered card and its hydrating
+ * client then disagree, React #418 fires and the page is re-rendered from
+ * scratch - /investor/pipeline did exactly that. The suffix is chosen here
+ * instead; only plain grouping and the currency symbol come from Intl, and
+ * those agree across runtimes.
+ */
+export function formatCompactMoney(amount: number, currency = 'EUR', maximumFractionDigits = 0): string {
+  if (!Number.isFinite(amount)) return '—';
+  const sign = amount < 0 ? '-' : '';
+  let value = Math.abs(amount);
+  let suffix = '';
+  const factor = 10 ** maximumFractionDigits;
+  for (let i = 0; i < COMPACT_TIERS.length; i++) {
+    const [size, label] = COMPACT_TIERS[i];
+    if (value >= size) {
+      let scaled = Math.round((value / size) * factor) / factor;
+      // 999,600 rounds to "1000K"; that is "1M".
+      if (scaled >= 1000 && i > 0) {
+        [, suffix] = COMPACT_TIERS[i - 1];
+        scaled = Math.round((value / COMPACT_TIERS[i - 1][0]) * factor) / factor;
+      } else {
+        suffix = label;
+      }
+      value = scaled;
+      break;
+    }
+  }
+  const number = new Intl.NumberFormat('en-GB', { maximumFractionDigits: suffix ? maximumFractionDigits : 0 }).format(value);
+  let symbol = currency;
+  try {
+    symbol = new Intl.NumberFormat('en-GB', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' })
+      .formatToParts(0)
+      .find((p) => p.type === 'currency')?.value ?? currency;
+  } catch {
+    // An unknown code falls back to the code itself.
+  }
+  return `${sign}${symbol}${number}${suffix}`;
+}

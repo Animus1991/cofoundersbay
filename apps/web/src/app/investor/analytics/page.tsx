@@ -29,16 +29,12 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { formatCompactMoney } from '@/lib/i18n/format';
 
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
   if (cents == null) return '—';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency,
-    notation: 'compact',
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
+  return formatCompactMoney(cents / 100, currency);
 }
 
 /*

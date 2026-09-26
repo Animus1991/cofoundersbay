@@ -35,6 +35,7 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { LocalTime } from '@/components/common/LocalTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -263,7 +264,7 @@ export function BoardHistoryDrawer({
             <Label className="text-xs font-medium">Save current state</Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Label (optional)…"
+                placeholder={bilingualInline("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
                 value={snapshotLabel}
                 onChange={(e) => setSnapshotLabel(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateSnapshot()}

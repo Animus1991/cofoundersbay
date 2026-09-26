@@ -46,6 +46,7 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /*
  * The quick notification switches here are the in-app channel of each
@@ -402,6 +403,7 @@ export default function SettingsPage() {
     <AppShell
       title="Settings"
       description="Manage billing, notifications, and integrations."
+      descriptionEl="Διαχειριστείτε χρεώσεις, ειδοποιήσεις και ενσωματώσεις."
       showHelp
     >
       {!hasToken && (
@@ -514,7 +516,7 @@ export default function SettingsPage() {
                     <div className="relative">
                       <Input
                         type={showPw ? 'text' : 'password'}
-                        placeholder="Current password"
+                        placeholder={bilingualInline("Current password", "Τρέχων κωδικός")}
                         value={pwForm.current}
                         onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
                         required
@@ -538,7 +540,7 @@ export default function SettingsPage() {
                     </div>
                     <Input
                       type={showPw ? 'text' : 'password'}
-                      placeholder="New password (min 8 chars)"
+                      placeholder={bilingualInline("New password (min 8 chars)", "Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)")}
                       value={pwForm.next}
                       onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
                       required
@@ -547,7 +549,7 @@ export default function SettingsPage() {
                     />
                     <Input
                       type={showPw ? 'text' : 'password'}
-                      placeholder="Confirm new password"
+                      placeholder={bilingualInline("Confirm new password", "Επιβεβαίωση νέου κωδικού")}
                       value={pwForm.confirm}
                       onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
                       required

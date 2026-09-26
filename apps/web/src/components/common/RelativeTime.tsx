@@ -2,6 +2,9 @@
 
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { el as elLocale } from 'date-fns/locale';
+import { formatRelativeTime, formatRelativeTimeEl } from '@/lib/utils';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * Hydration-stable wrapper for anything formatted relative to "now".
@@ -71,11 +74,19 @@ export function RelativeTime<T extends DateInput>({
   className?: string;
 }) {
   const hydrated = useHydrated();
+  const { primary } = useLanguagePreference();
   const d = date instanceof Date ? date : new Date(date);
   const iso = Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+  const greek = primary === 'el';
 
-  const relative = () =>
-    format ? format(date) : iso ? formatDistanceToNow(d, { addSuffix: true }) : '';
+  // The shared formatter and the date-fns default have Greek wording; a page's
+  // own formatter is used as given.
+  const relative = () => {
+    if (format === formatRelativeTime && greek) return formatRelativeTimeEl(date as string | Date);
+    if (format) return format(date);
+    if (!iso) return '';
+    return formatDistanceToNow(d, { addSuffix: true, ...(greek ? { locale: elLocale } : {}) });
+  };
 
   return (
     <time dateTime={iso} className={className}>

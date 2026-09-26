@@ -28,6 +28,29 @@ export function formatRelativeTime(dateStr: string | Date): string {
 }
 
 /**
+ * Greek counterpart of `formatRelativeTime`, same thresholds. `RelativeTime`
+ * switches to it when the reader's primary language is Greek; a timestamp is a
+ * tight slot, so it shows one language rather than both.
+ */
+export function formatRelativeTimeEl(dateStr: string | Date): string {
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  if (Number.isNaN(date.getTime())) return typeof dateStr === 'string' && dateStr.trim() ? dateStr : '—';
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return 'μόλις τώρα';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `πριν ${minutes} λ.`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `πριν ${hours} ώ.`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `πριν ${days} ημ.`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `πριν ${weeks} εβδ.`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `πριν ${months} μήν.`;
+  return `πριν ${Math.floor(months / 12)} έτ.`;
+}
+
+/**
  * Reads a message off a caught value. `catch` binds `unknown`, and the app's
  * API errors are plain Errors or `{ message }` objects; this keeps call sites
  * from reaching for `any`.

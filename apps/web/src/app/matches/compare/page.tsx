@@ -19,6 +19,9 @@ import { getMatchBreakdown, getRecommendations, type MatchBreakdown, type Search
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
+import { matchAxisEl } from '@/lib/i18n/strings-matches';
+import { bilingualAria } from '@/lib/i18n/format';
 
 /*
  * Matches side by side.
@@ -96,6 +99,30 @@ export default function MatchComparePage() {
   // The summary: who leads overall, and on which dimensions each leads.
   const overallLeader = leaderOf(people.map((_, i) => scoreOf(i)));
   const leads = people.map((_, i) => axes.filter(([key]) => leaderOf(people.map((__, j) => axisScore(j, key))) === i).map(([, label]) => label));
+  // One sentence per language, written whole rather than stitched from parts.
+  const summary = (() => {
+    const listEn = (labels: string[]) => labels.join(', ').toLowerCase();
+    const listEl = (labels: string[]) => labels.map((l) => matchAxisEl(l) ?? l).join(', ').toLowerCase();
+    const en: string[] = [];
+    const el: string[] = [];
+    if (overallLeader >= 0) {
+      const name = people[overallLeader].displayName;
+      const lead = leads[overallLeader] ?? [];
+      en.push(`${name} has the highest overall match at ${scoreOf(overallLeader)}%${lead.length ? `, leading on ${listEn(lead)}` : ''}.`);
+      el.push(`${name}: η υψηλότερη συνολική αντιστοίχιση, ${scoreOf(overallLeader)}%${lead.length ? `, με προβάδισμα σε ${listEl(lead)}` : ''}.`);
+    } else {
+      en.push('No one leads overall: the scores are level.');
+      el.push('Κανείς δεν προηγείται συνολικά: οι βαθμολογίες είναι ίσες.');
+    }
+    people.forEach((p, i) => {
+      if (i === overallLeader || !leads[i]?.length) return;
+      en.push(`${p.displayName} leads on ${listEn(leads[i])}.`);
+      el.push(`${p.displayName}: προβάδισμα σε ${listEl(leads[i])}.`);
+    });
+    en.push('The full reasoning for each person is on their match page.');
+    el.push('Η πλήρης αιτιολόγηση για κάθε πρόσωπο βρίσκεται στη σελίδα της αντιστοίχισής του.');
+    return { en: en.join(' '), el: el.join(' ') };
+  })();
 
   usePageList([
     {
@@ -127,10 +154,10 @@ export default function MatchComparePage() {
   ]);
 
   return (
-    <AppShell title="Compare matches" description="Open two or more match profiles side by side to weigh fit.">
+    <AppShell title="Compare matches" titleEl="Σύγκριση αντιστοιχιών" description="Open two or more match profiles side by side to weigh fit." descriptionEl="Ανοίξτε δύο ή περισσότερα προφίλ δίπλα-δίπλα για να κρίνετε πόσο ταιριάζουν.">
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Go back. Πίσω">
             <ArrowLeft className="icon-md" />
           </Button>
           <p className="min-w-0 flex-1 text-sm text-muted-foreground">
@@ -138,9 +165,9 @@ export default function MatchComparePage() {
           </p>
           {people.length < MAX && addable.length > 0 && (
             <Select value="" onValueChange={add}>
-              <SelectTrigger aria-label="Add a match to compare" className="w-[220px]">
+              <SelectTrigger aria-label="Add a match to compare. Προσθήκη αντιστοίχισης για σύγκριση" className="w-[220px]">
                 <Plus className="mr-1.5 icon-sm" aria-hidden="true" />
-                <SelectValue placeholder="Add a match" />
+                <SelectValue placeholder={bilingualInline("Add a match", "Προσθήκη αντιστοίχισης")} />
               </SelectTrigger>
               <SelectContent>
                 {addable.map((m) => (
@@ -152,13 +179,17 @@ export default function MatchComparePage() {
             </Select>
           )}
           <Button variant="outline" asChild>
-            <Link href="/matches">Back to matches</Link>
+            <Link href="/matches"><BilingualText en="Back to matches" el="Πίσω στις αντιστοιχίσεις" compact /></Link>
           </Button>
         </div>
 
         {notMatched.length > 0 && !recLoading && (
           <p className="rounded-lg border border-border/60 bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
-            {notMatched.length === 1 ? 'One person you picked is' : `${notMatched.length} people you picked are`} not among your current matches, so there is no breakdown to compare.
+            <BilingualText
+              en={`${notMatched.length === 1 ? 'One person you picked is' : `${notMatched.length} people you picked are`} not among your current matches, so there is no breakdown to compare.`}
+              el={`${notMatched.length === 1 ? 'Ένα πρόσωπο που επιλέξατε δεν είναι' : `${notMatched.length} πρόσωπα που επιλέξατε δεν είναι`} στις τρέχουσες αντιστοιχίσεις σας, οπότε δεν υπάρχει ανάλυση για σύγκριση.`}
+              wrap
+            />
           </p>
         )}
 
@@ -180,7 +211,7 @@ export default function MatchComparePage() {
         {people.length > 0 && (
           <div className="overflow-x-auto rounded-xl border border-border/60 bg-card">
             <table className="w-full min-w-[640px] border-collapse text-sm">
-              <caption className="sr-only">Your matches compared, dimension by dimension</caption>
+              <caption className="sr-only"><BilingualText en="Your matches compared, dimension by dimension" el="Οι αντιστοιχίσεις σας συγκριτικά, διάσταση προς διάσταση" wrap /></caption>
               <thead>
                 <tr>
                   <th scope="col" className="w-40 p-4 text-left align-bottom text-xs font-medium text-muted-foreground">
@@ -188,7 +219,7 @@ export default function MatchComparePage() {
                   </th>
                   {people.map((person, i) => (
                     <th key={person.userId} scope="col" className="relative p-4 text-left align-top font-normal">
-                      <Button aria-label={`Remove ${person.displayName} from the comparison`} variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7" onClick={() => remove(person.userId)}>
+                      <Button aria-label={bilingualAria(`Remove ${person.displayName} from the comparison`, `Αφαίρεση του/της ${person.displayName} από τη σύγκριση`)} variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7" onClick={() => remove(person.userId)}>
                         <X className="icon-sm" aria-hidden="true" />
                       </Button>
                       <div className="flex items-start gap-3 pr-8">
@@ -208,7 +239,7 @@ export default function MatchComparePage() {
                       <div className="mt-3 flex items-baseline gap-2">
                         <span className="text-2xl font-semibold tabular-nums text-primary-accessible">{scoreOf(i) ?? '—'}%</span>
                         {overallLeader === i && (
-                          <Badge variant="success" size="sm" className="gap-1"><Crown className="h-3 w-3" aria-hidden="true" />Highest</Badge>
+                          <Badge variant="success" size="sm" className="gap-1"><Crown className="h-3 w-3" aria-hidden="true" /><BilingualText en="Highest" el="Υψηλότερη" compact /></Badge>
                         )}
                       </div>
                       {breakdowns[i]?.overall.confidence != null && (
@@ -228,7 +259,7 @@ export default function MatchComparePage() {
                   const lead = leaderOf(values);
                   return (
                     <tr key={key} className="border-t border-border/60">
-                      <th scope="row" className="p-4 text-left text-xs font-medium text-muted-foreground">{label}</th>
+                      <th scope="row" className="p-4 text-left text-xs font-medium text-muted-foreground"><BilingualText en={label} el={matchAxisEl(label)} compact wrap /></th>
                       {values.map((value, i) => (
                         <td key={people[i].userId} className="p-4 align-middle">
                           <div className="flex items-center gap-3">
@@ -245,7 +276,7 @@ export default function MatchComparePage() {
                   );
                 })}
                 <tr className="border-t border-border/60">
-                  <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">Skills</th>
+                  <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Skills" el="Δεξιότητες" compact /></th>
                   {people.map((person) => (
                     <td key={person.userId} className="p-4 align-top">
                       <div className="flex flex-wrap gap-1.5">
@@ -258,7 +289,7 @@ export default function MatchComparePage() {
                 </tr>
                 <tr className="border-t border-border/60">
                   <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><Check className="icon-sm text-status-success" aria-hidden="true" />Strengths</span>
+                    <span className="flex items-center gap-1.5"><Check className="icon-sm text-status-success" aria-hidden="true" /><BilingualText en="Strengths" el="Δυνατά σημεία" compact /></span>
                   </th>
                   {people.map((person, i) => (
                     <td key={person.userId} className="p-4 align-top">
@@ -271,7 +302,7 @@ export default function MatchComparePage() {
                 </tr>
                 <tr className="border-t border-border/60">
                   <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><Minus className="icon-sm text-status-warning" aria-hidden="true" />Considerations</span>
+                    <span className="flex items-center gap-1.5"><Minus className="icon-sm text-status-warning" aria-hidden="true" /><BilingualText en="Considerations" el="Επιφυλάξεις" compact /></span>
                   </th>
                   {people.map((person, i) => (
                     <td key={person.userId} className="p-4 align-top">
@@ -284,7 +315,7 @@ export default function MatchComparePage() {
                 </tr>
                 {people.some((p) => p.availability || p.lookingFor) && (
                   <tr className="border-t border-border/60">
-                    <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">Availability</th>
+                    <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></th>
                     {people.map((person) => (
                       <td key={person.userId} className="p-4 align-top text-muted-foreground">
                         {[person.availability, person.lookingFor].filter(Boolean).join(' · ') || '—'}
@@ -300,18 +331,7 @@ export default function MatchComparePage() {
         {people.length >= 2 && (
           <SectionCard title="What the comparison says" titleEl="Τι λέει η σύγκριση" icon={Brain}>
             <p className="text-sm text-muted-foreground">
-              {overallLeader >= 0 ? (
-                <>
-                  <strong className="text-foreground">{people[overallLeader].displayName}</strong> has the highest overall match at {scoreOf(overallLeader)}%
-                  {leads[overallLeader]?.length ? <>, leading on {leads[overallLeader].join(', ').toLowerCase()}</> : null}.
-                </>
-              ) : (
-                <>No one leads overall: the scores are level.</>
-              )}
-              {people.map((p, i) => (i !== overallLeader && leads[i]?.length ? (
-                <span key={p.userId}> {p.displayName} leads on {leads[i].join(', ').toLowerCase()}.</span>
-              ) : null))}
-              {' '}The full reasoning for each person is on their match page.
+              <BilingualText en={summary.en} el={summary.el} wrap />
             </p>
             {overallLeader >= 0 && (
               <div className="flex flex-wrap gap-3 pt-2">
@@ -319,7 +339,7 @@ export default function MatchComparePage() {
                 <Button asChild variant="outline" size="md">
                   <Link href={`/matches/${people[overallLeader].userId}`}>
                     <Target className="mr-2 icon-sm" aria-hidden="true" />
-                    View full analysis
+                    <BilingualText en="View full analysis" el="Πλήρης ανάλυση" compact />
                   </Link>
                 </Button>
               </div>

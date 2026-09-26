@@ -46,6 +46,7 @@ import { MilestonesModule } from './milestones/milestones.module';
 import { InvestorModule } from './investor/investor.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
+import { AccountExportModule } from './account-export/account-export.module';
 import { ResearchModule } from './research/research.module';
 import { BuilderModule } from './builder/builder.module';
 import { RolesModule } from './roles/roles.module';
@@ -122,6 +123,7 @@ function findEnvFiles(): string[] {
     InvestorModule,
     ShortlistModule,
     EndorsementsModule,
+    AccountExportModule,
     ResearchModule,
     BuilderModule,
     RolesModule,

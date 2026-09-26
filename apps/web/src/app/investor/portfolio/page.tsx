@@ -33,6 +33,7 @@ import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { formatCompactMoney } from '@/lib/i18n/format';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -83,12 +84,7 @@ type Investment = {
 /** Compact money in the deal's own currency, not a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
   if (cents == null) return '\u2014';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency,
-    notation: 'compact',
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
+  return formatCompactMoney(cents / 100, currency);
 }
 
 /**
@@ -365,7 +361,7 @@ export default function InvestorPortfolioPage() {
 
   if (!isLoading && !showDemoData && investments.length === 0) {
     return (
-      <AppShell title="Portfolio" description="Track your investments and returns">
+      <AppShell title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
         <EmptyState
           illustration="default"
           title="No portfolio companies yet"
@@ -380,7 +376,9 @@ export default function InvestorPortfolioPage() {
   return (
     <AppShell
       title="Portfolio"
+      titleEl="Χαρτοφυλάκιο"
       description="Track your investments and returns"
+      descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας"
       actions={
         // Had no handler. The whole portfolio, one row per investment.
         <Button

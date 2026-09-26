@@ -869,6 +869,7 @@ export default function CoachingPage() {
     <AppShell
       rail={rail}
       title="Coaching"
+      titleEl="Καθοδήγηση"
       description="Accountability, clarity, and execution coaching for founders and teams"
       descriptionEl="Καθοδήγηση λογοδοσίας, διαύγειας και εκτέλεσης για ιδρυτές και ομάδες"
     >

@@ -2137,6 +2137,49 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { count: 2 };
   }
 
+  // The account export, built from the demo's own records the way the API
+  // builds it from the database: only what the demo user owns or sent.
+  if (pathname === '/api/account/export') {
+    const all = ['profile', 'messages', 'connections', 'activity', 'milestones', 'settings'];
+    const asked = (new URLSearchParams(path.split('?')[1] ?? '').get('sections') ?? '').split(',').filter((x) => all.includes(x));
+    const sections = asked.length ? all.filter((x) => asked.includes(x)) : all;
+    const p = ME_PROFILE.profile;
+    const data: Record<string, unknown> = {};
+    if (sections.includes('profile')) {
+      data.profile = {
+        account: { id: ME_ID, email: p.email, role: p.role, emailVerified: true, twoFactorEnabled: false, createdAt: p.createdAt },
+        profile: { displayName: p.displayName, headline: p.headline, bio: p.bio, location: p.location, timezone: p.timezone, languages: p.languages, rolePayload: p.rolePayload },
+        skills: p.skills.map((s) => s.skillName),
+      };
+    }
+    if (sections.includes('messages')) {
+      const sent = Object.values(MESSAGES).flat().filter((m) => m.senderId === ME_ID).map((m) => ({ id: m.id, conversationId: m.conversationId, body: m.body, createdAt: m.createdAt }));
+      data.messages = { sent: { items: sent, truncated: false } };
+    }
+    if (sections.includes('connections')) {
+      data.connections = {
+        items: CONNECTIONS.filter((c) => c.requesterId === ME_ID || c.receiverId === ME_ID).map((c) => ({
+          id: c.id,
+          direction: c.requesterId === ME_ID ? 'sent' : 'received',
+          otherUserId: c.requesterId === ME_ID ? c.receiverId : c.requesterId,
+          status: c.status,
+          createdAt: c.createdAt,
+        })),
+        truncated: false,
+      };
+    }
+    if (sections.includes('activity')) {
+      data.activity = { notifications: { items: NOTIFICATIONS.map((n) => ({ type: n.type, title: n.title, createdAt: n.createdAt })), truncated: false } };
+    }
+    if (sections.includes('milestones')) {
+      data.milestones = { items: PREVIEW_MILESTONES.filter((m) => m.ownerId === ME_ID).map((m) => ({ id: m.id, title: m.title, status: m.status, dueDate: m.dueDate, progress: m.progress })), truncated: false };
+    }
+    if (sections.includes('settings')) {
+      data.settings = { visibilityRules: p.visibilityRules, twoFactorEnabled: false, emailVerified: true, linkedAccounts: { google: false, linkedin: false } };
+    }
+    return { format: 'cofounderbay-export-v1', exportedAt: new Date(previewNowMs()).toISOString(), userId: ME_ID, sections, unavailable: [], data };
+  }
+
   if (pathname.startsWith('/api/connections')) {
     // Withdrawing a request the demo user sent. The showcase keeps no server
     // state, so it answers the shape the caller reads and nothing more.

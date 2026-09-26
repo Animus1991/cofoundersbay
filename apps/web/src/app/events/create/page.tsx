@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const EVENT_TYPES = [
   { value: 'networking', label: 'Networking', labelEl: 'Δικτύωση' },
@@ -169,7 +170,7 @@ export default function CreateEventPage() {
             <FormField htmlFor="event-description" label={<BilingualText en="Description" el="Περιγραφή" compact />}>
               <Textarea
                 className="min-h-[7rem] resize-none"
-                placeholder="What will happen at this event? Who should attend?"
+                placeholder={bilingualInline("What will happen at this event? Who should attend?", "Τι θα γίνει στην εκδήλωση; Ποιοι πρέπει να έρθουν;")}
                 value={form.description}
                 onChange={(e) => set('description', e.target.value)}
                 maxLength={5000}
@@ -269,7 +270,7 @@ export default function CreateEventPage() {
             >
               <Input
                 type="number"
-                placeholder="Unlimited"
+                placeholder={bilingualInline("Unlimited", "Απεριόριστο")}
                 value={form.capacity}
                 onChange={(e) => set('capacity', e.target.value)}
                 min={1}

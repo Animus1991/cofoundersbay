@@ -46,6 +46,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the moderation queue row.
@@ -578,7 +579,7 @@ export default function AdminReportsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search reports..."
+              placeholder={bilingualInline("Search reports…", "Αναζήτηση αναφορών…")}
               aria-label="Search reports by reason or target"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

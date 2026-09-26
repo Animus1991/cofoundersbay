@@ -44,6 +44,9 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -63,11 +66,11 @@ type FeatureFlag = {
   createdBy: string;
 };
 
-const STATUS_CONFIG: Record<FlagStatus, { label: string; color: string; icon: React.ElementType }> = {
-  enabled:    { label: 'Enabled',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 },
-  disabled:   { label: 'Disabled',   color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',     icon: XCircle },
-  rollout:    { label: 'Rollout',    color: 'bg-status-info-bg text-status-info border-status-info-border',     icon: Percent },
-  experiment: { label: 'Experiment', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: FlaskConical },
+const STATUS_CONFIG: Record<FlagStatus, { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
+  enabled:    { label: 'Enabled', labelEl: 'Ενεργή',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 },
+  disabled:   { label: 'Disabled', labelEl: 'Ανενεργή',   color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',     icon: XCircle },
+  rollout:    { label: 'Rollout', labelEl: 'Σταδιακή διάθεση',    color: 'bg-status-info-bg text-status-info border-status-info-border',     icon: Percent },
+  experiment: { label: 'Experiment', labelEl: 'Πείραμα', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: FlaskConical },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -173,18 +176,20 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
             checked={isEnabled}
             onCheckedChange={(v) => void onToggle(flag.id, v)}
             className="mt-0.5"
-            aria-label={`${isEnabled ? 'Disable' : 'Enable'} ${flag.name}`}
+            aria-label={isEnabled
+              ? bilingualAria(`Disable ${flag.name}`, `Απενεργοποίηση: ${flag.name}`)
+              : bilingualAria(`Enable ${flag.name}`, `Ενεργοποίηση: ${flag.name}`)}
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold">{flag.name}</span>
               <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{flag.key}</code>
               <Badge variant="outline" className={cn('text-xs', statusCfg.color)}>
-                <StatusIcon className="mr-1 icon-sm" />
-                {statusCfg.label}
+                <StatusIcon className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en={statusCfg.label} el={statusCfg.labelEl} compact />
               </Badge>
               <Badge className={cn('text-xs border-0', CATEGORY_COLORS[flag.category])}>
-                {flag.category}
+                <StatusText value={flag.category} />
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">{flag.description}</p>
@@ -218,7 +223,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
               {/* None of these four had a handler. The experiments API they
                   map to has PATCH and DELETE (admin.controller.ts). */}
               <DropdownMenuItem onSelect={() => onEdit(flag, 'details')}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Flag" el="Επεξεργασία σημαίας" compact /></DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onEdit(flag, 'rollout')}><Percent className="mr-2 icon-sm" aria-hidden="true" />Set Rollout %</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onEdit(flag, 'rollout')}><Percent className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Set rollout %" el="Ορισμός ποσοστού διάθεσης" compact /></DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onCopyKey(flag)}><Copy className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Copy Key" el="Αντιγραφή κλειδιού" compact /></DropdownMenuItem>
               <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete" el="Διαγραφή" compact /></DropdownMenuItem>
             </DropdownMenuContent>
@@ -336,9 +341,9 @@ export default function AdminFeatureFlagsPage() {
   const deleteFlag = async (flag: FeatureFlag) => {
     if (!isLive) return refuseOnSample();
     const ok = await confirm({
-      title: `Delete ${flag.name}?`,
-      description: 'The experiment and its assignments are removed. Code that reads this key falls back to its default.',
-      confirmLabel: 'Delete flag',
+      title: <BilingualText en={`Delete ${flag.name}?`} el={`Διαγραφή: ${flag.name};`} />,
+      description: <BilingualText en="The experiment and its assignments are removed. Code that reads this key falls back to its default." el="Το πείραμα και οι αναθέσεις του αφαιρούνται. Ο κώδικας που διαβάζει αυτό το κλειδί επιστρέφει στην προεπιλογή." />,
+      confirmLabel: <BilingualText en="Delete flag" el="Διαγραφή σημαίας" compact />,
     });
     if (!ok) return;
     try {
@@ -434,7 +439,9 @@ export default function AdminFeatureFlagsPage() {
   return (
     <AppShell
       title="Feature Flags"
+      titleEl="Σημαίες λειτουργιών"
       description="Control feature rollouts, experiments, and gradual deployments"
+      descriptionEl="Ελέγξτε τη διάθεση λειτουργιών, τα πειράματα και τις σταδιακές αναπτύξεις"
       actions={
         <div className="flex flex-wrap gap-2">
           <TooltipProvider>
@@ -463,11 +470,11 @@ export default function AdminFeatureFlagsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-status-success' },
-            { label: 'In Rollout', value: stats.rollout, icon: Percent, color: 'text-status-info' },
-            { label: 'Experiments', value: stats.experiment, icon: FlaskConical, color: 'text-status-accent' },
-            { label: 'Disabled', value: stats.disabled, icon: XCircle, color: 'text-muted-foreground' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Enabled', labelEl: 'Ενεργές', value: stats.enabled, icon: CheckCircle2, color: 'text-status-success' },
+            { label: 'In Rollout', labelEl: 'Σε σταδιακή διάθεση', value: stats.rollout, icon: Percent, color: 'text-status-info' },
+            { label: 'Experiments', labelEl: 'Πειράματα', value: stats.experiment, icon: FlaskConical, color: 'text-status-accent' },
+            { label: 'Disabled', labelEl: 'Ανενεργές', value: stats.disabled, icon: XCircle, color: 'text-muted-foreground' },
+          ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
@@ -475,7 +482,7 @@ export default function AdminFeatureFlagsPage() {
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -486,7 +493,7 @@ export default function AdminFeatureFlagsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder="Search flags by name or key..."
+            placeholder={bilingualInline("Search flags by name or key…", "Αναζήτηση σημαιών με όνομα ή κλειδί…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -496,7 +503,7 @@ export default function AdminFeatureFlagsPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({flags.length})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${flags.length})`} el={`Όλες (${flags.length})`} compact /></TabsTrigger>
             <TabsTrigger value="enabled"><BilingualText en="Enabled" el="Ενεργές" compact /></TabsTrigger>
             <TabsTrigger value="rollout"><BilingualText en="Rollout" el="Σταδιακή διάθεση" compact /></TabsTrigger>
             <TabsTrigger value="experiment"><BilingualText en="Experiments" el="Πειράματα" compact /></TabsTrigger>

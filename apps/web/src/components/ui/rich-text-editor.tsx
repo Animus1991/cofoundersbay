@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface RichTextEditorProps {
   value: string;
@@ -235,7 +236,7 @@ export function RichTextEditor({
               <Input
                 value={linkText}
                 onChange={(e) => setLinkText(e.target.value)}
-                placeholder="Link text..."
+                placeholder={bilingualInline("Link text…", "Κείμενο συνδέσμου…")}
               />
             </div>
             <div className="flex gap-2">

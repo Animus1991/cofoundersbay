@@ -29,6 +29,9 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { formatCompactMoney } from '@/lib/i18n/format';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -57,13 +60,13 @@ type Deal = {
   teamSize?: number;
 };
 
-const PIPELINE_STAGES: { key: PipelineStage; label: string; color: string }[] = [
-  { key: 'discovered', label: 'Discovered', color: 'bg-gray-500' },
-  { key: 'reviewing', label: 'Reviewing', color: 'bg-blue-500' },
-  { key: 'meeting', label: 'Meeting', color: 'bg-purple-500' },
-  { key: 'due_diligence', label: 'Due Diligence', color: 'bg-amber-500' },
-  { key: 'negotiating', label: 'Negotiating', color: 'bg-orange-500' },
-  { key: 'invested', label: 'Invested', color: 'bg-green-500' },
+const PIPELINE_STAGES: { key: PipelineStage; label: string; labelEl: string; color: string }[] = [
+  { key: 'discovered', label: 'Discovered', labelEl: 'Εντοπίστηκε', color: 'bg-gray-500' },
+  { key: 'reviewing', label: 'Reviewing', labelEl: 'Υπό εξέταση', color: 'bg-blue-500' },
+  { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-purple-500' },
+  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-amber-500' },
+  { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-orange-500' },
+  { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-green-500' },
 ];
 
 /** The next stage forward on the board; null at the end or once passed. */
@@ -104,7 +107,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={`/startups/${deal.id}`}>View Details</Link>
+              <Link href={`/startups/${deal.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
             </DropdownMenuItem>
             {/* Four items here had no handler. Move and Pass write the
                 deal's stage; notes live on the deal page, which also has
@@ -122,14 +125,14 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
               reasonEl="Οι συναντήσεις με ιδρυτές δεν προγραμματίζονται ακόμη εδώ - στείλτε μήνυμα από τη σελίδα της συμφωνίας."
             />
             <DropdownMenuItem asChild>
-              <Link href={`/startups/${deal.id}`}>Add Note</Link>
+              <Link href={`/startups/${deal.id}`}><BilingualText en="Add Note" el="Προσθήκη σημείωσης" compact /></Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive-accessible"
               disabled={!onMove || deal.pipelineStage === 'passed'}
               onSelect={() => onMove?.(deal, 'passed')}
             >
-              Pass
+              <BilingualText en="Pass" el="Απόρριψη" compact />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -137,7 +140,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
       <div className="flex items-center gap-2 mt-2">
         <Badge variant="secondary" className="text-2xs">{deal.stage}</Badge>
         {deal.readinessScore != null && (
-          <span className="text-2xs text-muted-foreground">{deal.readinessScore}% ready</span>
+          <span className="text-2xs text-muted-foreground"><BilingualText en={`${deal.readinessScore}% ready`} el={`${deal.readinessScore}% έτοιμη`} compact /></span>
         )}
         {deal.askAmount ? (
           <span className="text-2xs font-medium text-status-success ml-auto">
@@ -146,9 +149,19 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
         ) : null}
       </div>
       {deal.founderName && (
-        <p className="text-2xs text-muted-foreground mt-1.5 flex items-center gap-1">
-          <span>👤 {deal.founderName}</span>
-          {deal.teamSize && <span>· {deal.teamSize} team</span>}
+        <p className="text-2xs text-muted-foreground mt-1.5 flex min-w-0 items-center gap-1">
+          <span className="min-w-0 truncate">👤 {deal.founderName}</span>
+          {/* A count and an icon: "3 team · ομάδα 3" broke the founder's
+              name across two lines in a 288px column. */}
+          {deal.teamSize && (
+            // `relative` keeps the sr-only text inside the card: absolutely
+            // positioned with no positioned ancestor in the scrolling board,
+            // it escaped the scroller and widened the page to 1668px on a phone.
+            <span className="relative flex shrink-0 items-center gap-0.5">
+              · <Users className="h-3 w-3" aria-hidden="true" />{deal.teamSize}
+              <span className="sr-only">{bilingualInline('people on the team', 'άτομα στην ομάδα')}</span>
+            </span>
+          )}
         </p>
       )}
       <p className="text-2xs text-muted-foreground mt-1">
@@ -185,12 +198,7 @@ function toPageDeal(deal: InvestorDeal): Deal {
 
 /** Compact money, in the deal's own currency rather than a hard-coded dollar. */
 function formatAsk(amount: number, currency = 'EUR'): string {
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency,
-    notation: 'compact',
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCompactMoney(amount, currency);
 }
 
 /**
@@ -241,9 +249,9 @@ export default function InvestorPipelinePage() {
   const moveDeal = async (deal: Deal, stage: PipelineStage) => {
     if (stage === 'passed') {
       const ok = await confirm({
-        title: `Pass on ${deal.name}?`,
-        description: 'It leaves the active pipeline. You can bring it back from its deal page.',
-        confirmLabel: 'Pass',
+        title: <BilingualText en={`Pass on ${deal.name}?`} el={`Απόρριψη: ${deal.name};`} />,
+        description: <BilingualText en="It leaves the active pipeline. You can bring it back from its deal page." el="Φεύγει από την ενεργή ροή. Μπορείτε να την επαναφέρετε από τη σελίδα της." />,
+        confirmLabel: <BilingualText en="Pass" el="Απόρριψη" compact />,
       });
       if (!ok) return;
     }
@@ -257,7 +265,19 @@ export default function InvestorPipelinePage() {
     }
   };
 
-  const totalPipelineValue = useMemo(() => deals.reduce((s, d) => s + (d.askAmount ?? 0), 0), [deals]);
+  // Summed per currency: the board holds each deal's ask in its own currency,
+  // and adding euros to dollars under a "$" sign reported a figure in neither.
+  const pipelineValue = useMemo(() => {
+    const byCurrency = new Map<string, number>();
+    for (const d of deals) {
+      if (!d.askAmount) continue;
+      const c = d.currency ?? 'EUR';
+      byCurrency.set(c, (byCurrency.get(c) ?? 0) + d.askAmount);
+    }
+    return byCurrency.size === 0
+      ? '—'
+      : [...byCurrency].map(([c, v]) => formatCompactMoney(v, c, 1)).join(' + ');
+  }, [deals]);
   // Averaged over the deals that carry a score, not over all of them: dividing
   // by the whole board would report a lower readiness the more deals you add.
   const avgReadiness = useMemo(() => {
@@ -307,10 +327,10 @@ export default function InvestorPipelinePage() {
     ], starredOnly ? 'on' : 'off', (v) => setStarredOnly(v === 'on')),
     // The same move the stage buttons on each card make; passing still asks
     // first, as it does from the card.
-    ...[...PIPELINE_STAGES, { key: 'passed' as PipelineStage, label: 'Passed', color: '' }].map((stage) => ({
+    ...[...PIPELINE_STAGES, { key: 'passed' as PipelineStage, label: 'Passed', labelEl: 'Απορρίφθηκε', color: '' }].map((stage) => ({
       id: `move_to_${stage.key}`,
       labelEn: stage.key === 'passed' ? 'Pass on deal' : `Move deal to ${stage.label}`,
-      labelEl: stage.key === 'passed' ? 'Απόρριψη συμφωνίας' : `Μετακίνηση συμφωνίας σε ${stage.label}`,
+      labelEl: stage.key === 'passed' ? 'Απόρριψη συμφωνίας' : `Μετακίνηση συμφωνίας σε ${stage.labelEl}`,
       writes: true,
       options: deals.filter((d) => d.pipelineStage !== stage.key).map((d) => ({ value: d.id, labelEn: d.name, labelEl: d.name })),
       unavailableEn: sampleEn,
@@ -330,13 +350,13 @@ export default function InvestorPipelinePage() {
 
   if (!isLoading && !showDemoData && deals.length === 0) {
     return (
-      <AppShell title="Investment Pipeline" description="Track deals through your investment process">
+      <AppShell title="Investment Pipeline" titleEl="Ροή επενδύσεων" description="Track deals through your investment process" descriptionEl="Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας">
         <EmptyState
           illustration="rocket"
           title="No deals in pipeline"
           description="Start scouting startups to build your investment pipeline."
           askAiPrompt="My investment pipeline is empty. How should I scout startups on CoFounderBay and what to shortlist first?"
-          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" />Scout Startups</Link></Button>}
+          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" /><BilingualText en="Scout Startups" el="Αναζήτηση νεοφυών" compact /></Link></Button>}
         />
       </AppShell>
     );
@@ -345,14 +365,18 @@ export default function InvestorPipelinePage() {
   return (
     <AppShell
       title="Investment Pipeline"
+      titleEl="Ροή επενδύσεων"
       description="Track deals through your investment process"
+      descriptionEl="Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας"
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowPassed(!showPassed)}>
-            {showPassed ? 'Hide Passed' : 'Show Passed'}
+            {showPassed
+              ? <BilingualText en="Hide passed" el="Απόκρυψη απορριφθεισών" compact />
+              : <BilingualText en="Show passed" el="Εμφάνιση απορριφθεισών" compact />}
           </Button>
           <Button asChild size="sm">
-            <Link href="/investor/scouting"><Plus className="mr-2 icon-sm" />Add Deal</Link>
+            <Link href="/investor/scouting"><Plus className="mr-2 icon-sm" /><BilingualText en="Add Deal" el="Νέα ευκαιρία" compact /></Link>
           </Button>
         </div>
       }
@@ -362,17 +386,17 @@ export default function InvestorPipelinePage() {
         {/* Stats Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Deals', value: deals.length, icon: FolderKanban, color: 'text-primary-accessible' },
-            { label: 'Pipeline Value', value: `$${(totalPipelineValue / 1_000_000).toFixed(1)}M`, icon: DollarSign, color: 'text-status-success' },
-            { label: 'Avg Readiness', value: avgReadiness == null ? '—' : `${avgReadiness}%`, icon: Target, color: 'text-status-info' },
-            { label: 'Invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-status-success' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Total Deals', labelEl: 'Σύνολο ευκαιριών', value: deals.length, icon: FolderKanban, color: 'text-primary-accessible' },
+            { label: 'Pipeline Value', labelEl: 'Αξία ροής', value: pipelineValue, icon: DollarSign, color: 'text-status-success' },
+            { label: 'Avg Readiness', labelEl: 'Μέση ετοιμότητα', value: avgReadiness == null ? '—' : `${avgReadiness}%`, icon: Target, color: 'text-status-info' },
+            { label: 'Invested', labelEl: 'Επενδύσεις', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-status-success' },
+          ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -384,7 +408,8 @@ export default function InvestorPipelinePage() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder="Search deals..."
+              aria-label="Search deals. Αναζήτηση ευκαιριών"
+              placeholder={bilingualInline('Search deals…', 'Αναζήτηση ευκαιριών…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -394,7 +419,7 @@ export default function InvestorPipelinePage() {
               supports beyond search is the star an investor puts on a deal. */}
           <Button variant={starredOnly ? 'default' : 'outline'} aria-pressed={starredOnly} onClick={() => setStarredOnly((v) => !v)}>
             <Filter className="mr-2 icon-sm" aria-hidden="true" />
-            Starred only
+            <BilingualText en="Starred only" el="Μόνο με αστέρι" compact />
           </Button>
         </div>
 
@@ -406,7 +431,7 @@ export default function InvestorPipelinePage() {
               <div key={stage.key} className="flex-shrink-0 w-72">
                 <div className="flex items-center gap-2 mb-3">
                   <div className={cn('w-2 h-2 rounded-full', stage.color)} />
-                  <h3 className="font-medium text-sm">{stage.label}</h3>
+                  <h3 className="min-w-0 truncate font-medium text-sm"><BilingualText en={stage.label} el={stage.labelEl} compact /></h3>
                   <Badge variant="secondary" className="text-xs ml-auto">
                     {stageDeals.length}
                   </Badge>
@@ -417,7 +442,7 @@ export default function InvestorPipelinePage() {
                   ))}
                   {stageDeals.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-8">
-                      No deals in this stage
+                      <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
                     </p>
                   )}
                 </div>
@@ -430,7 +455,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /> Pipeline Conversion</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
           </CardHeader>
           <CardContent>
             {/* Seven stages do not fit one row on a phone: a 4-column grid
@@ -443,7 +468,7 @@ export default function InvestorPipelinePage() {
                   <div key={stage.key} className="flex min-w-0 flex-1 items-center gap-2">
                     <div className="min-w-0 flex-1 text-center">
                       <p className="text-lg font-bold tabular-nums">{count}</p>
-                      <p className="truncate text-2xs text-muted-foreground">{stage.label}</p>
+                      <p className="truncate text-2xs text-muted-foreground"><BilingualText en={stage.label} el={stage.labelEl} compact /></p>
                       <Progress value={pct} className="h-1 mt-1" />
                     </div>
                     {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="hidden icon-sm shrink-0 text-muted-foreground/40 sm:block" aria-hidden="true" />}

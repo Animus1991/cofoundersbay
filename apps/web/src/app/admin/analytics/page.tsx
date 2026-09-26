@@ -84,6 +84,7 @@ export default function AdminAnalyticsPage() {
     <AppShell
       title="Global analytics"
       description="Platform growth, engagement, and role distribution — export for board or investor updates."
+      descriptionEl="Ανάπτυξη της πλατφόρμας, δραστηριότητα και κατανομή ρόλων — με εξαγωγή για ενημερώσεις διοικητικού συμβουλίου ή επενδυτών."
       showHelp
       actions={
         <div className="flex flex-wrap gap-2">

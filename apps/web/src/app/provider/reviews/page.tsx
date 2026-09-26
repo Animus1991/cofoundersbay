@@ -24,6 +24,8 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Review = {
   id: string;
@@ -82,22 +84,22 @@ function ReviewCard({ review }: { review: Review }) {
 
             {review.response && (
               <div className="mt-3 p-3 rounded-lg bg-muted/50 border-l-2 border-primary">
-                <p className="text-xs font-medium text-muted-foreground mb-1">Your Response</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Your Response" el="Η απάντησή σας" compact /></p>
                 <p className="text-sm">{review.response}</p>
               </div>
             )}
 
             <div className="flex items-center gap-4 mt-3">
-              <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title="Reviews cannot be marked helpful yet">
+              <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
                 <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
                 {/* Nobody can mark a review helpful — there is no field
                     and no endpoint — so the count is not shown. */}
-                Helpful
+                <BilingualText en="Helpful" el="Χρήσιμο" compact />
               </Button>
               {!review.response && (
-                <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title="Responses to reviews are not stored yet">
+                <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Responses to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
                   <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                  Respond
+                  <BilingualText en="Respond" el="Απάντηση" compact />
                 </Button>
               )}
             </div>
@@ -207,7 +209,7 @@ export default function ProviderReviewsPage() {
 
   if (!isLoading && !showDemoData && reviews.length === 0) {
     return (
-      <AppShell title="Reviews" description="See what clients are saying about your services">
+      <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="See what clients are saying about your services" descriptionEl="Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας">
         <EmptyState
           illustration="default"
           title="No client reviews yet"
@@ -219,7 +221,7 @@ export default function ProviderReviewsPage() {
   }
 
   return (
-    <AppShell title="Reviews" description="See what clients are saying about your services">
+    <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="See what clients are saying about your services" descriptionEl="Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας">
       <div className="space-y-6">
 
         {/* Stats */}
@@ -242,7 +244,7 @@ export default function ProviderReviewsPage() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {reviews.length} reviews
+                    <BilingualText en={`${reviews.length} reviews`} el={`${reviews.length} αξιολογήσεις`} compact />
                   </p>
                 </div>
                 <div className="flex-1 space-y-1">
@@ -264,23 +266,23 @@ export default function ProviderReviewsPage() {
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Reviews</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Total Reviews" el="Σύνολο αξιολογήσεων" compact /></p>
                   <p className="text-xl font-bold">{reviews.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">5-Star Reviews</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="5-star reviews" el="Αξιολογήσεις 5 αστέρων" compact wrap /></p>
                   <p className="text-xl font-bold text-status-warning">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Response Rate</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Response Rate" el="Ποσοστό απαντήσεων" compact /></p>
                   <p className="text-xl font-bold">
                     {Math.round((reviews.filter((r) => r.response).length / reviews.length) * 100)}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Helpful Votes</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Helpful Votes" el="Ψήφοι «χρήσιμο»" compact /></p>
                   <p className="text-xl font-bold">
                     {reviews.reduce((acc, r) => acc + r.helpful, 0)}
                   </p>
@@ -294,7 +296,7 @@ export default function ProviderReviewsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search reviews..."
+            placeholder={bilingualInline("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -310,9 +312,9 @@ export default function ProviderReviewsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium">No reviews found</h3>
+                <h3 className="font-medium"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your search
+                  <BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact />
                 </p>
               </CardContent>
             </Card>

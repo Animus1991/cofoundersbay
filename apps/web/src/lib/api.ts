@@ -2688,6 +2688,32 @@ export async function getPendingEndorsements(): Promise<{ endorsements: Endorsem
   return apiRequest('/api/endorsements/pending');
 }
 
+// --- Account data export ---
+
+export type AccountExportSection = 'profile' | 'messages' | 'connections' | 'activity' | 'milestones' | 'settings';
+
+/** The reader's own data, built on request by `GET /api/account/export` and never stored. */
+export type AccountExport = {
+  format: 'cofounderbay-export-v1';
+  exportedAt: string;
+  userId: string;
+  sections: AccountExportSection[];
+  /** Parts the server could not read, named rather than left out silently. */
+  unavailable: Array<{ section: AccountExportSection; part: string; reason: string }>;
+  data: Partial<Record<AccountExportSection, unknown>>;
+};
+
+export async function getAccountExport(sections: AccountExportSection[]): Promise<AccountExport> {
+  const sp = sections.length ? `?sections=${encodeURIComponent(sections.join(','))}` : '';
+  const res = await apiRequest<AccountExport>(`/api/account/export${sp}`);
+  return {
+    ...res,
+    sections: Array.isArray(res?.sections) ? res.sections : sections,
+    unavailable: Array.isArray(res?.unavailable) ? res.unavailable : [],
+    data: res?.data ?? {},
+  };
+}
+
 /** What the signed-in user has written for others, approved or still waiting. */
 export async function getGivenEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
   return apiRequest('/api/endorsements/given');

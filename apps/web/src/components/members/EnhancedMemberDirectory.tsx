@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface Member {
   id: string;
@@ -169,7 +170,7 @@ export function EnhancedMemberDirectory() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder="Search by name, skills, or industry..."
+              placeholder={bilingualInline("Search by name, skills, or industry…", "Αναζήτηση με όνομα, δεξιότητες ή κλάδο…")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"

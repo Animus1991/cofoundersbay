@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Report = {
     id: string;
@@ -115,6 +116,7 @@ export default function ContentModerationPage() {
     <AppShell
       title="Content moderation"
       description="Review flagged posts, profiles, and messages. Resolve or dismiss with one action."
+      descriptionEl="Ελέγξτε αναρτήσεις, προφίλ και μηνύματα που επισημάνθηκαν. Επιλύστε ή απορρίψτε με μία ενέργεια."
       showHelp
     >
       <HelpCallout id="admin-content-moderation" title="Moderation queue">
@@ -138,7 +140,7 @@ export default function ContentModerationPage() {
                     <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search reports…"
+            placeholder={bilingualInline("Search reports…", "Αναζήτηση αναφορών…")}
             className="pl-9"
           />
               </div>

@@ -21,6 +21,7 @@ import {
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /** `<input type="datetime-local">` wants local wall-clock time without a zone. */
 function toLocalInput(iso: string | Date): string {
@@ -126,7 +127,7 @@ export function ScheduleSessionDialog({
             <div className="space-y-1.5">
               <Label htmlFor="session-mentee"><BilingualText en="Mentee" el="Μαθητευόμενος" compact /></Label>
               <Select value={relationshipId} onValueChange={setRelationshipId}>
-                <SelectTrigger id="session-mentee"><SelectValue placeholder="Choose a mentee" /></SelectTrigger>
+                <SelectTrigger id="session-mentee"><SelectValue placeholder={bilingualInline("Choose a mentee", "Επιλέξτε καθοδηγούμενο")} /></SelectTrigger>
                 <SelectContent>
                   {relationships.map((r) => (
                     <SelectItem key={r.id} value={r.id}>{r.mentee.displayName}</SelectItem>

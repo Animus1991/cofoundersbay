@@ -26,6 +26,7 @@ import {
 import { useChartTheme } from '@/lib/chart-theme';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const STATE_LABELS: Record<string, { label: string; color: string }> = {
   newly_onboarded:    { label: 'New Onboard',      color: 'bg-blue-500' },
@@ -126,7 +127,7 @@ function UserClassifyTab() {
     <div className="space-y-4">
       <div className="flex gap-2">
         <Input
-          placeholder="User ID"
+          placeholder={bilingualInline("User ID", "Αναγνωριστικό χρήστη")}
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           className="flex-1"

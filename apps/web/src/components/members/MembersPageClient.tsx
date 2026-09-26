@@ -44,6 +44,7 @@ import {
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
@@ -515,7 +516,7 @@ export function MembersPageClient() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search members by name, skills, or bio..."
+              placeholder={bilingualInline("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"

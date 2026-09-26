@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { BilingualText } from '@/components/common/BilingualText';
 import { researchEn, researchEl } from '@/lib/i18n/strings-research';
 import { matchProductLink, readCfbHref } from '@/lib/canvas/canvas-geometry';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type NodeUpdateData = {
   title?: string;
@@ -416,7 +417,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               className="flex-1 bg-transparent text-sm font-semibold text-foreground outline-none truncate placeholder:text-muted-foreground focus:bg-secondary/40 rounded px-1.5 py-0.5 -ml-1.5 transition-colors"
-              placeholder="Untitled"
+              placeholder={bilingualInline("Untitled", "Χωρίς τίτλο")}
             />
           ) : (
             <span className="flex-1 text-sm font-semibold text-foreground truncate">
@@ -502,7 +503,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 <input
                   value={linkInputValue}
                   onChange={(e) => setLinkInputValue(e.target.value)}
-                  placeholder="Paste Builder Document ID…"
+                  placeholder={bilingualInline("Paste Builder Document ID…", "Επικολλήστε το ID εγγράφου του Builder…")}
                   className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/60 text-xs"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && linkInputValue.trim()) {
@@ -743,7 +744,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             <RichTextEditor
               content={editContent}
               onChange={(html) => { setEditContent(html); setSaved(false); }}
-              placeholder="Start writing your research notes…"
+              placeholder={bilingualInline("Start writing your research notes…", "Ξεκινήστε να γράφετε τις σημειώσεις έρευνας…")}
               className="border-0 rounded-none h-full"
             />
           )}

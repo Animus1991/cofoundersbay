@@ -43,6 +43,8 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the organisation's member list.
@@ -126,7 +128,7 @@ function StartupCard({ startup }: { startup: Startup }) {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                  {startup.status}
+                  <StatusText value={startup.status} />
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -167,7 +169,7 @@ function StartupCard({ startup }: { startup: Startup }) {
               {startup.teamSize != null && (
                 <span className="flex items-center gap-1">
                   <Users className="icon-sm" aria-hidden="true" />
-                  {startup.teamSize} members
+                  <BilingualText en={`${startup.teamSize} members`} el={`${startup.teamSize} μέλη`} compact />
                 </span>
               )}
               <span className="flex items-center gap-1">
@@ -343,6 +345,7 @@ export default function OrgStartupsPage() {
     <AppShell
       title="Portfolio Startups"
       description="Startups currently in your programs and graduates. Track readiness, milestones, and program assignment."
+      descriptionEl="Νεοφυείς που συμμετέχουν στα προγράμματά σας και απόφοιτοι. Παρακολουθήστε ετοιμότητα, ορόσημα και ανάθεση προγράμματος."
       actions={(
         <Button asChild>
           <Link href="/org/applications">
@@ -392,7 +395,7 @@ export default function OrgStartupsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search startups..."
+              placeholder={bilingualInline("Search startups…", "Αναζήτηση νεοφυών…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -400,7 +403,7 @@ export default function OrgStartupsPage() {
           </div>
           <Select value={program} onValueChange={setProgram}>
             <SelectTrigger aria-label="Program" className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Program" />
+              <SelectValue placeholder={bilingualInline("Program", "Πρόγραμμα")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>
@@ -411,7 +414,7 @@ export default function OrgStartupsPage() {
           </Select>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -426,7 +429,11 @@ export default function OrgStartupsPage() {
         {/* Results */}
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            {filteredStartups.length} startup{filteredStartups.length !== 1 ? 's' : ''}
+            <BilingualText
+              en={`${filteredStartups.length} startup${filteredStartups.length !== 1 ? 's' : ''}`}
+              el={`${filteredStartups.length} ${filteredStartups.length !== 1 ? 'νεοφυείς' : 'νεοφυής'}`}
+              compact
+            />
           </p>
           {filteredStartups.map((startup) => (
             <StartupCard key={startup.id} startup={startup} />

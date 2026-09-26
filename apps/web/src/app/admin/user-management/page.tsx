@@ -71,6 +71,8 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 // The API's Role enum (schema.prisma). The page used to offer moderator,
@@ -389,15 +391,15 @@ export default function AdminUserManagementPage() {
       content: (
         <div className="space-y-2">
           {[
-            { label: 'Total users', value: stats.total, icon: Users },
-            { label: 'Active', value: stats.active, icon: CheckCircle2, className: 'text-status-success' },
-            { label: 'Pending', value: stats.pending, icon: Clock, className: 'text-status-warning' },
-            { label: 'Suspended', value: stats.suspended, icon: Ban, className: 'text-status-danger' },
-          ].map(({ label, value, icon: Icon, className }) => (
+            { label: 'Total users', labelEl: 'Σύνολο χρηστών', value: stats.total, icon: Users },
+            { label: 'Active', labelEl: 'Ενεργοί', value: stats.active, icon: CheckCircle2, className: 'text-status-success' },
+            { label: 'Pending', labelEl: 'Σε αναμονή', value: stats.pending, icon: Clock, className: 'text-status-warning' },
+            { label: 'Suspended', labelEl: 'Σε αναστολή', value: stats.suspended, icon: Ban, className: 'text-status-danger' },
+          ].map(({ label, labelEl, value, icon: Icon, className }) => (
             <Card key={label}>
               <CardContent className="flex items-center justify-between p-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">{label}</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                   <p className={cn('text-2xl font-bold', className)}>{value}</p>
                 </div>
                 <Icon className={cn('icon-lg text-muted-foreground', className)} />
@@ -419,7 +421,7 @@ export default function AdminUserManagementPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
-                <SelectValue placeholder="All roles" />
+                <SelectValue placeholder={bilingualInline("All roles", "Όλοι οι ρόλοι")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
@@ -433,7 +435,7 @@ export default function AdminUserManagementPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
-                <SelectValue placeholder="All statuses" />
+                <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -605,15 +607,22 @@ export default function AdminUserManagementPage() {
   return (
     <AppShell
       title="User Management"
+      titleEl="Διαχείριση χρηστών"
       description="Search, filter, verify, and moderate platform accounts. Bulk actions apply to selected rows."
+      descriptionEl="Αναζητήστε, φιλτράρετε, επαληθεύστε και εποπτεύστε λογαριασμούς. Οι μαζικές ενέργειες εφαρμόζονται στις επιλεγμένες γραμμές."
       showHelp
       rail={rail}
     >
-      <HelpCallout id="admin-user-management" title="How this page works">
+      <HelpCallout id="admin-user-management" title="How this page works" titleEl="Πώς λειτουργεί η σελίδα">
         <p>
           Use the <strong>filters in the page tools</strong> on the right to narrow by role or status. Select rows with
           checkboxes for <strong>bulk activate, suspend, or delete</strong>. Open a user with the eye
           icon or row menu; each user&apos;s name opens their full admin detail page.
+        </p>
+        <p lang="el" className="mt-2 text-muted-foreground">
+          Χρησιμοποιήστε τα <strong>φίλτρα στα εργαλεία της σελίδας</strong> δεξιά για ρόλο ή κατάσταση. Επιλέξτε γραμμές
+          για <strong>μαζική ενεργοποίηση, αναστολή ή διαγραφή</strong>. Ανοίξτε έναν χρήστη από το εικονίδιο ή το μενού
+          της γραμμής· το όνομα κάθε χρήστη ανοίγει την πλήρη σελίδα διαχείρισής του.
         </p>
       </HelpCallout>
 
@@ -634,7 +643,7 @@ export default function AdminUserManagementPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search by name, email, or location…"
+              placeholder={bilingualInline("Search by name, email, or location…", "Αναζήτηση με όνομα, email ή τοποθεσία…")}
               className="pl-9"
               aria-label="Search users"
             />
@@ -645,9 +654,13 @@ export default function AdminUserManagementPage() {
               <Checkbox
                 checked={paginated.length > 0 && selectedIds.length === paginated.length}
                 onCheckedChange={(v) => toggleAll(Boolean(v))}
-                aria-label="Select all on page"
+                aria-label="Select all on page. Επιλογή όλων στη σελίδα"
               />
-              <span>{selectedIds.length} selected · {filtered.length} matching</span>
+              <BilingualText
+                en={`${selectedIds.length} selected · ${filtered.length} matching`}
+                el={`${selectedIds.length} επιλεγμένοι · ${filtered.length} αποτελέσματα`}
+                compact
+              />
             </div>
 
             {paginated.map((user) => {
@@ -681,16 +694,16 @@ export default function AdminUserManagementPage() {
                       <Link href={`/admin/user-detail/${user.id}`} className="font-medium hover:text-primary-accessible">
                         {user.name}
                       </Link>
-                      {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" aria-label="Verified" />}
+                      {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" aria-label="Verified. Επαληθευμένος" />}
                     </div>
                     <p className="truncate text-sm text-muted-foreground">{user.email}</p>
                   </div>
                   <Badge variant="outline" className="gap-1 capitalize">
                     {ROLE_ICONS[user.role]}
-                    {roleLabel(user.role)}
+                    <BilingualText en={roleLabel(user.role)} el={ROLE_OPTIONS.find((r) => r.value === user.role)?.el} compact />
                   </Badge>
                   <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
-                    {user.status}
+                    <StatusText value={user.status} />
                   </Badge>
                   <span className="hidden text-sm text-muted-foreground md:inline">
                     {user.lastActive
@@ -753,13 +766,13 @@ export default function AdminUserManagementPage() {
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              Page {page} of {totalPages}
+              <BilingualText en={`Page ${page} of ${totalPages}`} el={`Σελίδα ${page} από ${totalPages}`} compact />
             </span>
             <div className="flex gap-2">
-              <Button aria-label="Previous page" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              <Button aria-label="Previous page. Προηγούμενη σελίδα" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
                 <ChevronLeft className="icon-sm" />
               </Button>
-              <Button aria-label="Next page" variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+              <Button aria-label="Next page. Επόμενη σελίδα" variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
                 <ChevronRight className="icon-sm" />
               </Button>
             </div>

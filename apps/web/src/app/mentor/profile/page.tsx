@@ -31,6 +31,7 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { mentorDemoRating } from '@/lib/demo/mentor-world';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
@@ -185,7 +186,7 @@ export default function MentorProfilePage() {
                   <Textarea
                     value={bio}
                     onChange={e => setBio(e.target.value)}
-                    placeholder="Describe your mentoring style, what you offer, and what kinds of founders you work best with..."
+                    placeholder={bilingualInline("Describe your mentoring style, what you offer, and what kinds of founders you work best with…", "Περιγράψτε το στυλ καθοδήγησής σας, τι προσφέρετε και με ποιους ιδρυτές δουλεύετε καλύτερα…")}
                     rows={5}
                     className="resize-none"
                   />

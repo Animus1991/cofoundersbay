@@ -501,7 +501,7 @@ export default function ProfileEditPage() {
 
   if (profileError) {
     return (
-      <AppShell title="Edit Profile">
+      <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
           <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load your profile." el="Δεν ήταν δυνατή η φόρτωση του προφίλ σας." compact /></p>
           <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
@@ -512,7 +512,7 @@ export default function ProfileEditPage() {
 
   if (loading) {
     return (
-      <AppShell title="Edit Profile">
+      <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="icon-xl animate-spin text-primary-accessible" />
         </div>
@@ -533,7 +533,9 @@ export default function ProfileEditPage() {
   return (
     <AppShell
       title="Edit Profile"
+      titleEl="Επεξεργασία προφίλ"
       description="Update your personal details and how you appear to others"
+      descriptionEl="Ενημερώστε τα στοιχεία σας και το πώς σας βλέπουν οι άλλοι"
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel" asChild>
@@ -639,7 +641,7 @@ export default function ProfileEditPage() {
                     <div className="space-y-4 flex-1 w-full">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Input
-                          placeholder="Paste image URL..."
+                          placeholder={bilingualInline("Paste image URL…", "Επικολλήστε URL εικόνας…")}
                           value={form.avatarUrl}
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
                           className="flex-1"
@@ -722,7 +724,7 @@ export default function ProfileEditPage() {
                     <Textarea
                       value={form.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
-                      placeholder="Tell the community about your background, what you're working on, and what you're looking for..."
+                      placeholder={bilingualInline("Tell the community about your background, what you're working on, and what you're looking for…", "Πείτε στην κοινότητα για το υπόβαθρό σας, τι φτιάχνετε και τι αναζητάτε…")}
                       rows={5}
                       className="resize-y"
                     />
@@ -839,7 +841,7 @@ export default function ProfileEditPage() {
                     value={form.skills}
                     onChange={(v) => updateField('skills', v)}
                     suggestions={skillCatalog.length ? skillCatalog.map((s) => s.name) : expertiseOptions}
-                    placeholder="Type a skill and press Enter..."
+                    placeholder={bilingualInline("Type a skill and press Enter…", "Πληκτρολογήστε δεξιότητα και πατήστε Enter…")}
                     max={15}
                   />
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -956,7 +958,7 @@ export default function ProfileEditPage() {
                       value={form.expertiseAreas}
                       onChange={(v) => updateField('expertiseAreas', v)}
                       suggestions={expertiseOptions}
-                      placeholder="Add expertise..."
+                      placeholder={bilingualInline("Add expertise…", "Προσθήκη εξειδίκευσης…")}
                       max={10}
                     />
                     <SelectButtons
@@ -1039,7 +1041,7 @@ export default function ProfileEditPage() {
                       value={form.geography}
                       onChange={(v) => updateField('geography', v)}
                       suggestions={['Global', 'Europe', 'USA', 'MENA', 'Asia', 'LATAM']}
-                      placeholder="Add region..."
+                      placeholder={bilingualInline("Add region…", "Προσθήκη περιοχής…")}
                       max={5}
                     />
                   </CardContent>
@@ -1203,16 +1205,18 @@ export default function ProfileEditPage() {
 
               <div className="pt-4 border-t border-border/50 space-y-3">
                 <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
-                  {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
-                  Save Changes
+                  {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
+                  <BilingualText en="Save Changes" el="Αποθήκευση αλλαγών" compact />
                 </Button>
-                <div className="flex gap-2">
+                {/* Stacked: side by side in this ~250px card, the two bilingual
+                    labels pushed "Add Links" 116px past the page edge. */}
+                <div className="grid grid-cols-1 gap-2">
                   <Button variant="outline" className="w-full text-xs h-9" asChild>
-                    <Link href="/profile" className="flex-1">
+                    <Link href="/profile">
                       <BilingualText en="View Profile" el="Προβολή προφίλ" compact />
                     </Link>
                   </Button>
-                  <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
+                  <Button variant="outline" className="w-full text-xs h-9" onClick={() => setActiveTab('links')}>
                     <BilingualText en="Add Links" el="Προσθήκη συνδέσμων" compact />
                   </Button>
                 </div>

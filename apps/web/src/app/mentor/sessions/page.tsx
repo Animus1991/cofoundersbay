@@ -195,9 +195,9 @@ export default function MentorSessionsPage() {
 
   const cancelSession = async (s: MentorshipSessionItem) => {
     const ok = await confirm({
-      title: 'Cancel this session?',
-      description: 'Your mentee sees it as cancelled. You can schedule a new one at any time.',
-      confirmLabel: 'Cancel session',
+      title: <BilingualText en="Cancel this session?" el="Ακύρωση αυτής της συνεδρίας;" />,
+      description: <BilingualText en="Your mentee sees it as cancelled. You can schedule a new one at any time." el="Ο καθοδηγούμενος τη βλέπει ως ακυρωμένη. Μπορείτε να προγραμματίσετε νέα οποτεδήποτε." />,
+      confirmLabel: <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />,
     });
     if (!ok) return;
     try {

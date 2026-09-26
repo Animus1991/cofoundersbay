@@ -27,6 +27,7 @@ import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
 const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
@@ -259,11 +260,12 @@ export default function OrgAnalyticsPage() {
     <AppShell
       title="Org Analytics"
       description="Cohort health, program impact, application funnel, and member growth in one dashboard."
+      descriptionEl="Κατάσταση κοορτών, αντίκτυπος προγραμμάτων, ροή αιτήσεων και αύξηση μελών σε έναν πίνακα."
       actions={(
         <>
           <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
             <SelectTrigger aria-label="Time period" className="w-[150px]">
-              <SelectValue placeholder="Time period" />
+              <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
             </SelectTrigger>
             <SelectContent>
               {PERIODS.map((p) => (

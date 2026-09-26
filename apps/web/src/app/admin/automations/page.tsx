@@ -32,6 +32,7 @@ import {
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
@@ -108,7 +109,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this rule do?" />
+            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder={bilingualInline("What does this rule do?", "Τι κάνει αυτός ο κανόνας;")} />
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>

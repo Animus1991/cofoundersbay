@@ -40,6 +40,8 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type Inquiry = {
   id: string;
@@ -88,7 +90,7 @@ function InquiryCard({
                   <span className="font-semibold">{inquiry.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
                     <StatusIcon className="mr-1 icon-sm" />
-                    {inquiry.status}
+                    <StatusText value={inquiry.status} />
                   </Badge>
                 </div>
                 {inquiry.clientCompany && (
@@ -229,7 +231,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       message: 'Hi, I need help with my startup incorporation documents. We are a team of 3 co-founders and need founder agreements as well.',
       receivedAt: '2026-09-04T08:00:00.000Z',
       status: 'new',
-      budget: '$2,000-3,000',
+      budget: '€2,000–3,000',
     },
     {
       id: '2',
@@ -239,7 +241,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       message: 'Looking for help with our Series A financial model. We need 5-year projections with multiple scenarios.',
       receivedAt: '2026-09-03T10:00:00.000Z',
       status: 'replied',
-      budget: '$3,500-5,000',
+      budget: '€3,500–5,000',
     },
     {
       id: '3',
@@ -249,7 +251,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       message: 'Need to review our terms of service and privacy policy before launch.',
       receivedAt: '2026-09-02T10:00:00.000Z',
       status: 'converted',
-      budget: '$1,500',
+      budget: '€1,500',
     },
     {
       id: '4',
@@ -259,7 +261,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       message: 'Interested in your legal package. Can you provide more details on what is included?',
       receivedAt: '2026-09-01T10:00:00.000Z',
       status: 'new',
-      budget: '$2,500',
+      budget: '€2,500',
     },
     {
       id: '5',
@@ -268,7 +270,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       message: 'Looking for a pitch deck redesign for our upcoming fundraise.',
       receivedAt: '2026-08-28T10:00:00.000Z',
       status: 'declined',
-      budget: '$800',
+      budget: '€800',
     },
   ];
 
@@ -365,24 +367,26 @@ export default function ProviderInquiriesPage() {
   return (
     <AppShell
       title="Inquiries"
+      titleEl="Αιτήματα"
       description="Manage incoming service inquiries"
+      descriptionEl="Διαχειριστείτε τα εισερχόμενα αιτήματα για τις υπηρεσίες σας"
     >
       <div className="space-y-6">
 
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
-            { label: 'New', value: counts.new, icon: Mail, color: 'text-status-info' },
-            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
-            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
+            { label: 'New', labelEl: 'Νέα', value: counts.new, icon: Mail, color: 'text-status-info' },
+            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
+            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
+          ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -393,7 +397,7 @@ export default function ProviderInquiriesPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search inquiries..."
+            placeholder={bilingualInline("Search inquiries…", "Αναζήτηση αιτημάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

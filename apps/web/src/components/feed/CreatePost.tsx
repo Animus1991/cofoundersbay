@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
@@ -171,7 +172,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 <Hash className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Add tags (press Enter)"
+                  placeholder={bilingualInline("Add tags (press Enter)", "Προσθήκη ετικετών (πατήστε Enter)")}
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {

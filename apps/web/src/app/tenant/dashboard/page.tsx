@@ -134,7 +134,9 @@ export default function TenantDashboardPage() {
   return (
     <AppShell
       title="Tenant Dashboard"
+      titleEl="Πίνακας οργανισμού"
       description="Manage your organization on CoFounderBay"
+      descriptionEl="Διαχειριστείτε τον οργανισμό σας στο CoFounderBay"
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" asChild>

@@ -32,6 +32,9 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the API row.
@@ -80,12 +83,12 @@ const ORG_PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
   archived: 'warning',
 };
 
-const STATUS_LABEL: Record<Program['status'], string> = {
-  draft: 'Draft',
-  upcoming: 'Upcoming',
-  active: 'Running',
-  completed: 'Completed',
-  archived: 'Archived',
+const STATUS_LABEL: Record<Program['status'], { en: string; el: string }> = {
+  draft: { en: 'Draft', el: 'Πρόχειρο' },
+  upcoming: { en: 'Upcoming', el: 'Προσεχές' },
+  active: { en: 'Running', el: 'Σε εξέλιξη' },
+  completed: { en: 'Completed', el: 'Ολοκληρώθηκε' },
+  archived: { en: 'Archived', el: 'Αρχειοθετημένο' },
 };
 
 /** "7 Sep 2026": the API sends ISO timestamps, which the card printed as they came. */
@@ -125,10 +128,10 @@ function ProgramCard({ program }: { program: Program }) {
                 {program.name}
               </Link>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                {STATUS_LABEL[program.status]}
+                <BilingualText en={STATUS_LABEL[program.status].en} el={STATUS_LABEL[program.status].el} compact />
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mt-1 capitalize">{program.type}</p>
+            <p className="text-sm text-muted-foreground mt-1 capitalize"><StatusText value={program.type} /></p>
             {program.description && (
               <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{program.description}</p>
             )}
@@ -136,12 +139,12 @@ function ProgramCard({ program }: { program: Program }) {
               {program.startDate && (
                 <span className="flex items-center gap-1">
                   <Calendar className="icon-sm" aria-hidden="true" />
-                  {programDate(program.startDate)} – {program.endDate ? programDate(program.endDate) : 'Ongoing'}
+                  {programDate(program.startDate)} – {program.endDate ? programDate(program.endDate) : <BilingualText en="Ongoing" el="Σε εξέλιξη" compact />}
                 </span>
               )}
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
-                {program.enrolled}/{program.capacity} enrolled
+                <BilingualText en={`${program.enrolled}/${program.capacity} enrolled`} el={`${program.enrolled}/${program.capacity} εγγεγραμμένοι`} compact />
               </span>
             </div>
           </div>
@@ -153,13 +156,13 @@ function ProgramCard({ program }: { program: Program }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/programs/${program.id}`}>View Details</Link>
+                <Link href={`/programs/${program.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/tenant/programs">Edit Program</Link>
+                <Link href="/tenant/programs"><BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact /></Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/org/applications">Manage Participants</Link>
+                <Link href="/org/applications"><BilingualText en="Manage Participants" el="Διαχείριση συμμετεχόντων" compact /></Link>
               </DropdownMenuItem>
               {/*
                 * "Duplicate" is gone rather than left inert: there is no
@@ -172,7 +175,9 @@ function ProgramCard({ program }: { program: Program }) {
                 disabled={archive.isPending || program.status === 'archived'}
                 onClick={() => archive.mutate()}
               >
-                {program.status === 'archived' ? 'Archived' : 'Archive'}
+                {program.status === 'archived'
+                  ? <BilingualText en="Archived" el="Αρχειοθετημένο" compact />
+                  : <BilingualText en="Archive" el="Αρχειοθέτηση" compact />}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -305,12 +310,13 @@ export default function OrgProgramsPage() {
   return (
     <AppShell
       title="Programs"
+      titleEl="Προγράμματα"
       description="Create, run, and review accelerator, bootcamp, and incubator programs."
       actions={(
         <Button asChild>
           <Link href="/tenant/programs">
             <Plus className="mr-2 icon-sm" />
-            New Program
+            <BilingualText en="New Program" el="Νέο πρόγραμμα" compact />
           </Link>
         </Button>
       )}
@@ -321,13 +327,13 @@ export default function OrgProgramsPage() {
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Programs</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Programs" el="Σύνολο προγραμμάτων" compact /></p>
               <p className="text-xl font-bold">{programs.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
               <p className={cn('text-xl font-bold', STATUS.success.icon)}>
                 {programs.filter((p) => p.status === 'active').length}
               </p>
@@ -335,7 +341,7 @@ export default function OrgProgramsPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Enrolled</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Enrolled" el="Σύνολο εγγεγραμμένων" compact /></p>
               <p className="text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.enrolled, 0)}
               </p>
@@ -343,7 +349,7 @@ export default function OrgProgramsPage() {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένα" compact /></p>
               <p className={cn('text-xl font-bold', STATUS.info.icon)}>
                 {programs.filter((p) => p.status === 'completed').length}
               </p>
@@ -356,7 +362,7 @@ export default function OrgProgramsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search programs..."
+              placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"

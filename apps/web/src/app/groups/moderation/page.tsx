@@ -34,6 +34,9 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -46,32 +49,44 @@ type ModerationReport = {
   reportedUser: string;
   groupName: string;
   status: ReportStatus;
-  reportedAt: string;
+  reportedHoursAgo: number;
   priority: 'high' | 'medium' | 'low';
 };
 
-const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; chip: string }> = {
-  spam: { label: 'Spam', chip: STATUS.warning.chip },
-  harassment: { label: 'Harassment', chip: STATUS.danger.chip },
-  misinformation: { label: 'Misinformation', chip: STATUS.warning.chip },
-  inappropriate: { label: 'Inappropriate', chip: STATUS.accent.chip },
-  'off-topic': { label: 'Off-topic', chip: STATUS.neutral.chip },
+const CONTENT_EL: Record<ModerationReport['contentType'], string> = { post: 'ανάρτηση', comment: 'σχόλιο', profile: 'προφίλ', member: 'μέλος' };
+
+const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; labelEl: string; chip: string }> = {
+  spam: { label: 'Spam', labelEl: 'Ανεπιθύμητο', chip: STATUS.warning.chip },
+  harassment: { label: 'Harassment', labelEl: 'Παρενόχληση', chip: STATUS.danger.chip },
+  misinformation: { label: 'Misinformation', labelEl: 'Παραπληροφόρηση', chip: STATUS.warning.chip },
+  inappropriate: { label: 'Inappropriate', labelEl: 'Ακατάλληλο', chip: STATUS.accent.chip },
+  'off-topic': { label: 'Off-topic', labelEl: 'Εκτός θέματος', chip: STATUS.neutral.chip },
 };
 
-const STATUS_CONFIG: Record<ReportStatus, { label: string; chip: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', chip: STATUS.warning.chip, icon: Clock },
-  reviewed: { label: 'Reviewed', chip: STATUS.info.chip, icon: Eye },
-  resolved: { label: 'Resolved', chip: STATUS.success.chip, icon: CheckCircle },
-  dismissed: { label: 'Dismissed', chip: STATUS.neutral.chip, icon: XCircle },
+const STATUS_CONFIG: Record<ReportStatus, { label: string; labelEl: string; chip: string; icon: React.ElementType }> = {
+  pending: { label: 'Pending', labelEl: 'Σε αναμονή', chip: STATUS.warning.chip, icon: Clock },
+  reviewed: { label: 'Reviewed', labelEl: 'Ελέγχθηκε', chip: STATUS.info.chip, icon: Eye },
+  resolved: { label: 'Resolved', labelEl: 'Επιλύθηκε', chip: STATUS.success.chip, icon: CheckCircle },
+  dismissed: { label: 'Dismissed', labelEl: 'Απορρίφθηκε', chip: STATUS.neutral.chip, icon: XCircle },
 };
 
-const MOCK_REPORTS: ModerationReport[] = [
-  { id: '1', type: 'spam', contentType: 'post', contentPreview: 'Check out this amazing investment opportunity! 10x returns guaranteed...', reportedBy: 'Alice M.', reportedUser: 'John D.', groupName: 'AI Founders Network', status: 'pending', reportedAt: '2 hours ago', priority: 'high' },
-  { id: '2', type: 'harassment', contentType: 'comment', contentPreview: 'Your idea is terrible and you should quit...', reportedBy: 'Bob S.', reportedUser: 'Anonymous_123', groupName: 'SaaS Growth Hackers', status: 'pending', reportedAt: '4 hours ago', priority: 'high' },
-  { id: '3', type: 'misinformation', contentType: 'post', contentPreview: 'This framework has been proven to cause 100% failure rates...', reportedBy: 'Carol K.', reportedUser: 'TechGuru99', groupName: 'AI Founders Network', status: 'reviewed', reportedAt: '1 day ago', priority: 'medium' },
-  { id: '4', type: 'off-topic', contentType: 'post', contentPreview: 'Looking for a roommate in New York City...', reportedBy: 'Dave P.', reportedUser: 'Newuser2024', groupName: 'Early Stage Investors', status: 'resolved', reportedAt: '2 days ago', priority: 'low' },
-  { id: '5', type: 'inappropriate', contentType: 'profile', contentPreview: 'Profile contains explicit promotional content...', reportedBy: 'Eve R.', reportedUser: 'SpamBot_001', groupName: 'CleanTech Builders', status: 'dismissed', reportedAt: '3 days ago', priority: 'low' },
+// Samples, shown only with sample data on: there is no group-report store.
+// Reporters are demo-world members and the groups are the demo world's
+// communities; the reported accounts are throwaway handles, not people.
+const SAMPLE_REPORTS: ModerationReport[] = [
+  { id: '1', type: 'spam', contentType: 'post', contentPreview: 'Guaranteed 10x returns - DM me for a private allocation before Friday...', reportedBy: 'Sofia Alexiou', reportedUser: 'quick-returns-2026', groupName: 'Pre-Seed Fundraising', status: 'pending', reportedHoursAgo: 2, priority: 'high' },
+  { id: '2', type: 'harassment', contentType: 'comment', contentPreview: 'Nobody in this room will fund an idea this weak. Quit now...', reportedBy: 'Yannis Petrou', reportedUser: 'anon_founder_77', groupName: 'Athens Founders', status: 'pending', reportedHoursAgo: 4, priority: 'high' },
+  { id: '3', type: 'misinformation', contentType: 'post', contentPreview: 'Every eval framework fails in production, so do not bother measuring...', reportedBy: 'Marcus Chen', reportedUser: 'ml-hot-takes', groupName: 'AI Builders EU', status: 'reviewed', reportedHoursAgo: 26, priority: 'medium' },
+  { id: '4', type: 'off-topic', contentType: 'post', contentPreview: 'Looking for a flatmate in Pangrati from October...', reportedBy: 'Maria Georgiou', reportedUser: 'new-member-381', groupName: 'SaaS Metrics Circle', status: 'resolved', reportedHoursAgo: 50, priority: 'low' },
+  { id: '5', type: 'inappropriate', contentType: 'profile', contentPreview: 'The profile is a block of promotional links...', reportedBy: 'Katerina Nikolaou', reportedUser: 'promo-links-bot', groupName: 'Women Founders Greece', status: 'dismissed', reportedHoursAgo: 75, priority: 'low' },
 ];
+
+/** "2h ago" / "πριν 2 ώ." from the sample's age; samples carry ages, not dates. */
+function ageLabel(hours: number): { en: string; el: string } {
+  if (hours < 24) return { en: `${hours}h ago`, el: `πριν ${hours} ώ.` };
+  const days = Math.floor(hours / 24);
+  return { en: `${days}d ago`, el: `πριν ${days} ημ.` };
+}
 
 function ReportCard({ report }: { report: ModerationReport }) {
   const typeCfg = TYPE_CONFIG[report.type];
@@ -85,31 +100,31 @@ function ReportCard({ report }: { report: ModerationReport }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className={cn('text-xs border', typeCfg.chip)}>
-                <AlertTriangle className="mr-1 icon-sm" />
-                {typeCfg.label}
+                <AlertTriangle className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en={typeCfg.label} el={typeCfg.labelEl} compact />
               </Badge>
-              <Badge variant="secondary" className="text-xs capitalize">{report.contentType}</Badge>
+              <Badge variant="secondary" className="text-xs capitalize"><BilingualText en={report.contentType} el={CONTENT_EL[report.contentType]} compact /></Badge>
               <Badge variant="outline" className={cn('text-xs border', statusCfg.chip)}>
-                <StatusIcon className="mr-1 icon-sm" />
-                {statusCfg.label}
+                <StatusIcon className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en={statusCfg.label} el={statusCfg.labelEl} compact />
               </Badge>
               {report.priority === 'high' && (
-                <Badge variant="destructive" className="text-xs">High Priority</Badge>
+                <Badge variant="destructive" className="text-xs"><BilingualText en="High Priority" el="Υψηλή προτεραιότητα" compact /></Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2 italic">
               &ldquo;{report.contentPreview}&rdquo;
             </p>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-              <span>Reported by: <span className="font-medium text-foreground">{report.reportedBy}</span></span>
-              <span>Against: <span className="font-medium text-foreground">{report.reportedUser}</span></span>
-              <span>In: <span className="font-medium text-foreground">{report.groupName}</span></span>
-              <span className="flex items-center gap-1"><Clock className="icon-sm" />{report.reportedAt}</span>
+              <span><BilingualText en="Reported by" el="Αναφορά από" compact />: <span className="font-medium text-foreground">{report.reportedBy}</span></span>
+              <span><BilingualText en="Against" el="Κατά" compact />: <span className="font-medium text-foreground">{report.reportedUser}</span></span>
+              <span><BilingualText en="In" el="Στην" compact />: <span className="font-medium text-foreground">{report.groupName}</span></span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" /><BilingualText en={ageLabel(report.reportedHoursAgo).en} el={ageLabel(report.reportedHoursAgo).el} compact /></span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Report actions">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Report actions. Ενέργειες αναφοράς">
                 <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
@@ -127,9 +142,9 @@ function ReportCard({ report }: { report: ModerationReport }) {
         </div>
         {report.status === 'pending' && (
           <div className="flex gap-2 mt-3">
-            <Button size="sm" variant="default" className="h-7 text-xs" disabled title="Sample report - group reports have no queue yet"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Resolve</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs" disabled title="Sample report - group reports have no queue yet"><XCircle className="mr-1 icon-sm" aria-hidden="true" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30" disabled title="Sample report - group reports have no queue yet"><Ban className="mr-1 icon-sm" aria-hidden="true" />Ban User</Button>
+            <Button size="sm" variant="default" className="h-7 text-xs" disabled title="Sample report - group reports have no queue yet"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Resolve" el="Επίλυση" compact /></Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs" disabled title="Sample report - group reports have no queue yet"><XCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30" disabled title="Sample report - group reports have no queue yet"><Ban className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact /></Button>
           </div>
         )}
       </CardContent>
@@ -141,10 +156,12 @@ export default function GroupsModerationPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('pending');
 
-  const pendingCount = MOCK_REPORTS.filter(r => r.status === 'pending').length;
-  const highPriority = MOCK_REPORTS.filter(r => r.priority === 'high' && r.status === 'pending').length;
+  const { showDemoData } = useDemoData();
+  const reports = showDemoData ? SAMPLE_REPORTS : [];
+  const pendingCount = reports.filter(r => r.status === 'pending').length;
+  const highPriority = reports.filter(r => r.priority === 'high' && r.status === 'pending').length;
 
-  const filtered = MOCK_REPORTS.filter(r => {
+  const filtered = reports.filter(r => {
     const q = search.toLowerCase();
     const matchesSearch = !search || r.reportedUser.toLowerCase().includes(q) || r.groupName.toLowerCase().includes(q) || r.contentPreview.toLowerCase().includes(q);
     const matchesTab = activeTab === 'all' || r.status === activeTab;
@@ -158,9 +175,9 @@ export default function GroupsModerationPage() {
       id: 'reports',
       labelEn: 'Group reports',
       labelEl: 'Αναφορές ομάδων',
-      rows: filtered.map((r) => `${r.type} · ${r.contentType} by ${r.reportedUser} in ${r.groupName} · ${r.status} · ${r.priority} priority`),
-      total: MOCK_REPORTS.length,
-      sample: true,
+      rows: filtered.map((r) => `${r.type} · ${r.contentType} by ${r.reportedUser} in ${r.groupName} · ${r.status} · ${r.priority} priority · ${ageLabel(r.reportedHoursAgo).en}`),
+      total: reports.length,
+      sample: reports.length > 0,
     },
   ]);
   usePageControls([
@@ -175,21 +192,29 @@ export default function GroupsModerationPage() {
   return (
     <AppShell
       title="Moderation queue"
+      titleEl="Ουρά εποπτείας"
       description="Review and action community reports. High-priority items are flagged first so nothing urgent slips through."
+      descriptionEl="Ελέγξτε και χειριστείτε αναφορές κοινοτήτων. Τα επείγοντα εμφανίζονται πρώτα, ώστε να μη χάνεται τίποτα."
     >
       <div className="space-y-6">
-        <SampleDataNotice
-          surface="Community moderation"
-          detail="These reports are samples - reports filed against people are handled in the platform moderation queue (Admin -> Reports), and group-level reports have no store yet."
-          askAiPrompt="Where do I handle reports about a member of my community?"
-        />
+        {reports.length > 0 && (
+          <SampleDataNotice
+            surface="Community moderation"
+            detail="These reports are samples - reports filed against people are handled in the platform moderation queue (Admin -> Reports), and group-level reports have no store yet."
+            askAiPrompt="Where do I handle reports about a member of my community?"
+          />
+        )}
         {/* Alert Banner */}
         {highPriority > 0 && (
           <Card className="border-status-danger-border/40 bg-status-danger-bg">
             <CardContent className="p-4 flex items-center gap-3">
               <AlertTriangle className={cn('icon-md shrink-0', STATUS.danger.icon)} />
               <p className="text-sm">
-                <span className="font-semibold">{highPriority} high-priority report{highPriority > 1 ? 's' : ''}</span> require immediate attention
+                <BilingualText
+                  en={`${highPriority} high-priority report${highPriority > 1 ? 's' : ''} need attention now`}
+                  el={`${highPriority} ${highPriority > 1 ? 'αναφορές' : 'αναφορά'} υψηλής προτεραιότητας ${highPriority > 1 ? 'χρειάζονται' : 'χρειάζεται'} άμεση προσοχή`}
+                  wrap
+                />
               </p>
             </CardContent>
           </Card>
@@ -198,14 +223,14 @@ export default function GroupsModerationPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
-            { label: 'Pending', value: pendingCount, color: STATUS.warning.icon },
-            { label: 'High Priority', value: highPriority, color: STATUS.danger.icon },
-            { label: 'Resolved (30d)', value: MOCK_REPORTS.filter(r => r.status === 'resolved').length, color: STATUS.success.icon },
-            { label: 'Total Reports', value: MOCK_REPORTS.length, color: 'text-foreground' },
+            { label: 'Pending', labelEl: 'Σε αναμονή', value: pendingCount, color: STATUS.warning.icon },
+            { label: 'High Priority', labelEl: 'Υψηλή προτεραιότητα', value: highPriority, color: STATUS.danger.icon },
+            { label: 'Resolved', labelEl: 'Επιλυμένες', value: reports.filter(r => r.status === 'resolved').length, color: STATUS.success.icon },
+            { label: 'Total Reports', labelEl: 'Σύνολο αναφορών', value: reports.length, color: 'text-foreground' },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className={cn('text-2xl font-bold', stat.color)}>{stat.value}</p>
               </CardContent>
             </Card>
@@ -215,15 +240,15 @@ export default function GroupsModerationPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input placeholder="Search reports..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder={bilingualInline("Search reports…", "Αναζήτηση αναφορών…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
-            <TabsTrigger value="reviewed">Reviewed</TabsTrigger>
-            <TabsTrigger value="resolved">Resolved</TabsTrigger>
-            <TabsTrigger value="all">All ({MOCK_REPORTS.length})</TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en={`Pending (${pendingCount})`} el={`Σε αναμονή (${pendingCount})`} compact /></TabsTrigger>
+            <TabsTrigger value="reviewed"><BilingualText en="Reviewed" el="Ελεγμένες" compact /></TabsTrigger>
+            <TabsTrigger value="resolved"><BilingualText en="Resolved" el="Επιλυμένες" compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${reports.length})`} el={`Όλες (${reports.length})`} compact /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(report => <ReportCard key={report.id} report={report} />)}
@@ -234,15 +259,27 @@ export default function GroupsModerationPage() {
                 <ListEmptyState
                   icon={CheckCircle}
                   tone="success"
-                  title="All caught up"
-                  description="There are no pending reports to review. New community reports will appear here for action."
+                  title={<BilingualText en="All caught up" el="Όλα εντάξει" wrap />}
+                  description={reports.length === 0 ? (
+                    <BilingualText
+                      en="Group reports have no queue yet. Reports about a member are handled in Admin → Reports."
+                      el="Οι αναφορές κοινοτήτων δεν έχουν ακόμη ουρά. Οι αναφορές για μέλη χειρίζονται στο Διαχείριση → Αναφορές."
+                      wrap
+                    />
+                  ) : (
+                    <BilingualText
+                      en="There are no pending reports to review. New community reports will appear here for action."
+                      el="Δεν υπάρχουν αναφορές σε αναμονή. Οι νέες αναφορές κοινοτήτων θα εμφανίζονται εδώ."
+                      wrap
+                    />
+                  )}
                 />
               ) : (
                 <ListEmptyState
                   icon={Shield}
                   tone="neutral"
-                  title="No reports here"
-                  description={`There are no ${activeTab === 'all' ? '' : `${activeTab} `}reports to show right now.`}
+                  title={<BilingualText en="No reports here" el="Καμία αναφορά εδώ" wrap />}
+                  description={<BilingualText en="There are no reports in this view right now." el="Δεν υπάρχουν αναφορές σε αυτή την προβολή αυτή τη στιγμή." wrap />}
                 />
               )
             )}

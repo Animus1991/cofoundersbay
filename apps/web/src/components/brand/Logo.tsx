@@ -71,6 +71,9 @@ export function LogoIcon({
       height={size}
       alt=""
       draggable={false}
+      // The mark's corner is 28% of its size at every size, like an app icon;
+      // the corner-ladder test skips it by this attribute.
+      data-brand-mark=""
       className={cn('inline-block select-none object-cover', className)}
       style={{ width: size, height: size, borderRadius: Math.round(size * 0.28) }}
     />

@@ -56,6 +56,9 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
+import { statusEl } from '@/components/common/StatusText';
 
 /**
  * The page's own row from the tenant membership row.
@@ -151,7 +154,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-sm">{member.name}</span>
                   <Badge variant="outline" className={cn('text-2xs h-4 px-1.5', STATUS_COLORS[member.status])}>
-                    {member.status}
+                    <StatusText value={member.status} />
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">{member.email}</p>
@@ -183,7 +186,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
                       disabled={!onRole || member.role === r}
                       onSelect={() => onRole?.(member, r)}
                     >
-                      {r}
+                      <StatusText value={r} />
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
@@ -194,9 +197,9 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" size="sm">{member.role}</Badge>
+              <Badge variant="secondary" size="sm"><StatusText value={member.role} /></Badge>
               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                <Clock className="icon-sm" aria-hidden="true" />Joined {member.joinedAt}
+                <Clock className="icon-sm" aria-hidden="true" /><BilingualText en={`Joined ${member.joinedAt}`} el={`Μέλος από ${member.joinedAt}`} compact />
               </span>
               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
                 <Activity className="icon-sm" aria-hidden="true" />Active {member.lastActive}
@@ -311,7 +314,7 @@ export default function TenantMembersPage() {
       if (!m.userId) return;
       try {
         await updateTenantMember(tenantId, m.userId, { role });
-        toastOk('Role changed', `${m.name} is now ${role}.`);
+        toastOk('Role changed', bilingualInline(`${m.name} is now ${role}.`, `${m.name}: ${statusEl(role) ?? role}.`));
       } catch (e) {
         toastFail('Could not change the role', e instanceof Error ? e.message : undefined);
       } finally { refreshMembers(); }
@@ -319,9 +322,9 @@ export default function TenantMembersPage() {
     onRemove: async (m) => {
       if (!m.userId) return;
       const ok = await confirm({
-        title: `Remove ${m.name}?`,
-        description: 'They lose access to this workspace. Their account itself is not deleted.',
-        confirmLabel: 'Remove member',
+        title: <BilingualText en={`Remove ${m.name}?`} el={`Αφαίρεση: ${m.name};`} />,
+        description: <BilingualText en="They lose access to this workspace. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον χώρο εργασίας. Ο λογαριασμός του/της δεν διαγράφεται." />,
+        confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
       });
       if (!ok) return;
       try {
@@ -419,7 +422,9 @@ export default function TenantMembersPage() {
   return (
     <AppShell
       title="Members"
+      titleEl="Μέλη"
       description="Manage and track your organization's member engagement"
+      descriptionEl="Διαχειριστείτε και παρακολουθήστε τη συμμετοχή των μελών του οργανισμού σας"
       actions={
         <Button onClick={() => setShowInvite(true)} className="gap-1.5">
           <Plus className="icon-sm" /> <BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact />
@@ -431,11 +436,11 @@ export default function TenantMembersPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-accessible' },
-            { label: 'Online Now', value: onlineCount ?? '—', icon: Activity, color: 'text-status-success' },
-            { label: 'Avg Engagement', value: avgEngagement == null ? '—' : `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
-            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length, icon: Users, color: 'text-primary-accessible' },
+            { label: 'Online Now', labelEl: 'Συνδεδεμένοι τώρα', value: onlineCount ?? '—', icon: Activity, color: 'text-status-success' },
+            { label: 'Avg Engagement', labelEl: 'Μέση συμμετοχή', value: avgEngagement == null ? '—' : `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Pending Approval', labelEl: 'Σε αναμονή έγκρισης', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
+          ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
@@ -443,7 +448,7 @@ export default function TenantMembersPage() {
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -454,11 +459,11 @@ export default function TenantMembersPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={bilingualInline("Search by name or email…", "Αναζήτηση με όνομα ή email…")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger aria-label="Status. Κατάσταση" className="w-full sm:w-[150px]">
+              <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -472,10 +477,14 @@ export default function TenantMembersPage() {
         {/* Role Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setRoleFilter(v)}>
           <TabsList className="flex-wrap h-auto gap-1">
-            <TabsTrigger value="all">All ({members.length})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${members.length})`} el={`Όλα (${members.length})`} compact /></TabsTrigger>
             {roles.map((role) => (
               <TabsTrigger key={role} value={role}>
-                {role} ({members.filter((m) => m.role === role).length})
+                <BilingualText
+                  en={`${role} (${members.filter((m) => m.role === role).length})`}
+                  el={`${statusEl(role) ?? role} (${members.filter((m) => m.role === role).length})`}
+                  compact
+                />
               </TabsTrigger>
             ))}
           </TabsList>
@@ -483,7 +492,11 @@ export default function TenantMembersPage() {
           <TabsContent value={activeTab} className="mt-4">
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} found
+                <BilingualText
+                  en={`${filteredMembers.length} member${filteredMembers.length !== 1 ? 's' : ''} found`}
+                  el={`${filteredMembers.length} ${filteredMembers.length !== 1 ? 'μέλη' : 'μέλος'}`}
+                  compact
+                />
               </p>
               {filteredMembers.map((member) => (
                 <MemberCard key={member.id} member={member} {...memberActions} />

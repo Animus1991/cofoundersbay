@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface Message {
   id: string;
@@ -225,7 +226,7 @@ export function EnhancedMessageThread({
       {showSearch && (
         <div className="px-6 py-3 border-b bg-muted/50">
           <Input
-            placeholder="Search in conversation..."
+            placeholder={bilingualInline("Search in conversation…", "Αναζήτηση στη συνομιλία…")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-background"
@@ -476,7 +477,7 @@ export function EnhancedMessageThread({
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
+              placeholder={bilingualInline("Type a message…", "Γράψτε ένα μήνυμα…")}
               className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none min-h-[48px] max-h-[200px]"
               rows={1}
             />

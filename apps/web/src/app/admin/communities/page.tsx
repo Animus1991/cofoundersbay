@@ -55,6 +55,8 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 /**
  * The page's own row from a group.
@@ -138,14 +140,14 @@ function CommunityCard({
                   </Link>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     {visibilityIcons[community.visibility]}
-                    {community.visibility}
+                    <StatusText value={community.visibility} />
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{community.category}</p>
+                <p className="text-sm text-muted-foreground"><StatusText value={community.category} /></p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn('text-xs', statusColors[community.status])}>
-                  {community.status}
+                  <StatusText value={community.status} />
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -191,11 +193,11 @@ function CommunityCard({
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Users2 className="icon-sm" />
-                {community.memberCount} members
+                <BilingualText en={`${community.memberCount} members`} el={`${community.memberCount} μέλη`} compact />
               </span>
               <span className="flex items-center gap-1">
                 <MessageSquare className="icon-sm" />
-                {community.postCount} posts
+                <BilingualText en={`${community.postCount} posts`} el={`${community.postCount} αναρτήσεις`} compact />
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" />
@@ -338,9 +340,9 @@ export default function AdminCommunitiesPage() {
       return;
     }
     const ok = await confirm({
-      title: `Delete ${c.name}?`,
-      description: 'The group, its posts and its member list are removed. This cannot be undone.',
-      confirmLabel: 'Delete community',
+      title: <BilingualText en={`Delete ${c.name}?`} el={`Διαγραφή: ${c.name};`} />,
+      description: <BilingualText en="The group, its posts and its member list are removed. This cannot be undone." el="Η κοινότητα, οι αναρτήσεις και τα μέλη της αφαιρούνται. Δεν αναιρείται." />,
+      confirmLabel: <BilingualText en="Delete community" el="Διαγραφή κοινότητας" compact />,
     });
     if (ok) deleteMutation.mutate(c.id);
   };
@@ -397,13 +399,13 @@ export default function AdminCommunitiesPage() {
       content: (
         <div className="space-y-2">
           {[
-            { label: 'Total Communities', value: communities.length },
-            { label: 'Total Members', value: communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB') },
-            { label: 'Total Posts', value: communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB') },
-            { label: 'Flagged', value: communities.filter((c) => c.status === 'flagged').length, danger: true },
-          ].map(({ label, value, danger }) => (
+            { label: 'Total Communities', labelEl: 'Σύνολο κοινοτήτων', value: communities.length },
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB') },
+            { label: 'Total Posts', labelEl: 'Σύνολο αναρτήσεων', value: communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB') },
+            { label: 'Flagged', labelEl: 'Με σήμανση', value: communities.filter((c) => c.status === 'flagged').length, danger: true },
+          ].map(({ label, labelEl, value, danger }) => (
             <div key={label} className="rounded-lg border border-border/60 p-3">
-              <p className="text-sm text-muted-foreground">{label}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               <p className={cn('mt-1 text-xl font-bold tabular-nums', danger && 'text-status-danger')}>{value}</p>
             </div>
           ))}
@@ -422,7 +424,7 @@ export default function AdminCommunitiesPage() {
             <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Visibility" el="Ορατότητα" compact /></p>
             <Select value={visibility} onValueChange={setVisibility}>
               <SelectTrigger aria-label="Visibility" className="w-full">
-                <SelectValue placeholder="Visibility" />
+                <SelectValue placeholder={bilingualInline("Visibility", "Ορατότητα")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All" el="Όλες" compact /></SelectItem>
@@ -436,7 +438,7 @@ export default function AdminCommunitiesPage() {
             <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger aria-label="Status" className="w-full">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -484,7 +486,7 @@ export default function AdminCommunitiesPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder="Search communities..."
+            placeholder={bilingualInline("Search communities…", "Αναζήτηση κοινοτήτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -572,7 +574,7 @@ export default function AdminCommunitiesPage() {
                 id="community-description"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="What is this community about?"
+                placeholder={bilingualInline("What is this community about?", "Ποιο είναι το θέμα της κοινότητας;")}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">

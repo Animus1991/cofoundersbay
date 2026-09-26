@@ -38,6 +38,7 @@ import {
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
+import { formatCompactMoney } from '@/lib/i18n/format';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -72,12 +73,7 @@ const STAGE_TONE: Record<string, string> = {
 
 function money(cents: number | null | undefined, currency = 'EUR'): string {
   if (cents == null) return '—';
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency,
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(cents / 100);
+  return formatCompactMoney(cents / 100, currency, 1);
 }
 
 /**
@@ -205,6 +201,7 @@ export default function InvestorDashboard() {
   return (
     <AppShell
       description="Pipeline health, deal flow, and portfolio performance — in one view."
+      descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
       actions={
         <Badge variant="outline" className="gap-1.5">
           <DollarSign className="icon-sm" aria-hidden="true" />

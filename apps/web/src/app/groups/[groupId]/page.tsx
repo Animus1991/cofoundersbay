@@ -32,6 +32,7 @@ import {
   type GroupPost,
   type GroupComment,
 } from '@/lib/api';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
 
@@ -196,7 +197,7 @@ function PostCard({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
-                placeholder="Write a comment..."
+                placeholder={bilingualInline("Write a comment…", "Γράψτε ένα σχόλιο…")}
                 className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none"
               />
               <Button aria-label="Send"
@@ -458,7 +459,7 @@ export default function GroupDetailPage() {
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
-                    placeholder="Share something with the group..."
+                    placeholder={bilingualInline("Share something with the group…", "Μοιραστείτε κάτι με την κοινότητα…")}
                     className="w-full rounded-xl border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none resize-none"
                     rows={3}
                   />

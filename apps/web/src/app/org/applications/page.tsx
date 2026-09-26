@@ -50,6 +50,8 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 /**
  * An application is a program participant whose status says so.
@@ -177,13 +179,13 @@ function ApplicationCard({
                   {application.startupName}
                 </button>
                 <p className="text-sm text-muted-foreground">
-                  by {[application.founderName, application.industry, application.location].filter(Boolean).join(' · ')}
+                  {[application.founderName, application.industry, application.location].filter(Boolean).join(' · ')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={cn('text-xs flex items-center gap-1 border', statusColors.chip)}>
                   <StatusIcon className="icon-sm" />
-                  {application.status.replace('_', ' ')}
+                  <StatusText value={application.status} />
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -229,7 +231,7 @@ function ApplicationCard({
               {application.score !== undefined && (
                 <span className="flex items-center gap-1">
                   <Star className={cn('icon-sm', STATUS.warning.icon)} />
-                  Score: {application.score}/100
+                  <BilingualText en={`Score: ${application.score}/100`} el={`Βαθμολογία: ${application.score}/100`} compact />
                 </span>
               )}
             </div>
@@ -397,14 +399,14 @@ export default function OrgApplicationsPage() {
         {/* Stats: the three states an application can be in, and the whole. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           {[
-            { label: 'Total', value: statusCounts.all, tone: '' },
-            { label: 'Pending', value: statusCounts.pending, tone: STATUS.warning.icon },
-            { label: 'Accepted', value: statusCounts.accepted, tone: STATUS.success.icon },
-            { label: 'Rejected', value: statusCounts.rejected, tone: STATUS.danger.icon },
+            { label: 'Total', labelEl: 'Σύνολο', value: statusCounts.all, tone: '' },
+            { label: 'Pending', labelEl: 'Σε αναμονή', value: statusCounts.pending, tone: STATUS.warning.icon },
+            { label: 'Accepted', labelEl: 'Εγκεκριμένες', value: statusCounts.accepted, tone: STATUS.success.icon },
+            { label: 'Rejected', labelEl: 'Απορριφθείσες', value: statusCounts.rejected, tone: STATUS.danger.icon },
           ].map((kpi) => (
             <Card key={kpi.label}>
               <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">{kpi.label}</p>
+                <p className="text-sm text-muted-foreground"><BilingualText en={kpi.label} el={kpi.labelEl} compact wrap /></p>
                 <p className={cn('text-xl font-semibold tabular-nums sm:text-2xl', kpi.tone)}>{kpi.value}</p>
               </CardContent>
             </Card>
@@ -414,10 +416,10 @@ export default function OrgApplicationsPage() {
         {/* Tabs: In review and Shortlisted had no status behind them and read 0 forever. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
-            <TabsTrigger value="pending">Pending ({statusCounts.pending})</TabsTrigger>
-            <TabsTrigger value="accepted">Accepted ({statusCounts.accepted})</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected ({statusCounts.rejected})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${statusCounts.all})`} el={`Όλες (${statusCounts.all})`} compact /></TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en={`Pending (${statusCounts.pending})`} el={`Σε αναμονή (${statusCounts.pending})`} compact /></TabsTrigger>
+            <TabsTrigger value="accepted"><BilingualText en={`Accepted (${statusCounts.accepted})`} el={`Εγκεκριμένες (${statusCounts.accepted})`} compact /></TabsTrigger>
+            <TabsTrigger value="rejected"><BilingualText en={`Rejected (${statusCounts.rejected})`} el={`Απορριφθείσες (${statusCounts.rejected})`} compact /></TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -426,15 +428,15 @@ export default function OrgApplicationsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Search applications..."
+              placeholder={bilingualInline('Search applications…', 'Αναζήτηση αιτήσεων…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
           <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger aria-label="Program" className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Program" />
+            <SelectTrigger aria-label="Program. Πρόγραμμα" className="w-full sm:w-[200px]">
+              <SelectValue placeholder={bilingualInline('Program', 'Πρόγραμμα')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>

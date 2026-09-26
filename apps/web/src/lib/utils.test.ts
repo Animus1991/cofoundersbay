@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { formatRelativeTime, initialsOf } from './utils';
+import { formatRelativeTime, formatRelativeTimeEl, initialsOf } from './utils';
 
 describe('formatRelativeTime', () => {
   afterEach(() => vi.useRealTimers());
@@ -19,6 +19,20 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime('Never')).toBe('Never');
     expect(formatRelativeTime('')).toBe('—');
     expect(formatRelativeTime(new Date('nope'))).toBe('—');
+  });
+});
+
+describe('formatRelativeTimeEl', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('uses the same thresholds in Greek', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-24T12:00:00Z'));
+    expect(formatRelativeTimeEl('2026-09-24T11:59:30Z')).toBe('μόλις τώρα');
+    expect(formatRelativeTimeEl('2026-09-24T09:00:00Z')).toBe('πριν 3 ώ.');
+    expect(formatRelativeTimeEl(new Date('2026-09-20T12:00:00Z'))).toBe('πριν 4 ημ.');
+    expect(formatRelativeTimeEl('2025-09-01T12:00:00Z')).toBe('πριν 1 έτ.');
+    expect(formatRelativeTimeEl('Never')).toBe('Never');
   });
 });
 

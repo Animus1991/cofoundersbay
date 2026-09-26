@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export type NewsletterItem = {
   id: string;
@@ -62,7 +63,7 @@ export function DashboardNewsletter({
         </ul>
         <div className="flex gap-2">
           <Input
-            placeholder="Your email"
+            placeholder={bilingualInline("Your email", "Το email σας")}
             className="flex-1 text-sm"
             type="email"
             aria-label="Newsletter email"

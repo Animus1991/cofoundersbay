@@ -34,6 +34,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export type SearchFiltersValues = {
   q: string;
@@ -224,7 +225,7 @@ export function SearchFilters({
           <div className="relative min-w-0 flex-1">
             <Input
               type="text"
-              placeholder="Search by name, skills, industry..."
+              placeholder={bilingualInline("Search by name, skills, industry…", "Αναζήτηση με όνομα, δεξιότητες, κλάδο…")}
               value={filters.q}
               onChange={(e) => updateFilter('q', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch()}
@@ -361,7 +362,7 @@ export function SearchFilters({
                 </AccordionTrigger>
                 <AccordionContent className="space-y-3">
                   <Input
-                    placeholder="City or country..."
+                    placeholder={bilingualInline("City or country…", "Πόλη ή χώρα…")}
                     value={filters.location}
                     onChange={(e) => updateFilter('location', e.target.value)}
                   />
