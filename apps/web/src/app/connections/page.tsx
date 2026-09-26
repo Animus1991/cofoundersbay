@@ -26,6 +26,8 @@ import {
   type ConnectionRequestItem,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -388,6 +390,39 @@ export default function ConnectionsPage() {
     },
   ];
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'people',
+      labelEn: 'Network',
+      labelEl: 'Δίκτυο',
+      content: (
+        <RailStats
+          items={networkStats.map((s) => ({
+            key: s.labelEn,
+            label: s.labelEn,
+            labelEl: s.labelEl,
+            value: s.value,
+            icon: s.icon,
+            tone: `${STATUS[s.tone].bg} ${STATUS[s.tone].icon}`,
+          }))}
+        />
+      ),
+    },
+    {
+      id: 'go',
+      glyph: 'discover',
+      labelEn: 'Where to go next',
+      labelEl: 'Πού να πάτε μετά',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Compass} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <>
     {justAcceptedUser && (
@@ -398,6 +433,7 @@ export default function ConnectionsPage() {
     )}
     <AppShell
       showHelp
+      rail={rail}
       actions={
         <Button className="gap-2" asChild>
           <Link href="/discover">
@@ -408,31 +444,6 @@ export default function ConnectionsPage() {
       }
     >
       <div className="space-y-5 pb-10">
-      {/* Four across waits for `md`: at 640px a quarter-width tile leaves a
-          bilingual label about 80px, and the page scrolled sideways. */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {networkStats.map((s) => {
-          const SIcon = s.icon;
-          const colors = STATUS[s.tone];
-          return (
-            <Card key={s.labelEn} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-2.5 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', colors.bg, colors.icon)}>
-                  <SIcon className="icon-sm" aria-hidden="true" />
-                </div>
-                {/* min-w-0 lets the label wrap instead of widening the tile. */}
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-foreground leading-none tabular-nums">{s.value}</p>
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">

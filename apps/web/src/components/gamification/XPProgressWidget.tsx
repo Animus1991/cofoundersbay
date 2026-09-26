@@ -65,7 +65,7 @@ export function XPProgressWidget() {
     : '';
 
   return (
-    <Card>
+    <Card className="min-w-0 overflow-hidden">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <CfbGlyph name="award" className="icon-md text-primary-accessible" />
@@ -90,12 +90,12 @@ export function XPProgressWidget() {
 
           <div className="space-y-1">
             <Progress value={xp.levelProgress} label="Level progress" className="h-2" />
-            <div className="flex justify-between gap-2 text-xs text-muted-foreground">
-              <span>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+              <span className="min-w-0">
                 <BilingualText en={`Level ${xp.level}`} el={`Επίπεδο ${xp.level}`} compact />
               </span>
               <span className="tabular-nums">{xp.levelProgress.toFixed(0)}%</span>
-              <span className="text-right">
+              <span className="min-w-0 text-right">
                 <BilingualText
                   en={`${xp.xpToNextLevel} to next`}
                   el={`${xp.xpToNextLevel} έως το επόμενο`}
@@ -107,20 +107,20 @@ export function XPProgressWidget() {
         </div>
 
         {streak && (
-          <div className="flex items-center justify-between rounded-2xl bg-muted/40 p-3">
-            <div className="flex items-center gap-3">
-              <CfbGlyph name="spark" className="icon-lg text-muted-foreground" />
-              <div>
-                <div className="text-sm font-semibold">
-                  <BilingualText en={streakDaysEn} el={streakDaysEl} compact />
+          <div className="flex min-w-0 items-start justify-between gap-2 overflow-hidden rounded-2xl bg-muted/40 p-2.5">
+            <div className="flex min-w-0 items-start gap-2">
+              <CfbGlyph name="spark" className="icon-md mt-0.5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold leading-snug">
+                  <BilingualText en={streakDaysEn} el={streakDaysEl} compact wrap />
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  <BilingualText en={bestEn} el={bestEl} compact />
+                <div className="text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={bestEn} el={bestEl} compact wrap />
                 </div>
               </div>
             </div>
             {streak.currentStreak >= 7 && (
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="shrink-0 gap-1">
                 <CfbGlyph name="award" className="icon-sm" />
                 <BilingualText en="On fire" el="Σε φόρμα" compact />
               </Badge>
@@ -129,9 +129,9 @@ export function XPProgressWidget() {
         )}
 
         {xp.recentEvents.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-muted-foreground">
-              <BilingualText en="Recent activity" el="Πρόσφατη δραστηριότητα" compact />
+          <div className="min-w-0 space-y-2">
+            <div className="min-w-0 text-sm font-medium leading-snug text-muted-foreground">
+              <BilingualText en="Recent activity" el="Πρόσφατη δραστηριότητα" compact wrap />
             </div>
             <div className="space-y-1">
               {xp.recentEvents.slice(0, 3).map((event) => (
@@ -139,7 +139,7 @@ export function XPProgressWidget() {
                   key={event.id}
                   className="flex items-center justify-between rounded-lg bg-muted/50 p-2 text-xs"
                 >
-                  <span className="text-muted-foreground">
+                  <span className="min-w-0 truncate pr-2 text-muted-foreground">
                     {formatEventType(event.eventType)}
                   </span>
                   <span className="font-medium text-status-warning">

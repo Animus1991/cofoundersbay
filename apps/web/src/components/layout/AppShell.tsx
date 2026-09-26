@@ -86,7 +86,7 @@ export function AppShellFrame({
             // reserved on a page that has one, so pinning and unpinning slides
             // the panel rather than reflowing the whole column twice.
             'transition-[margin-right] duration-200 ease-out',
-            hasRail && (railPinned ? 'lg:mr-[20.25rem]' : 'lg:mr-[3.25rem]'),
+            hasRail && (railPinned ? 'lg:mr-[21.752rem]' : 'lg:mr-[3.25rem]'),
           )}
         >
           <MemoTopBar />
@@ -147,6 +147,8 @@ type AppShellProps = {
   fullHeight?: boolean;
   /** Extra class on the content wrapper */
   contentClassName?: string;
+  /** Extra class on the page H1 — founder overview scales the title locally. */
+  titleClassName?: string;
   /**
    * Contextual Ask AI prompt. Defaults to the page title when omitted.
    * Pass `false` to hide (AI workspace, pages that already own the CTA).
@@ -183,6 +185,7 @@ export function AppShell({
   showHelp = false,
   fullHeight = false,
   contentClassName,
+  titleClassName,
   askAi,
   rail,
 }: AppShellProps) {
@@ -226,7 +229,7 @@ export function AppShell({
               />
               <div className="min-w-0">
                 {pageTitle && (
-                  <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">
+                  <h1 className={cn('text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
                     <BilingualText en={pageTitle} el={pageTitleEl} />
                   </h1>
                 )}

@@ -259,7 +259,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
             aria-hidden={!open}
           >
             {open && (
-              <div className="flex h-full w-[17rem] flex-col">
+              <div className="flex h-full w-full flex-col">
                 <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
                   {/* Stacked, not inline-truncated: "PLATFORM TOTALS · ΣΥΝΟΛΑ
                       ΠΛΑΤΦΟΡΜΑΣ" is wider than the panel, and an ellipsis on
@@ -349,9 +349,11 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   <PanelRight className="icon-md" aria-hidden="true" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="left" className="text-xs">
-                <BilingualText en="Page tools" el="Εργαλεία σελίδας" />
-              </TooltipContent>
+              {!open && (
+                <TooltipContent side="left" className="text-xs">
+                  <BilingualText en="Page tools" el="Εργαλεία σελίδας" />
+                </TooltipContent>
+              )}
             </Tooltip>
 
             <div className="h-px w-6 bg-border/60" />
@@ -402,10 +404,12 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                       )}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="left" className="text-xs">
-                    <BilingualText en={section.labelEn} el={section.labelEl} />
-                    {badge != null && <span className="ml-1 opacity-70">({badge})</span>}
-                  </TooltipContent>
+                  {!open && (
+                    <TooltipContent side="left" className="text-xs">
+                      <BilingualText en={section.labelEn} el={section.labelEl} />
+                      {badge != null && <span className="ml-1 opacity-70">({badge})</span>}
+                    </TooltipContent>
+                  )}
                 </Tooltip>
               );
             })}

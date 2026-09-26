@@ -147,6 +147,9 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // behaviour - a spatial command surface, not a duplicate.
   'key:add_sticky',
   'key:create_group',
+  // /research/[boardId]: the rail's Insert section uploads at the viewport
+  // centre; the canvas right-click menu uploads at the clicked point.
+  'key:upload',
   // /projects: the rail's Filters section owns the standing clear control; the
   // column's EmptyState shows the same words only when a filtered list came
   // back empty - recovery copy inside an empty state, not a second toolbar.
@@ -178,6 +181,22 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // only when there is no board to continue - the other branch of a
   // ternary, never rendered beside the header button that owns the action.
   'key:use_template',
+  // /activity: the rail's type filter names the same kinds the feed rows
+  // badge. The badge is a label on a row, not a second filter.
+  'key:type_connection',
+  'key:type_message',
+  'key:type_match',
+  'key:type_milestone',
+  'key:type_achievement',
+  'key:type_event',
+  'key:type_endorsement',
+  'key:type_job',
+  'key:type_system',
+  'key:type_invite',
+  // /activity: the rail's Shortcuts owns the standing events link; the
+  // Events tab shows the same words only inside the empty state — recovery
+  // copy, not a second shortcut.
+  'key:browse_events',
 ]);
 
 const pages = RAIL_ROOTS.flatMap(walk)

@@ -557,13 +557,13 @@ export default function FounderDashboardContent() {
   }
 
   /*
-   * The two blocks on this page that are not oversight.
+   * Three families that are not the dashboard's reason for existing.
    *
-   * A dashboard exists to be read at a glance, so most of it stays: the
-   * readiness score, the round, the matches, the milestones, profile
-   * strength, what happened and what is next. XP and badges answer how the
-   * product is rewarding you rather than how the venture is doing, and Quick
-   * Actions is nine destinations - navigation, which already has a sidebar.
+   * A dashboard exists to be read at a glance, so the pulse stays in the
+   * column: readiness, the round, matches, milestones, profile strength.
+   * Quick actions is nine destinations - navigation, which already has a
+   * sidebar. XP and badges answer how the product is rewarding you. Activity
+   * and upcoming events are a readout of elsewhere, not the pulse.
    */
   const rail: PageRailSection[] = [
     {
@@ -624,11 +624,133 @@ export default function FounderDashboardContent() {
         </div>
       ),
     },
+    {
+      id: 'now',
+      glyph: 'calendar',
+      labelEn: 'Activity and events',
+      labelEl: 'Δραστηριότητα και εκδηλώσεις',
+      badge: showDemoData ? DEMO_EVENTS.slice(0, 3).length : null,
+      content: (
+        <div className="space-y-4">
+          <BehavioralNudge surface="dashboard" />
+
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
+                  <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="h-9 px-3 text-xs" asChild>
+                  <Link href="/activity">
+                    <BilingualText en="Open activity" el="Άνοιγμα δραστηριότητας" compact />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {activityItems.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="flex items-start gap-3 rounded-xl px-1 py-2 transition-colors hover:bg-muted/40"
+                >
+                  <div className="mt-0.5 shrink-0 text-muted-foreground">
+                    <CfbGlyph name={item.glyph} className="icon-sm" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-foreground leading-snug">
+                      <BilingualText en={item.textEn} el={item.textEl} />
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      <BilingualText en={item.timeEn} el={item.timeEl} compact />
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CfbGlyph name="calendar" className="icon-sm text-primary-accessible" />
+                  <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="h-9 px-3 text-xs gap-1" asChild>
+                  <Link href="/events">
+                    <BilingualText en="Open events" el="Άνοιγμα εκδηλώσεων" compact />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {showDemoData ? (
+                DEMO_EVENTS.slice(0, 3).map((event) => {
+                  const tone = EVENT_CONFIG[event.type];
+                  const cfg = STATUS[tone];
+                  const isUrgent = event.daysLeft <= 3;
+                  return (
+                    <Link
+                      key={event.id}
+                      href="/events"
+                      className="flex items-start gap-3 rounded-xl px-1 py-1.5 transition-colors hover:bg-muted/40"
+                    >
+                      <div className="mt-0.5 shrink-0 text-muted-foreground">
+                        <CfbGlyph name="calendar" className={cn('icon-sm', isUrgent ? cfg.icon : 'text-muted-foreground')} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium leading-snug text-foreground">
+                          <BilingualText en={event.titleEn} el={event.titleEl} compact wrap />
+                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                          <span className="text-xs text-muted-foreground">
+                            <BilingualText
+                              en={`${formatShortDate(event.date, 'en')} · ${event.time}`}
+                              el={`${formatShortDate(event.date, 'el')} · ${event.time}`}
+                              compact
+                            />
+                          </span>
+                          <span className={cn(
+                            'text-xs font-medium',
+                            isUrgent ? STATUS.danger.icon : event.daysLeft <= 7 ? STATUS.warning.icon : 'text-muted-foreground'
+                          )}>
+                            {event.daysLeft === 0
+                              ? <BilingualText en={dashboardEn('today')} el={dashboardEl('today')} compact />
+                              : event.daysLeft === 1
+                              ? <BilingualText en={dashboardEn('tomorrow')} el={dashboardEl('tomorrow')} compact />
+                              : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft} ημ.`} compact />}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="rounded-xl bg-muted/40 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText en="No events this week" el="Δεν υπάρχουν εκδηλώσεις αυτή την εβδομάδα" />
+                  </p>
+                  <Button variant="ghost" size="sm" className="mt-1.5 gap-1" asChild>
+                    <Link href="/events">
+                      <BilingualText en="Browse events" el="Περιήγηση εκδηλώσεων" /> <ArrowRight className="icon-sm" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
   ];
   return (
     <AppShell
       rail={rail}
       showHelp
+      titleClassName="founder-dash-h1"
+      contentClassName="founder-dash"
       // One Ask AI in the header, not three. AppShell renders its own whenever the
       // page has a title, and this page was additionally passing an AIInsightButton
       // and an AskAiButton through `actions` — on a 360px screen that stacked into
@@ -694,6 +816,9 @@ export default function FounderDashboardContent() {
             value={userMetrics?.profileViews ?? '—'}
             trend={trendOf(userMetrics?.profileViewsChange)}
             href="/analytics"
+            labelClassName="founder-dash-stat-label"
+            valueClassName="founder-dash-stat"
+            metaClassName="founder-dash-stat-meta"
           />
           {/* No endpoint reports a week-over-week change for matches, so this
               tile carried a literal 3 as its arrow. It shows the count alone. */}
@@ -702,6 +827,9 @@ export default function FounderDashboardContent() {
             label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
             value={stats?.matchesThisWeek ?? '—'}
             href="/matches"
+            labelClassName="founder-dash-stat-label"
+            valueClassName="founder-dash-stat"
+            metaClassName="founder-dash-stat-meta"
           />
           <MetricTile
             glyph="messages"
@@ -710,6 +838,9 @@ export default function FounderDashboardContent() {
             href="/messages"
             caption={messageCaption.en}
             captionEl={messageCaption.el}
+            labelClassName="founder-dash-stat-label"
+            valueClassName="founder-dash-stat"
+            metaClassName="founder-dash-stat-meta"
           />
           <MetricTile
             glyph="flag"
@@ -718,14 +849,15 @@ export default function FounderDashboardContent() {
             href="/milestones"
             caption={milestoneCaption.en}
             captionEl={milestoneCaption.el}
+            labelClassName="founder-dash-stat-label"
+            valueClassName="founder-dash-stat"
+            metaClassName="founder-dash-stat-meta"
           />
         </div>
 
         <AttentionChips items={attentionItems} />
 
-        <div className="grid grid-cols-1 min-w-0 gap-6 lg:grid-cols-3">
-          {/* Main column */}
-          <div className="min-w-0 space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6">
 
             {/* Readiness — single home.
                 This previously rendered VentureReadinessCard *and* a second
@@ -737,6 +869,7 @@ export default function FounderDashboardContent() {
               <div id="founder-progress" className="scroll-mt-24">
               <VentureReadinessCard
                 data={vrs}
+                titleClassName="founder-dash-section"
                 footer={
                   <div className="space-y-2.5">
                     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -776,7 +909,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="founder-dash-section text-base flex items-center gap-2">
                     <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
                   </CardTitle>
@@ -812,7 +945,7 @@ export default function FounderDashboardContent() {
                       <p className="text-xs text-muted-foreground">
                         {fundRound.name}
                       </p>
-                      <p className="text-xl font-bold text-foreground">
+                      <p className="founder-dash-figure text-xl font-bold text-foreground">
                         {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
                         <span className="text-sm font-normal text-muted-foreground ml-1">
                           / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
@@ -861,7 +994,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="founder-dash-section text-base flex items-center gap-2">
                     <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
                   </CardTitle>
@@ -918,7 +1051,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="founder-dash-section text-base flex items-center gap-2">
                     <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
                   </CardTitle>
@@ -961,7 +1094,7 @@ export default function FounderDashboardContent() {
                 Badges together where they belong. */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
+                <CardTitle className="founder-dash-section text-sm flex items-center gap-2">
                   <CfbGlyph name="shield" className="icon-sm text-primary-accessible" />
                   <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
                 </CardTitle>
@@ -1019,130 +1152,6 @@ export default function FounderDashboardContent() {
                 )}
               </CardContent>
             </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="min-w-0 space-y-6">
-
-            {/* Behavioral Nudge */}
-            <BehavioralNudge surface="dashboard" />
-
-
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
-                    <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-9 px-3 text-xs" asChild>
-                    <Link href="/activity">
-                      <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {activityItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="flex items-start gap-3 rounded-xl px-1 py-2 transition-colors hover:bg-muted/40"
-                  >
-                    <div className="mt-0.5 shrink-0 text-muted-foreground">
-                      <CfbGlyph name={item.glyph} className="icon-sm" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-foreground leading-snug">
-                        <BilingualText en={item.textEn} el={item.textEl} />
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        <BilingualText en={item.timeEn} el={item.timeEl} compact />
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Events */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <CfbGlyph name="calendar" className="icon-sm text-primary-accessible" />
-                    <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-9 px-3 text-xs gap-1" asChild>
-                    <Link href="/events">
-                      <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {showDemoData ? (
-                  DEMO_EVENTS.slice(0, 3).map((event) => {
-                    const tone = EVENT_CONFIG[event.type];
-                    const cfg = STATUS[tone];
-                    const isUrgent = event.daysLeft <= 3;
-                    return (
-                      <Link
-                        key={event.id}
-                        href="/events"
-                        className="flex items-start gap-3 rounded-xl px-1 py-1.5 transition-colors hover:bg-muted/40"
-                      >
-                        <div className="mt-0.5 shrink-0 text-muted-foreground">
-                          <CfbGlyph name="calendar" className={cn('icon-sm', isUrgent ? cfg.icon : 'text-muted-foreground')} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          {/* Two lines rather than an ellipsis: in a 381px
-                              rail "Mentor Session — Dr. Sarah Chen" lost 37% of
-                              itself, and which mentor it is with is most of the
-                              information in the row. */}
-                          <p className="text-xs font-medium leading-snug text-foreground">
-                            <BilingualText en={event.titleEn} el={event.titleEl} compact wrap />
-                          </p>
-                          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                            <span className="text-xs text-muted-foreground">
-                              <BilingualText
-                                en={`${formatShortDate(event.date, 'en')} · ${event.time}`}
-                                el={`${formatShortDate(event.date, 'el')} · ${event.time}`}
-                                compact
-                              />
-                            </span>
-                            <span className={cn(
-                              'text-xs font-medium',
-                              isUrgent ? STATUS.danger.icon : event.daysLeft <= 7 ? STATUS.warning.icon : 'text-muted-foreground'
-                            )}>
-                              {event.daysLeft === 0
-                                ? <BilingualText en={dashboardEn('today')} el={dashboardEl('today')} compact />
-                                : event.daysLeft === 1
-                                ? <BilingualText en={dashboardEn('tomorrow')} el={dashboardEl('tomorrow')} compact />
-                                : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft} ημ.`} compact />}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <div className="rounded-xl bg-muted/40 p-3 text-center">
-                    <p className="text-xs text-muted-foreground">
-                      <BilingualText en="No events this week" el="Δεν υπάρχουν εκδηλώσεις αυτή την εβδομάδα" />
-                    </p>
-                    <Button variant="ghost" size="sm" className="mt-1.5 gap-1" asChild>
-                      <Link href="/events">
-                        <BilingualText en="Browse events" el="Περιήγηση εκδηλώσεων" /> <ArrowRight className="icon-sm" />
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </AppShell>

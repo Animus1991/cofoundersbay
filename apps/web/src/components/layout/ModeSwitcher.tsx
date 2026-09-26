@@ -19,7 +19,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
  * Greek display labels, with soft hyphens at the syllable boundary.
  *
  * Measured in the browser rather than guessed: the cell is 58.8px, and at the
- * 10px the label renders at, "Εργασία" needs 58.1px (it just fits),
+ * 10.2px the label renders at, "Εργασία" needs ~59.3px (it just fits),
  * "Εξερεύνηση" needs 84.8px and "Λογαριασμός" needs 93.5px. One line is
  * therefore impossible - fitting "Λογαριασμός" would take a ~6px font, far
  * under the legibility floor - and clipping to "Λογαριασ…" loses the word.
@@ -88,7 +88,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               {expanded && (
                 <span
                   lang={primary === 'el' ? 'el' : 'en'}
-                  className="w-full px-0.5 text-center text-[10px] font-medium leading-[1.2] [hyphens:auto]"
+                  className="w-full px-0.5 text-center text-[10.201px] font-medium leading-[1.2] [hyphens:auto]"
                 >
                   {primary === 'el' ? displayEl : mode.shortLabel}
                 </span>

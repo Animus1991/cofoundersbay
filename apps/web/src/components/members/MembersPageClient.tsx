@@ -11,7 +11,6 @@ import {
   List,
   MapPin,
   Briefcase,
-  Filter,
   X,
   UserPlus,
   MessageCircle,
@@ -28,19 +27,15 @@ import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, t
 import { useHydrated } from '@/components/common/RelativeTime';
 import { useToast } from '@/components/ui/toast';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -50,11 +45,11 @@ type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
 
 const ROLE_OPTIONS = [
-  { value: 'all', label: 'All Roles' },
-  { value: 'founder', label: 'Founder' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'investor', label: 'Investor' },
-  { value: 'org', label: 'Organization' },
+  { value: 'all', label: 'All Roles', labelEl: 'Όλοι οι ρόλοι' },
+  { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής' },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας' },
+  { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής' },
+  { value: 'org', label: 'Organization', labelEl: 'Οργανισμός' },
 ] as const;
 const INDUSTRIES = ['All Industries', 'Technology', 'Healthcare', 'Finance', 'E-commerce', 'Education', 'Real Estate', 'SaaS', 'AI/ML', 'Blockchain'];
 const LOCATIONS = ['All Locations', 'Remote', 'San Francisco', 'New York', 'London', 'Berlin', 'Singapore', 'Austin', 'Seattle', 'Boston'];
@@ -363,7 +358,6 @@ export function MembersPageClient() {
   const [selectedLocation, setSelectedLocation] = useState('All Locations');
   const [selectedAvailability, setSelectedAvailability] = useState<(typeof AVAILABILITY_OPTIONS)[number]['value']>('all');
   const [sortBy, setSortBy] = useState<SortBy>('relevance');
-  const [showFilters, setShowFilters] = useState(false);
   const [activeSkill, setActiveSkill] = useState('All Skills');
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -428,6 +422,109 @@ export function MembersPageClient() {
 
   const featuredMembers = members.slice(0, 3);
 
+  usePageControls([
+    choiceControl('role', 'Role filter', 'Φίλτρο ρόλου', ROLE_OPTIONS.map((r) => ({ value: r.value, en: r.label, el: r.labelEl })), selectedRole, (v) => setSelectedRole(v as typeof selectedRole)),
+    choiceControl('view', 'Members layout', 'Διάταξη μελών', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as ViewMode)),
+    choiceControl('sort', 'Sort members', 'Ταξινόμηση μελών', [
+      { value: 'relevance', en: 'Most Relevant', el: 'Πιο σχετικά' },
+      { value: 'recent', en: 'Newest First', el: 'Νεότερα πρώτα' },
+      { value: 'active', en: 'Most Active', el: 'Πιο ενεργά' },
+    ], sortBy, (v) => setSortBy(v as SortBy)),
+    { id: 'clear_filters', labelEn: 'Clear member filters', labelEl: 'Καθαρισμός φίλτρων μελών', writes: false, run: clearFilters },
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'people',
+      labelEn: 'Directory',
+      labelEl: 'Κατάλογος',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total members', labelEl: 'Σύνολο μελών', value: total.toLocaleString('en-GB'), icon: Users, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'online', label: 'Online now', labelEl: 'Σε σύνδεση τώρα', value: stats ? stats.onlineNow : dash, icon: Activity, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'new', label: 'New this week', labelEl: 'Νέα αυτή την εβδομάδα', value: stats ? stats.newThisWeek : dash, icon: TrendingUp, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'mentors', label: 'Mentors', labelEl: 'Μέντορες', value: stats ? stats.mentors : dash, icon: Award, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters & view',
+      labelEl: 'Φίλτρα & προβολή',
+      badge: activeFiltersCount + (activeSkill !== 'All Skills' ? 1 : 0) || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Role"
+            titleEl="Ρόλος"
+            options={ROLE_OPTIONS.map((r) => ({ value: r.value, en: r.label, el: r.labelEl }))}
+            value={selectedRole}
+            onChange={(v) => setSelectedRole(v)}
+          />
+          <RailOptions
+            title="Industry"
+            titleEl="Κλάδος"
+            options={INDUSTRIES.map((industry) => ({ value: industry, en: industry, el: industry }))}
+            value={selectedIndustry}
+            onChange={setSelectedIndustry}
+          />
+          <RailOptions
+            title="Location"
+            titleEl="Τοποθεσία"
+            options={LOCATIONS.map((location) => ({ value: location, en: location, el: location }))}
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+          />
+          <RailOptions
+            title="Availability"
+            titleEl="Διαθεσιμότητα"
+            options={AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.label }))}
+            value={selectedAvailability}
+            onChange={(v) => setSelectedAvailability(v)}
+          />
+          <RailOptions
+            title="Skill"
+            titleEl="Δεξιότητα"
+            options={SKILL_PILLS.map((skill) => ({ value: skill, en: skill, el: skill }))}
+            value={activeSkill}
+            onChange={setActiveSkill}
+          />
+          <RailOptions
+            title="Layout"
+            titleEl="Διάταξη"
+            options={[
+              { value: 'grid' as ViewMode, en: 'Grid', el: 'Πλέγμα', icon: Grid3x3 },
+              { value: 'list' as ViewMode, en: 'List', el: 'Λίστα', icon: List },
+            ]}
+            value={viewMode}
+            onChange={setViewMode}
+          />
+          <RailOptions
+            title="Sort"
+            titleEl="Ταξινόμηση"
+            options={[
+              { value: 'relevance' as SortBy, en: 'Most Relevant', el: 'Πιο σχετικά' },
+              { value: 'recent' as SortBy, en: 'Newest First', el: 'Νεότερα πρώτα' },
+              { value: 'active' as SortBy, en: 'Most Active', el: 'Πιο ενεργά' },
+            ]}
+            value={sortBy}
+            onChange={setSortBy}
+          />
+          {activeFiltersCount > 0 && (
+            <RailAction icon={X} en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" onClick={clearFilters} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       /* The count belongs in both halves. Leaving `descriptionEl` to the
@@ -437,52 +534,9 @@ export function MembersPageClient() {
       title="Member Directory"
       description={`Discover and connect with ${total.toLocaleString('en-GB')} members`}
       descriptionEl={`Ανακαλύψτε και συνδεθείτε με ${total.toLocaleString('el-GR')} μέλη`}
+      rail={rail}
     >
       <div className="space-y-4 pb-10">
-
-        {/* Stats bar */}
-        {!isLoading && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: 'Total Members', value: total.toLocaleString('en-GB'), icon: Users, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-              { label: 'Online Now', value: stats ? stats.onlineNow : dash, icon: Activity, color: 'text-status-success', bg: 'bg-status-success-bg' },
-              { label: 'New This Week', value: stats ? stats.newThisWeek : dash, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
-              { label: 'Mentors', value: stats ? stats.mentors : dash, icon: Award, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-            ].map((s) => {
-              const SIcon = s.icon;
-              return (
-                <Card key={s.label} className="shadow-sm border-border/50">
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                      <SIcon className="icon-sm" />
-                    </div>
-                    <div>
-                      <p className="text-base font-bold leading-none text-foreground">{s.value}</p>
-                      <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-        {/* Skill filter pills */}
-        <div className="flex gap-1.5 flex-wrap">
-          {SKILL_PILLS.map((skill) => (
-            <button
-              key={skill}
-              onClick={() => setActiveSkill(skill)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-all',
-                activeSkill === skill
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground',
-              )}
-            >
-              {skill}
-            </button>
-          ))}
-        </div>
 
         {/* Featured spotlight */}
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
@@ -511,165 +565,22 @@ export function MembersPageClient() {
           </div>
         )}
 
-        {/* Search and View Controls */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={bilingualInline("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant={showFilters ? 'default' : 'outline'}
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
-              <Filter className="icon-sm" />
-              Filters
-              {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-
-            <div className="flex rounded-lg border border-border/60">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-r-none"
-                aria-label="Grid view"
-                aria-pressed={viewMode === 'grid'}
-              >
-                <Grid3x3 className="icon-sm" aria-hidden="true" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-l-none"
-                aria-label="List view"
-                aria-pressed={viewMode === 'list'}
-              >
-                <List className="icon-sm" aria-hidden="true" />
-              </Button>
-            </div>
-          </div>
+        {/* Search — filters and layout live in the rail. */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={bilingualInline("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
         </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <Card className="shadow-sm border-primary/20">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Role" el="Ρόλος" compact /></label>
-                  <Select
-                    value={selectedRole}
-                    onValueChange={(value) => setSelectedRole(value as (typeof ROLE_OPTIONS)[number]['value'])}
-                  >
-                    <SelectTrigger aria-label="Role">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLE_OPTIONS.map((role) => (
-                        <SelectItem key={role.value} value={role.value}>
-                          {role.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Industry" el="Κλάδος" compact /></label>
-                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                    <SelectTrigger aria-label="Industry">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDUSTRIES.map((industry) => (
-                        <SelectItem key={industry} value={industry}>
-                          {industry}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
-                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                    <SelectTrigger aria-label="Location">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LOCATIONS.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></label>
-                  <Select
-                    value={selectedAvailability}
-                    onValueChange={(value) => setSelectedAvailability(value as (typeof AVAILABILITY_OPTIONS)[number]['value'])}
-                  >
-                    <SelectTrigger aria-label="Availability">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABILITY_OPTIONS.map((avail) => (
-                        <SelectItem key={avail.value} value={avail.value}>
-                          {avail.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {activeFiltersCount > 0 && (
-                <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/60">
-                  <span className="text-sm text-muted-foreground">
-                    {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
-                    <X className="icon-sm" />
-                    <BilingualText en="Clear all" el="Καθαρισμός όλων" compact />
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
         {/* Results Header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {isLoading ? 'Loading...' : `${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`}
           </p>
-
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-              <SelectTrigger aria-label="Sort by" className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance"><BilingualText en="Most Relevant" el="Πιο σχετικά" compact /></SelectItem>
-                <SelectItem value="recent"><BilingualText en="Newest First" el="Νεότερα πρώτα" compact /></SelectItem>
-                <SelectItem value="active"><BilingualText en="Most Active" el="Πιο ενεργά" compact /></SelectItem>
-              </SelectContent>
-            </Select>
         </div>
 
         {/* Members Grid/List */}

@@ -2181,6 +2181,28 @@ export default function ResearchBoardPage() {
           },
         },
         { icon: Users, en: researchEn('ref_entity'), el: researchEl('ref_entity'), onClick: () => setShowEntitySelector(true) },
+        { icon: Upload, en: researchEn('upload'), el: researchEl('upload'), onClick: () => fileInputRef.current?.click() },
+        { icon: HelpCircle, en: researchEn('capture_question'), el: researchEl('capture_question'), onClick: () => issue('capture', { nodeType: 'question' }) },
+        { icon: FlaskConical, en: researchEn('capture_hypothesis'), el: researchEl('capture_hypothesis'), onClick: () => issue('capture', { nodeType: 'hypothesis' }) },
+        { icon: GitBranch, en: researchEn('capture_evidence'), el: researchEl('capture_evidence'), onClick: () => issue('capture', { nodeType: 'evidence' }) },
+        { icon: Lightbulb, en: researchEn('capture_insight'), el: researchEl('capture_insight'), onClick: () => issue('capture', { nodeType: 'insight' }) },
+      ]),
+    },
+    {
+      id: 'arrange',
+      glyph: 'compare',
+      labelEn: 'Align selection',
+      labelEl: 'Στοίχιση επιλογής',
+      badge: selectedNodeIds.size >= 2 ? selectedNodeIds.size : null,
+      content: railRows([
+        { icon: Layers, en: researchEn('align_left'), el: researchEl('align_left'), onClick: () => issue('align', { align: 'left' }) },
+        { icon: Layers, en: researchEn('align_right'), el: researchEl('align_right'), onClick: () => issue('align', { align: 'right' }) },
+        { icon: Layers, en: researchEn('align_top'), el: researchEl('align_top'), onClick: () => issue('align', { align: 'top' }) },
+        { icon: Layers, en: researchEn('align_bottom'), el: researchEl('align_bottom'), onClick: () => issue('align', { align: 'bottom' }) },
+        { icon: Layers, en: researchEn('align_center_h'), el: researchEl('align_center_h'), onClick: () => issue('align', { align: 'center_h' }) },
+        { icon: Layers, en: researchEn('align_center_v'), el: researchEl('align_center_v'), onClick: () => issue('align', { align: 'center_v' }) },
+        { icon: Layers, en: researchEn('align_h'), el: researchEl('align_h'), onClick: () => issue('align', { align: 'h' }) },
+        { icon: Layers, en: researchEn('align_v'), el: researchEl('align_v'), onClick: () => issue('align', { align: 'v' }) },
       ]),
     },
     {
@@ -2273,7 +2295,7 @@ export default function ResearchBoardPage() {
           expanded ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
           // This page mounts its own chrome rather than AppShellFrame, so it
           // reserves the page rail's strip itself - same widths the frame uses.
-          hasRail && (railPinned ? 'lg:mr-[20.25rem]' : 'lg:mr-[3.25rem]'),
+          hasRail && (railPinned ? 'lg:mr-[21.752rem]' : 'lg:mr-[3.25rem]'),
         )}
       >
         <TopBar />
@@ -2412,20 +2434,6 @@ export default function ResearchBoardPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Upload */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            className="h-8 gap-1.5 rounded-xl text-xs shrink-0"
-            aria-label={bilingualAria(researchEn('upload'), researchEl('upload'))}
-          >
-            <Upload className="icon-sm" />
-            <span className="hidden 2xl:inline">
-              <BilingualText en={researchEn('upload')} el={researchEl('upload')} compact />
-            </span>
-          </Button>
-
           {/* Connect tool */}
           <Button
             variant={activeTool === 'connect' ? 'secondary' : 'ghost'}
@@ -2439,86 +2447,6 @@ export default function ResearchBoardPage() {
               <BilingualText en={researchEn('connect')} el={researchEl('connect')} compact />
             </span>
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs" aria-label={bilingualAria(researchEn('capture'), researchEl('capture'))}>
-                <FlaskConical className="icon-sm" aria-hidden="true" />
-                <span className="hidden 2xl:inline">
-                  <BilingualText en={researchEn('capture')} el={researchEl('capture')} compact />
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-52">
-              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'question' })}>
-                <HelpCircle className="icon-sm mr-2" />
-                <BilingualText en={researchEn('capture_question')} el={researchEl('capture_question')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'hypothesis' })}>
-                <FlaskConical className="icon-sm mr-2" />
-                <BilingualText en={researchEn('capture_hypothesis')} el={researchEl('capture_hypothesis')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'evidence' })}>
-                <GitBranch className="icon-sm mr-2" />
-                <BilingualText en={researchEn('capture_evidence')} el={researchEl('capture_evidence')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => issue('capture', { nodeType: 'insight' })}>
-                <Lightbulb className="icon-sm mr-2" />
-                <BilingualText en={researchEn('capture_insight')} el={researchEl('capture_insight')} compact />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {selectedNodeIds.size >= 2 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-xs" aria-label={bilingualAria(researchEn('align'), researchEl('align'))}>
-                  <Layers className="icon-sm" aria-hidden="true" />
-                  <span className="hidden 2xl:inline">
-                    <BilingualText en={researchEn('align')} el={researchEl('align')} compact />
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem onClick={() => issue('align', { align: 'left' })}>
-                  <BilingualText en={researchEn('align_left')} el={researchEl('align_left')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'right' })}>
-                  <BilingualText en={researchEn('align_right')} el={researchEl('align_right')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'top' })}>
-                  <BilingualText en={researchEn('align_top')} el={researchEl('align_top')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'bottom' })}>
-                  <BilingualText en={researchEn('align_bottom')} el={researchEl('align_bottom')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'center_h' })}>
-                  <BilingualText en={researchEn('align_center_h')} el={researchEl('align_center_h')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'center_v' })}>
-                  <BilingualText en={researchEn('align_center_v')} el={researchEl('align_center_v')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'h' })}>
-                  <BilingualText en={researchEn('align_h')} el={researchEl('align_h')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('align', { align: 'v' })}>
-                  <BilingualText en={researchEn('align_v')} el={researchEl('align_v')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('match_size')}>
-                  <BilingualText en={researchEn('match_size')} el={researchEl('match_size')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('tidy')}>
-                  <BilingualText en={researchEn('tidy')} el={researchEl('tidy')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('frame')}>
-                  <BilingualText en={researchEn('frame')} el={researchEl('frame')} compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => issue('hug')}>
-                  <BilingualText en={researchEn('hug')} el={researchEl('hug')} compact />
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
 
           <Button
             type="button"

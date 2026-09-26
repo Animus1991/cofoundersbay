@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { notificationsEn, notificationsEl } from '@/lib/i18n/strings-notifications';
@@ -18,7 +20,6 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { qk } from '@/lib/query-keys';
@@ -53,14 +54,14 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const FILTER_TABS = [
-  { value: 'all', labelEn: 'All', labelEl: 'Όλες' },
-  { value: 'connection', labelEn: 'Connections', labelEl: 'Συνδέσεις' },
-  { value: 'message', labelEn: 'Messages', labelEl: 'Μηνύματα' },
-  { value: 'match', labelEn: 'Matches', labelEl: 'Αντιστοιχίσεις' },
-  { value: 'event', labelEn: 'Events', labelEl: 'Εκδηλώσεις' },
-  { value: 'achievement', labelEn: 'Achievements', labelEl: 'Επιτεύγματα' },
-  { value: 'community', labelEn: 'Community', labelEl: 'Κοινότητα' },
-  { value: 'system', labelEn: 'System', labelEl: 'Σύστημα' },
+  { value: 'all', labelEn: 'All', labelEl: 'Όλες', icon: Bell },
+  { value: 'connection', labelEn: 'Connections', labelEl: 'Συνδέσεις', icon: UserPlus },
+  { value: 'message', labelEn: 'Messages', labelEl: 'Μηνύματα', icon: MessageCircle },
+  { value: 'match', labelEn: 'Matches', labelEl: 'Αντιστοιχίσεις', icon: TrendingUp },
+  { value: 'event', labelEn: 'Events', labelEl: 'Εκδηλώσεις', icon: Calendar },
+  { value: 'achievement', labelEn: 'Achievements', labelEl: 'Επιτεύγματα', icon: Award },
+  { value: 'community', labelEn: 'Community', labelEl: 'Κοινότητα', icon: Users },
+  { value: 'system', labelEn: 'System', labelEl: 'Σύστημα', icon: Bell },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
@@ -367,126 +368,102 @@ export default function NotificationsPage() {
 
   const grouped = groupByDate(notifications);
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'types',
+      glyph: 'bell',
+      labelEn: 'Categories',
+      labelEl: 'Κατηγορίες',
+      badge: activeTab !== 'all' ? 1 : null,
+      content: (
+        <RailOptions
+          title="Type"
+          titleEl="Τύπος"
+          options={FILTER_TABS.map((t) => ({
+            value: t.value,
+            en: t.labelEn,
+            el: t.labelEl,
+            icon: t.icon,
+            count: catCounts[t.value] || undefined,
+          }))}
+          value={activeTab}
+          onChange={(v) => { setActiveTab(v); setSelectedIds(new Set()); }}
+        />
+      ),
+    },
+    {
+      id: 'actions',
+      glyph: 'sliders',
+      labelEn: 'Inbox tools',
+      labelEl: 'Εργαλεία εισερχομένων',
+      badge: (showUnreadOnly ? 1 : 0) + (bulkMode ? 1 : 0) || null,
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            aria-pressed={showUnreadOnly}
+            onClick={() => setShowUnreadOnly((v) => !v)}
+            className={cn(
+              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
+              showUnreadOnly ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+            )}
+          >
+            <Filter className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={notificationsEn('unread')} el={notificationsEl('unread')} compact wrap />
+            </span>
+            {unreadCount > 0 ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{unreadCount}</span> : null}
+          </button>
+          <button
+            type="button"
+            aria-pressed={bulkMode}
+            onClick={() => { setBulkMode((v) => !v); setSelectedIds(new Set()); }}
+            className={cn(
+              'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
+              bulkMode ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+            )}
+          >
+            <SquareCheck className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en={bulkMode ? notificationsEn('exit_select') : notificationsEn('select')} el={bulkMode ? notificationsEl('exit_select') : notificationsEl('select')} compact wrap />
+            </span>
+          </button>
+          {bulkMode && (
+            <RailAction icon={Square} en={notificationsEn('select_all')} el={notificationsEl('select_all')} onClick={selectAll} />
+          )}
+          {bulkMode && selectedIds.size > 0 && (
+            <>
+              <RailAction icon={Check} en={`Mark selected (${selectedIds.size})`} el={`Επιλεγμένες ως αναγνωσμένες (${selectedIds.size})`} onClick={handleBulkRead} />
+              <RailAction icon={Trash2} en={`Remove selected (${selectedIds.size})`} el={`Διαγραφή επιλεγμένων (${selectedIds.size})`} onClick={handleBulkDelete} />
+            </>
+          )}
+          {unreadCount > 0 && (
+            <RailAction icon={CheckCheck} en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending} />
+          )}
+          <RailAction icon={RefreshCw} en={notificationsEn('refresh')} el={notificationsEl('refresh')} onClick={() => void refetch()} />
+          <Link
+            href="/settings"
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <Settings className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en="Notification settings" el="Ρυθμίσεις ειδοποιήσεων" compact wrap />
+            </span>
+          </Link>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title={notificationsEn('page_title')}
       titleEl={notificationsEl('page_title')}
       description={notificationsEn('page_description')}
       descriptionEl={notificationsEl('page_description')}
+      rail={rail}
     >
       <div className="">
-        {/* Stats bar */}
-        {unreadCount > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium">
-              <BilingualText en={notificationsEn('unread_by_type')} el={notificationsEl('unread_by_type')} compact />
-            </span>
-            {Object.entries(catCounts).map(([type, count]) => {
-              const Icon = TYPE_ICONS[type] ?? Bell;
-              const color = TYPE_COLORS[type] ?? TYPE_COLORS.system;
-              // The chip is an icon and a number; its name says what both mean.
-              const tabLabel = FILTER_TABS.find((t) => t.value === type);
-              const labelEn = tabLabel?.labelEn ?? TYPE_LABELS[type] ?? type;
-              const labelEl = tabLabel?.labelEl ?? TYPE_LABELS[type] ?? type;
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => { setActiveTab(type); setShowUnreadOnly(true); }}
-                  aria-label={bilingualAria(
-                    `Show ${count} unread: ${labelEn}`,
-                    `Εμφάνιση ${count} αδιάβαστων: ${labelEl}`,
-                  )}
-                  className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:opacity-80', color)}
-                >
-                  <Icon className="icon-sm" aria-hidden="true" />{count}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Header actions */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedIds(new Set()); }}>
-              <TabsList className="h-8 gap-0.5 flex-nowrap">
-                {/* min-h-10 is the incoming branch's taller touch target; the
-                    bilingual label is ours. */}
-                {FILTER_TABS.map((t) => (
-                  <TabsTrigger key={t.value} value={t.value} className="min-h-10 shrink-0 px-3 text-xs">
-                    <BilingualText en={t.labelEn} el={t.labelEl} compact />
-                    {catCounts[t.value] ? (
-                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-2xs font-bold text-primary-accessible">
-                        {catCounts[t.value]}
-                      </span>
-                    ) : null}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {bulkMode && selectedIds.size > 0 && (
-              <>
-                <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
-                  <Check className="icon-sm" /><BilingualText en={`Mark read (${selectedIds.size})`} el={`Αναγνωσμένες (${selectedIds.size})`} compact />
-                </Button>
-                <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={handleBulkDelete}>
-                  <Trash2 className="icon-sm" /><BilingualText en={`Delete (${selectedIds.size})`} el={`Διαγραφή (${selectedIds.size})`} compact />
-                </Button>
-              </>
-            )}
-            {bulkMode && (
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={selectAll}>
-                <BilingualText en={notificationsEn('select_all')} el={notificationsEl('select_all')} compact />
-              </Button>
-            )}
-            <button
-              type="button"
-              aria-pressed={bulkMode}
-              onClick={() => { setBulkMode((v) => !v); setSelectedIds(new Set()); }}
-              className={cn(
-                // Their 44px tap target, our contrast-safe accent token.
-                'inline-flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors',
-                bulkMode ? 'border-primary/40 bg-primary/10 text-primary-accessible' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <SquareCheck className="icon-sm" />
-              <BilingualText en={bulkMode ? notificationsEn('exit_select') : notificationsEn('select')} el={bulkMode ? notificationsEl('exit_select') : notificationsEl('select')} compact />
-            </button>
-            <button
-              type="button"
-              aria-pressed={showUnreadOnly}
-              onClick={() => setShowUnreadOnly((v) => !v)}
-              className={cn(
-                // Their 44px tap target, our contrast-safe accent token.
-                'inline-flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors',
-                showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary-accessible' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <Filter className="icon-sm" />
-              <BilingualText en={notificationsEn('unread')} el={notificationsEl('unread')} compact />
-              {unreadCount > 0 && (
-                <Badge className="h-4 min-w-[1rem] px-1 text-2xs" variant="default">{unreadCount}</Badge>
-              )}
-            </button>
-            {unreadCount > 0 && (
-              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
-                <CheckCheck className="icon-sm" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
-              </Button>
-            )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title={bilingualAria(notificationsEn('refresh'), notificationsEl('refresh'))} aria-label={bilingualAria(notificationsEn('refresh'), notificationsEl('refresh'))}>
-              <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" asChild aria-label={bilingualAria('Open notification settings', 'Άνοιγμα ρυθμίσεων ειδοποιήσεων')}>
-              <Link href="/settings" title={bilingualAria('Notification settings', 'Ρυθμίσεις ειδοποιήσεων')}>
-                <Settings className="icon-sm" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-
         {/* Notification list */}
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           {isError ? (

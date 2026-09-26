@@ -1,26 +1,30 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   Save,
   RefreshCw,
   Copy,
   CheckCircle2,
-  Clock,
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { BUILDER_BTN, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { ApplicationProgramsChrome } from './ApplicationProgramsChrome';
+import {
+  deriveApplicationStatus,
+  requiredCompletion,
+  type ApplicationTemplate,
+} from './application-model';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import {
   applicationQuestionCopy,
@@ -28,52 +32,19 @@ import {
 } from '@/lib/i18n/strings-application-questions';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
-
-interface ApplicationQuestion {
-  id: string;
-  question: string;
-  answer: string;
-  maxLength?: number;
-  tips?: string;
-  required: boolean;
-}
-
-interface ApplicationTemplate {
-  id: string;
-  name: string;
-  description: string;
-  descKey?: 'app_yc_desc' | 'app_ts_desc' | 'app_uni_desc' | 'app_grant_desc';
-  glyph: CfbGlyphName;
-  deadline?: string;
-  deadlineKey?: 'app_deadline_rolling' | 'app_deadline_varies';
-  website?: string;
-  questions: ApplicationQuestion[];
-  status: 'draft' | 'in-progress' | 'completed' | 'submitted';
-}
+import { choiceControl, usePageControls } from '@/lib/page-controls';
 
 interface ApplicationGeneratorProps {
   onSave?: (data: ApplicationTemplate[]) => void | Promise<void>;
   workspaceData?: Record<string, unknown>;
   initialData?: unknown;
   hideTitle?: boolean;
+  /** Dedicated /builder/applications page: stats and program picker live in the rail. */
+  pageRail?: boolean;
 }
 
-export function requiredCompletion(app: { questions: ApplicationQuestion[] }): number {
-  const required = app.questions.filter((q) => q.required);
-  if (required.length === 0) return 100;
-  const answered = required.filter((q) => q.answer.trim().length > 0);
-  return Math.round((answered.length / required.length) * 100);
-}
-
-export function deriveApplicationStatus(
-  app: ApplicationTemplate,
-): ApplicationTemplate['status'] {
-  if (app.status === 'submitted') return 'submitted';
-  const pct = requiredCompletion(app);
-  if (pct === 0) return 'draft';
-  if (pct === 100) return 'completed';
-  return 'in-progress';
-}
+export { deriveApplicationStatus, requiredCompletion } from './application-model';
+export type { ApplicationTemplate } from './application-model';
 
 function seedApplications(): ApplicationTemplate[] {
   return APPLICATION_TEMPLATES.map((tpl) => ({ ...tpl, status: 'draft' as const }));
@@ -198,7 +169,7 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
   }
 ];
 
-export function ApplicationGenerator({ onSave, workspaceData, initialData, hideTitle = false }: ApplicationGeneratorProps) {
+export function ApplicationGenerator({ onSave, workspaceData, initialData, hideTitle = false, pageRail = false }: ApplicationGeneratorProps) {
   const t = useBuilderPrimaryText();
   const { success } = useToast();
   const [applications, setApplications] = useState<ApplicationTemplate[]>(() => mergeSavedApplications(initialData));
@@ -339,49 +310,59 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
     );
   };
 
-  const stats = useMemo(() => {
-    const completions = applications.map((app) => requiredCompletion(app));
-    const avg = completions.length
-      ? Math.round(completions.reduce((sum, n) => sum + n, 0) / completions.length)
-      : 0;
-    return {
-      programs: applications.length,
-      inProgress: applications.filter((app) => app.status === 'in-progress').length,
-      ready: applications.filter((app) => app.status === 'completed').length,
-      avg,
-    };
-  }, [applications]);
+  usePageControls([
+    choiceControl(
+      'active_program',
+      'Active program',
+      'Ενεργό πρόγραμμα',
+      applications.map((app) => ({ value: app.id, en: app.name, el: app.name })),
+      activeApp,
+      setActiveApp,
+    ),
+  ]);
 
-  const getStatusBadge = (status: ApplicationTemplate['status']) => {
-    switch (status) {
-      case 'draft':
-        return (
-          <Badge variant="secondary">
-            <BilingualText en={builderEn('app_draft')} el={builderEl('app_draft')} compact />
-          </Badge>
-        );
-      case 'in-progress':
-        return (
-          <Badge variant="outline" className={cn('border', STATUS.warning.chip)}>
-            <BilingualText en={builderEn('status_in_progress')} el={builderEl('status_in_progress')} compact />
-          </Badge>
-        );
-      case 'completed':
-        return (
-          <Badge variant="outline" className={cn('border', STATUS.success.chip)}>
-            <BilingualText en={builderEn('status_completed')} el={builderEl('status_completed')} compact />
-          </Badge>
-        );
-      case 'submitted':
-        return (
-          <Badge className={STATUS.success.chip}>
-            <BilingualText en={builderEn('app_submitted')} el={builderEl('app_submitted')} compact />
-          </Badge>
-        );
-    }
-  };
+  const rail: PageRailSection[] = [
+    {
+      id: 'progress',
+      glyph: 'chart',
+      labelEn: 'Application progress',
+      labelEl: 'Πρόοδος αιτήσεων',
+      content: (
+        <ApplicationProgramsChrome
+          applications={applications}
+          activeApp={activeApp}
+          onSelect={setActiveApp}
+          layout="rail"
+          part="stats"
+        />
+      ),
+    },
+    {
+      id: 'programs',
+      glyph: 'applications',
+      labelEn: 'Programs',
+      labelEl: 'Προγράμματα',
+      badge: applications.filter((app) => app.status === 'in-progress' || app.status === 'completed').length || null,
+      content: (
+        <ApplicationProgramsChrome
+          applications={applications}
+          activeApp={activeApp}
+          onSelect={setActiveApp}
+          layout="rail"
+          part="picker"
+        />
+      ),
+    },
+  ];
 
+  /*
+   * Progress is the four totals. Programs is the switcher. The column is
+   * the form. Inside Builder the same chrome stays as cards, because that
+   * workspace already has a rail of its own.
+   */
   return (
+    <>
+      {pageRail ? <PageRail sections={rail} /> : null}
     <div className="space-y-6">
       <BuilderStageHeader
         glyph="applications"
@@ -409,77 +390,14 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
         }
       />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {(
-          [
-            { glyph: 'applications' as const, label: 'app_stat_programs' as const, value: String(stats.programs) },
-            { glyph: 'flag' as const, label: 'app_stat_progress' as const, value: String(stats.inProgress) },
-            { glyph: 'award' as const, label: 'app_stat_ready' as const, value: String(stats.ready) },
-            { glyph: 'chart' as const, label: 'app_stat_avg' as const, value: `${stats.avg}%` },
-          ] as const
-        ).map((item) => (
-          <Card key={item.label} className="rounded-xl">
-            <CardContent className="flex items-center gap-3 p-4">
-              <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
-              <div className="min-w-0">
-                <p className="text-2xs text-muted-foreground">
-                  <BilingualText en={builderEn(item.label)} el={builderEl(item.label)} compact />
-                </p>
-                <p className="text-lg font-semibold tracking-tight">{item.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        {applications.map((app) => {
-          const completion = requiredCompletion(app);
-          
-          return (
-            <Card 
-              key={app.id}
-              className={cn(
-                "cursor-pointer rounded-xl transition-all",
-                activeApp === app.id && "ring-2 ring-primary"
-              )}
-              onClick={() => setActiveApp(app.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <CfbGlyph name={app.glyph} className="icon-sm text-muted-foreground" />
-                  {getStatusBadge(app.status)}
-                </div>
-                <h3 className="mb-1 text-base font-semibold">{app.name}</h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {app.descKey ? (
-                    <BilingualText en={builderEn(app.descKey)} el={builderEl(app.descKey)} compact />
-                  ) : (
-                    app.description
-                  )}
-                </p>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span><BilingualText en={builderEn('completion')} el={builderEl('completion')} compact /></span>
-                    <span>{completion}%</span>
-                  </div>
-                  <Progress value={completion} className="h-1.5" />
-                </div>
-                {(app.deadlineKey || app.deadline) && (
-                  <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                    <Clock className="icon-sm" />
-                    {app.deadlineKey ? (
-                      <BilingualText en={builderEn(app.deadlineKey)} el={builderEl(app.deadlineKey)} compact />
-                    ) : (
-                      app.deadline
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {!pageRail && (
+        <ApplicationProgramsChrome
+          applications={applications}
+          activeApp={activeApp}
+          onSelect={setActiveApp}
+          layout="cards"
+        />
+      )}
 
       {currentApp && (
         <Card className="rounded-xl">
@@ -610,5 +528,6 @@ export function ApplicationGenerator({ onSave, workspaceData, initialData, hideT
         </Card>
       )}
     </div>
+    </>
   );
 }

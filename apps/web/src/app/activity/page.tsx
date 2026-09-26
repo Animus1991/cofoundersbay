@@ -4,18 +4,20 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TrendingUp, Users, Sparkles, Bell, Calendar, MessageCircle,
-  UserPlus, Award, Briefcase, RefreshCw, CheckCheck, ExternalLink,
-  Flag, Star, Gift, Activity, Filter, Zap, Clock, ArrowRight,
+  Award, Briefcase, RefreshCw, CheckCheck, ExternalLink,
+  Flag, Star, Gift, Activity, Zap, Clock, ArrowRight,
   UserCheck, Target, BarChart3, CheckCircle2, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getDashboardActivity, listNotifications, markAllNotificationsRead, type DashboardActivityItem, type NotificationItem, type DashboardActivityPage } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -334,62 +336,127 @@ export default function ActivityPage() {
   const isLoading = activeTab === 'notifications' ? notifLoading : activityLoading;
   const refetch = activeTab === 'notifications' ? refetchNotif : refetchActivity;
 
-  return (
-    <AppShell>
-      <div className="space-y-5">
-
-        {/* Stats bar */}
-        {/* Four across waits for `md`. At 640px `sm:grid-cols-4` gave each
-            tile 145px, which leaves a bilingual label about 80px — less than
-            "Σύνολο αλληλεπιδράσεων" can break to, and the page scrolled 20px
-            sideways because of it. Two columns hold to 768px. */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {([
-            { key: 'stat_today', value: todayCount, icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-            { key: 'stat_unread', value: unreadCount, icon: Bell, color: 'text-status-info', bg: 'bg-status-info-bg' },
-            { key: 'stat_connections', value: connectionCount, icon: UserCheck, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { key: 'stat_matches', value: matchCount, icon: TrendingUp, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-          ] as const).map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.key} className="border-border/50">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', stat.bg, stat.color)}>
+  const rail: PageRailSection[] = [
+    {
+      id: 'overview',
+      glyph: 'spark',
+      labelEn: 'Overview',
+      labelEl: 'Επισκόπηση',
+      badge: unreadCount || null,
+      content: (
+        <div className="space-y-4">
+          <RailStats
+            items={[
+              { key: 'today', label: activityEn('stat_today'), labelEl: activityEl('stat_today'), value: todayCount, icon: Zap },
+              { key: 'unread', label: activityEn('stat_unread'), labelEl: activityEl('stat_unread'), value: unreadCount, icon: Bell },
+              { key: 'connections', label: activityEn('stat_connections'), labelEl: activityEl('stat_connections'), value: connectionCount, icon: UserCheck },
+              { key: 'matches', label: activityEn('stat_matches'), labelEl: activityEl('stat_matches'), value: matchCount, icon: TrendingUp },
+            ]}
+          />
+          <div className="space-y-2.5">
+            <p className="px-2.5 text-xs font-medium text-muted-foreground">
+              <BilingualText en={activityEn('activity_breakdown')} el={activityEl('activity_breakdown')} compact wrap />
+            </p>
+            {Object.entries(TYPE_CONFIG).slice(0, 6).map(([type, cfg]) => {
+              const count = activityItems.filter((i) => i.type === type).length;
+              const Icon = cfg.icon;
+              return (
+                <div key={type} className="flex items-center gap-2.5 px-2.5">
+                  <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
                     <Icon className="icon-sm" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xl font-bold text-foreground leading-none">{stat.value}</p>
-                    {/* `wrap`, not `truncate`: "Αδιάβαστες ειδοποιήσεις" is 23
-                        characters in a quarter-width card and had nowhere to
-                        truncate to. */}
-                    <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
-                      <BilingualText en={activityEn(stat.key)} el={activityEl(stat.key)} compact wrap />
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 lg:hidden">
-          {QUICK_ACTIONS.map((action) => {
-            const ActionIcon = action.icon;
-            return (
-              <Link key={action.href} href={action.href}>
-                <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2">
-                  <ActionIcon className="icon-sm shrink-0 text-primary-accessible" />
-                  <span className="text-xs font-medium text-foreground">
-                    <BilingualText en={activityEn(action.key)} el={activityEl(action.key)} compact wrap />
+                  <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+                    <BilingualText en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact wrap />
                   </span>
+                  <span className="text-xs font-semibold text-foreground">{count}</span>
                 </div>
-              </Link>
-            );
-          })}
+              );
+            })}
+          </div>
+          <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-violet-500/5">
+            <CardContent className="p-4 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <BarChart3 className="icon-md text-primary-accessible" />
+              </div>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                <BilingualText en={activityEn('stay_active')} el={activityEl('stay_active')} compact />
+              </p>
+              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                <BilingualText en={activityEn('stay_active_hint')} el={activityEl('stay_active_hint')} compact wrap />
+              </p>
+              <Button variant="outline" size="sm" className="mt-3 h-8 w-full gap-1.5 text-xs" asChild>
+                <Link href="/analytics">
+                  <Target className="icon-sm" />
+                  <BilingualText en={activityEn('view_analytics')} el={activityEl('view_analytics')} compact wrap />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters and shortcuts',
+      labelEl: 'Φίλτρα και συντομεύσεις',
+      badge: typeFilter !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Type"
+            titleEl="Τύπος"
+            options={FEED_TYPE_FILTERS.map((f) => ({
+              value: f.value,
+              en: activityEn(f.key),
+              el: activityEl(f.key),
+              icon: f.icon,
+              count: f.value === 'all' ? undefined : activityItems.filter((i) => i.type === f.value).length,
+            }))}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
+          {typeFilter !== 'all' && (
+            <RailAction
+              icon={X}
+              en={activityEn('clear_filter')}
+              el={activityEl('clear_filter')}
+              onClick={() => setTypeFilter('all')}
+            />
+          )}
+          <div className="space-y-1">
+            <p className="px-2.5 pb-0.5 text-xs font-medium text-muted-foreground">
+              <BilingualText en={activityEn('quick_actions')} el={activityEl('quick_actions')} compact wrap />
+            </p>
+            {QUICK_ACTIONS.map((a) => {
+              const AIcon = a.icon;
+              return (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm text-foreground hover:bg-muted/70"
+                >
+                  <AIcon className={cn('icon-sm shrink-0', a.color)} />
+                  <span className="min-w-0 flex-1">
+                    <BilingualText en={activityEn(a.key)} el={activityEl(a.key)} compact wrap />
+                  </span>
+                  <ArrowRight className="icon-sm text-muted-foreground/50" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-          {/* Main feed */}
+  return (
+    <AppShell
+      rail={rail}
+      showHelp
+      askAi="Summarise my recent network activity and tell me what to act on first: intros, unread notifications, or upcoming events."
+    >
+      <div className="space-y-5">
           <div>
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }}>
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -434,40 +501,6 @@ export default function ActivityPage() {
 
               {/* Network tab with type filters */}
               <TabsContent value="network" className="mt-0 space-y-3">
-                {/* Type filter chips */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Filter className="icon-sm text-muted-foreground shrink-0" />
-                  {FEED_TYPE_FILTERS.map((f) => {
-                    const FIcon = f.icon;
-                    const isActive = typeFilter === f.value;
-                    return (
-                      <button
-                        key={f.value}
-                        onClick={() => setTypeFilter(f.value)}
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
-                          isActive
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border/60 bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                        )}
-                      >
-                        <FIcon className="icon-sm" />
-                        <BilingualText en={activityEn(f.key)} el={activityEl(f.key)} compact />
-                        {f.value !== 'all' && (
-                          <span className={cn('ml-0.5 rounded-full px-1 text-2xs', isActive ? 'bg-white/20' : 'bg-muted')}>
-                            {activityItems.filter((i) => i.type === f.value).length}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                  {typeFilter !== 'all' && (
-                    <button onClick={() => setTypeFilter('all')} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                      <X className="icon-sm" /> <BilingualText en={activityEn('clear_filter')} el={activityEl('clear_filter')} compact />
-                    </button>
-                  )}
-                </div>
-
                 <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
                   {activityError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
@@ -597,81 +630,6 @@ export default function ActivityPage() {
               </TabsContent>
             </Tabs>
           </div>
-
-          {/* Sidebar */}
-          <div className="hidden lg:flex lg:flex-col lg:gap-4">
-            {/* Quick actions */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-3 pt-4">
-                <CardTitle className="text-sm"><BilingualText en={activityEn('quick_actions')} el={activityEl('quick_actions')} compact wrap /></CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-2 pb-4">
-                {QUICK_ACTIONS.map((a) => {
-                  const AIcon = a.icon;
-                  return (
-                    <Link key={a.href} href={a.href}>
-                      <div className="flex items-center gap-2.5 rounded-lg p-2 hover:bg-muted/50 transition-colors">
-                        <AIcon className={cn('icon-sm shrink-0', a.color)} />
-                        <span className="min-w-0 text-sm text-foreground/80">
-                          <BilingualText en={activityEn(a.key)} el={activityEl(a.key)} compact wrap />
-                        </span>
-                        <ArrowRight className="ml-auto icon-sm text-muted-foreground/50" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </CardContent>
-            </Card>
-
-            {/* Activity breakdown */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-3 pt-4">
-                <CardTitle className="text-sm"><BilingualText en={activityEn('activity_breakdown')} el={activityEl('activity_breakdown')} compact wrap /></CardTitle>
-              </CardHeader>
-              <CardContent className="pb-4 space-y-2.5">
-                {Object.entries(TYPE_CONFIG).slice(0, 6).map(([type, cfg]) => {
-                  const count = activityItems.filter((i) => i.type === type).length;
-                  const Icon = cfg.icon;
-                  return (
-                    <div key={type} className="flex items-center gap-2.5">
-                      <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-                        <Icon className="icon-sm" />
-                      </div>
-                      {/* Was the raw key, `capitalize`d — "Connection" on a
-                          Greek page. The config carries the label now. */}
-                      <span className="min-w-0 flex-1 text-xs text-muted-foreground">
-                        <BilingualText en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact wrap />
-                      </span>
-                      <span className="text-xs font-semibold text-foreground">{count}</span>
-                      <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className={cn('h-full rounded-full', cfg.color.replace('text-', 'bg-'))}
-                          style={{ width: `${activityItems.length > 0 ? (count / activityItems.length) * 100 : 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-
-            {/* Streak / engagement */}
-            <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-violet-500/5">
-              <CardContent className="p-4 text-center">
-                <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary/10">
-                  <BarChart3 className="icon-md text-primary-accessible" />
-                </div>
-                <p className="mt-2 text-sm font-semibold text-foreground"><BilingualText en={activityEn('stay_active')} el={activityEl('stay_active')} compact /></p>
-                <p className="text-xs leading-snug text-muted-foreground mt-0.5"><BilingualText en={activityEn('stay_active_hint')} el={activityEl('stay_active_hint')} compact wrap /></p>
-                <Button variant="outline" size="sm" className="mt-3 w-full h-8 text-xs gap-1.5" asChild>
-                  <Link href="/analytics">
-                    <Target className="icon-sm" /> <BilingualText en={activityEn('view_analytics')} el={activityEl('view_analytics')} compact wrap />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </div>
     </AppShell>
   );

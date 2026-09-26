@@ -68,7 +68,7 @@ export function ChatBubble() {
         'pointer-events-none fixed bottom-6 z-50 hidden transition-[right] duration-200 ease-out lg:block',
         // Clear of the page rail: the strip on a page that has one, the whole
         // panel while it is pinned. Without this the bubble sat behind it.
-        !hasRail ? 'right-6' : railPinned ? 'right-[21.25rem]' : 'right-[4.25rem]',
+        !hasRail ? 'right-6' : railPinned ? 'right-[23.252rem]' : 'right-[4.75rem]',
       )}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,

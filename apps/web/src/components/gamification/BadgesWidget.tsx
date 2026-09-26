@@ -73,7 +73,7 @@ export function BadgesWidget() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-col gap-2 text-base sm:flex-row sm:items-start sm:justify-between">
+        <CardTitle className="flex flex-col gap-2 text-base">
           <div className="flex min-w-0 items-center gap-2">
             <CfbGlyph name="award" className="icon-md shrink-0 text-primary-accessible" />
             <BilingualText en="Badges" el="Εμβλήματα" wrap />

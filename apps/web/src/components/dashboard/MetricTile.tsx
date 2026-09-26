@@ -37,18 +37,21 @@ export type MetricTileProps = {
   trend?: { value: number; positive: boolean; en?: string; el?: string };
   href?: string;
   className?: string;
+  labelClassName?: string;
+  valueClassName?: string;
+  metaClassName?: string;
 };
 
-export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className }: MetricTileProps) {
+export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName }: MetricTileProps) {
   const content = (
     <Card className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
       <CardContent className="flex h-full flex-col p-4 sm:p-5">
         <div className="flex w-full items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
-            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
+            <p className={cn('text-[11px] leading-snug text-muted-foreground sm:text-xs', labelClassName)}>
               <BilingualText en={label} el={labelEl} stacked wrap />
             </p>
-            <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">{value}</p>
+            <p className={cn('text-xl font-semibold tabular-nums tracking-tight sm:text-2xl', valueClassName)}>{value}</p>
           </div>
           {glyph ? (
             <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
@@ -59,17 +62,17 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
         <div className="mt-auto min-h-[2.75rem] pt-2">
           {trend ? (
             <div className="space-y-0.5">
-              <p className={cn('text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
+              <p className={cn('text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down, metaClassName)}>
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
               </p>
               {trend.en ? (
-                <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                <p className={cn('text-[11px] leading-snug text-muted-foreground sm:text-xs', metaClassName)}>
                   <BilingualText en={trend.en} el={trend.el} stacked wrap />
                 </p>
               ) : null}
             </div>
           ) : caption ? (
-            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
+            <p className={cn('text-[11px] leading-snug text-muted-foreground sm:text-xs', metaClassName)}>
               <BilingualText en={caption} el={captionEl} stacked wrap />
             </p>
           ) : null}

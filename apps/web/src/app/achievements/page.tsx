@@ -24,13 +24,14 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { achievementsEn, achievementsEl } from '@/lib/i18n/strings-achievements';
-import { Button } from '@/components/ui/button';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
@@ -296,7 +297,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             {achievement.unlocked === false && (
               <div className="space-y-1.5 mb-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span><BilingualText en="Progress" el="Πρόοδος" compact /></span>
+                  <span><BilingualText en={achievementsEn('progress')} el={achievementsEl('progress')} compact /></span>
                   <span>
                     {achievement.progress} / {achievement.total}
                   </span>
@@ -323,7 +324,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
                 {achievement.tier}
               </Badge>
               <span className="text-muted-foreground">
-                {achievement.rarity}% <BilingualText en="have this" el="έχουν αυτό" compact />
+                {achievement.rarity}% <BilingualText en={achievementsEn('have_this')} el={achievementsEl('have_this')} compact />
               </span>
               {achievement.unlocked && achievement.unlockedAt && (
                 <span className="text-muted-foreground ml-auto">
@@ -361,7 +362,13 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progress to Level {stats.level + 1}</span>
+                <span className="text-muted-foreground">
+                  <BilingualText
+                    en={`${achievementsEn('progress_to_level')} ${stats.level + 1}`}
+                    el={`${achievementsEl('progress_to_level')} ${stats.level + 1}`}
+                    compact
+                  />
+                </span>
                 <span className="font-medium">
                   {stats.totalPoints} / {stats.nextLevelPoints} pts
                 </span>
@@ -536,74 +543,110 @@ export default function AchievementsPage() {
 
   const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
 
+  const listViews = activeTab === 'all' || activeTab === 'unlocked' || activeTab === 'locked';
+
+  usePageList([
+    {
+      id: 'achievements',
+      labelEn: 'Achievements',
+      labelEl: 'Επιτεύγματα',
+      rows: isLoading ? undefined : (filteredAchievements ?? []).map((a) =>
+        `${a.title} · ${a.unlocked ? 'unlocked' : 'in progress'} · ${a.category} · ${a.points} pts`,
+      ),
+    },
+  ]);
+  usePageControls([
+    choiceControl(
+      'achievement_view',
+      'Achievements view',
+      'Προβολή επιτευγμάτων',
+      [
+        { value: 'all', en: achievementsEn('tab_all'), el: achievementsEl('tab_all') },
+        { value: 'unlocked', en: achievementsEn('tab_unlocked'), el: achievementsEl('tab_unlocked') },
+        { value: 'locked', en: achievementsEn('tab_in_progress'), el: achievementsEl('tab_in_progress') },
+        { value: 'leaderboard', en: achievementsEn('tab_leaderboard'), el: achievementsEl('tab_leaderboard') },
+        { value: 'reputation', en: achievementsEn('tab_reputation'), el: achievementsEl('tab_reputation') },
+        { value: 'badges', en: achievementsEn('tab_badges'), el: achievementsEl('tab_badges') },
+      ],
+      activeTab,
+      (v) => setActiveTab(v as typeof activeTab),
+    ),
+    choiceControl(
+      'achievement_category',
+      'Achievement category',
+      'Κατηγορία επιτεύγματος',
+      categories.map((c) => ({ value: c.value, en: c.labelEn, el: c.labelEl })),
+      categoryFilter,
+      setCategoryFilter,
+    ),
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'progress',
+      glyph: 'award',
+      labelEn: 'Your progress',
+      labelEl: 'Η πρόοδός σας',
+      content: stats ? <UserStatsCard stats={stats} /> : null,
+    },
+    {
+      id: 'browse',
+      glyph: 'sliders',
+      labelEn: 'Browse',
+      labelEl: 'Περιήγηση',
+      badge: (activeTab !== 'all' ? 1 : 0) + (categoryFilter !== 'all' ? 1 : 0) || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="View"
+            titleEl="Προβολή"
+            options={[
+              { value: 'all', en: achievementsEn('tab_all'), el: achievementsEl('tab_all'), icon: Award, count: achievements.length },
+              { value: 'unlocked', en: achievementsEn('tab_unlocked'), el: achievementsEl('tab_unlocked'), icon: CheckCircle2, count: achievements.filter((a) => a.unlocked).length },
+              { value: 'locked', en: achievementsEn('tab_in_progress'), el: achievementsEl('tab_in_progress'), icon: Lock, count: achievements.filter((a) => !a.unlocked).length },
+              { value: 'leaderboard', en: achievementsEn('tab_leaderboard'), el: achievementsEl('tab_leaderboard'), icon: Trophy },
+              { value: 'reputation', en: achievementsEn('tab_reputation'), el: achievementsEl('tab_reputation'), icon: TrendingUp },
+              { value: 'badges', en: achievementsEn('tab_badges'), el: achievementsEl('tab_badges'), icon: Award },
+            ]}
+            value={activeTab}
+            onChange={(v) => setActiveTab(v)}
+          />
+          {listViews && (
+            <RailOptions
+              title="Category"
+              titleEl="Κατηγορία"
+              options={categories.map((c) => ({
+                value: c.value,
+                en: c.labelEn,
+                el: c.labelEl,
+                icon: c.icon,
+              }))}
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+            />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title={achievementsEn('page_title')}
       titleEl={achievementsEl('page_title')}
       description={achievementsEn('page_description')}
       descriptionEl={achievementsEl('page_description')}
+      rail={rail}
+      showHelp
+      askAi="What achievements should I work toward next, and which unlocked badges are most useful to show investors?"
     >
       <div className="space-y-4 pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
         ) : (
           <>
-            {stats && <UserStatsCard stats={stats} />}
-
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                {/* min-w-0/max-w-full are what let the overflow-x-auto engage. As a
-                    flex child this defaults to min-width:auto, so it refused to
-                    shrink below its content, never scrolled, and pushed the document
-                    76px wide instead — achievements was the one page in the sweep
-                    that scrolled horizontally on a phone. */}
-                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto scrollbar-hide min-w-0 max-w-full">
-                  <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="icon-sm" /> <BilingualText en={`All (${achievements?.length})`} el={`Όλα (${achievements?.length})`} compact />
-                  </TabsTrigger>
-                  <TabsTrigger value="unlocked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <CheckCircle2 className="icon-sm" /> <BilingualText en={`Unlocked (${achievements?.filter((a) => a.unlocked).length})`} el={`Ξεκλειδωμένα (${achievements?.filter((a) => a.unlocked).length})`} compact />
-                  </TabsTrigger>
-                  <TabsTrigger value="locked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Lock className="icon-sm" /> <BilingualText en={`In Progress (${achievements?.filter((a) => !a.unlocked).length})`} el={`Σε εξέλιξη (${achievements?.filter((a) => !a.unlocked).length})`} compact />
-                  </TabsTrigger>
-                  <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Trophy className="icon-sm" /> <BilingualText en={achievementsEn('tab_leaderboard')} el={achievementsEl('tab_leaderboard')} compact />
-                  </TabsTrigger>
-                  <TabsTrigger value="reputation" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <TrendingUp className="icon-sm" /> <BilingualText en={achievementsEn('tab_reputation')} el={achievementsEl('tab_reputation')} compact />
-                  </TabsTrigger>
-                  <TabsTrigger value="badges" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="icon-sm" /> <BilingualText en={achievementsEn('tab_badges')} el={achievementsEl('tab_badges')} compact />
-                  </TabsTrigger>
-                </TabsList>
-
-                {activeTab !== 'leaderboard' && activeTab !== 'reputation' && activeTab !== 'badges' && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {categories.map((category) => {
-                      const Icon = category.icon;
-                      return (
-                        <Badge
-                          key={category.value}
-                          variant={categoryFilter === category.value ? 'default' : 'outline'}
-                          className="cursor-pointer gap-1 text-xs"
-                          onClick={() => setCategoryFilter(category.value)}
-                        >
-                          {Icon && <Icon className="icon-sm" />}
-                          <BilingualText
-                            en={category.labelEn}
-                            el={category.labelEl}
-                            compact
-                            secondaryClassName={categoryFilter === category.value ? 'text-primary-foreground' : undefined}
-                          />
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <TabsContent value="all" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              {activeTab === 'all' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -617,9 +660,11 @@ export default function AchievementsPage() {
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="unlocked" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              {activeTab === 'unlocked' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -633,9 +678,11 @@ export default function AchievementsPage() {
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="locked" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              {activeTab === 'locked' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -648,10 +695,11 @@ export default function AchievementsPage() {
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="leaderboard" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {activeTab === 'leaderboard' && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 animate-in fade-in slide-in-from-bottom-2">
                   {/* Leaderboard table */}
                   <div className="sm:col-span-2">
                     <Card>
@@ -744,16 +792,19 @@ export default function AchievementsPage() {
                     </Card>
                   </div>
                 </div>
-              </TabsContent>
+              )}
 
-              <TabsContent value="reputation" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <ReputationSystem points={reputationPoints > 0 ? reputationPoints : undefined} />
-              </TabsContent>
+              {activeTab === 'reputation' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <ReputationSystem points={reputationPoints > 0 ? reputationPoints : undefined} />
+                </div>
+              )}
 
-              <TabsContent value="badges" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <UserBadges />
-              </TabsContent>
-            </Tabs>
+              {activeTab === 'badges' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <UserBadges />
+                </div>
+              )}
           </>
         )}
       </div>

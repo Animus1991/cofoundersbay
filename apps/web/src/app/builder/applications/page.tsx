@@ -95,6 +95,7 @@ function ApplicationsPageContent() {
 
         <ApplicationGenerator
           hideTitle
+          pageRail
           onSave={handleSave}
           initialData={rawContent}
           workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})}

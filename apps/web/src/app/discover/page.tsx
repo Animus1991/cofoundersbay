@@ -19,15 +19,15 @@ import {
   Briefcase,
   Star,
   BadgeCheck,
-  Filter,
   X as XIcon,
 } from 'lucide-react';
 import {
   searchProfiles, getRecommendations, getDashboardStats, sendConnectionRequest, saveToShortlist, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
@@ -37,7 +37,7 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
 import { cn } from '@/lib/utils';
-import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { STATUS } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
@@ -46,15 +46,6 @@ const ConnectionRequestDialog = dynamic(() => import('@/components/common/Connec
 
 type ViewMode = 'grid' | 'list' | 'match';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
-
-const ROLE_FILTER_TONE: Record<RoleFilter, StatusTone | null> = {
-  all: null,
-  founder: 'accent',
-  cofounder: 'info',
-  mentor: 'success',
-  investor: 'warning',
-  service_provider: 'accent',
-};
 
 const ROLE_FILTERS: { value: RoleFilter; labelEn: string; labelEl: string; icon: React.ElementType }[] = [
   { value: 'all',              labelEn: discoverEn('all'),              labelEl: discoverEl('all'),              icon: Users         },
@@ -277,6 +268,62 @@ export default function DiscoverPage() {
     { id: 'message_person', labelEn: 'Message', labelEl: 'Μήνυμα σε', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleMessage(hitToProfile(h)); } },
     { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(shown), run: (v) => { const h = hitById(v); if (h) void handleBookmark(hitToProfile(h)); } },
   ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'discover',
+      labelEn: 'Platform',
+      labelEl: 'Πλατφόρμα',
+      content: (
+        <RailStats
+          items={PLATFORM_STAT_SLOTS.map((s) => {
+            const count = platformStats?.[s.key];
+            return {
+              key: s.key,
+              label: s.labelEn,
+              labelEl: s.labelEl,
+              value: count == null ? '—' : count.toLocaleString('en-GB'),
+              icon: s.icon,
+              tone: 'bg-primary/10 text-primary-accessible',
+            };
+          })}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters & view',
+      labelEl: 'Φίλτρα & προβολή',
+      badge: (roleFilter !== 'all' ? 1 : 0) + (viewMode !== 'grid' ? 1 : 0) || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Role"
+            titleEl="Ρόλος"
+            options={ROLE_FILTERS.map((r) => ({ value: r.value, en: r.labelEn, el: r.labelEl, icon: r.icon }))}
+            value={roleFilter}
+            onChange={setRoleFilter}
+          />
+          <RailOptions
+            title="Layout"
+            titleEl="Διάταξη"
+            options={[
+              { value: 'grid' as ViewMode, en: 'Grid', el: 'Πλέγμα', icon: LayoutGrid },
+              { value: 'list' as ViewMode, en: 'List', el: 'Λίστα', icon: List },
+            ]}
+            value={viewMode === 'match' ? 'grid' : viewMode}
+            onChange={setViewMode}
+          />
+          {roleFilter !== 'all' && (
+            <RailAction icon={XIcon} en={discoverEn('clear')} el={discoverEl('clear')} onClick={() => setRoleFilter('all')} />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title={discoverEn('page_title')}
@@ -286,6 +333,7 @@ export default function DiscoverPage() {
       showHelp
       askAi={askAi}
       contentClassName="overflow-x-clip"
+      rail={rail}
       actions={
         <Button variant="outline" size="sm" className="min-h-10 gap-2" asChild>
           <Link href="/matches">
@@ -296,32 +344,6 @@ export default function DiscoverPage() {
       }
     >
       <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
-
-        {/* Platform stats bar */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {PLATFORM_STAT_SLOTS.map((s) => {
-            const SIcon = s.icon;
-            const count = platformStats?.[s.key];
-            const value = count == null ? '\u2014' : count.toLocaleString('en-GB');
-            return (
-              <Card key={s.labelEn} className="min-w-0 shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
-                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <SIcon className="icon-sm text-primary-accessible" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-base font-bold tabular-nums text-foreground leading-none">{value}</p>
-                    {/* `wrap`: "Επιτυχείς αντιστοιχίσεις" is 112px in a tile
-                        that gives the label about 96px. */}
-                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground sm:text-xs">
-                      <BilingualText en={s.labelEn} el={s.labelEl} compact wrap />
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }}>
@@ -340,70 +362,7 @@ export default function DiscoverPage() {
                 <BilingualText en={discoverEn('top_matches')} el={discoverEl('top_matches')} compact />
               </TabsTrigger>
             </TabsList>
-
-          {/* View mode toggle */}
-          <div className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-card p-1 shadow-sm">
-            <Button
-              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              size="icon"
-              className="h-10 w-10 sm:h-8 sm:w-8"
-              onClick={() => setViewMode('grid')}
-              aria-label="Grid view"
-            >
-              <LayoutGrid className="icon-sm" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="icon"
-              className="h-10 w-10 sm:h-8 sm:w-8"
-              onClick={() => setViewMode('list')}
-              aria-label="List view"
-            >
-              <List className="icon-sm" />
-            </Button>
           </div>
-        </div>
-
-        {/* Role filter chips - shown for search & suggestions tabs */}
-        {activeTab !== 'matches' && (
-          <div className="flex min-w-0 items-center gap-2 overflow-x-auto pt-1 scrollbar-hide -mx-1 px-1">
-            <Filter className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-            {/* Said in words because a second role row sits below it: this one
-                narrows the results already shown; "Search only" below changes
-                what the search asks for. Same roles, different jobs. */}
-            <span className="shrink-0 text-xs text-muted-foreground">
-              <BilingualText en="Show" el="Εμφάνιση" compact />
-            </span>
-            {ROLE_FILTERS.map((rf) => {
-              const RIcon = rf.icon;
-              const isActive = roleFilter === rf.value;
-              const tone = ROLE_FILTER_TONE[rf.value];
-              return (
-                <button
-                  key={rf.value}
-                  onClick={() => setRoleFilter(rf.value)}
-                  className={cn(
-                    'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-all',
-                    isActive
-                      ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                      : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50',
-                  )}
-                >
-                  <RIcon className={cn('icon-sm', isActive ? 'text-primary-foreground' : tone ? STATUS[tone].icon : 'text-foreground')} />
-                  <BilingualText en={rf.labelEn} el={rf.labelEl} compact />
-                </button>
-              );
-            })}
-            {roleFilter !== 'all' && (
-              <button
-                onClick={() => setRoleFilter('all')}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <XIcon className="icon-sm" /> <BilingualText en={discoverEn('clear')} el={discoverEl('clear')} compact />
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Search Tab */}
         <TabsContent value="search" className="space-y-8 mt-6">

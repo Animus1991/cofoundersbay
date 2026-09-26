@@ -96,15 +96,17 @@ html {
        sm 6 · DEFAULT 8 · md 10 · lg 12 · xl 16 · 2xl 20 · 3xl 26. */
     --radius:           12px;
 
-    /* Typography scale — refined for readability */
-    --font-size-xs:     0.735rem;   /* 11.76px */
-    --font-size-sm:     0.8575rem;  /* 13.72px */
-    --font-size-base:   0.91875rem; /* 14.7px */
-    --font-size-lg:     0.98rem;    /* 15.68px */
-    --font-size-xl:     1.1025rem;  /* 17.64px */
-    --font-size-2xl:    1.225rem;   /* 19.6px */
-    --font-size-3xl:    1.47rem;    /* 23.52px */
-    --font-size-4xl:    1.96rem;    /* 31.36px */
+    /* Typography scale — Cursor.com steps, then +2% on the UI/copy half
+       (2xs–base; two requested +1% passes). Display steps (lg+) stay. */
+    --font-size-2xs:    0.765075rem; /* 12.24px captions */
+    --font-size-xs:     0.82883125rem;/* 13.26px helpers */
+    --font-size-sm:     0.8925875rem; /* 14.28px nav / UI */
+    --font-size-base:   1.0201rem;    /* 16.32px body / titles */
+    --font-size-lg:     1.125rem;   /* 18px */
+    --font-size-xl:     1.25rem;    /* 20px */
+    --font-size-2xl:    1.5rem;     /* 24px  page titles */
+    --font-size-3xl:    1.625rem;   /* 26px  cursor.com h1 */
+    --font-size-4xl:    2.25rem;    /* 36px  heading-lg */
 
     /* Gradients */
     --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
@@ -494,7 +496,7 @@ html {
   /* Desktop density from origin/claude 141552e: 82% of the phone/tablet
      scale from `lg` up, as a percentage so a raised browser default still
      applies. Body stays in rem so it participates. Two floors they measured
-     but did not hold: 11px type (our documented minimum) and 24px controls
+     but did not hold: 12px type (cursor.com caption) and 24px controls
      (WCAG 2.5.8 — 24px becomes 19.7px at 82%). */
   @media (min-width: 1024px) {
     html {
@@ -517,55 +519,13 @@ html {
     }
   }
 
-  @media (max-width: 639.98px) {
-    h1.text-base, h2.text-base, h3.text-base { font-size: 0.93168306rem; }
-    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.02718057rem; }
-    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.14131175rem; }
-    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.36957410rem; }
-    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.66905430rem; }
-    h1.text-4xl,  h2.text-4xl                { font-size: 2.00323038rem; }
-  }
-
-  /* ── Desktop density ──────────────────────────────────────────────────────
-     The web view renders at 82% of the phone/tablet scale — an 18% reduction
-     applied once, at the root, so type, spacing, icons, radii and every h-N /
-     w-N box shrink by exactly the same factor and every proportion in the
-     design system is preserved. A percentage, not a px value, so a reader who
-     has raised their browser's default font size still gets 82% of *their*
-     size rather than having the preference overwritten.
-     Breakpoint is `lg` (1024px): the width at which the app switches to the
-     full desktop chrome with the 240px drawer. Phones and tablets are
-     untouched. ──────────────────────────────────────────────────────────── */
-  @media (min-width: 1024px) {
-    html {
-      font-size: 82%;
-    }
-  }
-
-  /* ── Phone titles ─────────────────────────────────────────────────────────
-     Headings render 3% smaller on a phone. Tailwind writes these sizes in rem
-     on the element itself, and CSS has no way to say "97% of whatever this
-     element already computes to" — `em` resolves against the parent — so each
-     size that carries a title on a phone is restated here at 97%. Scoped to
-     heading elements, so body copy, labels and badges keep their size.
-     ──────────────────────────────────────────────────────────────────────── */
-  @media (max-width: 639.98px) {
-    h1.text-base, h2.text-base, h3.text-base { font-size: 0.97rem; }      /* 16   -> 15.52 */
-    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.09125rem; }   /* 18   -> 17.46 */
-    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.2125rem; }    /* 20   -> 19.4  */
-    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.455rem; }     /* 24   -> 23.28 */
-    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.77316rem; }   /* 29.25 -> 28.37 */
-    h1.text-4xl,  h2.text-4xl                { font-size: 2.12818rem; }   /* 35.1  -> 34.05 */
-  }
-
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100dvh;
     font-feature-settings: 'cv11', 'ss01';
-    /* 15px at the default 16px root; 12.3px once html is 82% on desktop.
-       −2% pass: 14.7px at 16px root; 12.05px at the desktop root. */
-    font-size: 0.91875rem;
-    line-height: 1.55;
+    /* UI/copy half +2% (16.32px). Display titles stay on the Cursor steps. */
+    font-size: 1.0201rem;
+    line-height: 1.5;
     letter-spacing: -0.011em;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -576,13 +536,10 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.2182660). It has to sit
-     after the rule above, not inside the `min-width: 1024px` block further up:
-     same layer, same specificity, so source order decides and that block comes
-     first. */
+  /* Same 16.32px body against the 82% desktop root (16.3216 / 13.12). */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.11928192rem;
+      font-size: 1.24402439rem;
     }
   }
 
@@ -897,7 +854,7 @@ html {
        elsewhere), so this pair clears 4.5:1 in every theme. */
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    font-size: 0.87473575rem;
+    font-size: 14px;
     font-weight: 600;
     white-space: nowrap;
     outline: 2px solid hsl(var(--ring));
@@ -1187,14 +1144,14 @@ html {
   /* ── Bilingual secondary text ──
      The secondary language must read as subordinate to the primary without
      becoming illegible. Sizing is relative (0.85em) so the ratio holds in an
-     h1, in body copy and in a badge alike, with an 11px floor via max() so it
-     never drops below a readable size in already-small containers.
+     h1, in body copy and in a badge alike, with a 12px floor via max() so it
+     never drops below cursor.com's caption size in already-small containers.
      Replaces the previous hardcoded text-[9px] / text-[10px].
      Colour is deliberately NOT set here: it stays a Tailwind class on the
      element so tailwind-merge can resolve a caller-supplied override
      (e.g. secondaryClassName="text-primary-foreground" on an active chip). */
   .bilingual-secondary {
-    font-size: max(11px, 0.67375rem, 0.85em);
+    font-size: max(12.2412px, 0.765075rem, 0.85em);
     line-height: 1.35;                 /* room for Greek diacritics */
     font-weight: 400;
     letter-spacing: 0;
@@ -1214,419 +1171,232 @@ html {
   /* Separator between primary and secondary in inline mode. */
   .bilingual-separator {
     @apply select-none text-muted-foreground/40;
-    font-size: max(11px, 0.67375rem, 0.85em);
+    font-size: max(12.2412px, 0.765075rem, 0.85em);
   }
 
-  /* Hold the 11px floor when html is 82% on desktop (0.68729238rem → 9.02px). */
+  /* Phone/tablet (16px root): same computed pixels as cursor.com. Desktop
+     overrides below restate each step against the 82% root so the px hold. */
   .text-2xs {
-    font-size: max(0.68729238rem, 11px);
-    line-height: max(1.01rem, 16px);
+    font-size: max(0.765075rem, 12.2412px);
+    line-height: 1rem;
   }
 
-  /* `text-xs` needed the same floor and did not have it. 0.735rem against the 82%
-     desktop root is 9.64px, and it is the most common size in the product -- 111
-     text nodes on the founder dashboard alone were rendering below the
-     documented 11px minimum on every desktop. */
   .text-xs {
-    font-size: max(0.7497735rem, 11px);
-    line-height: max(1.01rem, 16px);
+    font-size: 0.82883125rem;
+    line-height: 1.25rem;
   }
 
-  /* ── Phone/tablet type scale: −2% pass, then −2% again on the display half ──
-     Every step below `lg` is the class's own size x0.98; the px floors keep the
-     documented 11px/16px minimums, so `2xs`/`xs` stay pinned at 11px on mobile
-     and the floor, not the multiplier, is what they render. Steps `3xl` and up
-     follow `tailwind.config.ts`'s display values, not Tailwind's defaults.
-     `text-lg` and up then took a second x0.98 — see the web view block below
-     for what that pass was for; the phone scale takes it too so a stat card
-     does not change proportion when the viewport crosses `lg`.
-     Two later passes pull the ladder's two ends toward each other: each time
-     the steps below `base` (2xs, xs, sm) take x1.01 and `base` and everything
-     above take x0.99, so adjacent steps sit closer without losing the gaps
-     between them. `base` travels with the larger half on purpose — `text-sm` is
-     what the product's body copy actually uses (~1,870 sites against base's
-     ~250), so `base` is a title-adjacent step. The second of those passes is
-     page content only: the rail keeps the values the first pass left it with.
-     The 11px legibility floor does not move: it is a minimum, not a size, and
-     the rem intent above it still rose — `2xs` simply stays floor-bound.
-     The `min-width: 1024px` block further down still wins on desktop — same
-     layer, same specificity, later source order. */
-  .text-sm  { font-size: 0.87473575rem; }
-  .text-base { font-size: 0.960498rem; }
-  .text-lg  { font-size: 1.05894905rem; }
-  .text-xl  { font-size: 1.17661005rem; }
-  .text-2xl { font-size: 1.41193206rem; }
-  .text-3xl { font-size: 1.51782696rem; }
-  .text-4xl { font-size: 1.69996620rem; }
-  .text-5xl { font-size: 1.90396215rem; }
-  .text-6xl { font-size: 2.13243760rem; }
-  .text-7xl { font-size: 2.38833011rem; }
+  .text-sm  { font-size: 0.8925875rem; line-height: 1.3125rem; }
+  .text-base { font-size: 1.0201rem; line-height: 1.5rem; }
+  .text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
+  .text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+  .text-3xl { font-size: 1.625rem; line-height: 2.03125rem; }
+  .text-4xl { font-size: 2.25rem; line-height: 2.7rem; }
+  .text-5xl { font-size: 3rem; }
+  .text-6xl { font-size: 3.75rem; }
+  .text-7xl { font-size: 4.5rem; }
 
-  /* Same pass for the responsive variants while the desktop block is inactive:
-     `sm:`/`md:` utilities match at 640px+ / 768px+, which still includes phones
-     in landscape and every tablet up to `lg`. */
   @media (max-width: 1023.98px) {
-    .sm\:text-xs  { font-size: max(0.7497735rem, 11px); }
-    .sm\:text-sm  { font-size: 0.87473575rem; }
-    .sm\:text-lg  { font-size: 1.05894905rem; }
-    .sm\:text-xl  { font-size: 1.17661005rem; }
-    .sm\:text-2xl { font-size: 1.41193206rem; }
-    /* Three variants the product uses that this block had never listed, so
-       they fell through to the raw Tailwind scale against the 82% root — the
-       same defect that once rendered `sm:text-xs` at 9.84px. Values mirror the
-       unprefixed step of the same name. */
-    .sm\:text-3xl { font-size: 1.51782696rem; }
-    .lg\:text-5xl { font-size: 1.90396215rem; }
-    .xl\:text-3xl { font-size: 1.51782696rem; }
-    .sm\:text-4xl { font-size: 1.69996620rem; }
-    .sm\:text-5xl { font-size: 1.90396215rem; }
-    .sm\:text-6xl { font-size: 2.13243760rem; }
-    .md\:text-lg  { font-size: 1.05894905rem; }
-    .md\:text-xl  { font-size: 1.17661005rem; }
-    .md\:text-2xl { font-size: 1.41193206rem; }
-    .md\:text-6xl { font-size: 2.13243760rem; }
+    .sm\:text-xs  { font-size: 0.82883125rem; line-height: 1.25rem; }
+    .sm\:text-sm  { font-size: 0.8925875rem; line-height: 1.3125rem; }
+    .sm\:text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
+    .sm\:text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+    .sm\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .sm\:text-3xl { font-size: 1.625rem; line-height: 2.03125rem; }
+    .lg\:text-5xl { font-size: 3rem; }
+    .xl\:text-3xl { font-size: 1.625rem; line-height: 2.03125rem; }
+    .sm\:text-4xl { font-size: 2.25rem; line-height: 2.7rem; }
+    .sm\:text-5xl { font-size: 3rem; }
+    .sm\:text-6xl { font-size: 3.75rem; }
+    .md\:text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
+    .md\:text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+    .md\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .md\:text-6xl { font-size: 3.75rem; }
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over nine requested passes, then one uniform x0.98
-     pass over every step, every responsive variant, the rail, and body copy:
-       page, below `text-lg`  x1.05, x1.03, x1.02 x4, x1.01, x1.02, x1.01, x0.98 = x1.19390076
-       `text-lg` and up        held, held, x0.98, x0.98, then held, x0.98  = x0.941192
-       the sidebar             frozen at pass 7, x1.02, then x0.98
-       the sidebar's headings  frozen at pass 6, held since, then x0.98
-
-     The threshold came from measuring what the named elements are: "Your
-     founder journey" is `text-lg`, and the page title and the stat numerals
-     ("Founder dashboard", "1840", "0/4") are `text-2xl`.
-
-     THE ORDER IS RESTORED HERE. Nine passes had taken the steps below the
-     threshold to x1.2182660 while `text-lg` and up went to x0.9604, which put
-     body copy above both the section heading (`text-lg`) and the card heading
-     (`text-xl`) -- only weight still separated them.
-
-     Neither remedy this comment used to propose actually works, and both were
-     checked before choosing a third: letting `text-lg` travel with the lower
-     steps puts it at 17.98px, and moving the threshold up to `text-xl` puts
-     `text-xl` at 19.98px. Both land above the `text-2xl` anchor of 18.90px, so
-     each one only moves the inversion up a step. The two halves of the scale
-     have drifted 23% apart, and no threshold placed inside the ladder closes
-     that.
-
-     What closes it is interpolating the two orphaned steps back into the room
-     that is actually available -- between `text-base` (15.984) and the
-     `text-2xl` anchor (18.901) -- at the geometric ratio those two imply,
-     x1.0574676. `text-2xl` and every display step above it are unchanged to the
-     digit, since those are the elements that were named in each pass, and
-     nothing below `text-lg` moves either. A later requested pass then moved
-     every step, variant, the rail and body copy by a uniform x0.98, so the
-     ladder still ascends. As rendered now, smallest first:
-
-       text-2xs 13.133 | text-xs 13.133 | text-sm 13.706 | body   14.685
-       text-base 15.664 | text-lg 16.233 | text-xl 17.166 | text-2xl 18.152
-
-     The display half — `text-lg` and up, every variant, and the `h1/h2/h3`
-     overrides on phones — then took one more x0.98. The request named the stat
-     pairs ("24% Ολοκλήρωση", "42% Ετοιμότητα", "0 Ολοκληρωμένα",
-     "1 Συνεργάτες"), whose numerals are `text-xl sm:text-2xl` and whose labels
-     are `text-2xs`; 187 call sites use `text-xl font-bold`, 71 use `text-2xl`,
-     38 use `text-3xl`, so the only way to reach every one of them without
-     omission is the scale itself. Body copy and the two smallest steps stay
-     where they are, which also narrows the numeral-to-label ratio rather than
-     shifting the whole page down with it.
-
-     `text-2xs` and `text-xs` still land on the same value: both sit under the
-     scaled 11px floor, which is what a floor does rather than a fault. They are
-     the one pair `typeScaleOrder.test.ts` permits to be equal.
-
-     Sizes are rem x multiplier, not fixed px, so a reader who raises their
-     browser default still gets the scale; the px halves of the `max()` on the
-     two smallest steps are the 11px/16px legibility floors, scaled alongside,
-     so the floor travels with the type instead of swallowing the change.
-
-     `.bilingual-secondary` needs no entry -- it is sized in `em` against its
-     own parent, so it follows whichever side of the threshold that parent is
-     on. */
+     Cursor.com steps, then +2% on 2xs–base (two Overview +1% passes).
+       Display half unchanged:
+       12.24 caption · 13.26 helper · 14.28 nav/UI · 16.32 body
+       18 · 20 · 24 page title · 26 h1 · 36 · 48 · 60 · 72 display
+     Rem values are those pixels against the 82% desktop root (13.12px),
+     so a raised browser default still scales the ladder. The phone rules
+     above use the same pixels at a 16px root. typeScaleOrder.test.ts
+     requires this block to stay ascending and to list every responsive
+     variant the product uses. */
   @media (min-width: 1024px) {
-    /* ── below the threshold: x1.1251926, then x0.98, then x1.01 twice ── */
     .text-2xs {
-      font-size: max(0.83730494rem, 13.39687977px);
-      line-height: max(1.24275323rem, 19.88405163px);
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
 
     .text-xs {
-      font-size: max(0.91342363rem, 13.39687977px);
-      line-height: max(1.24275323rem, 19.88405163px);
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
     }
 
     .text-sm {
-      font-size: 1.06566089rem;
-      line-height: 1.55344154rem;
+      font-size: 1.08852134rem;
+      line-height: 1.60060976rem;
     }
 
     .text-base {
-      font-size: 1.17014213rem;
-      line-height: 1.79103388rem;
+      font-size: 1.24402439rem;
+      line-height: 1.82926829rem;
     }
 
-    /* ── the two steps that had fallen under body: interpolated back in ──
-       Line heights keep the ratio each step carried before (28/18 for `lg`,
-       1.4 for `xl`), so the leading travels with the size instead of staying
-       pinned to the 1.6807rem both had been sharing. */
     .text-lg {
-      font-size: 1.21263969rem;
-      line-height: 1.92482490rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
 
     .text-xl {
-      font-size: 1.28232723rem;
-      line-height: 1.83189605rem;
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
     }
 
-    /* ── the display steps: x0.9604, then x0.98, then evened out ──────────
-       `2xl` is the anchor and does not move; `3xl` and up were rebuilt from it
-       on a fixed ratio, because the ladder's own steps had drifted far apart at
-       the top while staying almost flat at the bottom:
-
-                    before            after
-         xs  → sm   1.044 (both floored)   unchanged
-         sm  → base 1.142                  unchanged
-         base→ lg   1.036                  unchanged
-         lg  → xl   1.058                  unchanged
-         xl  → 2xl  1.057                  unchanged
-         2xl → 3xl  1.219  22.12px         1.075  19.51px
-         3xl → 4xl  1.200  26.55px         1.120  21.86px
-         4xl → 5xl  1.333  35.39px         1.120  24.48px
-         5xl → 6xl  1.250  44.24px         1.120  27.42px
-         6xl → 7xl  1.200  53.10px         1.120  30.71px
-
-       So a step at the top of the scale now differs from its neighbour by
-       about as much as one at the bottom does, and every size sits closer to
-       body copy — the request was to leave the small steps alone and bring the
-       large ones down toward them, not to flatten the ladder: 1.075 and 1.120
-       still separate two adjacent levels plainly at these sizes (1.4px and
-       2.4px), which is what a heading needs over its body and no more.
-
-       `2xl` holds because it is where the app's own hierarchy tops out — stat
-       numerals are `text-xl sm:text-2xl` — so moving it would move the figures
-       on every dashboard without evening anything. The four steps above it are
-       26 call sites, nearly all marketing headlines, and they carried the whole
-       disproportion. The phone scale takes the same two ratios against its own
-       100% root, so a heading keeps its proportion across `lg`.
-
-       Then the ends were drawn closer twice: every step above `base` took x0.99
-       and the three below it took x1.01 each time (see the phone-scale comment
-       for why `base` rides with the top half). The second of those is page
-       content only — the rail is left where the first pass put it. On desktop
-       the rendered page ladder is now: 13.40 (2xs/xs share the floor) ·
-       13.98 sm · 15.35 base · 15.91 lg · 16.82 xl · 17.79 2xl · 19.13 3xl ·
-       21.42 4xl · 23.99 5xl · 26.87 6xl · 30.09 7xl. Body copy stays 14.69,
-       between sm and base. Adjacent ratios still run x1.036 to x1.120 — every
-       gap distinct, none disproportionate. The 13.3969px floor moved with the
-       steps because on this root it IS the rendered size of `2xs`/`xs`, not a
-       minimum: leaving it would have meant the two most-used sizes never
-       changed. */
     .text-2xl {
-      font-size: 1.35601955rem;
-      line-height: 1.84492456rem;
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
     }
 
     .text-3xl {
-      font-size: 1.45772102rem;
-      line-height: 1.78529054rem;
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
     }
 
     .text-4xl {
-      font-size: 1.63264754rem;
-      line-height: 1.85124254rem;
+      font-size: 2.74390244rem;
+      line-height: 3.29268293rem;
     }
 
     .text-5xl {
-      font-size: 1.82856523rem;
+      font-size: 3.65853659rem;
     }
 
     .text-6xl {
-      font-size: 2.04799307rem;
+      font-size: 4.57317073rem;
     }
 
     .text-7xl {
-      font-size: 2.29375224rem;
+      font-size: 5.48780488rem;
     }
 
-    /* ── Responsive variants ──────────────────────────────────────────────
-       Nine passes tuned the unprefixed utilities only, so every `sm:`/`md:`
-       type class fell through to the raw Tailwind scale against the 82% root
-       and none of this work reached it. Measured at 1024px, the drift was:
-
-         sm:text-xs   9.84px vs 13.40   sm:text-sm  11.48px vs 13.99
-         sm:text-lg  14.76px vs 16.90   sm:text-xl  16.40px vs 17.87
-         sm:text-2xl 19.68px vs 18.90   sm:text-4xl 28.79px vs 27.65
-
-       The first two broke the documented 11px floor outright. The three
-       `sm:text-xs` call sites are written `text-[11px] ... sm:text-xs`, so the
-       variant was *lowering* an explicitly-set 11px to 9.84px on exactly the
-       viewport it was meant to grow on -- twice on the founder dashboard, once
-       on `/discover`.
-
-       Every `sm:`/`md:` breakpoint is already active at 1024px, so each variant
-       simply takes its unprefixed value. Declared after all of them, and `sm:`
-       before `md:`, so `text-base sm:text-sm` and `sm:text-lg md:text-xl` still
-       resolve the way Tailwind's own ordering resolves them. Only the variants
-       the product actually uses are listed; `typeScaleOrder.test.ts` fails if a
-       component starts using one that is missing here. */
     .sm\:text-xs {
-      font-size: max(0.91342363rem, 13.39687977px);
-      line-height: max(1.24275323rem, 19.88405163px);
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
     }
 
     .sm\:text-sm {
-      font-size: 1.06566089rem;
-      line-height: 1.55344154rem;
+      font-size: 1.08852134rem;
+      line-height: 1.60060976rem;
     }
 
     .sm\:text-lg {
-      font-size: 1.21263969rem;
-      line-height: 1.92482490rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
 
     .sm\:text-xl {
-      font-size: 1.28232723rem;
-      line-height: 1.83189605rem;
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
     }
 
     .sm\:text-2xl {
-      font-size: 1.35601955rem;
-      line-height: 1.84492456rem;
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
     }
 
-    /* See the note in the tablet block: `sm:text-3xl`, `xl:text-3xl` and
-       `lg:text-5xl` are used by the admin headers, the role dashboards and the
-       pitch viewer, and were the last three variants with no desktop override.
-       They track the unprefixed `.text-3xl` / `.text-5xl` steps exactly. */
     .sm\:text-3xl {
-      font-size: 1.45772102rem;
-      line-height: 1.78529054rem;
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
     }
 
     .xl\:text-3xl {
-      font-size: 1.45772102rem;
-      line-height: 1.78529054rem;
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
     }
 
     .lg\:text-5xl {
-      font-size: 1.82856523rem;
+      font-size: 3.65853659rem;
     }
 
     .sm\:text-4xl {
-      font-size: 1.63264754rem;
-      line-height: 1.85124254rem;
+      font-size: 2.74390244rem;
+      line-height: 3.29268293rem;
     }
 
-    /* Marketing hero sizes: `/` and `/t/[slug]` headlines, `/pricing`,
-       `/themes/alliance`. Line height is left alone -- the display steps carry
-       `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
     .sm\:text-5xl {
-      font-size: 1.82856523rem;
+      font-size: 3.65853659rem;
     }
 
     .sm\:text-6xl {
-      font-size: 2.04799307rem;
+      font-size: 4.57317073rem;
     }
 
     .md\:text-lg {
-      font-size: 1.21263969rem;
-      line-height: 1.92482490rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
 
     .md\:text-xl {
-      font-size: 1.28232723rem;
-      line-height: 1.83189605rem;
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
     }
 
     .md\:text-2xl {
-      font-size: 1.35601955rem;
-      line-height: 1.84492456rem;
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
     }
 
     .md\:text-6xl {
-      font-size: 2.04799307rem;
+      font-size: 4.57317073rem;
     }
 
-    /* `lg:text-xs` — the Network Velocity labels, which step up from `text-2xs`
-       when that card stacks into rows at `lg` and has the width for it. Takes
-       the same value as the unprefixed step, declared after it so it wins. */
     .lg\:text-xs {
-      font-size: max(0.91342363rem, 13.39687977px);
-      line-height: max(1.24275323rem, 19.88405163px);
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
     }
 
     .lg\:text-6xl {
-      font-size: 2.04799307rem;
+      font-size: 4.57317073rem;
     }
 
     .lg\:text-7xl {
-      font-size: 2.29375224rem;
+      font-size: 5.48780488rem;
     }
 
-    /* The sidebar's uppercase section headings run the other way: they take the
-       display steps' x0.98 per pass while the links beneath them take the
-       x1.02 of `text-sm`. Declared after `.text-xs` above, whose size the
-       element would otherwise inherit -- same layer and specificity, so source
-       order is what decides. Written out as its own class, never assembled from
-       parts, because Tailwind drops a custom utility whose name it cannot find
-       literally in the source. */
-    /* The rail moves on its own multiplier: x1.02 this pass against the page's
-       x1.01, and its uppercase section headings stay where pass six left them. `aside .text-*` is
-       (0,1,1) against the (0,1,0) of the rules above, so it wins on specificity
-       rather than order -- and `.nav-section-label` therefore needs the same
-       weight, declared after, or the frozen `aside .text-xs` would capture the
-       section headings too. */
     aside .text-2xs {
-      font-size: max(0.81254522rem, 13.00072357px);
-      line-height: max(1.20600404rem, 19.29606467px);
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
 
     aside .text-xs {
-      font-size: max(0.88641297rem, 13.00072357px);
-      line-height: max(1.20600404rem, 19.29606467px);
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
     }
 
     aside .text-sm {
-      font-size: 1.03414847rem;
-      line-height: 1.50750505rem;
+      font-size: 1.08852134rem;
+      line-height: 1.60060976rem;
     }
 
-    /* The logo wordmark is `text-base`; the rest are frozen so the rail cannot
-       drift if it later uses one of them. */
     aside .text-base {
-      font-size: 1.18188396rem;
-      line-height: 1.80900607rem;
+      font-size: 1.24402439rem;
+      line-height: 1.82926829rem;
     }
 
-    /* The rail had inherited the same inversion: its own `text-base` wordmark
-       (15.823px) outran both of these. Interpolated between that wordmark and
-       the page's `text-2xl` anchor, which the rail has no override for and so
-       falls through to -- ratio x1.0610395. */
     aside .text-lg {
-      font-size: 1.25402556rem;
-      line-height: 1.99051676rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
 
     aside .text-xl {
-      font-size: 1.33057064rem;
-      line-height: 1.90081520rem;
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
     }
 
-    /* Icons in the rail and the top bar, +2% then +3% = x1.0506.
-       The icon scale is rem-based (`icon-sm` is `h-4 w-4`), so the 82% desktop
-       root renders it at 13.12px where the class comment says 16px -- and it has
-       stayed there while the type around it grew, so the glyphs had drifted small
-       against their own labels. This lifts only the two chrome surfaces; the
-       page's icons are untouched, and so is every viewport below `lg`, where the
-       root is 100% and the icons are already their nominal size.
-
-       These two surfaces are now the only place the icon scale differs from the
-       page's, which is deliberate: the chrome carries labels that have grown
-       nine times while the glyphs beside them never moved. */
     aside .icon-sm,
     header .icon-sm,
     aside svg.h-4,
@@ -1648,8 +1418,8 @@ html {
     }
 
     aside .nav-section-label {
-      font-size: max(0.79458454rem, 11.65390657px);
-      line-height: max(1.0810674rem, 17.2970784px);
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
   }
 
@@ -1723,64 +1493,62 @@ html {
       width: 14px;
     }
 
-    /* Startup Builder: card/stage titles (h2, h3) and Overview stat chips, −1%
-       from the already-scaled tokens. Body, labels, tabs, and controls stay. */
+    /* Startup Builder titles and overview type follow the same Cursor ladder. */
     .builder-type :is(h2, h3, .builder-title).text-base {
-      font-size: 1.14685630rem; /* 15.20 → 15.05 */
+      font-size: 1.24402439rem;
+      line-height: 1.82926829rem;
     }
     .builder-type :is(h2, h3, .builder-title).text-lg,
     .builder-type :is(h2, h3).sm\:text-lg {
-      font-size: 1.18850816rem; /* 15.75 → 15.59 */
-      line-height: 1.88652088rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
     .builder-type :is(h2, h3, .builder-title).text-xl,
     .builder-type :is(h2, h3).sm\:text-xl {
-      font-size: 1.25680892rem;
-      line-height: 1.79544132rem;
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
     }
     .builder-type :is(h2, h3, .builder-title).text-2xl,
     .builder-type :is(h2, h3).sm\:text-2xl {
-      font-size: 1.32903476rem;
-      line-height: 1.80821056rem;
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
     }
     .builder-type :is(h2, h3, .builder-title).text-3xl,
     .builder-type :is(h2, h3).sm\:text-3xl {
-      font-size: 1.42871237rem;
-      line-height: 1.74976325rem;
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
     }
-    /* Overview named copy (stats, Ask AI / Invite / New document, progress
-       rows, quick actions, gaps, next steps): another −1% from current. */
     .builder-type .builder-overview-type .text-2xs {
-      font-size: max(0.82893189rem, 13.26291097px);
-      line-height: max(1.23032570rem, 19.68521111px);
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
     .builder-type .builder-overview-type .text-xs {
-      font-size: max(0.90428939rem, 13.26291097px);
-      line-height: max(1.23032570rem, 19.68521111px);
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
     }
     .builder-type .builder-overview-type .text-sm {
-      font-size: 1.05500428rem;
-      line-height: 1.53790712rem;
+      font-size: 1.08852134rem;
+      line-height: 1.60060976rem;
     }
     .builder-type .builder-overview-type :is(h2, h3).text-base {
-      font-size: 1.13538774rem;
+      font-size: 1.24402439rem;
     }
     .builder-type .builder-overview-type :is(h2, h3).text-lg,
     .builder-type .builder-overview-type :is(h2, h3).sm\:text-lg {
-      font-size: 1.17662308rem;
-      line-height: 1.86765567rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
     .builder-type .builder-overview-stats .text-lg {
-      font-size: 1.17662308rem;
-      line-height: 1.86765567rem;
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
     }
     .builder-type .builder-overview-stats .text-2xs {
-      font-size: max(0.81243614rem, 12.99897904px);
-      line-height: max(1.20584222rem, 19.29347541px);
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
     .builder-type .builder-overview-stats .text-xs {
-      font-size: max(0.88629404rem, 12.99897904px);
-      line-height: max(1.20584222rem, 19.29347541px);
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
     }
     .builder-type [role='tab'][data-state='active'] {
       box-shadow: none;
@@ -2337,4 +2105,76 @@ html {
 [data-rail-content] .max-w-xl,
 [data-rail-content] .max-w-2xl {
   max-width: 100%;
+}
+
+/* Page cards keep 24–28px padding. In the ~240px rail that leaves ~160px
+   for copy, so Greek labels (streak, recent activity) walk off the card.
+   Tighten padding only inside the rail. */
+[data-rail-content] .card-comfortable {
+  padding: 14px;
+}
+[data-rail-content] .card-comfortable.card-header {
+  padding-bottom: 10px;
+}
+[data-rail-content] .card-comfortable ~ .card-comfortable {
+  padding-top: 0;
+}
+
+/* ── Founder overview type (listed copy only) ────────────────────────────
+   Title / stats / captions / $375K: −5% then −2% from that size; title and
+   figures then another −1%. Section titles: −2% then +21% then −1%.
+   Element+class so these beat later `sm:text-*` restatements of the ladder. */
+h1.founder-dash-h1,
+p.founder-dash-stat {
+  font-size: calc(1.25rem * 0.95 * 0.98 * 0.99);
+  line-height: calc(1.75rem * 0.95 * 0.98 * 0.99);
+}
+p.founder-dash-stat-label,
+p.founder-dash-stat-meta {
+  font-size: calc(10.45px * 0.98);
+  line-height: calc(1.25rem * 0.95 * 0.98);
+}
+h3.founder-dash-section {
+  font-size: calc(1.0201rem * 0.98 * 1.21 * 0.99);
+  line-height: calc(1.5rem * 0.98 * 1.21 * 0.99);
+}
+p.founder-dash-figure {
+  font-size: calc(1.25rem * 0.98 * 0.98);
+  line-height: calc(1.75rem * 0.98 * 0.98);
+}
+@media (min-width: 640px) {
+  h1.founder-dash-h1,
+  p.founder-dash-stat {
+    font-size: calc(1.5rem * 0.95 * 0.98 * 0.99);
+    line-height: calc(2rem * 0.95 * 0.98 * 0.99);
+  }
+  p.founder-dash-stat-label,
+  p.founder-dash-stat-meta {
+    font-size: calc(0.82883125rem * 0.95 * 0.98);
+    line-height: calc(1.25rem * 0.95 * 0.98);
+  }
+  h3.founder-dash-section {
+    font-size: calc(1.125rem * 0.98 * 1.21 * 0.99);
+    line-height: calc(1.625rem * 0.98 * 1.21 * 0.99);
+  }
+}
+@media (min-width: 1024px) {
+  h1.founder-dash-h1,
+  p.founder-dash-stat {
+    font-size: calc(1.82926829rem * 0.95 * 0.98 * 0.99);
+    line-height: calc(2.43902439rem * 0.95 * 0.98 * 0.99);
+  }
+  p.founder-dash-stat-label,
+  p.founder-dash-stat-meta {
+    font-size: calc(1.01076982rem * 0.95 * 0.98);
+    line-height: calc(1.52439024rem * 0.95 * 0.98);
+  }
+  h3.founder-dash-section {
+    font-size: calc(1.37195122rem * 0.98 * 1.21 * 0.99);
+    line-height: calc(1.98170732rem * 0.98 * 1.21 * 0.99);
+  }
+  p.founder-dash-figure {
+    font-size: calc(1.52439024rem * 0.98 * 0.98);
+    line-height: calc(2.13414634rem * 0.98 * 0.98);
+  }
 }

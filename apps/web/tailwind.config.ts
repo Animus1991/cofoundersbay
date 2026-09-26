@@ -213,19 +213,21 @@ const config: Config = {
         'glass-sheen':
           'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
       },
-      // Hard legibility floor. Nothing in the product is set below 11px; this is the
-      // same floor .bilingual-secondary uses. Replaces ~550 arbitrary text-[Npx]
-      // values (8px–13px) that were scattered through the codebase.
+      // Cursor.com steps at a 16px root. globals.css restates the same pixels
+      // against the 82% desktop root so computed sizes match on every viewport.
       fontSize: {
-        '2xs': ['0.6875rem', { lineHeight: '1rem' }], // 11px — counters, badges, micro-labels
-        // Top of the scale pulled in 2.5% (Claude 2e5b104). Tailwind defaults
-        // 30/36/48/60/72 against a ~14px body read as a jump next to the
-        // 11–16px steps that carry most of the product. Nothing below 30px.
-        '3xl': ['1.828rem', { lineHeight: '2.194rem' }],
-        '4xl': ['2.194rem', { lineHeight: '2.438rem' }],
-        '5xl': ['2.925rem', { lineHeight: '1' }],
-        '6xl': ['3.656rem', { lineHeight: '1' }],
-        '7xl': ['4.388rem', { lineHeight: '1' }],
+        '2xs': ['0.765075rem', { lineHeight: '1rem' }], // 12.24px — captions, badges
+        xs: ['0.82883125rem', { lineHeight: '1.25rem' }], // 13.26px
+        sm: ['0.8925875rem', { lineHeight: '1.3125rem' }], // 14.28px
+        base: ['1.0201rem', { lineHeight: '1.5rem' }], // 16.32px
+        lg: ['1.125rem', { lineHeight: '1.625rem' }], // 18px
+        xl: ['1.25rem', { lineHeight: '1.75rem' }], // 20px
+        '2xl': ['1.5rem', { lineHeight: '2rem' }], // 24px
+        '3xl': ['1.625rem', { lineHeight: '2.03125rem' }], // 26px
+        '4xl': ['2.25rem', { lineHeight: '2.7rem' }], // 36px
+        '5xl': ['3rem', { lineHeight: '1' }], // 48px
+        '6xl': ['3.75rem', { lineHeight: '1' }], // 60px
+        '7xl': ['4.5rem', { lineHeight: '1' }], // 72px
       },
       fontFamily: {
         // Outer var = per-tenant override written by TenantContext.applyBrandingFonts;

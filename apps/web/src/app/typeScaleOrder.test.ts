@@ -5,21 +5,13 @@ import { describe, expect, it } from 'vitest';
 /**
  * Guards the order of the desktop type scale.
  *
- * Nine successive percentage passes raised every step below `text-lg` by
- * x1.2182660 while `text-lg` and up went to x0.9604. The two halves drifted 23%
- * apart and the ladder stopped running in order: `text-base` body copy rendered
- * at 15.984px against a `text-lg` section heading at 14.176px and a `text-xl`
- * card heading at 15.751px, so a paragraph was larger than the heading above it
- * and only font weight still separated them.
- *
- * Nothing in the process caught that, because each pass was verified as a
- * percentage applied correctly rather than as a scale that still ascends. This
- * test states the invariant itself: rendered smallest to largest, every step is
- * at least as large as the one before it. It reads the CSS rather than a token
- * file, because the desktop scale only exists as `@media (min-width: 1024px)`
- * overrides, and it resolves `rem` against the 82% root that the same file
- * declares, so the assertion is in rendered pixels -- the unit the defect
- * appeared in.
+ * The ladder is the cursor.com steps with +2% on 2xs–base (12.24 / 13.26 /
+ * 14.28 / 16.32 / 18 / 20 / 24 / 26 / 36 / 48 / 60 / 72), written as rem
+ * against the 82% desktop root. This test states the
+ * invariant: rendered smallest to largest, every step is at least as large as
+ * the one before it. It reads the CSS rather than a token file, because the
+ * desktop scale only exists as @media (min-width: 1024px) overrides, and it
+ * resolves rem against the 82% root that the same file declares.
  *
  * What it does not do: prove real-browser layout, or that any given element
  * carries the class the scale assumes. Only that the ladder ascends.
@@ -31,17 +23,13 @@ const CSS = readFileSync(CSS_PATH, 'utf8');
 /** Browsers resolve a percentage root against their own default of 16px. */
 const BROWSER_DEFAULT_PX = 16;
 
-/** The documented legibility minimum for this product. */
-const MIN_TYPE_PX = 11;
+/** Cursor.com caption size — the documented legibility minimum. */
+const MIN_TYPE_PX = 12;
 
 /** Ascending. `base` sits where Tailwind puts it, between `sm` and `lg`. */
 const STEPS = ['2xs', 'xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'] as const;
 
-/**
- * `text-2xs` and `text-xs` both resolve under the scaled 11px floor, so `max()`
- * returns the floor for both and they render identically. That is a floor doing
- * its job, so equality is allowed here and nowhere else.
- */
+/** No adjacent pair should collapse; kept so a future floor can share 2xs/xs. */
 const EQUAL_ALLOWED = new Set(['2xs->xs']);
 
 /** Extracts the `min-width: 1024px` block that contains a given rule. */
