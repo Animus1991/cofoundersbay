@@ -356,10 +356,10 @@ export function demoCohortItems(now: number): CohortItem[] {
   return ORG_PROGRAMS.map((p) => cohortItem(p, isoFrom(now)));
 }
 
-/** One cohort in the shape `GET /org/:slug/cohorts/:id` returns; the first when the id is not one of them. */
-export function demoCohortDetail(cohortId: string, now: number): CohortDetail {
-  const prog = ORG_PROGRAMS.find((p) => p.cohortId === cohortId || p.cohortId.replace(/^cohort-/, '') === cohortId) ?? ORG_PROGRAMS[0];
-  return cohortDetail(prog, isoFrom(now)) as CohortDetail;
+/** One cohort in the shape `GET /org/:slug/cohorts/:id` returns, or null when absent. */
+export function demoCohortDetail(cohortId: string, now: number): CohortDetail | null {
+  const prog = ORG_PROGRAMS.find((p) => p.cohortId === cohortId || p.cohortId.replace(/^cohort-/, '') === cohortId);
+  return prog ? cohortDetail(prog, isoFrom(now)) as CohortDetail : null;
 }
 
 export function previewOrgApi(pathname: string, path: string, method: string, iso: Iso): unknown {
@@ -410,8 +410,8 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
       return { cohorts, total: cohorts.length };
     }
     if (rest[0] === 'cohorts' && rest[1]) {
-      const prog = ORG_PROGRAMS.find((p) => p.cohortId === rest[1] || p.cohortId.replace(/^cohort-/, '') === rest[1]) ?? ORG_PROGRAMS[0];
-      return cohortDetail(prog, iso);
+      const prog = ORG_PROGRAMS.find((p) => p.cohortId === rest[1] || p.cohortId.replace(/^cohort-/, '') === rest[1]);
+      return prog ? cohortDetail(prog, iso) : null;
     }
     if (rest[0] === 'members') {
       const all = orgMembers(iso);
@@ -422,11 +422,13 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
     // Opportunities are answered by the caller, which owns that list.
     return undefined;
   }
+  if (parts[1] === 'org' && parts[2] && parts.length === 3) return { org: null };
 
   // ── Organisations (admin view) ─────────────────────────────────────────
   if (pathname === `/api/organizations/slug/${ORG_SLUG}`) {
     return { id: ORG_ID, name: ORG.name, slug: ORG_SLUG, logo: null, logoUrl: null, _count: { memberships: ORG_STAFF.length + ORG_MENTORS.length, programs: ORG_PROGRAMS.length } };
   }
+  if (pathname.startsWith('/api/organizations/slug/')) return null;
   if (parts[1] === 'organizations' && parts[2] === ORG_ID) {
     if (parts[3] === 'members') {
       const people = [...ORG_STAFF.map((s) => ({ ...s, title: s.title, department: 'Programs' })), ...ORG_MENTORS.filter((m) => !ORG_STAFF.some((s) => s.id === m.id)).map((m) => ({ ...m, role: 'mentor', title: 'Mentor', department: 'Mentor pool' }))];
@@ -539,6 +541,7 @@ export function previewOrgApi(pathname: string, path: string, method: string, is
   if (pathname === `/api/tenants/by-slug/${ORG_SLUG}` || pathname === `/api/tenants/${TENANT_ID}`) {
     return tenantItem(iso);
   }
+  if (pathname.startsWith('/api/tenants/by-slug/')) return null;
   if (pathname === `/api/tenants/${TENANT_ID}/members`) {
     const all = tenantMembers(iso);
     const limit = Number(params.get('limit') ?? 100);

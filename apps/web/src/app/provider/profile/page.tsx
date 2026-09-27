@@ -175,12 +175,12 @@ export default function ProviderProfilePage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label><BilingualText en="Company Name" el="Επωνυμία" compact /></Label>
-                    <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Legal Partners" />
+                    <Label htmlFor="provider-company-name"><BilingualText en="Company Name" el="Επωνυμία" compact /></Label>
+                    <Input id="provider-company-name" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Legal Partners" />
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="Website" el="Ιστότοπος" compact /></Label>
-                    <Input value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} placeholder="https://acmelegal.com" />
+                    <Label htmlFor="provider-website"><BilingualText en="Website" el="Ιστότοπος" compact /></Label>
+                    <Input id="provider-website" value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} placeholder="https://acmelegal.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -195,8 +195,9 @@ export default function ProviderProfilePage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label><BilingualText en="Headline" el="Τίτλος" compact /></Label>
+                  <Label htmlFor="provider-headline"><BilingualText en="Headline" el="Τίτλος" compact /></Label>
                   <Input
+                    id="provider-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
                     placeholder="e.g. Startup-focused legal services — term sheets, IP, incorporation"
@@ -204,8 +205,9 @@ export default function ProviderProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label><BilingualText en="Description" el="Περιγραφή" compact /></Label>
+                  <Label htmlFor="provider-description"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
                   <Textarea
+                    id="provider-description"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     placeholder={bilingualInline("Describe your services, your process, and what makes you different…", "Περιγράψτε τις υπηρεσίες, τη μέθοδό σας και τι σας ξεχωρίζει…")}
@@ -226,8 +228,9 @@ export default function ProviderProfilePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="Clients Served" el="Πελάτες που εξυπηρετήθηκαν" compact /></Label>
+                    <Label htmlFor="provider-clients-served"><BilingualText en="Clients Served" el="Πελάτες που εξυπηρετήθηκαν" compact /></Label>
                     <Input
+                      id="provider-clients-served"
                       type="number"
                       value={clientsServed}
                       onChange={e => setClientsServed(e.target.value)}

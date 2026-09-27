@@ -379,7 +379,7 @@ export default function OrgAnalyticsPage() {
           <SectionCard title="Members by role" titleEl="Μέλη ανά ρόλο" action={{ href: '/org/members', label: 'Members', labelEl: 'Μέλη' }}>
             {byRole.length ? (
               <div className="flex items-center gap-4">
-                <IndustryPieChart data={byRole} />
+                <div aria-hidden="true"><IndustryPieChart data={byRole} /></div>
                 <ul className="flex-1 space-y-2">
                   {byRole.map((item) => (
                     <li key={item.name} className="flex items-center justify-between text-sm">

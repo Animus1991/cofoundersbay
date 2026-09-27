@@ -395,6 +395,7 @@ export default function OrgStartupsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
+              aria-label={bilingualInline("Search startups", "Αναζήτηση νεοφυών")}
               placeholder={bilingualInline("Search startups…", "Αναζήτηση νεοφυών…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}

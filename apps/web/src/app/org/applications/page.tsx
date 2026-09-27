@@ -428,6 +428,7 @@ export default function OrgApplicationsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
+              aria-label={bilingualInline('Search applications', 'Αναζήτηση αιτήσεων')}
               placeholder={bilingualInline('Search applications…', 'Αναζήτηση αιτήσεων…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}

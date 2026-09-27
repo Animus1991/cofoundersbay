@@ -474,6 +474,7 @@ export default function SearchPage() {
             <Input
               ref={inputRef}
               type="text"
+              aria-label={sayOne('Search the platform', 'Αναζήτηση στην πλατφόρμα')}
               placeholder={sayOne(searchEn('input_placeholder'), searchEl('input_placeholder'))}
               value={query}
               onChange={(e) => setQuery(e.target.value)}

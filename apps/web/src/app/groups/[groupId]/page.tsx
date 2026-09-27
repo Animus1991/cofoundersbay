@@ -512,7 +512,7 @@ export default function GroupDetailPage() {
             >
               {s === 'feed' ? <BilingualText en="Feed" el="Ροή" compact /> : <BilingualText en="Members" el="Μέλη" compact />}
               {s === 'members' && (
-                <span className="ml-1.5 text-xs opacity-70">({group.memberCount})</span>
+                <span className="ml-1.5 text-xs">({group.memberCount})</span>
               )}
             </button>
           ))}

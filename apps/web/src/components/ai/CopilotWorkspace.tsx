@@ -453,6 +453,7 @@ export function CopilotWorkspace({
           <div className="flex items-center gap-2">
             <Input
               ref={inputRef}
+              aria-label={sayOne('Ask AI', 'Ρωτήστε το AI')}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={sayOne(

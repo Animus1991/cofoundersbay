@@ -523,23 +523,50 @@ export default function OrgAdminPage() {
     },
   ];
 
+  if (orgQuery.isPending) {
+    return (
+      <AppShell>
+        <div role="status" className="py-16 text-center text-muted-foreground">
+          <BilingualText en="Loading organization…" el="Φόρτωση οργανισμού…" compact />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!orgData) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <h1 className="text-xl font-semibold">
+            {orgQuery.isError
+              ? <BilingualText en="Could not load organization" el="Δεν ήταν δυνατή η φόρτωση του οργανισμού" compact />
+              : <BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact />}
+          </h1>
+          <Button variant="outline" asChild>
+            <Link href="/org"><BilingualText en="Back to organizations" el="Πίσω στους οργανισμούς" compact /></Link>
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell rail={rail}>
-      <div className="space-y-6">
+      <div className="min-w-0 max-w-full space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-4">
           <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src={org.logo} />
               <AvatarFallback className="bg-primary/10 text-primary-accessible text-lg">
                 {org.name[0]}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{org.name}</h1>
+            <div className="min-w-0">
+              <h1 className="break-words text-2xl sm:text-3xl font-bold text-foreground">{org.name}</h1>
               <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact /></p>
             </div>
           </div>
@@ -560,7 +587,7 @@ export default function OrgAdminPage() {
         )}
 
         {/* Tabs */}
-        <Tabs defaultValue="members" className="space-y-4">
+        <Tabs defaultValue="members" className="min-w-0 max-w-full space-y-4">
           <TabsList>
             <TabsTrigger value="members" className="gap-2">
               <Users className="icon-sm" aria-hidden="true" />
@@ -595,7 +622,7 @@ export default function OrgAdminPage() {
             </div>
 
             {/* Members Table */}
-            <Card>
+            <Card className="min-w-0 max-w-full overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>

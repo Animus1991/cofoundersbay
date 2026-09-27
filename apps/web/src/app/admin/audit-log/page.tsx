@@ -238,6 +238,7 @@ export default function AdminAuditLogPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
+              aria-label={bilingualInline("Search audit log by actor, entity, or action", "Αναζήτηση στο αρχείο ελέγχου με χρήστη, οντότητα ή ενέργεια")}
               placeholder={bilingualInline("Search by actor, entity, action…", "Αναζήτηση με χρήστη, οντότητα, ενέργεια…")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}

@@ -226,8 +226,8 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </a>
             )}
             {(b?.websiteUrl || tenant.website) && (
-              <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Globe className="icon-sm" />
+              <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" aria-label={tenantName + ' website'} className="text-muted-foreground hover:text-foreground transition-colors">
+                <Globe className="icon-sm" aria-hidden="true" />
               </a>
             )}
             {b?.linkedinUrl && (

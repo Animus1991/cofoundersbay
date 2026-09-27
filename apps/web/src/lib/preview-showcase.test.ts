@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resolvePreviewApi } from './preview-api';
+import { demoCohortDetail } from './demo/org-api';
 
 /**
  * /events, /jobs, /groups and /opportunities used to fall through to the
@@ -10,6 +11,44 @@ import { resolvePreviewApi } from './preview-api';
  */
 
 type Events = { events: Array<{ id: string; mode: string; startAt: string; viewerRsvp: string | null }> };
+describe('preview event identity', () => {
+  it('keeps a known record distinct from a missing record', () => {
+    expect(resolvePreviewApi('/api/events/ev-demo-day')).toMatchObject({
+      event: { id: 'ev-demo-day' },
+    });
+    expect(resolvePreviewApi('/api/events/__audit_missing__')).toEqual({ event: null });
+  });
+});
+
+describe('preview dynamic detail identity', () => {
+  it('does not substitute the first group for unknown group and nested reads', () => {
+    expect(resolvePreviewApi('/api/groups/grp-athens-founders')).toMatchObject({ group: { id: 'grp-athens-founders' } });
+    expect(resolvePreviewApi('/api/groups/athens-founders')).toMatchObject({ group: { id: 'grp-athens-founders' } });
+    expect(resolvePreviewApi('/api/groups/__audit_missing__')).toMatchObject({ group: null });
+    expect(resolvePreviewApi('/api/groups/__audit_missing__/posts')).toMatchObject({ posts: [], total: 0 });
+    expect(resolvePreviewApi('/api/groups/__audit_missing__/members')).toMatchObject({ members: [], total: 0 });
+  });
+
+  it('does not alias the research board or an investor deal', () => {
+    expect(resolvePreviewApi('/api/research/boards/board-gtm')).toMatchObject({ board: { id: 'board-gtm' } });
+    expect(resolvePreviewApi('/api/research/boards/__audit_missing__')).toEqual({ board: null });
+    expect(resolvePreviewApi('/api/investor/deals/deal-harbor')).toMatchObject({ deal: { id: 'deal-harbor' } });
+    expect(resolvePreviewApi('/api/investor/deals/__audit_missing__')).toEqual({ deal: null });
+  });
+
+  it('keeps cohort, organisation and tenant identifiers distinct', () => {
+    expect(resolvePreviewApi('/api/org/aegean-lab/cohorts/cohort-autumn-2026')).toMatchObject({ cohort: { id: 'cohort-autumn-2026' } });
+    expect(resolvePreviewApi('/api/org/aegean-lab/cohorts/__audit_missing__')).toBeNull();
+    expect(demoCohortDetail('cohort-autumn-2026', Date.now())).toMatchObject({ cohort: { id: 'cohort-autumn-2026' } });
+    expect(demoCohortDetail('__audit_missing__', Date.now())).toBeNull();
+    expect(resolvePreviewApi('/api/organizations/slug/aegean-lab')).toMatchObject({ slug: 'aegean-lab' });
+    expect(resolvePreviewApi('/api/organizations/slug/__audit_missing__')).toBeNull();
+    expect(resolvePreviewApi('/api/org/__audit_missing__')).toEqual({ org: null });
+    expect(resolvePreviewApi('/api/tenants/by-slug/aegean-lab')).toMatchObject({ slug: 'aegean-lab' });
+    expect(resolvePreviewApi('/api/tenants/by-slug/__audit_missing__')).toBeNull();
+  });
+});
+
 type Groups = { groups: Array<{ id: string; category: string | null; memberCount: number; isMember: boolean }>; total: number; hasMore: boolean };
 type Opps = { opportunities: Array<{ id: string; type: string; isRemote: boolean }>; total: number };
 

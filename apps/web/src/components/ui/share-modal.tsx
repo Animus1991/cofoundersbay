@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link2, Twitter, Linkedin, Facebook, Mail, Check, Share2, QrCode, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 interface ShareModalProps {
   open: boolean;
@@ -56,30 +58,49 @@ export function ShareModal({
   open,
   onClose,
   url,
-  title = 'Check this out',
+  title = bilingualInline('Check this out', 'Δείτε αυτό'),
   description = '',
   imageUrl,
   hashtags = [],
 }: ShareModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const copied = copyState === 'copied';
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (resetTimer.current) clearTimeout(resetTimer.current); }, []);
+
+  const report = (state: 'copied' | 'failed') => {
+    setCopyState(state);
+    if (resetTimer.current) clearTimeout(resetTimer.current);
+    // Failure stays visible until the next attempt so the reader can copy manually.
+    if (state === 'copied') resetTimer.current = setTimeout(() => setCopyState('idle'), 2000);
+  };
+
+  const fallbackCopy = (): boolean => {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    try {
+      ta.select();
+      // execCommand reports false (or throws) when the copy did not happen.
+      return document.execCommand('copy') === true;
+    } catch {
+      return false;
+    } finally {
+      document.body.removeChild(ta);
+    }
+  };
 
   const handleCopy = async () => {
     try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      report('copied');
     } catch {
-      // Fallback for older browsers
-      const ta = document.createElement('textarea');
-      ta.value = url;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      report(fallbackCopy() ? 'copied' : 'failed');
     }
   };
 
@@ -108,11 +129,15 @@ export function ShareModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="icon-sm" />
-            Share
+            <Share2 className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Share" el="Κοινοποίηση" />
           </DialogTitle>
           <DialogDescription>
-            Copy the link or share this page on your preferred channel.
+            <BilingualText
+              en="Copy the link or share this page on your preferred channel."
+              el="Αντιγράψτε τον σύνδεσμο ή κοινοποιήστε αυτή τη σελίδα στο κανάλι που προτιμάτε."
+              wrap
+            />
           </DialogDescription>
         </DialogHeader>
 
@@ -133,9 +158,9 @@ export function ShareModal({
 
           {/* Copy link */}
           <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Link</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide" id="share-modal-link-label"><BilingualText en="Link" el="Σύνδεσμος" /></p>
             <div className="flex gap-2">
-              <Input value={url} readOnly className="text-sm font-mono bg-muted/50 text-xs" />
+              <Input value={url} readOnly aria-labelledby="share-modal-link-label" onFocus={(e) => e.currentTarget.select()} className="text-sm font-mono bg-muted/50 text-xs" />
               <Button
                 variant={copied ? 'default' : 'outline'}
                 size="sm"
@@ -143,15 +168,19 @@ export function ShareModal({
                 className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-green-600 hover:bg-green-600 border-green-600')}
               >
                 {copied ? <Check className="icon-sm" /> : <Link2 className="icon-sm" />}
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? <BilingualText en="Copied!" el="Αντιγράφηκε!" /> : <BilingualText en="Copy" el="Αντιγραφή" />}
               </Button>
             </div>
+            <p role="status" aria-live="polite" aria-atomic="true" className={cn('text-xs', copyState === 'failed' ? 'text-destructive-accessible' : 'sr-only')}>
+              {copyState === 'copied' && <BilingualText en="Link copied to clipboard." el="Ο σύνδεσμος αντιγράφηκε στο πρόχειρο." wrap />}
+              {copyState === 'failed' && <BilingualText en="Couldn't copy the link. Select it above and copy it manually." el="Δεν ήταν δυνατή η αντιγραφή. Επιλέξτε τον σύνδεσμο παραπάνω και αντιγράψτε τον χειροκίνητα." wrap />}
+            </p>
           </div>
 
           {/* Social channels */}
           <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Share via</p>
-            <div className="grid grid-cols-2 gap-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide" id="share-modal-channels-label"><BilingualText en="Share via" el="Κοινοποίηση μέσω" /></p>
+            <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="share-modal-channels-label">
               {SHARE_CHANNELS.map((ch) => (
                 <button
                   key={ch.id}
@@ -162,8 +191,8 @@ export function ShareModal({
                     ch.color,
                   )}
                 >
-                  <ch.icon className="h-4 w-4 shrink-0" />
-                  {ch.label}
+                  <ch.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  {ch.id === 'email' ? <BilingualText en="Email" el="Ηλεκτρονικό ταχυδρομείο" /> : ch.label}
                 </button>
               ))}
             </div>
@@ -172,8 +201,8 @@ export function ShareModal({
           {/* Native share (mobile) */}
           {typeof navigator !== 'undefined' && !!navigator.share && (
             <Button variant="outline" className="w-full gap-2" onClick={handleNativeShare}>
-              <ExternalLink className="icon-sm" />
-              More options…
+              <ExternalLink className="icon-sm" aria-hidden="true" />
+              <BilingualText en="More options…" el="Περισσότερες επιλογές…" />
             </Button>
           )}
         </div>
@@ -199,8 +228,8 @@ export function ShareButton({ url, title, description, imageUrl, hashtags, child
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)} aria-label="Share">
-        {children ?? <><Share2 className="icon-sm mr-1.5" />Share</>}
+      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)} aria-label={bilingualAria('Share', 'Κοινοποίηση')}>
+        {children ?? <><Share2 className="icon-sm mr-1.5" aria-hidden="true" /><BilingualText en="Share" el="Κοινοποίηση" /></>}
       </Button>
       <ShareModal open={open} onClose={() => setOpen(false)} url={url} title={title} description={description} imageUrl={imageUrl} hashtags={hashtags} />
     </>

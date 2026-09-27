@@ -155,8 +155,8 @@ function ReportCard({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{report.reason}</span>
                   <Badge variant="outline" className={cn('text-xs', priorityColors[report.priority])}>
                     {report.priority}
@@ -171,7 +171,7 @@ function ReportCard({
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <Badge variant="outline" className={cn('text-xs flex items-center gap-1', config.color)}>
                   {config.icon}
                   {report.status}

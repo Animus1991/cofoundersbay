@@ -397,6 +397,7 @@ export default function AdminBillingPage() {
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
+                  aria-label={bilingualInline("Search billing records", "Αναζήτηση εγγραφών χρέωσης")}
                   placeholder={bilingualInline("Search…", "Αναζήτηση…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}

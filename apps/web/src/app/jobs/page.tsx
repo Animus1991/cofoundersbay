@@ -393,6 +393,7 @@ export default function JobsPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
+            aria-label={bilingualInline("Search jobs, roles, companies", "Αναζήτηση θέσεων, ρόλων, εταιρειών")}
             placeholder={bilingualInline(jobsEn('search'), jobsEl('search'))}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

@@ -596,6 +596,7 @@ export function MembersPageClient() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
+            aria-label={bilingualInline("Search members by name, skills, or bio", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό")}
             placeholder={bilingualInline("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

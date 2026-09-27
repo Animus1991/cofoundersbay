@@ -2395,6 +2395,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname.startsWith('/api/research/boards/')) {
     const rest = pathname.replace(/^\/api\/research\/boards\//, '');
     const segments = rest.split('/').filter(Boolean);
+    if (segments[0] !== 'board-gtm' && method === 'GET') return { board: null };
     if (segments[1] === 'nodes' && segments[2] === 'batch' && method === 'PATCH') {
       const updates = Array.isArray(body.updates) ? body.updates : [];
       previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
@@ -3276,7 +3277,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname.startsWith('/api/events/')) {
     const id = pathname.split('/')[3];
     const event = PREVIEW_EVENTS.find((e) => e.id === id);
-    return event ? { event } : { event: PREVIEW_EVENTS[0] };
+    return { event: event ?? null };
   }
 
   if (pathname === '/api/jobs' || pathname.startsWith('/api/jobs?')) {
@@ -3322,9 +3323,14 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname.startsWith('/api/groups/')) {
     const parts = pathname.split('/');
     const id = parts[3];
-    const group = PREVIEW_GROUPS.find((g) => g.id === id || g.slug === id) ?? PREVIEW_GROUPS[0];
+    const group = PREVIEW_GROUPS.find((g) => g.id === id || g.slug === id);
     // Comments under a post: none yet in the showcase.
     if (parts[4] === 'posts' && parts[6] === 'comments') return { comments: [], total: 0, hasMore: false };
+    if (!group) {
+      if (parts[4] === 'posts') return { posts: [], total: 0, hasMore: false };
+      if (parts[4] === 'members') return { members: [], total: 0 };
+      return { group: null, isMember: false, memberRole: null };
+    }
     if (parts[4] === 'posts') {
       const posts = previewGroupPosts(group);
       return { posts, total: group.postCount, hasMore: group.postCount > posts.length };
@@ -3657,8 +3663,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname.startsWith('/api/investor/deals/')) {
     const id = pathname.split('/')[4];
     const deal = PREVIEW_DEALS.find((d) => d.id === id);
-    if (method !== 'GET') return { ok: true, deal: deal ?? PREVIEW_DEALS[0] };
-    return deal ? { deal } : { deal: PREVIEW_DEALS[0] };
+    if (method !== 'GET') return deal ? { ok: true, deal } : { ok: false, deal: null };
+    return { deal: deal ?? null };
   }
 
   if (method !== 'GET') {

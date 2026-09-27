@@ -484,6 +484,7 @@ export default function TenantProgramsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
+            aria-label={bilingualInline("Search programs", "Αναζήτηση προγραμμάτων")}
             placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

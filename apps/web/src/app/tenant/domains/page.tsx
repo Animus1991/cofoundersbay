@@ -19,6 +19,7 @@ import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -573,6 +574,7 @@ export default function TenantDomainsPage() {
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
+                  aria-label={bilingualAria("Platform subdomain", "Υποτομέας πλατφόρμας")}
                   placeholder="yourorg"
                   value={subdomainInput}
                   onChange={(e) => setSubdomainInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -618,6 +620,7 @@ export default function TenantDomainsPage() {
           <CardContent className="space-y-3">
             <div className="flex gap-2">
               <Input
+                aria-label={bilingualAria("Custom domain", "Προσαρμοσμένος τομέας")}
                 placeholder="founders.yourorganization.org"
                 value={customDomainInput}
                 onChange={(e) => setCustomDomainInput(e.target.value.toLowerCase().trim())}

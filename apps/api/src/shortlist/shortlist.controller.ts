@@ -19,7 +19,7 @@ export class ShortlistController {
   ) {
     const limit = Math.min(Math.max(parseInt(limitRaw ?? '50', 10) || 50, 1), 100);
 
-    const items = await (this.prisma as any).savedProfile.findMany({
+    const items = await this.prisma.savedProfile.findMany({
       where: { savedById: user.id },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
@@ -28,12 +28,12 @@ export class ShortlistController {
         user: {
           select: {
             id: true,
+            role: true,
             profile: {
               select: {
                 displayName: true,
                 avatarUrl: true,
                 headline: true,
-                role: true,
                 location: true,
                 skills: {
                   take: 5,
@@ -50,7 +50,7 @@ export class ShortlistController {
     const page = hasMore ? items.slice(0, limit) : items;
 
     return {
-      items: page.map((item: any) => ({
+      items: page.map((item) => ({
         id: item.id,
         userId: item.userId,
         note: item.note ?? null,
@@ -60,9 +60,9 @@ export class ShortlistController {
               displayName: item.user.profile.displayName,
               avatarUrl: item.user.profile.avatarUrl ?? null,
               headline: item.user.profile.headline ?? null,
-              role: item.user.profile.role ?? null,
+              role: item.user.role ?? null,
               location: item.user.profile.location ?? null,
-              skills: (item.user.profile.skills ?? []).map((ps: any) => ps.skill?.name).filter(Boolean),
+              skills: item.user.profile.skills.map((ps) => ps.skill.name),
             }
           : null,
       })),

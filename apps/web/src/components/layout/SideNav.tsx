@@ -333,7 +333,7 @@ export function SideNav() {
               showLabels ? commonEn('collapse_sidebar') : commonEn('expand_sidebar'),
               showLabels ? commonEl('collapse_sidebar') : commonEl('expand_sidebar'),
             )}
-            className="absolute right-0 top-1/2 z-50 flex h-6 w-6 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
+            className="absolute right-0 top-1/2 z-50 flex h-6 w-6 min-w-[24px] -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
           >
             {showLabels ? (
               <ChevronLeft className="h-3.5 w-3.5" aria-hidden />

@@ -172,8 +172,9 @@ export default function MentorProfilePage() {
               <CardHeader><CardTitle className="text-base"><BilingualText en="About You" el="Σχετικά με εσάς" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label><BilingualText en="Headline" el="Τίτλος" compact /></Label>
+                  <Label htmlFor="mentor-headline"><BilingualText en="Headline" el="Τίτλος" compact /></Label>
                   <Input
+                    id="mentor-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
                     placeholder="e.g. Serial founder & GTM advisor | 2x exits"
@@ -182,8 +183,9 @@ export default function MentorProfilePage() {
                   <p className="text-xs text-muted-foreground">{headline.length}/120 chars</p>
                 </div>
                 <div className="space-y-2">
-                  <Label><BilingualText en="Mentoring Bio" el="Βιογραφικό καθοδήγησης" compact /></Label>
+                  <Label htmlFor="mentor-bio"><BilingualText en="Mentoring Bio" el="Βιογραφικό καθοδήγησης" compact /></Label>
                   <Textarea
+                    id="mentor-bio"
                     value={bio}
                     onChange={e => setBio(e.target.value)}
                     placeholder={bilingualInline("Describe your mentoring style, what you offer, and what kinds of founders you work best with…", "Περιγράψτε το στυλ καθοδήγησής σας, τι προσφέρετε και με ποιους ιδρυτές δουλεύετε καλύτερα…")}

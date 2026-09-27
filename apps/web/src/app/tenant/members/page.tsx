@@ -459,7 +459,7 @@ export default function TenantMembersPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input placeholder={bilingualInline("Search by name or email…", "Αναζήτηση με όνομα ή email…")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input aria-label={bilingualInline("Search members by name or email", "Αναζήτηση μελών με όνομα ή email")} placeholder={bilingualInline("Search by name or email…", "Αναζήτηση με όνομα ή email…")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger aria-label="Status. Κατάσταση" className="w-full sm:w-[150px]">

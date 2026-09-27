@@ -385,7 +385,7 @@ export default function ReputationPage() {
                   <Card className="lg:col-span-3">
                     <CardHeader>
                       <CardTitle className="text-base"><BilingualText en={reputationEn('how_xp_title')} el={reputationEl('how_xp_title')} /></CardTitle>
-                      <CardDescription><BilingualText en={reputationEn('how_xp_desc')} el={reputationEl('how_xp_desc')} compact /></CardDescription>
+                      <CardDescription><BilingualText en={reputationEn('how_xp_desc')} el={reputationEl('how_xp_desc')} compact wrap /></CardDescription>
                     </CardHeader>
                     <CardContent>
                       {groups.length === 0 ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Image, Link2, Hash, AtSign, Send, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
@@ -27,14 +28,20 @@ type CreatePostProps = {
   placeholder?: string;
 };
 
-const postTypes: { type: PostType; label: string; emoji: string; description: string }[] = [
-  { type: 'update', label: 'Update', emoji: '📢', description: 'Share news or progress' },
-  { type: 'ask', label: 'Ask', emoji: '❓', description: 'Request help or advice' },
-  { type: 'offer', label: 'Offer', emoji: '🎁', description: 'Offer help or resources' },
-  { type: 'hiring', label: 'Hiring', emoji: '👥', description: 'Looking for team members' },
-  { type: 'milestone', label: 'Milestone', emoji: '🎉', description: 'Celebrate an achievement' },
-  { type: 'pitch', label: 'Pitch', emoji: '🚀', description: 'Share your startup idea' },
+const postTypes: { type: PostType; label: string; labelEl: string; emoji: string; description: string; descriptionEl: string }[] = [
+  { type: 'update', label: 'Update', labelEl: 'Ενημέρωση', emoji: '📢', description: 'Share news or progress', descriptionEl: 'Μοιραστείτε νέα ή πρόοδο' },
+  { type: 'ask', label: 'Ask', labelEl: 'Ερώτηση', emoji: '❓', description: 'Request help or advice', descriptionEl: 'Ζητήστε βοήθεια ή συμβουλή' },
+  { type: 'offer', label: 'Offer', labelEl: 'Προσφορά', emoji: '🎁', description: 'Offer help or resources', descriptionEl: 'Προσφέρετε βοήθεια ή πόρους' },
+  { type: 'hiring', label: 'Hiring', labelEl: 'Προσλήψεις', emoji: '👥', description: 'Looking for team members', descriptionEl: 'Αναζητάτε μέλη ομάδας' },
+  { type: 'milestone', label: 'Milestone', labelEl: 'Ορόσημο', emoji: '🎉', description: 'Celebrate an achievement', descriptionEl: 'Γιορτάστε ένα επίτευγμα' },
+  { type: 'pitch', label: 'Pitch', labelEl: 'Παρουσίαση', emoji: '🚀', description: 'Share your startup idea', descriptionEl: 'Μοιραστείτε την ιδέα της startup σας' },
 ];
+
+const MAX_LENGTH = 1000;
+const ATTACHMENTS_UNAVAILABLE = bilingualInline(
+  'Not available yet: posts are text-only for now',
+  'Δεν είναι διαθέσιμο ακόμη: οι αναρτήσεις είναι μόνο κείμενο προς το παρόν',
+);
 
 export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?" }: CreatePostProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -43,18 +50,32 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
+  const baseId = useId();
+  const contentId = `${baseId}-content`;
+  const tagsId = `${baseId}-tags`;
+  const tagsHintId = `${baseId}-tags-hint`;
+  const countId = `${baseId}-count`;
+  const errorId = `${baseId}-error`;
+  const attachHintId = `${baseId}-attach-hint`;
+  const current = postTypes.find((p) => p.type === postType);
+  const tooLong = content.length > MAX_LENGTH;
 
   const handleSubmit = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
+    setSubmitError(false);
     try {
       await onSubmit({ type: postType, content: content.trim(), tags });
       setContent('');
       setTags([]);
+      setTagInput('');
       setIsExpanded(false);
     } catch (error) {
+      // Keep the draft (content, type, tags) and the dialog open so the author can retry.
       console.error('Failed to create post:', error);
+      setSubmitError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +126,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 className="gap-1.5 text-xs"
                 onClick={(e) => { e.stopPropagation(); setPostType(pt.type); setIsExpanded(true); }}
               >
-                {pt.emoji} {pt.label}
+                <span aria-hidden="true">{pt.emoji}</span> <BilingualText en={pt.label} el={pt.labelEl} />
               </Button>
             ))}
           </div>
@@ -118,15 +139,17 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Send className="icon-md text-primary-accessible" />
-              Create Post
+              <BilingualText en="Create Post" el="Νέα ανάρτηση" />
             </DialogTitle>
           </DialogHeader>
 
           {/* Post type selector */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2" role="group" aria-label={bilingualAria('Post type', 'Τύπος ανάρτησης')}>
             {postTypes.map((pt) => (
               <button
                 key={pt.type}
+                type="button"
+                aria-pressed={postType === pt.type}
                 onClick={() => setPostType(pt.type)}
                 className={cn(
                   'flex flex-col items-center gap-1 rounded-lg border p-3 transition-colors',
@@ -135,8 +158,8 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                     : 'border-border/60 hover:border-primary/50'
                 )}
               >
-                <span className="text-xl">{pt.emoji}</span>
-                <span className="text-xs font-medium">{pt.label}</span>
+                <span className="text-xl" aria-hidden="true">{pt.emoji}</span>
+                <span className="text-xs font-medium"><BilingualText en={pt.label} el={pt.labelEl} /></span>
               </button>
             ))}
           </div>
@@ -151,15 +174,23 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
             </Avatar>
             <div>
               <p className="font-medium text-foreground">{user.displayName}</p>
-              <p className="text-xs text-muted-foreground">Posting as {postTypes.find((p) => p.type === postType)?.label}</p>
+              <p className="text-xs text-muted-foreground">
+                <BilingualText en={`Posting as ${current?.label ?? ''}`} el={`Ανάρτηση ως ${current?.labelEl ?? ''}`} />
+              </p>
             </div>
           </div>
 
           {/* Content */}
+          <label htmlFor={contentId} className="sr-only">
+            {bilingualAria('Post content', 'Περιεχόμενο ανάρτησης')}
+          </label>
           <Textarea
-            placeholder={postTypes.find((p) => p.type === postType)?.description || placeholder}
+            id={contentId}
+            placeholder={current ? bilingualInline(current.description, current.descriptionEl) : placeholder}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => { setContent(e.target.value); if (submitError) setSubmitError(false); }}
+            aria-describedby={submitError ? `${countId} ${errorId}` : countId}
+            aria-invalid={tooLong || undefined}
             rows={5}
             className="resize-none"
             autoFocus
@@ -169,8 +200,13 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
+                <label htmlFor={tagsId} className="sr-only">
+                  {bilingualAria('Tags', 'Ετικέτες')}
+                </label>
                 <input
+                  id={tagsId}
+                  aria-describedby={tagsHintId}
                   type="text"
                   placeholder={bilingualInline("Add tags (press Enter)", "Προσθήκη ετικετών (πατήστε Enter)")}
                   value={tagInput}
@@ -185,16 +221,19 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 />
               </div>
               <Button variant="secondary" size="sm" onClick={addTag} disabled={!tagInput.trim()}>
-                Add
+                <BilingualText en="Add" el="Προσθήκη" />
               </Button>
             </div>
+            <p id={tagsHintId} className="sr-only">
+              {bilingualAria(`Press Enter to add. Up to 5 tags, ${tags.length} added.`, `Πατήστε Enter για προσθήκη. Έως 5 ετικέτες, ${tags.length} προστέθηκαν.`)}
+            </p>
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button aria-label={`Remove ${tag}`} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
-                      <X className="icon-sm" />
+                    <button aria-label={bilingualAria(`Remove tag ${tag}`, `Αφαίρεση ετικέτας ${tag}`)} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+                      <X className="icon-sm" aria-hidden="true" />
                     </button>
                   </Badge>
                 ))}
@@ -202,27 +241,45 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
             )}
           </div>
 
+          {submitError && (
+            <p id={errorId} role="alert" className="text-sm text-destructive-accessible">
+              <BilingualText
+                en="Your post couldn't be published. Your draft is kept, so you can try again."
+                el="Η ανάρτηση δεν δημοσιεύτηκε. Το προσχέδιό σας διατηρήθηκε, ώστε να δοκιμάσετε ξανά."
+                wrap
+              />
+            </p>
+          )}
+
           {/* Actions */}
           <div className="flex items-center justify-between pt-2 border-t border-border/40">
-            <div className="flex items-center gap-1">
-              <Button aria-label="Add image" variant="ghost" size="icon" className="h-9 w-9" disabled>
+            <div className="flex items-center gap-1" role="group" aria-label={bilingualAria('Attachments', 'Συνημμένα')} aria-describedby={attachHintId}>
+              <span id={attachHintId} className="sr-only">{ATTACHMENTS_UNAVAILABLE}</span>
+              <Button aria-label={bilingualAria('Add image', 'Προσθήκη εικόνας')} title={ATTACHMENTS_UNAVAILABLE} variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <Image className="icon-sm" aria-hidden="true" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" disabled aria-label="Add link">
+              <Button variant="ghost" size="icon" className="h-9 w-9" disabled title={ATTACHMENTS_UNAVAILABLE} aria-label={bilingualAria('Add link', 'Προσθήκη συνδέσμου')}>
                 <Link2 className="icon-sm" aria-hidden="true" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" disabled aria-label="Mention someone">
+              <Button variant="ghost" size="icon" className="h-9 w-9" disabled title={ATTACHMENTS_UNAVAILABLE} aria-label={bilingualAria('Mention someone', 'Αναφορά σε κάποιον')}>
                 <AtSign className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{content.length}/1000</span>
+              <span id={countId} className={cn('text-xs', tooLong ? 'text-destructive-accessible' : 'text-muted-foreground')}>
+                {content.length}/{MAX_LENGTH}
+                {tooLong && <span className="sr-only">{bilingualAria(' Over the character limit.', ' Υπέρβαση ορίου χαρακτήρων.')}</span>}
+              </span>
               <Button
                 onClick={handleSubmit}
-                disabled={!content.trim() || content.length > 1000 || isSubmitting}
+                disabled={!content.trim() || tooLong || isSubmitting}
+                aria-busy={isSubmitting || undefined}
               >
-                {isSubmitting ? 'Posting...' : 'Post'}
+                {isSubmitting ? <BilingualText en="Posting…" el="Δημοσίευση…" /> : <BilingualText en="Post" el="Δημοσίευση" />}
               </Button>
+              <span role="status" aria-live="polite" className="sr-only">
+                {isSubmitting ? bilingualAria('Publishing your post…', 'Δημοσίευση της ανάρτησής σας…') : ''}
+              </span>
             </div>
           </div>
         </DialogContent>

@@ -615,6 +615,7 @@ export default function LearningPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
+                aria-label={bilingualInline("Search courses, guides, topics", "Αναζήτηση μαθημάτων, οδηγών, θεμάτων")}
                 placeholder={bilingualInline(learningEn('search'), learningEl('search'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

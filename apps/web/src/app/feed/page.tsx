@@ -5,7 +5,7 @@ import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
-  Send, Image as ImageIcon, Link2, Smile, TrendingUp,
+  Send, Link2, Smile, TrendingUp,
   Users, Sparkles, Filter, Clock, Flame, ThumbsUp,
   Award, Rocket, Target, Briefcase, GraduationCap,
   Plus, RefreshCw, ChevronDown, X, Flag, Settings,
@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { FeedPostComposer } from '@/components/feed/FeedPostComposer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -168,101 +169,6 @@ const DEMO_POSTS: FeedPost[] = [
     tags: ['portfolio', 'fintech', 'growth'],
   },
 ];
-
-function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) => void }) {
-  const [content, setContent] = useState('');
-  const [postType, setPostType] = useState<PostType>('update');
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleSubmit = () => {
-    if (!content.trim()) return;
-    onPost(content, postType);
-    setContent('');
-    setIsExpanded(false);
-  };
-
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>ME</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <Textarea
-              aria-label={bilingualAria("Write a post", "Σύνταξη δημοσίευσης")}
-              placeholder={bilingualInline("Share an update, ask a question, or celebrate a milestone…", "Μοιραστείτε νέα, κάντε μια ερώτηση ή γιορτάστε ένα ορόσημο…")}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onFocus={() => setIsExpanded(true)}
-              className={cn(
-                'resize-none border-0 p-0 focus-visible:ring-0 bg-transparent',
-                isExpanded ? 'min-h-[100px]' : 'min-h-[40px]'
-              )}
-            />
-
-            {isExpanded && (
-              <div className="mt-3 flex items-center justify-between border-t pt-3">
-                <div className="flex gap-2">
-                  {(Object.entries(POST_TYPE_CONFIG) as [PostType, typeof POST_TYPE_CONFIG.update][]).map(
-                    ([type, config]) => {
-                      const Icon = config.icon;
-                      return (
-                        <Button
-                          key={type}
-                          variant={postType === type ? 'secondary' : 'ghost'}
-                          size="sm"
-                          onClick={() => setPostType(type)}
-                          aria-label={config.label}
-                          aria-pressed={postType === type}
-                          className="gap-1"
-                        >
-                          <Icon className={cn('icon-sm', config.color)} aria-hidden="true" />
-                          <span className="hidden sm:inline">{config.label}</span>
-                        </Button>
-                      );
-                    }
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {/* An image and a link need somewhere to upload to, and the
-                      feed has no server yet. Disabled and labelled, rather
-                      than looking available and doing nothing. */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled
-                    aria-label={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
-                    title={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
-                  >
-                    <ImageIcon className="icon-sm" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled
-                    aria-label={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
-                    title={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
-                  >
-                    <Link2 className="icon-sm" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSubmit}
-                    disabled={!content.trim()}
-                  >
-                    <Send className="icon-sm mr-1" />
-                    Post
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function PostCard({
   post,
@@ -938,7 +844,7 @@ export default function FeedPage() {
         <div className="space-y-6">
 
             {/* Create Post */}
-            <CreatePostCard onPost={handlePost} />
+            <FeedPostComposer onPost={handlePost} />
 
             {/* Posts */}
             <div className="space-y-4">

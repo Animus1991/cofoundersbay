@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -204,6 +204,7 @@ function TagInput({
   max?: number;
 }) {
   const [input, setInput] = useState('');
+  const inputId = useId();
 
   const addTag = (tag: string) => {
     const cleaned = tag.trim();
@@ -219,7 +220,7 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">{label}</label>
+      <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
       <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border/60 bg-background/50 min-h-[60px]">
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
@@ -230,6 +231,7 @@ function TagInput({
           </Badge>
         ))}
         <input
+          id={inputId}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -641,6 +643,7 @@ export default function ProfileEditPage() {
                     <div className="space-y-4 flex-1 w-full">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Input
+                          aria-label={bilingualInline("Profile photo URL", "URL φωτογραφίας προφίλ")}
                           placeholder={bilingualInline("Paste image URL…", "Επικολλήστε URL εικόνας…")}
                           value={form.avatarUrl}
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
@@ -697,8 +700,9 @@ export default function ProfileEditPage() {
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /> <span className="text-destructive-accessible">*</span></label>
+                    <label htmlFor="profile-display-name" className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /> <span className="text-destructive-accessible">*</span></label>
                     <Input
+                      id="profile-display-name"
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
                       placeholder="e.g. Jane Doe"
@@ -706,8 +710,9 @@ export default function ProfileEditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Headline" el="Τίτλος" compact /></label>
+                    <label htmlFor="profile-headline" className="text-sm font-medium"><BilingualText en="Headline" el="Τίτλος" compact /></label>
                     <Input
+                      id="profile-headline"
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
                       placeholder="e.g., 3x Founder | Building AI SaaS | ex-Google"
@@ -808,16 +813,18 @@ export default function ProfileEditPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="City, Country" el="Πόλη, χώρα" compact /></label>
+                    <label htmlFor="profile-location" className="text-sm font-medium"><BilingualText en="City, Country" el="Πόλη, χώρα" compact /></label>
                     <Input
+                      id="profile-location"
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
                       placeholder="e.g., Athens, Greece"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
+                    <label htmlFor="profile-timezone" className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
                     <Input
+                      id="profile-timezone"
                       value={form.timezone}
                       onChange={(e) => updateField('timezone', e.target.value)}
                       placeholder="e.g., Europe/Athens"
