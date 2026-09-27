@@ -22,7 +22,7 @@ export function StatCard({ label, value, icon, trend, className }: StatCardProps
     <Card className={cn('p-4 card-interactive group', className)}>
       <div className="flex items-center justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="page-stat-label text-xs uppercase tracking-[0.2em] text-muted-foreground">
             {label}
           </p>
           <p className="page-stat text-2xl font-bold text-foreground font-display">

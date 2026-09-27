@@ -2120,12 +2120,23 @@ html {
   padding-top: 0;
 }
 
-/* ── App chrome type (Overview standard, every page) ─────────────────────
-   Tuned on the founder Overview, then applied to AppShell titles, card
-   section headings and MetricTiles. The ladder itself is unchanged.
-   Element+class so these beat later `sm:text-*` restatements.
-   Rail titles stay on the pre-Overview card size — the 21px section step
-   does not fit a ~240px panel. */
+/* ── App chrome type (1.08 from the caption floor) ───────────────────────
+   Claude `b05b51b8` last push is 22.12 / 21.13 / 19.21 / 12.35 (phone
+   labels 10.24). Tight title≈section is good; the set is too large and
+   the 12.35→22.12 span is 9.77px. No smaller system exists on that
+   branch, so chrome is a geometric 1.08 from the same 12.2412px floor
+   as `aside .text-2xs` (between a minor and a major second):
+
+     n=0 label   = 12.2412px          (floor)
+     n=2 compact = 12.2412 × 1.08²    → 14.28px = ladder sm / rail
+     n=3 figure  = 12.2412 × 1.08³    → 15.42px
+     n=4 section = 12.2412 × 1.08⁴    → 16.65px
+     n=5 title   = ladder lg          → 18px   (1.08⁵ ≈ 17.99)
+
+   Adjacent chrome steps stay ~1.08. Title→section ≈ 1.35px.
+   Title→label span = 5.76px (Claude 9.77). Same px every breakpoint —
+   Claude phone inverted section above title. Roles stay; `.text-*` does
+   not change. Element+class so these beat later `sm:text-*`. */
 h1.page-title,
 h1.founder-dash-h1,
 p.page-stat,
@@ -2134,26 +2145,26 @@ span.page-stat,
 div.page-stat,
 dd.page-stat,
 p.founder-dash-stat {
-  font-size: calc(1.25rem * 0.95 * 0.98 * 0.99);
-  line-height: calc(1.75rem * 0.95 * 0.98 * 0.99);
+  font-size: max(12.2412px, 1.125rem);
+  line-height: 1.625rem;
 }
 p.page-stat-label,
 p.page-stat-meta,
 span.page-stat-label,
 p.founder-dash-stat-label,
 p.founder-dash-stat-meta {
-  font-size: calc(10.45px * 0.98);
-  line-height: calc(1.25rem * 0.95 * 0.98);
+  font-size: max(12.2412px, 0.765075rem);
+  line-height: max(16.3216px, 1rem);
 }
 h3.page-section,
 h3.founder-dash-section {
-  font-size: calc(1.0201rem * 0.98 * 1.21 * 0.99);
-  line-height: calc(1.5rem * 0.98 * 1.21 * 0.99);
+  font-size: max(12.2412px, 1.04087609rem);
+  line-height: 1.5rem;
 }
 p.page-figure,
 p.founder-dash-figure {
-  font-size: calc(1.25rem * 0.98 * 0.98);
-  line-height: calc(1.75rem * 0.98 * 0.98);
+  font-size: max(12.2412px, 0.96377416rem);
+  line-height: 1.4375rem;
 }
 @media (min-width: 640px) {
   h1.page-title,
@@ -2164,21 +2175,21 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: calc(1.5rem * 0.95 * 0.98 * 0.99);
-    line-height: calc(2rem * 0.95 * 0.98 * 0.99);
+    font-size: max(12.2412px, 1.125rem);
+    line-height: 1.625rem;
   }
   p.page-stat-label,
   p.page-stat-meta,
   span.page-stat-label,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
-    font-size: calc(0.82883125rem * 0.95 * 0.98);
-    line-height: calc(1.25rem * 0.95 * 0.98);
+    font-size: max(12.2412px, 0.765075rem);
+    line-height: max(16.3216px, 1rem);
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: calc(1.125rem * 0.98 * 1.21 * 0.99);
-    line-height: calc(1.625rem * 0.98 * 1.21 * 0.99);
+    font-size: max(12.2412px, 1.04087609rem);
+    line-height: 1.5rem;
   }
 }
 @media (min-width: 1024px) {
@@ -2190,75 +2201,200 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: calc(1.82926829rem * 0.95 * 0.98 * 0.99);
-    line-height: calc(2.43902439rem * 0.95 * 0.98 * 0.99);
+    font-size: max(12.2412px, 1.37195122rem);
+    line-height: 1.98170732rem;
   }
   p.page-stat-label,
   p.page-stat-meta,
   span.page-stat-label,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
-    font-size: calc(1.01076982rem * 0.95 * 0.98);
-    line-height: calc(1.52439024rem * 0.95 * 0.98);
+    font-size: max(12.2412px, 0.765075rem);
+    line-height: max(16.3216px, 1.24402439rem);
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: calc(1.37195122rem * 0.98 * 1.21 * 0.99);
-    line-height: calc(1.98170732rem * 0.98 * 1.21 * 0.99);
+    font-size: max(12.2412px, 1.26936109rem);
+    line-height: 1.82926829rem;
   }
   p.page-figure,
   p.founder-dash-figure {
-    font-size: calc(1.52439024rem * 0.98 * 0.98);
-    line-height: calc(2.13414634rem * 0.98 * 0.98);
+    font-size: max(12.2412px, 1.17533434rem);
+    line-height: 1.75304878rem;
   }
 }
 
+/* Dense cards + the ~240px rail stay on ladder `sm`. Do not key this off
+   leftover `text-sm` on canvas titles — that split 14.28 vs 18 on the
+   same page. */
 h3.page-section.page-section--compact,
-h3.page-section.text-sm {
-  font-size: 0.8925875rem;
-  line-height: 1.3125rem;
-}
 [data-rail-content] h3.page-section,
 [data-rail-content] h3.founder-dash-section {
-  font-size: 1.0201rem;
-  line-height: 1.5rem;
-}
-[data-rail-content] h3.page-section.page-section--compact,
-[data-rail-content] h3.page-section.text-sm {
   font-size: 0.8925875rem;
   line-height: 1.3125rem;
 }
 
 @media (min-width: 640px) {
   h3.page-section.page-section--compact,
-  h3.page-section.text-sm {
-    font-size: 0.8925875rem;
-    line-height: 1.3125rem;
-  }
   [data-rail-content] h3.page-section,
   [data-rail-content] h3.founder-dash-section {
-    font-size: 1.125rem;
-    line-height: 1.625rem;
-  }
-  [data-rail-content] h3.page-section.page-section--compact,
-  [data-rail-content] h3.page-section.text-sm {
     font-size: 0.8925875rem;
     line-height: 1.3125rem;
   }
 }
 @media (min-width: 1024px) {
   h3.page-section.page-section--compact,
-  h3.page-section.text-sm {
+  [data-rail-content] h3.page-section,
+  [data-rail-content] h3.founder-dash-section {
     font-size: 1.08852134rem;
     line-height: 1.60060976rem;
   }
-  [data-rail-content] h3.page-section,
-  [data-rail-content] h3.founder-dash-section {
-    font-size: 1.37195122rem;
+}
+
+/* ── App type ceiling + floor (all #main-content components) ─────────────
+   The 1.08 chrome cluster tops at lg = 18px. Reusable and page-local
+   leftovers still used xl/2xl/3xl (20/24/26) and text-[11px] (below the
+   12.2412 floor). That is a larger set and a wider span than the
+   preference. Cap those steps inside the shell only — landing, auth
+   marketing and legal stay outside #main-content. The ladder `.text-*`
+   rules are unchanged (typeScaleOrder). Rail stays on sm. Canvas rulers
+   at 9px are not listed. No :is() — Lightning CSS has merged that into
+   invalid selectors here before. */
+#main-content .text-xl,
+#main-content .sm\:text-xl,
+#main-content .md\:text-xl,
+#main-content .lg\:text-xl,
+#main-content .text-2xl,
+#main-content .sm\:text-2xl,
+#main-content .md\:text-2xl,
+#main-content .text-3xl,
+#main-content .sm\:text-3xl,
+#main-content .xl\:text-3xl,
+#main-content .text-4xl,
+#main-content .sm\:text-4xl,
+#main-content .text-5xl,
+#main-content .text-6xl,
+#main-content .text-7xl,
+#main-content .text-\[2\.75rem\] {
+  font-size: max(12.2412px, 1.125rem);
+  line-height: 1.625rem;
+}
+#main-content .text-\[11px\],
+#main-content .text-\[10px\],
+#main-content .text-\[11\.76px\],
+#main-content .text-\[12\.74px\] {
+  font-size: 12.2412px;
+  line-height: 1rem;
+}
+#main-content [data-rail-content] .text-xl,
+#main-content [data-rail-content] .sm\:text-xl,
+#main-content [data-rail-content] .text-2xl,
+#main-content [data-rail-content] .sm\:text-2xl,
+#main-content [data-rail-content] .text-3xl {
+  font-size: 0.8925875rem;
+  line-height: 1.3125rem;
+}
+@media (min-width: 1024px) {
+  #main-content .text-xl,
+  #main-content .sm\:text-xl,
+  #main-content .md\:text-xl,
+  #main-content .lg\:text-xl,
+  #main-content .text-2xl,
+  #main-content .sm\:text-2xl,
+  #main-content .md\:text-2xl,
+  #main-content .text-3xl,
+  #main-content .sm\:text-3xl,
+  #main-content .xl\:text-3xl,
+  #main-content .text-4xl,
+  #main-content .sm\:text-4xl,
+  #main-content .text-5xl,
+  #main-content .text-6xl,
+  #main-content .text-7xl,
+  #main-content .text-\[2\.75rem\] {
+    font-size: max(12.2412px, 1.37195122rem);
     line-height: 1.98170732rem;
   }
-  [data-rail-content] h3.page-section.page-section--compact,
-  [data-rail-content] h3.page-section.text-sm {
+  #main-content [data-rail-content] .text-xl,
+  #main-content [data-rail-content] .sm\:text-xl,
+  #main-content [data-rail-content] .text-2xl,
+  #main-content [data-rail-content] .sm\:text-2xl,
+  #main-content [data-rail-content] .text-3xl {
+    font-size: 1.08852134rem;
+    line-height: 1.60060976rem;
+  }
+}
+
+/* Chrome roles beat the ceiling (`#main-content .text-xl` is 1,1,0;
+   `#main-content p.page-figure` is 1,1,1). Without this, $375K and
+   leftover `text-xl` on figures snapped to the 18px cap. */
+#main-content h1.page-title,
+#main-content h1.founder-dash-h1,
+#main-content p.page-stat,
+#main-content h3.page-stat,
+#main-content span.page-stat,
+#main-content div.page-stat,
+#main-content dd.page-stat,
+#main-content p.founder-dash-stat {
+  font-size: max(12.2412px, 1.125rem);
+  line-height: 1.625rem;
+}
+#main-content p.page-stat-label,
+#main-content p.page-stat-meta,
+#main-content span.page-stat-label,
+#main-content p.founder-dash-stat-label,
+#main-content p.founder-dash-stat-meta {
+  font-size: max(12.2412px, 0.765075rem);
+  line-height: max(16.3216px, 1rem);
+}
+#main-content h3.page-section,
+#main-content h3.founder-dash-section {
+  font-size: max(12.2412px, 1.04087609rem);
+  line-height: 1.5rem;
+}
+#main-content p.page-figure,
+#main-content p.founder-dash-figure {
+  font-size: max(12.2412px, 0.96377416rem);
+  line-height: 1.4375rem;
+}
+#main-content h3.page-section.page-section--compact,
+#main-content [data-rail-content] h3.page-section,
+#main-content [data-rail-content] h3.founder-dash-section {
+  font-size: 0.8925875rem;
+  line-height: 1.3125rem;
+}
+@media (min-width: 1024px) {
+  #main-content h1.page-title,
+  #main-content h1.founder-dash-h1,
+  #main-content p.page-stat,
+  #main-content h3.page-stat,
+  #main-content span.page-stat,
+  #main-content div.page-stat,
+  #main-content dd.page-stat,
+  #main-content p.founder-dash-stat {
+    font-size: max(12.2412px, 1.37195122rem);
+    line-height: 1.98170732rem;
+  }
+  #main-content p.page-stat-label,
+  #main-content p.page-stat-meta,
+  #main-content span.page-stat-label,
+  #main-content p.founder-dash-stat-label,
+  #main-content p.founder-dash-stat-meta {
+    font-size: max(12.2412px, 0.765075rem);
+    line-height: max(16.3216px, 1.24402439rem);
+  }
+  #main-content h3.page-section,
+  #main-content h3.founder-dash-section {
+    font-size: max(12.2412px, 1.26936109rem);
+    line-height: 1.82926829rem;
+  }
+  #main-content p.page-figure,
+  #main-content p.founder-dash-figure {
+    font-size: max(12.2412px, 1.17533434rem);
+    line-height: 1.75304878rem;
+  }
+  #main-content h3.page-section.page-section--compact,
+  #main-content [data-rail-content] h3.page-section,
+  #main-content [data-rail-content] h3.founder-dash-section {
     font-size: 1.08852134rem;
     line-height: 1.60060976rem;
   }
