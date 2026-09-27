@@ -543,7 +543,7 @@ export default function OrgAdminPage() {
               : <BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact />}
           </h1>
           <Button variant="outline" asChild>
-            <Link href="/org"><BilingualText en="Back to organizations" el="Πίσω στους οργανισμούς" compact /></Link>
+            <Link href="/org/dashboard"><BilingualText en="Back to organization dashboard" el="Πίσω στον πίνακα οργανισμού" compact /></Link>
           </Button>
         </div>
       </AppShell>

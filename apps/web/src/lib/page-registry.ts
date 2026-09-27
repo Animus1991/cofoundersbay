@@ -170,7 +170,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   //    the registry knows. Ten founder-reachable pages therefore had an
   //    English-only heading on a bilingual product, and the help and
   //    assistant surfaces that read this registry could not see them at all.
-  { path: '/activity', title: 'Activity Feed', description: 'Track your network activity, notifications, and events.', section: 'Account', status: 'complete' },
+  { path: '/activity', title: 'Activity Feed', titleEl: 'Ροή δραστηριότητας', description: 'Track your network activity, notifications, and events.', descriptionEl: 'Δραστηριότητα δικτύου, ειδοποιήσεις και εκδηλώσεις σε ένα σημείο.', helpId: 'activity', helpTitle: 'What each tab shows', helpTitleEl: 'Τι δείχνει κάθε καρτέλα', section: 'Account', status: 'complete' },
   { path: '/ai', title: 'AI Assistant', description: 'Sign in to let the copilot read your graph and act on it.', section: 'Work', priority: 'critical', status: 'complete' },
   { path: '/ai/capabilities', title: 'What the assistant can do', titleEl: 'Τι μπορεί να κάνει ο βοηθός', description: 'Every read and write the copilot can perform, generated from the shared capability contract.', descriptionEl: 'Κάθε ανάγνωση και εγγραφή που μπορεί να κάνει ο βοηθός, παραγόμενη από το κοινό συμβόλαιο δυνατοτήτων.', section: 'Work', status: 'complete' },
   { path: '/compare', title: 'Compare Profiles', description: 'Side-by-side comparison to find your best match. Tip: bookmark a /matches/compare URL with profile ids to share.', section: 'Explore', status: 'complete' },
@@ -323,6 +323,9 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
     meta: {
       title: 'Cohort',
       description: 'Participants, mentor coverage, and recent matches for this cohort.',
+      helpId: 'cohort-detail',
+      helpTitle: 'How to read this cohort',
+      helpTitleEl: 'Πώς να διαβάσετε αυτόν τον κύκλο',
       section: 'Work',
       status: 'complete',
     },

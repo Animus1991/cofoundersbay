@@ -869,6 +869,37 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  activity: {
+    en: (
+      <>
+        <p>
+          Three streams, one page. <strong>Network</strong> is what people you are connected to did — new
+          connections, posts, milestones. <strong>Notifications</strong> are messages addressed to you: intro
+          requests, replies, mentions; the badge is the unread count and <em>Mark all read</em> clears it.{' '}
+          <strong>Events</strong> are sessions and community events you are registered for or invited to.
+        </p>
+        <p>
+          The filter chips narrow the open tab only. Refresh re-fetches all three streams. Nothing here is
+          sample data unless it is labelled as sample.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τρεις ροές, μία σελίδα. Το <strong>Δίκτυο</strong> είναι ό,τι έκαναν όσοι είστε συνδεδεμένοι — νέες
+          συνδέσεις, δημοσιεύσεις, ορόσημα. Οι <strong>Ειδοποιήσεις</strong> είναι μηνύματα προς εσάς: αιτήματα
+          γνωριμίας, απαντήσεις, αναφορές· το σήμα είναι τα αδιάβαστα και το <em>Σήμανση όλων ως αναγνωσμένα</em>{' '}
+          το καθαρίζει. Οι <strong>Εκδηλώσεις</strong> είναι συνεδρίες και εκδηλώσεις κοινότητας στις οποίες
+          έχετε εγγραφεί ή προσκληθεί.
+        </p>
+        <p>
+          Τα φίλτρα περιορίζουν μόνο την ανοιχτή καρτέλα. Η ανανέωση ξαναφορτώνει και τις τρεις ροές. Τίποτα εδώ
+          δεν είναι δείγμα αν δεν φέρει ετικέτα δείγματος.
+        </p>
+      </>
+    ),
+  },
   'cohort-detail': {
     en: (
       <>

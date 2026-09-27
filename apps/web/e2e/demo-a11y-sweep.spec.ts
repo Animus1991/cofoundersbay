@@ -35,7 +35,7 @@ const ROUTES = [
   '/expert-reviews',
   '/feed',
   '/settings',
-  '/org/cohorts/demo-cohort-1',
+  '/org/cohorts/cohort-autumn-2026',
 ];
 
 type Finding = {
@@ -72,23 +72,37 @@ async function enterDemo(page: Page) {
   });
 }
 
-test.describe.configure({ mode: 'serial' });
-
 for (const route of ROUTES) {
   test(`a11y + layout: ${route}`, async ({ page }, testInfo) => {
     await enterDemo(page);
     const response = await page.goto(route);
     await waitForStableDom(page);
+    // The auth guard redirects to /login without a session — a scan of the login
+    // page would pass silently, so the route itself must have rendered.
+    expect(page.url(), `${route} redirected to ${page.url()}`).toContain(route.split('/')[1]);
+    expect((await page.locator('main').first().innerText()).trim().length, `${route} rendered an empty main`).toBeGreaterThan(40);
 
     const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-    const overflow = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>('body *')]
-        .filter((e) => e.getBoundingClientRect().right > window.innerWidth + 1 && getComputedStyle(e).position !== 'fixed')
+    // Only real page-level horizontal scroll counts. Elements inside their own
+    // scroll container (tab strips, chip rows) are by design wider than the screen.
+    const overflow = await page.evaluate(() => {
+      const root = document.documentElement;
+      const main = document.querySelector('main') ?? document.body;
+      if (main.scrollWidth <= main.clientWidth + 1 && root.scrollWidth <= root.clientWidth + 1) return [];
+      const inScroller = (el: Element) => {
+        for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+          const ox = getComputedStyle(p).overflowX;
+          if (ox === 'auto' || ox === 'scroll' || ox === 'hidden' || ox === 'clip') return true;
+        }
+        return false;
+      };
+      return [...document.querySelectorAll<HTMLElement>('body *')]
+        .filter((e) => e.getBoundingClientRect().right > window.innerWidth + 1 && getComputedStyle(e).position !== 'fixed' && !inScroller(e))
         .slice(0, 5)
-        .map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(' ').slice(0, 3).join('.')}`),
-    );
+        .map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(' ').slice(0, 3).join('.')}`);
+    });
 
-    findings.push({
+    const finding: Finding = {
       route,
       viewport: testInfo.project.name,
       status: response?.status() ?? null,
@@ -100,7 +114,10 @@ for (const route of ROUTES) {
         nodes: v.nodes.length,
         targets: v.nodes.slice(0, 3).map((n) => n.target.join(' ')),
       })),
-    });
+    };
+    findings.push(finding);
+    mkdirSync('test-results/a11y', { recursive: true });
+    writeFileSync(`test-results/a11y/${testInfo.project.name}${route.replace(/[^a-z0-9]+/gi, '-')}.json`, JSON.stringify(finding, null, 2));
 
     const blocking = results.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
     expect.soft(blocking, `${route} @ ${testInfo.project.name}: ${blocking.map((v) => v.id).join(', ')}`).toEqual([]);

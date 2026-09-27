@@ -44,6 +44,7 @@ import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type Pu
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { bilingualInline } from '@/lib/i18n/format';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
@@ -524,6 +525,8 @@ export default function PitchDeckPage() {
               <span className="flex items-center gap-1"><Eye className="icon-sm" />{deck.stats.views}</span>
               <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
             </div>
+            {/* No AppShell on the public deck, so the page-registry help mounts here. */}
+            <PageContextualHelp compact />
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
               <Share2 className="icon-sm mr-1.5" /><BilingualText en="Share" el="Κοινοποίηση" compact />
             </Button>
