@@ -708,7 +708,7 @@ export default function ExpertReviewsPage() {
     : null;
 
   return (
-    <AppShell>
+    <AppShell showHelp askAi="Which expert review should I request first — pitch deck, financial model, or go-to-market — given my current readiness gaps?">
       <div className="space-y-6 pb-10">
 
         {/* Stats */}

@@ -869,6 +869,36 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  'expert-reviews': {
+    en: (
+      <>
+        <p>
+          Request structured feedback on a specific artefact — <strong>pitch deck, financial model, market analysis,</strong>{' '}
+          or go-to-market. <strong>My reviews</strong> tracks what you requested; <strong>Find experts</strong> is the
+          reviewer directory, filtered by domain; <strong>Insights</strong> aggregates scores once a review is submitted.
+        </p>
+        <p>
+          Reviewers are the platform&rsquo;s vetted mentors, so requesting a review and messaging a reviewer both go through{' '}
+          <a href="/mentoring">Mentoring</a>. A dash in a score means it was not rated yet, not zero.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Ζητήστε δομημένη ανατροφοδότηση για ένα συγκεκριμένο παραδοτέο — <strong>pitch deck, οικονομικό μοντέλο,
+          ανάλυση αγοράς</strong> ή στρατηγική εισόδου. Οι <strong>αξιολογήσεις μου</strong> δείχνουν όσα ζητήσατε· η{' '}
+          <strong>Εύρεση ειδικών</strong> είναι ο κατάλογος αξιολογητών ανά τομέα· οι <strong>Αναλύσεις</strong>{' '}
+          συγκεντρώνουν τις βαθμολογίες μόλις υποβληθεί μια αξιολόγηση.
+        </p>
+        <p>
+          Οι αξιολογητές είναι οι ελεγμένοι mentors της πλατφόρμας, οπότε τόσο το αίτημα αξιολόγησης όσο και το μήνυμα
+          σε αξιολογητή περνούν από το <a href="/mentoring">Mentoring</a>. Μια παύλα σε βαθμολογία σημαίνει ότι δεν
+          έχει βαθμολογηθεί ακόμη, όχι μηδέν.
+        </p>
+      </>
+    ),
+  },
 };
 
 /**
