@@ -869,6 +869,39 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  'cohort-detail': {
+    en: (
+      <>
+        <p>
+          One cohort of one program. <strong>Overview</strong> shows the headline numbers — participants, matches
+          formed, mentoring sessions and average progress — plus the upcoming schedule. <strong>Participants</strong>{' '}
+          lists every startup with its stage and progress; <strong>Matches</strong> are the co-founder pairings formed
+          inside this cohort; <strong>Mentoring</strong> is every session booked, completed or cancelled.
+        </p>
+        <p>
+          <em>Share</em> copies this page&rsquo;s link, <em>Export</em> downloads the participant list as CSV, and{' '}
+          <em>Message all</em> opens one email with the cohort in Bcc. Sample cohorts are labelled as sample — a
+          dash in a stat means it was not recorded, not zero.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Ένας κύκλος ενός προγράμματος. Η <strong>Επισκόπηση</strong> δείχνει τους βασικούς αριθμούς — συμμετέχοντες,
+          αντιστοιχίσεις, συνεδρίες καθοδήγησης και μέση πρόοδο — και το επερχόμενο πρόγραμμα. Οι{' '}
+          <strong>Συμμετέχοντες</strong> είναι κάθε startup με στάδιο και πρόοδο· οι <strong>Αντιστοιχίσεις</strong>{' '}
+          είναι τα ζευγάρια συνιδρυτών που σχηματίστηκαν μέσα στον κύκλο· η <strong>Καθοδήγηση</strong> είναι κάθε
+          συνεδρία που κλείστηκε, ολοκληρώθηκε ή ακυρώθηκε.
+        </p>
+        <p>
+          Η <em>Κοινοποίηση</em> αντιγράφει τον σύνδεσμο της σελίδας, η <em>Εξαγωγή</em> κατεβάζει τη λίστα
+          συμμετεχόντων σε CSV και το <em>Μήνυμα σε όλους</em> ανοίγει ένα email με τον κύκλο σε Bcc. Οι δείγμα-κύκλοι
+          φέρουν ετικέτα δείγματος — μια παύλα σε στατιστικό σημαίνει ότι δεν καταγράφηκε, όχι μηδέν.
+        </p>
+      </>
+    ),
+  },
   'expert-reviews': {
     en: (
       <>

@@ -37,6 +37,38 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const MATCHES_TOUR: TourStep[] = [
+  {
+    target: 'matches-stats',
+    titleEn: 'Your match summary',
+    titleEl: 'Η σύνοψη των αντιστοιχίσεών σας',
+    bodyEn: 'Total matches, how many score 80%+ ("excellent"), and your average and top score. These count every match, not just the ones shown after filtering.',
+    bodyEl: 'Σύνολο αντιστοιχίσεων, πόσες έχουν 80%+ («εξαιρετικές») και η μέση και κορυφαία βαθμολογία σας. Μετρούν όλες τις αντιστοιχίσεις, όχι μόνο όσες φαίνονται μετά το φιλτράρισμα.',
+  },
+  {
+    target: 'matches-tiers',
+    titleEn: 'Filter by match tier',
+    titleEl: 'Φίλτρο ανά επίπεδο ταιριάσματος',
+    bodyEn: 'Tap a tier to see only excellent, strong, or good matches. Tap it again to clear. Role, location and availability filters live in the page tools on the right.',
+    bodyEl: 'Πατήστε ένα επίπεδο για να δείτε μόνο εξαιρετικές, ισχυρές ή καλές αντιστοιχίσεις. Πατήστε ξανά για καθαρισμό. Τα φίλτρα ρόλου, τοποθεσίας και διαθεσιμότητας είναι στα εργαλεία σελίδας δεξιά.',
+  },
+  {
+    target: 'matches-toolbar',
+    titleEn: 'Select, search, and change the view',
+    titleEl: 'Επιλογή, αναζήτηση και αλλαγή προβολής',
+    bodyEn: 'Select mode lets you pick two profiles and compare them side by side. Search finds a name, headline or skill. The view switch toggles grid or list.',
+    bodyEl: 'Η λειτουργία επιλογής σάς αφήνει να διαλέξετε δύο προφίλ και να τα συγκρίνετε δίπλα-δίπλα. Η αναζήτηση βρίσκει όνομα, τίτλο ή δεξιότητα. Ο διακόπτης προβολής αλλάζει πλέγμα ή λίστα.',
+  },
+  {
+    target: 'matches-grid',
+    titleEn: 'Read "Why you match" before reaching out',
+    titleEl: 'Διαβάστε το «Γιατί ταιριάζετε» πριν επικοινωνήσετε',
+    bodyEn: 'Each card shows the score and the reasons behind it. Use Connect to send a request, Save to keep the profile for later, or Pass to hide it — Pass can be undone.',
+    bodyEl: 'Κάθε κάρτα δείχνει τη βαθμολογία και τους λόγους πίσω από αυτή. Με Σύνδεση στέλνετε αίτημα, με Αποθήκευση κρατάτε το προφίλ για αργότερα, με Παράλειψη το κρύβετε — η Παράλειψη αναιρείται.',
+  },
+];
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 const MatchCompatibilityChart = dynamic(
@@ -927,6 +959,7 @@ export default function MatchesPage() {
       }
     >
       <div className="min-w-0 space-y-4 overflow-x-clip pb-10">
+        <FirstRunTour tourId="matches" steps={MATCHES_TOUR} ready={hasToken && !isLoading && visible.length > 0} />
 
         {/* ── Not authenticated ── */}
         {!hasToken && (
@@ -974,7 +1007,7 @@ export default function MatchesPage() {
 
         {/* ── Stats bar ── */}
         {hasToken && !isLoading && visible.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-tour="matches-stats">
             {[
               { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all, tone: 'neutral' as const, icon: Users },
               { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent, tone: 'success' as const, icon: Star },
@@ -1062,7 +1095,7 @@ export default function MatchesPage() {
                   Secondary filters (role, location, availability) and sort
                   live in the page rail - the expanded panel that used to sit
                   here duplicated them, so it is gone rather than doubled. */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5" data-tour="matches-tiers">
                 {TIER_TABS.map(tab => {
                   const isActive = activeFilter === tab.key;
                   return (
@@ -1081,7 +1114,7 @@ export default function MatchesPage() {
               </div>
 
               {/* Results toolbar */}
-              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2" data-tour="matches-toolbar">
                 <p className="min-w-0 text-xs text-muted-foreground">
                   {filtered.length > 0 && (
                     <span>
@@ -1177,7 +1210,8 @@ export default function MatchesPage() {
               {/* Matches grid */}
               {filtered.length > 0 && viewMode !== 'list' && (
                 <div className={cn('grid grid-cols-1 gap-4',
-                  viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}>
+                  viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}
+                  data-tour="matches-grid">
                   {filtered.map((hit) => {
                     const profile = hitToProfile(hit);
                     const score = hit.matchScore ?? 50;

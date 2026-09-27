@@ -443,6 +443,8 @@ export default function CohortDetailPage() {
     <AppShell
       title={cohort.name}
       description={`${cohort.program} • ${formatDate(cohort.startDate)} - ${formatDate(cohort.endDate)}`}
+      showHelp
+      askAi={`Summarise the "${cohort.name}" cohort — which startups are behind on progress, which have no mentor sessions yet, and what should the program team do this week?`}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {/* All three had no handler. Share copies this page; Export is

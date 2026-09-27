@@ -29,6 +29,31 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import type { BuilderDocumentType } from '@/lib/builder-api';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const BUILDER_TOUR: TourStep[] = [
+  {
+    target: 'builder-context',
+    titleEn: 'This is your startup workspace',
+    titleEl: 'Αυτός είναι ο χώρος εργασίας του startup σας',
+    bodyEn: 'Everything you write here — idea, market, business model, pitch — is stored as artefacts in this workspace. The AI insight button reads them all and proposes what to complete next.',
+    bodyEl: 'Ό,τι γράφετε εδώ — ιδέα, αγορά, επιχειρηματικό μοντέλο, pitch — αποθηκεύεται ως παραδοτέα στον χώρο εργασίας. Το κουμπί AI διαβάζει όλα τα παραδοτέα και προτείνει τι να ολοκληρώσετε μετά.',
+  },
+  {
+    target: 'builder-tabs',
+    titleEn: 'Work through the stages in order',
+    titleEl: 'Προχωρήστε στα στάδια με τη σειρά',
+    bodyEn: 'Idea Core → Market → Business Model → MVP → Financials → Pitch. Each tab saves on its own. Progress in earlier stages unlocks the Pitch Deck and Applications tabs.',
+    bodyEl: 'Πυρήνας ιδέας → Αγορά → Επιχειρηματικό μοντέλο → MVP → Οικονομικά → Pitch. Κάθε καρτέλα αποθηκεύεται μόνη της. Η πρόοδος στα πρώτα στάδια ξεκλειδώνει τις καρτέλες Pitch Deck και Αιτήσεις.',
+  },
+  {
+    target: 'builder-overview',
+    titleEn: 'The overview shows completion per artefact',
+    titleEl: 'Η επισκόπηση δείχνει την ολοκλήρωση ανά παραδοτέο',
+    bodyEn: 'Each card is one artefact with its completion percentage. Open a card to jump straight to that stage. Version History on any document lets you roll back.',
+    bodyEl: 'Κάθε κάρτα είναι ένα παραδοτέο με το ποσοστό ολοκλήρωσης. Ανοίξτε μια κάρτα για να πάτε απευθείας στο στάδιο. Το Ιστορικό εκδόσεων σε κάθε έγγραφο επιτρέπει επαναφορά.',
+  },
+];
 
 const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
 
@@ -155,6 +180,7 @@ function BuilderPageContent() {
       askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
     >
       <div className="builder-type min-w-0 space-y-6 overflow-x-clip">
+        <FirstRunTour tourId="builder" steps={BUILDER_TOUR} ready={!isLoadingWorkspaces && Boolean(workspace)} />
         {/* Error Alert */}
         {error && (
           <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
@@ -207,7 +233,7 @@ function BuilderPageContent() {
         )}
 
         {/* Context Bar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" data-tour="builder-context">
           <div className="min-w-0">
             {workspace?.name && (
               <p className="builder-title text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
@@ -267,7 +293,7 @@ function BuilderPageContent() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex h-auto w-full snap-x snap-mandatory justify-start overflow-x-auto rounded-xl">
+          <TabsList className="flex h-auto w-full snap-x snap-mandatory justify-start overflow-x-auto rounded-xl" data-tour="builder-tabs">
             {BUILDER_TABS.map((tab) => (
               <TabsTrigger
                 key={tab.id}
@@ -281,7 +307,7 @@ function BuilderPageContent() {
             ))}
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-6" data-tour="builder-overview">
             <BuilderWorkspace onOpenStage={setActiveTab} />
           </TabsContent>
 

@@ -64,6 +64,31 @@ import {
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { qk } from '@/lib/query-keys';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const RESEARCH_TOUR: TourStep[] = [
+  {
+    target: 'research-actions',
+    titleEn: 'Start a board two ways',
+    titleEl: 'Ξεκινήστε πίνακα με δύο τρόπους',
+    bodyEn: '"Use template" seeds a board with a proven structure — validation, market, competitors, pitch. "New board" starts from a blank canvas you shape yourself.',
+    bodyEl: 'Το «Χρήση προτύπου» γεμίζει έναν πίνακα με δοκιμασμένη δομή — επικύρωση, αγορά, ανταγωνιστές, pitch. Το «Νέος πίνακας» ξεκινά από κενό καμβά που διαμορφώνετε εσείς.',
+  },
+  {
+    target: 'research-templates',
+    titleEn: 'Templates connect to the Builder',
+    titleEl: 'Τα πρότυπα συνδέονται με τον Builder',
+    bodyEn: 'Each template maps to a Builder stage, so what you capture here — interviews, market sizing, competitor notes — feeds Idea Core and Market Analysis directly.',
+    bodyEl: 'Κάθε πρότυπο αντιστοιχεί σε στάδιο του Builder, ώστε όσα καταγράφετε εδώ — συνεντεύξεις, μέγεθος αγοράς, σημειώσεις ανταγωνισμού — να τροφοδοτούν απευθείας τον Πυρήνα ιδέας και την Ανάλυση αγοράς.',
+  },
+  {
+    target: 'research-boards',
+    titleEn: 'Your boards',
+    titleEl: 'Οι πίνακές σας',
+    bodyEn: 'Open a board to add notes, files and links as connected nodes. Pin keeps a board at the top; the card menu handles rename, duplicate and delete.',
+    bodyEl: 'Ανοίξτε έναν πίνακα για να προσθέσετε σημειώσεις, αρχεία και συνδέσμους ως συνδεδεμένους κόμβους. Το καρφίτσωμα κρατά τον πίνακα στην κορυφή· το μενού της κάρτας κάνει μετονομασία, αντιγραφή και διαγραφή.',
+  },
+];
 
 const BOARD_COLORS: { nameKey: 'color_default' | 'color_blue' | 'color_green' | 'color_purple' | 'color_orange' | 'color_pink' | 'color_cyan'; value: string | null }[] = [
   { nameKey: 'color_default', value: null },
@@ -568,7 +593,7 @@ export default function ResearchBoardsPage() {
       showHelp
       askAi="Help me open a market, product, or competitive research board and tell me what to capture first."
       actions={
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" data-tour="research-actions">
           <Button variant="outline" size="sm" onClick={() => setTemplatesDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
             <CfbGlyph name="spark" className="icon-sm" />
             <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
@@ -601,10 +626,11 @@ export default function ResearchBoardsPage() {
       )}
       {!bootLoad && !error && (
         <>
+          <FirstRunTour tourId="research" steps={RESEARCH_TOUR} ready />
           <BehavioralNudge surface="canvas" compact className="mb-5" />
 
 
-          <section className="mt-8">
+          <section className="mt-8" data-tour="research-templates">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 className="text-sm font-semibold">
@@ -669,7 +695,7 @@ export default function ResearchBoardsPage() {
                 viewMode === 'grid'
                   ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
                   : 'flex flex-col gap-3',
-              )}>
+              )} data-tour="research-boards">
                 {pinnedBoards.map((board) => (
                   <BoardCard
                     key={board.id}
@@ -695,7 +721,7 @@ export default function ResearchBoardsPage() {
                 viewMode === 'grid'
                   ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
                   : 'flex flex-col gap-3',
-              )}>
+              )} data-tour="research-boards">
                 {regularBoards.map((board) => (
                   <BoardCard
                     key={board.id}
@@ -715,7 +741,7 @@ export default function ResearchBoardsPage() {
               viewMode === 'grid'
                 ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
                 : 'flex flex-col gap-3',
-            )}>
+            )} data-tour="research-boards">
               {filteredBoards.map((board) => (
                 <BoardCard
                   key={board.id}
