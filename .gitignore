@@ -74,3 +74,8 @@ apps/api/.dev-prisma-state.json
 # Replit
 .cache/
 .local/
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
