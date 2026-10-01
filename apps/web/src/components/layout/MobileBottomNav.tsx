@@ -18,24 +18,22 @@ const PRIMARY_TABS = [
   { icon: User, label: 'Profile', labelEl: 'Προφίλ', path: '/profile', match: ['/profile'] },
 ] as const;
 
-const tabClasses = 'relative flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-xs font-medium focus-ring';
+const tabClasses = 'relative flex min-h-[3.25rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[11px] font-medium leading-[1.15] tracking-tight focus-ring';
 
 function TabLabel({ en, el }: { en: string; el: string }) {
-  // Truncate rather than wrap. `break-words` split the longest Greek label
-  // mid-word ("Εξερεύνηση" -> "Εξερεύνησ" / "η"), which reads badly and made that
-  // one tab two lines tall while the others stayed at one, leaving the whole bar
-  // visibly uneven. Each tab is ~72px at 360px; an ellipsis keeps every tab the
-  // same height, and the full label is still announced through the link's
-  // aria-label, so nothing is lost to assistive tech.
+  // 11px is the product floor, and it is the size at which "Εξερεύνηση" fits a
+  // five-column tab on a 360px phone (measured 64px). `text-xs` (13.26px) was
+  // 77px and truncated to "Εξερευν…". Truncation stays as a fallback for a
+  // narrower window; the full pair is still the link's accessible name.
   return (
     <BilingualText
       en={en}
       el={el}
       stacked
       keepSecondaryOnMobile
-      className="w-full text-center"
+      className="w-full text-center text-[11px] leading-[1.15] tracking-tight"
       primaryClassName="truncate"
-      secondaryClassName="truncate"
+      secondaryClassName="truncate text-[11px] leading-[1.15]"
     />
   );
 }
@@ -98,7 +96,8 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-1 pt-1.5 backdrop-blur-md sm:hidden safe-bottom safe-x"
+      data-mobile-tabs=""
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-0.5 pt-1 backdrop-blur-md sm:hidden safe-bottom pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]"
       role="navigation"
       aria-label={t('Primary mobile navigation')}
     >

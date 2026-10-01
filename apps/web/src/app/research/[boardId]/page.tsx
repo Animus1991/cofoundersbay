@@ -1941,6 +1941,7 @@ export default function ResearchBoardPage() {
   // state is only evaluated after the component mounts on the client.
   const [mounted, setMounted] = useState(false);
   const [isPhone, setIsPhone] = useState(false);
+  const [phoneInspector, setPhoneInspector] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)');
     const sync = () => setIsPhone(mq.matches);
@@ -2588,18 +2589,32 @@ export default function ResearchBoardPage() {
         <div
           data-canvas-chrome
           className={cn(
-            'absolute z-40 pointer-events-auto',
+            'absolute z-40 pointer-events-auto flex items-end gap-1.5',
             'inset-x-2 bottom-8',
-            'sm:inset-x-auto sm:bottom-auto sm:left-3 sm:top-1/2 sm:-translate-y-1/2',
+            'sm:inset-x-auto sm:bottom-auto sm:left-3 sm:top-1/2 sm:block sm:-translate-y-1/2',
           )}
           onPointerDown={(e) => e.stopPropagation()}
         >
+          <div className="min-w-0 flex-1 sm:flex-none">
           <CanvasDrawToolbar
             activeTool={activeTool}
             onToolChange={(t) => issue('set_tool', { query: t })}
             onToggleLibrary={() => setShowShapeLibrary((p) => !p)}
             libraryOpen={showShapeLibrary}
           />
+          </div>
+          <button
+            type="button"
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-card/95 text-muted-foreground shadow-xl sm:hidden',
+              phoneInspector && 'bg-primary/15 text-primary-accessible',
+            )}
+            aria-pressed={phoneInspector}
+            aria-label={bilingualAria(researchEn('layers'), researchEl('layers'))}
+            onClick={() => setPhoneInspector((open) => !open)}
+          >
+            <Layers className="icon-sm" aria-hidden="true" />
+          </button>
         </div>
 
         {/* ─── Shape Library Panel ──────────────────────────────────────── */}
@@ -2773,10 +2788,14 @@ export default function ResearchBoardPage() {
             // plus a 0.5rem seam. From lg the map itself sits above the chat
             // bubble, so the inspector follows it up. When the map is off,
             // 99px still holds the inspector off the chat bubble.
+            // Phones do not keep a 220px column over the notes. The same panel
+            // opens from the layers button as a sheet above the draw strip.
             showMiniMap
               ? 'bottom-[calc(6rem+78px)] sm:bottom-[calc(3rem+122px)] lg:bottom-[calc(3rem+174px)]'
               : 'bottom-[99px]',
+            'max-sm:bottom-[6.5rem] max-sm:left-2 max-sm:right-2 max-sm:top-auto max-sm:z-50 max-sm:w-auto max-sm:max-h-[46dvh]',
           )}
+          data-phone-inspector={phoneInspector ? 'open' : 'closed'}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <CanvasInspectorPanel
@@ -2873,8 +2892,8 @@ export default function ResearchBoardPage() {
               {snapToGrid && ` · ⊞ ${t(researchEn('snap'), researchEl('snap'))}`}
             </span>
           </span>
-          <span className="text-2xs tabular-nums text-muted-foreground/50 shrink-0 ml-2">
-            <span className="sm:hidden">{t(researchEn('hint_nav_touch'), researchEl('hint_nav_touch'))}</span>
+          <span className="ml-2 min-w-0 max-w-[46%] truncate text-2xs tabular-nums text-muted-foreground/50 sm:max-w-none sm:shrink-0">
+            <span className="sr-only sm:hidden">{t(researchEn('hint_nav_touch'), researchEl('hint_nav_touch'))}</span>
             <span className="hidden sm:inline">
               {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} · `}
               {t(researchEn('hint_nav'), researchEl('hint_nav'))}
