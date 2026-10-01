@@ -263,7 +263,7 @@ function AttentionChips({
         <li key={`${item.href}:${item.en}`} className="min-w-0">
           <Link
             href={item.href}
-            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50"
+            className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50 sm:min-h-0"
           >
             <CfbGlyph name={item.glyph} className={cn('icon-sm shrink-0', item.urgent ? STATUS.danger.icon : 'text-muted-foreground')} />
             <span className="min-w-0 truncate">
@@ -289,7 +289,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
       </Avatar>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{match.displayName}</p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-xs text-muted-foreground max-sm:line-clamp-2 max-sm:whitespace-normal">
           {match.headline && PREVIEW_HEADLINE_EL[match.headline]
             ? <BilingualText en={match.headline} el={PREVIEW_HEADLINE_EL[match.headline]} compact />
             : match.headline}

@@ -98,8 +98,9 @@ export function AppShellFrame({
               tabIndex={-1}
               className={cn(
                 'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
-                // MobileBottomNav stops at `sm`, so its clearance does too.
-                'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
+                // Phone clearance covers the bottom nav and the page-tools button
+                // above it. From `sm` there is no bottom nav.
+                'pb-[calc(8.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
                 contentClassName,
               )}
             >
