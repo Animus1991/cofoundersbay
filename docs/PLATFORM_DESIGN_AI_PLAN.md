@@ -1075,3 +1075,16 @@ Production build με `NEXT_PUBLIC_API_URL=http://localhost:3001` + `e2e/mock-ap
 - Οι μετρήσεις τρέχουν ως `platform_admin` σε demo mode, με το preview να απαντά στον browser· persistence, JWT, Redis και οι πραγματικοί controllers ελέγχονται μόνο από τα api tests (mocked Prisma).
 - Lint δεν αναφέρεται — το `next lint` δεν έχει flat config (AGENTS.md).
 - Τα ελληνικά των νομικών σελίδων και οι ισχυρισμοί του §26.4 που δεν άλλαξαν περιμένουν απόφαση ιδιοκτήτη.
+
+## 27. Έλεγχος 2026-10-01 (preview branch) — fast-forward, καμία παράλειψη
+
+`git fetch origin --prune` από το `97e0eab` (§24).
+
+| branch | commits μόνο εκεί | κρίση |
+|---|---|---|
+| `integration/ai-platform-upgrade` `0e792ce7` | 74 | αυστηρός απόγονος· περιέχει και το Claude |
+| `claude/project-audit-upgrade-y2ebnr` `3da7e380` | 73 | πρόγονος του integration (`merge-base` = `3da7e380`) |
+| `main` `91d6ea3` | 0 | πρόγονος |
+| `cursor/ai-os-fullpage-chat-53e0` `7ce1fe3` | 0 | πρόγονος |
+
+`git merge --ff-only origin/integration/ai-platform-upgrade`. Το HEAD είναι το `0e792ce7`: **335** commits μπροστά από το `main`. Το μοναδικό commit που είχε το integration πέρα από το Claude είναι το χρώμα μάρκας (funnel lilac, 2026-10-01). Κανένα άλλο remote branch δεν έχει commit που λείπει. Δεν υπήρχε divergence.
