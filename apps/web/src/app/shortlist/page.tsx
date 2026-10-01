@@ -544,6 +544,7 @@ export default function ShortlistPage() {
 
   return (
     <AppShell
+      showHelp
       rail={rail}
       title={shortlistEn('page_title')}
       titleEl={shortlistEl('page_title')}

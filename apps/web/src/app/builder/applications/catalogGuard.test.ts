@@ -5,6 +5,12 @@ import {
   requiredCompletion,
 } from '@/components/builder/ApplicationGenerator';
 import {
+  harborApplicationDrafts,
+  isStaleHarborApplicationBlob,
+  mergeEmptyApplicationAnswers,
+  PREVIEW_APPLICATION_SEED,
+} from '@/components/builder/application-model';
+import {
   applicationQuestionCopy,
   applicationTipCopy,
 } from '@/lib/i18n/strings-application-questions';
@@ -75,5 +81,31 @@ describe('program applications catalogue lockstep', () => {
         }
       }
     }
+  });
+
+  it('keeps Harbor YC and university drafts without invented traction', () => {
+    const apps = mergeSavedApplications(PREVIEW_APPLICATION_SEED);
+    const yc = apps.find((app) => app.id === 'yc')!;
+    const yc1 = yc.questions.find((q) => q.id === 'yc1')!.answer;
+    expect(yc1.length).toBeLessThanOrEqual(50);
+    expect(yc1).toBe('Harbor OS for early-stage founders.');
+    expect(deriveApplicationStatus(yc)).toBe('in-progress');
+    expect(requiredCompletion(apps.find((app) => app.id === 'techstars')!)).toBe(0);
+    expect(requiredCompletion(apps.find((app) => app.id === 'grant')!)).toBe(0);
+    expect(deriveApplicationStatus(apps.find((app) => app.id === 'university')!)).toBe('in-progress');
+    expect(isStaleHarborApplicationBlob(JSON.stringify(apps))).toBe(false);
+    expect(isStaleHarborApplicationBlob('Sequoia Capital and $3M ARR in San Francisco')).toBe(true);
+  });
+
+  it('fills empty answers only and never overwrites a filled field', () => {
+    const yc = mergeSavedApplications(PREVIEW_APPLICATION_SEED).find((app) => app.id === 'yc')!;
+    const filled = yc.questions.find((q) => q.id === 'yc1')!.answer;
+    const merged = mergeEmptyApplicationAnswers(yc, {
+      yc1: 'Overwrite me with Sequoia and $3M ARR',
+      yc4: harborApplicationDrafts('yc').yc4,
+    });
+    expect(merged.questions.find((q) => q.id === 'yc1')?.answer).toBe(filled);
+    expect(merged.questions.find((q) => q.id === 'yc4')?.answer).toContain('Elena Papadopoulos');
+    expect(isStaleHarborApplicationBlob(JSON.stringify(merged.questions.map((q) => q.answer)))).toBe(false);
   });
 });

@@ -517,7 +517,7 @@ export default function InvestorWatchlistPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <>
           <div className="flex items-center gap-2">

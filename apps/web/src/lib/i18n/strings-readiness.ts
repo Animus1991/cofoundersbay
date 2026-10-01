@@ -130,7 +130,11 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   // ── Charts ──
   readiness_radar: { en: 'Readiness Radar', el: 'Ραντάρ ετοιμότητας' },
   your_score: { en: 'Your Score', el: 'Η βαθμολογία σας' },
-  benchmark: { en: 'Benchmark (65%)', el: 'Σημείο αναφοράς (65%)' },
+  benchmark: { en: 'Accelerator target (65%)', el: 'Στόχος επιταχυντή (65%)' },
+  radar_benchmark_note: {
+    en: 'The dashed ring is the 65% line used on Benchmarks — apply-ready for accelerators.',
+    el: 'Ο διακεκομμένος δακτύλιος είναι η γραμμή 65% στα Σημεία αναφοράς — έτοιμο για αίτηση σε επιταχυντή.',
+  },
   score_progression: { en: 'Score Progression (7 weeks)', el: 'Εξέλιξη βαθμολογίας (7 εβδομάδες)' },
   export: { en: 'Export', el: 'Εξαγωγή' },
   overall: { en: 'Overall', el: 'Συνολικά' },

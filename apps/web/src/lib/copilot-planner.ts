@@ -166,7 +166,8 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['inquir*', 'enquir*', 'αιτηματα πελατ', 'ερωτηματα πελατ'], tool: 'get_inquiries' },
   { keys: ['learning', 'course', 'tutorial', 'εκπαιδευτικ', 'μαθηματα', 'μαθημα'], tool: 'get_learning' },
   { keys: ['expert review*', 'αξιολογησεις ειδικ', 'αξιολογηση ειδικ', 'αξιολογησεων ειδικ'], tool: 'get_expert_reviews' },
-  { keys: ['cohort*', 'κοορτ'], tool: 'get_org_cohorts' },
+  // The UI says «κύκλος» for a cohort; only the plural, because «κύκλος» alone is also a funding round.
+  { keys: ['cohort*', 'κοορτ', 'κυκλοι', 'κυκλους', 'κυκλων'], tool: 'get_org_cohorts' },
   {
     keys: ['organisation member*', 'organization member*', 'org member*', 'members of my organi*', 'μελη του οργανισμου', 'μελη οργανισμου'],
     tool: 'get_org_members',

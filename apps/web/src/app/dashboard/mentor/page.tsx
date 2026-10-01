@@ -209,7 +209,7 @@ export default function MentorDashboard() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -223,7 +223,7 @@ export default function MentorDashboard() {
   }
 
   return (
-    <AppShell
+    <AppShell showHelp
       description="Sessions, mentee requests, reviews, and earnings at a glance."
       descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
       actions={

@@ -34,13 +34,15 @@ import {
   type BuilderDocumentVersion,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function fmtDate(iso: string): string {
+function fmtDate(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }) +
-    ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString(locale, { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString(locale, { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' });
 }
 
 function VersionCard({
@@ -91,7 +93,7 @@ function VersionCard({
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Clock className="icon-sm" />
-            {fmtDate(v.createdAt)}
+            <BilingualText en={fmtDate(v.createdAt, 'en-GB')} el={fmtDate(v.createdAt, 'el-GR')} compact />
           </span>
           {v.changedBy ? (
             <span className="flex items-center gap-1">
@@ -117,12 +119,13 @@ function VersionCard({
         <Button
           size="sm"
           variant="ghost"
-          className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity h-7 px-2 shrink-0 text-xs"
+          className="h-7 px-2 shrink-0 text-xs"
           onClick={() => onRestore(v)}
           disabled={restoring}
+          aria-label={bilingualAria(builderEn('hist_restore'), builderEl('hist_restore'))}
         >
           {restoring ? <Loader2 className="icon-sm animate-spin" /> : <RotateCcw className="icon-sm mr-1" />}
-          Restore
+          <BilingualText en={builderEn('hist_restore')} el={builderEl('hist_restore')} compact />
         </Button>
       )}
     </div>
@@ -162,8 +165,8 @@ export function VersionHistoryDrawer({
   const restoreMutation = useMutation({
     mutationFn: (v: BuilderDocumentVersion) =>
       restoreDocumentVersion({ documentId, targetVersion: v.version }),
-    onSuccess: (result) => {
-      success(`Restored to v${result.restoredFromVersion} — now at v${result.newVersion}`);
+    onSuccess: () => {
+      success('Version restored');
       queryClient.invalidateQueries({ queryKey: qk('builder', 'document-versions', documentId) });
       queryClient.invalidateQueries({ queryKey: qk('builder') });
       setConfirmVersion(null);
@@ -238,7 +241,7 @@ export function VersionHistoryDrawer({
           {versions.length > 0 && (
             <div className="shrink-0 pt-3 border-t mt-3">
               <p className="text-xs text-muted-foreground text-center">
-                {versions.length} version{versions.length !== 1 ? 's' : ''} · Hover a version to restore it
+                {versions.length} · <BilingualText en={builderEn('hist_footer')} el={builderEl('hist_footer')} wrap />
               </p>
             </div>
           )}
@@ -249,10 +252,15 @@ export function VersionHistoryDrawer({
       <Dialog open={!!confirmVersion} onOpenChange={() => setConfirmVersion(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle><BilingualText en="Restore this version?" el="Επαναφορά αυτής της έκδοσης;" compact /></DialogTitle>
+            <DialogTitle>
+              <BilingualText en={builderEn('hist_restore_title')} el={builderEl('hist_restore_title')} compact />
+            </DialogTitle>
             <DialogDescription>
-              Restoring to <strong>{confirmVersion?.versionLabel ?? `v${confirmVersion?.version}`}</strong> will
-              create a backup of the current version first, then apply the selected content. This action is reversible.
+              <BilingualText
+                en={`${builderEn('hist_restore_body')} (${confirmVersion?.versionLabel ?? `v${confirmVersion?.version ?? ''}`}).`}
+                el={`${builderEl('hist_restore_body')} (${confirmVersion?.versionLabel ?? `v${confirmVersion?.version ?? ''}`}).`}
+                wrap
+              />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -266,7 +274,7 @@ export function VersionHistoryDrawer({
             >
               {restoreMutation.isPending && <Loader2 className="icon-sm animate-spin" />}
               <RotateCcw className="icon-sm" />
-              <BilingualText en="Restore Version" el="Επαναφορά έκδοσης" compact />
+              <BilingualText en={builderEn('hist_restore_cta')} el={builderEl('hist_restore_cta')} compact />
             </Button>
           </DialogFooter>
         </DialogContent>

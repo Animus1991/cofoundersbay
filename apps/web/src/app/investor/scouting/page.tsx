@@ -382,7 +382,7 @@ export default function InvestorScoutingPage() {
   const activeFilters = [industry !== 'all' && industry, stage !== 'all' && stage, model !== 'all' && model].filter(Boolean) as string[];
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <>
           <div className="flex items-center gap-2">

@@ -236,7 +236,7 @@ export default function InvestorAnalyticsPage() {
   const empty = !dealsLoading && deals.length === 0;
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <div role="group" aria-label="Analytics window" className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
           {([

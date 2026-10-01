@@ -7,14 +7,16 @@ import type { BilingualPair } from './types';
 export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   // ── Greetings ──
   good_morning: { en: 'Good morning', el: 'Καλημέρα' },
-  good_afternoon: { en: 'Good afternoon', el: 'Καλό απόγευμα' },
-  good_evening: { en: 'Good evening', el: 'Καλό βράδυ' },
+  // «Καλό απόγευμα» / «Καλό βράδυ» are said on leaving; on arrival Greek uses
+  // «Καλησπέρα» from midday on.
+  good_afternoon: { en: 'Good afternoon', el: 'Καλησπέρα' },
+  good_evening: { en: 'Good evening', el: 'Καλησπέρα' },
 
   // ── Page header ──
   page_title: { en: 'Founder dashboard', el: 'Πίνακας ελέγχου ιδρυτή' },
   page_description: {
     en: 'Your startup command center — readiness, matches, and next actions.',
-    el: 'Το κέντρο ελέγχου της νεοφυούς σας — ετοιμότητα, αντιστοιχίσεις και επόμενα βήματα.',
+    el: 'Το κέντρο ελέγχου της startup σας — ετοιμότητα, αντιστοιχίσεις και επόμενα βήματα.',
   },
 
   // ── Stat cards ──
@@ -27,7 +29,7 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   this_week: { en: 'this week', el: 'αυτή την εβδομάδα' },
 
   // ── Section titles ──
-  startup_readiness: { en: 'Startup Readiness', el: 'Ετοιμότητα νεοφυούς' },
+  startup_readiness: { en: 'Startup Readiness', el: 'Ετοιμότητα startup' },
   top_matches: { en: 'Top Matches', el: 'Κορυφαίες αντιστοιχίσεις' },
   view_all_matches: { en: 'View all matches', el: 'Προβολή όλων' },
   milestones: { en: 'Milestones', el: 'Ορόσημα' },
@@ -42,7 +44,7 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   find_matches: { en: 'Find Matches', el: 'Εύρεση αντιστοιχίσεων' },
   browse_mentors: { en: 'Browse Mentors', el: 'Περιήγηση μεντόρων' },
   explore_events: { en: 'Explore Events', el: 'Εξερεύνηση εκδηλώσεων' },
-  startup_builder: { en: 'Startup Builder', el: 'Δημιουργός νεοφυούς' },
+  startup_builder: { en: 'Startup Builder', el: 'Startup Builder' },
   learning_hub: { en: 'Learning Hub', el: 'Κέντρο μάθησης' },
   marketplace: { en: 'Marketplace', el: 'Αγορά υπηρεσιών' },
   community: { en: 'Community', el: 'Κοινότητα' },
@@ -132,7 +134,7 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   },
   ask_ai_milestones: {
     en: 'Ask AI how to hit these dates',
-    el: 'Ρωτήστε το AI πώς να πιάσετε τις ημερομηνίες',
+    el: 'Ρωτήστε το AI πώς να τηρήσετε τις προθεσμίες',
   },
   ask_ai_profile: {
     en: 'Ask AI to review your profile',
@@ -145,7 +147,7 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   inbox_clear: { en: 'Inbox is clear', el: 'Τα εισερχόμενα είναι καθαρά' },
   add_first_milestone: { en: 'Add your first', el: 'Προσθέστε το πρώτο' },
   milestones_all_complete: { en: 'All complete', el: 'Όλα ολοκληρωμένα' },
-  keep_current: { en: 'Keep current', el: 'Διατήρηση' },
+  keep_current: { en: 'View profile', el: 'Προβολή προφίλ' },
   view_achievements: { en: 'All badges', el: 'Όλα τα εμβλήματα' },
   badges_keep_going: {
     en: 'Keep going to unlock more',
@@ -155,7 +157,9 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   manage_pipeline: { en: 'Manage pipeline', el: 'Διαχείριση pipeline' },
   find_investors: { en: 'Find investors', el: 'Εύρεση επενδυτών' },
   leads_tracked: { en: 'leads tracked', el: 'υποψήφιοι σε παρακολούθηση' },
+  lead_tracked: { en: 'lead tracked', el: 'υποψήφιος σε παρακολούθηση' },
   committed_count: { en: 'committed', el: 'δεσμεύτηκαν' },
+  committed_one: { en: 'committed', el: 'δεσμεύτηκε' },
   pre_seed_round: { en: 'Pre-Seed Round', el: 'Γύρος Pre-Seed' },
   view_all: { en: 'View all', el: 'Προβολή όλων' },
   manage: { en: 'Manage', el: 'Διαχείριση' },
@@ -164,6 +168,10 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   greeting_lead: {
     en: 'Here is what needs attention, and what to do next.',
     el: 'Εδώ βλέπετε τι χρειάζεται προσοχή και τι να κάνετε μετά.',
+  },
+  fundraising_empty: {
+    en: 'Start the round on Fundraising. The tracker, pipeline, and data room live there — this card will show the live figures once a round exists.',
+    el: 'Ξεκινήστε τον γύρο στη Χρηματοδότηση. Εκεί μένουν tracker, pipeline και data room — εδώ θα φανούν τα ζωντανά μεγέθη όταν υπάρχει γύρος.',
   },
   investor_lead: {
     en: 'Deal flow, the deals in motion and your portfolio, in one view.',

@@ -12,7 +12,11 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   },
   ask_ai_hint: {
     en: 'Match open roles to your skills, or draft a project from Builder artefacts.',
-    el: 'Αντιστοιχίστε ανοιχτούς ρόλους στις δεξιότητές σας, ή συντάξτε έργο από τον Builder.',
+    el: 'Αντιστοιχίστε ανοιχτούς ρόλους στις δεξιότητές σας ή συντάξτε έργο από τον Builder.',
+  },
+  ask_ai_hint_harbor: {
+    en: 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the $750K seed (Athens Tech Angels, $375K committed).',
+    el: 'Προτείνετε ποιο έργο Harbor να ξεκινήσετε ή να ενταχθείτε από τον Πυρήνα ιδέας, τον πίνακα GTM, τον ρόλο συμπληρωματικού συνιδρυτή και τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα).',
   },
   ask_ai_create: {
     en: 'Ask AI to draft this project',
@@ -41,7 +45,7 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   stage_idea_hint: { en: 'Just an idea, looking for validation', el: 'Μόλις ιδέα, ψάχνει επικύρωση' },
   stage_validating_hint: { en: 'Testing the market and building an MVP', el: 'Δοκιμή αγοράς και κατασκευή MVP' },
   stage_building_hint: { en: 'Actively developing the product', el: 'Ενεργή ανάπτυξη του προϊόντος' },
-  stage_launched_hint: { en: 'Product is live with users', el: 'Το προϊόν είναι live με χρήστες' },
+  stage_launched_hint: { en: 'Product is live and in use', el: 'Το προϊόν είναι live και σε χρήση' },
   stage_scaling_hint: { en: 'Growing and expanding', el: 'Ανάπτυξη και επέκταση' },
   stat_total: { en: 'Total projects', el: 'Σύνολο έργων' },
   stat_active: { en: 'Active / building', el: 'Ενεργά / κατασκευή' },
@@ -96,9 +100,9 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   basics_title: { en: 'Basic information', el: 'Βασικά στοιχεία' },
   basics_desc: { en: 'Name the idea and say what done looks like.', el: 'Ονομάστε την ιδέα και πείτε τι σημαίνει «ολοκληρώθηκε».' },
   field_name: { en: 'Project name', el: 'Όνομα έργου' },
-  name_ph: { en: 'e.g. EcoTrack', el: 'π.χ. EcoTrack' },
+  name_ph: { en: 'e.g. Harbor GTM board', el: 'π.χ. Πίνακας GTM του Harbor' },
   field_tagline: { en: 'Tagline', el: 'Σλόγκαν' },
-  tagline_ph: { en: 'e.g. AI-powered carbon footprint tracking', el: 'π.χ. Παρακολούθηση αποτυπώματος άνθρακα με AI' },
+  tagline_ph: { en: 'e.g. Graph + readiness + builder in the same product', el: 'π.χ. Γράφος + ετοιμότητα + builder στο ίδιο προϊόν' },
   tagline_hint: { en: 'A short line (max 100 characters).', el: 'Σύντομη γραμμή (έως 100 χαρακτήρες).' },
   field_desc: { en: 'Description', el: 'Περιγραφή' },
   desc_ph: {
@@ -174,7 +178,40 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
     el: 'Μπορεί να αφαιρέθηκε, ή ο σύνδεσμος είναι από άλλο χώρο εργασίας.',
   },
   back_projects: { en: 'Back to projects', el: 'Πίσω στα έργα' },
+  link_into: { en: 'Carry this catalogue into', el: 'Μεταφέρετε αυτόν τον κατάλογο στο' },
+  link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
+  link_milestones: { en: 'Milestones', el: 'Ορόσημα' },
+  link_research: { en: 'Research boards', el: 'Πίνακες έρευνας' },
+  link_fundraising: { en: 'Fundraising', el: 'Χρηματοδότηση' },
+  link_matches: { en: 'Matches', el: 'Αντιστοιχίσεις' },
+  commit_full: { en: 'Full-time', el: 'Πλήρης απασχόληση' },
+  commit_part: { en: 'Part-time', el: 'Μερική απασχόληση' },
+  own_this: { en: 'You own this project', el: 'Αυτό το έργο είναι δικό σας' },
+  on_team: { en: "You're on this team", el: 'Είστε στην ομάδα' },
+  applied_btn: { en: 'Application noted', el: 'Η αίτηση καταχωρήθηκε' },
 };
+
+export const PROJECT_COMMON_ROLES: BilingualPair[] = [
+  { en: 'Complementary cofounder — technical + commercial pair', el: 'Συμπληρωματικός συνιδρυτής — τεχνικό + εμπορικό ζεύγος' },
+  { en: 'Technical Co-founder', el: 'Τεχνικός συνιδρυτής' },
+  { en: 'Backend Engineer', el: 'Backend μηχανικός' },
+  { en: 'Frontend Engineer', el: 'Frontend μηχανικός' },
+  { en: 'Full-stack Developer', el: 'Full-stack developer' },
+  { en: 'Mobile Developer', el: 'Mobile developer' },
+  { en: 'Designer', el: 'Σχεδιαστής' },
+  { en: 'Product Manager', el: 'Product manager' },
+  { en: 'Growth Lead', el: 'Growth Lead' },
+  { en: 'Marketing', el: 'Marketing' },
+  { en: 'Sales', el: 'Πωλήσεις' },
+  { en: 'Operations', el: 'Λειτουργίες' },
+  { en: 'Data Scientist', el: 'Data scientist' },
+  { en: 'DevOps', el: 'DevOps' },
+  { en: 'Other', el: 'Άλλο' },
+];
+
+export const PROJECT_ROLE_TITLE_EL: Record<string, string> = Object.fromEntries(
+  PROJECT_COMMON_ROLES.map((role) => [role.en, role.el]),
+);
 
 export function projectEn(key: keyof typeof PROJECT_STRINGS): string {
   return PROJECT_STRINGS[key].en;

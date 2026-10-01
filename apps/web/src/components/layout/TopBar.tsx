@@ -119,9 +119,9 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
 }
 
 /**
- * Phone-only chrome. From `sm` the sidebar rail carries search, palette,
- * notifications, theme, locale, and the user menu — a sticky top bar there
- * would only steal vertical space without widening the column.
+ * Phone-only chrome. From `sm` the sidebar rail keeps search + notifications
+ * and folds palette, theme, and locale into the account menu — a sticky top
+ * bar there would only steal vertical space without widening the column.
  */
 export function TopBar() {
   const pathname = usePathname();

@@ -4,18 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
-import { BuilderWorkspace } from '@/components/builder/BuilderWorkspace';
-import { IdeaCore } from '@/components/builder/IdeaCore';
-import { BusinessModelCanvas } from '@/components/builder/BusinessModelCanvas';
-import { MarketAnalysis } from '@/components/builder/MarketAnalysis';
-import { MVPPlanner } from '@/components/builder/MVPPlanner';
-import { FinancialPlanning } from '@/components/builder/FinancialPlanning';
-import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
+import { BuilderWorkspace, type BuilderWorkspaceDialog } from '@/components/builder/BuilderWorkspace';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { IdeaCore, ideaCoreCompletion } from '@/components/builder/IdeaCore';
+import { BusinessModelCanvas, bmcCompletion } from '@/components/builder/BusinessModelCanvas';
+import { MarketAnalysis, marketCompletion } from '@/components/builder/MarketAnalysis';
+import { MVPPlanner, mvpCompletion } from '@/components/builder/MVPPlanner';
+import { FinancialPlanning, financialCompletion } from '@/components/builder/FinancialPlanning';
+import { PitchDeckBuilder, pitchDeckCompletion, type PitchDeckData } from '@/components/builder/PitchDeckBuilder';
 import { ReadinessScoring } from '@/components/builder/ReadinessScoring';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
-import { STATUS } from '@/lib/semantic-colors';
-import { cn } from '@/lib/utils';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
 import { WorkspaceMetricsPanels } from '@/components/gamification/WorkspaceMetricsPanels';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -23,13 +22,13 @@ import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, AlertCircle, ArrowRight, X } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
-import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { builderEn, builderEl, builderDocLabel } from '@/lib/i18n/strings-builder';
 import type { BuilderDocumentType } from '@/lib/builder-api';
-import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 const BUILDER_TOUR: TourStep[] = [
   {
@@ -55,12 +54,20 @@ const BUILDER_TOUR: TourStep[] = [
   },
 ];
 
-const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
-
 /** Greek for the preview workspace description seeded by `lib/preview-api.ts`. */
 const PREVIEW_WS_DESC_EL: Record<string, string> = {
   'Sample workspace — preview demo, not live founder data.':
     'Δείγμα χώρου εργασίας — επίδειξη προεπισκόπησης, όχι πραγματικά δεδομένα ιδρυτή.',
+};
+
+const TAB_TO_DOC: Record<string, BuilderDocumentType> = {
+  'idea-core': 'idea_core',
+  bmc: 'business_model_canvas',
+  market: 'market_analysis',
+  'pitch-deck': 'pitch_deck',
+  mvp: 'mvp_plan',
+  financials: 'financial_plan',
+  applications: 'application',
 };
 
 const BUILDER_TABS: { id: string; glyph: CfbGlyphName; labelEn: string; labelEl: string }[] = [
@@ -88,13 +95,7 @@ function BuilderPageContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTabState] = useState('overview');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [reviewBannerDismissed, setReviewBannerDismissed] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem(BUILDER_REVIEW_DISMISS_KEY) === 'true') {
-      setReviewBannerDismissed(true);
-    }
-  }, []);
+  const [workspaceDialog, setWorkspaceDialog] = useState<BuilderWorkspaceDialog>(null);
 
   useEffect(() => {
     const fromUrl = searchParams?.get('tab') ?? null;
@@ -109,6 +110,17 @@ function BuilderPageContent() {
     },
     [router],
   );
+
+  usePageControls([
+    choiceControl(
+      'tab',
+      'Builder stage',
+      'Στάδιο Builder',
+      BUILDER_TABS.map((tab) => ({ value: tab.id, en: tab.labelEn, el: tab.labelEl })),
+      activeTab,
+      (value) => setActiveTab(value),
+    ),
+  ]);
   const {
     workspace,
     isLoadingWorkspaces,
@@ -119,19 +131,67 @@ function BuilderPageContent() {
     isGenerating,
     loadWorkspaces,
     updateDocumentSection,
+    updateDocument,
     generateContent,
     createDocument,
+    selectDocument,
     clearError,
   } = useBuilder();
+
+  // The document cards are on screen only on the overview; each stage tab publishes its own rows.
+  usePageList([
+    {
+      id: 'documents',
+      labelEn: 'Workspace documents',
+      labelEl: 'Έγγραφα χώρου εργασίας',
+      rows:
+        activeTab === 'overview' && !isLoadingWorkspaces
+          ? documents.map((doc) => `${doc.title} · ${doc.status} · ${doc.completionPercent ?? 0}%`)
+          : undefined,
+      total: documents.length,
+    },
+  ]);
 
   useEffect(() => {
     loadWorkspaces(true);
   }, [loadWorkspaces]);
 
-  const handleSave = async (section: string, data: unknown) => {
-    if (!activeDocument) return;
-    await updateDocumentSection(activeDocument.id, section, (data ?? {}) as Record<string, any>);
+  useEffect(() => {
+    const type = TAB_TO_DOC[activeTab];
+    if (!type) return;
+    const doc = documents.find((d) => d.type === type);
+    if (doc && activeDocument?.id !== doc.id) {
+      void selectDocument(doc.id);
+    }
+  }, [activeTab, documents, activeDocument?.id, selectDocument]);
+
+  const ensureStageDocument = async (type: BuilderDocumentType) => {
+    const existing = documents.find((d) => d.type === type);
+    if (existing) {
+      if (activeDocument?.id !== existing.id) await selectDocument(existing.id);
+      return existing;
+    }
+    return createDocument(type, builderDocLabel(type, 'en'));
   };
+
+  const saveStageSection = async (section: string, data: unknown) => {
+    const type = TAB_TO_DOC[activeTab];
+    const doc = type ? await ensureStageDocument(type) : activeDocument;
+    if (!doc) return null;
+    await updateDocumentSection(doc.id, section, (data ?? {}) as Record<string, unknown>);
+    await selectDocument(doc.id);
+    return doc;
+  };
+
+  // Each stage passes the figure its own header shows. Written after every section save, because the
+  // API recomputes completion from section flags on that save and the overview would disagree.
+  const handleSave = async (section: string, data: unknown, completionPercent: number) => {
+    const doc = await saveStageSection(section, data);
+    if (doc) await updateDocument(doc.id, { completionPercent });
+  };
+
+  const handleSavePitch = (data: PitchDeckData) =>
+    handleSave('pitchDeck', data, pitchDeckCompletion(data.slides ?? []));
 
   const handleSaveApplications = async (data: unknown) => {
     try {
@@ -145,12 +205,16 @@ function BuilderPageContent() {
     }
   };
 
-  const handleGenerate = async (documentType: string, sectionKey?: string) => {
+  const handleGenerate = async (
+    documentType: BuilderDocumentType,
+    sectionKey?: string,
+    context?: Record<string, unknown>,
+  ) => {
     try {
-      const result = await generateContent(documentType as BuilderDocumentType, sectionKey);
-      return result.content;
-    } catch (err) {
-      console.error('Generation failed:', err);
+      const result = await generateContent(documentType, sectionKey, context);
+      return result.content ?? null;
+    } catch {
+      clearError();
       return null;
     }
   };
@@ -178,14 +242,15 @@ function BuilderPageContent() {
     <AppShell
       showHelp
       askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
+      contentClassName="builder-copy overflow-x-clip"
     >
-      <div className="builder-type min-w-0 space-y-6 overflow-x-clip">
+      <div className="builder-type builder-copy min-w-0 space-y-6 overflow-x-clip">
         <FirstRunTour tourId="builder" steps={BUILDER_TOUR} ready={!isLoadingWorkspaces && Boolean(workspace)} />
         {/* Error Alert */}
         {error && (
           <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
             <div className="flex min-w-0 items-start gap-3">
-              <AlertCircle className="icon-md shrink-0 text-destructive-accessible" />
+              <AlertCircle className="icon-sm shrink-0 text-destructive-accessible" />
               <p className="text-sm text-destructive-accessible">{error}</p>
             </div>
             <Button variant="ghost" size="sm" onClick={clearError} className="sm:ml-auto">
@@ -196,49 +261,13 @@ function BuilderPageContent() {
 
         <BehavioralNudge surface="builder" compact />
 
-        {!reviewBannerDismissed && documents.length >= 2 && (
-          <div className={cn('flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center', STATUS.warning.border, STATUS.warning.bg)}>
-            <CfbGlyph name="award" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
-            <div className="min-w-0 flex-1">
-              {/* The trigger is "two or more documents exist", not "documents
-                  are finished" — the stat card a few pixels below can say
-                  "0 completed" while this banner runs. So the claim is about
-                  what an expert can do with drafts, not that the work is done. */}
-              <p className="text-sm font-semibold text-foreground">
-                <BilingualText
-                  en={`${documents.length} documents in progress — an expert can review drafts now`}
-                  el={`${documents.length} έγγραφα σε εξέλιξη — ένας ειδικός μπορεί να αξιολογήσει τα προσχέδια τώρα`}
-                />
-              </p>
-              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                <BilingualText en="Early feedback from an investor, mentor or industry specialist is cheapest before the documents are finished." el="Η έγκαιρη ανατροφοδότηση από επενδυτή, μέντορα ή ειδικό κλάδου κοστίζει λιγότερο πριν ολοκληρωθούν τα έγγραφα." />
-              </p>
-            </div>
-            {/* One control: a <button> nested in an <a> is two (axe nested-interactive). */}
-            <Button asChild variant="ghost" size="sm" className={cn('h-9 w-full shrink-0 gap-1 text-xs font-semibold hover:bg-status-warning-bg sm:w-auto', STATUS.warning.text)}>
-              <a href="/expert-reviews">
-                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="icon-sm" aria-hidden="true" />
-              </a>
-            </Button>
-            <button
-              type="button"
-              onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
-              className="shrink-0 rounded-xl p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
-              title={bilingualAria('Dismiss', 'Απόρριψη')}
-              aria-label={bilingualAria('Dismiss expert-review suggestion', 'Απόρριψη πρότασης αξιολόγησης')}
-            >
-              <X className="icon-sm" />
-            </button>
-          </div>
-        )}
-
         {/* Context Bar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" data-tour="builder-context">
           <div className="min-w-0">
             {workspace?.name && (
-              <p className="builder-title text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
+              <p className="page-section font-semibold tracking-tight text-foreground">{workspace.name}</p>
             )}
-            <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
+            <p className="type-hold mt-0.5 text-sm leading-snug text-muted-foreground">
               {/* The preview workspace ships an English description; map it so
                   the Greek-primary page is not interrupted. User workspaces
                   render whatever the founder wrote. */}
@@ -250,11 +279,8 @@ function BuilderPageContent() {
             </p>
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <AIInsightButton
-              className="h-9"
-              prompt={`Startup Builder workspace "${workspace?.name ?? 'my venture'}": ${documents.length} artifacts (${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}). Recommend the next document — Idea Core, Business Model, interviews, pitch, MVP, or financials — and draft the first section.`}
-            />
-            {/* Online Collaborators */}
+            {/* Ask AI lives in AppShell from `askAi`. A second insight button
+                here sat on the same row as the header field. */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
                 <CfbGlyph name="people" className="icon-sm text-muted-foreground" />
@@ -280,17 +306,30 @@ function BuilderPageContent() {
                 <BilingualText en={builderEn('ai_generating')} el={builderEl('ai_generating')} compact />
               </div>
             )}
+            {/* Workspace actions on the overview; the open document's tools on a stage. */}
+            {activeTab === 'overview' ? (
+              workspace && (
+                <>
+                  <Button size="sm" variant="outline" className={BUILDER_BTN} onClick={() => setWorkspaceDialog('invite')}>
+                    <BilingualText en={builderEn('invite')} el={builderEl('invite')} compact />
+                  </Button>
+                  <Button size="sm" className={BUILDER_BTN} onClick={() => setWorkspaceDialog('create')}>
+                    <BilingualText en={builderEn('new_document')} el={builderEl('new_document')} compact />
+                  </Button>
+                </>
+              )
+            ) : (
+              activeDocument && workspace && (
+                <CollabToolbar
+                  documentId={activeDocument.id}
+                  workspaceId={workspace.id}
+                  documentTitle={activeDocument.title}
+                  onHistoryClick={() => setShowVersionHistory(true)}
+                />
+              )
+            )}
           </div>
         </div>
-
-        {activeDocument && workspace && (
-          <CollabToolbar
-            documentId={activeDocument.id}
-            workspaceId={workspace.id}
-            documentTitle={activeDocument.title}
-            onHistoryClick={() => setShowVersionHistory(true)}
-          />
-        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex h-auto w-full snap-x snap-mandatory justify-start overflow-x-auto rounded-xl" data-tour="builder-tabs">
@@ -308,51 +347,65 @@ function BuilderPageContent() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6" data-tour="builder-overview">
-            <BuilderWorkspace onOpenStage={setActiveTab} />
+            <BuilderWorkspace onOpenStage={setActiveTab} dialog={workspaceDialog} onDialogChange={setWorkspaceDialog} />
           </TabsContent>
 
           <TabsContent value="idea-core" className="space-y-6">
             <IdeaCore
-              onSave={(data) => handleSave('ideaCore', data)}
+              key={documents.find((d) => d.type === 'idea_core')?.id ?? 'idea-core'}
+              onSave={(data) => handleSave('ideaCore', data, ideaCoreCompletion(data))}
+              onGenerate={(data) => handleGenerate('idea_core', 'ideaCore', { current: data })}
               initialData={getDocumentContent('idea_core')}
+              contentRevision={`${documents.find((d) => d.type === 'idea_core')?.id ?? ''}:${documents.find((d) => d.type === 'idea_core')?.version ?? 0}:${documents.find((d) => d.type === 'idea_core')?.updatedAt ?? ''}`}
             />
           </TabsContent>
 
           <TabsContent value="bmc" className="space-y-6">
             <BusinessModelCanvas
-              onSave={(data) => handleSave('bmc', data)}
+              key={documents.find((d) => d.type === 'business_model_canvas')?.id ?? 'bmc'}
+              onSave={(data) => handleSave('bmc', data, bmcCompletion(data))}
+              onGenerate={(data) => handleGenerate('business_model_canvas', 'bmc', { current: data })}
               initialData={getDocumentContent('business_model_canvas')}
+              contentRevision={`${documents.find((d) => d.type === 'business_model_canvas')?.id ?? ''}:${documents.find((d) => d.type === 'business_model_canvas')?.version ?? 0}:${documents.find((d) => d.type === 'business_model_canvas')?.updatedAt ?? ''}`}
             />
           </TabsContent>
 
           <TabsContent value="market" className="space-y-6">
             <MarketAnalysis
-              onSave={(data) => handleSave('marketAnalysis', data)}
+              key={documents.find((d) => d.type === 'market_analysis')?.id ?? 'market'}
+              onSave={(data) => handleSave('marketAnalysis', data, marketCompletion(data))}
+              onGenerate={(data) => handleGenerate('market_analysis', 'marketAnalysis', { current: data })}
               initialData={getDocumentContent('market_analysis')}
+              contentRevision={`${documents.find((d) => d.type === 'market_analysis')?.id ?? ''}:${documents.find((d) => d.type === 'market_analysis')?.version ?? 0}:${documents.find((d) => d.type === 'market_analysis')?.updatedAt ?? ''}`}
             />
           </TabsContent>
 
           <TabsContent value="pitch-deck" className="space-y-6">
             <PitchDeckBuilder
-              onSave={(data) => handleSave('pitchDeck', data)}
+              key={documents.find((d) => d.type === 'pitch_deck')?.id ?? 'pitch-deck'}
+              hideTitle
+              onSave={handleSavePitch}
+              onGenerate={(data) => handleGenerate('pitch_deck', 'pitchDeck', { current: data })}
               initialData={getDocumentContent('pitch_deck')}
+              contentRevision={`${documents.find((d) => d.type === 'pitch_deck')?.id ?? ''}:${documents.find((d) => d.type === 'pitch_deck')?.version ?? 0}:${documents.find((d) => d.type === 'pitch_deck')?.updatedAt ?? ''}`}
               workspaceName={workspace?.startupName || workspace?.name}
               ideaCore={getDocumentContent('idea_core')}
               bmc={getDocumentContent('business_model_canvas')}
+              market={getDocumentContent('market_analysis')}
             />
           </TabsContent>
 
           <TabsContent value="mvp" className="space-y-6">
             <MVPPlanner
-              onSave={(data) => handleSave('mvpPlan', data)}
+              onSave={(data) => handleSave('mvpPlan', data, mvpCompletion(data))}
               initialData={getDocumentContent('mvp_plan')}
             />
           </TabsContent>
 
           <TabsContent value="financials" className="space-y-6">
             <FinancialPlanning
-              onSave={(data) => handleSave('financials', data)}
-              initialData={getDocumentContent('financials')}
+              onSave={(data) => handleSave('financials', data, financialCompletion(data))}
+              initialData={getDocumentContent('financial_plan')}
             />
           </TabsContent>
 
@@ -365,8 +418,11 @@ function BuilderPageContent() {
 
           <TabsContent value="applications" className="space-y-6">
             <ApplicationGenerator
+              key={documents.find((d) => d.type === 'application')?.id ?? 'applications'}
               onSave={handleSaveApplications}
+              onGenerate={(app) => handleGenerate('application', 'applications', { programId: app.id, current: app })}
               initialData={getDocumentContent('application')}
+              contentRevision={`${documents.find((d) => d.type === 'application')?.id ?? ''}:${documents.find((d) => d.type === 'application')?.version ?? 0}:${documents.find((d) => d.type === 'application')?.updatedAt ?? ''}`}
               workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})}
             />
           </TabsContent>
@@ -380,7 +436,10 @@ function BuilderPageContent() {
           documentId={activeDocument.id}
           documentTitle={activeDocument.title}
           currentVersion={activeDocument.version}
-          onRestored={() => setShowVersionHistory(false)}
+          onRestored={() => {
+            setShowVersionHistory(false);
+            if (activeDocument) void selectDocument(activeDocument.id);
+          }}
         />
       )}
     </AppShell>

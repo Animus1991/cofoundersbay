@@ -25,6 +25,24 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-activity';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const ACTIVITY_TOUR: TourStep[] = [
+  {
+    target: 'activity-tabs',
+    titleEn: 'Three streams, one page',
+    titleEl: 'Τρεις ροές, μία σελίδα',
+    bodyEn: 'Network is what people you are connected to did. Notifications are addressed to you — the badge is unread, and Mark all read clears it. Events are sessions and community dates you are on.',
+    bodyEl: 'Το Δίκτυο είναι ό,τι έκαναν όσοι είστε συνδεδεμένοι. Οι Ειδοποιήσεις απευθύνονται σε εσάς — το σήμα είναι τα αδιάβαστα και το «Σήμανση όλων» τα καθαρίζει. Οι Εκδηλώσεις είναι συνεδρίες και ημερομηνίες στις οποίες είστε.',
+  },
+  {
+    target: 'activity-stream',
+    titleEn: 'The open tab is the only list that filters',
+    titleEl: 'Η ανοιχτή καρτέλα είναι η μόνη λίστα που φιλτράρεται',
+    bodyEn: 'Type chips in the right rail narrow this stream only. Refresh re-fetches all three. Nothing here is sample data unless it is labelled as sample.',
+    bodyEl: 'Τα φίλτρα τύπου στη δεξιά ράγα περιορίζουν μόνο αυτή τη ροή. Η ανανέωση ξαναφορτώνει και τις τρεις. Τίποτα εδώ δεν είναι δείγμα αν δεν φέρει ετικέτα δείγματος.',
+  },
+];
 
 // ── Type config ─────────────────────────────────────────────────────────────
 
@@ -456,10 +474,11 @@ export default function ActivityPage() {
       showHelp
       askAi="Summarise my recent network activity and tell me what to act on first: intros, unread notifications, or upcoming events."
     >
+      <FirstRunTour tourId="activity" steps={ACTIVITY_TOUR} ready={!activityLoading} />
       <div className="space-y-5">
           <div>
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }}>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3" data-tour="activity-tabs">
                 <TabsList className="h-9">
                   <TabsTrigger value="network" className="gap-1.5 text-xs">
                     <Sparkles className="icon-sm" /> <BilingualText en={activityEn('tab_network')} el={activityEl('tab_network')} compact />
@@ -500,7 +519,7 @@ export default function ActivityPage() {
               </div>
 
               {/* Network tab with type filters */}
-              <TabsContent value="network" className="mt-0 space-y-3">
+              <TabsContent value="network" className="mt-0 space-y-3" data-tour="activity-stream">
                 <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
                   {activityError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">

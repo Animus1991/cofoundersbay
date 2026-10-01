@@ -257,7 +257,7 @@ export default function OrgAnalyticsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Org Analytics"
       description="Cohort health, program impact, application funnel, and member growth in one dashboard."
       descriptionEl="Κατάσταση κοορτών, αντίκτυπος προγραμμάτων, ροή αιτήσεων και αύξηση μελών σε έναν πίνακα."
@@ -379,7 +379,9 @@ export default function OrgAnalyticsPage() {
           <SectionCard title="Members by role" titleEl="Μέλη ανά ρόλο" action={{ href: '/org/members', label: 'Members', labelEl: 'Μέλη' }}>
             {byRole.length ? (
               <div className="flex items-center gap-4">
-                <div aria-hidden="true"><IndustryPieChart data={byRole} /></div>
+                <div inert>
+                  <IndustryPieChart data={byRole} />
+                </div>
                 <ul className="flex-1 space-y-2">
                   {byRole.map((item) => (
                     <li key={item.name} className="flex items-center justify-between text-sm">

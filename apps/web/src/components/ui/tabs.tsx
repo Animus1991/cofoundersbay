@@ -70,7 +70,9 @@ const TabsList = React.forwardRef<
     <TabsPrimitive.List
       ref={setRef}
       className={cn(
-        'tab-strip inline-flex min-h-11 max-w-full items-center gap-0.5 overflow-x-auto scrollbar-hide rounded-xl border border-border bg-muted/40 p-1 text-muted-foreground',
+        // No frame around the strip: the selected tab's quiet fill is the
+        // only shape, so a row of tabs reads as text rather than a control box.
+        'tab-strip inline-flex min-h-11 max-w-full items-center gap-0.5 overflow-x-auto scrollbar-hide rounded-lg p-0.5 text-muted-foreground',
         className,
       )}
       {...props}
@@ -127,11 +129,11 @@ const TabsTrigger = React.forwardRef<
     <TabsPrimitive.Trigger
       ref={setRef}
       className={cn(
-        'inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
-        'text-muted-foreground hover:text-foreground',
+        'inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150',
+        'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.035]',
         'focus-visible:outline-none',
         'disabled:pointer-events-none disabled:opacity-40',
-        'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-0',
+        'data-[state=active]:bg-foreground/[0.07] data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-0',
         className,
       )}
       {...props}

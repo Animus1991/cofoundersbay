@@ -13,6 +13,8 @@ type PageContextualHelpProps = {
   children?: ReactNode;
   defaultOpen?: boolean;
   compact?: boolean;
+  /** Size/weight for the help title only. */
+  titleClassName?: string;
 };
 
 type HelpCopy = { en: ReactNode; el: ReactNode };
@@ -86,12 +88,13 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         <p>
           This page edits the same <strong>application</strong> artefact as the Applications tab in Startup Builder. Four
           templates stay on the page — Y Combinator, Techstars, university incubator, and grants. Completion is the share
-          of <em>required</em> answers filled; optional questions do not hold the bar.
+          of <em>required</em> answers filled; optional questions do not hold the bar. Harbor seed is $750K ($375K
+          committed by Athens Tech Angels).
         </p>
         <p>
-          Use <em>AI Generate</em> to fill the open program with a draft, or <em>Ask AI</em> to write from Idea Core,
-          Market, and Pitch. Save writes the workspace. <em>Mark submitted</em> appears when every required field is
-          filled. View Program opens the real application page.
+          Use <em>AI Generate</em> to fill empty answers only in the open programme, or <em>Ask AI</em> to draft from Idea
+          Core, the GTM board, and the seed. Save writes this workspace artefact. <em>Mark submitted</em> appears when
+          every required field is filled. View Program opens the real application page.
         </p>
       </>
     ),
@@ -101,11 +104,44 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           Αυτή η σελίδα επεξεργάζεται το ίδιο παραδοτέο <strong>application</strong> με την καρτέλα Αιτήσεις στον Startup
           Builder. Τα τέσσερα πρότυπα μένουν στη σελίδα — Y Combinator, Techstars, πανεπιστημιακό incubator και
           επιχορηγήσεις. Η ολοκλήρωση είναι το μερίδιο <em>υποχρεωτικών</em> απαντήσεων· οι προαιρετικές δεν κρατούν τη μπάρα.
+          Ο γύρος Harbor είναι $750K ($375K από Athens Tech Angels).
         </p>
         <p>
-          Με <em>Δημιουργία AI</em> γεμίζετε το ανοιχτό πρόγραμμα, ή με <em>Ρωτήστε το AI</em> συντάσσετε από Ιδέα, Αγορά
-          και Pitch. Η αποθήκευση γράφει στον χώρο εργασίας. Η <em>Σήμανση υποβολής</em> εμφανίζεται όταν όλα τα υποχρεωτικά
-          πεδία έχουν απάντηση. Το «Προβολή προγράμματος» ανοίγει την πραγματική αίτηση.
+          Με <em>Δημιουργία AI</em> γεμίζετε μόνο κενές απαντήσεις στο ανοιχτό πρόγραμμα, ή με <em>Ρωτήστε το AI</em>
+          συντάσσετε από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο. Η αποθήκευση γράφει σε αυτό το παραδοτέο. Η
+          <em>Σήμανση υποβολής</em> εμφανίζεται όταν όλα τα υποχρεωτικά πεδία έχουν απάντηση. Το «Προβολή προγράμματος»
+          ανοίγει την πραγματική αίτηση.
+        </p>
+      </>
+    ),
+  },
+  ai: {
+    en: (
+      <>
+        <p>
+          This is the full-page Harbor copilot — the same tools as the popup. It can read matches, the GTM research
+          board, Harbor&apos;s <strong>$750K seed</strong> (Athens Tech Angels committed $375K), calendar, and Builder
+          artefacts. Writes (shortlist, connect, message) wait for your confirmation.
+        </p>
+        <p>
+          Look-up rows run immediately. Amber rows write, and each one asks first. <em>What I can do</em> lists every
+          capability. Threads on the left keep past questions. <em>I can read</em> opens workspace pages this copilot
+          actually reads — Matches, Research, Fundraising, Calendar, Builder, or Applications.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτός είναι ο βοηθός Harbor πλήρους σελίδας — τα ίδια εργαλεία με το αναδυόμενο. Διαβάζει αντιστοιχίσεις, τον
+          πίνακα GTM, τον γύρο Harbor <strong>$750K</strong> (Athens Tech Angels $375K δεσμευμένα), ημερολόγιο και
+          παραδοτέα του Builder. Οι εγγραφές (λίστα, σύνδεση, μήνυμα) περιμένουν την επιβεβαίωσή σας.
+        </p>
+        <p>
+          Οι γραμμές αναζήτησης τρέχουν αμέσως. Οι πορτοκαλί γράφουν και ρωτούν πρώτα. Το <em>Τι μπορώ να κάνω</em>{' '}
+          απαριθμεί κάθε δυνατότητα. Τα νήματα αριστερά κρατούν προηγούμενες ερωτήσεις. Το <em>Μπορώ να διαβάσω</em>{' '}
+          ανοίγει σελίδες που διαβάζει όντως ο βοηθός — Αντιστοιχίσεις, Έρευνα, Χρηματοδότηση, Ημερολόγιο, Builder ή
+          Αιτήσεις.
         </p>
       </>
     ),
@@ -219,26 +255,30 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          The summary counts the <strong>full pipeline</strong>. Committed contacts are the investor count on the round
-          card — they cannot disagree. Move a card in Kanban or the pipeline list; both tabs share the same contacts.
+          This is Harbor&apos;s <strong>$750K seed</strong>. Athens Tech Angels committed $375K; $375K remains; a warm
+          intro from Athens founder networks is in motion. The summary counts the full pipeline. Committed contacts are
+          the investor count on the round card — they cannot disagree with Kanban. Contacts you add and stage moves stay
+          in this browser until a fundraising API exists.
         </p>
         <p>
-          Use <em>Ask AI</em> for who to contact next from Builder, Pitch deck, and Data Room gaps. The{' '}
-          <strong>Data Room</strong> tab holds documents shared via tokenised links — nothing is public unless you share it.
+          Use <em>Ask AI</em> for who to contact next from Idea Core, the pitch deck, Research, and Data Room gaps. The{' '}
+          <strong>Data Room</strong> tab holds documents shared via tokenised links — nothing is public unless you send it.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Οι στήλες Kanban είναι τα στάδια:{' '}
-          <strong>Υποψήφιος → Επικοινωνία → Συνάντηση → Έλεγχος → Δεσμευμένος → Απόρριψη</strong>. Η σύνοψη μετρά ολόκληρο
-          τον αγωγό· οι δεσμευμένοι είναι ο αριθμός επενδυτών στην κάρτα γύρου — δεν μπορεί να διαφωνούν.
+          Αυτός είναι ο γύρος Harbor <strong>$750K</strong>. Οι Athens Tech Angels δεσμεύτηκαν $375K· απομένουν $375K·
+          μια ζεστή σύσταση από δίκτυα ιδρυτών στην Αθήνα είναι σε εξέλιξη. Οι στήλες Kanban είναι τα στάδια:{' '}
+          <strong>Υποψήφιος → Επικοινωνία → Συνάντηση → Due diligence → Δεσμευμένος → Δεν προχώρησε</strong>. Η σύνοψη μετρά ολόκληρο
+          το pipeline· οι δεσμευμένοι είναι ο αριθμός επενδυτών στην κάρτα γύρου — δεν μπορεί να διαφωνούν. Οι επαφές και
+          οι μετακινήσεις μένουν σε αυτόν τον browser μέχρι να υπάρξει υπηρεσία χρηματοδότησης.
         </p>
         <p>
-          Με <em>Ρωτήστε το AI</em> δείτε ποιον να προσεγγίσετε μετά από Builder, pitch deck και κενά του Data Room. Η
-          καρτέλα <strong>Data Room</strong> κρατά έγγραφα με συνδέσμους token — τίποτα δεν είναι δημόσιο αν δεν το
-          μοιραστείτε.
+          Με <em>Ρωτήστε το AI</em> δείτε ποιον να προσεγγίσετε μετά από τον Πυρήνα ιδέας, το pitch deck, την Έρευνα και
+          κενά του Data Room. Η καρτέλα <strong>Data Room</strong> κρατά έγγραφα με συνδέσμους token — τίποτα δεν είναι
+          δημόσιο αν δεν τον στείλετε.
         </p>
       </>
     ),
@@ -404,26 +444,31 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          <strong>Discover</strong> is the full catalogue. <em>My projects</em>, <em>Joined</em>, and <em>Starred</em> are
-          slices of the same list — the summary counts every project, filters only change what is on screen.
+          <strong>Discover</strong> is Harbor plus listings you publish. Preview keeps Harbor (Elena), the GTM board Alex
+          joined, and Alex&rsquo;s Athens path so <em>My projects</em>, <em>Joined</em>, and <em>Starred</em> are not empty.
+          Rail counts match the catalogue; filters only change what is on screen.
         </p>
         <p>
-          Open a card for roles, team, milestones, and updates. Use <em>Ask AI</em> to match open roles to your skills or
-          to draft a new project from Builder artefacts. Create still publishes a listing with every field from the
-          four-step form.
+          Open a card for roles, team, milestones, and updates. Apply and request-to-join stay in this browser until a
+          projects API exists — the founder has not accepted yet. Use <em>Ask AI</em> to pick a project from Idea Core, the GTM board, and
+          the $750K seed (Athens Tech Angels, $375K committed). Create still
+          publishes every field from the four-step form.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Η <strong>Ανακάλυψη</strong> είναι ο πλήρης κατάλογος. <em>Τα έργα μου</em>, <em>Συμμετοχές</em> και{' '}
-          <em>Αγαπημένα</em> είναι φέτες της ίδιας λίστας — η σύνοψη μετρά όλα τα έργα, τα φίλτρα αλλάζουν μόνο ό,τι φαίνεται.
+          Η <strong>Ανακάλυψη</strong> είναι το Harbor και οι καταχωρίσεις που δημοσιεύετε. Το preview κρατά το Harbor (Elena),
+          τον πίνακα GTM όπου συμμετέχει ο Alex, και τη διαδρομή Αθήνας του Alex ώστε <em>Τα έργα μου</em>,{' '}
+          <em>Συμμετοχές</em> και <em>Αγαπημένα</em> να μην είναι άδεια. Οι αριθμοί στη ράγα ταιριάζουν με τον κατάλογο· τα
+          φίλτρα αλλάζουν μόνο ό,τι φαίνεται.
         </p>
         <p>
-          Ανοίξτε κάρτα για ρόλους, ομάδα, ορόσημα και ενημερώσεις. Με <em>Ρωτήστε το AI</em> αντιστοιχίστε ανοιχτούς ρόλους
-          στις δεξιότητές σας ή συντάξτε νέο έργο από τον Builder. Η δημιουργία δημοσιεύει καταχώριση με όλα τα πεδία της
-          φόρμας τεσσάρων βημάτων.
+          Ανοίξτε κάρτα για ρόλους, ομάδα, ορόσημα και ενημερώσεις. Αίτηση και αίτημα ένταξης μένουν σε αυτόν τον browser μέχρι
+          να υπάρχει API έργων — ο ιδρυτής δεν έχει αποδεχτεί ακόμη. Με το <em>Ρωτήστε το AI</em> διαλέγετε έργο με βάση τον Πυρήνα ιδέας, τον πίνακα
+          GTM και τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα). Η
+          δημιουργία δημοσιεύει καταχώριση με όλα τα πεδία της φόρμας τεσσάρων βημάτων.
         </p>
       </>
     ),
@@ -674,8 +719,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Roles posted by startups on this platform — not a general job board. Filter by function and employment type.
-          <em>Post a role</em> writes to the jobs API. Cards only show facts the posting actually has (no invented
-          skills or “posted today”).
+          <em>Post a role</em> writes to the jobs API. Cards only show facts the posting actually
+          has.
         </p>
         <p>
           Empty results can <em>Ask AI</em> to draft a cofounder or early-hire post from your profile gaps, or to
@@ -688,7 +733,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         <p>
           Θέσεις που δημοσιεύουν startups σε αυτή την πλατφόρμα — όχι γενικός πίνακας αγγελιών. Φιλτράρετε κατά
           λειτουργία και τύπο απασχόλησης. Η <em>Δημοσίευση θέσης</em> γράφει στο API. Οι κάρτες δείχνουν μόνο όσα έχει
-          όντως η αγγελία (χωρίς εφευρεμένες δεξιότητες ή «δημοσιεύτηκε σήμερα»).
+          όντως η αγγελία.
         </p>
         <p>
           Τα κενά αποτελέσματα μπορούν να <em>Ρωτήσουν το AI</em> να συντάξει αγγελία συνιδρυτή ή πρώτης πρόσληψης από
@@ -702,7 +747,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       <>
         <p>
           Resources and sequenced <strong>paths</strong> aligned with readiness gaps. Tapping a path filters this page
-          to that topic — it does not invent a separate course player. Saved and Completed are local to the cards on
+          to that topic — it does not open a separate course player. Saved and Completed are local to the cards on
           this screen.
         </p>
         <p>
@@ -933,6 +978,139 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  recommendations: {
+    en: (
+      <>
+        <p>
+          These are <strong>ranked picks</strong>, not a browse directory. Order comes from your profile, skills, and
+          recent activity, and is recalculated at least hourly. Use <em>Refresh</em> after a profile edit.
+        </p>
+        <p>
+          Connect sends a request. Save writes the same shortlist as{' '}
+          <a href="/shortlist">Saved profiles</a>. <em>Not relevant</em> trains the next batch — it does not notify them.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτές είναι <strong>καταταγμένες επιλογές</strong>, όχι κατάλογος περιήγησης. Η σειρά προκύπτει από προφίλ,
+          δεξιότητες και πρόσφατη δραστηριότητα, και επανυπολογίζεται τουλάχιστον κάθε ώρα. Πατήστε <em>Ανανέωση</em>{' '}
+          μετά από αλλαγή προφίλ.
+        </p>
+        <p>
+          Η Σύνδεση στέλνει αίτημα. Η Αποθήκευση γράφει την ίδια λίστα με τα{' '}
+          <a href="/shortlist">Αποθηκευμένα προφίλ</a>. Το <em>Μη σχετικό</em> εκπαιδεύει την επόμενη παρτίδα — δεν
+          ειδοποιεί εκείνον.
+        </p>
+      </>
+    ),
+  },
+  search: {
+    en: (
+      <>
+        <p>
+          One box searches people, jobs, events, programs, and posts. Type at least two characters. Filters on the
+          results apply only to the open type — they do not hide other categories from a new query.
+        </p>
+        <p>
+          For ranked co-founder suggestions use <a href="/matches">Matches</a>. For a filtered browse, use{' '}
+          <a href="/discover">Explore</a>.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Ένα πεδίο ψάχνει ανθρώπους, θέσεις, εκδηλώσεις, προγράμματα και αναρτήσεις. Γράψτε τουλάχιστον δύο χαρακτήρες.
+          Τα φίλτρα στα αποτελέσματα ισχύουν μόνο για τον ανοιχτό τύπο — δεν κρύβουν άλλες κατηγορίες από νέα αναζήτηση.
+        </p>
+        <p>
+          Για καταταγμένες προτάσεις συνιδρυτή χρησιμοποιήστε τις <a href="/matches">Αντιστοιχίσεις</a>. Για περιήγηση
+          με φίλτρα, την <a href="/discover">Εξερεύνηση</a>.
+        </p>
+      </>
+    ),
+  },
+  shortlist: {
+    en: (
+      <>
+        <p>
+          Profiles you bookmarked from Matches, Discover, or For you. Saving does not notify them and is not a
+          connection. Add a note on a card so you remember why you kept it.
+        </p>
+        <p>
+          Connect still goes through the normal request. Remove drops the row and its note — you can save them again later.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Προφίλ που αποθηκεύσατε από Αντιστοιχίσεις, Εξερεύνηση ή Για εσάς. Η αποθήκευση δεν τους ειδοποιεί και δεν
+          είναι σύνδεση. Προσθέστε σημείωση στην κάρτα για να θυμάστε γιατί το κρατήσατε.
+        </p>
+        <p>
+          Η Σύνδεση περνά από το κανονικό αίτημα. Η αφαίρεση σβήνει τη γραμμή και τη σημείωση — μπορείτε να το
+          αποθηκεύσετε ξανά αργότερα.
+        </p>
+      </>
+    ),
+  },
+  achievements: {
+    en: (
+      <>
+        <p>
+          <strong>XP</strong> and <strong>level</strong> come from the gamification service when it is reachable;
+          otherwise the page sums points on unlocked badges, so there is only ever one score. A locked card
+          shows progress toward that badge only.
+        </p>
+        <p>
+          Tabs slice the same list: all, unlocked, locked, leaderboard, reputation, badges. The rail filters by
+          category. Leaderboard ranks include a &ldquo;You&rdquo; row from your current XP.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τα <strong>XP</strong> και το <strong>επίπεδο</strong> έρχονται από την υπηρεσία gamification όταν είναι
+          διαθέσιμη· αλλιώς η σελίδα αθροίζει πόντους ξεκλειδωμένων σημάτων ώστε να μην υπάρχει δεύτερη βαθμολογία. Μια
+          κλειδωμένη κάρτα δείχνει πρόοδο μόνο προς εκείνο το σήμα.
+        </p>
+        <p>
+          Οι καρτέλες κόβουν την ίδια λίστα: όλα, ξεκλειδωμένα, κλειδωμένα, κατάταξη, φήμη, σήματα. Η ράγα φιλτράρει
+          ανά κατηγορία. Η κατάταξη περιλαμβάνει γραμμή «Εσείς» από τα τρέχοντα XP.
+        </p>
+      </>
+    ),
+  },
+  'org-admin': {
+    en: (
+      <>
+        <p>
+          This screen administers <strong>one organization</strong> — programs, cohorts, members, and branding for
+          this slug — not the platform-wide admin console and not the public org page.
+        </p>
+        <p>
+          Changes here apply to this org only. Cohort detail, applications, and the org dashboard stay one click away
+          from the rail and header. A dash in a stat means it was not recorded, not zero.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτή η οθόνη διαχειρίζεται <strong>έναν οργανισμό</strong> — προγράμματα, κύκλους, μέλη και branding για αυτό
+          το slug — όχι την κονσόλα όλης της πλατφόρμας και όχι τη δημόσια σελίδα.
+        </p>
+        <p>
+          Οι αλλαγές ισχύουν μόνο για αυτόν τον οργανισμό. Η λεπτομέρεια κύκλου, οι αιτήσεις και ο πίνακας οργανισμού
+          μένουν ένα κλικ μακριά από ράγα και κεφαλίδα. Παύλα σε στατιστικό σημαίνει ότι δεν καταγράφηκε, όχι μηδέν.
+        </p>
+      </>
+    ),
+  },
   'expert-reviews': {
     en: (
       <>
@@ -963,13 +1141,691 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  'dashboard-mentor': {
+    en: (
+      <>
+        <p>
+          Counts here are the same lists one click away: upcoming sessions, open mentee requests, and active
+          mentees. A dash means the metric was not recorded — not zero.
+        </p>
+        <p>
+          Open <a href="/mentor/requests">Requests</a> to accept or decline. <a href="/mentor/sessions">Sessions</a>{' '}
+          holds the calendar. Earnings on this home are the month total from completed sessions when the API is up.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Οι αριθμοί εδώ είναι οι ίδιες λίστες ένα κλικ μακριά: επερχόμενες συνεδρίες, ανοιχτά αιτήματα mentee και
+          ενεργοί μαθητευόμενοι. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν.
+        </p>
+        <p>
+          Ανοίξτε τα <a href="/mentor/requests">Αιτήματα</a> για αποδοχή ή απόρριψη. Οι{' '}
+          <a href="/mentor/sessions">Συνεδρίες</a> είναι το ημερολόγιο. Τα έσοδα σε αυτή την αρχική είναι το σύνολο
+          μήνα από ολοκληρωμένες συνεδρίες όταν το API είναι διαθέσιμο.
+        </p>
+      </>
+    ),
+  },
+  'mentor-sessions': {
+    en: (
+      <>
+        <p>
+          <strong>Upcoming</strong> is still-scheduled sessions. <strong>Past</strong> and <strong>Completed</strong>{' '}
+          come from each mentorship&rsquo;s own history — the upcoming endpoint never includes them.
+        </p>
+        <p>
+          Join opens the meeting URL when one exists. Reschedule and Cancel write back to that session. Notes appear
+          only after the session is marked completed.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Οι <strong>Επερχόμενες</strong> είναι συνεδρίες που είναι ακόμη προγραμματισμένες. Τα{' '}
+          <strong>Παρελθόντα</strong> και τα <strong>Ολοκληρωμένα</strong> έρχονται από το ιστορικό κάθε mentorship —
+          το endpoint επερχόμενων δεν τα περιλαμβάνει.
+        </p>
+        <p>
+          Η Συμμετοχή ανοίγει το URL συνάντησης όταν υπάρχει. Η αλλαγή ώρας και η ακύρωση γράφουν στη συνεδρία. Οι
+          σημειώσεις εμφανίζονται μόνο αφού η συνεδρία σημειωθεί ολοκληρωμένη.
+        </p>
+      </>
+    ),
+  },
+  'mentor-requests': {
+    en: (
+      <>
+        <p>
+          These are founders asking you to mentor them — not calendar bookings. Accept starts a mentorship;
+          decline does not notify them with a message thread.
+        </p>
+        <p>
+          After you accept, the founder appears on <a href="/mentor/mentees">Mentees</a> and can book against{' '}
+          <a href="/mentor/availability">Availability</a>.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτοί είναι ιδρυτές που ζητούν καθοδήγηση — όχι κρατήσεις ημερολογίου. Η αποδοχή ξεκινά mentorship· η
+          απόρριψη δεν ανοίγει νήμα μηνύματος προς εκείνους.
+        </p>
+        <p>
+          Μετά την αποδοχή, ο ιδρυτής εμφανίζεται στους <a href="/mentor/mentees">Mentees</a> και μπορεί να κλείσει
+          ώρα από τη <a href="/mentor/availability">Διαθεσιμότητα</a>.
+        </p>
+      </>
+    ),
+  },
+  'mentor-mentees': {
+    en: (
+      <>
+        <p>
+          One row per founder you have accepted. Session counts and last activity come from that mentorship — they
+          cannot disagree with <a href="/mentor/sessions">Sessions</a>.
+        </p>
+        <p>
+          Open a row to message or schedule. Ending a mentorship removes them from this list; it does not delete
+          past session notes.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Μία γραμμή ανά ιδρυτή που αποδεχτήκατε. Τα πλήθη συνεδριών και η τελευταία δραστηριότητα έρχονται από
+          εκείνο το mentorship — δεν μπορούν να διαφωνούν με τις <a href="/mentor/sessions">Συνεδρίες</a>.
+        </p>
+        <p>
+          Ανοίξτε γραμμή για μήνυμα ή προγραμματισμό. Το τέλος του mentorship τους αφαιρεί από αυτή τη λίστα· δεν
+          διαγράφει παλιές σημειώσεις συνεδριών.
+        </p>
+      </>
+    ),
+  },
+  'mentor-availability': {
+    en: (
+      <>
+        <p>
+          These hours are what founders can book. Saving writes the slots the booking API reads — a hidden slot
+          cannot be requested.
+        </p>
+        <p>
+          Existing sessions stay on the calendar if you shrink a window; they are not auto-cancelled. Use{' '}
+          <a href="/mentor/sessions">Sessions</a> to move or cancel one.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτές οι ώρες είναι ό,τι μπορούν να κλείσουν οι ιδρυτές. Η αποθήκευση γράφει τα slots που διαβάζει το API
+          κρατήσεων — ένα κρυφό slot δεν μπορεί να ζητηθεί.
+        </p>
+        <p>
+          Οι υπάρχουσες συνεδρίες μένουν στο ημερολόγιο αν μικρύνετε ένα παράθυρο· δεν ακυρώνονται αυτόματα.
+          Χρησιμοποιήστε τις <a href="/mentor/sessions">Συνεδρίες</a> για μετακίνηση ή ακύρωση.
+        </p>
+      </>
+    ),
+  },
+  'mentor-earnings': {
+    en: (
+      <>
+        <p>
+          Pending is completed sessions not yet paid out. Paid is what has already left the platform. A dash is
+          &ldquo;not recorded&rdquo;, not a zero payout.
+        </p>
+        <p>
+          Totals always add up from the session list. Invoice and payout method live with
+          billing, not on this page.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τα εκκρεμή είναι ολοκληρωμένες συνεδρίες που δεν έχουν πληρωθεί ακόμη. Τα πληρωμένα έχουν ήδη φύγει από
+          την πλατφόρμα. Η παύλα είναι «δεν καταγράφηκε», όχι μηδενική πληρωμή.
+        </p>
+        <p>
+          Τα σύνολα προκύπτουν πάντα από τη λίστα συνεδριών. Τιμολόγιο και μέθοδος πληρωμής
+          είναι στη χρέωση, όχι σε αυτή τη σελίδα.
+        </p>
+      </>
+    ),
+  },
+  'mentor-reviews': {
+    en: (
+      <>
+        <p>
+          Reviews appear after a completed session when the founder submitted one. A missing score is not zero —
+          it was not rated.
+        </p>
+        <p>
+          You cannot edit a founder&rsquo;s review here. Reply only if the page exposes that action; otherwise the
+          review is read-only.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Οι κριτικές εμφανίζονται μετά από ολοκληρωμένη συνεδρία όταν ο ιδρυτής υπέβαλε μία. Η απουσία βαθμού δεν
+          είναι μηδέν — δεν βαθμολογήθηκε.
+        </p>
+        <p>
+          Δεν επεξεργάζεστε την κριτική του ιδρυτή εδώ. Απαντήστε μόνο αν η σελίδα δείχνει αυτή την ενέργεια· αλλιώς
+          η κριτική είναι μόνο για ανάγνωση.
+        </p>
+      </>
+    ),
+  },
+  'mentor-profile': {
+    en: (
+      <>
+        <p>
+          This is what founders see on <a href="/mentoring">Find mentors</a>: expertise, rate, timezone, and who
+          you want to reach. Empty fields stay empty — they are not filled with sample copy.
+        </p>
+        <p>
+          Saving updates the directory listing. Availability still lives on{' '}
+          <a href="/mentor/availability">Availability</a>; this page does not set bookable hours.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτό βλέπουν οι ιδρυτές στην <a href="/mentoring">Εύρεση μεντόρων</a>: εξειδίκευση, χρέωση, ζώνη ώρας και
+          ποιους θέλετε να προσεγγίσετε. Τα κενά πεδία μένουν κενά — δεν γεμίζουν με δείγμα.
+        </p>
+        <p>
+          Η αποθήκευση ενημερώνει την καταχώριση στον κατάλογο. Η διαθεσιμότητα μένει στη{' '}
+          <a href="/mentor/availability">Διαθεσιμότητα</a>· αυτή η σελίδα δεν ορίζει ώρες κράτησης.
+        </p>
+      </>
+    ),
+  },
+  mentoring: {
+    en: (
+      <>
+        <p>
+          This is the public mentor directory — filter by expertise, timezone, and rate. Booking writes a real
+          request or session; it is not a silent apply.
+        </p>
+        <p>
+          Mentors set their own hours on Availability. Expert reviews of a pitch or model go through{' '}
+          <a href="/expert-reviews">Expert reviews</a>, not this list.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτός είναι ο δημόσιος κατάλογος μεντόρων — φιλτράρετε κατά εξειδίκευση, ζώνη ώρας και χρέωση. Η κράτηση
+          γράφει πραγματικό αίτημα ή συνεδρία· δεν είναι σιωπηλή αίτηση.
+        </p>
+        <p>
+          Οι μέντορες ορίζουν τις ώρες τους στη Διαθεσιμότητα. Οι αξιολογήσεις pitch ή μοντέλου περνούν από τις{' '}
+          <a href="/expert-reviews">Αξιολογήσεις ειδικών</a>, όχι από αυτή τη λίστα.
+        </p>
+      </>
+    ),
+  },
+  'dashboard-investor': {
+    en: (
+      <>
+        <p>
+          KPIs here count the same deals as <a href="/investor/pipeline">Pipeline</a> and{' '}
+          <a href="/investor/watchlist">Watchlist</a>. A dash means the figure was not recorded.
+        </p>
+        <p>
+          Scout to find new companies. Moving a card in Pipeline is what changes these totals — this home does not
+          keep a second ledger.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τα KPI εδώ μετράνε τις ίδιες συμφωνίες με το <a href="/investor/pipeline">Pipeline</a> και τη{' '}
+          <a href="/investor/watchlist">Λίστα παρακολούθησης</a>. Η παύλα σημαίνει ότι ο αριθμός δεν καταγράφηκε.
+        </p>
+        <p>
+          Το Scout βρίσκει νέες εταιρείες. Η μετακίνηση κάρτας στο Pipeline είναι αυτό που αλλάζει αυτά τα σύνολα —
+          αυτή η αρχική δεν κρατά δεύτερο καθολικό.
+        </p>
+      </>
+    ),
+  },
+  'investor-scouting': {
+    en: (
+      <>
+        <p>
+          Search and filter startups by stage, sector, and traction. Adding to the pipeline or watchlist writes the
+          same deal the Kanban reads.
+        </p>
+        <p>
+          Founder readiness scores stay private unless the founder has shared them — a missing score is simply
+          left out.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αναζητήστε και φιλτράρετε startups κατά στάδιο, κλάδο και traction. Η προσθήκη στο pipeline ή στη λίστα
+          παρακολούθησης γράφει την ίδια συμφωνία που διαβάζει το Kanban.
+        </p>
+        <p>
+          Οι βαθμολογίες ετοιμότητας ιδρυτή μένουν ιδιωτικές εκτός αν τις έχει μοιραστεί — όταν λείπει, απλώς δεν
+          εμφανίζεται.
+        </p>
+      </>
+    ),
+  },
+  'investor-pipeline': {
+    en: (
+      <>
+        <p>
+          Stages run <strong>Discovered → Reviewing → Meeting → Diligence → Negotiating → Invested / Passed</strong>.
+          The summary counts the full pipeline; filters only change what is on screen.
+        </p>
+        <p>
+          Move a card to change stage. Invested companies also appear on <a href="/investor/portfolio">Portfolio</a>.
+          Passed stays in history — it is not deleted.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Τα στάδια είναι <strong>Ανακάλυψη → Έλεγχος → Συνάντηση → Diligence → Διαπραγμάτευση → Επένδυση / Απόρριψη</strong>.
+          Η σύνοψη μετρά όλο το pipeline· τα φίλτρα αλλάζουν μόνο ό,τι φαίνεται.
+        </p>
+        <p>
+          Μετακινήστε κάρτα για αλλαγή σταδίου. Οι επενδυμένες εταιρείες εμφανίζονται και στο{' '}
+          <a href="/investor/portfolio">Χαρτοφυλάκιο</a>. Η απόρριψη μένει στο ιστορικό — δεν διαγράφεται.
+        </p>
+      </>
+    ),
+  },
+  investors: {
+    en: (
+      <>
+        <p>
+          A public directory of angels, VCs, and syndicates. This is browse, not your personal pipeline. Filters
+          apply to the open list only.
+        </p>
+        <p>
+          Saving or connecting uses the same shortlist and connection flow as Discover. It does not add them as a
+          deal on <a href="/investor/pipeline">Pipeline</a>.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Δημόσιος κατάλογος angels, VCs και syndicates. Είναι περιήγηση, όχι το προσωπικό σας pipeline. Τα φίλτρα
+          ισχύουν μόνο για την ανοιχτή λίστα.
+        </p>
+        <p>
+          Η αποθήκευση ή η σύνδεση χρησιμοποιεί την ίδια ροή με την Εξερεύνηση. Δεν τους προσθέτει ως συμφωνία στο{' '}
+          <a href="/investor/pipeline">Pipeline</a>.
+        </p>
+      </>
+    ),
+  },
+  'investor-portfolio': {
+    en: (
+      <>
+        <p>
+          Companies you marked <strong>Invested</strong> on the pipeline. Tracking here is that deal&rsquo;s record —
+          it is not a second cap table.
+        </p>
+        <p>
+          A dash in a metric means it was not shared or not recorded. Updates you log stay on this company; they
+          do not publish to the founder feed.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Εταιρείες που σημειώσατε <strong>Επένδυση</strong> στο pipeline. Η παρακολούθηση εδώ είναι το αρχείο εκείνης
+          της συμφωνίας — όχι δεύτερος πίνακας κεφαλαίου.
+        </p>
+        <p>
+          Παύλα σε μέτρηση σημαίνει ότι δεν μοιράστηκε ή δεν καταγράφηκε. Οι ενημερώσεις που καταγράφετε μένουν σε
+          αυτή την εταιρεία· δεν δημοσιεύονται στο feed του ιδρυτή.
+        </p>
+      </>
+    ),
+  },
+  'investor-watchlist': {
+    en: (
+      <>
+        <p>
+          Founders and startups you are following before a commitment. Watchlist is not a pipeline stage and not a
+          connection request.
+        </p>
+        <p>
+          Move someone into <a href="/investor/pipeline">Pipeline</a> when you start diligence. Removing them here
+          does not delete a deal that already exists there.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Ιδρυτές και startups που παρακολουθείτε πριν δεσμευτείτε. Η λίστα δεν είναι στάδιο του pipeline και δεν είναι
+          αίτημα σύνδεσης.
+        </p>
+        <p>
+          Μεταφέρετέ τους στο <a href="/investor/pipeline">Pipeline</a> όταν ξεκινήσετε diligence. Η αφαίρεση εδώ δεν
+          διαγράφει συμφωνία που υπάρχει ήδη εκεί.
+        </p>
+      </>
+    ),
+  },
+  'investor-analytics': {
+    en: (
+      <>
+        <p>
+          Trends are recorded counts for the selected range. Role and sector mix come from deals you actually
+          moved — empty charts mean nothing was logged, not a zero market.
+        </p>
+        <p>
+          Response rate is replies you sent versus inbound intros the API recorded. A dash is unmeasured.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Οι τάσεις είναι καταγεγραμμένα πλήθη για το επιλεγμένο διάστημα. Η σύνθεση ρόλου και κλάδου προέρχεται από
+          συμφωνίες που μετακινήσατε — κενό γράφημα σημαίνει ότι δεν καταγράφηκε τίποτα, όχι μηδενική αγορά.
+        </p>
+        <p>
+          Το ποσοστό απόκρισης είναι απαντήσεις που στείλατε προς εισερχόμενες γνωριμίες που κατέγραψε το API. Η
+          παύλα είναι μη μετρημένο.
+        </p>
+      </>
+    ),
+  },
+  'org-dashboard': {
+    en: (
+      <>
+        <p>
+          This home reads the same endpoints as the org lists: programs, their participants, members, and the
+          mentor pool. A figure here is the length of a list one click away.
+        </p>
+        <p>
+          <a href="/org/dashboard">/org/dashboard</a> redirects here. Upcoming dates come from the programs&rsquo;
+          own start/end fields — not a separate milestone calendar.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτή η αρχική διαβάζει τα ίδια endpoints με τις λίστες οργανισμού: προγράμματα, συμμετέχοντες, μέλη και
+          το pool μεντόρων. Ένας αριθμός εδώ είναι το μήκος μιας λίστας ένα κλικ μακριά.
+        </p>
+        <p>
+          Το <a href="/org/dashboard">/org/dashboard</a> ανακατευθύνει εδώ. Οι επερχόμενες ημερομηνίες έρχονται από
+          τα πεδία έναρξης/λήξης των προγραμμάτων — όχι από ξεχωριστό ημερολόγιο οροσήμων.
+        </p>
+      </>
+    ),
+  },
+  'org-programs': {
+    en: (
+      <>
+        <p>
+          Statuses are the API&rsquo;s five: draft, upcoming, active, completed, archived. Enrolment is{' '}
+          <em>participantCount</em> from the same program row — it cannot disagree with Applications.
+        </p>
+        <p>
+          Create writes a real program. Opening a row goes to that program&rsquo;s cohorts and applications, not a
+          separate catalogue.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Οι καταστάσεις είναι οι πέντε του API: πρόχειρο, επερχόμενο, ενεργό, ολοκληρωμένο, αρχειοθετημένο. Η
+          εγγραφή είναι το <em>participantCount</em> της ίδιας γραμμής — δεν μπορεί να διαφωνεί με τις Αιτήσεις.
+        </p>
+        <p>
+          Η δημιουργία γράφει πραγματικό πρόγραμμα. Το άνοιγμα γραμμής πηγαίνει στους κύκλους και τις αιτήσεις του —
+          όχι σε ξεχωριστό κατάλογο.
+        </p>
+      </>
+    ),
+  },
+  'org-applications': {
+    en: (
+      <>
+        <p>
+          Applications across every open program you run. Scoring and status write to the same artefact the
+          founder sees on Builder Applications.
+        </p>
+        <p>
+          Filters slice this list only. A dash in a score means it was not rated yet. Accepting places the startup
+          on <a href="/org/startups">Portfolio</a> and the matching cohort.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αιτήσεις από κάθε ανοιχτό πρόγραμμα που τρέχετε. Η βαθμολογία και η κατάσταση γράφουν στο ίδιο παραδοτέο
+          που βλέπει ο ιδρυτής στις Αιτήσεις του Builder.
+        </p>
+        <p>
+          Τα φίλτρα κόβουν μόνο αυτή τη λίστα. Παύλα σε βαθμό σημαίνει ότι δεν βαθμολογήθηκε ακόμη. Η αποδοχή βάζει
+          το startup στο <a href="/org/startups">Χαρτοφυλάκιο</a> και στον αντίστοιχο κύκλο.
+        </p>
+      </>
+    ),
+  },
+  'org-cohorts': {
+    en: (
+      <>
+        <p>
+          One row per cohort of a program. Open a row for participants, matches, and mentoring — that detail page
+          has its own help.
+        </p>
+        <p>
+          Counts here are the cohort&rsquo;s recorded members. Empty coverage means no mentor was assigned, not a
+          hidden pool.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Μία γραμμή ανά κύκλο προγράμματος. Ανοίξτε γραμμή για συμμετέχοντες, αντιστοιχίσεις και καθοδήγηση — η
+          σελίδα λεπτομέρειας έχει δική της βοήθεια.
+        </p>
+        <p>
+          Τα πλήθη εδώ είναι τα καταγεγραμμένα μέλη του κύκλου. Κενή κάλυψη σημαίνει ότι δεν ορίστηκε μέντορας, όχι
+          κρυφό pool.
+        </p>
+      </>
+    ),
+  },
+  'org-startups': {
+    en: (
+      <>
+        <p>
+          Startups currently in your programs and graduates. The row is a participant the applications list already
+          accepted — not a second CRM.
+        </p>
+        <p>
+          Stage and progress come from that program membership. A dash was not recorded. Open the company for the
+          cohort they sit in.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Startups στα προγράμματά σας και απόφοιτοι. Η γραμμή είναι συμμετέχων που οι αιτήσεις έχουν ήδη
+          αποδεχτεί — όχι δεύτερο CRM.
+        </p>
+        <p>
+          Στάδιο και πρόοδος έρχονται από εκείνη τη συμμετοχή στο πρόγραμμα. Η παύλα δεν καταγράφηκε. Ανοίξτε την
+          εταιρεία για τον κύκλο στον οποίο ανήκει.
+        </p>
+      </>
+    ),
+  },
+  'org-members': {
+    en: (
+      <>
+        <p>
+          People who can run programs, review applications, and change settings for this organization. Invite
+          writes a membership — it is not a platform-admin grant.
+        </p>
+        <p>
+          Removing a member drops org access only. Their personal CoFounderBay account stays. Roles here do not
+          replace tenant SSO mappings.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Όσοι μπορούν να τρέχουν προγράμματα, να αξιολογούν αιτήσεις και να αλλάζουν ρυθμίσεις αυτού του
+          οργανισμού. Η πρόσκληση γράφει ιδιότητα μέλους — όχι δικαίωμα platform-admin.
+        </p>
+        <p>
+          Η αφαίρεση μέλους κόβει μόνο την πρόσβαση στον οργανισμό. Ο προσωπικός λογαριασμός CoFounderBay μένει. Οι
+          ρόλοι εδώ δεν αντικαθιστούν αντιστοιχίσεις SSO του tenant.
+        </p>
+      </>
+    ),
+  },
+  'org-mentors': {
+    en: (
+      <>
+        <p>
+          Mentors available to your cohorts. Invite by email or pull from the public{' '}
+          <a href="/mentoring">Find mentors</a> directory. They are not automatically every mentor on the platform.
+        </p>
+        <p>
+          Assigning a mentor to a cohort happens on the cohort detail page. This list is the pool, not the
+          session calendar.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Μέντορες διαθέσιμοι στους κύκλους σας. Προσκαλέστε με email ή από τον δημόσιο κατάλογο{' '}
+          <a href="/mentoring">Εύρεση μεντόρων</a>. Δεν είναι αυτόματα όλοι οι μέντορες της πλατφόρμας.
+        </p>
+        <p>
+          Η ανάθεση μέντορα σε κύκλο γίνεται στη σελίδα του κύκλου. Αυτή η λίστα είναι το pool, όχι το ημερολόγιο
+          συνεδριών.
+        </p>
+      </>
+    ),
+  },
+  'org-events': {
+    en: (
+      <>
+        <p>
+          Demo days, office hours, workshops, and pitch nights for your cohorts. RSVP and dates write to this
+          org&rsquo;s events — not the public <a href="/events">Events</a> catalogue unless you publish them there.
+        </p>
+        <p>
+          Create opens the real composer. A missing location or time is omitted on the card, not filled with
+          sample copy.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Demo days, office hours, workshops και pitch nights για τους κύκλους σας. RSVP και ημερομηνίες γράφουν
+          στις εκδηλώσεις αυτού του οργανισμού — όχι στον δημόσιο κατάλογο <a href="/events">Εκδηλώσεων</a> εκτός αν
+          τις δημοσιεύσετε εκεί.
+        </p>
+        <p>
+          Η δημιουργία ανοίγει τον πραγματικό συνθέτη. Η απουσία τοποθεσίας ή ώρας παραλείπεται στην κάρτα, δεν
+          γεμίζει με δείγμα.
+        </p>
+      </>
+    ),
+  },
+  'org-analytics': {
+    en: (
+      <>
+        <p>
+          Funnel and cohort health are recorded counts for this organization only — not platform-wide admin
+          analytics. A dash means the period was not measured.
+        </p>
+        <p>
+          Application totals must match <a href="/org/applications">Applications</a> for the same range. Member
+          growth is new org memberships, not every login.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Χωνί και υγεία κύκλων είναι καταγεγραμμένα πλήθη μόνο γι&rsquo; αυτόν τον οργανισμό — όχι τα αναλυτικά όλης
+          της πλατφόρμας. Η παύλα σημαίνει ότι η περίοδος δεν μετρήθηκε.
+        </p>
+        <p>
+          Τα σύνολα αιτήσεων πρέπει να συμφωνούν με τις <a href="/org/applications">Αιτήσεις</a> για το ίδιο
+          διάστημα. Η ανάπτυξη μελών είναι νέες ιδιότητες μέλους οργανισμού, όχι κάθε σύνδεση.
+        </p>
+      </>
+    ),
+  },
+  'org-settings': {
+    en: (
+      <>
+        <p>
+          Profile, branding, permissions, and billing for <em>this</em> organization. These are not tenant
+          white-label settings and not the platform admin console.
+        </p>
+        <p>
+          Publish branding only when this screen says so. Team permissions overlap <a href="/org/members">Members</a>{' '}
+          — changing a role here is the same membership.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Προφίλ, branding, δικαιώματα και χρέωση για <em>αυτόν</em> τον οργανισμό. Δεν είναι ρυθμίσεις white-label
+          tenant και όχι η κονσόλα platform admin.
+        </p>
+        <p>
+          Δημοσιεύστε branding μόνο όταν το λέει αυτή η οθόνη. Τα δικαιώματα ομάδας επικαλύπτονται με τα{' '}
+          <a href="/org/members">Μέλη</a> — η αλλαγή ρόλου εδώ είναι η ίδια ιδιότητα μέλους.
+        </p>
+      </>
+    ),
+  },
 };
 
 /**
  * Renders contextual help from page-registry when helpId/helpTitle exist,
  * or explicit props when provided.
  */
-export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, compact }: PageContextualHelpProps) {
+export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, compact, titleClassName }: PageContextualHelpProps) {
   const meta = usePageMeta();
   const { primary } = useLanguagePreference();
   const helpId = id ?? meta?.helpId;
@@ -994,6 +1850,7 @@ export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, 
       titleEl={helpTitleEl}
       defaultOpen={defaultOpen ?? false}
       compact={compact}
+      titleClassName={titleClassName}
     >
       {body}
     </HelpCallout>

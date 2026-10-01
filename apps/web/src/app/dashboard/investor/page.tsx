@@ -185,7 +185,7 @@ export default function InvestorDashboard() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -199,7 +199,7 @@ export default function InvestorDashboard() {
   }
 
   return (
-    <AppShell
+    <AppShell showHelp
       description="Pipeline health, deal flow, and portfolio performance — in one view."
       descriptionEl="Κατάσταση της ροής επενδύσεων, νέες ευκαιρίες και απόδοση χαρτοφυλακίου — σε μία προβολή."
       actions={

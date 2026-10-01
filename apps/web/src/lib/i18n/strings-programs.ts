@@ -73,7 +73,7 @@ export const PROGRAMS_STRINGS: Record<string, BilingualPair> = {
   optional: { en: '(optional)', el: '(προαιρετικό)' },
   fit_placeholder: {
     en: 'Describe your startup, stage, and why this program is the right fit...',
-    el: 'Περιγράψτε τη νεοφυή σας, το στάδιο, και γιατί το πρόγραμμα ταιριάζει...',
+    el: 'Περιγράψτε τη startup σας, το στάδιό της και γιατί σας ταιριάζει το πρόγραμμα...',
   },
   cancel: { en: 'Cancel', el: 'Άκυρο' },
   submit_application: { en: 'Submit Application', el: 'Υποβολή αίτησης' },

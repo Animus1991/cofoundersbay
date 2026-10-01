@@ -277,6 +277,7 @@ describe('planning the new reads', () => {
     ['Where are my expert reviews?', 'get_expert_reviews'],
     ['Which cohorts are running?', 'get_org_cohorts'],
     ['Ποιες κοόρτες τρέχουν;', 'get_org_cohorts'],
+    ['Ποιοι κύκλοι τρέχουν;', 'get_org_cohorts'],
     ['Who are the newest organisation members?', 'get_org_members'],
     ['How many users does the platform have?', 'get_platform_stats'],
     ['What is in the moderation queue?', 'get_moderation_queue'],

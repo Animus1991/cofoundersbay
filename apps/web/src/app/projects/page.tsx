@@ -40,9 +40,10 @@ import {
   useProjectPrimaryText,
   PROJECT_STAGE_KEYS,
   PROJECT_STAGE_FULL_KEYS,
+  PROJECT_ROLE_TITLE_EL,
 } from '@/lib/i18n/strings-projects';
 import { cn } from '@/lib/utils';
-import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import {
   listDemoProjects,
   toggleDemoStar,
@@ -51,6 +52,7 @@ import {
   demoProjectStats,
   PROJECT_STATUS_GLYPH,
   type DemoProject,
+  type DemoRole,
   type ProjectStatus,
 } from '@/lib/projects-demo';
 
@@ -73,20 +75,20 @@ const STAGE_PILLS: { value: string; glyph: CfbGlyphName; labelKey: keyof typeof 
 
 type TabId = 'discover' | 'mine' | 'joined' | 'starred';
 
-const ROLE_TITLE_EL: Record<string, string> = {
-  'Backend Engineer': 'Backend μηχανικός',
-  'Growth Lead': 'Growth Lead',
-  'Full-stack Developer': 'Full-stack developer',
-  Marketing: 'Marketing',
-  'Technical Co-founder': 'Τεχνικός συνιδρυτής',
-  'Mobile Developer': 'Mobile developer',
-  'Data Scientist': 'Data scientist',
-};
+function roleLabel(role: DemoRole | string) {
+  const title = typeof role === 'string' ? role : role.title;
+  const el = typeof role === 'string' ? PROJECT_ROLE_TITLE_EL[title] : (role.titleEl ?? PROJECT_ROLE_TITLE_EL[title]);
+  return el ? <BilingualText en={title} el={el} compact /> : title;
+}
 
-function roleLabel(title: string) {
-  return ROLE_TITLE_EL[title]
-    ? <BilingualText en={title} el={ROLE_TITLE_EL[title]} compact />
-    : title;
+function ProjectBlurb({ project, clamp }: { project: DemoProject; clamp: 'line-clamp-1' | 'line-clamp-2' }) {
+  const en = project.tagline || project.description;
+  const el = project.taglineEl || project.descriptionEl;
+  return (
+    <p className={cn('type-hold text-sm text-muted-foreground', clamp)}>
+      {el ? <BilingualText en={en} el={el} compact={clamp === 'line-clamp-1'} wrap={clamp === 'line-clamp-2'} /> : en}
+    </p>
+  );
 }
 
 function StageBadge({ status }: { status: ProjectStatus }) {
@@ -119,17 +121,13 @@ function ProjectCard({
           <div className="flex items-center gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">
-                <Link href={`/projects/${project.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                <Link href={`/projects/${project.id}`} className="page-section inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
                   {project.name}
                 </Link>
                 <StageBadge status={project.status} />
                 {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
               </div>
-              <p className="line-clamp-1 text-sm text-muted-foreground">
-                {project.descriptionEl
-                  ? <BilingualText en={project.description} el={project.descriptionEl} compact />
-                  : project.description}
-              </p>
+              <ProjectBlurb project={project} clamp="line-clamp-1" />
             </div>
             <div className="flex shrink-0 items-center gap-6">
               <div className="flex -space-x-2">
@@ -148,11 +146,11 @@ function ProjectCard({
               <div className="flex max-w-[200px] flex-wrap gap-1">
                 {project.rolesNeeded.slice(0, 2).map((role) => (
                   <Badge key={role.title} variant="secondary" className="rounded-full text-2xs">
-                    {roleLabel(role.title)}
+                    {roleLabel(role)}
                   </Badge>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="rounded-xl" asChild>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} asChild>
                 <Link href={`/projects/${project.id}`}>
                   <BilingualText en={projectEn('view')} el={projectEl('view')} compact />
                   <ChevronRight className="icon-sm ml-1" />
@@ -171,9 +169,9 @@ function ProjectCard({
         <div className="flex items-start justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2">
-              <Link href={`/projects/${project.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
-                {project.name}
-              </Link>
+              <Link href={`/projects/${project.id}`} className="page-section inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
+                  {project.name}
+                </Link>
               {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
             </div>
             <StageBadge status={project.status} />
@@ -212,11 +210,7 @@ function ProjectCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="line-clamp-2 text-sm text-muted-foreground">
-          {project.descriptionEl
-            ? <BilingualText en={project.description} el={project.descriptionEl} wrap />
-            : project.description}
-        </p>
+        <ProjectBlurb project={project} clamp="line-clamp-2" />
 
         <div className="flex flex-wrap gap-1.5">
           {project.tags.slice(0, 4).map((tag) => (
@@ -276,7 +270,7 @@ function ProjectCard({
               <div className="flex flex-wrap gap-1">
                 {project.rolesNeeded.map((role) => (
                   <Badge key={role.title} variant="outline" className="rounded-full bg-primary/5 text-2xs text-primary-accessible border-primary/20">
-                    {roleLabel(role.title)}
+                    {roleLabel(role)}
                   </Badge>
                 ))}
               </div>
@@ -284,7 +278,7 @@ function ProjectCard({
           )}
         </div>
 
-        <Button className="w-full rounded-xl" asChild>
+        <Button className={`w-full ${BUILDER_BTN}`} asChild>
           <Link href={`/projects/${project.id}`}>
             <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
             <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
@@ -314,10 +308,10 @@ function EmptyState({
     <Card className="rounded-xl border-dashed">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         <CfbGlyph name={glyph} className="mb-4 icon-lg text-muted-foreground/50" />
-        <h3 className="mb-1 text-sm font-semibold text-foreground">
+        <h3 className="page-section mb-1 font-semibold text-foreground">
           <BilingualText en={titleEn} el={titleEl} />
         </h3>
-        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+        <p className="type-hold mb-4 max-w-sm text-sm text-muted-foreground">
           <BilingualText en={hintEn} el={hintEl} />
         </p>
         {action}
@@ -343,9 +337,25 @@ export default function ProjectsPage() {
 
   const filtered = useMemo(() => {
     return projects.filter((p) => {
-      const q = searchQuery.toLowerCase();
-      if (q && !p.name.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q) && !p.industry.toLowerCase().includes(q)) {
-        return false;
+      const q = searchQuery.trim().toLowerCase();
+      if (q) {
+        const hay = [
+          p.name,
+          p.tagline,
+          p.taglineEl ?? '',
+          p.description,
+          p.descriptionEl ?? '',
+          p.industry,
+          p.location,
+          p.status,
+          p.stage,
+          p.founder.name,
+          p.members.map((m) => `${m.name} ${m.role} ${m.roleEl ?? ''}`).join(' '),
+          p.tags.join(' '),
+          p.rolesNeeded.map((r) => `${r.title} ${r.titleEl ?? ''} ${r.description} ${r.descriptionEl ?? ''}`).join(' '),
+          p.milestones.map((m) => `${m.title} ${m.titleEl ?? ''}`).join(' '),
+        ].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
       }
       if (statusFilter !== 'all' && p.status !== statusFilter) return false;
       if (industryFilter !== 'all' && p.industry !== industryFilter) return false;
@@ -378,8 +388,8 @@ export default function ProjectsPage() {
 
   function handleShare(project: DemoProject) {
     const url = `${window.location.origin}/projects/${project.id}`;
-    void navigator.clipboard?.writeText(url);
-    success(t(projectEn('share_done'), projectEl('share_done')), t(projectEn('share_hint'), projectEl('share_hint')));
+    void navigator.clipboard?.writeText(url).catch(() => undefined);
+    success('Link copied', 'Anyone with the link can open this project.');
   }
 
   function clearFilters() {
@@ -400,7 +410,7 @@ export default function ProjectsPage() {
           hintEl={projectEl(filteredEmpty ? 'empty_filter_hint' : empty.hint)}
           action={
             filteredEmpty ? (
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={clearFilters}>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={clearFilters}>
                 <BilingualText en={projectEn('clear_filters')} el={projectEl('clear_filters')} compact />
               </Button>
             ) : (
@@ -418,7 +428,7 @@ export default function ProjectsPage() {
             project={project}
             viewMode={viewMode}
             onStar={handleStar}
-            onMessage={(p) => openAskAi(p.founder.id)}
+            onMessage={(p) => openAskAi(p.founder.id, 'messages')}
             onShare={handleShare}
           />
         ))}
@@ -427,7 +437,7 @@ export default function ProjectsPage() {
   }
 
   const createCta = (
-    <Button size="sm" className="rounded-xl" asChild>
+    <Button size="sm" className={BUILDER_BTN} asChild>
       <Link href="/projects/create">
         <Plus className="icon-sm mr-1.5" />
         <BilingualText en={projectEn('create')} el={projectEl('create')} compact />
@@ -483,8 +493,8 @@ export default function ProjectsPage() {
                 <CfbGlyph name={s.glyph} className="icon-sm" />
               </div>
               <div className="min-w-0">
-                <p className="text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
-                <p className="mt-0.5 text-2xs leading-snug text-muted-foreground">
+                <p className="page-stat text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
+                <p className="page-stat-label mt-0.5 text-2xs leading-snug text-muted-foreground">
                   <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
                 </p>
               </div>
@@ -541,6 +551,7 @@ export default function ProjectsPage() {
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="icon"
             className="flex-1 rounded-xl"
+            type="button"
             onClick={() => setViewMode('grid')}
             aria-label={bilingualAria(projectEn('view_grid'), projectEl('view_grid'))}
             aria-pressed={viewMode === 'grid'}
@@ -551,6 +562,7 @@ export default function ProjectsPage() {
             variant={viewMode === 'list' ? 'secondary' : 'ghost'}
             size="icon"
             className="flex-1 rounded-xl"
+            type="button"
             onClick={() => setViewMode('list')}
             aria-label={bilingualAria(projectEn('view_list'), projectEl('view_list'))}
             aria-pressed={viewMode === 'list'}
@@ -562,19 +574,20 @@ export default function ProjectsPage() {
     },
   ];
 
+  const harborLive = projects.some((p) => p.name === 'Harbor' || p.id === '1');
+  const askAi = harborLive
+    ? 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the $750K seed (Athens Tech Angels, $375K committed).'
+    : 'Help me pick a project from Builder artefacts and matches.';
+
   return (
     <AppShell
       showHelp
       rail={rail}
-      askAi="Projects is still sample data. Help me find collaborators from matches and shortlist instead of treating these cards as live."
+      askAi={askAi}
+      contentClassName="builder-copy overflow-x-clip"
       actions={createCta}
     >
       <div className="space-y-4">
-        <SampleDataNotice
-          surface="Projects"
-          detail="Listed collaborations on this page are sample records until a projects API exists. Create Project still opens the form. Ask the assistant to find people instead of inventing live project data."
-          askAiPrompt="Projects is still sample data. Help me find collaborators from matches and shortlist instead of treating these cards as live."
-        />
         <button
           type="button"
           onClick={() => openAskAi()}
@@ -582,14 +595,40 @@ export default function ProjectsPage() {
         >
           <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-foreground">
+            <span className="type-kicker block font-medium text-foreground">
               <BilingualText en={projectEn('ask_ai_plan')} el={projectEl('ask_ai_plan')} stacked />
             </span>
-            <span className="block text-2xs text-muted-foreground">
-              <BilingualText en={projectEn('ask_ai_hint')} el={projectEl('ask_ai_hint')} />
+            <span className="type-hold mt-0.5 block text-sm text-muted-foreground">
+              <BilingualText
+                en={projectEn(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
+                el={projectEl(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
+              />
             </span>
           </span>
         </button>
+        <p className="type-hold text-sm text-muted-foreground">
+          <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
+          {' · '}
+          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_idea')} el={projectEl('link_idea')} compact />
+          </Link>
+          {' · '}
+          <Link href="/milestones" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_milestones')} el={projectEl('link_milestones')} compact />
+          </Link>
+          {' · '}
+          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_research')} el={projectEl('link_research')} compact />
+          </Link>
+          {' · '}
+          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_fundraising')} el={projectEl('link_fundraising')} compact />
+          </Link>
+          {' · '}
+          <Link href="/matches" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_matches')} el={projectEl('link_matches')} compact />
+          </Link>
+        </p>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-4">
           <TabsList className="rounded-xl">
@@ -649,10 +688,15 @@ export default function ProjectsPage() {
 
           {byTab[tab].length > 0 && (
             <p className="text-2xs text-muted-foreground">
-              {byTab[tab].length}{' '}
               {byTab[tab].length === 1
-                ? <BilingualText en={projectEn('found_one')} el={projectEl('found_one')} compact />
-                : <BilingualText en={projectEn('found')} el={projectEl('found')} compact />}
+                ? <BilingualText en={`1 ${projectEn('found_one')}`} el={`1 ${projectEl('found_one')}`} compact />
+                : (
+                  <BilingualText
+                    en={`${byTab[tab].length} ${projectEn('found')}`}
+                    el={`${byTab[tab].length} ${projectEl('found')}`}
+                    compact
+                  />
+                )}
             </p>
           )}
 
@@ -678,7 +722,7 @@ export default function ProjectsPage() {
               title: 'empty_joined_title',
               hint: 'empty_joined_hint',
               action: (
-                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setTab('discover')}>
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => setTab('discover')}>
                   <BilingualText en={projectEn('browse')} el={projectEl('browse')} compact />
                 </Button>
               ),
@@ -690,7 +734,7 @@ export default function ProjectsPage() {
               title: 'empty_starred_title',
               hint: 'empty_starred_hint',
               action: (
-                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setTab('discover')}>
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => setTab('discover')}>
                   <BilingualText en={projectEn('browse')} el={projectEl('browse')} compact />
                 </Button>
               ),

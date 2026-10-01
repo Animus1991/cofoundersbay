@@ -75,20 +75,23 @@ const RESEARCH_TOUR: TourStep[] = [
     bodyEl: 'Το «Χρήση προτύπου» γεμίζει έναν πίνακα με δοκιμασμένη δομή — επικύρωση, αγορά, ανταγωνιστές, pitch. Το «Νέος πίνακας» ξεκινά από κενό καμβά που διαμορφώνετε εσείς.',
   },
   {
+    target: 'research-boards',
+    titleEn: 'Your boards',
+    titleEl: 'Οι πίνακές σας',
+    bodyEn: 'Open a board to add notes, files and links as connected nodes. The card menu pins a board to the top, duplicates, archives or deletes it.',
+    bodyEl: 'Ανοίξτε έναν πίνακα για να προσθέσετε σημειώσεις, αρχεία και συνδέσμους ως συνδεδεμένους κόμβους. Το μενού της κάρτας καρφιτσώνει τον πίνακα στην κορυφή, τον αντιγράφει, τον αρχειοθετεί ή τον διαγράφει.',
+  },
+  {
     target: 'research-templates',
     titleEn: 'Templates connect to the Builder',
     titleEl: 'Τα πρότυπα συνδέονται με τον Builder',
     bodyEn: 'Each template maps to a Builder stage, so what you capture here — interviews, market sizing, competitor notes — feeds Idea Core and Market Analysis directly.',
     bodyEl: 'Κάθε πρότυπο αντιστοιχεί σε στάδιο του Builder, ώστε όσα καταγράφετε εδώ — συνεντεύξεις, μέγεθος αγοράς, σημειώσεις ανταγωνισμού — να τροφοδοτούν απευθείας τον Πυρήνα ιδέας και την Ανάλυση αγοράς.',
   },
-  {
-    target: 'research-boards',
-    titleEn: 'Your boards',
-    titleEl: 'Οι πίνακές σας',
-    bodyEn: 'Open a board to add notes, files and links as connected nodes. Pin keeps a board at the top; the card menu handles rename, duplicate and delete.',
-    bodyEl: 'Ανοίξτε έναν πίνακα για να προσθέσετε σημειώσεις, αρχεία και συνδέσμους ως συνδεδεμένους κόμβους. Το καρφίτσωμα κρατά τον πίνακα στην κορυφή· το μενού της κάρτας κάνει μετονομασία, αντιγραφή και διαγραφή.',
-  },
 ];
+
+// Sized by the column, not the viewport: pinning the page tools narrows the column and breakpoints cannot see it.
+const BOARD_GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-4';
 
 const BOARD_COLORS: { nameKey: 'color_default' | 'color_blue' | 'color_green' | 'color_purple' | 'color_orange' | 'color_pink' | 'color_cyan'; value: string | null }[] = [
   { nameKey: 'color_default', value: null },
@@ -117,7 +120,8 @@ function getBoardGlyph(iconValue: string | null): CfbGlyphName {
  * exact English description, so user-authored boards are never touched.
  */
 const PREVIEW_BOARD_DESC_EL: Record<string, string> = {
-  'Sample research board for the preview.': 'Δείγμα πίνακα έρευνας για την προεπισκόπηση.',
+  'Harbor GTM notes aligned with Idea Core and the $750K seed.':
+    'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
 };
 
 const PREVIEW_BOARD_TITLE_EL: Record<string, string> = {
@@ -170,7 +174,7 @@ export default function ResearchBoardsPage() {
     mutationFn: createResearchBoard,
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: qk('research-boards') });
-      success(t(researchEn('created'), researchEl('created')), `"${result.board.title}" ${t(researchEn('created_ready'), researchEl('created_ready'))}`);
+      success('Board created');
       setCreateDialogOpen(false);
       setNewBoardTitle('');
       setNewBoardDescription('');
@@ -178,16 +182,21 @@ export default function ResearchBoardsPage() {
       setNewBoardIcon('document');
       router.push(`/research/${result.board.id}`);
     },
-    onError: (err) => {
-      showError(t(researchEn('fail_create'), researchEl('fail_create')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
+    onError: () => {
+      showError('Failed to create board', 'Please try again');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ boardId, data }: { boardId: string; data: Parameters<typeof updateResearchBoard>[1] }) =>
       updateResearchBoard(boardId, data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: qk('research-boards') });
+      if (variables.data.isArchived === true) success('Board archived');
+      if (variables.data.isArchived === false) success('Board restored');
+    },
+    onError: () => {
+      showError('Could not update your board', 'Please try again');
     },
   });
 
@@ -195,10 +204,10 @@ export default function ResearchBoardsPage() {
     mutationFn: deleteResearchBoard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('research-boards') });
-      success(t(researchEn('deleted'), researchEl('deleted')), t(researchEn('deleted_hint'), researchEl('deleted_hint')));
+      success('Board deleted');
     },
-    onError: (err) => {
-      showError(t(researchEn('fail_delete'), researchEl('fail_delete')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
+    onError: () => {
+      showError('Failed to delete', 'Please try again');
     },
   });
 
@@ -250,7 +259,6 @@ export default function ResearchBoardsPage() {
     });
     if (!ok) return;
     updateMutation.mutate({ boardId: board.id, data: { isArchived: true } });
-    success(t(researchEn('archived'), researchEl('archived')), `"${board.title}"`);
   };
 
   const handleRestore = async (board: ResearchBoard) => {
@@ -262,7 +270,6 @@ export default function ResearchBoardsPage() {
     });
     if (!ok) return;
     updateMutation.mutate({ boardId: board.id, data: { isArchived: false } });
-    success(t(researchEn('restored'), researchEl('restored')), `"${board.title}"`);
   };
 
   const handleDelete = async (board: ResearchBoard) => {
@@ -281,6 +288,7 @@ export default function ResearchBoardsPage() {
         icon: board.icon ?? undefined,
         tags: board.tags,
       });
+      if (!result?.board) throw new Error('Board was not created');
       for (const node of full.board.nodes) {
         await createResearchNode(result.board.id, {
           type: node.type,
@@ -297,13 +305,10 @@ export default function ResearchBoardsPage() {
         });
       }
       queryClient.invalidateQueries({ queryKey: qk('research-boards') });
-      success(
-        t(researchEn('duplicated'), researchEl('duplicated')),
-        `"${result.board.title}" · ${full.board.nodes.length} ${t(researchEn('tpl_nodes'), researchEl('tpl_nodes'))}`,
-      );
+      success('Board duplicated');
       router.push(`/research/${result.board.id}`);
-    } catch (err) {
-      showError(t(researchEn('fail_duplicate'), researchEl('fail_duplicate')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
+    } catch {
+      showError('Failed to duplicate', 'Please try again');
     }
   };
 
@@ -315,6 +320,7 @@ export default function ResearchBoardsPage() {
         color: template.color,
         tags: template.tags,
       });
+      if (!result?.board) throw new Error('Board was not created');
 
       for (const node of template.initialNodes) {
         await createResearchNode(result.board.id, {
@@ -330,13 +336,10 @@ export default function ResearchBoardsPage() {
       }
 
       queryClient.invalidateQueries({ queryKey: qk('research-boards') });
-      success(
-        t(researchEn('created_tpl'), researchEl('created_tpl')),
-        `"${template.name}" · ${template.initialNodes.length} ${t(researchEn('tpl_nodes'), researchEl('tpl_nodes'))}`,
-      );
+      success('Board created from template');
       router.push(`/research/${result.board.id}`);
-    } catch (err) {
-      showError(t(researchEn('fail_tpl'), researchEl('fail_tpl')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
+    } catch {
+      showError('Failed to create from template', 'Please try again');
     }
   };
 
@@ -416,26 +419,14 @@ export default function ResearchBoardsPage() {
       labelEn: 'Summary',
       labelEl: 'Σύνοψη',
       content: (
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 min-w-0 gap-5 lg:grid-cols-3">
-            <Card className="min-w-0">
-              <CardContent className="flex h-full flex-col gap-4 p-5">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="rounded-xl bg-primary/10 p-2.5">
-                    <CfbGlyph name="research" className="icon-sm text-primary-accessible" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">
-                      <BilingualText en={researchEn('stat_boards')} el={researchEl('stat_boards')} compact />
-                    </p>
-                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                      <BilingualText en={researchEn('stat_boards_hint')} el={researchEl('stat_boards_hint')} wrap />
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                  <span className="page-stat text-2xl font-bold tabular-nums">{boards.length}</span>
-                  <span className="mb-1 text-xs text-muted-foreground">
+        // Same tile as the Builder rail: figure first, name under it, glyph aside.
+        <div className="grid grid-cols-1 gap-2">
+          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="page-stat font-semibold tabular-nums">{boards.length}</span>
+                  <span className="page-stat-label text-muted-foreground">
                     {pinnedCount}{' '}
                     <BilingualText
                       en={researchEn('stat_pinned_n')}
@@ -444,68 +435,68 @@ export default function ResearchBoardsPage() {
                     />
                   </span>
                 </div>
-              </CardContent>
-            </Card>
+                <p className="page-stat-label mt-0.5 font-medium text-foreground">
+                  <BilingualText en={researchEn('stat_boards')} el={researchEl('stat_boards')} compact wrap />
+                </p>
+                <p className="page-stat-label mt-0.5 leading-snug text-muted-foreground">
+                  <BilingualText en={researchEn('stat_boards_hint')} el={researchEl('stat_boards_hint')} wrap />
+                </p>
+              </div>
+              <CfbGlyph name="research" className="icon-sm shrink-0 text-muted-foreground/70" />
+            </div>
+          </div>
 
-            <Card className="min-w-0">
-              <CardContent className="flex h-full flex-col gap-4 p-5">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="rounded-xl bg-primary/10 p-2.5">
-                    <CfbGlyph name="bookmark" className="icon-sm text-primary-accessible" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">
-                      <BilingualText en={researchEn('stat_notes')} el={researchEl('stat_notes')} compact />
-                    </p>
-                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                      <BilingualText en={researchEn('stat_notes_hint')} el={researchEl('stat_notes_hint')} wrap />
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-                  <span className="page-stat text-2xl font-bold tabular-nums">{totalNodes}</span>
-                  <span className="mb-1 text-xs text-muted-foreground">
+          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="page-stat font-semibold tabular-nums">{totalNodes}</span>
+                  <span className="page-stat-label text-muted-foreground">
                     <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
                   </span>
                 </div>
-              </CardContent>
-            </Card>
+                <p className="page-stat-label mt-0.5 font-medium text-foreground">
+                  <BilingualText en={researchEn('stat_notes')} el={researchEl('stat_notes')} compact wrap />
+                </p>
+                <p className="page-stat-label mt-0.5 leading-snug text-muted-foreground">
+                  <BilingualText en={researchEn('stat_notes_hint')} el={researchEl('stat_notes_hint')} wrap />
+                </p>
+              </div>
+              <CfbGlyph name="bookmark" className="icon-sm shrink-0 text-muted-foreground/70" />
+            </div>
+          </div>
 
-            <Card className="min-w-0">
-              <CardContent className="flex h-full flex-col gap-4 p-5">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="rounded-xl bg-primary/10 p-2.5">
-                    <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold">
-                      <BilingualText en={researchEn('stat_next')} el={researchEl('stat_next')} compact />
-                    </p>
-                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                      {latest ? (
-                        PREVIEW_BOARD_TITLE_EL[latest.title]
-                          ? <BilingualText en={latest.title} el={PREVIEW_BOARD_TITLE_EL[latest.title]} wrap />
-                          : latest.title
-                      ) : (
-                        <BilingualText en={researchEn('stat_next_empty')} el={researchEl('stat_next_empty')} wrap />
-                      )}
-                    </p>
-                  </div>
-                </div>
-                {latest ? (
-                  <Button size="sm" variant="outline" className={`mt-auto ${BUILDER_BTN}`} asChild>
-                    <Link href={`/research/${latest.id}`}>
-                      <BilingualText en={researchEn('open_board')} el={researchEl('open_board')} compact />
-                    </Link>
-                  </Button>
-                ) : (
-                  <Button size="sm" variant="outline" className={`mt-auto ${BUILDER_BTN}`} onClick={() => setTemplatesDialogOpen(true)}>
-                    <CfbGlyph name="spark" className="icon-sm mr-1.5" />
-                    <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="page-stat-label font-medium text-foreground">
+                  <BilingualText en={researchEn('stat_next')} el={researchEl('stat_next')} compact />
+                </p>
+                <p className="page-stat-label mt-0.5 leading-snug text-muted-foreground">
+                  {latest ? (
+                    PREVIEW_BOARD_TITLE_EL[latest.title]
+                      ? <BilingualText en={latest.title} el={PREVIEW_BOARD_TITLE_EL[latest.title]} wrap />
+                      : latest.title
+                  ) : (
+                    <BilingualText en={researchEn('stat_next_empty')} el={researchEl('stat_next_empty')} wrap />
+                  )}
+                </p>
+              </div>
+              <CfbGlyph name="flag" className="icon-sm shrink-0 text-muted-foreground/70" />
+            </div>
+            {/* The rail column is narrow: the label wraps inside the button rather than clipping both languages. */}
+            {latest ? (
+              <Button size="sm" variant="outline" className={`mt-3 h-auto min-h-8 w-full whitespace-normal py-1.5 ${BUILDER_BTN}`} asChild>
+                <Link href={`/research/${latest.id}`}>
+                  <BilingualText en={researchEn('open_board')} el={researchEl('open_board')} compact wrap className="justify-center" />
+                </Link>
+              </Button>
+            ) : (
+              <Button type="button" size="sm" variant="outline" className={`mt-3 h-auto min-h-8 w-full whitespace-normal py-1.5 ${BUILDER_BTN}`} onClick={() => setTemplatesDialogOpen(true)}>
+                <CfbGlyph name="spark" className="icon-sm mr-1.5 shrink-0" />
+                <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact wrap className="justify-center" />
+              </Button>
+            )}
           </div>
         </div>
       ),
@@ -518,63 +509,81 @@ export default function ResearchBoardsPage() {
       // A narrowed list with no visible reason reads as a broken list.
       badge: (filter !== 'all' ? 1 : 0) + (searchQuery.trim() ? 1 : 0) || null,
       content: (
-        <div className="space-y-3">
-          <div className="mb-4 mt-8 flex flex-col gap-3">
-            <div className="relative w-full min-w-0">
-              <Search className="icon-sm absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t(researchEn('search_ph'), researchEl('search_ph'))}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-xl pl-10"
-                aria-label={bilingualAria(researchEn('search_ph'), researchEl('search_ph'))}
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex gap-1 rounded-xl bg-secondary/50 p-1">
+        <div className="space-y-4">
+          <div className="relative w-full min-w-0">
+            <Search className="icon-sm absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t(researchEn('search_ph'), researchEl('search_ph'))}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="rounded-xl pl-10"
+              aria-label={bilingualAria(researchEn('search_ph'), researchEl('search_ph'))}
+            />
+          </div>
+          {/* Each group names itself and wraps: a single nowrap row clipped "Κενοί" and "Στοιχεία" in the rail. */}
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <p className="type-caption font-medium text-muted-foreground">
+                <BilingualText en={researchEn('filter_group_show')} el={researchEl('filter_group_show')} compact />
+              </p>
+              <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1">
                 {filters.map((f) => (
                   <Button
                     key={f.id}
+                    type="button"
                     variant={filter === f.id ? 'secondary' : 'ghost'}
                     size="sm"
                     onClick={() => setFilter(f.id)}
-                    className={`gap-1.5 ${BUILDER_BTN}`}
+                    className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
                     aria-pressed={filter === f.id}
                   >
                     <BilingualText en={f.labelEn} el={f.labelEl} compact />
                   </Button>
                 ))}
               </div>
-              <div className="flex gap-1 rounded-xl bg-secondary/50 p-1">
+            </div>
+            <div className="space-y-1.5">
+              <p className="type-caption font-medium text-muted-foreground">
+                <BilingualText en={researchEn('filter_group_sort')} el={researchEl('filter_group_sort')} compact />
+              </p>
+              <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1">
                 {sorts.map((s) => (
                   <Button
                     key={s.id}
+                    type="button"
                     variant={sort === s.id ? 'secondary' : 'ghost'}
                     size="sm"
                     onClick={() => setSort(s.id)}
-                    className={`gap-1.5 ${BUILDER_BTN}`}
+                    className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
                     aria-pressed={sort === s.id}
                   >
                     <BilingualText en={s.labelEn} el={s.labelEl} compact />
                   </Button>
                 ))}
               </div>
-              <div className="flex gap-1 rounded-xl bg-secondary/50 p-1">
+            </div>
+            <div className="space-y-1.5">
+              <p className="type-caption font-medium text-muted-foreground">
+                <BilingualText en={researchEn('filter_group_layout')} el={researchEl('filter_group_layout')} compact />
+              </p>
+              <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1">
                 <Button
+                  type="button"
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={`gap-1.5 ${BUILDER_BTN}`}
+                  className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
                   aria-pressed={viewMode === 'grid'}
                 >
                   <Grid3X3 className="icon-sm" />
                   <BilingualText en={researchEn('grid')} el={researchEl('grid')} compact />
                 </Button>
                 <Button
+                  type="button"
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={`gap-1.5 ${BUILDER_BTN}`}
+                  className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
                   aria-pressed={viewMode === 'list'}
                 >
                   <List className="icon-sm" />
@@ -587,18 +596,24 @@ export default function ResearchBoardsPage() {
       ),
     },
   ];
+  const harborLive = boards.some((b) => b.id === 'board-gtm' && !b.isArchived);
+  const askAi = harborLive
+    ? 'Open the Harbor go-to-market board and tell me what to capture next — problem, customer, channels, offer, competition, and the $750K seed metrics — then how to carry findings into Idea Core or Market analysis.'
+    : 'Help me open a market, product, or competitive research board and tell me what to capture first.';
+
   return (
     <AppShell
       rail={rail}
       showHelp
-      askAi="Help me open a market, product, or competitive research board and tell me what to capture first."
+      askAi={askAi}
+      contentClassName="builder-copy overflow-x-clip"
       actions={
         <div className="flex flex-wrap gap-2" data-tour="research-actions">
-          <Button variant="outline" size="sm" onClick={() => setTemplatesDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
+          <Button type="button" variant="outline" size="sm" onClick={() => setTemplatesDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
             <CfbGlyph name="spark" className="icon-sm" />
             <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
           </Button>
-          <Button size="sm" onClick={() => setCreateDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
+          <Button type="button" size="sm" onClick={() => setCreateDialogOpen(true)} className={`gap-1.5 ${BUILDER_BTN}`} disabled={bootLoad}>
             <Plus className="icon-sm" />
             <BilingualText en={researchEn('new_board')} el={researchEl('new_board')} compact />
           </Button>
@@ -608,7 +623,7 @@ export default function ResearchBoardsPage() {
       {bootLoad && (
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-primary-accessible" />
-          <p className="text-sm text-muted-foreground">
+          <p className="type-hold text-sm text-muted-foreground">
             <BilingualText en={researchEn('loading')} el={researchEl('loading')} compact />
           </p>
         </div>
@@ -619,7 +634,7 @@ export default function ResearchBoardsPage() {
           <p className="mb-4 text-destructive-accessible">
             <BilingualText en={researchEn('load_fail')} el={researchEl('load_fail')} />
           </p>
-          <Button size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: qk('research-boards') })}>
+          <Button type="button" size="sm" className={BUILDER_BTN} onClick={() => queryClient.invalidateQueries({ queryKey: qk('research-boards') })}>
             <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
           </Button>
         </div>
@@ -629,55 +644,22 @@ export default function ResearchBoardsPage() {
           <FirstRunTour tourId="research" steps={RESEARCH_TOUR} ready />
           <BehavioralNudge surface="canvas" compact className="mb-5" />
 
-
-          <section className="mt-8" data-tour="research-templates">
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-semibold">
-                  <BilingualText en={researchEn('templates_heading')} el={researchEl('templates_heading')} compact />
-                </h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  <BilingualText en={researchEn('templates_hint')} el={researchEl('templates_hint')} wrap />
-                </p>
-              </div>
-              <Button variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setTemplatesDialogOpen(true)}>
-                <BilingualText en={researchEn('templates_see_all')} el={researchEl('templates_see_all')} compact />
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {BOARD_TEMPLATES.slice(0, 3).map((template) => (
-                <ResearchTemplateTile key={template.id} template={template} onSelect={handleSelectTemplate} />
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              <BilingualText en={researchEn('link_builder')} el={researchEl('link_builder')} compact />
-              {' · '}
-              <Link href="/builder?tab=idea_core" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_idea')} el={researchEl('link_idea')} compact />
-              </Link>
-              {' · '}
-              <Link href="/builder?tab=market_analysis" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_market')} el={researchEl('link_market')} compact />
-              </Link>
-            </p>
-          </section>
-
-
+          {/* The founder's own boards come first; templates are for starting something new. */}
           {boards.length === 0 && filter === 'all' && (
             <div className="rounded-2xl border border-border/60 bg-card/60 px-5 py-10 text-center">
               <CfbGlyph name="research" className="mx-auto mb-4 icon-lg text-muted-foreground/50" />
-              <h2 className="mb-2 text-sm font-semibold">
+              <h2 className="page-section mb-2 font-semibold">
                 <BilingualText en={researchEn('empty_title')} el={researchEl('empty_title')} />
               </h2>
-              <p className="mx-auto mb-5 max-w-md text-xs text-muted-foreground">
+              <p className="type-hold mx-auto mb-5 max-w-md text-sm text-muted-foreground">
                 <BilingualText en={researchEn('empty_hint')} el={researchEl('empty_hint')} />
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                <Button variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setTemplatesDialogOpen(true)}>
+                <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setTemplatesDialogOpen(true)}>
                   <CfbGlyph name="spark" className="icon-sm" />
                   <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
                 </Button>
-                <Button size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setCreateDialogOpen(true)}>
+                <Button type="button" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="icon-sm" />
                   <BilingualText en={researchEn('empty_cta')} el={researchEl('empty_cta')} compact />
                 </Button>
@@ -687,13 +669,13 @@ export default function ResearchBoardsPage() {
 
           {useSplit && pinnedBoards.length > 0 && (
             <div className="mb-8">
-              <h2 className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <h2 className="page-section mb-4 flex items-center gap-2 font-medium text-muted-foreground">
                 <Pin className="icon-sm" />
                 <BilingualText en={researchEn('pinned')} el={researchEl('pinned')} compact />
               </h2>
               <div className={cn(
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                  ? BOARD_GRID
                   : 'flex flex-col gap-3',
               )} data-tour="research-boards">
                 {pinnedBoards.map((board) => (
@@ -712,14 +694,16 @@ export default function ResearchBoardsPage() {
 
           {useSplit && regularBoards.length > 0 && (
             <div>
-              {pinnedBoards.length > 0 && (
-                <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+              <h2 className="page-section mb-4 font-medium text-muted-foreground">
+                {pinnedBoards.length > 0 ? (
                   <BilingualText en={researchEn('all_boards')} el={researchEl('all_boards')} compact />
-                </h2>
-              )}
+                ) : (
+                  <BilingualText en={researchEn('your_boards')} el={researchEl('your_boards')} compact />
+                )}
+              </h2>
               <div className={cn(
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                  ? BOARD_GRID
                   : 'flex flex-col gap-3',
               )} data-tour="research-boards">
                 {regularBoards.map((board) => (
@@ -739,7 +723,7 @@ export default function ResearchBoardsPage() {
           {!useSplit && filteredBoards.length > 0 && (
             <div className={cn(
               viewMode === 'grid'
-                ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                ? BOARD_GRID
                 : 'flex flex-col gap-3',
             )} data-tour="research-boards">
               {filteredBoards.map((board) => (
@@ -777,6 +761,42 @@ export default function ResearchBoardsPage() {
             </div>
           )}
 
+          <section className="mt-10 border-t border-border/50 pt-8" data-tour="research-templates">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div className="min-w-0 flex-[1_1_20rem]">
+                <h2 className="page-section font-semibold">
+                  <BilingualText en={researchEn('templates_heading')} el={researchEl('templates_heading')} compact />
+                </h2>
+                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={researchEn('templates_hint')} el={researchEl('templates_hint')} wrap />
+                </p>
+              </div>
+              <Button type="button" variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setTemplatesDialogOpen(true)}>
+                <BilingualText en={researchEn('templates_see_all')} el={researchEl('templates_see_all')} compact />
+              </Button>
+            </div>
+            <div className={cn(BOARD_GRID, 'gap-3')}>
+              {BOARD_TEMPLATES.slice(0, 3).map((template) => (
+                <ResearchTemplateTile key={template.id} template={template} onSelect={handleSelectTemplate} />
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              <BilingualText en={researchEn('link_builder')} el={researchEl('link_builder')} compact />
+              {' · '}
+              <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
+                <BilingualText en={researchEn('link_idea')} el={researchEl('link_idea')} compact />
+              </Link>
+              {' · '}
+              <Link href="/builder?tab=market" className="text-foreground underline-offset-4 hover:underline">
+                <BilingualText en={researchEn('link_market')} el={researchEl('link_market')} compact />
+              </Link>
+              {' · '}
+              <Link href="/builder?tab=pitch-deck" className="text-foreground underline-offset-4 hover:underline">
+                <BilingualText en={researchEn('link_pitch')} el={researchEl('link_pitch')} compact />
+              </Link>
+            </p>
+          </section>
+
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogContent className="rounded-2xl sm:max-w-md">
               <DialogHeader>
@@ -790,7 +810,7 @@ export default function ResearchBoardsPage() {
 
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="type-hold text-sm font-medium">
                     <BilingualText en={researchEn('field_title')} el={researchEl('field_title')} compact />
                   </label>
                   <Input
@@ -803,7 +823,7 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="type-hold text-sm font-medium">
                     <BilingualText en={researchEn('field_desc')} el={researchEl('field_desc')} compact />
                   </label>
                   <Input
@@ -815,7 +835,7 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="type-hold text-sm font-medium">
                     <BilingualText en={researchEn('field_color')} el={researchEl('field_color')} compact />
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -840,7 +860,7 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="type-hold text-sm font-medium">
                     <BilingualText en={researchEn('field_icon')} el={researchEl('field_icon')} compact />
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -866,10 +886,11 @@ export default function ResearchBoardsPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setCreateDialogOpen(false)}>
+                <Button type="button" variant="ghost" size="sm" className={BUILDER_BTN} onClick={() => setCreateDialogOpen(false)}>
                   <BilingualText en={commonEn('cancel')} el={commonEl('cancel')} compact />
                 </Button>
                 <Button
+                  type="button"
                   size="sm"
                   className={BUILDER_BTN}
                   onClick={handleCreateBoard}
@@ -888,6 +909,7 @@ export default function ResearchBoardsPage() {
             open={templatesDialogOpen}
             onClose={() => setTemplatesDialogOpen(false)}
             onSelectTemplate={handleSelectTemplate}
+            onStartBlank={() => setCreateDialogOpen(true)}
           />
         </>
       )}
@@ -919,9 +941,17 @@ function BoardCard({
   onDelete: () => void;
 }) {
   const glyph = getBoardGlyph(board.icon);
-  const title = PREVIEW_BOARD_TITLE_EL[board.title]
-    ? <BilingualText en={board.title} el={PREVIEW_BOARD_TITLE_EL[board.title]} compact />
-    : board.title;
+  const titleEl = PREVIEW_BOARD_TITLE_EL[board.title];
+  const title = (wrap: boolean) =>
+    titleEl ? <BilingualText en={board.title} el={titleEl} compact wrap={wrap} /> : board.title;
+  const pinnedMark = board.isPinned ? (
+    <>
+      <Pin className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+      <span className="sr-only">
+        <BilingualText en={researchEn('pinned')} el={researchEl('pinned')} compact />
+      </span>
+    </>
+  ) : null;
   const description = board.description
     ? PREVIEW_BOARD_DESC_EL[board.description]
       ? <BilingualText en={board.description} el={PREVIEW_BOARD_DESC_EL[board.description]} wrap />
@@ -941,6 +971,7 @@ function BoardCard({
           variant={viewMode === 'list' ? 'ghost' : 'secondary'}
           size="sm"
           className="h-8 w-8 rounded-xl p-0"
+          type="button"
           aria-label={bilingualAria(researchEn('more'), researchEl('more'))}
         >
           <MoreVertical className="icon-sm" />
@@ -983,13 +1014,13 @@ function BoardCard({
     return (
       <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen}>
         <CardContent className="flex items-center gap-4 p-4">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
+          <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name={glyph} className="icon-sm" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="truncate text-sm font-semibold">{title}</h3>
-              {board.isPinned && <Pin className="icon-sm shrink-0 text-primary-accessible" />}
+              <h3 className="page-section min-w-0 truncate font-semibold">{title(false)}</h3>
+              {pinnedMark}
             </div>
             {description && (
               <p className="truncate text-xs text-muted-foreground">{description}</p>
@@ -1009,16 +1040,16 @@ function BoardCard({
     <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen}>
       <CardContent className="flex h-full flex-col gap-3 p-5">
         <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
+          <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name={glyph} className="icon-sm" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-semibold leading-snug">
-                {title}
-                {board.isPinned && <Pin className="ml-1.5 inline icon-sm align-text-top text-muted-foreground" />}
-              </h3>
-              {menu}
+              <h3 className="page-section min-w-0 flex-1 font-semibold leading-snug">{title(true)}</h3>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {pinnedMark}
+                {menu}
+              </div>
             </div>
             {description && (
               <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">
@@ -1028,9 +1059,9 @@ function BoardCard({
           </div>
         </div>
         {board.tags.length > 0 && (
-          <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">
+          <div className="flex flex-wrap gap-1.5 text-2xs text-muted-foreground">
             {board.tags.map((tag) => (
-              <span key={tag}>
+              <span key={tag} className="rounded-md bg-muted/70 px-1.5 py-0.5">
                 <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
               </span>
             ))}

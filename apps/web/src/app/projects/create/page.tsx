@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ArrowLeft, ArrowRight, Check, Plus, X,
 } from 'lucide-react';
@@ -29,8 +30,10 @@ import {
   projectEl,
   useProjectPrimaryText,
   PROJECT_STAGE_FULL_KEYS,
+  PROJECT_COMMON_ROLES,
 } from '@/lib/i18n/strings-projects';
 import { cn } from '@/lib/utils';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import {
   createDemoProject,
   PROJECT_STATUS_GLYPH,
@@ -48,12 +51,6 @@ const STATUS_OPTIONS: { value: ProjectStatus; hintKey: 'stage_idea_hint' | 'stag
 const INDUSTRIES = [
   'AI/ML', 'B2B SaaS', 'CleanTech', 'Consumer', 'EdTech', 'FinTech',
   'HealthTech', 'Marketplace', 'Social', 'Developer Tools', 'E-commerce', 'Other',
-];
-
-const COMMON_ROLES = [
-  'Technical Co-founder', 'Backend Engineer', 'Frontend Engineer', 'Full-stack Developer',
-  'Mobile Developer', 'Designer', 'Product Manager', 'Growth Lead', 'Marketing',
-  'Sales', 'Operations', 'Data Scientist', 'DevOps', 'Other',
 ];
 
 const COMMON_TAGS = [
@@ -137,10 +134,10 @@ export default function CreateProjectPage() {
         rolesNeeded,
         tags,
       });
-      success(t(projectEn('created'), projectEl('created')), t(projectEn('created_hint'), projectEl('created_hint')));
+      success('Project created', 'It is now visible to potential co-founders.');
       router.push(`/projects/${created.id}`);
     } catch {
-      showError(t(projectEn('fail_create'), projectEl('fail_create')), t(projectEn('try_again'), projectEl('try_again')));
+      showError('Failed to create project', 'Please try again');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,8 +148,10 @@ export default function CreateProjectPage() {
   return (
     <AppShell
       showHelp
+      askAi="Draft the next Harbor project from Idea Core, the GTM board, or the complementary-cofounder role."
+      contentClassName="builder-copy overflow-x-clip"
       actions={
-        <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
+        <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
           <CfbGlyph name="spark" className="icon-sm" />
           <BilingualText en={projectEn('ask_ai_create')} el={projectEl('ask_ai_create')} compact />
         </Button>
@@ -163,7 +162,8 @@ export default function CreateProjectPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-xl"
+            className={BUILDER_BTN}
+            type="button"
             onClick={() => router.push('/projects')}
             aria-label={bilingualAria(projectEn('back_projects'), projectEl('back_projects'))}
           >
@@ -171,6 +171,21 @@ export default function CreateProjectPage() {
           </Button>
           <CfbGlyph name="briefcase" className="icon-md text-muted-foreground" />
         </div>
+        <p className="type-hold text-sm text-muted-foreground">
+          <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
+          {' · '}
+          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_idea')} el={projectEl('link_idea')} compact />
+          </Link>
+          {' · '}
+          <Link href="/milestones" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_milestones')} el={projectEl('link_milestones')} compact />
+          </Link>
+          {' · '}
+          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_research')} el={projectEl('link_research')} compact />
+          </Link>
+        </p>
 
         <div className="flex items-center gap-2">
           {STEPS.map((s) => (
@@ -198,7 +213,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('basics_title')} el={projectEl('basics_title')} /></CardTitle>
-              <CardDescription><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
+              <CardDescription className="type-hold"><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -230,7 +245,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('stage_title')} el={projectEl('stage_title')} /></CardTitle>
-              <CardDescription><BilingualText en={projectEn('stage_desc')} el={projectEl('stage_desc')} /></CardDescription>
+              <CardDescription className="type-hold"><BilingualText en={projectEn('stage_desc')} el={projectEl('stage_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -307,7 +322,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('team_title')} el={projectEl('team_title')} /></CardTitle>
-              <CardDescription><BilingualText en={projectEn('team_desc')} el={projectEl('team_desc')} /></CardDescription>
+              <CardDescription className="type-hold"><BilingualText en={projectEn('team_desc')} el={projectEl('team_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -329,19 +344,19 @@ export default function CreateProjectPage() {
               <div className="space-y-3">
                 <Label><BilingualText en={projectEn('field_roles')} el={projectEl('field_roles')} compact /></Label>
                 <div className="flex flex-wrap gap-2">
-                  {COMMON_ROLES.map((role) => (
+                  {PROJECT_COMMON_ROLES.map((role) => (
                     <button
-                      key={role}
+                      key={role.en}
                       type="button"
-                      onClick={() => (rolesNeeded.includes(role) ? removeRole(role) : addRole(role))}
+                      onClick={() => (rolesNeeded.includes(role.en) ? removeRole(role.en) : addRole(role.en))}
                       className={cn(
                         'rounded-full px-3 py-1.5 text-sm transition-colors',
-                        rolesNeeded.includes(role)
+                        rolesNeeded.includes(role.en)
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80',
                       )}
                     >
-                      {role}
+                      <BilingualText en={role.en} el={role.el} compact />
                     </button>
                   ))}
                 </div>
@@ -359,14 +374,17 @@ export default function CreateProjectPage() {
                 </div>
                 {rolesNeeded.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2">
-                    {rolesNeeded.map((role) => (
-                      <Badge key={role} variant="secondary" className="gap-1 rounded-full">
-                        {role}
-                        <button aria-label={`Remove ${role}`} type="button" onClick={() => removeRole(role)}>
-                          <X className="icon-sm" />
-                        </button>
-                      </Badge>
-                    ))}
+                    {rolesNeeded.map((role) => {
+                      const pair = PROJECT_COMMON_ROLES.find((item) => item.en === role);
+                      return (
+                        <Badge key={role} variant="secondary" className="gap-1 rounded-full">
+                          {pair ? <BilingualText en={pair.en} el={pair.el} compact /> : role}
+                          <button aria-label={`Remove ${role}`} type="button" onClick={() => removeRole(role)}>
+                            <X className="icon-sm" />
+                          </button>
+                        </Badge>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -378,7 +396,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('review_title')} el={projectEl('review_title')} /></CardTitle>
-              <CardDescription><BilingualText en={projectEn('review_desc')} el={projectEl('review_desc')} /></CardDescription>
+              <CardDescription className="type-hold"><BilingualText en={projectEn('review_desc')} el={projectEl('review_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -415,7 +433,7 @@ export default function CreateProjectPage() {
               </div>
 
               <div className="space-y-4 rounded-xl border border-border p-4">
-                <h3 className="font-semibold text-foreground">
+                <h3 className="page-section font-semibold text-foreground">
                   <BilingualText en={projectEn('review')} el={projectEl('review')} compact />
                 </h3>
                 <div className="grid grid-cols-1 gap-3 text-sm">
@@ -446,17 +464,17 @@ export default function CreateProjectPage() {
         )}
 
         <div className="flex items-center justify-between">
-          <Button variant="outline" className="rounded-xl" onClick={() => setStep(step - 1)} disabled={step === 1}>
+          <Button type="button" variant="outline" className={BUILDER_BTN} onClick={() => setStep(step - 1)} disabled={step === 1}>
             <ArrowLeft className="icon-sm mr-2" />
             <BilingualText en={projectEn('back')} el={projectEl('back')} compact />
           </Button>
           {step < 4 ? (
-            <Button className="rounded-xl" onClick={() => setStep(step + 1)} disabled={!canProceed()}>
+            <Button type="button" className={BUILDER_BTN} onClick={() => setStep(step + 1)} disabled={!canProceed()}>
               <BilingualText en={projectEn('next')} el={projectEl('next')} compact />
               <ArrowRight className="icon-sm ml-2" />
             </Button>
           ) : (
-            <Button className="rounded-xl" onClick={() => void handleSubmit()} disabled={isSubmitting}>
+            <Button type="button" className={BUILDER_BTN} onClick={() => void handleSubmit()} disabled={isSubmitting}>
               {isSubmitting
                 ? <BilingualText en={projectEn('creating')} el={projectEl('creating')} compact />
                 : <BilingualText en={projectEn('create')} el={projectEl('create')} compact />}

@@ -249,7 +249,7 @@ export default function OrgMembersPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Team Members"
       description="Invite and manage who can run programs, review applications, and access workspace settings."
       descriptionEl="Προσκαλέστε και ορίστε ποιοι τρέχουν προγράμματα, αξιολογούν αιτήσεις και έχουν πρόσβαση στις ρυθμίσεις."

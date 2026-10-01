@@ -59,7 +59,7 @@ const notificationIcons: Record<NotificationType, React.ComponentType<{ classNam
 };
 
 const notificationColors: Record<NotificationType, string> = {
-  message: 'text-blue-400 bg-status-info-bg',
+  message: 'text-status-accent bg-status-accent-bg',
   connection: 'text-emerald-400 bg-status-success-bg',
   match: 'text-pink-400 bg-status-accent-bg',
   event: 'text-purple-400 bg-status-accent-bg',

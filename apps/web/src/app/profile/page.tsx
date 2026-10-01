@@ -762,10 +762,10 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="p-4 grid grid-cols-2 gap-3">
               {[
-                { icon: Users, labelEn: profileEn('connections'), labelEl: profileEl('connections'), value: '0', color: 'text-violet-500', bg: 'bg-violet-500/10' },
-                { icon: Star, labelEn: profileEn('endorsements'), labelEl: profileEl('endorsements'), value: '0', color: 'text-amber-500', bg: 'bg-amber-500/10' },
-                { icon: MessageSquare, labelEn: profileEn('posts'), labelEl: profileEl('posts'), value: '0', color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                { icon: Award, labelEn: profileEn('achievements'), labelEl: profileEl('achievements'), value: '0', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { icon: Users, labelEn: profileEn('connections'), labelEl: profileEl('connections'), value: '0', color: 'text-primary-accessible', bg: 'bg-primary/10' },
+                { icon: Star, labelEn: profileEn('endorsements'), labelEl: profileEl('endorsements'), value: '0', color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+                { icon: MessageSquare, labelEn: profileEn('posts'), labelEl: profileEl('posts'), value: '0', color: 'text-primary-accessible', bg: 'bg-primary/10' },
+                { icon: Award, labelEn: profileEn('achievements'), labelEl: profileEl('achievements'), value: '0', color: 'text-status-success', bg: 'bg-status-success-bg' },
               ].map(({ icon: Icon, labelEn, labelEl, value, color, bg }) => (
                 <div key={labelEn} className="flex min-w-0 flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
                   <div className={`p-2 rounded-full ${bg} mb-2`}>

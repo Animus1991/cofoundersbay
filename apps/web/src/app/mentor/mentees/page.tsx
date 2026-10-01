@@ -167,7 +167,7 @@ export default function MenteesPage() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="py-6 flex items-center justify-center min-h-[400px]">
           <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
@@ -177,7 +177,7 @@ export default function MenteesPage() {
 
   if (error) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
@@ -200,7 +200,7 @@ export default function MenteesPage() {
   const totalSessions = relationships.reduce((acc, r) => acc + (r.totalSessions || 0), 0);
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>

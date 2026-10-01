@@ -50,13 +50,13 @@ const Progress = React.forwardRef<
       // every tick, which screen readers re-announce as a new control.
       getValueLabel={() => (percent === null ? "Loading" : `${percent}%`)}
       className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-secondary/50",
+        "relative h-[5px] w-full overflow-hidden rounded-full bg-foreground/[0.06]",
         className
       )}
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className="h-full w-full flex-1 bg-primary transition-all duration-300 ease-out"
+        className="h-full w-full flex-1 bg-foreground/25 transition-all duration-300 ease-out"
         style={{ transform: `translateX(-${100 - ((current ?? 0) / maximum) * 100}%)` }}
       />
     </ProgressPrimitive.Root>

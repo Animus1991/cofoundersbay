@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Send,
   Settings,
-  Sparkles,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,44 +21,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import Link from 'next/link';
+import { CfbGlyph, glyphForHref } from '@/components/icons/CfbGlyph';
 import { cn } from '@/lib/utils';
 import { getAgentGlyph } from '@/lib/ai-api';
 import { useAIChat, type AIMessage } from '@/hooks/useAIChat';
 import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
+import { CopilotEmptyState } from '@/components/ai/CopilotEmptyState';
 import { CitationChip } from '@/components/ai/CitationChip';
+import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import type { CopilotAction } from '@/lib/copilot-types';
 import { getActionSpec } from '@/lib/action-registry';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
-
-/**
- * Starters, split the way the capability contract already splits its actions:
- * a `read` answers a question, a `mutation` changes something you own. The six
- * used to render as one undifferentiated run of chips, so nothing on screen
- * told you that two of them would send a request to another person while the
- * other four only looked something up. `writes` is the same distinction
- * `ActionDeclaration.writes` carries — surfaced here, before the click, rather
- * than only in the confirmation that follows it.
- */
-const STARTERS: { en: string; el: string; writes?: boolean }[] = [
-  { en: 'What should I do next?', el: 'Τι να κάνω μετά;' },
-  { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα' },
-  { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις' },
-  { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
-  { en: 'Show my notifications', el: 'Δείξε τις ειδοποιήσεις μου' },
-  { en: 'Open my calendar', el: 'Άνοιξε το ημερολόγιό μου' },
-  { en: 'How is my fundraising going?', el: 'Πώς πάει η χρηματοδότηση;' },
-  // Two adjacent chips named one thing twice - "στη shortlist" here and
-  // "από τη λίστα" on the next line. The planner matches both; the reader
-  // should not have to.
-  { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα', writes: true },
-  { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα', writes: true },
-  { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', writes: true },
-];
+import { COPILOT_PRODUCT_LINKS } from '@/lib/copilot-starters';
 
 function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -89,13 +67,13 @@ function AssistantBody({
   return (
     <div className="space-y-2">
       {message.isStreaming && !message.content ? (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="type-ui flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           <BilingualText en="Working across your graph…" el="Εργασία στο γράφο σας…" compact />
         </div>
       ) : (
         <SanitizedHtml
-          className="text-sm leading-relaxed text-foreground"
+          className="type-identity leading-relaxed text-foreground"
           html={html}
         />
       )}
@@ -162,6 +140,7 @@ export function CopilotWorkspace({
   const currentAgentConfig = agentList.find((a) => a.id === chat.currentAgent);
 
   useEffect(() => {
+    if (chat.messages.length === 0) return;
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat.messages, chat.isStreaming]);
 
@@ -207,15 +186,18 @@ export function CopilotWorkspace({
       {isPage && (
         <aside className="flex w-full shrink-0 flex-col border-b border-border/60 bg-card/80 lg:w-72 lg:border-b-0 lg:border-r">
           <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
-            <p className="text-sm font-semibold">
+            <p className="type-identity font-semibold">
               <BilingualText en="Threads" el="Νήματα" compact />
             </p>
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              className="min-h-11 gap-1.5"
-              onClick={() => chat.clearMessages()}
+              className="type-ui min-h-11 gap-1.5"
+              onClick={() => {
+                chat.clearMessages();
+                inputRef.current?.focus();
+              }}
             >
               <Plus className="h-3.5 w-3.5" />
               <BilingualText en="New" el="Νέα" compact />
@@ -223,12 +205,32 @@ export function CopilotWorkspace({
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {chat.conversations.length === 0 ? (
-              <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-                <BilingualText
-                  en="New conversations appear here after you send a message."
-                  el="Οι νέες συνομιλίες εμφανίζονται εδώ αφού στείλετε μήνυμα."
-                />
-              </p>
+              <div className="space-y-4 px-1 py-2">
+                <p className="type-caption text-muted-foreground">
+                  {sayOne(
+                    'Send a question — it becomes a thread here.',
+                    'Στείλτε μια ερώτηση — γίνεται νήμα εδώ.',
+                  )}
+                </p>
+                <div>
+                  <p className="type-caption mb-1.5 font-medium uppercase tracking-wide text-muted-foreground">
+                    {sayOne('I can read', 'Μπορώ να διαβάσω')}
+                  </p>
+                  <ul className="flex flex-col">
+                    {COPILOT_PRODUCT_LINKS.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="type-ui flex min-h-11 items-center gap-2 rounded-lg px-1.5 hover:bg-muted/70"
+                        >
+                          <CfbGlyph name={glyphForHref(link.href)} className="icon-sm shrink-0 text-muted-foreground" />
+                          <BilingualText en={link.en} el={link.el} compact />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             ) : (
               <ul className="space-y-1">
                 {chat.conversations.map((conv) => (
@@ -237,7 +239,7 @@ export function CopilotWorkspace({
                       type="button"
                       onClick={() => void chat.loadConversation(conv.id)}
                       className={cn(
-                        'tap-target min-h-11 w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted/70',
+                        'tap-target type-ui min-h-11 w-full rounded-lg px-2.5 py-2 text-left hover:bg-muted/70',
                         chat.conversationId === conv.id && 'bg-primary/10 text-primary-accessible',
                       )}
                     >
@@ -257,7 +259,7 @@ export function CopilotWorkspace({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
+              className="type-ui h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
               onClick={() => router.push('/ai/capabilities')}
             >
               <List className="h-4 w-4 shrink-0" />
@@ -269,7 +271,7 @@ export function CopilotWorkspace({
               size="sm"
               // h-auto + stacked: the inline "AI preferences · Προτιμήσεις AI"
               // did not fit the 288px rail and clipped to "AI preferen…".
-              className="h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
+              className="type-ui h-auto min-h-11 w-full justify-start gap-2 py-1.5 md:min-h-9"
               onClick={() => router.push('/settings/ai')}
             >
               <Settings className="h-4 w-4 shrink-0" />
@@ -286,24 +288,31 @@ export function CopilotWorkspace({
               <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className={cn('truncate text-sm font-medium', !isPage && 'max-w-[9.5rem]')}>
-                {currentAgentConfig?.name || 'CoFounderBay Assistant'}
-              </p>
+              {isPage ? (
+                <h1 className="type-identity truncate font-medium">
+                  {currentAgentConfig?.name || 'CoFounderBay Assistant'}
+                </h1>
+              ) : (
+                <p className="type-identity max-w-[9.5rem] truncate font-medium">
+                  {currentAgentConfig?.name || 'CoFounderBay Assistant'}
+                </p>
+              )}
               {isPage && (
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="type-support truncate text-muted-foreground">
                 {chat.isAIAvailable
-                  ? sayOne('Live model + platform tools', 'Ζωντανό μοντέλο + εργαλεία πλατφόρμας')
-                  : sayOne('Platform copilot · tools online', 'Βοηθός πλατφόρμας · εργαλεία ενεργά')}
+                  ? sayOne('Live model · workspace tools', 'Ζωντανό μοντέλο · εργαλεία χώρου')
+                  : sayOne('Harbor copilot · tools ready', 'Βοηθός Harbor · εργαλεία έτοιμα')}
               </p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {isPage && <PageContextualHelp defaultOpen={false} compact />}
             {agentList.length > 1 && (
               <Select value={chat.currentAgent} onValueChange={(v) => chat.setAgent(v)}>
                 <SelectTrigger
                   className={cn(
-                    'h-8 min-h-8 w-auto gap-1 px-2 text-xs',
+                    'h-8 min-h-8 w-auto gap-1 px-2 type-ui',
                     isPage ? 'max-w-[11rem]' : 'max-w-[7.5rem]',
                   )}
                   aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
@@ -312,7 +321,7 @@ export function CopilotWorkspace({
                 </SelectTrigger>
                 <SelectContent align="end">
                   {agentList.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.id} className="text-xs">
+                    <SelectItem key={agent.id} value={agent.id} className="type-ui">
                       {agent.name}
                     </SelectItem>
                   ))}
@@ -337,77 +346,20 @@ export function CopilotWorkspace({
           </div>
         </div>
 
-        <div className="flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto',
+            chat.messages.length === 0
+              ? 'flex flex-col p-3 sm:p-4 lg:px-6 lg:py-5'
+              : 'space-y-3 p-3 sm:p-4 lg:px-6',
+          )}
+        >
           {chat.messages.length === 0 ? (
-            /* `h-full` + `justify-center` rather than a top-pinned block: the
-               scroller is the full height of the page, so an intro that
-               started at the top left roughly 700px of void between the last
-               chip and the composer — the flagship page read as broken rather
-               than as ready for input. Centred, the same content sits between
-               the header and the composer it belongs to. `min-h-full` keeps it
-               scrollable once it outgrows the viewport. */
-            <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center gap-5 py-6">
-              <div className="flex gap-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
-                </div>
-                <div className="rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-sm">
-                  <BilingualText
-                    en="I can search the network, explain matches, send intros, open threads, and jump to any page — using the same data as the rest of CoFounderBay. Writes wait for your confirm."
-                    el="Μπορώ να ψάξω στο δίκτυο, να εξηγήσω αντιστοιχίσεις, να στείλω συστάσεις, να ανοίξω νήματα και να μεταβώ σε οποιαδήποτε σελίδα — με τα ίδια δεδομένα της πλατφόρμας. Οι εγγραφές περιμένουν επιβεβαίωση."
-                  />
-                </div>
-              </div>
-
-              {([false, true] as const).map((writes) => {
-                const group = STARTERS.filter((q) => Boolean(q.writes) === writes);
-                if (group.length === 0) return null;
-                return (
-                  <div key={String(writes)} className="space-y-2">
-                    <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
-                      {writes
-                        ? sayOne('Changes something — asks first', 'Αλλάζει κάτι — ρωτά πρώτα')
-                        : sayOne('Just looks something up', 'Απλώς αναζητά κάτι')}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {group.map((q) => (
-                        <button
-                          key={q.en}
-                          type="button"
-                          onClick={() => void chat.sendMessage(q.en)}
-                          className={cn(
-                            'min-h-11 rounded-full border px-3 py-2 text-xs font-medium transition-colors',
-                            // Semantic tokens, not raw palette steps: the
-                            // product migrated ~2,000 of those onto the status
-                            // scale and these six were left behind, so they
-                            // were the only violet in the theme's chrome.
-                            writes
-                              ? 'border-status-warning-border/50 bg-status-warning-bg text-status-warning hover:bg-status-warning-bg/70'
-                              : 'border-border bg-secondary/50 text-foreground hover:bg-secondary',
-                          )}
-                        >
-                          {sayOne(q.en, q.el)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              <p className="text-center text-xs text-muted-foreground">
-                <button
-                  type="button"
-                  className="underline-offset-2 hover:underline"
-                  onClick={() => router.push('/ai/capabilities')}
-                >
-                  <BilingualText
-                    en="See everything I can read and change"
-                    el="Δες όλα όσα μπορώ να διαβάσω και να αλλάξω"
-                    compact
-                    wrap
-                  />
-                </button>
-              </p>
-            </div>
+            <CopilotEmptyState
+              surface={isPage ? 'page' : 'popup'}
+              onAsk={(en) => void chat.sendMessage(en)}
+              onOpenCapabilities={() => router.push('/ai/capabilities')}
+            />
           ) : (
             chat.messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2', msg.role === 'user' && 'justify-end')}>
@@ -418,14 +370,15 @@ export function CopilotWorkspace({
                 )}
                 <div
                   className={cn(
-                    'max-w-[min(100%,36rem)] rounded-2xl px-3 py-2',
+                    'rounded-2xl px-3 py-2',
+                    isPage ? 'max-w-[min(100%,48rem)]' : 'max-w-[min(100%,36rem)]',
                     msg.role === 'user'
                       ? 'rounded-tr-sm bg-primary text-primary-foreground'
                       : 'rounded-tl-sm bg-muted/70',
                   )}
                 >
                   {msg.role === 'user' ? (
-                    <p className="text-sm">{msg.content}</p>
+                    <p className="type-identity">{msg.content}</p>
                   ) : (
                     <AssistantBody
                       message={msg}
@@ -435,7 +388,7 @@ export function CopilotWorkspace({
                       onUndo={(a) => void chat.undoAction(a)}
                     />
                   )}
-                  <p className={cn('mt-1 text-2xs', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
+                  <p className={cn('type-caption mt-1', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
                     {formatTime(msg.timestamp)}
                   </p>
                 </div>
@@ -446,7 +399,7 @@ export function CopilotWorkspace({
         </div>
 
         {chat.error && (
-          <p className="px-3 text-xs text-destructive">{chat.error}</p>
+          <p className="type-caption px-3 text-destructive">{chat.error}</p>
         )}
 
         <form onSubmit={onSubmit} className="shrink-0 border-t border-border/60 p-3">
@@ -458,13 +411,13 @@ export function CopilotWorkspace({
               onChange={(e) => setInput(e.target.value)}
               placeholder={sayOne(
                 isPage
-                  ? 'Ask AI to search, intro, message, or navigate…'
-                  : 'Ask to search, intro, or go…',
+                  ? 'Search, intro, message, or go…'
+                  : 'Search, intro, or go…',
                 isPage
-                  ? 'Ρωτήστε το AI να αναζητήσει, να συστήσει, να στείλει μήνυμα ή να πλοηγηθεί…'
+                  ? 'Αναζήτηση, σύσταση, μήνυμα ή πλοήγηση…'
                   : 'Αναζήτηση, σύσταση, πλοήγηση…',
               )}
-              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:outline-none focus-visible:ring-0"
+              className="type-ui h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 focus-visible:outline-none focus-visible:ring-0"
               disabled={chat.isStreaming}
             />
             <Button
@@ -477,8 +430,8 @@ export function CopilotWorkspace({
               {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
-          {!isPage ? (
-            <p className="mt-1.5 text-center text-2xs text-muted-foreground">
+          {!isPage && chat.messages.length > 0 ? (
+            <p className="type-support mt-1.5 text-center text-muted-foreground">
               <button
                 type="button"
                 className="underline-offset-2 hover:underline"
@@ -492,15 +445,15 @@ export function CopilotWorkspace({
                 />
               </button>
             </p>
-          ) : (
-          <p className="mt-2 flex items-center justify-center gap-1 text-center text-2xs text-muted-foreground">
-            <Sparkles className="h-3 w-3" />
+          ) : isPage ? (
+          <p className="type-support mt-1.5 text-muted-foreground">
             <BilingualText
-              en="Tools use your real Connections, Matches, and Messages APIs. Destructive steps need confirm."
-              el="Τα εργαλεία χρησιμοποιούν τις πραγματικές συνδέσεις, αντιστοιχίσεις και μηνύματα. Οι καταστροφικές ενέργειες θέλουν επιβεβαίωση."
+              en="Writes wait for your confirm."
+              el="Οι εγγραφές περιμένουν επιβεβαίωση."
+              compact
             />
           </p>
-          )}
+          ) : null}
         </form>
       </section>
     </div>

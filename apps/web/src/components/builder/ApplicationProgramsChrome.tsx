@@ -8,6 +8,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { RailStats } from '@/components/layout/RailParts';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { BUILDER_STAT, BUILDER_STAT_LABEL } from './BuilderStageChrome';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { requiredCompletion, type ApplicationTemplate } from './application-model';
@@ -103,8 +104,8 @@ export function ApplicationProgramsChrome({
                 <CfbGlyph name={app.glyph} className="icon-sm text-muted-foreground" />
                 {statusBadge(app.status)}
               </div>
-              <h3 className="mb-1 text-base font-semibold">{app.name}</h3>
-              <p className="mb-3 text-xs text-muted-foreground">
+              <h3 className="mb-1 page-section font-semibold">{app.name}</h3>
+              <p className="type-hold mb-3 text-sm text-muted-foreground">
                 {app.descKey ? (
                   <BilingualText en={builderEn(app.descKey)} el={builderEl(app.descKey)} compact />
                 ) : (
@@ -198,10 +199,10 @@ export function ApplicationProgramsChrome({
             <CardContent className="flex items-center gap-3 p-4">
               <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
               <div className="min-w-0">
-                <p className="text-2xs text-muted-foreground">
+                <p className={cn(BUILDER_STAT_LABEL, 'text-muted-foreground')}>
                   <BilingualText en={builderEn(item.label)} el={builderEl(item.label)} compact />
                 </p>
-                <p className="text-lg font-semibold tracking-tight">{item.value}</p>
+                <p className={BUILDER_STAT}>{item.value}</p>
               </div>
             </CardContent>
           </Card>

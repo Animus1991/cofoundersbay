@@ -24,6 +24,7 @@ interface AIInsightButtonProps {
   variant?: 'default' | 'outline' | 'ghost' | 'icon';
   size?: 'sm' | 'lg' | 'icon';
   label?: string;
+  labelEl?: string;
 }
 
 export function AIInsightButton({
@@ -32,14 +33,17 @@ export function AIInsightButton({
   variant = 'outline',
   size = 'sm',
   label,
+  labelEl,
 }: AIInsightButtonProps) {
   const router = useSafeRouter();
   const { primary } = useLanguagePreference();
   // One language, no wrap: BilingualText+compact inside a 36px-tall outline
   // button stacked "Ask" over "AI" on Greek-primary pages, and the English
   // default won the first paint. The chip still opens the same assistant.
-  const visibleLabel = label ?? (primary === 'el' ? 'Ρωτήστε το AI' : 'Ask AI');
-  const ariaLabel = label ?? bilingualAria('Ask AI', 'Ρωτήστε το AI');
+  const visibleLabel = label
+    ? (primary === 'el' && labelEl ? labelEl : label)
+    : (primary === 'el' ? 'Ρωτήστε το AI' : 'Ask AI');
+  const ariaLabel = label ? bilingualAria(label, labelEl) : bilingualAria('Ask AI', 'Ρωτήστε το AI');
 
   const openAssistant = () => {
     const params = new URLSearchParams({ q: prompt });
@@ -82,7 +86,6 @@ export function AIInsightButton({
       aria-label={visibleLabel}
       className={cn('h-auto min-h-9 gap-1.5 whitespace-nowrap px-2.5', className)}
     >
-      <Sparkles className="icon-sm shrink-0 text-status-accent" />
       {visibleLabel}
     </Button>
   );

@@ -392,8 +392,12 @@ export default function DiscoverPage() {
             <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-status-accent-bg/30 p-4">
               <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
                 <BadgeCheck className="icon-sm shrink-0 text-primary-accessible" />
-                <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
-                <span className="hidden text-xs text-muted-foreground sm:inline">— Top matches based on your profile</span>
+                <span className="text-sm font-semibold text-foreground">
+                  <BilingualText en="Featured profiles" el="Προτεινόμενα προφίλ" compact />
+                </span>
+                <span className="hidden text-xs text-muted-foreground sm:inline">
+                  <BilingualText en="Top matches for your profile" el="Κορυφαίες αντιστοιχίσεις για το προφίλ σας" compact />
+                </span>
               </div>
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                 {hits.slice(0, 4).map((h) => (

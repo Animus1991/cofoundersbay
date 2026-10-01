@@ -29,10 +29,10 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
 const STATE_LABELS: Record<string, { label: string; color: string }> = {
-  newly_onboarded:    { label: 'New Onboard',      color: 'bg-blue-500' },
-  profile_incomplete: { label: 'Profile Incomplete', color: 'bg-orange-500' },
-  exploring:          { label: 'Exploring',         color: 'bg-sky-500' },
-  matching_focused:   { label: 'Matching',          color: 'bg-violet-500' },
+  newly_onboarded:    { label: 'New Onboard',      color: 'bg-primary' },
+  profile_incomplete: { label: 'Profile Incomplete', color: 'bg-status-warning' },
+  exploring:          { label: 'Exploring',         color: 'bg-status-info' },
+  matching_focused:   { label: 'Matching',          color: 'bg-status-accent' },
   artifact_building:  { label: 'Building',          color: 'bg-emerald-500' },
   stuck:              { label: 'Stuck',             color: 'bg-red-500' },
   feedback_processing:{ label: 'Feedback',          color: 'bg-amber-500' },
@@ -76,7 +76,7 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <KPICard title="Total Shown" value={stats.totalShown} icon={Target} color="bg-blue-500" />
+        <KPICard title="Total Shown" value={stats.totalShown} icon={Target} color="bg-primary" />
         <KPICard title="Dismissed" value={stats.totalDismissed} sub={`${stats.dismissalRate}%`} icon={XCircle} color="bg-red-500" />
         <KPICard title="Converted" value={stats.totalConverted} sub={`${stats.conversionRate}%`} icon={CheckCircle} color="bg-emerald-500" />
         <KPICard title="Conv. Rate" value={`${stats.conversionRate}%`} icon={TrendingUp} color="bg-violet-500" />

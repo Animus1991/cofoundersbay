@@ -1,12 +1,14 @@
 "use client";
 
 import Link from 'next/link';
-import { LogOut, User, Settings, Edit, ChevronDown, Eye, EyeOff, Languages } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LogOut, User, Settings, Edit, ChevronDown, ChevronRight, Eye, EyeOff, Languages, Keyboard, Globe, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { translate } from '@/lib/i18n/translate';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -15,10 +17,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT, type AppLocale } from '@/lib/locale';
+import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
+import { THEME_OPTIONS } from '@/components/theme/ThemeSwitcher';
 import { cn, initialsOf } from '@/lib/utils';
+import { useOpenCommandPalette } from './CommandPaletteHost';
 
 /**
  * Secondary line shared by every menu entry. Sizing is deliberately NOT set here:
@@ -43,8 +53,24 @@ export function UserMenu({
   const router = useRouter();
   const user = useStoredUser();
   const sayOne = useBilingualString();
+  const setCommandOpen = useOpenCommandPalette();
   const { showDemoData, toggleDemoData } = useDemoData();
   const { displayMode, setDisplayMode } = useLanguagePreference();
+  const [locale, setLocale] = useState<AppLocale>('en');
+  const [theme, setTheme] = useState<ThemeName>('dark');
+
+  useEffect(() => {
+    setLocale(getStoredLocale());
+    setTheme(getStoredTheme());
+    const onLocale = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (APP_LOCALES.some((item) => item.value === next)) setLocale(next as AppLocale);
+    };
+    window.addEventListener(LOCALE_CHANGE_EVENT, onLocale);
+    return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onLocale);
+  }, []);
+
+  const ThemeIcon = THEME_OPTIONS.find((item) => item.name === theme)?.icon ?? THEME_OPTIONS[0].icon;
 
   const initials =
     (user?.displayName ? initialsOf(user.displayName) : '') ||
@@ -150,18 +176,26 @@ export function UserMenu({
           </Link>
         </DropdownMenuItem>
 
+        <DropdownMenuItem onSelect={() => setCommandOpen(true)}>
+          <Keyboard className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+          <BilingualText en="Command palette" el="Παλέτα εντολών" secondaryClassName={SECONDARY_LINE} />
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem
-          onSelect={() => setDisplayMode(displayMode === 'bilingual' ? 'primary-only' : 'bilingual')}
-        >
-          <Languages className="mr-2 icon-sm shrink-0" aria-hidden="true" />
-          <BilingualText
-            en={displayMode === 'bilingual' ? 'Primary language only' : 'Bilingual display'}
-            el={displayMode === 'bilingual' ? 'Μόνο κύρια γλώσσα' : 'Δίγλωσση εμφάνιση'}
-            secondaryClassName={SECONDARY_LINE}
-          />
-        </DropdownMenuItem>
+        {/* Only English and Greek pair with a second language; elsewhere the toggle does nothing. */}
+        {(locale === 'en' || locale === 'el') && (
+          <DropdownMenuItem
+            onSelect={() => setDisplayMode(displayMode === 'bilingual' ? 'primary-only' : 'bilingual')}
+          >
+            <Languages className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+            <BilingualText
+              en={displayMode === 'bilingual' ? 'Primary language only' : 'Bilingual display'}
+              el={displayMode === 'bilingual' ? 'Μόνο κύρια γλώσσα' : 'Δίγλωσση εμφάνιση'}
+              secondaryClassName={SECONDARY_LINE}
+            />
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={toggleDemoData}>
           {showDemoData
             ? <Eye className="mr-2 icon-sm shrink-0" aria-hidden="true" />
@@ -172,6 +206,69 @@ export function UserMenu({
             secondaryClassName={SECONDARY_LINE}
           />
         </DropdownMenuItem>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Globe className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en="Language" el="Γλώσσα" secondaryClassName={SECONDARY_LINE} />
+            </span>
+            <ChevronRight className="ml-2 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            {APP_LOCALES.map((lang) => (
+              <DropdownMenuItem
+                key={lang.value}
+                onSelect={() => {
+                  setLocale(lang.value);
+                  applyLocale(lang.value);
+                }}
+              >
+                <span className="min-w-0 flex-1">{lang.label}</span>
+                {locale === lang.value ? <Check className="ml-2 icon-sm shrink-0 text-primary-accessible" aria-hidden="true" /> : null}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <ThemeIcon className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText en="Theme" el="Θέμα" secondaryClassName={SECONDARY_LINE} />
+            </span>
+            <ChevronRight className="ml-2 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            {THEME_OPTIONS.map((option) => {
+              const Icon = option.icon;
+              const isActive = theme === option.name;
+              return (
+                <DropdownMenuItem
+                  key={option.name}
+                  onSelect={() => {
+                    setTheme(option.name);
+                    applyTheme(option.name);
+                  }}
+                >
+                  <Icon className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <BilingualText
+                      en={option.label}
+                      el={translate('el', option.label)}
+                      secondaryClassName={SECONDARY_LINE}
+                    />
+                  </span>
+                  {isActive ? <Check className="ml-2 icon-sm shrink-0 text-primary-accessible" aria-hidden="true" /> : null}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
 
         <DropdownMenuSeparator />
 

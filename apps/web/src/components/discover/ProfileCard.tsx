@@ -55,7 +55,7 @@ export type ProfileCardData = {
 };
 
 const ROLE_RING_COLORS: Record<string, string> = {
-  founder: 'ring-indigo-500/60',
+  founder: 'ring-primary/50',
   mentor: 'ring-cyan-500/60',
   investor: 'ring-orange-500/60',
   org: 'ring-purple-500/60',
@@ -64,9 +64,9 @@ const ROLE_RING_COLORS: Record<string, string> = {
 
 function ProfileCompletenessBar({ score }: { score: number }) {
   const getColor = () => {
-    if (score >= 80) return 'bg-emerald-500';
-    if (score >= 50) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-status-success';
+    if (score >= 50) return 'bg-status-warning';
+    return 'bg-status-danger';
   };
   
   return (
@@ -294,6 +294,7 @@ function ProfileCardInner({
                   }
                 }}
                 label="Why this match?"
+                labelEl="Γιατί ταιριάζετε;"
                 variant="ghost"
                 size="sm"
               />
@@ -374,12 +375,12 @@ function ProfileCardInner({
             <div className="relative">
               <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-accessible dark:text-indigo-300 font-semibold">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                   {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
               {profile.isVerified && (
-                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-card">
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-status-success flex items-center justify-center ring-2 ring-card">
                   <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
@@ -404,7 +405,7 @@ function ProfileCardInner({
               </div>
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
-                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible dark:text-indigo-300">
+                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
                     <Star className="icon-sm fill-current" />
                     {profile.matchScore}%
                   </div>
@@ -453,7 +454,8 @@ function ProfileCardInner({
               prompt={`Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}`}
               agentId="matching"
               context={{ matchScore: profile.matchScore, targetName: profile.displayName, role: profile.role, skills: profile.skills }}
-              label="AI Match Analysis"
+              label="AI match analysis"
+              labelEl="Ανάλυση αντιστοίχισης με AI"
               variant="ghost"
               size="sm"
             />

@@ -115,26 +115,25 @@ function Verdict({ ok, warn, children }: { ok: boolean; warn: boolean; children:
   );
 }
 
+/** Share of the six plan parts with anything in them; the stage header and the stored document both use it. */
+export function financialCompletion(data: FinancialData): number {
+  const parts = [
+    data.startupCosts.length > 0,
+    data.operatingCosts.length > 0,
+    data.revenueStreams.length > 0,
+    data.unitEconomics.cac > 0,
+    Boolean(data.pricingModel),
+    data.fundingRounds.length > 0,
+  ];
+  return Math.round((parts.filter(Boolean).length / parts.length) * 100);
+}
+
 export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProps) {
   const t = useBuilderPrimaryText();
   const [data, setData] = useState<FinancialData>({ ...defaultFinancialData, ...initialData });
   const [activeTab, setActiveTab] = useState('costs');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [completionPercentage, setCompletionPercentage] = useState(0);
-
-  useEffect(() => {
-    let completed = 0;
-    let total = 6;
-    
-    if (data.startupCosts.length > 0) completed++;
-    if (data.operatingCosts.length > 0) completed++;
-    if (data.revenueStreams.length > 0) completed++;
-    if (data.unitEconomics.cac > 0) completed++;
-    if (data.pricingModel) completed++;
-    if (data.fundingRounds.length > 0) completed++;
-    
-    setCompletionPercentage((completed / total) * 100);
-  }, [data]);
+  const completionPercentage = financialCompletion(data);
 
   // Calculate derived metrics
   useEffect(() => {
@@ -391,7 +390,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Startup Costs */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">
+                <CardTitle>
                   <BilingualText en={builderEn('fin_startup')} el={builderEl('fin_startup')} compact />
                 </CardTitle>
                 <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCost('startup')}>
@@ -458,7 +457,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Operating Costs */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">
+                <CardTitle>
                   <BilingualText en={builderEn('fin_operating')} el={builderEl('fin_operating')} compact />
                 </CardTitle>
                 <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCost('operating')}>
@@ -528,7 +527,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <TabsContent value="revenue" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">
+              <CardTitle>
                 <BilingualText en={builderEn('fin_streams')} el={builderEl('fin_streams')} compact />
               </CardTitle>
               <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addRevenueStream}>
@@ -610,7 +609,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">
+              <CardTitle>
                 <BilingualText en={builderEn('fin_pricing')} el={builderEl('fin_pricing')} compact />
               </CardTitle>
             </CardHeader>
@@ -630,7 +629,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle>
                   <BilingualText en={builderEn('fin_acq')} el={builderEl('fin_acq')} compact />
                 </CardTitle>
               </CardHeader>
@@ -667,7 +666,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle>
                   <BilingualText en={builderEn('fin_value')} el={builderEl('fin_value')} compact />
                 </CardTitle>
               </CardHeader>
@@ -706,7 +705,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           {/* Unit Economics Health */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">
+              <CardTitle>
                 <BilingualText en={builderEn('fin_health')} el={builderEl('fin_health')} compact />
               </CardTitle>
             </CardHeader>
@@ -754,7 +753,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <TabsContent value="funding" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">
+              <CardTitle>
                 <BilingualText en={builderEn('fin_rounds')} el={builderEl('fin_rounds')} compact />
               </CardTitle>
               <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addFundingRound}>
@@ -837,8 +836,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Conservative */}
             <Card className="border-status-warning-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <AlertTriangle className="icon-md text-status-warning" />
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="icon-sm text-status-warning" />
                   <BilingualText en={builderEn('fin_cons')} el={builderEl('fin_cons')} compact />
                 </CardTitle>
               </CardHeader>
@@ -891,8 +890,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Realistic */}
             <Card className="border-status-info-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <CfbGlyph name="target" className="icon-md text-status-info" />
+                <CardTitle className="flex items-center gap-2">
+                  <CfbGlyph name="target" className="icon-sm text-status-info" />
                   <BilingualText en={builderEn('fin_real')} el={builderEl('fin_real')} compact />
                 </CardTitle>
               </CardHeader>
@@ -945,8 +944,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Aggressive */}
             <Card className="border-status-success-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <TrendingUp className="icon-md text-status-success" />
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="icon-sm text-status-success" />
                   <BilingualText en={builderEn('fin_aggr')} el={builderEl('fin_aggr')} compact />
                 </CardTitle>
               </CardHeader>

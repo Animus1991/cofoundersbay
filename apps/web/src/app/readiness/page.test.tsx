@@ -25,6 +25,7 @@ vi.mock('@/contexts/PopupChatContext', () => ({
     isOpen: false, isMinimized: false, initialUserId: null,
     minimize: vi.fn(), restore: vi.fn(),
   }),
+  usePopupChatOptional: () => null,
 }));
 vi.mock('next/dynamic', () => ({ default: () => () => <div data-testid="chart" /> }));
 

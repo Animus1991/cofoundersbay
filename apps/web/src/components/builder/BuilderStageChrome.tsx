@@ -35,7 +35,6 @@ export function BuilderAskAiButton({
   return (
     <Button asChild variant={variant} size="sm" className={cn('h-8 gap-1.5 text-xs', className)}>
       <Link href={href}>
-        <CfbGlyph name="spark" className="icon-sm" aria-hidden="true" />
         <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
       </Link>
     </Button>
@@ -50,6 +49,8 @@ export function BuilderStageHeader({
   subtitleEl,
   completion,
   extraActions,
+  leading,
+  meta,
   hideTitle = false,
   showAskAi = true,
   askPrompt,
@@ -61,6 +62,10 @@ export function BuilderStageHeader({
   subtitleEl: string;
   completion?: number;
   extraActions?: ReactNode;
+  /** Replaces the subtitle, for routes whose page header already says it. */
+  leading?: ReactNode;
+  /** A line under the subtitle, such as the stage's own progress. */
+  meta?: ReactNode;
   /** When the AppShell already shows the page title (dedicated routes). */
   hideTitle?: boolean;
   showAskAi?: boolean;
@@ -70,23 +75,29 @@ export function BuilderStageHeader({
     askPrompt ??
     `Help me complete the "${titleEn}" section of my Startup Builder. What should I write or improve first?`;
   return (
-    <div className={cn('flex flex-col gap-3', hideTitle ? 'sm:flex-row sm:items-center sm:justify-end' : 'sm:flex-row sm:items-start sm:justify-between')}>
-      {!hideTitle && (
-        <div className="flex min-w-0 items-center gap-3">
-          <CfbGlyph name={glyph} className="mt-1 icon-md shrink-0 text-muted-foreground" />
-          <div className="min-w-0">
+    // Wraps as whole blocks: the actions sit beside the title while they fit on one line, else below it.
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-[1_1_20rem] items-start gap-3">
+        {!hideTitle && (
+          <CfbGlyph name={glyph} className="mt-0.5 icon-sm shrink-0 text-primary-accessible" />
+        )}
+        <div className="min-w-0">
+          {!hideTitle && (
             <h2 className={BUILDER_STAGE_TITLE}>
               <BilingualText en={titleEn} el={titleEl} />
             </h2>
+          )}
+          {leading ?? (
             <p className={BUILDER_STAGE_SUBTITLE}>
               <BilingualText en={subtitleEn} el={subtitleEl} />
             </p>
-          </div>
+          )}
+          {meta}
         </div>
-      )}
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         {completion != null && (
-          <Badge variant="outline" className="gap-1.5 rounded-xl text-xs">
+          <Badge variant="outline" className="type-kicker gap-1.5 rounded-xl text-xs">
             {completion.toFixed(0)}%{' '}
             <BilingualText en={builderEn('complete')} el={builderEl('complete')} compact />
           </Badge>
@@ -100,11 +111,11 @@ export function BuilderStageHeader({
 
 /** Applications (Αιτήσεις) type — never larger than this ladder. */
 export const BUILDER_STAGE_TITLE =
-  'builder-title text-lg font-semibold tracking-tight text-foreground';
-export const BUILDER_STAGE_SUBTITLE = 'mt-0.5 text-sm text-muted-foreground';
-export const BUILDER_CARD_TITLE = 'text-base';
-export const BUILDER_STAT = 'text-lg font-semibold tracking-tight';
-export const BUILDER_STAT_LABEL = 'text-2xs text-muted-foreground';
+  'page-section font-semibold tracking-tight text-foreground';
+export const BUILDER_STAGE_SUBTITLE = 'page-stat-label mt-0.5 text-muted-foreground';
+export const BUILDER_CARD_TITLE = 'page-section';
+export const BUILDER_STAT = 'page-stat font-semibold tracking-tight';
+export const BUILDER_STAT_LABEL = 'page-stat-label text-muted-foreground';
 
 /** Inner stage strips — same `text-xs` as the Applications / main Builder tabs. */
 export const BUILDER_SUBTAB_LIST =

@@ -10,9 +10,15 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
     en: 'Ask AI what to ship next',
     el: 'Ρωτήστε το AI τι να παραδώσετε μετά',
   },
+  // What the founder gets, not the prompt's guardrails: "no invented metrics"
+  // is an instruction to the model and stays in the prompt only.
   ask_ai_hint: {
-    en: 'Propose the next three from Builder, the pitch deck, and anything overdue.',
-    el: 'Προτείνετε τα επόμενα τρία από τον Builder, το pitch deck και ό,τι είναι εκπρόθεσμο.',
+    en: 'It proposes the next three from Builder, the pitch deck, and anything overdue.',
+    el: 'Προτείνει τα επόμενα τρία από τον Builder, το pitch deck και ό,τι είναι εκπρόθεσμο.',
+  },
+  ask_ai_hint_harbor: {
+    en: 'It proposes the next three from Idea Core, the GTM board, the $750K seed (Athens Tech Angels, $375K committed), and anything overdue.',
+    el: 'Προτείνει τα επόμενα τρία από τον Πυρήνα ιδέας, τον πίνακα GTM, τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα) και ό,τι είναι εκπρόθεσμο.',
   },
   lead: {
     en: 'Each milestone is one goal with an owner and a date. Completing them feeds Readiness and investor updates. Ask AI to propose the next three from Builder artefacts.',
@@ -52,6 +58,7 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   stat_completed: { en: 'Completed', el: 'Ολοκληρωμένα' },
   stat_overdue: { en: 'Overdue', el: 'Εκπρόθεσμα' },
   stat_rate: { en: 'Completion rate', el: 'Ποσοστό ολοκλήρωσης' },
+  progress_aria: { en: 'Progress', el: 'Πρόοδος' },
   overdue: { en: 'Overdue', el: 'Εκπρόθεσμο' },
   due_soon: { en: 'Due soon', el: 'Λήγει σύντομα' },
   edit: { en: 'Edit', el: 'Επεξεργασία' },
@@ -59,6 +66,8 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   reopen: { en: 'Reopen', el: 'Επανάνοιγμα' },
   delete: { en: 'Delete', el: 'Διαγραφή' },
   more: { en: 'Milestone actions', el: 'Ενέργειες ορόσημου' },
+  layout: { en: 'Layout', el: 'Διάταξη' },
+  clear_search: { en: 'Clear search', el: 'Καθαρισμός αναζήτησης' },
   view_list: { en: 'List view', el: 'Προβολή λίστας' },
   view_grid: { en: 'Grid view', el: 'Προβολή πλέγματος' },
   refresh: { en: 'Refresh', el: 'Ανανέωση' },
@@ -79,7 +88,7 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   modal_new: { en: 'New milestone', el: 'Νέο ορόσημο' },
   modal_edit: { en: 'Edit milestone', el: 'Επεξεργασία ορόσημου' },
   field_title: { en: 'Title', el: 'Τίτλος' },
-  title_ph: { en: 'e.g. Launch MVP to beta users', el: 'π.χ. Κυκλοφορία MVP σε beta χρήστες' },
+  title_ph: { en: 'e.g. Share the deck with Athens Tech Angels', el: 'π.χ. Μοιραστείτε το deck με τους Athens Tech Angels' },
   field_desc: { en: 'Description', el: 'Περιγραφή' },
   desc_ph: { en: 'What does this milestone represent?', el: 'Τι αντιπροσωπεύει αυτό το ορόσημο;' },
   field_status: { en: 'Status', el: 'Κατάσταση' },
@@ -110,9 +119,22 @@ export const MILESTONE_STRINGS: Record<string, BilingualPair> = {
   created: { en: 'Milestone created', el: 'Το ορόσημο δημιουργήθηκε' },
   created_hint: { en: 'Added to your tracker.', el: 'Προστέθηκε στον πίνακα.' },
   fail_create: { en: 'Failed to create milestone', el: 'Αποτυχία δημιουργίας ορόσημου' },
+  toast_completed: { en: 'Milestone completed', el: 'Το ορόσημο ολοκληρώθηκε' },
+  toast_reopened: { en: 'Milestone reopened', el: 'Το ορόσημο άνοιξε ξανά' },
+  toast_updated: { en: 'Milestone updated', el: 'Το ορόσημο ενημερώθηκε' },
+  toast_deleted: { en: 'Milestone deleted', el: 'Το ορόσημο διαγράφηκε' },
+  fail_update: { en: 'Could not update your milestone', el: 'Δεν ήταν δυνατή η ενημέρωση του ορόσημου' },
+  fail_delete: { en: 'Failed to delete', el: 'Αποτυχία διαγραφής' },
   try_again: { en: 'Please try again', el: 'Δοκιμάστε ξανά' },
   creating: { en: 'Creating…', el: 'Δημιουργία…' },
   due_optional: { en: 'Due date (optional)', el: 'Προθεσμία (προαιρετικό)' },
+  // A colon, so the Greek needs no case agreement with the page names after it.
+  link_into: { en: 'Connected pages:', el: 'Συνδεδεμένες σελίδες:' },
+  link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
+  link_pitch: { en: 'Pitch deck', el: 'Pitch deck' },
+  link_research: { en: 'Research boards', el: 'Πίνακες έρευνας' },
+  link_readiness: { en: 'Readiness', el: 'Ετοιμότητα' },
+  link_fundraising: { en: 'Fundraising', el: 'Χρηματοδότηση' },
 };
 
 export function milestoneEn(key: keyof typeof MILESTONE_STRINGS): string {
@@ -152,6 +174,57 @@ export const MILESTONE_STATUS_ONE_KEYS: Record<string, keyof typeof MILESTONE_ST
   blocked: 'status_blocked_one',
   completed: 'status_completed_one',
   cancelled: 'status_cancelled_one',
+};
+
+/**
+ * Greek for the twelve preview milestones (`PREVIEW_MILESTONES` in
+ * `lib/preview-api.ts`). Real milestones are user data and render as typed.
+ * Keyed by the exact English title, same pattern as the Builder preview hints;
+ * the milestone tracker and the Overview's "Next" chip both read it.
+ */
+export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?: string }> = {
+  'Complementary cofounder — technical + commercial pair': {
+    title: 'Συμπληρωματικός συνιδρυτής — τεχνικό + εμπορικό ζεύγος',
+    description: 'Εργασία: εύρεση συμπληρωματικού συνιδρυτή.',
+  },
+  'First founder-network path in Athens': {
+    title: 'Πρώτη διαδρομή δικτύου ιδρυτών στην Αθήνα',
+    description: 'Discover, matches και παραδοτέα Builder που μοιράζονται. Πρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και ζώνες ΕΕ.',
+  },
+  'File Harbor trademark': {
+    title: 'Κατοχύρωση σήματος Harbor',
+    description: 'Προαιρετικό νομικό βήμα.',
+  },
+  'Close $750K seed': {
+    title: 'Κλείσιμο γύρου $750K',
+    description: '$375K δεσμευμένα από στόχο $750K. Lead: Athens Tech Angels.',
+  },
+  'Shareable Idea Core and GTM board': {
+    title: 'Πυρήνας ιδέας και πίνακας GTM που μοιράζονται',
+    description: 'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται.',
+  },
+  'Warm intro from Athens founder networks': {
+    title: 'Ζεστή σύσταση από δίκτυα ιδρυτών στην Αθήνα',
+    description: 'Αναμονή ζεστής σύστασης από δίκτυα ιδρυτών στην Αθήνα.',
+  },
+  'Idea Core v1 in Builder': {
+    title: 'Πυρήνας ιδέας v1 στον Builder',
+    description: 'Πρόβλημα, κοινό συμπληρωματικού συνιδρυτή, γράφος + ετοιμότητα + builder.',
+  },
+  'First mentor office hours': { title: 'Πρώτες ώρες γραφείου με μέντορα' },
+  'BMC v1 in Builder': {
+    title: 'Καμβάς μοντέλου v1 στον Builder',
+    description: 'Επόμενα η πρόταση αξίας και τα κανάλια· ένα από τα εννέα μπλοκ είναι συμπληρωμένο.',
+  },
+  'Pitch deck outline for the $750K seed': {
+    title: 'Δομή pitch deck για τον γύρο $750K',
+    description: 'Ίδιο ask με την παρουσίαση επενδυτών του Harbor.',
+  },
+  'Readiness score above 40': { title: 'Βαθμός ετοιμότητας πάνω από 40' },
+  'GTM canvas on Research': {
+    title: 'Καμβάς GTM στους πίνακες έρευνας',
+    description: 'Σημειώσεις GTM του Harbor σε συμφωνία με τον Πυρήνα ιδέας και τον γύρο $750K.',
+  },
 };
 
 export const MILESTONE_PRIORITY_KEYS: Record<string, keyof typeof MILESTONE_STRINGS> = {

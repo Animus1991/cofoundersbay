@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { getActionSpec, undoAvailable } from '@/lib/action-registry';
+import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import type { CopilotAction } from '@/lib/copilot-types';
 
@@ -36,7 +37,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
     <div
       className={cn(
         'rounded-lg border bg-card px-3 py-2.5 shadow-sm',
-        done && 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20',
+        done && `border-status-success-border/40 ${STATUS.success.bg}`,
         (dismissed || undone) && 'surface-inactive',
         failed && 'border-destructive/40',
       )}
@@ -82,7 +83,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
           </span>
         ) : done ? (
           <>
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <span className={cn('inline-flex items-center gap-1 text-xs font-medium', STATUS.success.text)}>
               <Check className="h-3.5 w-3.5" aria-hidden="true" />
               <BilingualText en="Done" el="Έγινε" />
             </span>

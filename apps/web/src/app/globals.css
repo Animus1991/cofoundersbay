@@ -18,6 +18,13 @@ html {
   --banner-demo: 0px;
   /* −1% component height. font-size / line-height never read this. */
   --chrome-y: 0.99;
+  /* Product chrome cluster (AI-converged). Locked founder dash pages
+     keep the hold/kicker ladder and do not read these. */
+  --type-caption: 12.61px;
+  --type-support: 12.7361px;
+  --type-ui: 13.50px;
+  --type-identity: 14.28px;
+  --type-page: 15.42px;
 }
 
 @layer base {
@@ -34,66 +41,59 @@ html {
   }
 
   :root {
-    /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
-    --background:       220 16% 96%;
-    --foreground:       220 26% 9%;
-    --card:             0 0% 100%;
-    --card-foreground:  220 26% 9%;
+    /* ── Light theme ──
+       Surfaces step the way cursor.com's do: page, card and inset sit a few
+       points of lightness apart (card/page 1.07:1 here, 1.06 measured on
+       cursor.com), so a card reads as a place rather than as a box. Every
+       theme below holds the same three ratios:
+         card on page   1.05-1.09
+         --border       1.14-1.19 on its card (cursor.com 1.15-1.18)
+         --input        1.25-1.37 on its card, the one edge a control needs */
+    --background:       220 8% 96.4%;
+    --foreground:       220 12% 20%;
+    --card:             220 16% 99.4%;
+    --card-foreground:  220 12% 20%;
     --popover:          0 0% 100%;
-    --popover-foreground: 220 26% 9%;
+    --popover-foreground: 220 12% 20%;
 
-    /* Primary: professional blue-violet — modern, trustworthy.
-       Two tokens, because one cannot serve both jobs: --primary is an
-       interactive SURFACE (its foreground must contrast against it), while
-       --primary-emphasis is TEXT drawn on a surface (it must contrast against
-       the background). Tuning a single token for one breaks the other.
-       Every pair below is verified at >= 4.5:1 (WCAG 1.4.3). */
-    --primary:          236 72% 55%;   /* #3a45df — white on it: 6.78 */
+    /* Primary: the profile-funnel bar. Restored to the exact token that
+       painted it — `235 88% 62%` at `bg-primary/70`. Same hue everywhere;
+       filled buttons use the solid (white still ≥4.5:1). */
+    --primary:          235 88% 62%;
     --primary-foreground: 0 0% 100%;
-    /* Accent text on dark/tinted surfaces (avatars, active nav, badges) — distinct from
-       --primary because a single lightness can't satisfy both "text on dark background"
-       (needs high luminance) and "white text on primary-colored button" (needs low
-       luminance) against the same background — verified via axe-core, computed per theme.
-       Light theme's own --primary already clears 4.5:1 as text, so this matches it. */
-    --primary-accessible: 236 72% 55%;
+    --primary-accessible: 235 72% 50%;
 
-    /* Secondary: subtle gray for secondary actions */
-    --secondary:        220 13% 94%;
-    --secondary-foreground: 220 18% 16%;
+    /* Secondary / muted sit a couple of points off the card, not a new colour. */
+    --secondary:        220 8% 95.4%;
+    --secondary-foreground: 220 10% 24%;
 
-    /* Muted: for subtitles, disabled states */
-    --muted:            220 12% 92%;
-    --muted-foreground: 220 10% 42%; /* Improved contrast for WCAG AA */
+    --muted:            220 8% 94.6%;
+    --muted-foreground: 220 6% 45%;  /* ~5.2 on card — helper, not a second shout */
 
-    /* Accent: vibrant for highlights, badges */
-    --accent:           236 72% 55%;
+    /* Accent follows primary. A second hue (magenta, cyan) was pulling the
+       eye off the words the way cursor.com never does. */
+    --accent:           235 88% 62%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 84% 49%; /* WCAG AA: white on destructive 4.70 (50% was 4.53) */
+    --destructive:      0 68% 46%;
     --destructive-foreground: 0 0% 100%;
-    /* Text-only destructive (headings, labels, ghost-button labels) — same tension as
-       --primary-accessible: text needs to be darker than the button's own fill for
-       contrast against a light surface, while the button fill must stay light enough
-       for white text on it. Slightly darker than --destructive. */
-    --destructive-accessible: 0 84% 46%;
+    --destructive-accessible: 0 64% 40%;
 
-    /* Borders: subtle, consistent */
-    /* Measured against this theme's own --card: every theme sat between 1.27
-       and 1.41:1, and the codebase reaches for `border-border/60` constantly,
-       which dropped those to 1.10-1.23:1 -- a hairline most displays cannot
-       resolve, which is why cards had taken to stacking a border, a fill and a
-       shadow to make one edge read. Each theme now clears 1.45:1 on its card
-       (GitHub Primer's level: a boundary, not an outline), so the /60 and /40
-       variants become a real hierarchy instead of four values crowded into the
-       invisible band. Borders are decorative under WCAG unless they are a
-       control's only boundary, and that case is carried by --input, held at
-       3:1 for SC 1.4.11 separately. Values from origin/claude 1501b70,
-       re-derived here. */
-    --border:           220 13% 85%;   /* 1.44 on card */
-    --input:            0 0% 100%;
-    --ring:             236 72% 55%;
-    /* Base radius. All Tailwind rounded-* steps derive from this (tailwind.config.ts):
-       sm 6 · DEFAULT 8 · md 10 · lg 12 · xl 16 · 2xl 20 · 3xl 26. */
+    /* Borders: a hairline, spent sparingly.
+       cursor.com draws its card edge at 1.15:1 and its button edge at 1.18:1,
+       with no shadow behind either -- the surface step does most of the
+       separating and the line only confirms it. At 1.44:1 every card here
+       was outlined rather than placed, and that line was repeated on chips,
+       tiles and rows inside the card. `--border` now sits in cursor.com's
+       band, so `/60` and `/40` fade toward nothing, which is what an inner
+       divider should do. A control's own boundary is `--input`, kept firmer
+       than a card edge because it is the only thing that marks the field. */
+    --border:           220 8% 93.6%;  /* ~1.12 on card — a hairline, not a frame */
+    --input:            220 8% 90.5%;  /* ~1.22 on card — fields only */
+    --ring:             235 88% 62%;
+    /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
+       sm/DEFAULT 6 · md/lg 8 · xl 10 · 2xl 12 · 3xl 14.
+       cursor.com: cards ~12px, outlined buttons ~6–8px, both circular arcs. */
     --radius:           12px;
 
     /* Typography scale — Cursor.com steps, then +2% on the UI/copy half
@@ -108,32 +108,28 @@ html {
     --font-size-3xl:    1.625rem;   /* 26px  cursor.com h1 */
     --font-size-4xl:    2.25rem;    /* 36px  heading-lg */
 
-    /* Gradients */
-    --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(286 74% 62%));
-    --gradient-card:    linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
+    /* Gradients. The hero is one flat dark tone carrying white type; a
+       surface that shifts hue across its width pulls the eye off the words. */
+    --gradient-hero:    linear-gradient(hsl(222 26% 10%), hsl(222 26% 10%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(242 70% 70%));
+    --gradient-card:    linear-gradient(hsl(var(--card)), hsl(var(--card)));
 
     /* ── Shadows ──────────────────────────────────────────────────────────
-       Elevation is tinted with the theme rather than pure black: a neutral
-       black shadow over a tinted ground reads as grey haze, a shadow that
-       carries the ground's hue reads as depth. `--shadow-strength` scales
-       every step at once, which is how the dark themes get shadows that are
-       visible at all without each of them restating the whole ladder. Both
-       are read by the box-shadow ladder in tailwind.config.ts, so every
-       theme has to declare them. */
+       Nothing in the page flow casts one: cursor.com's cards, tiles and
+       buttons carry none, and a shadow under a hairline is a second edge.
+       Only what floats over the page -- menus, popovers, dialogs, toasts --
+       gets a soft, wide, low-opacity spread (cursor.com's flyout is 2-5%
+       black), and it is tinted with the ground's hue so it reads as depth
+       rather than haze. `--shadow-strength` scales it for the dark themes,
+       where the same opacity would not register. Both are read by the
+       box-shadow ladder in tailwind.config.ts, so every theme declares them. */
     --shadow-color:     220 40% 18%;
     --shadow-strength:  1;
 
-    /* A quiet lift, not a second outline. This was
-       `0 0 0 1px hsl(var(--border) / 0.8)`: a 1px ring drawn exactly on top
-       of the border that every element carrying it already declares — two
-       hairlines at the same coordinates on every outline button. The dark
-       themes override it with their primary glow, which is a deliberate
-       effect and is left alone. */
-    --shadow-glow:      0 1px 2px -1px hsl(var(--shadow-color) / 0.07);
-    --shadow-card:      0 1px 2px hsl(220 20% 10% / 0.04), 0 8px 24px hsl(220 20% 10% / 0.04);
-    --shadow-elevated:  0 8px 28px hsl(220 20% 10% / 0.08), 0 2px 8px hsl(220 20% 10% / 0.04);
-    --shadow-modal:     0 20px 48px hsl(220 20% 10% / 0.12), 0 6px 16px hsl(220 20% 10% / 0.06);
+    --shadow-glow:      none;
+    --shadow-card:      none;
+    --shadow-elevated:  0 4px 20px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 7%));
+    --shadow-modal:     0 12px 40px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 12%));
 
     /* ── Standardized spacing scale ── */
     --spacing-card-compact: 1rem;      /* 16px - p-4 */
@@ -152,41 +148,32 @@ html {
   }
 
   .dark {
-    --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 10%) 50%, hsl(235 80% 15%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(222 30% 14% / 0.8), hsl(222 30% 10% / 0.6));
+    --gradient-hero: linear-gradient(hsl(222 22% 10.2%), hsl(222 22% 10.2%));
     --shadow-color: 222 60% 2%;
     --shadow-strength: 3;
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
-    /* The trailing `0 1px 0 border` was a hairline under every card that
-       already draws a border on all four sides. The ambient pair is the
-       elevation; the border is the boundary. */
-    --shadow-card: 0 8px 28px hsl(0 0% 0% / 0.28);
-    --background: 222 35% 8%;
-    --foreground: 210 40% 96%;
-    --card: 222 30% 12%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 30% 10%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 235 88% 62%; /* WCAG AA: white on primary ≥4.5:1 (was 66%) */
+    /* card/page 1.06 (cursor.com dark 1.07); the popover sits one step above
+       the card so a menu over a card still separates without a heavy shadow. */
+    --background: 222 28% 7.4%;
+    --foreground: 220 10% 93%;
+    --card: 222 22% 10.2%;
+    --card-foreground: 220 10% 93%;
+    --popover: 222 20% 11.4%;
+    --popover-foreground: 220 10% 93%;
+    --primary: 235 80% 72%;
     --primary-foreground: 0 0% 100%;
-    /* Text-on-dark variant. 71% was tuned against the page and sidebar only and
-       still failed the case that matters most for this token — accent text on a
-       `bg-primary/20` tint (avatar fallbacks, active chips): 3.70:1. Raised to
-       78%, which clears every surface it is actually drawn on:
-       tint 5.18 · sidebar 6.53 · card 7.01 · page 7.63. */
-    --primary-accessible: 235 88% 78%;
-    --secondary: 218 18% 18%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 218 18% 16%;
-    --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
-    --accent: 292 84% 48%; /* WCAG AA: white on accent ≥4.5:1 (was 66%) */
+    --primary-accessible: 235 88% 80%;
+    --secondary: 222 16% 13.8%;
+    --secondary-foreground: 220 10% 93%;
+    --muted: 222 16% 13%;
+    --muted-foreground: 220 8% 62%;
+    --accent: 235 80% 72%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 46%;
+    --destructive: 0 62% 52%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 62% 61%; /* text-on-dark variant — 46% measures ~2.9:1 as inline text (axe-core) */
-    --border: 220 18% 23%;             /* 1.44 on card, 1.58 on page */
-    --input: 220 18% 20%;
-    --ring: 235 88% 66%;
+    --destructive-accessible: 0 58% 70%;
+    --border: 222 12% 13.6%;           /* ~1.12 on card */
+    --input: 222 12% 16.8%;            /* ~1.22 on card */
+    --ring: 235 80% 72%;
     color-scheme: dark;
   }
 
@@ -196,26 +183,26 @@ html {
     --shadow-strength: 3;
     --background: 215 28% 17%;
     --foreground: 210 20% 98%;
-    --card: 215 25% 21%;
+    --card: 215 25% 19.4%;
     --card-foreground: 210 20% 98%;
-    --popover: 215 25% 21%;
+    --popover: 215 24% 20.6%;
     --popover-foreground: 210 20% 98%;
-    --primary: 199 89% 36%; /* WCAG AA: white on cyan primary ≥4.5:1 (was 48%) */
+    --primary: 199 36% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 199 89% 50%; /* text-on-dark — 48% was 4.46 on this theme's card */
-    --secondary: 215 20% 26%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 20% 26%;
-    --muted-foreground: 215 16% 70%;
-    --accent: 199 89% 36%;
+    --primary-accessible: 199 28% 62%;
+    --secondary: 215 20% 22.6%;
+    --secondary-foreground: 210 12% 94%;
+    --muted: 215 20% 22%;
+    --muted-foreground: 215 10% 68%;
+    --accent: 199 36% 40%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 50%;
+    --destructive: 2 32% 50%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 70% 70%; /* text-on-dark — 69% was 4.48 on this theme's card */
-    --border: 215 20% 31%;             /* 1.47 on card, 1.69 on page */
-    --input: 215 20% 30%;
-    --ring: 199 89% 36%;
-    --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
+    --destructive-accessible: 2 28% 70%;
+    --border: 215 16% 22.8%;           /* ~1.12 on card */
+    --input: 215 16% 25.8%;            /* ~1.22 on card */
+    --ring: 199 36% 40%;
+    --gradient-hero: linear-gradient(hsl(215 26% 13%), hsl(215 26% 13%));
     color-scheme: dark;
   }
 
@@ -226,27 +213,26 @@ html {
     --shadow-strength: 1;
     --background: 195 26% 96%;
     --foreground: 220 100% 3%;
-    --card: 0 0% 100%;
+    --card: 195 30% 99.2%;
     --card-foreground: 220 100% 3%;
-    --popover: 180 25% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 220 100% 3%;
-    --primary: 34 100% 52%;
-    --primary-foreground: 220 100% 3%; /* dark on amber — ≥9:1 */
-    --primary-accessible: 34 100% 28%; /* amber is a light hue even at moderate lightness —
-       52% measures ~1.9:1 as text on this theme's near-white background; darkened to clear 4.5:1 */
-    --secondary: 200 15% 88%;
+    --primary: 34 40% 46%;
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 34 36% 34%;
+    --secondary: 200 16% 93.6%;
     --secondary-foreground: 220 100% 3%;
-    --muted: 180 25% 94%;
-    --muted-foreground: 210 5% 43%; /* WCAG AA on muted fill (44% was 4.46) */
-    --accent: 34 100% 52%;
-    --accent-foreground: 220 100% 3%;
-    --destructive: 0 84% 49%;
+    --muted: 190 22% 94%;
+    --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
+    --accent: 34 40% 46%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 2 30% 46%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 84% 46%; /* text-on-light variant, darkened like light theme above */
-    --border: 200 15% 84%;             /* 1.44 on card, 1.33 on page */
-    --input: 200 15% 88%;
-    --ring: 34 100% 52%;
-    --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
+    --destructive-accessible: 2 26% 40%;
+    --border: 200 12% 93.4%;           /* ~1.12 on card */
+    --input: 200 12% 90.4%;            /* ~1.22 on card */
+    --ring: 34 40% 46%;
+    --gradient-hero: linear-gradient(hsl(205 20% 13%), hsl(205 20% 13%));
     color-scheme: light;
   }
 
@@ -256,26 +242,26 @@ html {
     --shadow-strength: 3;
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
-    --card: 240 8% 8%;
+    --card: 240 7% 6.8%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 8% 8%;
+    --popover: 240 7% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 262 83% 58%;            /* #7c3bed — white on it: 5.67 */
+    --primary: 258 28% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 262 83% 68%; /* text-on-dark variant, same pattern as .dark above */
-    --secondary: 240 6% 15%;
+    --primary-accessible: 258 22% 72%;
+    --secondary: 240 6% 10.4%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 6% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 280 100% 55%; /* WCAG AA: white on magenta accent ≥4.5:1 (was 70%) */
+    --muted: 240 6% 9.8%;
+    --muted-foreground: 240 5% 64%;
+    --accent: 258 28% 58%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --destructive: 2 32% 52%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 72% 58%; /* text-on-dark variant, same pattern as .dark above */
-    --border: 240 6% 21%;              /* 1.47 on card, 1.57 on page */
-    --input: 240 6% 18%;
-    --ring: 262 83% 58%;
-    --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
+    --destructive-accessible: 2 28% 66%;
+    --border: 240 6% 10.8%;            /* ~1.12 on card */
+    --input: 240 6% 13.6%;             /* ~1.22 on card */
+    --ring: 258 28% 58%;
+    --gradient-hero: linear-gradient(hsl(240 7% 6.8%), hsl(240 7% 6.8%));
     color-scheme: dark;
   }
 
@@ -295,9 +281,9 @@ html {
   [data-theme="minimal"] {
     --shadow-color: 30 18% 22%;
     --shadow-strength: 0.8;
-    --background:        40 20% 98%;
+    --background:        40 14% 96.6%;
     --foreground:        30 8% 12%;
-    --card:              0 0% 100%;
+    --card:              40 20% 99.3%;
     --card-foreground:   30 8% 12%;
     --popover:           0 0% 100%;
     --popover-foreground: 30 8% 12%;
@@ -306,10 +292,10 @@ html {
     --primary-foreground: 0 0% 100%;
     --primary-emphasis:  190 48% 24%;   /* link text — 8.82 on card */
 
-    --secondary:         40 14% 94%;
+    --secondary:         40 14% 94.2%;
     --secondary-foreground: 30 8% 16%;
-    --muted:             40 14% 95%;
-    --muted-foreground:  30 6% 38%;     /* 5.51 on muted, 6.12 on card */
+    --muted:             40 14% 93.8%;
+    --muted-foreground:  30 6% 37%;     /* 5.61 on muted, 6.29 on card */
 
     --accent:            40 16% 93%;
     --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
@@ -318,13 +304,10 @@ html {
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 6 60% 36%;  /* 7.83 on card */
 
-    --border:            36 12% 83%;   /* 1.45 on card, 1.39 on page */
-    --input:             36 10% 55%;    /* 3.21 on card — a visible field edge */
+    --border:            36 10% 91.8%;  /* 1.17 on card */
+    --input:             36 10% 55%;    /* 3.14 on card — a visible field edge */
     --ring:              190 48% 32%;   /* 5.75 on page */
 
-    /* Inherits the radius ladder unchanged. Minimal is a restraint on colour,
-       elevation and weight, not on curvature -- the corners are the one part
-       of the product that reads as calm in every theme, so they stay put. */
     color-scheme: light;
   }
 
@@ -334,9 +317,9 @@ html {
      Token names on this line: --primary-accessible / --destructive-accessible
      (Claude 803ddb2 used --primary-emphasis / --destructive-emphasis). ──── */
   [data-theme="minimal"] {
-    --background:        40 20% 98%;
+    --background:        40 14% 96.6%;
     --foreground:        30 8% 12%;
-    --card:              0 0% 100%;
+    --card:              40 20% 99.3%;
     --card-foreground:   30 8% 12%;
     --popover:           0 0% 100%;
     --popover-foreground: 30 8% 12%;
@@ -345,10 +328,10 @@ html {
     --primary-foreground: 0 0% 100%;
     --primary-accessible:  190 48% 24%; /* link text — 8.82 on card */
 
-    --secondary:         40 14% 94%;
+    --secondary:         40 14% 94.2%;
     --secondary-foreground: 30 8% 16%;
-    --muted:             40 14% 95%;
-    --muted-foreground:  30 6% 38%;     /* 5.51 on muted, 6.12 on card */
+    --muted:             40 14% 93.8%;
+    --muted-foreground:  30 6% 37%;     /* 5.61 on muted, 6.29 on card */
 
     --accent:            40 16% 93%;
     --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
@@ -357,46 +340,71 @@ html {
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 6 60% 36%; /* 7.83 on card */
 
-    --border:            36 12% 83%;   /* 1.47 on card, 1.41 on page */
-    --input:             36 10% 55%;    /* 3.21 on card — a visible field edge */
+    --border:            36 10% 91.8%;  /* 1.17 on card */
+    --input:             36 10% 55%;    /* 3.14 on card — a visible field edge */
     --ring:              190 48% 32%;   /* 5.75 on page */
 
-    /* 8px, not 0.5rem: the desktop root is 82%, which silently shrank this
-       theme's radius to 6.56px and every calc() step with it (cards at
-       10.6px instead of 16). The whole ladder is px so a corner is the same
-       curve at every viewport; this is the same 8px 0.5rem meant at the
-       default root. */
-    --radius: 8px;
     color-scheme: light;
   }
 
   .role-founder {
     --primary: 235 88% 62%;
     --primary-foreground: 0 0% 100%;
-    --accent: 292 84% 48%;
+    --primary-accessible: 235 72% 50%;
+    --accent: 235 88% 62%;
     --accent-foreground: 0 0% 100%;
+    --ring: 235 88% 62%;
+  }
+  html.dark.role-founder {
+    --primary: 235 80% 72%;
+    --primary-accessible: 235 88% 80%;
+    --accent: 235 80% 72%;
+    --ring: 235 80% 72%;
   }
 
   .role-mentor {
-    --primary: 200 84% 55%;
-    --primary-foreground: 220 26% 9%; /* dark on bright cyan — warm primaries */
-    --accent: 180 72% 52%;
-    --accent-foreground: 220 26% 9%;
+    --primary: 190 28% 42%;
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 190 24% 36%;
+    --accent: 190 28% 42%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 190 28% 42%;
+  }
+  html.dark.role-mentor {
+    --primary: 190 22% 62%;
+    --primary-accessible: 190 18% 74%;
+    --accent: 190 22% 62%;
+    --ring: 190 22% 62%;
   }
 
   .role-investor {
-    /* Amber, like the alliance orange, cannot carry white text on brand. */
-    --primary: 32 92% 60%;
-    --primary-foreground: 220 100% 3%; /* dark on orange — ≥9:1 */
-    --accent: 14 82% 54%;
-    --accent-foreground: 220 100% 3%;
+    --primary: 32 36% 44%;
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 32 32% 36%;
+    --accent: 32 36% 44%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 32 36% 44%;
+  }
+  html.dark.role-investor {
+    --primary: 32 28% 58%;
+    --primary-accessible: 32 24% 70%;
+    --accent: 32 28% 58%;
+    --ring: 32 28% 58%;
   }
 
   .role-org {
-    --primary: 268 84% 62%; /* WCAG AA: white on purple ≥4.5:1 (was 68%) */
+    --primary: 258 28% 48%;
     --primary-foreground: 0 0% 100%;
-    --accent: 248 70% 60%;
+    --primary-accessible: 258 24% 40%;
+    --accent: 258 28% 48%;
     --accent-foreground: 0 0% 100%;
+    --ring: 258 28% 48%;
+  }
+  html.dark.role-org {
+    --primary: 258 24% 66%;
+    --primary-accessible: 258 20% 76%;
+    --accent: 258 24% 66%;
+    --ring: 258 24% 66%;
   }
 
   /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)
@@ -404,88 +412,59 @@ html {
   :root,
   [data-theme="alliance"],
   [data-theme="minimal"] {
-    --status-success-fg:     142 64% 30%;
-    --status-success-bg:     142 55% 94%;
-    --status-success-border: 142 45% 78%;
-    --status-warning-fg:     32 95% 34%;
-    --status-warning-bg:     38 92% 95%;
-    --status-warning-border: 38 80% 78%;
-    --status-danger-fg:      0 72% 42%;
-    --status-danger-bg:      0 80% 96%;
-    --status-danger-border:  0 65% 82%;
-    --status-info-fg:        217 85% 40%;
-    --status-info-bg:        217 80% 96%;
-    --status-info-border:    217 60% 82%;
-    --status-accent-fg:      263 70% 42%;
-    --status-accent-bg:      263 60% 96%;
-    --status-accent-border:  263 50% 82%;
-    --status-neutral-fg:     220 10% 42%;
-    --status-neutral-bg:     220 12% 94%;
-    --status-neutral-border: 220 13% 85%;
+    /* Original hues; lightness only a few points milder than HEAD. */
+    --status-success-fg:     142 64% 34%;
+    --status-success-bg:     142 50% 95%;
+    --status-success-border: 142 40% 82%;
+    --status-warning-fg:     32 88% 38%;
+    --status-warning-bg:     38 80% 95.5%;
+    --status-warning-border: 38 70% 82%;
+    --status-danger-fg:      0 68% 44%;
+    --status-danger-bg:      0 70% 96%;
+    --status-danger-border:  0 55% 84%;
+    /* Helper blue — extra colour only (e.g. readiness “Good”). */
+    --status-info-fg:        217 72% 42%;
+    --status-info-bg:        217 70% 96%;
+    --status-info-border:    217 50% 84%;
+    --status-accent-fg:      235 72% 50%;
+    --status-accent-bg:      235 40% 96.5%;
+    --status-accent-border:  235 28% 90%;
+    --status-neutral-fg:     220 8% 44%;
+    --status-neutral-bg:     220 8% 95.6%;
+    --status-neutral-border: 220 8% 92%;
   }
 
   .dark,
   [data-theme="cofounder"],
   [data-theme="system"] {
-    --status-success-fg:     142 55% 58%;
-    --status-success-bg:     142 35% 14%;
-    --status-success-border: 142 30% 26%;
-    --status-warning-fg:     38 92% 58%;
-    --status-warning-bg:     38 60% 14%;
-    --status-warning-border: 38 50% 26%;
-    --status-danger-fg:      0 75% 62%;
-    --status-danger-bg:      0 45% 14%;
-    --status-danger-border:  0 40% 28%;
-    --status-info-fg:        217 85% 65%;
-    --status-info-bg:        217 50% 14%;
-    --status-info-border:    217 45% 28%;
-    --status-accent-fg:      263 75% 68%;
-    --status-accent-bg:      263 40% 16%;
-    --status-accent-border:  263 35% 28%;
-    --status-neutral-fg:     215 16% 65%;
-    --status-neutral-bg:     218 18% 16%;
-    --status-neutral-border: 220 18% 24%;
+    --status-success-fg:     142 50% 56%;
+    --status-success-bg:     142 32% 14%;
+    --status-success-border: 142 28% 26%;
+    --status-warning-fg:     38 80% 56%;
+    --status-warning-bg:     38 50% 14%;
+    --status-warning-border: 38 42% 26%;
+    --status-danger-fg:      0 68% 60%;
+    --status-danger-bg:      0 40% 14%;
+    --status-danger-border:  0 36% 28%;
+    --status-info-fg:        217 70% 64%;
+    --status-info-bg:        217 45% 14%;
+    --status-info-border:    217 40% 28%;
+    --status-accent-fg:      235 70% 78%;
+    --status-accent-bg:      235 28% 14%;
+    --status-accent-border:  235 22% 20%;
+    --status-neutral-fg:     220 8% 64%;
+    --status-neutral-bg:     222 12% 12.2%;
+    --status-neutral-border: 222 12% 15.4%;
   }
 
   * {
     @apply border-border;
   }
 
-  /* ── Continuous curvature ─────────────────────────────────────────────────
-     A plain `border-radius` draws a circular arc, which meets the straight
-     edge at a curvature discontinuity: the corner "starts" at a visible
-     point. That break is what makes a rounded rectangle read as stamped
-     rather than moulded, and it is the single reason the product's corners
-     looked mechanical no matter what radius they were given. A superellipse
-     has no such break -- curvature ramps smoothly into the edge, which is
-     the shape Apple uses for icons and Figma exposes as "corner smoothing".
-
-     `corner-shape` is an unknown declaration in browsers that do not
-     implement it, so the @supports guard is belt-and-braces: those browsers
-     keep the circular arc at the same radius and lose only the smoothing.
-     Applying it with `*` costs nothing on the ~90% of elements with radius
-     0, where there is no corner to shape.
-
-     Pills are the one exclusion, and they are excluded for a rendering
-     reason rather than a taste one: `rounded-full` sets 9999px, hundreds of
-     times past the clamp, and a superellipse that far past the clamp
-     degrades into a rounded rectangle -- it would turn every avatar,
-     badge and switch into a squarish blob. Radii that merely graze the
-     clamp (a 13px corner on a 24px chip) render as a clean squircle
-     capsule, so they are left in. */
-  @supports (corner-shape: squircle) {
-    *,
-    *::before,
-    *::after {
-      corner-shape: squircle;
-    }
-
-    [class*='rounded-full'],
-    [class*='rounded-full']::before,
-    [class*='rounded-full']::after {
-      corner-shape: round;
-    }
-  }
+  /* Corners stay plain circular arcs, as on cursor.com. No
+     `corner-shape: squircle`: at the same radius a superellipse pulls the
+     curve tight into the corner and leaves long straight runs either side,
+     which reads as abrupt rather than soft. */
 
   html {
     scroll-behavior: smooth;
@@ -530,10 +509,6 @@ html {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image:
-      radial-gradient(ellipse 90% 55% at 50% -18%, hsl(var(--primary) / 0.07), transparent 58%),
-      radial-gradient(ellipse 50% 40% at 100% 0%, hsl(var(--accent) / 0.04), transparent 48%);
-    background-attachment: fixed;
   }
 
   /* Same 16.32px body against the 82% desktop root (16.3216 / 13.12). */
@@ -719,12 +694,13 @@ html {
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(99, 102, 241, 0.15);
   }
 
-  /* Hover lift effect */
+  /* Hover answers with a firmer edge, never with motion or a shadow
+     (cursor.com: border at 10% foreground on hover). */
   .hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
   }
   .hover-lift:hover {
-    transform: translateY(-4px);
+    border-color: hsl(var(--foreground) / 0.12);
   }
 
   /* Focus ring animation */
@@ -734,11 +710,10 @@ html {
 
   /* Interactive card */
   .card-interactive {
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
   }
   .card-interactive:hover {
-    transform: translateY(-2px);
-    border-color: hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--foreground) / 0.12);
   }
 
   /* Backdrop blur levels */
@@ -812,6 +787,9 @@ html {
   .bg-white\/15 { background-color: rgb(255 255 255 / 0.15); }
 
   /* Skip-to-content — stays in the tab order, but has no paint until focused (WCAG 2.4.1) */
+  .skip-to-content {
+    font-size: 13.50px;
+  }
   .skip-to-content:not(:focus) {
     position: absolute;
     /* Off-screen in both axes. `left` alone leaves the box at y=0 with a 1px
@@ -854,7 +832,7 @@ html {
        elsewhere), so this pair clears 4.5:1 in every theme. */
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    font-size: 14px;
+    font-size: 13.36px;
     font-weight: 600;
     white-space: nowrap;
     outline: 2px solid hsl(var(--ring));
@@ -1078,7 +1056,7 @@ html {
   
   /* Card hover effect */
   .card-hover {
-    @apply transition-all duration-150 hover:shadow-lg hover:-translate-y-px;
+    @apply transition-colors duration-150 hover:border-foreground/[0.12];
   }
   
   /* Button variants */
@@ -1086,9 +1064,9 @@ html {
     @apply text-foreground/70 hover:text-foreground hover:bg-secondary/50;
   }
   
-  /* Input improvements */
+  /* A field's edge is `--input`, the one boundary firmer than a card's. */
   .input-clean {
-    @apply border-border/60 hover:border-border;
+    @apply border-input hover:border-foreground/20;
   }
   
   /* Text improvements */
@@ -1135,10 +1113,10 @@ html {
 
   /* Quiet wells for original glyphs — identity without decoration. */
   .icon-well {
-    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible;
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/6 text-muted-foreground;
   }
   .icon-well-sm {
-    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible;
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/6 text-muted-foreground;
   }
 
   /* ── Bilingual secondary text ──
@@ -1368,18 +1346,19 @@ html {
     }
 
     aside .text-2xs {
-      font-size: max(0.93301829rem, 12.2412px);
+      /* 12.2412px floor; painted caption is 12.61px */
+      font-size: max(0.93301829rem, 12.61px);
       line-height: max(1.24402439rem, 16.3216px);
     }
 
     aside .text-xs {
-      font-size: 1.01076982rem;
-      line-height: 1.52439024rem;
+      font-size: 13.50px;
+      line-height: 1.35;
     }
 
     aside .text-sm {
-      font-size: 1.08852134rem;
-      line-height: 1.60060976rem;
+      font-size: 13.50px;
+      line-height: 1.4;
     }
 
     aside .text-base {
@@ -1418,7 +1397,8 @@ html {
     }
 
     aside .nav-section-label {
-      font-size: max(0.93301829rem, 12.2412px);
+      /* 12.2412px floor; painted caption is 12.61px */
+      font-size: max(0.93301829rem, 12.61px);
       line-height: max(1.24402439rem, 16.3216px);
     }
   }
@@ -1493,6 +1473,18 @@ html {
       width: 14px;
     }
 
+    /* Restate after the 16px icon restore so section glyphs stay 1.08 × title. */
+    h3.page-section > svg,
+    h3.page-section svg.icon-sm,
+    h3.page-section svg.lucide,
+    h3.page-section svg.h-4,
+    h3.founder-dash-section > svg,
+    h3.founder-dash-section svg.icon-sm,
+    h3.founder-dash-section svg.lucide {
+      height: 1.08em;
+      width: 1.08em;
+    }
+
     /* Startup Builder titles and overview type follow the same Cursor ladder. */
     .builder-type :is(h2, h3, .builder-title).text-base {
       font-size: 1.24402439rem;
@@ -1517,38 +1509,6 @@ html {
     .builder-type :is(h2, h3).sm\:text-3xl {
       font-size: 1.98170732rem;
       line-height: 2.47713415rem;
-    }
-    .builder-type .builder-overview-type .text-2xs {
-      font-size: max(0.93301829rem, 12.2412px);
-      line-height: max(1.24402439rem, 16.3216px);
-    }
-    .builder-type .builder-overview-type .text-xs {
-      font-size: 1.01076982rem;
-      line-height: 1.52439024rem;
-    }
-    .builder-type .builder-overview-type .text-sm {
-      font-size: 1.08852134rem;
-      line-height: 1.60060976rem;
-    }
-    .builder-type .builder-overview-type :is(h2, h3).text-base {
-      font-size: 1.24402439rem;
-    }
-    .builder-type .builder-overview-type :is(h2, h3).text-lg,
-    .builder-type .builder-overview-type :is(h2, h3).sm\:text-lg {
-      font-size: 1.37195122rem;
-      line-height: 1.98170732rem;
-    }
-    .builder-type .builder-overview-stats .text-lg {
-      font-size: 1.37195122rem;
-      line-height: 1.98170732rem;
-    }
-    .builder-type .builder-overview-stats .text-2xs {
-      font-size: max(0.93301829rem, 12.2412px);
-      line-height: max(1.24402439rem, 16.3216px);
-    }
-    .builder-type .builder-overview-stats .text-xs {
-      font-size: 1.01076982rem;
-      line-height: 1.52439024rem;
     }
     .builder-type [role='tab'][data-state='active'] {
       box-shadow: none;
@@ -2145,12 +2105,14 @@ span.page-stat,
 div.page-stat,
 dd.page-stat,
 p.founder-dash-stat {
-  font-size: max(12.2412px, 1.125rem);
-  line-height: 1.625rem;
+  font-size: max(12.2412px, 1.11375rem);
+  line-height: 1.60875rem;
 }
 p.page-stat-label,
 p.page-stat-meta,
 span.page-stat-label,
+div.page-stat-label,
+div.page-stat-meta,
 p.founder-dash-stat-label,
 p.founder-dash-stat-meta {
   font-size: max(12.2412px, 0.765075rem);
@@ -2158,13 +2120,23 @@ p.founder-dash-stat-meta {
 }
 h3.page-section,
 h3.founder-dash-section {
-  font-size: max(12.2412px, 1.04087609rem);
-  line-height: 1.5rem;
+  font-size: max(12.2412px, 1.03046733rem);
+  line-height: 1.485rem;
+}
+/* Glyph in the title row = 1.08 × that title, not a fixed 16px next to 16.65. */
+h3.page-section > svg,
+h3.page-section svg.icon-sm,
+h3.page-section svg.lucide,
+h3.founder-dash-section > svg,
+h3.founder-dash-section svg.icon-sm,
+h3.founder-dash-section svg.lucide {
+  height: 1.08em;
+  width: 1.08em;
 }
 p.page-figure,
 p.founder-dash-figure {
-  font-size: max(12.2412px, 0.96377416rem);
-  line-height: 1.4375rem;
+  font-size: max(12.2412px, 0.95413642rem);
+  line-height: 1.423125rem;
 }
 @media (min-width: 640px) {
   h1.page-title,
@@ -2175,12 +2147,14 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: max(12.2412px, 1.125rem);
-    line-height: 1.625rem;
+    font-size: max(12.2412px, 1.11375rem);
+    line-height: 1.60875rem;
   }
   p.page-stat-label,
   p.page-stat-meta,
   span.page-stat-label,
+  div.page-stat-label,
+  div.page-stat-meta,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
     font-size: max(12.2412px, 0.765075rem);
@@ -2188,8 +2162,8 @@ p.founder-dash-figure {
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: max(12.2412px, 1.04087609rem);
-    line-height: 1.5rem;
+    font-size: max(12.2412px, 1.03046733rem);
+    line-height: 1.485rem;
   }
 }
 @media (min-width: 1024px) {
@@ -2201,12 +2175,14 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: max(12.2412px, 1.37195122rem);
-    line-height: 1.98170732rem;
+    font-size: max(12.2412px, 1.35823171rem);
+    line-height: 1.96189025rem;
   }
   p.page-stat-label,
   p.page-stat-meta,
   span.page-stat-label,
+  div.page-stat-label,
+  div.page-stat-meta,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
     font-size: max(12.2412px, 0.765075rem);
@@ -2214,13 +2190,13 @@ p.founder-dash-figure {
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: max(12.2412px, 1.26936109rem);
-    line-height: 1.82926829rem;
+    font-size: max(12.2412px, 1.25666748rem);
+    line-height: 1.81097561rem;
   }
   p.page-figure,
   p.founder-dash-figure {
-    font-size: max(12.2412px, 1.17533434rem);
-    line-height: 1.75304878rem;
+    font-size: max(12.2412px, 1.16358100rem);
+    line-height: 1.73551823rem;
   }
 }
 
@@ -2230,24 +2206,143 @@ p.founder-dash-figure {
 h3.page-section.page-section--compact,
 [data-rail-content] h3.page-section,
 [data-rail-content] h3.founder-dash-section {
-  font-size: 0.8925875rem;
-  line-height: 1.3125rem;
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
 }
 
 @media (min-width: 640px) {
   h3.page-section.page-section--compact,
   [data-rail-content] h3.page-section,
   [data-rail-content] h3.founder-dash-section {
-    font-size: 0.8925875rem;
-    line-height: 1.3125rem;
+    font-size: 0.88366163rem;
+    line-height: 1.299375rem;
   }
 }
 @media (min-width: 1024px) {
   h3.page-section.page-section--compact,
   [data-rail-content] h3.page-section,
   [data-rail-content] h3.founder-dash-section {
-    font-size: 1.08852134rem;
-    line-height: 1.60060976rem;
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+}
+
+/* ── Product type standard ───────────────────────────────────────────────
+   One ladder for every page in the shell and its page-tools rail: the
+   sizes tuned on Overview, Readiness and Analytics. Each step is ~1.08 ×
+   the one below it, and every Tailwind step lands on one of them:
+
+     caption 12.24   2xs, stat labels, the bilingual floor
+     meta    13.13   xs, tabs, small buttons, chips
+     body    14.14   sm, copy, inputs, rail card titles
+     figure  15.27   in-card figures ($375K)
+     section 16.49   card and section titles, base, lg
+     title   17.82   h1, stat figures, xl and above (ceiling below)
+
+   The readiness gauge (32px) is the one display figure. Same pixels on
+   phone and desktop. The left SideNav keeps its own chrome ladder.
+   Declared before the ceiling so `text-lg sm:text-xl` still reaches the
+   title step from `sm` up. */
+#main-content .text-2xs {
+  font-size: max(0.765075rem, 12.2412px);
+  line-height: 1rem;
+}
+#main-content .text-xs {
+  font-size: 0.82054294rem;
+  line-height: 1.2375rem;
+}
+#main-content .text-sm {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+/* Tailwind's base (16.32) and lg (18) sat 0.2px either side of the section
+   and title steps; lg outranked the page title. Both are headings here. */
+#main-content .text-base,
+#main-content .text-lg,
+#main-content p.page-section,
+#main-content h2.page-section {
+  font-size: 1.03046733rem;
+  line-height: 1.485rem;
+}
+/* Responsive variants after the plain steps, so `text-base sm:text-sm`
+   (inputs, selects) still resolves to its sm step. */
+@media (min-width: 640px) {
+  #main-content .sm\:text-xs {
+    font-size: 0.82054294rem;
+    line-height: 1.2375rem;
+  }
+  #main-content .sm\:text-sm {
+    font-size: 0.88366163rem;
+    line-height: 1.299375rem;
+  }
+  #main-content .sm\:text-lg {
+    font-size: 1.03046733rem;
+    line-height: 1.485rem;
+  }
+}
+@media (min-width: 768px) {
+  #main-content .md\:text-lg {
+    font-size: 1.03046733rem;
+    line-height: 1.485rem;
+  }
+}
+/* Tabs switch the copy under them, so they sit a step below it. After
+   `.text-sm`: the trigger carries that class. */
+#main-content [role='tab'] {
+  font-size: 0.82054294rem;
+  line-height: 1.2375rem;
+}
+/* The rail is ~240px wide: every heading step stays on its title size. */
+#main-content [data-rail-content] .text-base,
+#main-content [data-rail-content] .text-lg,
+#main-content [data-rail-content] .sm\:text-lg {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+
+@media (min-width: 1024px) {
+  #main-content .text-2xs {
+    font-size: max(0.93301829rem, 12.2412px);
+    line-height: max(1.24402439rem, 16.3216px);
+  }
+  #main-content .text-xs {
+    font-size: 1.00066212rem;
+    line-height: 1.50914634rem;
+  }
+  #main-content .text-sm {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+  #main-content .text-base,
+  #main-content .text-lg,
+  #main-content p.page-section,
+  #main-content h2.page-section {
+    font-size: 1.25666748rem;
+    line-height: 1.81097561rem;
+  }
+  #main-content .sm\:text-xs,
+  #main-content .lg\:text-xs {
+    font-size: 1.00066212rem;
+    line-height: 1.50914634rem;
+  }
+  #main-content .sm\:text-sm {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+  #main-content .sm\:text-lg,
+  #main-content .md\:text-lg {
+    font-size: 1.25666748rem;
+    line-height: 1.81097561rem;
+  }
+  #main-content [role='tab'] {
+    font-size: 1.00066212rem;
+    line-height: 1.50914634rem;
+  }
+  #main-content [data-rail-content] .text-base,
+  #main-content [data-rail-content] .text-lg,
+  #main-content [data-rail-content] .sm\:text-lg {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
   }
 }
 
@@ -2276,8 +2371,8 @@ h3.page-section.page-section--compact,
 #main-content .text-6xl,
 #main-content .text-7xl,
 #main-content .text-\[2\.75rem\] {
-  font-size: max(12.2412px, 1.125rem);
-  line-height: 1.625rem;
+  font-size: max(12.2412px, 1.11375rem);
+  line-height: 1.60875rem;
 }
 #main-content .text-\[11px\],
 #main-content .text-\[10px\],
@@ -2291,8 +2386,8 @@ h3.page-section.page-section--compact,
 #main-content [data-rail-content] .text-2xl,
 #main-content [data-rail-content] .sm\:text-2xl,
 #main-content [data-rail-content] .text-3xl {
-  font-size: 0.8925875rem;
-  line-height: 1.3125rem;
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
 }
 @media (min-width: 1024px) {
   #main-content .text-xl,
@@ -2311,16 +2406,16 @@ h3.page-section.page-section--compact,
   #main-content .text-6xl,
   #main-content .text-7xl,
   #main-content .text-\[2\.75rem\] {
-    font-size: max(12.2412px, 1.37195122rem);
-    line-height: 1.98170732rem;
+    font-size: max(12.2412px, 1.35823171rem);
+    line-height: 1.96189025rem;
   }
   #main-content [data-rail-content] .text-xl,
   #main-content [data-rail-content] .sm\:text-xl,
   #main-content [data-rail-content] .text-2xl,
   #main-content [data-rail-content] .sm\:text-2xl,
   #main-content [data-rail-content] .text-3xl {
-    font-size: 1.08852134rem;
-    line-height: 1.60060976rem;
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
   }
 }
 
@@ -2335,12 +2430,14 @@ h3.page-section.page-section--compact,
 #main-content div.page-stat,
 #main-content dd.page-stat,
 #main-content p.founder-dash-stat {
-  font-size: max(12.2412px, 1.125rem);
-  line-height: 1.625rem;
+  font-size: max(12.2412px, 1.11375rem);
+  line-height: 1.60875rem;
 }
 #main-content p.page-stat-label,
 #main-content p.page-stat-meta,
 #main-content span.page-stat-label,
+#main-content div.page-stat-label,
+#main-content div.page-stat-meta,
 #main-content p.founder-dash-stat-label,
 #main-content p.founder-dash-stat-meta {
   font-size: max(12.2412px, 0.765075rem);
@@ -2348,19 +2445,19 @@ h3.page-section.page-section--compact,
 }
 #main-content h3.page-section,
 #main-content h3.founder-dash-section {
-  font-size: max(12.2412px, 1.04087609rem);
-  line-height: 1.5rem;
+  font-size: max(12.2412px, 1.03046733rem);
+  line-height: 1.485rem;
 }
 #main-content p.page-figure,
 #main-content p.founder-dash-figure {
-  font-size: max(12.2412px, 0.96377416rem);
-  line-height: 1.4375rem;
+  font-size: max(12.2412px, 0.95413642rem);
+  line-height: 1.423125rem;
 }
 #main-content h3.page-section.page-section--compact,
 #main-content [data-rail-content] h3.page-section,
 #main-content [data-rail-content] h3.founder-dash-section {
-  font-size: 0.8925875rem;
-  line-height: 1.3125rem;
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
 }
 @media (min-width: 1024px) {
   #main-content h1.page-title,
@@ -2371,12 +2468,14 @@ h3.page-section.page-section--compact,
   #main-content div.page-stat,
   #main-content dd.page-stat,
   #main-content p.founder-dash-stat {
-    font-size: max(12.2412px, 1.37195122rem);
-    line-height: 1.98170732rem;
+    font-size: max(12.2412px, 1.35823171rem);
+    line-height: 1.96189025rem;
   }
   #main-content p.page-stat-label,
   #main-content p.page-stat-meta,
   #main-content span.page-stat-label,
+  #main-content div.page-stat-label,
+  #main-content div.page-stat-meta,
   #main-content p.founder-dash-stat-label,
   #main-content p.founder-dash-stat-meta {
     font-size: max(12.2412px, 0.765075rem);
@@ -2384,19 +2483,124 @@ h3.page-section.page-section--compact,
   }
   #main-content h3.page-section,
   #main-content h3.founder-dash-section {
-    font-size: max(12.2412px, 1.26936109rem);
-    line-height: 1.82926829rem;
+    font-size: max(12.2412px, 1.25666748rem);
+    line-height: 1.81097561rem;
   }
   #main-content p.page-figure,
   #main-content p.founder-dash-figure {
-    font-size: max(12.2412px, 1.17533434rem);
-    line-height: 1.75304878rem;
+    font-size: max(12.2412px, 1.16358100rem);
+    line-height: 1.73551823rem;
   }
   #main-content h3.page-section.page-section--compact,
   #main-content [data-rail-content] h3.page-section,
   #main-content [data-rail-content] h3.founder-dash-section {
-    font-size: 1.08852134rem;
-    line-height: 1.60060976rem;
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+}
+
+/* Named type roles. Outside the page (the SideNav mode switcher) they keep
+   the chrome sizes below; inside #main-content they are the standard's
+   steps, so the AI workspace reads on the same ladder as every page. */
+.type-caption {
+  font-size: 12.61px;
+  line-height: 1.35;
+}
+.type-support {
+  font-size: 12.7361px;
+  line-height: 1.35;
+}
+.type-ui {
+  font-size: 13.50px;
+  line-height: 1.35;
+}
+.type-identity {
+  font-size: 14.28px;
+  line-height: 1.3;
+}
+.type-page {
+  font-size: 15.42px;
+  line-height: 1.3;
+}
+#main-content .type-caption,
+#main-content .type-caption.text-2xs,
+#main-content .type-caption.text-xs,
+#main-content .type-caption.text-sm,
+#main-content .type-caption.text-\[11px\] {
+  font-size: max(0.765075rem, 12.2412px);
+  line-height: 1.35;
+}
+#main-content .type-support,
+#main-content .type-support.type-caption,
+#main-content .type-support.text-xs,
+#main-content .type-support.text-sm,
+#main-content .type-ui,
+#main-content .type-ui.text-2xs,
+#main-content .type-ui.text-xs,
+#main-content .type-ui.text-sm,
+#main-content .type-ui.text-base,
+#main-content .type-ui.sm\:text-sm,
+#main-content input.type-ui {
+  font-size: 0.82054294rem;
+  line-height: 1.35;
+}
+#main-content .type-identity,
+#main-content .type-identity.text-sm,
+#main-content .type-identity.text-xs {
+  font-size: 0.88366163rem;
+  line-height: 1.3;
+}
+#main-content .type-page,
+#main-content .type-page.text-xl,
+#main-content .type-page.text-2xl,
+#main-content h1.type-page {
+  font-size: 1.11375rem;
+  line-height: 1.3;
+}
+@media (min-width: 1024px) {
+  #main-content .type-caption,
+  #main-content .type-caption.text-2xs,
+  #main-content .type-caption.text-xs,
+  #main-content .type-caption.text-sm,
+  #main-content .type-caption.text-\[11px\] {
+    font-size: max(0.93301829rem, 12.2412px);
+  }
+  #main-content .type-support,
+  #main-content .type-support.type-caption,
+  #main-content .type-support.text-xs,
+  #main-content .type-support.text-sm,
+  #main-content .type-ui,
+  #main-content .type-ui.text-2xs,
+  #main-content .type-ui.text-xs,
+  #main-content .type-ui.text-sm,
+  #main-content .type-ui.text-base,
+  #main-content .type-ui.sm\:text-sm,
+  #main-content input.type-ui {
+    font-size: 1.00066212rem;
+  }
+  #main-content .type-identity,
+  #main-content .type-identity.text-sm,
+  #main-content .type-identity.text-xs {
+    font-size: 1.07763613rem;
+  }
+  #main-content .type-page,
+  #main-content .type-page.text-xl,
+  #main-content .type-page.text-2xl,
+  #main-content h1.type-page {
+    font-size: 1.35823171rem;
+  }
+}
+
+/* The readiness gauge is the page's one figure. The #main-content ceiling
+   had flattened leftover `text-[2.75rem]` to 18px inside a 184px ring. */
+#main-content .score-emblem-figure {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+@media (min-width: 1024px) {
+  #main-content .score-emblem-figure {
+    font-size: 32px;
+    line-height: 1;
   }
 }
 
@@ -2407,4 +2611,163 @@ h3.page-section.page-section--compact,
 .focus-ring:focus-visible {
   outline: 2px solid hsl(var(--ring)) !important;
   outline-offset: 2px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Cursor.com rule — every theme, every page, every surface.
+
+   One hairline per floating or in-flow surface, spent sparingly. Nested
+   frames inside a card fade toward nothing. Outlined buttons share the
+   card's edge (never a field's --input, never a second shadow). Decorative
+   glyphs beside copy disappear; chrome (nav, dialogs, icon-only controls)
+   keeps its icons. Corners stay the 12px / 8px ladder from --radius.
+
+   Selectors use [class~="border"] rather than .border: Tailwind's CSS
+   pipeline treats the `.border` utility as the `*` preflight and the
+   sheet fails to parse.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* In-flow boxes: a 1px hairline, no shadow, no 2px frame. */
+#main-content div[class~="border"],
+#main-content section[class~="border"],
+#main-content article[class~="border"],
+#main-content aside[class~="border"],
+#main-content li[class~="border"],
+#main-content form[class~="border"],
+#main-content [data-surface="card"],
+#main-content [data-surface="card"]:hover {
+  box-shadow: none;
+}
+#main-content div[class~="border-2"],
+#main-content section[class~="border-2"],
+#main-content article[class~="border-2"],
+#main-content form[class~="border-2"] {
+  border-width: 1px;
+}
+
+/* Nested rounded boxes inside a card: the inner line is half as present. */
+#main-content [data-surface="card"] div[class~="border"],
+#main-content [data-surface="card"] section[class~="border"],
+#main-content [data-surface="card"] article[class~="border"],
+#main-content [data-surface="card"] li[class~="border"],
+#main-content [data-surface="card"] form[class~="border"] {
+  border-color: hsl(var(--border) / 0.45);
+  box-shadow: none;
+}
+
+/* A lightly tinted accent card (cursor.com "Upgrade available") keeps a
+   matching whisper of the same hue, not a grey then a blue. */
+#main-content .bg-primary\/5,
+#main-content .bg-primary\/10 {
+  border-color: hsl(var(--primary) / 0.16);
+}
+
+[data-surface="overlay"],
+.fixed[class~="shadow-2xl"],
+[class~="shadow-modal"],
+[class~="shadow-flyout"] {
+  box-shadow: none;
+}
+[data-surface="overlay"] {
+  border-color: hsl(var(--border));
+}
+[data-surface="overlay"] svg.cfb-glyph {
+  display: none;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────
+   cursor.com "Adjust Plan": 1px hairline, transparent fill, 8px corner.
+   cursor.com "Upgrade": fill, no extra edge.
+   Applies on every page and every overlay, including asChild <a> buttons.
+   Fields (combobox / checkbox / switch) keep --input, not this hairline. */
+button[class~="border-2"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+[data-slot="button"][class~="border-2"],
+[role="button"][class~="border-2"]:not([data-surface="card"]),
+a[class~="inline-flex"][class~="border-2"] {
+  border-width: 1px;
+}
+button[class~="border"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+button[class~="border-input"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+button[class~="border-border"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+[data-slot="button"][class~="border"],
+[data-slot="button"][class~="border-input"],
+[data-slot="button"][class~="border-border"],
+[role="button"][class~="border"]:not([data-surface="card"]),
+[role="button"][class~="border-input"]:not([data-surface="card"]),
+[role="button"][class~="border-border"]:not([data-surface="card"]),
+a[class~="inline-flex"][class~="border"],
+a[class~="inline-flex"][class~="border-input"],
+a[class~="inline-flex"][class~="border-border"] {
+  border-color: hsl(var(--border));
+  box-shadow: none;
+}
+button[class~="border"]:not([role="combobox"]):hover,
+button[class~="border-input"]:not([role="combobox"]):hover,
+button[class~="border-border"]:not([role="combobox"]):hover,
+[data-slot="button"][class~="border"]:hover,
+[data-slot="button"][class~="border-input"]:hover,
+[data-slot="button"][class~="border-border"]:hover,
+[role="button"][class~="border"]:not([data-surface="card"]):hover,
+[role="button"][class~="border-input"]:not([data-surface="card"]):hover,
+[role="button"][class~="border-border"]:not([data-surface="card"]):hover,
+a[class~="inline-flex"][class~="border"]:hover,
+a[class~="inline-flex"][class~="border-input"]:hover,
+a[class~="inline-flex"][class~="border-border"]:hover {
+  border-color: hsl(var(--foreground) / 0.12);
+}
+button.bg-primary,
+button.bg-destructive,
+[data-slot="button"].bg-primary,
+[data-slot="button"].bg-destructive,
+a[class~="inline-flex"].bg-primary,
+a[class~="inline-flex"].bg-destructive {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ── Decorative icons ─────────────────────────────────────────────────────
+   Glyphs beside copy on labeled buttons and inside cards go away.
+   Icons that *are* the control stay: nav/chrome, close (X), chevrons
+   inside a control, checkbox, spinner. */
+#main-content [data-page-header] > svg.cfb-glyph,
+#main-content [data-surface="card"] [data-glyph-well],
+#main-content [data-surface="card"] .icon-well,
+#main-content [data-surface="card"] .icon-well-sm {
+  display: none;
+}
+#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.cfb-glyph,
+#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide,
+#main-content [data-surface="card"] button svg.cfb-glyph,
+#main-content [data-surface="card"] [data-slot="button"] svg.cfb-glyph,
+#main-content [data-surface="card"] a svg.cfb-glyph,
+#main-content [data-surface="card"] a svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x),
+#main-content [data-surface="card"] button svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content [data-surface="card"] [data-slot="button"] svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content [role="tab"] svg.cfb-glyph,
+#main-content [role="tab"] svg.lucide {
+  display: none;
+}
+
+/* Labeled action buttons on every page (header Invite / New Document, asChild
+   links, dialogs). Icon-only controls have only an svg child and are skipped. */
+button[data-slot="button"]:has(> :not(svg)) > svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg)) svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg)) .cfb-glyph,
+button:has(> :not(svg)) > svg.cfb-glyph,
+button:has(> :not(svg)) > .cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg)) > svg.cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg)) svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg)) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+a[class~="inline-flex"]:has(> :not(svg)) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content a[class~="border"] svg.cfb-glyph,
+#main-content a[class~="border"] svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x) {
+  display: none;
+}
+
+/* Progress tracks: a thin grey rail, a quiet fill. */
+#main-content [role="progressbar"] {
+  background-color: hsl(var(--foreground) / 0.06);
+}
+#main-content [role="progressbar"] > * {
+  background-color: hsl(var(--foreground) / 0.22);
 }

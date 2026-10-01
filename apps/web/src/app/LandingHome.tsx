@@ -76,7 +76,7 @@ const PERSONAS: Array<{
   {
     icon: Briefcase,
     role: 'Founder',
-    color: 'text-indigo-400',
+    color: 'text-primary-accessible',
     bg: 'bg-status-accent-bg border-status-accent-border',
     headline: 'Find your co-founder',
     bullets: [
@@ -88,7 +88,7 @@ const PERSONAS: Array<{
   {
     icon: GraduationCap,
     role: 'Mentor',
-    color: 'text-cyan-400',
+    color: 'text-status-info',
     bg: 'bg-status-info-bg border-status-info-border',
     headline: 'Scale your impact',
     bullets: [
@@ -129,7 +129,7 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
     icon: UserCheck,
     title: 'Build your profile',
     desc: 'Complete your guided onboarding. Define your role, expertise, startup stage, work style, and what you\'re looking for in a co-founder or collaborator.',
-    color: 'text-indigo-400 bg-status-accent-bg',
+    color: 'text-primary-accessible bg-status-accent-bg',
   },
   {
     step: 2,

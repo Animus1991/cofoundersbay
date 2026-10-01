@@ -556,7 +556,7 @@ export function UnifiedChatPopup() {
         <div
           {...dragHandleProps}
           className={cn(
-            'pointer-events-auto flex items-center gap-1 rounded-full bg-primary py-1.5 pl-2 pr-1.5 shadow-lg',
+            'pointer-events-auto flex items-center gap-1 rounded-full bg-primary py-1.5 pl-2 pr-1.5 shadow-none',
             isDragging && 'cursor-grabbing opacity-90',
           )}
           style={dragHandleProps.style}

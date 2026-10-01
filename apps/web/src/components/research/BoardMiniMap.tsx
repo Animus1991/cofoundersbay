@@ -5,10 +5,13 @@ import { cn } from '@/lib/utils';
 import type { ResearchNode } from '@/lib/api';
 import { nodePaintColor } from '@/lib/canvas/canvas-geometry';
 
-const DESKTOP_W = 180;
-const DESKTOP_H = 120;
-const COMPACT_W = 112;
-const COMPACT_H = 76;
+/** Pixel drawing surface. The framed chrome is +`BOARD_MINIMAP_FRAME_PX`. */
+export const BOARD_MINIMAP_DESKTOP_W = 180;
+export const BOARD_MINIMAP_DESKTOP_H = 120;
+export const BOARD_MINIMAP_COMPACT_W = 112;
+export const BOARD_MINIMAP_COMPACT_H = 76;
+/** Border on the floating frame (width/height style is surface + this). */
+export const BOARD_MINIMAP_FRAME_PX = 2;
 const PADDING = 20;
 
 function getNodeColor(type: string, color: string | null): string {
@@ -47,8 +50,8 @@ export function BoardMiniMap({
   compact = false,
   embedded = false,
 }: BoardMiniMapProps) {
-  const miniW = compact ? COMPACT_W : DESKTOP_W;
-  const miniH = compact ? COMPACT_H : DESKTOP_H;
+  const miniW = compact ? BOARD_MINIMAP_COMPACT_W : BOARD_MINIMAP_DESKTOP_W;
+  const miniH = compact ? BOARD_MINIMAP_COMPACT_H : BOARD_MINIMAP_DESKTOP_H;
 
   // Compute bounding box of all nodes
   const bounds = useMemo(() => {
@@ -120,7 +123,7 @@ export function BoardMiniMap({
           ? 'h-full w-full rounded-xl bg-muted/30'
           : 'pointer-events-auto rounded-xl border border-border/70 bg-muted/80 shadow-lg backdrop-blur-sm',
       )}
-      style={embedded ? undefined : { width: miniW + 2, height: miniH + 2 }}
+      style={embedded ? undefined : { width: miniW + BOARD_MINIMAP_FRAME_PX, height: miniH + BOARD_MINIMAP_FRAME_PX }}
     >
       <svg
         {...(embedded ? {} : { width: miniW, height: miniH })}

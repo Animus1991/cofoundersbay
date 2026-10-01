@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, X, MessageCircle, Bookmark, MapPin, Clock, Sparkles, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { UserPlus, X, MessageCircle, Bookmark, MapPin, Clock, Sparkles, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
 import { SkillChip } from './SkillChip';
+import { BilingualText } from './BilingualText';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type MatchReason = {
@@ -64,14 +66,20 @@ function tierGlow(stroke: string) {
   return `color-mix(in srgb, ${stroke} 12%, transparent)`;
 }
 
+const TIER_LABEL: Record<MatchTier, { en: string; el: string }> = {
+  excellent: { en: 'Excellent', el: 'Εξαιρετική' },
+  strong: { en: 'Strong', el: 'Ισχυρή' },
+  good: { en: 'Good', el: 'Καλή' },
+  potential: { en: 'Low', el: 'Χαμηλή' },
+};
+
 function getScoreTier(score: number) {
   let tier: MatchTier = 'potential';
-  let label = 'LOW';
-  if (score >= 80) { tier = 'excellent'; label = 'EXCELLENT'; }
-  else if (score >= 65) { tier = 'strong'; label = 'STRONG'; }
-  else if (score >= 45) { tier = 'good'; label = 'GOOD'; }
+  if (score >= 80) tier = 'excellent';
+  else if (score >= 65) tier = 'strong';
+  else if (score >= 45) tier = 'good';
   const stroke = TIER_STROKE[tier];
-  return { label, tier, stroke, glow: tierGlow(stroke), colors: STATUS[MATCH_TIER_TONE[tier]] };
+  return { label: TIER_LABEL[tier], tier, stroke, glow: tierGlow(stroke), colors: STATUS[MATCH_TIER_TONE[tier]] };
 }
 
 // ── Score Badge (top-right) ───────────────────────────────────────────────────
@@ -98,9 +106,9 @@ function ScoreBadge({ score }: { score: number }) {
           {score}%
         </span>
       </div>
-      <span className="text-2xs font-bold tracking-wider"
+      <span className="text-2xs font-bold uppercase tracking-wider"
         style={{ color: stroke, fontFamily: 'var(--font-mono)' }}>
-        {label}
+        <BilingualText en={label.en} el={label.el} compact />
       </span>
     </div>
   );
@@ -166,7 +174,8 @@ function MatchCardInner({
         <button
           onClick={(e) => { e.stopPropagation(); onSelect(); }}
           className="absolute left-3 top-3 z-20"
-          aria-label={isSelected ? 'Deselect' : 'Select'}
+          aria-pressed={Boolean(isSelected)}
+          aria-label={bilingualAria(`Select ${displayName}`, `Επιλογή: ${displayName}`)}
         >
           <div className={cn(
             'h-5 w-5 rounded-sm border-2 flex items-center justify-center transition-colors',
@@ -242,11 +251,14 @@ function MatchCardInner({
         {/* Match reasons toggle */}
         <button
           onClick={() => setShowReasons(!showReasons)}
+          aria-expanded={showReasons}
           // tap-target-y: a 16px-tall disclosure is under the 24px target minimum.
           className={cn('mt-3 flex tap-target-y items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
         >
           <Sparkles className="icon-sm" />
-          {showReasons ? 'Hide reasons' : 'Why this match?'}
+          {showReasons
+            ? <BilingualText en="Hide reasons" el="Απόκρυψη λόγων" compact />
+            : <BilingualText en="Why this match?" el="Γιατί ταιριάζετε;" compact />}
           {showReasons ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
         </button>
 
@@ -270,7 +282,8 @@ function MatchCardInner({
           {onPass && (
             <button
               onClick={onPass}
-              aria-label={`Pass on ${displayName}`}
+              aria-label={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
+              title={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
             >
               <X className="icon-sm" />
@@ -279,15 +292,21 @@ function MatchCardInner({
           {onLike && (
             <button
               onClick={onLike}
-              aria-label={`Save ${displayName}`}
+              aria-label={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
+              title={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
             >
-              <Heart className="icon-sm" />
+              <UserPlus className="icon-sm" />
             </button>
           )}
           <button
             onClick={handleBookmark}
-              aria-label={`Bookmark ${displayName}`}
+            aria-pressed={bookmarked}
+            aria-label={
+              bookmarked
+                ? bilingualAria(`${displayName} is on your shortlist`, `${displayName}: στη λίστα επιλογών`)
+                : bilingualAria(`Save ${displayName} to shortlist`, `Αποθήκευση ${displayName} στη λίστα`)
+            }
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
               bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
@@ -306,13 +325,13 @@ function MatchCardInner({
               onClick={onBreakdown}
             >
               <TrendingUp className="icon-sm" />
-              Breakdown
+              <BilingualText en="Breakdown" el="Ανάλυση" compact />
             </Button>
           ) : (
             <Button size="sm" variant="outline" className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.text)} style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }} asChild>
               <Link href={`/matches/${userId}`}>
                 <TrendingUp className="icon-sm" />
-                Compatibility
+                <BilingualText en="Compatibility" el="Συμβατότητα" compact />
               </Link>
             </Button>
           )}
@@ -320,7 +339,7 @@ function MatchCardInner({
           {onMessage && (
             <Button onClick={onMessage} size="sm" className="h-10 gap-1.5 px-2.5 text-xs">
               <MessageCircle className="icon-sm" />
-              Message
+              <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
           )}
           </div>

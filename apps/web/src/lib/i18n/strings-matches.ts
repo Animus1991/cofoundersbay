@@ -120,7 +120,7 @@ export const MATCHES_STRINGS: Record<string, BilingualPair> = {
 
   // ── Match reasons ──
   complementary_skills: { en: 'Complementary role & skills', el: 'Συμπληρωματικός ρόλος & δεξιότητες' },
-  matching_stage: { en: 'Matching startup stage', el: 'Αντίστοιχο στάδιο νεοφυούς' },
+  matching_stage: { en: 'Matching startup stage', el: 'Ίδιο στάδιο startup' },
   similar_industry: { en: 'Similar industry focus', el: 'Παρόμοια εστίαση κλάδου' },
   same_location: { en: 'Same location', el: 'Ίδια τοποθεσία' },
   potential_match: { en: 'Potential match', el: 'Δυνητική αντιστοίχιση' },

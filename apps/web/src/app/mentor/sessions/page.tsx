@@ -262,7 +262,7 @@ export default function MentorSessionsPage() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="py-6 flex items-center justify-center min-h-[400px]">
           <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
@@ -272,7 +272,7 @@ export default function MentorSessionsPage() {
 
   if (error) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
@@ -295,7 +295,7 @@ export default function MentorSessionsPage() {
   const totalDuration = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <>
           <div className="flex gap-2">

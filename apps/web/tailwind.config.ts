@@ -86,18 +86,19 @@ const config: Config = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
       },
-      // One token, one scale. Every step derives from --radius (globals.css) so a
-      // theme can soften or sharpen the whole product by changing a single value.
-      // Concentric nesting: card 20 > control 16 > row/item 12 > chip 10,
-      // so chrome reads as one family and inner corners never bulge past the card.
+      // One token, one scale, in cursor.com's proportions: the card corner is
+      // --radius (12px, globals.css) and everything inside steps down from it,
+      // so an inner corner never bulges past its container. Outlined buttons
+      // sit at 8px; only avatars, dots, switches and progress tracks are fully
+      // round.
       borderRadius: {
-        sm: 'calc(var(--radius) - 6px)',       //  6px  heat-map cells, hairline wells
-        DEFAULT: 'calc(var(--radius) - 4px)',  //  8px  tiny inline marks
-        md: 'calc(var(--radius) - 2px)',       // 10px  chips, checkbox
-        lg: 'var(--radius)',                   // 12px  menu items, tab triggers, tiles
-        xl: 'calc(var(--radius) + 4px)',       // 16px  buttons, fields, selects, menus
-        '2xl': 'calc(var(--radius) + 8px)',    // 20px  cards, dialogs, sheets
-        '3xl': 'calc(var(--radius) + 14px)',   // 26px  marketing blocks
+        sm: 'calc(var(--radius) - 6px)',       //  6px  marks, kbd
+        DEFAULT: 'calc(var(--radius) - 6px)',  //  6px  checkbox, tiny inline marks
+        md: 'calc(var(--radius) - 4px)',       //  8px  buttons, fields, chips, badges
+        lg: 'calc(var(--radius) - 4px)',       //  8px  menu items, tab triggers, rows
+        xl: 'calc(var(--radius) - 2px)',       // 10px  tiles inside a card, menus
+        '2xl': 'var(--radius)',                // 12px  cards, dialogs, sheets
+        '3xl': 'calc(var(--radius) + 2px)',    // 14px  large marketing blocks
       },
       keyframes: {
         'fade-in': {
@@ -178,40 +179,34 @@ const config: Config = {
         'wiggle': 'wiggle 0.3s ease-in-out',
         'spin-slow': 'spin-slow 8s linear infinite',
       },
-      // The elevation ladder, rebuilt to sit next to the softened corners.
+      // Elevation, cursor.com's way: nothing in the page flow casts a shadow.
+      // A card, tile or button is separated by its surface step and a
+      // hairline; a shadow under that hairline only draws a second edge.
+      // So `sm`, `DEFAULT` and `md` -- the steps in-flow elements reach for --
+      // are empty, and every one of the ~270 call sites goes quiet at once.
       //
-      // Tailwind's defaults are pure black at a tight blur -- `shadow-sm` is
-      // `0 1px 2px rgb(0 0 0 / 0.05)`, which on the 641 cards that carry
-      // `border + bg-card + shadow-sm` draws a second hard line a pixel below
-      // the border, at exactly the place the corner turns. Two hairlines
-      // tracing the same corner is what made those cards read as busy; it is
-      // also the one thing that would have survived the radius change and
-      // kept the corners looking stamped.
-      //
-      // Each step here is a contact shadow plus an ambient one, tinted with
-      // `--shadow-color` (the ground's own hue -- a neutral black over a
-      // tinted surface reads as grey haze) and scaled by `--shadow-strength`,
-      // which is where the dark themes get elevation that is visible at all
-      // without restating the ladder five times.
+      // `lg` and up are for what floats over the page (menus, popovers,
+      // toasts, sheets, dialogs): one soft, wide, low-opacity spread, tinted
+      // with `--shadow-color` and scaled by `--shadow-strength` so the dark
+      // themes still register it. `flyout` names that intent for primitives.
       boxShadow: {
-        sm: '0 1px 2px -1px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%)), 0 2px 6px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 5%))',
-        DEFAULT:
-          '0 1px 3px -1px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 7%)), 0 4px 10px -3px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
-        md: '0 2px 6px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%)), 0 8px 18px -6px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%))',
-        lg: '0 4px 10px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 9%)), 0 14px 30px -10px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 10%))',
-        xl: '0 8px 18px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 10%)), 0 24px 48px -16px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 13%))',
-        '2xl':
-          '0 16px 32px -12px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 12%)), 0 40px 72px -24px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 18%))',
-        inner: 'inset 0 1px 2px 0 hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
+        sm: 'none',
+        DEFAULT: 'none',
+        md: 'none',
+        lg: '0 4px 16px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
+        xl: '0 8px 24px -6px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%))',
+        '2xl': '0 12px 40px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 12%))',
+        flyout: '0 4px 16px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
+        inner: 'none',
         none: 'none',
-        'glow-sm': '0 0 0 1px rgba(99,102,241,0.25), 0 8px 32px rgba(0,0,0,0.35)',
-        'glow-md': '0 0 0 1px rgba(99,102,241,0.35), 0 16px 48px rgba(0,0,0,0.45)',
+        'glow-sm': '0 4px 16px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
+        'glow-md': '0 8px 24px -6px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%))',
       },
+      // Flat on purpose: a glow behind the page or a card shifts the tone the
+      // content sits on. The keys stay so existing call sites resolve.
       backgroundImage: {
-        'hero-radial':
-          'radial-gradient(ellipse 80% 50% at 50% -5%, hsl(var(--primary) / 0.10) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 85% 0%, hsl(var(--accent) / 0.08) 0%, transparent 55%)',
-        'glass-sheen':
-          'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
+        'hero-radial': 'none',
+        'glass-sheen': 'none',
       },
       // Cursor.com steps at a 16px root. globals.css restates the same pixels
       // against the 82% desktop root so computed sizes match on every viewport.

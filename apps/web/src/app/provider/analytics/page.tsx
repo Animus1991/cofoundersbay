@@ -45,11 +45,11 @@ const MOCK_WEEKLY_VIEWS = [
 ];
 
 const MOCK_CONVERSIONS = [
-  { stage: 'Profile Views', count: 342, pct: 100, color: 'bg-blue-500' },
-  { stage: 'Inquiry Sent', count: 27, pct: 7.9, color: 'bg-violet-500' },
-  { stage: 'Response Given', count: 25, pct: 7.3, color: 'bg-primary' },
-  { stage: 'Project Started', count: 18, pct: 5.3, color: 'bg-green-500' },
-  { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-emerald-600' },
+  { stage: 'Profile Views', count: 342, pct: 100, color: 'bg-primary' },
+  { stage: 'Inquiry Sent', count: 27, pct: 7.9, color: 'bg-status-accent' },
+  { stage: 'Response Given', count: 25, pct: 7.3, color: 'bg-status-info' },
+  { stage: 'Project Started', count: 18, pct: 5.3, color: 'bg-status-success' },
+  { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-status-success' },
 ];
 
 const MOCK_TRAFFIC_SOURCES = [

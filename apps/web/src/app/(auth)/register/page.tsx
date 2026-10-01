@@ -31,7 +31,7 @@ const ROLES = [
     label: 'Founder',
     labelEl: 'Ιδρυτής',
     description: 'Build and lead startups',
-    descriptionEl: 'Χτίστε και ηγηθείτε νεοφυών',
+    descriptionEl: 'Χτίστε και οδηγήστε startups',
     badge: 'F',
   },
   {
@@ -188,7 +188,7 @@ export default function RegisterPage() {
                 wrap
               />
             ) : (
-              <BilingualText en="Join the startup ecosystem in under 2 minutes." el="Μπείτε στο οικοσύστημα νεοφυών σε λιγότερο από 2 λεπτά." wrap />
+              <BilingualText en="Join the startup ecosystem in under 2 minutes." el="Μπείτε στο οικοσύστημα των startups σε λιγότερο από 2 λεπτά." wrap />
             )}
           </p>
 

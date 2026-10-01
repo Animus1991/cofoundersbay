@@ -463,7 +463,7 @@ export default function SearchPage() {
   ]);
 
   return (
-    <AppShell>
+    <AppShell showHelp>
       <div className="">
         {/* Search Input */}
         <div

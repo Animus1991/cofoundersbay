@@ -2172,7 +2172,7 @@ export default function ResearchBoardPage() {
       labelEl: 'Εισαγωγή',
       content: railRows([
         { icon: StickyNote, en: researchEn('add_sticky'), el: researchEl('add_sticky'), onClick: () => issue('add_sticky'), tone: 'text-amber-500' },
-        { icon: Grid3X3, en: researchEn('create_group'), el: researchEl('create_group'), onClick: () => issue('group'), tone: 'text-blue-500' },
+        { icon: Grid3X3, en: researchEn('create_group'), el: researchEl('create_group'), onClick: () => issue('group'), tone: 'text-primary-accessible' },
         {
           icon: LinkIcon, en: researchEn('add_link'), el: researchEl('add_link'),
           onClick: () => {
@@ -2244,7 +2244,7 @@ export default function ResearchBoardPage() {
         <div className="space-y-2">
           {board && <BoardExport board={board} canvasRef={canvasRef as React.RefObject<HTMLDivElement>} />}
           {railRows([
-            { icon: Download, en: researchEn('export_png'), el: researchEl('export_png'), onClick: () => issue('export', { query: 'png' }), tone: 'text-blue-500' },
+            { icon: Download, en: researchEn('export_png'), el: researchEl('export_png'), onClick: () => issue('export', { query: 'png' }), tone: 'text-primary-accessible' },
             { icon: Download, en: researchEn('export_svg'), el: researchEl('export_svg'), onClick: () => issue('export', { query: 'svg' }) },
             { icon: Download, en: researchEn('export_json'), el: researchEl('export_json'), onClick: () => issue('export', { query: 'json' }) },
             { icon: FileText, en: researchEn('export_md'), el: researchEl('export_md'), onClick: () => issue('export', { query: 'markdown' }) },
@@ -2744,11 +2744,14 @@ export default function ResearchBoardPage() {
           />
         )}
 
-        {/* MiniMap — compact on phones, above the draw strip; full size from sm */}
+        {/* MiniMap — compact on phones, above the draw strip; from sm it sits
+            at bottom-10, and from lg it rises above the 52px chat bubble so
+            the Co mark does not cover the map. z-[45] keeps it above the
+            inspector at the seam. */}
         {showMiniMap && board ? (
           <div
             data-canvas-chrome
-            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-40 cursor-default sm:bottom-10 sm:right-4"
+            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4 lg:bottom-[calc(2.5rem+52px)]"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <BoardMiniMap
@@ -2764,8 +2767,16 @@ export default function ResearchBoardPage() {
         ) : null}
         <div
           data-canvas-chrome
-          className="pointer-events-auto absolute top-4 right-4 z-40 flex w-[220px] cursor-default flex-col overflow-hidden"
-          style={{ bottom: 99 }}
+          className={cn(
+            'pointer-events-auto absolute top-4 right-4 z-40 flex w-[220px] cursor-default flex-col overflow-hidden',
+            // Stop above the MiniMap: compact 78px frame, desktop 122px frame,
+            // plus a 0.5rem seam. From lg the map itself sits above the chat
+            // bubble, so the inspector follows it up. When the map is off,
+            // 99px still holds the inspector off the chat bubble.
+            showMiniMap
+              ? 'bottom-[calc(6rem+78px)] sm:bottom-[calc(3rem+122px)] lg:bottom-[calc(3rem+174px)]'
+              : 'bottom-[99px]',
+          )}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <CanvasInspectorPanel
@@ -3069,7 +3080,7 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Grid3X3 className="icon-sm text-blue-500" /> <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
+                <Grid3X3 className="icon-sm text-primary-accessible" /> <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
               </button>
               <button
                 onClick={() => {

@@ -9,9 +9,11 @@ import type { BilingualPair } from './types';
  * (styled, `lang`-tagged, honours the user's display preference), or
  * `bilingualInline` when the slot only accepts a string (placeholder, toast).
  */
+const sameText = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
 export function bilingualAria(en: string, el?: string | null): string {
-  if (!el || el === en) return en;
-  return `${en}. ${el}`;
+  if (!el || sameText(el, en)) return en;
+  return /[?!…]$/.test(en.trim()) ? `${en} ${el}` : `${en}. ${el}`;
 }
 
 /**
@@ -20,7 +22,7 @@ export function bilingualAria(en: string, el?: string | null): string {
  * ReactNode is allowed.
  */
 export function bilingualInline(en: string, el?: string | null): string {
-  if (!el || el === en) return en;
+  if (!el || sameText(el, en)) return en;
   return `${en} · ${el}`;
 }
 

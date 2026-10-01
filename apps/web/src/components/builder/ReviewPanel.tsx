@@ -179,7 +179,7 @@ function ReviewDecisionDialog({
                       n <= (rating ?? 0) ? 'text-yellow-400' : 'text-muted-foreground/40',
                     )}
                   >
-                    <Star className="icon-md fill-current" />
+                    <Star className="icon-sm fill-current" />
                   </button>
                 ))}
               </div>

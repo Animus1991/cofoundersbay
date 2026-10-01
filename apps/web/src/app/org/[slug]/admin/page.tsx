@@ -525,7 +525,7 @@ export default function OrgAdminPage() {
 
   if (orgQuery.isPending) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div role="status" className="py-16 text-center text-muted-foreground">
           <BilingualText en="Loading organization…" el="Φόρτωση οργανισμού…" compact />
         </div>
@@ -535,7 +535,7 @@ export default function OrgAdminPage() {
 
   if (!orgData) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <h1 className="text-xl font-semibold">
             {orgQuery.isError
@@ -551,7 +551,7 @@ export default function OrgAdminPage() {
   }
 
   return (
-    <AppShell rail={rail}>
+    <AppShell showHelp rail={rail}>
       <div className="min-w-0 max-w-full space-y-6">
         {/* Header */}
         <div className="flex min-w-0 flex-wrap items-center gap-4">

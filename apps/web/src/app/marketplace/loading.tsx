@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function MarketplaceLoading() {
   return (
-    <AppShell title="Marketplace" titleEl="Αγορά υπηρεσιών" description="Discover tools and resources to grow your startup" descriptionEl="Ανακαλύψτε εργαλεία και πόρους για την ανάπτυξη της νεοφυούς σας">
+    <AppShell title="Marketplace" titleEl="Αγορά υπηρεσιών" description="Discover tools and resources to grow your startup" descriptionEl="Ανακαλύψτε εργαλεία και πόρους για να αναπτύξετε τη startup σας">
       {/* Search skeleton */}
       <Skeleton className="h-10 w-full rounded-xl" />
 

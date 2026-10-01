@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Bot, Keyboard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
@@ -25,12 +25,7 @@ import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
-import { useOpenCommandPalette } from './CommandPaletteHost';
 import { NotificationsBell } from './NotificationsBell';
-import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
-import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
-import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
-import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { UserMenu } from './UserMenu';
 import { PreviewDemoBadge } from './TopBar';
 import { Button } from '@/components/ui/button';
@@ -45,8 +40,6 @@ export function SideNav() {
   const primaryRole = role?.primaryRole;
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
-  const setCommandOpen = useOpenCommandPalette();
-
   // Between `sm` and `lg` the aside is a fixed 68px rail, so it renders its
   // collapsed contents regardless of the stored preference; the preference
   // still governs from `lg` up, where the 240px drawer fits.
@@ -224,11 +217,15 @@ export function SideNav() {
                           )}
                         />
                         {badge > 0 && !showLabels && (
-                          <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground ring-2 ring-card">
+                          <span
+                            aria-hidden="true"
+                            className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground ring-2 ring-card"
+                          >
                             {badge > 9 ? '9+' : badge}
                           </span>
                         )}
                       </span>
+                      {!showLabels && <span className="sr-only">{bilingualAria(label, labelEl)}</span>}
 
                       {/* Label + badge (expanded) */}
                       {showLabels && (
@@ -236,13 +233,18 @@ export function SideNav() {
                           <BilingualText en={label} el={labelEl} stacked className="min-w-0 flex-1" />
                           {badge > 0 && (
                             <span
+                              aria-hidden="true"
                               className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground"
-                              aria-label={`${badge} unread`}
                             >
                               {badge > 99 ? '99+' : badge}
                             </span>
                           )}
                         </>
+                      )}
+                      {badge > 0 && (
+                        <span className="sr-only">
+                          {bilingualAria(`${badge} unread`, `${badge} ${badge === 1 ? 'αδιάβαστο' : 'αδιάβαστα'}`)}
+                        </span>
                       )}
                     </OptimizedLink>
                   );
@@ -274,9 +276,9 @@ export function SideNav() {
           ))}
         </nav>
 
-        {/* ── Tools + user. Relocated TopBar controls; none are dropped. ── */}
+        {/* Search + bell stay in the rail; command/locale/theme/demo live in UserMenu. */}
         <div className={cn('flex-shrink-0 border-t border-border/60', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
-          <div className={cn(showLabels ? 'grid grid-cols-4 gap-0.5' : 'flex flex-col items-center gap-0.5')}>
+          <div className={cn(showLabels ? 'flex items-center gap-0.5' : 'flex flex-col items-center gap-0.5')}>
             <Button
               type="button"
               variant="ghost"
@@ -287,39 +289,13 @@ export function SideNav() {
             >
               <CfbGlyph name="discover" className={chromeIcon} />
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
-              onClick={() => setCommandOpen(true)}
-              aria-label={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
-            >
-              <Keyboard className={chromeIcon} />
-            </Button>
             <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
-            {showLabels ? (
-              <>
-                <DemoDataToggle iconOnly className="h-8 w-8 min-w-8 px-0" />
-                <LanguagePreferenceToggle className="h-8 w-8" />
-                <LanguageSwitcher iconOnly className="h-8 w-8" />
-                <ThemeSwitcher className="h-8 w-8" />
-              </>
-            ) : null}
           </div>
           {showLabels && <PreviewDemoBadge className="max-w-full justify-start" />}
           {mounted ? (
             <UserMenu variant="sidebar" rail={rail} />
           ) : (
             <div className={cn('rounded-lg bg-secondary/40', showLabels ? 'h-10' : 'mx-auto h-9 w-9')} />
-          )}
-          {!showLabels && (
-            <div className="flex flex-col items-center gap-0.5">
-              <DemoDataToggle iconOnly className={cn(railSlot, 'min-w-9 px-0')} />
-              <LanguagePreferenceToggle className={railSlot} />
-              <LanguageSwitcher iconOnly className={railSlot} />
-              <ThemeSwitcher className={railSlot} />
-            </div>
           )}
         </div>
 

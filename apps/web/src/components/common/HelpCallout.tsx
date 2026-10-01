@@ -25,6 +25,7 @@ export function HelpCallout({
   defaultOpen = false,
   compact = false,
   className,
+  titleClassName,
 }: {
   id: string;
   title: string;
@@ -36,6 +37,8 @@ export function HelpCallout({
   /** Icon-only trigger when the callout is collapsed (for tight headers). */
   compact?: boolean;
   className?: string;
+  /** Size/weight for the help title only (trigger label + popover heading). */
+  titleClassName?: string;
 }) {
   const storageKey = `cfb.help.${id}`;
   const [open, setOpen] = useState(defaultOpen);
@@ -66,7 +69,7 @@ export function HelpCallout({
       )}
     >
       <CfbGlyph name="book" className="icon-sm" />
-      <span className={cn(compact && 'sr-only')}>
+      <span className={cn(compact && 'sr-only', titleClassName)}>
         <BilingualText en={title} el={titleEl} compact />
       </span>
     </button>
@@ -93,7 +96,7 @@ export function HelpCallout({
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
                   <CfbGlyph name="book" className="icon-sm" />
                 </span>
-                <BilingualText en={title} el={titleEl} />
+                <BilingualText en={title} el={titleEl} className={titleClassName} />
                 {badge && (
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary-accessible">
                     {badge}
@@ -134,7 +137,7 @@ export function HelpCallout({
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
             <CfbGlyph name="book" className="icon-sm" />
           </span>
-          <BilingualText en={title} el={titleEl} />
+          <BilingualText en={title} el={titleEl} className={titleClassName} />
           {badge && (
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary-accessible">
               {badge}

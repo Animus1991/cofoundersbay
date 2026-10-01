@@ -472,7 +472,7 @@ const ADMIN_TAB_GROUPS: ReadonlyArray<{
     el: 'Άνθρωποι',
     tabs: [
       { value: 'users', en: 'Users', el: 'Χρήστες', icon: Users },
-      { value: 'cohorts', en: 'Cohorts', el: 'Κοόρτεις', icon: GraduationCap },
+      { value: 'cohorts', en: 'Cohorts', el: 'Κύκλοι', icon: GraduationCap },
     ],
   },
   {
@@ -687,7 +687,7 @@ export default function AdminPage() {
   usePageList([
     { id: 'reports', labelEn: 'Reports', labelEl: 'Αναφορές', rows: reportsLoading ? undefined : reports.map((r) => `${reportLabel(r)} · ${r.status} · by ${r.reporter.name}: ${r.reason}`) },
     { id: 'users', labelEn: 'Users', labelEl: 'Χρήστες', rows: usersLoading ? undefined : filteredUsers.map((u) => `${userName(u)} · ${u.email} · ${u.role} · ${u.moderationStatus}${u.reportsCount ? ` · ${u.reportsCount} reports` : ''}`) },
-    { id: 'cohorts', labelEn: 'Cohorts', labelEl: 'Κοόρτεις', rows: activeTab === 'cohorts' && !cohortsLoading ? cohorts.map((c) => `${c.name} · ${c.isActive ? 'active' : 'inactive'}${c.capacity ? ` · capacity ${c.capacity}` : ''}`) : undefined },
+    { id: 'cohorts', labelEn: 'Cohorts', labelEl: 'Κύκλοι', rows: activeTab === 'cohorts' && !cohortsLoading ? cohorts.map((c) => `${c.name} · ${c.isActive ? 'active' : 'inactive'}${c.capacity ? ` · capacity ${c.capacity}` : ''}`) : undefined },
     { id: 'events', labelEn: 'Events', labelEl: 'Εκδηλώσεις', rows: activeTab === 'content' && !eventsLoading ? events.map((e) => `${e.title} · ${e.startAt.slice(0, 10)}${e.isFeatured ? ' · featured' : ''}`) : undefined },
     { id: 'jobs', labelEn: 'Jobs', labelEl: 'Αγγελίες', rows: activeTab === 'content' && !jobsLoading ? jobs.map((j) => `${j.title} · ${j.creator.displayName}${j.isFeatured ? ' · featured' : ''}`) : undefined },
   ]);
@@ -696,7 +696,7 @@ export default function AdminPage() {
       { value: 'reports', en: 'Reports', el: 'Αναφορές' },
       { value: 'users', en: 'Users', el: 'Χρήστες' },
       { value: 'content', en: 'Content', el: 'Περιεχόμενο' },
-      { value: 'cohorts', en: 'Cohorts', el: 'Κοόρτεις' },
+      { value: 'cohorts', en: 'Cohorts', el: 'Κύκλοι' },
       { value: 'analytics', en: 'Analytics', el: 'Στατιστικά' },
       { value: 'audit', en: 'Audit log', el: 'Αρχείο ελέγχου' },
       { value: 'email', en: 'Email templates', el: 'Πρότυπα email' },
@@ -731,7 +731,7 @@ export default function AdminPage() {
     { id: 'suspend_user', labelEn: 'Suspend user', labelEl: 'Αναστολή χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus === 'active'), (u) => u.id, userName), undo: (v) => ({ control: 'reactivate_user', value: v }), run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'suspended' }); } },
     { id: 'reactivate_user', labelEn: 'Reactivate user', labelEl: 'Επανενεργοποίηση χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'active'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'suspended' ? { control: 'suspend_user', value: v } : prior === 'banned' ? { control: 'ban_user', value: v } : undefined; }, run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'active' }); } },
     { id: 'ban_user', labelEn: 'Ban user', labelEl: 'Αποκλεισμός χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'banned'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'active' ? { control: 'reactivate_user', value: v } : prior === 'suspended' ? { control: 'suspend_user', value: v } : undefined; }, run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'banned' }); } },
-    { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κοορτής', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κοόρτεις.', run: (v) => { const c = cohorts.find((x) => x.id === v); if (c) void deleteCohort(c); } },
+    { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κύκλου', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κύκλοι.', run: (v) => { const c = cohorts.find((x) => x.id === v); if (c) void deleteCohort(c); } },
     { id: 'feature_event', labelEn: 'Feature or unfeature event', labelEl: 'Προβολή ή απόσυρση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { const e = events.find((x) => x.id === v); if (e) featureMutation.mutate({ type: 'event', id: e.id, featured: !e.isFeatured }); } },
     { id: 'feature_job', labelEn: 'Feature or unfeature job', labelEl: 'Προβολή ή απόσυρση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { const j = jobs.find((x) => x.id === v); if (j) featureMutation.mutate({ type: 'job', id: j.id, featured: !j.isFeatured }); } },
     { id: 'remove_event', labelEn: 'Remove event', labelEl: 'Αφαίρεση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'event', id: v }); } },

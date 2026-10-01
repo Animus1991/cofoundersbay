@@ -52,7 +52,7 @@ export function IndustryPieChart({ data }: { data: IndustryDatum[] }) {
   return (
     <ResponsiveContainer width={140} height={140}>
       <PieChart>
-        <Pie data={data} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={60} strokeWidth={2}>
+        <Pie data={data} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={60} strokeWidth={2} tabIndex={-1}>
           {data.map((entry) => (
             <Cell key={entry.name} fill={entry.color} />
           ))}

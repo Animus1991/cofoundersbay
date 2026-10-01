@@ -1,20 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Save, RefreshCw } from 'lucide-react';
+import { Save, RefreshCw, X } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useToast } from '@/components/ui/toast';
 
-interface IdeaCoreData {
+export interface IdeaCoreData {
   problemStatement: string;
   targetAudience: string;
   solution: string;
@@ -26,48 +27,161 @@ interface IdeaCoreData {
 }
 
 interface IdeaCoreProps {
-  onSave?: (data: IdeaCoreData) => void;
-  initialData?: Partial<IdeaCoreData>;
+  onSave?: (data: IdeaCoreData) => void | Promise<void>;
+  onGenerate?: (data: IdeaCoreData) => Promise<Record<string, unknown> | null>;
+  initialData?: unknown;
+  contentRevision?: string;
 }
 
-export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
-  const t = useBuilderPrimaryText();
-  const [data, setData] = useState<IdeaCoreData>({
-    problemStatement: '',
-    targetAudience: '',
-    solution: '',
-    uniqueValue: '',
-    timing: '',
-    assumptions: [],
-    painPoints: [],
-    marketSize: '',
-    ...initialData,
-  });
+const EMPTY_IDEA: IdeaCoreData = {
+  problemStatement: '',
+  targetAudience: '',
+  solution: '',
+  uniqueValue: '',
+  timing: '',
+  assumptions: [],
+  painPoints: [],
+  marketSize: '',
+};
 
+const SCALAR_KEYS = [
+  'problemStatement',
+  'targetAudience',
+  'solution',
+  'uniqueValue',
+  'timing',
+  'marketSize',
+] as const;
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string');
+}
+
+function looksLikeIdeaCore(record: Record<string, unknown>): boolean {
+  return SCALAR_KEYS.some((key) => typeof record[key] === 'string')
+    || Array.isArray(record.assumptions)
+    || Array.isArray(record.painPoints);
+}
+
+/** Preview stores Idea Core flat; a save nests the same fields under `ideaCore`. */
+export function pickIdeaCore(raw: unknown): Partial<IdeaCoreData> {
+  const root = asRecord(raw);
+  if (!root) return {};
+  const nested = asRecord(root.ideaCore);
+  const source = nested && looksLikeIdeaCore(nested) ? nested : root;
+  const next: Partial<IdeaCoreData> = {};
+  for (const key of SCALAR_KEYS) {
+    if (typeof source[key] === 'string') next[key] = source[key] as string;
+  }
+  if (Array.isArray(source.assumptions)) next.assumptions = stringList(source.assumptions);
+  if (Array.isArray(source.painPoints)) next.painPoints = stringList(source.painPoints);
+  return next;
+}
+
+function hydrateIdeaCore(raw: unknown): IdeaCoreData {
+  return { ...EMPTY_IDEA, ...pickIdeaCore(raw) };
+}
+
+function isBlank(value: string | undefined): boolean {
+  return !value?.trim();
+}
+
+function mergeEmptyOnly(current: IdeaCoreData, incoming: Partial<IdeaCoreData>): IdeaCoreData {
+  const next: IdeaCoreData = { ...current, assumptions: [...current.assumptions], painPoints: [...current.painPoints] };
+  for (const key of SCALAR_KEYS) {
+    const value = incoming[key];
+    if (typeof value === 'string' && isBlank(current[key]) && value.trim()) {
+      next[key] = value;
+    }
+  }
+  if (!current.assumptions.some((item) => item.trim()) && incoming.assumptions?.some((item) => item.trim())) {
+    next.assumptions = incoming.assumptions;
+  }
+  if (!current.painPoints.some((item) => item.trim()) && incoming.painPoints?.some((item) => item.trim())) {
+    next.painPoints = incoming.painPoints;
+  }
+  return next;
+}
+
+function ideaCoreEquals(a: IdeaCoreData, b: IdeaCoreData): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function completionPercent(data: IdeaCoreData): number {
+  const filled = [
+    data.problemStatement,
+    data.targetAudience,
+    data.solution,
+    data.uniqueValue,
+    data.timing,
+    data.marketSize,
+    data.assumptions.some((item) => item.trim()) ? 'yes' : '',
+    data.painPoints.some((item) => item.trim()) ? 'yes' : '',
+  ].filter((field) => field.trim().length > 0).length;
+  return (filled / 8) * 100;
+}
+
+/** The figure the stage header shows, stored on the document when it saves. */
+export function ideaCoreCompletion(data: IdeaCoreData): number {
+  return Math.round(completionPercent(data));
+}
+
+function assistPrompt(data: IdeaCoreData): string {
+  const empty: string[] = [];
+  if (isBlank(data.problemStatement)) empty.push('problem statement');
+  if (isBlank(data.targetAudience)) empty.push('target audience');
+  if (isBlank(data.solution)) empty.push('solution');
+  if (isBlank(data.uniqueValue)) empty.push('unique value');
+  if (isBlank(data.timing)) empty.push('why now');
+  if (isBlank(data.marketSize)) empty.push('market size');
+  if (!data.assumptions.some((item) => item.trim())) empty.push('key assumptions');
+  if (!data.painPoints.some((item) => item.trim())) empty.push('pain points');
+  const focus = empty.length ? empty.join(', ') : 'the weakest line';
+  return [
+    'Help me complete the Idea Core in Startup Builder. Draft only the empty fields; keep what I already wrote.',
+    `Empty first: ${focus}.`,
+    `Problem: ${data.problemStatement || '(empty)'}`,
+    `Audience: ${data.targetAudience || '(empty)'}`,
+    `Solution: ${data.solution || '(empty)'}`,
+    `Unique value: ${data.uniqueValue || '(empty)'}`,
+    `Why now: ${data.timing || '(empty)'}`,
+    `Market size: ${data.marketSize || '(empty)'}`,
+    `Assumptions: ${data.assumptions.filter((item) => item.trim()).join('; ') || '(empty)'}`,
+    `Pain points: ${data.painPoints.filter((item) => item.trim()).join('; ') || '(empty)'}`,
+  ].join('\n');
+}
+
+export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: IdeaCoreProps) {
+  const t = useBuilderPrimaryText();
+  const router = useRouter();
+  const { success, error: toastError } = useToast();
+  const [data, setData] = useState<IdeaCoreData>(() => hydrateIdeaCore(initialData));
   const [isGenerating, setIsGenerating] = useState(false);
-  const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const fields = [
-      data.problemStatement,
-      data.targetAudience,
-      data.solution,
-      data.uniqueValue,
-      data.timing,
-      data.marketSize,
-    ];
-    const completedFields = fields.filter((field) => field.trim().length > 0).length;
-    setCompletionPercentage((completedFields / fields.length) * 100);
-  }, [data]);
+    setData(hydrateIdeaCore(initialData));
+    // Reload when the document version changes (save / restore), not on every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentRevision]);
 
-  const handleFieldChange = (field: keyof IdeaCoreData, value: string) => {
+  const handleFieldChange = (field: (typeof SCALAR_KEYS)[number], value: string) => {
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAssumptionChange = (index: number, value: string) => {
-    const newAssumptions = [...data.assumptions];
-    newAssumptions[index] = value;
-    setData((prev) => ({ ...prev, assumptions: newAssumptions }));
+    setData((prev) => {
+      const assumptions = [...prev.assumptions];
+      assumptions[index] = value;
+      return { ...prev, assumptions };
+    });
   };
 
   const addAssumption = () => {
@@ -82,9 +196,11 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
   };
 
   const handlePainPointChange = (index: number, value: string) => {
-    const newPainPoints = [...data.painPoints];
-    newPainPoints[index] = value;
-    setData((prev) => ({ ...prev, painPoints: newPainPoints }));
+    setData((prev) => {
+      const painPoints = [...prev.painPoints];
+      painPoints[index] = value;
+      return { ...prev, painPoints };
+    });
   };
 
   const addPainPoint = () => {
@@ -100,27 +216,34 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
 
   const generateWithAI = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
-      setData((prev) => ({
-        ...prev,
-        assumptions: [
-          'Target customers are willing to pay for this solution',
-          'Market timing is optimal for entry',
-          'Technology can solve the core problem effectively',
-          'Team can execute the business model',
-        ],
-        painPoints: [
-          'Current solutions are too expensive',
-          'Existing tools lack key features',
-          'Market underserved by current offerings',
-        ],
-      }));
+    try {
+      const incoming = await onGenerate?.(data);
+      if (incoming) {
+        const merged = mergeEmptyOnly(data, pickIdeaCore(incoming));
+        if (ideaCoreEquals(data, merged)) {
+          success('Nothing to change');
+        } else {
+          setData(merged);
+        }
+        return;
+      }
+      router.push(`/ai?q=${encodeURIComponent(assistPrompt(data))}`);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
-  const handleSave = () => {
-    onSave?.(data);
+  const handleSave = async () => {
+    if (!onSave) return;
+    setIsSaving(true);
+    try {
+      await onSave(data);
+      success('Saved');
+    } catch {
+      toastError('Could not save');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -131,11 +254,19 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
         titleEl={builderEl('tab_idea')}
         subtitleEn={builderEn('idea_sub')}
         subtitleEl={builderEl('idea_sub')}
-        completion={completionPercentage}
-        askPrompt="Help me sharpen the Idea Core: problem, audience, solution, unique value, and why now. Draft the weakest empty field first."
+        hideTitle
+        completion={completionPercent(data)}
+        askPrompt={assistPrompt(data)}
         extraActions={
           <>
-            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={BUILDER_BTN}
+              onClick={() => void generateWithAI()}
+              disabled={isGenerating || isSaving}
+            >
               {isGenerating ? (
                 <RefreshCw className="icon-sm mr-2 animate-spin" />
               ) : (
@@ -147,36 +278,35 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                 compact
               />
             </Button>
-            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
-              <Save className="icon-sm mr-2" />
+            <Button
+              type="button"
+              size="sm"
+              className={BUILDER_BTN}
+              onClick={() => void handleSave()}
+              disabled={isSaving || isGenerating}
+            >
+              {isSaving ? (
+                <RefreshCw className="icon-sm mr-2 animate-spin" />
+              ) : (
+                <Save className="icon-sm mr-2" />
+              )}
               <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
             </Button>
           </>
         }
       />
 
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">
-            <BilingualText en={builderEn('tab_idea')} el={builderEl('tab_idea')} compact />{' '}
-            <BilingualText en={builderEn('stage_complete')} el={builderEl('stage_complete')} compact />
-          </span>
-          <span>{completionPercentage.toFixed(0)}%</span>
-        </div>
-        <Progress value={completionPercentage} className="h-1.5" />
-      </div>
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CfbGlyph name="target" className="icon-md" />
+              <CardTitle className="flex items-center gap-2">
+                <CfbGlyph name="target" className="icon-sm" />
                 <BilingualText en={builderEn('idea_problem_card')} el={builderEl('idea_problem_card')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="problem">
                   <BilingualText en={builderEn('idea_problem_label')} el={builderEl('idea_problem_label')} compact />
                 </Label>
@@ -188,7 +318,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                   className="min-h-[100px] rounded-xl"
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="audience">
                   <BilingualText en={builderEn('idea_audience')} el={builderEl('idea_audience')} compact />
                 </Label>
@@ -200,7 +330,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                   className="rounded-xl"
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="market">
                   <BilingualText en={builderEn('idea_market')} el={builderEl('idea_market')} compact />
                 </Label>
@@ -217,13 +347,13 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CfbGlyph name="chart" className="icon-md" />
+              <CardTitle className="flex items-center gap-2">
+                <CfbGlyph name="chart" className="icon-sm" />
                 <BilingualText en={builderEn('idea_solution_card')} el={builderEl('idea_solution_card')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="solution">
                   <BilingualText en={builderEn('idea_solution')} el={builderEl('idea_solution')} compact />
                 </Label>
@@ -235,7 +365,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                   className="min-h-[100px] rounded-xl"
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="unique">
                   <BilingualText en={builderEn('idea_uvp')} el={builderEl('idea_uvp')} compact />
                 </Label>
@@ -247,7 +377,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                   className="min-h-[80px] rounded-xl"
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label htmlFor="timing">
                   <BilingualText en={builderEn('idea_why_now')} el={builderEl('idea_why_now')} compact />
                 </Label>
@@ -266,13 +396,19 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">
+              <CardTitle className="flex items-center gap-2">
+                <CfbGlyph name="flag" className="icon-sm" />
                 <BilingualText en={builderEn('idea_assumptions')} el={builderEl('idea_assumptions')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {data.assumptions.length === 0 && (
+                <p className="type-kicker text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={builderEn('idea_assumptions_hint')} el={builderEl('idea_assumptions_hint')} wrap />
+                </p>
+              )}
               {data.assumptions.map((assumption, index) => (
-                <div key={index} className="flex gap-2">
+                <div key={`assumption-${index}`} className="flex gap-2">
                   <Input
                     placeholder={t(builderEn('idea_assumption_ph'), builderEl('idea_assumption_ph'))}
                     value={assumption}
@@ -280,16 +416,18 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                     className="rounded-xl"
                   />
                   <Button
+                    type="button"
                     variant="outline"
                     size="icon"
+                    className="shrink-0 rounded-xl"
                     onClick={() => removeAssumption(index)}
                     aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
                   >
-                    ×
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addAssumption} className={`w-full ${BUILDER_BTN}`}>
+              <Button type="button" variant="outline" size="sm" onClick={addAssumption} className={`w-full ${BUILDER_BTN}`}>
                 <BilingualText en={builderEn('idea_add_assumption')} el={builderEl('idea_add_assumption')} compact />
               </Button>
             </CardContent>
@@ -297,13 +435,19 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">
+              <CardTitle className="flex items-center gap-2">
+                <CfbGlyph name="compare" className="icon-sm" />
                 <BilingualText en={builderEn('idea_pains')} el={builderEl('idea_pains')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {data.painPoints.length === 0 && (
+                <p className="type-kicker text-xs leading-snug text-muted-foreground">
+                  <BilingualText en={builderEn('idea_pains_hint')} el={builderEl('idea_pains_hint')} wrap />
+                </p>
+              )}
               {data.painPoints.map((painPoint, index) => (
-                <div key={index} className="flex gap-2">
+                <div key={`pain-${index}`} className="flex gap-2">
                   <Input
                     placeholder={t(builderEn('idea_pain_ph'), builderEl('idea_pain_ph'))}
                     value={painPoint}
@@ -311,31 +455,22 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                     className="rounded-xl"
                   />
                   <Button
+                    type="button"
                     variant="outline"
                     size="icon"
+                    className="shrink-0 rounded-xl"
                     onClick={() => removePainPoint(index)}
                     aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
                   >
-                    ×
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addPainPoint} className={`w-full ${BUILDER_BTN}`}>
+              <Button type="button" variant="outline" size="sm" onClick={addPainPoint} className={`w-full ${BUILDER_BTN}`}>
                 <BilingualText en={builderEn('idea_add_pain')} el={builderEl('idea_add_pain')} compact />
               </Button>
             </CardContent>
           </Card>
-
-          {isGenerating && (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <RefreshCw className="icon-xl mx-auto mb-4 animate-spin text-primary-accessible" />
-                <p className="text-sm text-muted-foreground">
-                  <BilingualText en={builderEn('ai_analyzing')} el={builderEl('ai_analyzing')} />
-                </p>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>

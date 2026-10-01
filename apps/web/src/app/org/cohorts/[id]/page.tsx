@@ -357,7 +357,7 @@ export default function CohortDetailPage() {
     );
   const copyLink = () => void navigator.clipboard?.writeText(window.location.href);
   usePageControls([
-    choiceControl('cohort_tab', 'Cohort tab', 'Καρτέλα κοόρτης', [
+    choiceControl('cohort_tab', 'Cohort tab', 'Καρτέλα κύκλου', [
       { value: 'overview', en: 'Overview', el: 'Επισκόπηση' },
       { value: 'participants', en: 'Participants', el: 'Συμμετέχοντες' },
       { value: 'matches', en: 'Matches', el: 'Αντιστοιχίσεις' },
@@ -372,7 +372,7 @@ export default function CohortDetailPage() {
       unavailableEl: participants.length === 0 ? 'Δεν υπάρχει κανείς για εξαγωγή.' : undefined,
       run: exportParticipants,
     },
-    { id: 'copy_cohort_link', labelEn: 'Copy the cohort link', labelEl: 'Αντιγραφή συνδέσμου κοόρτης', writes: false, run: copyLink },
+    { id: 'copy_cohort_link', labelEn: 'Copy the cohort link', labelEl: 'Αντιγραφή συνδέσμου κύκλου', writes: false, run: copyLink },
     {
       id: 'open_participant',
       labelEn: 'Open a participant\'s profile',
@@ -388,7 +388,7 @@ export default function CohortDetailPage() {
     {
       id: 'cohort_participants',
       labelEn: 'Cohort participants',
-      labelEl: 'Συμμετέχοντες κοόρτης',
+      labelEl: 'Συμμετέχοντες κύκλου',
       rows: live ? participants.map((pt) => `${pt.name} · ${pt.role}${pt.startup ? ` · ${pt.startup}` : ''} · ${pt.status}`) : undefined,
       total: participants.length,
       sample: isSample,
@@ -396,7 +396,7 @@ export default function CohortDetailPage() {
     {
       id: 'cohort_matches',
       labelEn: 'Matches in the cohort',
-      labelEl: 'Αντιστοιχίσεις στην κοόρτη',
+      labelEl: 'Αντιστοιχίσεις στον κύκλο',
       rows: live ? matches.map((m) => `${m.participant1.name} ↔ ${m.participant2.name} · ${m.matchScore}% · ${m.status}`) : undefined,
       total: matches.length,
       sample: isSample,
@@ -413,7 +413,7 @@ export default function CohortDetailPage() {
 
   if (!cohort) {
     return (
-      <AppShell title="Cohort" titleEl="Κοόρτη">
+      <AppShell title="Cohort" titleEl="Κύκλος">
         {isLoading || !hydrated ? (
           <div className="space-y-4">
             <Skeleton className="h-8 w-2/3" />
@@ -425,12 +425,12 @@ export default function CohortDetailPage() {
               <p className="mx-auto max-w-md text-sm text-muted-foreground">
                 <BilingualText
                   en="This cohort could not be loaded. It may belong to another organisation, or you may not be a member of its organisation."
-                  el="Η κοόρτη δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού της."
+                  el="Ο κύκλος δεν φορτώθηκε. Μπορεί να ανήκει σε άλλον οργανισμό ή να μην είστε μέλος του οργανισμού του."
                   wrap
                 />
               </p>
               <Button variant="outline" className="mt-4 gap-2" asChild>
-                <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλες οι κοόρτες" compact /></Link>
+                <Link href="/org/cohorts"><ArrowLeft className="icon-sm" aria-hidden="true" /><BilingualText en="All cohorts" el="Όλοι οι κύκλοι" compact /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -538,7 +538,7 @@ export default function CohortDetailPage() {
                 <p className="text-xs text-muted-foreground mt-1">
                   <BilingualText
                     en={`${stats.activeStartups} active startups • ${stats.totalMentors} mentors`}
-                    el={`${stats.activeStartups} νεοφυείς • ${stats.totalMentors} μέντορες`}
+                    el={`${stats.activeStartups} startups • ${stats.totalMentors} μέντορες`}
                     compact
                     wrap
                   />

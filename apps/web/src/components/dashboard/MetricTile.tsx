@@ -48,10 +48,10 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
       <CardContent className="flex h-full flex-col p-4 sm:p-5">
         <div className="flex w-full items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
-            <p className={cn('page-stat-label text-[11px] leading-snug text-muted-foreground sm:text-xs', labelClassName)}>
+            <p className={cn('page-stat-label leading-snug text-muted-foreground', labelClassName)}>
               <BilingualText en={label} el={labelEl} stacked wrap />
             </p>
-            <p className={cn('page-stat text-xl font-semibold tabular-nums tracking-tight sm:text-2xl', valueClassName)}>{value}</p>
+            <p className={cn('page-stat font-semibold tabular-nums tracking-tight', valueClassName)}>{value}</p>
           </div>
           {glyph ? (
             <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
@@ -62,17 +62,17 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
         <div className="mt-auto min-h-[2.75rem] pt-2">
           {trend ? (
             <div className="space-y-0.5">
-              <p className={cn('page-stat-meta text-[11px] font-medium tabular-nums leading-snug sm:text-xs', trend.positive ? TREND.up : TREND.down, metaClassName)}>
+              <p className={cn('page-stat-meta font-medium tabular-nums leading-snug', trend.positive ? TREND.up : TREND.down, metaClassName)}>
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
               </p>
               {trend.en ? (
-                <p className={cn('page-stat-meta text-[11px] leading-snug text-muted-foreground sm:text-xs', metaClassName)}>
+                <p className={cn('page-stat-meta leading-snug text-muted-foreground', metaClassName)}>
                   <BilingualText en={trend.en} el={trend.el} stacked wrap />
                 </p>
               ) : null}
             </div>
           ) : caption ? (
-            <p className={cn('page-stat-meta text-[11px] leading-snug text-muted-foreground sm:text-xs', metaClassName)}>
+            <p className={cn('page-stat-meta leading-snug text-muted-foreground', metaClassName)}>
               <BilingualText en={caption} el={captionEl} stacked wrap />
             </p>
           ) : null}

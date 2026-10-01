@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { listDeclarations, type ActionDeclaration } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 
 /**
  * Generated from the shared capability contract — the same list the model is
@@ -46,7 +48,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_inquiries: { en: 'Any new inquiries?', el: 'Έχω νέα αιτήματα πελατών;' },
   get_learning: { en: 'Suggest a course to learn from', el: 'Πρότεινε ένα μάθημα' },
   get_expert_reviews: { en: 'Where are my expert reviews?', el: 'Πού βρίσκονται οι αξιολογήσεις ειδικών μου;' },
-  get_org_cohorts: { en: 'Which cohorts are running?', el: 'Ποιες κοόρτες τρέχουν;' },
+  get_org_cohorts: { en: 'Which cohorts are running?', el: 'Ποιοι κύκλοι τρέχουν;' },
   get_org_members: { en: 'Who are the newest organisation members?', el: 'Ποια είναι τα νεότερα μέλη του οργανισμού;' },
   get_platform_stats: { en: 'How many users does the platform have?', el: 'Πόσοι χρήστες έχει η πλατφόρμα;' },
   get_moderation_queue: { en: 'What is in the moderation queue?', el: 'Τι υπάρχει στην ουρά ελέγχου;' },
@@ -123,7 +125,7 @@ function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
         </p>
       )}
       {sample && (
-        <Button asChild variant="ghost" size="sm" className="h-auto min-h-11 w-fit justify-start px-2 py-1.5 text-xs">
+        <Button asChild variant="ghost" size="sm" className={`h-auto min-h-11 w-fit justify-start px-2 py-1.5 text-xs ${BUILDER_BTN}`}>
           <Link href={`/ai?q=${encodeURIComponent(sample.en)}`}>
             <BilingualText en={`Try: “${sample.en}”`} el={`Δοκίμασε: «${sample.el}»`} compact wrap />
           </Link>
@@ -150,21 +152,21 @@ export default function AICapabilitiesPage() {
         </Link>
 
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <p className="type-hold max-w-2xl text-sm text-muted-foreground">
             <BilingualText
-              en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written. This page is generated from that contract, so it cannot fall behind."
-              el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε. Η σελίδα παράγεται από αυτό το συμβόλαιο, οπότε δεν μπορεί να μείνει πίσω."
+              en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written. Sample asks use Elena and Harbor's $750K seed. This page is generated from that contract, so it cannot fall behind."
+              el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε. Τα δείγματα χρησιμοποιούν την Elena και τον γύρο Harbor $750K. Η σελίδα παράγεται από αυτό το συμβόλαιο, οπότε δεν μπορεί να μείνει πίσω."
               wrap
             />
           </p>
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" className="gap-2">
+            <Button asChild variant="outline" className={`gap-2 ${BUILDER_BTN}`}>
               <Link href="/ai">
-                <Sparkles className="h-4 w-4" />
+                <CfbGlyph name="spark" className="icon-sm" />
                 <BilingualText en="Open assistant" el="Άνοιγμα βοηθού" compact />
               </Link>
             </Button>
-            <Button asChild variant="ghost">
+            <Button asChild variant="ghost" className={BUILDER_BTN}>
               <Link href="/settings/ai">
                 <BilingualText en="AI preferences" el="Προτιμήσεις AI" compact />
               </Link>
@@ -173,10 +175,10 @@ export default function AICapabilitiesPage() {
         </div>
 
         <section className="mb-10">
-          <h2 className="mb-1 text-base font-semibold">
+          <h2 className="type-kicker mb-1 font-semibold">
             <BilingualText en="Looks something up" el="Αναζητά κάτι" compact />
           </h2>
-          <p className="mb-4 text-sm text-muted-foreground">
+          <p className="type-hold mb-4 text-sm text-muted-foreground">
             <BilingualText
               en={`${reads.length} reads — answers a question from the same APIs the pages use.`}
               el={`${reads.length} αναγνώσεις — απαντούν με τα ίδια API που χρησιμοποιούν οι σελίδες.`}
@@ -191,10 +193,10 @@ export default function AICapabilitiesPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 text-base font-semibold">
+          <h2 className="type-kicker mb-1 font-semibold">
             <BilingualText en="Changes something you own" el="Αλλάζει κάτι δικό σας" compact />
           </h2>
-          <p className="mb-4 text-sm text-muted-foreground">
+          <p className="type-hold mb-4 text-sm text-muted-foreground">
             <BilingualText
               en={`${mutations.length} actions — each waits for your confirm. Reversible ones offer Undo after they run.`}
               el={`${mutations.length} ενέργειες — η καθεμία περιμένει επιβεβαίωση. Οι αναστρέψιμες προσφέρουν Αναίρεση αφού εκτελεστούν.`}

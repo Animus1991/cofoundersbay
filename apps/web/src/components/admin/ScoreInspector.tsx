@@ -129,7 +129,7 @@ export function ScoreInspector() {
         <button
           onClick={() => void runInspection()}
           disabled={loading || !userId.trim()}
-          className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Loading…' : 'Inspect'}
         </button>
@@ -363,7 +363,7 @@ export function ScoreInspector() {
                     <div className="flex items-center gap-3">
                       <div className="w-28 bg-muted rounded-full h-1.5">
                         <div
-                          className="bg-indigo-500 h-1.5 rounded-full"
+                          className="bg-primary h-1.5 rounded-full"
                           style={{ width: `${Math.min(100, c.score)}%` }}
                         />
                       </div>

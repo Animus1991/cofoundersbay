@@ -367,10 +367,10 @@ export default function OrgEventsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Organization Events"
       description="Demo days, office hours, workshops, and pitch nights for your cohorts."
-      descriptionEl="Demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων για τις κοόρτες σας."
+      descriptionEl="Demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων για τους κύκλους σας."
       actions={(
         <Button asChild>
           <Link href="/events/create">

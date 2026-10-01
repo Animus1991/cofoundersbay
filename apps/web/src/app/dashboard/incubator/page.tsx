@@ -168,7 +168,7 @@ export default function IncubatorDashboard() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -182,7 +182,7 @@ export default function IncubatorDashboard() {
   }
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1.5">

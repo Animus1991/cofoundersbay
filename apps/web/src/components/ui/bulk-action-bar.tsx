@@ -43,10 +43,9 @@ export function BulkActionBar({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: position === 'bottom' ? 24 : -24 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
+          data-surface="overlay"
           className={cn(
-            'fixed z-40 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5',
-            'bg-popover border border-border rounded-xl shadow-2xl',
-            'ring-1 ring-primary/20',
+            'bg-popover border border-border rounded-xl shadow-none',
             position === 'bottom'
               ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-w-[calc(100vw-1.5rem)] flex-wrap justify-center lg:bottom-6'
               : 'top-[calc(4.5rem+env(safe-area-inset-top))] lg:top-6',

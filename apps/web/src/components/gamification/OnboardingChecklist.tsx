@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useId } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Circle, ChevronRight, ChevronDown, X } from 'lucide-react';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { ChevronRight, ChevronDown, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
-import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 
 /* ── Step definitions ────────────────────────────────────────────────────── */
@@ -24,8 +22,6 @@ export interface OnboardingStep {
   cta: string;
   ctaEl?: string;
   done: boolean;
-  identitySignal?: string;
-  identitySignalEl?: string;
 }
 
 const STORAGE_KEY = 'cfb_onboarding_dismissed_v1';
@@ -110,14 +106,13 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
 
   if (dismissed !== false || allDone) return null;
 
-  const nextStep = steps.find((s) => !s.done);
   const dismissLabel = bilingualAria('Dismiss the getting-started checklist', 'Απόρριψη λίστας πρώτων βημάτων');
 
   const titleEn = userName ? `${userName}'s founder journey` : 'Your founder journey';
   const titleEl = userName ? `Η πορεία του ${userName} ως ιδρυτής` : 'Η πορεία σας ως ιδρυτής';
 
   return (
-    <Card className="rounded-xl">
+    <Card className="rounded-xl" data-tour="founder-checklist">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <button
@@ -127,7 +122,6 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             aria-expanded={expanded}
             aria-controls={listId}
           >
-            <CfbGlyph name="builder" className="icon-sm shrink-0 text-muted-foreground" />
             <div className="min-w-0">
               <CardTitle className="text-sm font-semibold text-foreground">
                 <BilingualText en={titleEn} el={titleEl} />
@@ -170,18 +164,12 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
           <div
             key={step.id}
             className={cn(
-              'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-lg px-3 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto]',
+              'grid grid-cols-1 items-start gap-x-3 gap-y-2 rounded-lg px-3 py-2.5 transition-colors sm:grid-cols-[minmax(0,1fr)_auto]',
               step.done
                 ? 'opacity-60'
-                : 'border border-border/40 bg-background/60 hover:border-primary/30 hover:bg-primary/5',
+                : 'bg-foreground/[0.025] hover:bg-foreground/[0.04]',
             )}
           >
-            <div className="mt-0.5 shrink-0">
-              {step.done
-                ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-label={bilingualAria('Done', 'Έγινε')} />
-                : <Circle className="icon-sm text-muted-foreground/40" aria-hidden="true" />
-              }
-            </div>
             <div className="min-w-0">
               <p className={cn('text-xs font-medium', step.done ? 'text-muted-foreground line-through' : 'text-foreground')}>
                 <BilingualText
@@ -207,9 +195,9 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             {!step.done && (
               <Button
                 asChild
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="col-start-2 h-auto min-h-8 min-w-0 max-w-full justify-self-start gap-1 whitespace-normal py-1.5 text-left text-primary-accessible hover:bg-primary/10 sm:col-start-auto"
+                className="h-auto min-h-8 min-w-0 max-w-full justify-self-start whitespace-normal py-1.5 text-left sm:col-start-auto"
               >
                 <Link href={step.href}>
                   <BilingualText
@@ -219,25 +207,11 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
                     primaryClassName="whitespace-normal break-words"
                     secondaryClassName="whitespace-normal break-words"
                   />
-                  <ChevronRight className="icon-sm" aria-hidden="true" />
                 </Link>
               </Button>
             )}
           </div>
         ))}
-
-        {nextStep?.identitySignal && (
-          <p className="px-1 pt-1 text-xs italic text-muted-foreground">
-            <span aria-hidden="true">✦ </span>
-            <BilingualText
-              en={`Next: ${nextStep.identitySignal}`}
-              el={nextStep.identitySignalEl ? `Επόμενο: ${nextStep.identitySignalEl}` : undefined}
-              stacked
-              primaryClassName="whitespace-normal break-words"
-              secondaryClassName="whitespace-normal break-words"
-            />
-          </p>
-        )}
       </CardContent>
     </Card>
   );
@@ -263,8 +237,6 @@ export function buildOnboardingSteps(opts: {
       cta: 'Complete',
       ctaEl: 'Ολοκλήρωση',
       done: opts.hasProfile,
-      identitySignal: 'You\'re setting yourself up as a serious, findable founder.',
-      identitySignalEl: 'Παρουσιάζεστε ως σοβαρός ιδρυτής που μπορεί να βρεθεί.',
     },
     {
       id: 'preferences',
@@ -276,8 +248,6 @@ export function buildOnboardingSteps(opts: {
       cta: 'Set up',
       ctaEl: 'Ρύθμιση',
       done: opts.hasPreferences,
-      identitySignal: 'Structured founders know exactly who they need.',
-      identitySignalEl: 'Οι μεθοδικοί ιδρυτές ξέρουν ακριβώς ποιους χρειάζονται.',
     },
     {
       id: 'connection',
@@ -289,8 +259,6 @@ export function buildOnboardingSteps(opts: {
       cta: 'Discover',
       ctaEl: 'Εξερεύνηση',
       done: opts.hasConnection,
-      identitySignal: 'Startup success is built on the right relationships.',
-      identitySignalEl: 'Η επιτυχία ενός startup χτίζεται στις σωστές σχέσεις.',
     },
     {
       id: 'board',
@@ -302,8 +270,6 @@ export function buildOnboardingSteps(opts: {
       cta: 'Create board',
       ctaEl: 'Δημιουργία πίνακα',
       done: opts.hasBoard,
-      identitySignal: 'Thinking visually separates founders who build from those who brainstorm.',
-      identitySignalEl: 'Η οπτική σκέψη ξεχωρίζει όσους χτίζουν από όσους απλώς συζητούν ιδέες.',
     },
     {
       id: 'artifact',
@@ -315,8 +281,6 @@ export function buildOnboardingSteps(opts: {
       cta: 'Open Builder',
       ctaEl: 'Άνοιγμα Builder',
       done: opts.hasArtifact,
-      identitySignal: 'You\'re now building like a structured startup team.',
-      identitySignalEl: 'Πλέον δουλεύετε σαν οργανωμένη ομάδα startup.',
     },
   ];
 }

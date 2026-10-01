@@ -36,6 +36,32 @@ const ROUTES = [
   '/feed',
   '/settings',
   '/org/cohorts/cohort-autumn-2026',
+  '/dashboard/mentor',
+  '/mentor/sessions',
+  '/mentor/requests',
+  '/mentor/mentees',
+  '/mentor/availability',
+  '/mentor/earnings',
+  '/mentor/reviews',
+  '/mentor/profile',
+  '/mentoring',
+  '/dashboard/investor',
+  '/investor/scouting',
+  '/investor/pipeline',
+  '/investor/portfolio',
+  '/investor/watchlist',
+  '/investor/analytics',
+  '/investors',
+  '/dashboard/incubator',
+  '/org/programs',
+  '/org/applications',
+  '/org/cohorts',
+  '/org/startups',
+  '/org/members',
+  '/org/mentors',
+  '/org/events',
+  '/org/analytics',
+  '/org/settings',
 ];
 
 type Finding = {
@@ -68,7 +94,9 @@ async function enterDemo(page: Page) {
   await page.waitForURL(/\/dashboard\/founder/, { timeout: 20_000 });
   // Tours are covered by their own test; keep them out of the page scans.
   await page.evaluate(() => {
-    for (const id of ['matches', 'builder', 'research']) localStorage.setItem(`cfb.tour.${id}.preview-demo-user`, 'done');
+    for (const id of ['matches', 'builder', 'research', 'founder-dashboard', 'activity', 'achievements']) {
+      localStorage.setItem(`cfb.tour.${id}.preview-demo-user`, 'done');
+    }
   });
 }
 

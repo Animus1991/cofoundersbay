@@ -173,7 +173,7 @@ export default function MentorReviewsPage() {
 
   if (!showDemoData && reviews.length === 0) {
     return (
-      <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
+      <AppShell showHelp title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
         <EmptyState
           illustration="default"
           title="No reviews yet"
@@ -185,7 +185,7 @@ export default function MentorReviewsPage() {
   }
 
   return (
-    <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
+    <AppShell showHelp title="Reviews" titleEl="Αξιολογήσεις" description="Feedback from your mentoring sessions" descriptionEl="Σχόλια από τις συνεδρίες καθοδήγησής σας">
       <div className="space-y-6">
 
         {/* Stats */}

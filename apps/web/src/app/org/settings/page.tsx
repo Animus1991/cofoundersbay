@@ -200,7 +200,7 @@ export default function OrgSettingsPage() {
     'Member';
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Organization Settings"
       description="Profile, branding, team, permissions, and billing for your organization."
     >

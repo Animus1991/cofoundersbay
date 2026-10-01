@@ -292,7 +292,7 @@ export default function OrgMentorsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Mentor Pool"
       description="Manage mentors available to your cohorts. Find them in the platform's mentor directory."
       descriptionEl="Διαχειριστείτε τους μέντορες των κοορτών σας. Βρείτε νέους στον κατάλογο μεντόρων της πλατφόρμας."

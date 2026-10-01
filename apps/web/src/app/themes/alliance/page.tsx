@@ -55,7 +55,7 @@ export default function AllianceThemePage() {
               <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact />
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              <BilingualText en="Join the premier network for startup founders, investors, and innovators" el="Μπείτε στο δίκτυο για ιδρυτές νεοφυών, επενδυτές και καινοτόμους" wrap />
+              <BilingualText en="Join the premier network for startup founders, investors, and innovators" el="Μπείτε στο δίκτυο για ιδρυτές startups, επενδυτές και καινοτόμους" wrap />
             </p>
             <div className="flex items-center justify-center gap-4">
               <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90" asChild>

@@ -454,7 +454,7 @@ export default function TenantProgramsPage() {
       title="Programs"
       titleEl="Προγράμματα"
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
-      descriptionEl="Οι χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, κοόρτες και δομημένη καθοδήγηση."
+      descriptionEl="Οι χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, κύκλους και δομημένη καθοδήγηση."
       rail={rail}
       actions={(
         <Button

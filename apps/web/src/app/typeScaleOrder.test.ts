@@ -29,8 +29,8 @@ const MIN_TYPE_PX = 12;
 /** Ascending. `base` sits where Tailwind puts it, between `sm` and `lg`. */
 const STEPS = ['2xs', 'xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'] as const;
 
-/** No adjacent pair should collapse; kept so a future floor can share 2xs/xs. */
-const EQUAL_ALLOWED = new Set(['2xs->xs']);
+/** Destinations on the rail share the ui step (xs and sm). */
+const EQUAL_ALLOWED = new Set(['2xs->xs', 'xs->sm']);
 
 /** Extracts the `min-width: 1024px` block that contains a given rule. */
 function desktopBlock(marker: string): string {

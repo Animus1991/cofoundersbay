@@ -390,7 +390,7 @@ export default function OrgApplicationsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Applications"
       description="Review and score startup applications across all your open programs."
     >

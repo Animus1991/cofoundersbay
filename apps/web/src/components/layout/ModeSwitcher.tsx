@@ -18,21 +18,16 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 /*
  * Greek display labels, with soft hyphens at the syllable boundary.
  *
- * Measured in the browser rather than guessed: the cell is 58.8px, and at the
- * 10.2px the label renders at, "Εργασία" needs ~59.3px (it just fits),
- * "Εξερεύνηση" needs 84.8px and "Λογαριασμός" needs 93.5px. One line is
- * therefore impossible - fitting "Λογαριασμός" would take a ~6px font, far
- * under the legibility floor - and clipping to "Λογαριασ…" loses the word.
- *
- * So these wrap to two lines, and Greek orthography requires a hyphen when a
- * word breaks. Both breaks below are valid syllable boundaries
- * (ε-ξε-ρεύ-νη-ση, λο-γα-ρια-σμός). The soft hyphen is invisible whenever the
- * label does fit, so English is untouched.
+ * Measured in the browser rather than guessed: the cell is 58.8px. Mode
+ * labels sit on the caption step (12.61px) so they join the chrome
+ * cluster instead of sitting below every other nav string. "Εξερεύνηση"
+ * and "Λογαριασμός" still need two hyphenated lines; "Εργασία" now wraps
+ * too. One line would take a ~6px font. Do not grow the 15rem drawer.
  *
  * Do not "fix" this into an ellipsis or a nowrap; the numbers above say why.
  */
 const MODE_LABEL_EL_DISPLAY: Record<'work' | 'explore' | 'account', string> = {
-  work: 'Εργασία',
+  work: 'Εργα\u00ADσία',
   explore: 'Εξερεύ\u00ADνηση',
   account: 'Λογαρια\u00ADσμός',
 };
@@ -88,7 +83,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               {expanded && (
                 <span
                   lang={primary === 'el' ? 'el' : 'en'}
-                  className="w-full px-0.5 text-center text-[10.201px] font-medium leading-[1.2] [hyphens:auto]"
+                  className="type-caption w-full px-0.5 text-center font-medium leading-[1.2] [hyphens:auto]"
                 >
                   {primary === 'el' ? displayEl : mode.shortLabel}
                 </span>

@@ -383,6 +383,7 @@ interface BoardTemplatesDialogProps {
   open: boolean;
   onClose: () => void;
   onSelectTemplate: (template: BoardTemplate) => void;
+  onStartBlank?: () => void;
 }
 
 export const TEMPLATE_GLYPH: Record<string, CfbGlyphName> = {
@@ -412,12 +413,12 @@ export function ResearchTemplateTile({
         'transition-colors hover:border-border hover:bg-muted/30',
       )}
     >
-      <div className="rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
+      <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
         <CfbGlyph name={glyph} className="icon-sm" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold leading-snug">
-          {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact /> : template.name}
+        <div className="page-section font-semibold leading-snug">
+          {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact wrap /> : template.name}
         </div>
         <div className="mt-1 text-xs leading-snug text-muted-foreground">
           {copy ? (
@@ -426,13 +427,14 @@ export function ResearchTemplateTile({
             template.description
           )}
         </div>
-        <div className="mt-2 flex flex-wrap gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">
+        {/* Pills, so three tags and a count do not read as one phrase. */}
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-2xs text-muted-foreground">
           {template.tags.map((tag) => (
-            <span key={tag}>
+            <span key={tag} className="rounded-md bg-muted/70 px-1.5 py-0.5">
               <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
             </span>
           ))}
-          <span>
+          <span className="px-0.5 tabular-nums">
             {template.initialNodes.length}{' '}
             <BilingualText en={researchEn('tpl_nodes')} el={researchEl('tpl_nodes')} compact />
           </span>
@@ -446,6 +448,7 @@ export function BoardTemplatesDialog({
   open,
   onClose,
   onSelectTemplate,
+  onStartBlank,
 }: BoardTemplatesDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
@@ -473,7 +476,16 @@ export function BoardTemplatesDialog({
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={onClose}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-xl"
+            onClick={() => {
+              onClose();
+              onStartBlank?.();
+            }}
+          >
             <BilingualText en={researchEn('tpl_blank')} el={researchEl('tpl_blank')} compact />
           </Button>
         </div>

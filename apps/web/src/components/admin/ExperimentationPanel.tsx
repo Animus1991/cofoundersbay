@@ -286,7 +286,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
               type="range" min="0.1" max="0.9" step="0.05"
               value={form.splitRatio}
               onChange={(e) => setForm((f) => ({ ...f, splitRatio: e.target.value }))}
-              className="w-full accent-indigo-600"
+              className="w-full accent-primary"
             />
           </div>
           {error && <p className="text-sm text-status-danger">{error}</p>}
@@ -301,7 +301,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
           <button
             onClick={() => void submit()}
             disabled={loading}
-            className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
           >
             {loading ? 'Creating…' : 'Create'}
           </button>
@@ -488,7 +488,7 @@ export function ExperimentationPanel() {
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               tab === key
-                ? 'bg-white text-indigo-700 shadow-sm'
+                ? 'bg-white text-primary-accessible shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -510,7 +510,7 @@ export function ExperimentationPanel() {
               </button>
               <button
                 onClick={() => setShowCreate(true)}
-                className="flex items-center gap-1.5 text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="flex items-center gap-1.5 text-sm px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
               >
                 <Plus className="icon-sm" /> <BilingualText en="New Experiment" el="Νέο πείραμα" compact />
               </button>

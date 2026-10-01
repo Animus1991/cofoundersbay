@@ -545,12 +545,12 @@ export default function InvestorsPage() {
   ];
 
   return (
-    <AppShell rail={rail}>
+    <AppShell showHelp rail={rail}>
       <div className="space-y-5 pb-10">
         {showDemoData && (
           <SampleDataNotice
             surface="Investors"
-            detail="The directory lists people whose role is investor. The six cards with a firm, check size and track record are invented examples of a complete investor profile; they have no profile page or inbox."
+            detail="The directory lists people whose role is investor. The six cards with a firm, check size and track record are sample profiles that show what a complete investor profile looks like; they have no profile page or inbox."
             askAiPrompt="Some investors here are samples. Which kind of investor fits my stage and industry, and how should I ask for an intro?"
           />
         )}

@@ -361,7 +361,7 @@ export default function InvestorPortfolioPage() {
 
   if (!isLoading && !showDemoData && investments.length === 0) {
     return (
-      <AppShell title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
+      <AppShell showHelp title="Portfolio" titleEl="Χαρτοφυλάκιο" description="Track your investments and returns" descriptionEl="Παρακολουθήστε τις επενδύσεις και τις αποδόσεις σας">
         <EmptyState
           illustration="default"
           title="No portfolio companies yet"
@@ -374,7 +374,7 @@ export default function InvestorPortfolioPage() {
   }
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Portfolio"
       titleEl="Χαρτοφυλάκιο"
       description="Track your investments and returns"

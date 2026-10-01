@@ -5,6 +5,13 @@ import { DEMO_CRITERIA } from './readiness-demo';
 import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_EARNINGS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 import { previewOrgApi } from './demo/org-api';
 import { ORG, ORG_MENTORS, ORG_SLUG } from './demo/org-world';
+import {
+  harborApplicationDrafts,
+  isStaleHarborApplicationBlob,
+  mergeSavedApplications,
+  PREVIEW_APPLICATION_SEED,
+  requiredCompletion,
+} from '@/components/builder/application-model';
 
 const NOW = '2026-09-04T10:00:00.000Z';
 
@@ -48,12 +55,12 @@ function seedPreviewGtmNodes() {
     updatedAt: NOW,
   };
   return [
-    { ...base, id: 'n-gtm-problem', type: 'note', title: 'Problem', content: '<p>Who experiences this, how painful is it, and how do they cope today?</p><p>Ποιος το βιώνει, πόσο πονάει, και πώς το λύνει σήμερα;</p>', posX: 80, posY: 80, width: 280, height: 200, color: '#FEF3C7' },
-    { ...base, id: 'n-gtm-customer', type: 'note', title: 'Customer', content: '<p>Segment, jobs to be done, budget, and buying path.</p><p>Τμήμα, εργασίες, προϋπολογισμός και διαδρομή αγοράς.</p>', posX: 400, posY: 80, width: 280, height: 200, color: '#DBEAFE' },
-    { ...base, id: 'n-gtm-channel', type: 'note', title: 'Channels', content: '<p>Where will the first 100 customers find you?</p><p>Πού θα σας βρουν οι πρώτοι 100 πελάτες;</p>', posX: 720, posY: 80, width: 280, height: 200, color: '#D1FAE5' },
-    { ...base, id: 'n-gtm-offer', type: 'note', title: 'Offer', content: '<p>Pricing, packaging, and the first conversion moment.</p><p>Τιμή, συσκευασία και η πρώτη στιγμή μετατροπής.</p>', posX: 80, posY: 320, width: 280, height: 200, color: '#FCE7F3' },
-    { ...base, id: 'n-gtm-comp', type: 'note', title: 'Competition', content: '<p>Direct, indirect, and the wedge you own.</p><p>Άμεσος, έμμεσος ανταγωνισμός και η δική σας διαφορά.</p>', posX: 400, posY: 320, width: 280, height: 200, color: '#FEE2E2' },
-    { ...base, id: 'n-gtm-metrics', type: 'note', title: 'Metrics', content: '<p>Activation, retention, and the weekly number that proves GTM.</p><p>Ενεργοποίηση, διατήρηση και ο εβδομαδιαίος αριθμός που αποδεικνύει το GTM.</p>', posX: 720, posY: 320, width: 280, height: 200, color: '#EDE9FE' },
+    { ...base, id: 'n-gtm-problem', type: 'note', title: 'Problem', content: '<p>Founders waste weeks stitching matching, messaging, and fundraising tools. Early-stage founders feel it; today they cope with directories, spreadsheets, and chat threads.</p><p>Οι ιδρυτές χάνουν εβδομάδες ράβοντας εργαλεία matching, μηνυμάτων και χρηματοδότησης. Το νιώθουν ιδρυτές πρώιμου σταδίου· σήμερα το λύνουν με καταλόγους, spreadsheets και threads.</p>', posX: 80, posY: 80, width: 280, height: 200, color: '#FEF3C7' },
+    { ...base, id: 'n-gtm-customer', type: 'note', title: 'Customer', content: '<p>Complementary cofounder searchers — technical + commercial pairs. Job: find a partner and turn the idea into shareable artefacts.</p><p>Αναζήτηση συμπληρωματικού συνιδρυτή — τεχνικό + εμπορικό ζεύγος. Εργασία: εύρεση συνεταίρου και μετατροπή της ιδέας σε παραδοτέα που μοιράζονται.</p>', posX: 400, posY: 80, width: 280, height: 200, color: '#DBEAFE' },
+    { ...base, id: 'n-gtm-channel', type: 'note', title: 'Channels', content: '<p>Discover, matches, and shareable Builder docs. First path: founder networks in Athens and EU time zones, then mentor intros.</p><p>Discover, matches και παραδοτέα Builder που μοιράζονται. Πρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και ζώνες ΕΕ, μετά συστάσεις mentors.</p>', posX: 720, posY: 80, width: 280, height: 200, color: '#D1FAE5' },
+    { ...base, id: 'n-gtm-offer', type: 'note', title: 'Offer', content: '<p>One workspace: graph + readiness + builder. First conversion: a filled Idea Core and a research board they can share.</p><p>Ένας χώρος εργασίας: γράφος + ετοιμότητα + builder. Πρώτη μετατροπή: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται.</p>', posX: 80, posY: 320, width: 280, height: 200, color: '#FCE7F3' },
+    { ...base, id: 'n-gtm-comp', type: 'note', title: 'Competition', content: '<p>Direct: matching directories that stop at the intro. Indirect: spreadsheets and chat that stitch matching, messaging, and fundraising by hand.</p><p>Άμεσος: κατάλογοι matching που σταματούν στην εισαγωγή. Έμμεσος: spreadsheets και chat που ράβουν matching, μηνύματα και χρηματοδότηση στο χέρι.</p>', posX: 400, posY: 320, width: 280, height: 200, color: '#FEE2E2' },
+    { ...base, id: 'n-gtm-metrics', type: 'note', title: 'Metrics', content: '<p>Seed: $375K committed of a $750K target. Lead: Athens Tech Angels.</p><p>Γύρος: $375K δεσμευμένα από στόχο $750K. Lead: Athens Tech Angels.</p>', posX: 720, posY: 320, width: 280, height: 200, color: '#EDE9FE' },
   ];
 }
 
@@ -71,20 +78,273 @@ type PreviewGtmConnector = {
 let previewGtmBoardNodes: PreviewGtmNode[] = seedPreviewGtmNodes();
 let previewGtmConnectors: PreviewGtmConnector[] = [];
 let previewGtmCanvasState: Record<string, unknown> = {};
+let previewGtmRemoved = false;
+
+/** Fast Refresh can keep the old generic GTM notes while `seedPreviewGtmNodes` already returns Harbor. */
+const PREVIEW_GTM_LEGACY_SNIPPETS = [
+  'Who experiences this, how painful is it',
+  'Segment, jobs to be done, budget, and buying path',
+  'Where will the first 100 customers find you',
+  'Pricing, packaging, and the first conversion moment',
+  'Direct, indirect, and the wedge you own',
+  'Activation, retention, and the weekly number that proves GTM',
+];
+
+function applyHarborGtmSeedIfStale() {
+  const seeded = seedPreviewGtmNodes();
+  const seededIds = new Set(seeded.map((node) => node.id));
+  let changed = false;
+  previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
+    const fresh = seeded.find((row) => row.id === node.id);
+    if (!fresh) return node;
+    const content = typeof node.content === 'string' ? node.content : '';
+    if (!PREVIEW_GTM_LEGACY_SNIPPETS.some((snippet) => content.includes(snippet))) return node;
+    changed = true;
+    return { ...node, title: fresh.title, content: fresh.content, updatedAt: fresh.updatedAt };
+  });
+  for (const fresh of seeded) {
+    if (previewGtmBoardNodes.some((node) => node.id === fresh.id)) continue;
+    previewGtmBoardNodes = [...previewGtmBoardNodes, fresh];
+    changed = true;
+  }
+  if (!previewGtmBoardNodes.some((node) => seededIds.has(node.id))) {
+    previewGtmBoardNodes = [...seeded, ...previewGtmBoardNodes];
+    changed = true;
+  }
+  if (changed || previewGtmMeta.description === 'Sample research board for the preview.') {
+    previewGtmMeta = {
+      ...previewGtmMeta,
+      description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.',
+      icon: previewGtmMeta.icon === 'flask' ? 'sparkles' : previewGtmMeta.icon,
+      updatedAt: new Date(previewNowMs()).toISOString(),
+    };
+  }
+}
+const ME_ID = 'preview-demo-user';
+let previewGtmMeta: {
+  title: string;
+  description: string | null;
+  visibility: string;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  isPinned: boolean;
+  isArchived: boolean;
+  updatedAt: string;
+} = {
+  title: 'Go-to-market canvas',
+  description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.',
+  visibility: 'private',
+  tags: ['gtm'],
+  color: '#6366f1',
+  icon: 'sparkles',
+  isPinned: true,
+  isArchived: false,
+  updatedAt: NOW,
+};
+
+function previewGtmSummary() {
+  return {
+    id: 'board-gtm',
+    ownerId: ME_ID,
+    title: previewGtmMeta.title,
+    description: previewGtmMeta.description,
+    visibility: previewGtmMeta.visibility,
+    canvasState: Object.keys(previewGtmCanvasState).length ? previewGtmCanvasState : {},
+    tags: previewGtmMeta.tags,
+    color: previewGtmMeta.color,
+    icon: previewGtmMeta.icon,
+    isPinned: previewGtmMeta.isPinned,
+    isArchived: previewGtmMeta.isArchived,
+    nodeCount: previewGtmBoardNodes.length,
+    createdAt: NOW,
+    updatedAt: previewGtmMeta.updatedAt,
+  };
+}
 
 function previewGtmBoardResponse() {
-  const board = kitchenSink().boards[0];
+  if (previewGtmRemoved) return { board: null };
+  applyHarborGtmSeedIfStale();
   return {
     board: {
-      ...board,
-      canvasState: Object.keys(previewGtmCanvasState).length ? previewGtmCanvasState : board.canvasState,
-      nodeCount: previewGtmBoardNodes.length,
+      ...previewGtmSummary(),
       nodes: previewGtmBoardNodes,
       connectors: previewGtmConnectors,
     },
   };
 }
-const ME_ID = 'preview-demo-user';
+type ExtraPreviewBoard = {
+  id: string;
+  ownerId: string;
+  title: string;
+  description: string | null;
+  visibility: string;
+  canvasState: Record<string, unknown>;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  isPinned: boolean;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  nodes: PreviewGtmNode[];
+  connectors: PreviewGtmConnector[];
+};
+
+let previewExtraResearchBoards: ExtraPreviewBoard[] = [];
+
+function previewStringTags(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((tag): tag is string => typeof tag === 'string') : [];
+}
+
+function summarizeExtraBoard(board: ExtraPreviewBoard) {
+  return {
+    id: board.id,
+    ownerId: board.ownerId,
+    title: board.title,
+    description: board.description,
+    visibility: board.visibility,
+    canvasState: board.canvasState,
+    tags: board.tags,
+    color: board.color,
+    icon: board.icon,
+    isPinned: board.isPinned,
+    isArchived: board.isArchived,
+    nodeCount: board.nodes.length,
+    createdAt: board.createdAt,
+    updatedAt: board.updatedAt,
+  };
+}
+
+function listPreviewResearchBoardSummaries(archived: boolean) {
+  applyHarborGtmSeedIfStale();
+  const items = [
+    ...(previewGtmRemoved ? [] : [previewGtmSummary()]),
+    ...previewExtraResearchBoards.map(summarizeExtraBoard),
+  ];
+  return items.filter((board) => Boolean(board.isArchived) === archived);
+}
+
+function findExtraPreviewBoard(boardId: string) {
+  return previewExtraResearchBoards.find((board) => board.id === boardId);
+}
+
+function extraBoardResponse(board: ExtraPreviewBoard) {
+  return {
+    board: {
+      ...summarizeExtraBoard(board),
+      nodes: board.nodes,
+      connectors: board.connectors,
+    },
+  };
+}
+
+function makePreviewResearchNode(boardId: string, body: Record<string, unknown>): PreviewGtmNode {
+  const now = new Date(previewNowMs()).toISOString();
+  return {
+    id: `n-preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    boardId,
+    url: null,
+    uploadId: null,
+    upload: null,
+    zIndex: typeof body.zIndex === 'number' ? body.zIndex : 1,
+    collapsed: body.collapsed === true,
+    locked: body.locked === true,
+    refEntityType: typeof body.refEntityType === 'string' ? body.refEntityType : null,
+    refEntityId: typeof body.refEntityId === 'string' ? body.refEntityId : null,
+    builderDocumentId: typeof body.builderDocumentId === 'string' ? body.builderDocumentId : null,
+    metadata: body.metadata ?? null,
+    tags: previewStringTags(body.tags),
+    createdAt: now,
+    updatedAt: now,
+    type: typeof body.type === 'string' ? body.type : 'note',
+    title: typeof body.title === 'string' ? body.title : 'Note',
+    content: typeof body.content === 'string' ? body.content : '',
+    posX: typeof body.posX === 'number' ? body.posX : 80,
+    posY: typeof body.posY === 'number' ? body.posY : 80,
+    width: typeof body.width === 'number' ? body.width : 280,
+    height: typeof body.height === 'number' ? body.height : 200,
+    color: (typeof body.color === 'string' ? body.color : null) as unknown as string,
+  };
+}
+
+function applyPreviewNodePatch(node: PreviewGtmNode, body: Record<string, unknown>): PreviewGtmNode {
+  const incomingContent = typeof body.content === 'string' ? body.content : undefined;
+  const content = incomingContent
+    && PREVIEW_GTM_LEGACY_SNIPPETS.some((snippet) => incomingContent.includes(snippet))
+    ? seedPreviewGtmNodes().find((row) => row.id === node.id)?.content ?? incomingContent
+    : incomingContent;
+  return {
+    ...node,
+    ...(typeof body.title === 'string' ? { title: body.title } : {}),
+    ...(typeof content === 'string' ? { content } : {}),
+    ...(typeof body.url === 'string' || body.url === null ? { url: body.url as string | null } : {}),
+    ...(typeof body.posX === 'number' ? { posX: body.posX } : {}),
+    ...(typeof body.posY === 'number' ? { posY: body.posY } : {}),
+    ...(typeof body.width === 'number' ? { width: body.width } : {}),
+    ...(typeof body.height === 'number' ? { height: body.height } : {}),
+    ...(typeof body.zIndex === 'number' ? { zIndex: body.zIndex } : {}),
+    ...(typeof body.color === 'string' || body.color === null ? { color: body.color as string } : {}),
+    ...(typeof body.collapsed === 'boolean' ? { collapsed: body.collapsed } : {}),
+    ...(typeof body.locked === 'boolean' ? { locked: body.locked } : {}),
+    ...(body.metadata !== undefined ? { metadata: mergeNodeMetadata(node.metadata, body.metadata) } : {}),
+    ...(Array.isArray(body.tags) ? { tags: previewStringTags(body.tags) } : {}),
+    ...(typeof body.builderDocumentId === 'string' || body.builderDocumentId === null
+      ? { builderDocumentId: body.builderDocumentId as string | null }
+      : {}),
+    updatedAt: new Date(previewNowMs()).toISOString(),
+  };
+}
+
+function applyPreviewNodeBatch(nodes: PreviewGtmNode[], updates: unknown[]): PreviewGtmNode[] {
+  return nodes.map((node) => {
+    const patch = updates.find((row) => row && typeof row === 'object' && (row as { id?: string }).id === node.id) as Record<string, unknown> | undefined;
+    if (!patch) return node;
+    return {
+      ...node,
+      posX: typeof patch.posX === 'number' ? patch.posX : node.posX,
+      posY: typeof patch.posY === 'number' ? patch.posY : node.posY,
+      width: typeof patch.width === 'number' ? patch.width : node.width,
+      height: typeof patch.height === 'number' ? patch.height : node.height,
+      zIndex: typeof patch.zIndex === 'number' ? patch.zIndex : node.zIndex,
+      updatedAt: new Date(previewNowMs()).toISOString(),
+    };
+  });
+}
+
+function applyPreviewBoardMeta<T extends {
+  title: string;
+  description: string | null;
+  visibility: string;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  isPinned: boolean;
+  isArchived: boolean;
+  updatedAt: string;
+}>(target: T, body: Record<string, unknown>, stamp: string): T {
+  return {
+    ...target,
+    ...(typeof body.title === 'string' ? { title: body.title } : {}),
+    ...(typeof body.description === 'string' || body.description === null ? { description: body.description as string | null } : {}),
+    ...(typeof body.visibility === 'string' ? { visibility: body.visibility } : {}),
+    ...(Array.isArray(body.tags) ? { tags: previewStringTags(body.tags) } : {}),
+    ...(typeof body.color === 'string' || body.color === null ? { color: body.color as string | null } : {}),
+    ...(typeof body.icon === 'string' || body.icon === null ? { icon: body.icon as string | null } : {}),
+    ...(typeof body.isPinned === 'boolean' ? { isPinned: body.isPinned } : {}),
+    ...(typeof body.isArchived === 'boolean' ? { isArchived: body.isArchived } : {}),
+    updatedAt: stamp,
+  };
+}
+
+function patchPreviewConnector(connector: PreviewGtmConnector, body: Record<string, unknown>): PreviewGtmConnector {
+  return {
+    ...connector,
+    label: typeof body.label === 'string' ? body.label : connector.label,
+    color: typeof body.color === 'string' ? body.color : connector.color,
+    style: typeof body.style === 'string' ? body.style : connector.style,
+  };
+}
 
 type PreviewResearchComment = {
   id: string;
@@ -166,7 +426,8 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
       uniqueValue: 'Graph + readiness + builder in the same product',
     },
     status: 'in_progress',
-    completionPercent: 35,
+    // What the Idea Core stage computes from this content: four of its eight fields.
+    completionPercent: 50,
     aiGenerated: false,
     version: 2,
     createdAt: NOW,
@@ -182,13 +443,378 @@ let previewBuilderDocs: PreviewBuilderDoc[] = [
       valueProposition: 'Faster path from idea to a shareable plan',
     },
     status: 'draft',
-    completionPercent: 12,
+    // One of the canvas's nine blocks.
+    completionPercent: 11,
+    aiGenerated: false,
+    version: 1,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-doc-market',
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    type: 'market_analysis',
+    title: 'Market Analysis',
+    description: 'Sizing and positioning — sample for preview.',
+    content: {
+      tam: {
+        value: '',
+        description: 'Early-stage founder tooling — matching, messaging, and fundraising in one category.',
+        sources: '',
+      },
+    },
+    status: 'draft',
+    completionPercent: 0,
+    aiGenerated: false,
+    version: 1,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-doc-pitch',
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    type: 'pitch_deck',
+    title: 'Pitch Deck',
+    description: 'Investor deck — sample for preview.',
+    content: {
+      deckType: 'investor',
+      companyName: 'Harbor',
+      tagline: 'The operating system for early-stage founders.',
+      askAmount: '$750,000',
+      useOfFunds: [],
+      slides: [
+        {
+          id: 'slide-cover',
+          type: 'cover',
+          title: 'Cover',
+          content: 'Harbor\n\nThe operating system for early-stage founders.',
+          notes: '',
+          order: 0,
+        },
+        {
+          id: 'slide-problem',
+          type: 'problem',
+          title: 'Problem',
+          content: 'Founders waste weeks stitching matching, messaging, and fundraising tools.',
+          notes: '',
+          order: 1,
+        },
+      ],
+    },
+    status: 'in_progress',
+    completionPercent: 17,
+    aiGenerated: false,
+    version: 1,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-doc-application',
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    type: 'application',
+    title: 'Program applications',
+    description: 'YC, Techstars, university, and grant drafts — sample for preview.',
+    content: { ...PREVIEW_APPLICATION_SEED },
+    status: 'in_progress',
+    completionPercent: previewApplicationCompletionPercent(),
     aiGenerated: false,
     version: 1,
     createdAt: NOW,
     updatedAt: NOW,
   },
 ];
+
+type PreviewDocVersion = {
+  id: string;
+  documentId: string;
+  version: number;
+  versionLabel: string | null;
+  changesSummary: string | null;
+  createdAt: string;
+  changedById: string | null;
+  changedBy: { id: string; displayName: string; avatarUrl?: string | null } | null;
+  content: Record<string, unknown>;
+};
+
+const PREVIEW_IDEA_V1 = {
+  problemStatement: 'Founders waste weeks stitching matching, messaging, and fundraising tools.',
+  targetAudience: 'Early-stage founders looking for a complementary cofounder',
+};
+
+const PREVIEW_IDEA_V2 = {
+  ...PREVIEW_IDEA_V1,
+  solution: 'One workspace that matches people and turns the idea into artifacts.',
+  uniqueValue: 'Graph + readiness + builder in the same product',
+};
+
+const PREVIEW_PITCH_V1 = {
+  deckType: 'investor',
+  companyName: 'Harbor',
+  tagline: 'The operating system for early-stage founders.',
+  askAmount: '$750,000',
+  useOfFunds: [] as string[],
+  slides: [
+    {
+      id: 'slide-cover',
+      type: 'cover',
+      title: 'Cover',
+      content: 'Harbor\n\nThe operating system for early-stage founders.',
+      notes: '',
+      order: 0,
+    },
+    {
+      id: 'slide-problem',
+      type: 'problem',
+      title: 'Problem',
+      content: 'Founders waste weeks stitching matching, messaging, and fundraising tools.',
+      notes: '',
+      order: 1,
+    },
+  ],
+};
+
+/** Empty-slide fill only on the client. Numbers match Harbor Idea Core, Market, and the $750K seed. */
+const PREVIEW_PITCH_GENERATE = {
+  companyName: 'Harbor',
+  tagline: 'Graph + readiness + builder in the same product',
+  askAmount: '$750,000',
+  useOfFunds: [
+    'Product (40%) — matching, artefacts, and readiness in one workspace',
+    'Go-to-market (30%) — founders who already sit in the graph',
+    'Team (20%) — complementary hires around the founder OS',
+    'Operations (10%) — infrastructure and legal for the seed',
+  ],
+  slides: [
+    {
+      id: 'gen-cover',
+      type: 'cover',
+      title: 'Cover',
+      content: 'Harbor\n\nThe operating system for early-stage founders.',
+      notes: 'Name, line, why now. Five seconds.',
+      order: 0,
+    },
+    {
+      id: 'gen-problem',
+      type: 'problem',
+      title: 'Problem',
+      content: 'Founders waste weeks stitching matching, messaging, and fundraising tools.',
+      notes: 'Stay with the Idea Core problem.',
+      order: 1,
+    },
+    {
+      id: 'gen-solution',
+      type: 'solution',
+      title: 'Solution',
+      content: 'One workspace that matches people and turns the idea into artifacts.',
+      notes: 'Same sentence as Idea Core. Show the workspace, do not add a second product.',
+      order: 2,
+    },
+    {
+      id: 'gen-market',
+      type: 'market',
+      title: 'Market',
+      content:
+        'TAM: $4B — founder tooling; matching, messaging, and fundraising in one category.\nSAM: $400M — early-stage matching and workspace tools.\nSOM: $12M — first three years among complementary-cofounder searches.',
+      notes: 'Same TAM/SAM/SOM as Market Analysis. Investors will check the round page.',
+      order: 3,
+    },
+    {
+      id: 'gen-product',
+      type: 'product',
+      title: 'Product',
+      content:
+        '• Matching on the founder graph\n• Builder artefacts in the same workspace\n• Readiness scoring attached to the drafts\n• Expert review on those drafts, not a separate stack',
+      notes: 'Walk the workspace. Cover, problem, and ask are already on the page.',
+      order: 4,
+    },
+    {
+      id: 'gen-traction',
+      type: 'traction',
+      title: 'Traction',
+      content:
+        'Seed in progress: $375K committed of a $750K target.\nLead: Athens Tech Angels.',
+      notes: 'Same raised and target as Fundraising.',
+      order: 5,
+    },
+    {
+      id: 'gen-bmc',
+      type: 'business-model',
+      title: 'Business Model',
+      content: 'Subscriptions and paid expert reviews on drafts — a faster path from idea to a shareable plan.',
+      notes: 'BMC value proposition plus revenue streams. Keep it to what the canvas already says.',
+      order: 6,
+    },
+    {
+      id: 'gen-comp',
+      type: 'competition',
+      title: 'Competition',
+      content:
+        'Direct: standalone matching directories that stop at the intro.\nIndirect: spreadsheets and chat threads that stitch matching, messaging, and fundraising by hand.\nHarbor keeps the graph, the artefacts, and readiness in one product.',
+      notes: 'Same competitors as Market Analysis.',
+      order: 7,
+    },
+    {
+      id: 'gen-team',
+      type: 'team',
+      title: 'Team',
+      content: 'Elena Papadopoulos — Founder & CEO at Harbor.',
+      notes: 'Only people who already exist in this workspace.',
+      order: 8,
+    },
+    {
+      id: 'gen-fin',
+      type: 'financials',
+      title: 'Financials',
+      content: 'Seed: $750,000 SAFE.\nCommitted: $375K.\nRunway target: 18–24 months from this round.',
+      notes: 'Same target and raised amount as the Harbor seed round.',
+      order: 9,
+    },
+    {
+      id: 'gen-ask',
+      type: 'ask',
+      title: 'The Ask',
+      content:
+        'Raising: $750,000 seed (SAFE).\nUse of funds:\n• Product (40%)\n• Go-to-market (30%)\n• Team (20%)\n• Operations (10%)',
+      notes: 'The ask field on this deck is $750,000 — the same figure as Fundraising.',
+      order: 10,
+    },
+    {
+      id: 'gen-close',
+      type: 'closing',
+      title: 'Closing',
+      content: 'Harbor\n\nGraph + readiness + builder in the same product.\n\nLet’s build the next artefact together.',
+      notes: 'Repeat the name and the unique value. Leave a next step, not a new claim.',
+      order: 11,
+    },
+  ],
+};
+
+let previewDocVersions: PreviewDocVersion[] = [
+  {
+    id: 'preview-ver-idea-1',
+    documentId: 'preview-doc-idea',
+    version: 1,
+    versionLabel: 'v1',
+    changesSummary: 'First draft — problem and audience.',
+    createdAt: NOW,
+    changedById: ME_ID,
+    changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    content: PREVIEW_IDEA_V1,
+  },
+  {
+    id: 'preview-ver-idea-2',
+    documentId: 'preview-doc-idea',
+    version: 2,
+    versionLabel: 'v2',
+    changesSummary: 'Added solution and unique value.',
+    createdAt: NOW,
+    changedById: ME_ID,
+    changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    content: PREVIEW_IDEA_V2,
+  },
+  {
+    id: 'preview-ver-bmc-1',
+    documentId: 'preview-doc-bmc',
+    version: 1,
+    versionLabel: 'v1',
+    changesSummary: 'Draft value proposition.',
+    createdAt: NOW,
+    changedById: ME_ID,
+    changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    content: {
+      valueProposition: 'Faster path from idea to a shareable plan',
+    },
+  },
+  {
+    id: 'preview-ver-market-1',
+    documentId: 'preview-doc-market',
+    version: 1,
+    versionLabel: 'v1',
+    changesSummary: 'Draft market notes.',
+    createdAt: NOW,
+    changedById: ME_ID,
+    changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    content: {
+      tam: {
+        value: '',
+        description: 'Early-stage founder tooling — matching, messaging, and fundraising in one category.',
+        sources: '',
+      },
+    },
+  },
+  {
+    id: 'preview-ver-pitch-1',
+    documentId: 'preview-doc-pitch',
+    version: 1,
+    versionLabel: 'v1',
+    changesSummary: 'First draft — cover, problem, Harbor ask.',
+    createdAt: NOW,
+    changedById: ME_ID,
+    changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    content: PREVIEW_PITCH_V1,
+  },
+  {
+    id: 'preview-ver-application-1',
+    documentId: 'preview-doc-application',
+    version: 1,
+    versionLabel: 'v1',
+    changesSummary: 'First draft — Harbor YC and university answers.',
+    createdAt: NOW,
+    changedById: ME_ID,
+    changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+    content: { ...PREVIEW_APPLICATION_SEED },
+  },
+];
+
+function listPreviewVersions(documentId: string) {
+  return previewDocVersions
+    .filter((row) => row.documentId === documentId)
+    .sort((a, b) => b.version - a.version)
+    .map(({ content: _content, ...rest }) => rest);
+}
+
+function previewApplicationCompletionPercent(): number {
+  const apps = mergeSavedApplications(PREVIEW_APPLICATION_SEED);
+  return apps.length
+    ? Math.round(apps.reduce((sum, app) => sum + requiredCompletion(app), 0) / apps.length)
+    : 0;
+}
+
+function ensurePreviewApplicationDoc() {
+  const found = previewBuilderDocs.find((d) => d.type === 'application');
+  const seedDoc: PreviewBuilderDoc = {
+    id: 'preview-doc-application',
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    type: 'application',
+    title: 'Program applications',
+    description: 'YC, Techstars, university, and grant drafts — sample for preview.',
+    content: { ...PREVIEW_APPLICATION_SEED },
+    status: 'in_progress',
+    completionPercent: previewApplicationCompletionPercent(),
+    aiGenerated: false,
+    version: 1,
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+  if (!found) {
+    previewBuilderDocs = [...previewBuilderDocs, seedDoc];
+    return;
+  }
+  if (isStaleHarborApplicationBlob(JSON.stringify(found.content ?? {}))) {
+    previewBuilderDocs = previewBuilderDocs.map((d) =>
+      d.id === found.id
+        ? {
+            ...d,
+            title: seedDoc.title,
+            description: seedDoc.description,
+            content: seedDoc.content,
+            status: seedDoc.status,
+            completionPercent: seedDoc.completionPercent,
+          }
+        : d,
+    );
+  }
+}
 
 const PREVIEW_BUILDER_COLLABORATORS = [
   {
@@ -254,6 +880,41 @@ const PREVIEW_BUILDER_OVERALL = Math.round(
     (PREVIEW_BUILDER_DIMENSIONS.length || 1),
 );
 
+const READINESS_AUDIENCE_WEIGHTS: Record<string, { accelerator: number; investor: number }> = {
+  team: { accelerator: 25, investor: 30 },
+  market: { accelerator: 20, investor: 25 },
+  product: { accelerator: 20, investor: 20 },
+  business: { accelerator: 15, investor: 15 },
+  funding: { accelerator: 10, investor: 5 },
+  execution: { accelerator: 10, investor: 5 },
+};
+
+function previewAudienceScore(audience: 'accelerator' | 'investor'): number {
+  const weightSum = PREVIEW_BUILDER_DIMENSIONS.reduce(
+    (sum, d) => sum + (READINESS_AUDIENCE_WEIGHTS[d.dimension]?.[audience] ?? 0),
+    0,
+  );
+  if (!weightSum) return 0;
+  return Math.round(
+    (PREVIEW_BUILDER_DIMENSIONS.reduce((sum, d) => {
+      const w = READINESS_AUDIENCE_WEIGHTS[d.dimension]?.[audience] ?? 0;
+      return sum + (d.score / (d.maxScore || 100)) * w;
+    }, 0) /
+      weightSum) *
+      100,
+  );
+}
+
+/** Same nested `assessment` envelope the Nest assess endpoint returns. */
+const PREVIEW_BUILDER_ASSESSMENT = {
+  overallScore: PREVIEW_BUILDER_OVERALL,
+  overallMax: 100,
+  dimensions: PREVIEW_BUILDER_DIMENSIONS,
+  lastAssessedAt: NOW,
+  acceleratorReadiness: previewAudienceScore('accelerator'),
+  investorReadiness: previewAudienceScore('investor'),
+};
+
 const PREVIEW_BUILDER_READINESS = {
   workspaceId: PREVIEW_BUILDER_WS_ID,
   overallScore: PREVIEW_BUILDER_OVERALL,
@@ -261,6 +922,7 @@ const PREVIEW_BUILDER_READINESS = {
   readinessLevel:
     PREVIEW_BUILDER_OVERALL >= 80 ? 'ready' : PREVIEW_BUILDER_OVERALL >= 55 ? 'developing' : 'early',
   dimensions: PREVIEW_BUILDER_DIMENSIONS,
+  assessment: PREVIEW_BUILDER_ASSESSMENT,
   // Named from criteria that are actually still open, so the blockers cannot
   // outlive the work they describe.
   blockers: [
@@ -326,6 +988,7 @@ function previewMilestoneSummary() {
 }
 
 function previewBuilderWorkspace() {
+  ensurePreviewApplicationDoc();
   return {
     id: PREVIEW_BUILDER_WS_ID,
     name: 'Harbor',
@@ -591,7 +1254,7 @@ const NOTIFICATIONS = [
     id: 'notif-3',
     type: 'match',
     title: '3 new cofounder matches',
-    body: 'Marcus Chen is a 88% skill complement.',
+    body: 'Marcus Chen is an 88% match.',
     link: '/matches',
     meta: {},
     createdAt: '2026-09-03T08:00:00.000Z',
@@ -609,14 +1272,14 @@ const FEED_POSTS = [
       role: 'founder',
     },
     type: 'milestone',
-    content: 'Closed a €250K pre-seed. Next: first 100 users on the founder OS.',
+    content: 'Athens Tech Angels committed $375K to the Harbor seed. Next: the remaining $375K and a complementary cofounder.',
     likes: 47,
     comments: 12,
     shares: 5,
     isLiked: false,
     isBookmarked: false,
     createdAt: NOW,
-    tags: ['fundraising', 'preseed'],
+    tags: ['fundraising', 'seed'],
   },
   {
     id: 'post-2',
@@ -663,22 +1326,78 @@ const ME_PROFILE = {
   hasCompletedOnboarding: true,
 };
 
-const PREVIEW_MILESTONES: PreviewMilestone[] = [
-  { id: 'ms-1', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Launch beta to first 20 users', description: 'Invite waitlist, instrument onboarding, collect qualitative feedback.', status: 'todo', priority: 'high', category: 'product', dueDate: '2026-09-10T17:00:00.000Z', completedAt: null, progress: 15, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-2', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Hire first engineer', description: 'Scorecard, three finalists, offer out.', status: 'todo', priority: 'medium', category: 'hiring', dueDate: '2026-10-15T17:00:00.000Z', completedAt: null, progress: 0, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-3', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'File trademark', description: null, status: 'todo', priority: 'low', category: 'other', dueDate: null, completedAt: null, progress: 0, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-4', ownerId: ME_ID, collaboratorId: 'user-elena', collaborator: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null }, title: 'Close seed round', description: 'Term sheet in, data room current, 8 meetings booked.', status: 'in_progress', priority: 'high', category: 'fundraising', dueDate: '2026-08-20T17:00:00.000Z', completedAt: null, progress: 55, notes: 'Two angels waiting on traction slide.', createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-5', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Ship onboarding checklist', description: 'Founder can finish setup without a call.', status: 'in_progress', priority: 'medium', category: 'product', dueDate: '2026-09-12T17:00:00.000Z', completedAt: null, progress: 40, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-6', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Sign university MoU', description: 'Pilot cohort of 12 teams.', status: 'blocked', priority: 'high', category: 'partnerships', dueDate: '2026-10-01T17:00:00.000Z', completedAt: null, progress: 20, notes: 'Legal review stalled.', createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-7', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Publish landing page', description: null, status: 'completed', priority: 'medium', category: 'growth', dueDate: '2026-07-01T17:00:00.000Z', completedAt: '2026-06-28T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-8', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'First mentor office hours', description: null, status: 'completed', priority: 'low', category: 'growth', dueDate: '2026-07-15T17:00:00.000Z', completedAt: '2026-07-14T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-9', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'BMC v1 in Builder', description: null, status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-06-20T17:00:00.000Z', completedAt: '2026-06-18T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-10', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Pitch deck outline', description: null, status: 'completed', priority: 'high', category: 'fundraising', dueDate: '2026-08-01T17:00:00.000Z', completedAt: '2026-07-30T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-11', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Readiness score above 40', description: null, status: 'completed', priority: 'medium', category: 'other', dueDate: '2026-08-10T17:00:00.000Z', completedAt: '2026-08-08T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
-  { id: 'ms-12', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Intro call with first accelerator', description: null, status: 'completed', priority: 'low', category: 'partnerships', dueDate: '2026-08-25T17:00:00.000Z', completedAt: '2026-08-22T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+const PREVIEW_MILESTONE_ELENA = {
+  id: 'user-elena',
+  displayName: 'Elena Papadopoulos',
+  avatarUrl: null,
+} as const;
+
+function previewMilestoneCollaborator(id: string | null) {
+  if (id === PREVIEW_MILESTONE_ELENA.id) {
+    return { id: PREVIEW_MILESTONE_ELENA.id, displayName: PREVIEW_MILESTONE_ELENA.displayName, avatarUrl: null };
+  }
+  return null;
+}
+
+/**
+ * Harbor tracker aligned with Idea Core, the GTM board, and the $750K seed.
+ * Fast Refresh can keep the old generic titles while this already returns Harbor.
+ */
+function seedPreviewMilestones(): PreviewMilestone[] {
+  const stamp = { ownerId: ME_ID, createdAt: NOW, updatedAt: NOW };
+  return [
+    { ...stamp, id: 'ms-1', collaboratorId: null, collaborator: null, title: 'Complementary cofounder — technical + commercial pair', description: 'Job: find a complementary cofounder.', status: 'todo', priority: 'high', category: 'hiring', dueDate: '2026-10-15T17:00:00.000Z', completedAt: null, progress: 0, notes: null },
+    { ...stamp, id: 'ms-2', collaboratorId: null, collaborator: null, title: 'First founder-network path in Athens', description: 'Discover, matches, and shareable Builder docs. First path: founder networks in Athens and EU time zones.', status: 'todo', priority: 'medium', category: 'growth', dueDate: '2026-10-01T17:00:00.000Z', completedAt: null, progress: 0, notes: null },
+    { ...stamp, id: 'ms-3', collaboratorId: null, collaborator: null, title: 'File Harbor trademark', description: 'Optional legal step.', status: 'todo', priority: 'low', category: 'other', dueDate: null, completedAt: null, progress: 0, notes: null },
+    { ...stamp, id: 'ms-4', collaboratorId: PREVIEW_MILESTONE_ELENA.id, collaborator: previewMilestoneCollaborator(PREVIEW_MILESTONE_ELENA.id), title: 'Close $750K seed', description: '$375K committed of a $750K target. Lead: Athens Tech Angels.', status: 'in_progress', priority: 'high', category: 'fundraising', dueDate: '2026-08-20T17:00:00.000Z', completedAt: null, progress: 50 /* $375K of $750K */, notes: 'Same target as the Harbor pitch ask.' },
+    { ...stamp, id: 'ms-5', collaboratorId: null, collaborator: null, title: 'Shareable Idea Core and GTM board', description: 'First conversion from the GTM offer: a filled Idea Core and a research board they can share.', status: 'in_progress', priority: 'medium', category: 'product', dueDate: '2026-09-12T17:00:00.000Z', completedAt: null, progress: 40, notes: null },
+    { ...stamp, id: 'ms-6', collaboratorId: null, collaborator: null, title: 'Warm intro from Athens founder networks', description: 'Waiting on a warm intro from Athens founder networks.', status: 'blocked', priority: 'high', category: 'partnerships', dueDate: '2026-10-01T17:00:00.000Z', completedAt: null, progress: 20, notes: null },
+    // Tracks the Builder canvas, which is a draft with one of nine blocks filled.
+    { ...stamp, id: 'ms-9', collaboratorId: null, collaborator: null, title: 'BMC v1 in Builder', description: 'Value proposition and channels next; one of the nine blocks is filled.', status: 'in_progress', priority: 'medium', category: 'product', dueDate: '2026-09-30T17:00:00.000Z', completedAt: null, progress: 11, notes: null },
+    { ...stamp, id: 'ms-7', collaboratorId: null, collaborator: null, title: 'Idea Core v1 in Builder', description: 'Problem, complementary-cofounder audience, graph + readiness + builder.', status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-06-20T17:00:00.000Z', completedAt: '2026-06-18T12:00:00.000Z', progress: 100, notes: null },
+    { ...stamp, id: 'ms-8', collaboratorId: null, collaborator: null, title: 'First mentor office hours', description: null, status: 'completed', priority: 'low', category: 'growth', dueDate: '2026-07-15T17:00:00.000Z', completedAt: '2026-07-14T12:00:00.000Z', progress: 100, notes: null },
+    { ...stamp, id: 'ms-10', collaboratorId: null, collaborator: null, title: 'Pitch deck outline for the $750K seed', description: 'Same ask as the Harbor pitch deck.', status: 'completed', priority: 'high', category: 'fundraising', dueDate: '2026-08-01T17:00:00.000Z', completedAt: '2026-07-30T12:00:00.000Z', progress: 100, notes: null },
+    { ...stamp, id: 'ms-11', collaboratorId: null, collaborator: null, title: 'Readiness score above 40', description: null, status: 'completed', priority: 'medium', category: 'other', dueDate: '2026-08-10T17:00:00.000Z', completedAt: '2026-08-08T12:00:00.000Z', progress: 100, notes: null },
+    { ...stamp, id: 'ms-12', collaboratorId: null, collaborator: null, title: 'GTM canvas on Research', description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.', status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-08-25T17:00:00.000Z', completedAt: '2026-08-22T12:00:00.000Z', progress: 100, notes: null },
+  ];
+}
+
+const PREVIEW_MILESTONE_LEGACY_TITLES = new Set([
+  'Launch beta to first 20 users',
+  'Hire first engineer',
+  'File trademark',
+  'Close seed round',
+  'Ship onboarding checklist',
+  'Sign university MoU',
+  'Publish landing page',
+  'Pitch deck outline',
+  'Intro call with first accelerator',
+]);
+
+const PREVIEW_MILESTONE_LEGACY_SNIPPETS = [
+  'Invite waitlist, instrument onboarding',
+  'Scorecard, three finalists',
+  'Pilot cohort of 12 teams',
+  'Term sheet in, data room current, 8 meetings booked',
+  'Founder can finish setup without a call',
+  'Two angels waiting on traction slide',
+  'not a cold list of twelve teams',
 ];
 
-previewMilestones = PREVIEW_MILESTONES;
+function applyHarborMilestoneSeedIfStale() {
+  const seeded = seedPreviewMilestones();
+  previewMilestones = previewMilestones.map((row) => {
+    const fresh = seeded.find((s) => s.id === row.id);
+    if (!fresh) return row;
+    const description = row.description ?? '';
+    const staleTitle = PREVIEW_MILESTONE_LEGACY_TITLES.has(row.title);
+    const staleBody = PREVIEW_MILESTONE_LEGACY_SNIPPETS.some((snippet) => description.includes(snippet));
+    if (!staleTitle && !staleBody) return row;
+    return { ...fresh };
+  });
+}
+
+previewMilestones = seedPreviewMilestones();
 
 /*
  * Showcase areas. /events, /jobs, /groups and /opportunities used to fall
@@ -1710,24 +2429,7 @@ function kitchenSink() {
     notifications: NOTIFICATIONS,
     conversations: CONVERSATIONS,
     connections: CONNECTIONS,
-    boards: [
-      {
-        id: 'board-gtm',
-        ownerId: ME_ID,
-        title: 'Go-to-market canvas',
-        description: 'Sample research board for the preview.',
-        visibility: 'private',
-        canvasState: {},
-        tags: ['gtm'],
-        color: '#6366f1',
-        icon: 'flask',
-        isPinned: true,
-        isArchived: false,
-        nodeCount: 6,
-        createdAt: NOW,
-        updatedAt: NOW,
-      },
-    ],
+    boards: listPreviewResearchBoardSummaries(false),
     events: [],
     members: [],
     users: [],
@@ -2179,7 +2881,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       data.activity = { notifications: { items: NOTIFICATIONS.map((n) => ({ type: n.type, title: n.title, createdAt: n.createdAt })), truncated: false } };
     }
     if (sections.includes('milestones')) {
-      data.milestones = { items: PREVIEW_MILESTONES.filter((m) => m.ownerId === ME_ID).map((m) => ({ id: m.id, title: m.title, status: m.status, dueDate: m.dueDate, progress: m.progress })), truncated: false };
+      applyHarborMilestoneSeedIfStale();
+      data.milestones = { items: previewMilestones.filter((m) => m.ownerId === ME_ID).map((m) => ({ id: m.id, title: m.title, status: m.status, dueDate: m.dueDate, progress: m.progress })), truncated: false };
     }
     if (sections.includes('settings')) {
       data.settings = { visibilityRules: p.visibilityRules, twoFactorEnabled: false, emailVerified: true, linkedAccounts: { google: false, linkedin: false } };
@@ -2387,74 +3090,105 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname === '/api/research/boards') {
-    if (path.includes('archived=1') || path.includes('archived=true')) {
-      return { boards: [] };
+    if (method === 'POST') {
+      const now = new Date(previewNowMs()).toISOString();
+      const board: ExtraPreviewBoard = {
+        id: `board-preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        ownerId: ME_ID,
+        title: typeof body.title === 'string' && body.title.trim() ? body.title.trim() : 'Untitled board',
+        description: typeof body.description === 'string' && body.description.trim() ? body.description.trim() : null,
+        visibility: typeof body.visibility === 'string' ? body.visibility : 'private',
+        canvasState: {},
+        tags: previewStringTags(body.tags),
+        color: typeof body.color === 'string' ? body.color : null,
+        icon: typeof body.icon === 'string' ? body.icon : 'document',
+        isPinned: false,
+        isArchived: false,
+        createdAt: now,
+        updatedAt: now,
+        nodes: [],
+        connectors: [],
+      };
+      previewExtraResearchBoards = [board, ...previewExtraResearchBoards];
+      return { board: summarizeExtraBoard(board) };
     }
-    return kitchenSink().boards ? { boards: kitchenSink().boards } : { boards: [] };
+    const archived = path.includes('archived=1') || path.includes('archived=true');
+    return { boards: listPreviewResearchBoardSummaries(archived) };
   }
   if (pathname.startsWith('/api/research/boards/')) {
     const rest = pathname.replace(/^\/api\/research\/boards\//, '');
     const segments = rest.split('/').filter(Boolean);
-    if (segments[0] !== 'board-gtm' && method === 'GET') return { board: null };
+    const boardId = segments[0];
+    const extra = findExtraPreviewBoard(boardId);
+    const isGtm = boardId === 'board-gtm' && !previewGtmRemoved;
+    if (!isGtm && !extra) {
+      if (method === 'GET') return { board: null };
+      return { ok: false, board: null };
+    }
+
     if (segments[1] === 'nodes' && segments[2] === 'batch' && method === 'PATCH') {
       const updates = Array.isArray(body.updates) ? body.updates : [];
-      previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
-        const patch = updates.find((row) => row && typeof row === 'object' && (row as { id?: string }).id === node.id) as Record<string, unknown> | undefined;
-        if (!patch) return node;
-        return {
-          ...node,
-          posX: typeof patch.posX === 'number' ? patch.posX : node.posX,
-          posY: typeof patch.posY === 'number' ? patch.posY : node.posY,
-          width: typeof patch.width === 'number' ? patch.width : node.width,
-          height: typeof patch.height === 'number' ? patch.height : node.height,
-          zIndex: typeof patch.zIndex === 'number' ? patch.zIndex : node.zIndex,
-          updatedAt: new Date(previewNowMs()).toISOString(),
-        };
-      });
+      if (isGtm) {
+        previewGtmBoardNodes = applyPreviewNodeBatch(previewGtmBoardNodes, updates);
+      } else if (extra) {
+        extra.nodes = applyPreviewNodeBatch(extra.nodes, updates);
+        extra.updatedAt = new Date(previewNowMs()).toISOString();
+      }
       return { ok: true };
     }
     if (segments[1] === 'nodes' && method === 'POST') {
-      const node: PreviewGtmNode = {
-        ...seedPreviewGtmNodes()[0],
-        id: `n-preview-${Date.now()}`,
-        type: typeof body.type === 'string' ? body.type : 'note',
-        title: typeof body.title === 'string' ? body.title : 'Note',
-        content: typeof body.content === 'string' ? body.content : '',
-        posX: typeof body.posX === 'number' ? body.posX : 80,
-        posY: typeof body.posY === 'number' ? body.posY : 80,
-        width: typeof body.width === 'number' ? body.width : 280,
-        height: typeof body.height === 'number' ? body.height : 200,
-        color: typeof body.color === 'string' ? body.color : null as unknown as string,
-        metadata: body.metadata ?? null,
-        locked: body.locked === true,
-        collapsed: body.collapsed === true,
-        zIndex: typeof body.zIndex === 'number' ? body.zIndex : 1,
-        createdAt: new Date(previewNowMs()).toISOString(),
-        updatedAt: new Date(previewNowMs()).toISOString(),
-      };
-      previewGtmBoardNodes = [...previewGtmBoardNodes, node];
+      const node = makePreviewResearchNode(boardId, body);
+      if (isGtm) {
+        previewGtmBoardNodes = [...previewGtmBoardNodes, node];
+      } else if (extra) {
+        extra.nodes = [...extra.nodes, node];
+        extra.updatedAt = new Date(previewNowMs()).toISOString();
+      }
       return { node };
     }
     if (segments[1] === 'connectors' && method === 'POST') {
       const connector: PreviewGtmConnector = {
         id: `c-preview-${Date.now()}`,
-        boardId: 'board-gtm',
+        boardId,
         fromNodeId: typeof body.fromNodeId === 'string' ? body.fromNodeId : '',
         toNodeId: typeof body.toNodeId === 'string' ? body.toNodeId : '',
         label: typeof body.label === 'string' ? body.label : null,
         color: typeof body.color === 'string' ? body.color : null,
         style: typeof body.style === 'string' ? body.style : 'solid',
       };
-      previewGtmConnectors = [...previewGtmConnectors, connector];
+      if (isGtm) {
+        previewGtmConnectors = [...previewGtmConnectors, connector];
+      } else if (extra) {
+        extra.connectors = [...extra.connectors, connector];
+        extra.updatedAt = new Date(previewNowMs()).toISOString();
+      }
       return { connector };
     }
-    if (method === 'PATCH' || method === 'PUT') {
-      if (body.canvasState && typeof body.canvasState === 'object') {
-        previewGtmCanvasState = { ...previewGtmCanvasState, ...(body.canvasState as Record<string, unknown>) };
-      }
-      return previewGtmBoardResponse();
+    if (method === 'DELETE') {
+      if (isGtm) previewGtmRemoved = true;
+      else previewExtraResearchBoards = previewExtraResearchBoards.filter((board) => board.id !== boardId);
+      return { ok: true };
     }
-    return previewGtmBoardResponse();
+    if (method === 'PATCH' || method === 'PUT') {
+      const stamp = new Date(previewNowMs()).toISOString();
+      if (isGtm) {
+        previewGtmMeta = applyPreviewBoardMeta(previewGtmMeta, body, stamp);
+        if (body.canvasState && typeof body.canvasState === 'object') {
+          previewGtmCanvasState = { ...previewGtmCanvasState, ...(body.canvasState as Record<string, unknown>) };
+        }
+        return previewGtmBoardResponse();
+      }
+      if (extra) {
+        const next = applyPreviewBoardMeta(extra, body, stamp);
+        if (body.canvasState && typeof body.canvasState === 'object') {
+          next.canvasState = { ...extra.canvasState, ...(body.canvasState as Record<string, unknown>) };
+        }
+        previewExtraResearchBoards = previewExtraResearchBoards.map((board) => (board.id === extra.id ? next : board));
+        return extraBoardResponse(next);
+      }
+    }
+    if (isGtm) return previewGtmBoardResponse();
+    return extra ? extraBoardResponse(extra) : { board: null };
   }
 
   const nodeItemMatch = pathname.match(/^\/api\/research\/nodes\/([^/]+)$/);
@@ -2463,35 +3197,38 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     if (method === 'DELETE') {
       previewGtmBoardNodes = previewGtmBoardNodes.filter((n) => n.id !== nodeId);
       previewGtmConnectors = previewGtmConnectors.filter((c) => c.fromNodeId !== nodeId && c.toNodeId !== nodeId);
+      previewExtraResearchBoards = previewExtraResearchBoards.map((board) =>
+        board.nodes.some((n) => n.id === nodeId)
+          ? {
+              ...board,
+              nodes: board.nodes.filter((n) => n.id !== nodeId),
+              connectors: board.connectors.filter((c) => c.fromNodeId !== nodeId && c.toNodeId !== nodeId),
+              updatedAt: new Date(previewNowMs()).toISOString(),
+            }
+          : board,
+      );
       return { ok: true };
     }
     if (method === 'PATCH' || method === 'PUT') {
-      let updated = previewGtmBoardNodes.find((n) => n.id === nodeId);
-      previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
-        if (node.id !== nodeId) return node;
-        updated = {
-          ...node,
-          ...(typeof body.title === 'string' ? { title: body.title } : {}),
-          ...(typeof body.content === 'string' ? { content: body.content } : {}),
-          ...(typeof body.url === 'string' || body.url === null ? { url: body.url as string | null } : {}),
-          ...(typeof body.posX === 'number' ? { posX: body.posX } : {}),
-          ...(typeof body.posY === 'number' ? { posY: body.posY } : {}),
-          ...(typeof body.width === 'number' ? { width: body.width } : {}),
-          ...(typeof body.height === 'number' ? { height: body.height } : {}),
-          ...(typeof body.zIndex === 'number' ? { zIndex: body.zIndex } : {}),
-          ...(typeof body.color === 'string' || body.color === null ? { color: body.color as string } : {}),
-          ...(typeof body.collapsed === 'boolean' ? { collapsed: body.collapsed } : {}),
-          ...(typeof body.locked === 'boolean' ? { locked: body.locked } : {}),
-          ...(body.metadata !== undefined ? { metadata: mergeNodeMetadata(node.metadata, body.metadata) } : {}),
-          ...(Array.isArray(body.tags) ? { tags: body.tags as string[] } : {}),
-          ...(typeof body.builderDocumentId === 'string' || body.builderDocumentId === null
-            ? { builderDocumentId: body.builderDocumentId as string | null }
-            : {}),
-          updatedAt: new Date(previewNowMs()).toISOString(),
-        };
-        return updated;
-      });
-      return { node: updated ?? previewGtmBoardNodes[0] };
+      let updated: PreviewGtmNode | undefined;
+      if (previewGtmBoardNodes.some((n) => n.id === nodeId)) {
+        previewGtmBoardNodes = previewGtmBoardNodes.map((node) => {
+          if (node.id !== nodeId) return node;
+          updated = applyPreviewNodePatch(node, body);
+          return updated;
+        });
+      } else {
+        previewExtraResearchBoards = previewExtraResearchBoards.map((board) => {
+          if (!board.nodes.some((n) => n.id === nodeId)) return board;
+          const nodes = board.nodes.map((node) => {
+            if (node.id !== nodeId) return node;
+            updated = applyPreviewNodePatch(node, body);
+            return updated;
+          });
+          return { ...board, nodes, updatedAt: new Date(previewNowMs()).toISOString() };
+        });
+      }
+      return { node: updated ?? null };
     }
   }
 
@@ -2500,20 +3237,37 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     const connectorId = connectorItemMatch[1];
     if (method === 'DELETE') {
       previewGtmConnectors = previewGtmConnectors.filter((c) => c.id !== connectorId);
+      previewExtraResearchBoards = previewExtraResearchBoards.map((board) =>
+        board.connectors.some((c) => c.id === connectorId)
+          ? {
+              ...board,
+              connectors: board.connectors.filter((c) => c.id !== connectorId),
+              updatedAt: new Date(previewNowMs()).toISOString(),
+            }
+          : board,
+      );
       return { ok: true };
     }
     if (method === 'PATCH') {
-      previewGtmConnectors = previewGtmConnectors.map((c) =>
-        c.id === connectorId
-          ? {
-              ...c,
-              label: typeof body.label === 'string' ? body.label : c.label,
-              color: typeof body.color === 'string' ? body.color : c.color,
-              style: typeof body.style === 'string' ? body.style : c.style,
-            }
-          : c,
-      );
-      return { connector: previewGtmConnectors.find((c) => c.id === connectorId) };
+      let updated: PreviewGtmConnector | undefined;
+      if (previewGtmConnectors.some((c) => c.id === connectorId)) {
+        previewGtmConnectors = previewGtmConnectors.map((connector) => {
+          if (connector.id !== connectorId) return connector;
+          updated = patchPreviewConnector(connector, body);
+          return updated;
+        });
+      } else {
+        previewExtraResearchBoards = previewExtraResearchBoards.map((board) => {
+          if (!board.connectors.some((c) => c.id === connectorId)) return board;
+          const connectors = board.connectors.map((connector) => {
+            if (connector.id !== connectorId) return connector;
+            updated = patchPreviewConnector(connector, body);
+            return updated;
+          });
+          return { ...board, connectors, updatedAt: new Date(previewNowMs()).toISOString() };
+        });
+      }
+      return { connector: updated ?? null };
     }
   }
 
@@ -3066,8 +3820,287 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     previewBuilderDocs = [doc, ...previewBuilderDocs];
     return doc;
   }
+
+  if (pathname === '/api/builder/ai/generate' && method === 'POST') {
+    const documentType = typeof body.documentType === 'string' ? body.documentType : '';
+    if (documentType === 'idea_core') {
+      return {
+        content: {
+          timing: 'Matching and fundraising tools are fragmenting just as more first-time founders start remotely.',
+          marketSize: '$4B TAM for founder tooling; $400M SAM in early-stage matching.',
+          assumptions: [
+            'Founders will write the idea in one workspace instead of five tools.',
+            'A complementary cofounder is discoverable from the same graph.',
+          ],
+          painPoints: [
+            'Matching, messaging, and fundraising live in separate products.',
+            'Readiness advice is disconnected from the artefacts.',
+          ],
+        },
+        tokensUsed: 0,
+        latencyMs: 18,
+        model: 'preview',
+      };
+    }
+    if (documentType === 'business_model_canvas') {
+      return {
+        content: {
+          keyPartners: 'Complementary founders, mentors, and the programmes that already sit in the same graph.',
+          keyActivities: 'Matching, artefact writing, readiness scoring, and keeping the plan in one workspace.',
+          keyResources: 'The founder graph, the readiness model, and the builder artefacts themselves.',
+          customerRelationships: 'Workspace collaboration, comments, and expert review on the same drafts.',
+          channels: 'Discover, matches, and shareable documents for mentors and investors.',
+          customerSegments: 'Early-stage founders looking for a complementary cofounder.',
+          costStructure: 'Product, matching, and the expert-review marketplace.',
+          revenueStreams: 'Subscriptions and paid expert reviews on drafts.',
+        },
+        tokensUsed: 0,
+        latencyMs: 18,
+        model: 'preview',
+      };
+    }
+    if (documentType === 'market_analysis') {
+      return {
+        content: {
+          tam: {
+            value: '$4B',
+            description: 'Founder tooling — matching, messaging, and fundraising in one category.',
+            sources: 'Category estimate aligned with Idea Core market size.',
+          },
+          sam: {
+            value: '$400M',
+            description: 'Early-stage matching and workspace tools in English-speaking ecosystems.',
+            methodology: 'Top-down from founder-tooling TAM, limited to early-stage matching.',
+          },
+          som: {
+            value: '$12M',
+            description: 'Realistic share in the first three years among complementary-cofounder searches.',
+            assumptions: 'Low single-digit take of SAM; subscription plus expert-review attach.',
+          },
+          directCompetitors: [
+            {
+              name: 'Standalone matching directories',
+              description: 'Profile boards that introduce founders but stop at the intro.',
+              strengths: [],
+              weaknesses: [],
+              pricing: 'Freemium',
+              marketShare: '',
+            },
+          ],
+          indirectCompetitors: [
+            {
+              name: 'Spreadsheets and chat threads',
+              description: 'Founders stitch matching, messaging, and fundraising by hand.',
+              strengths: [],
+              weaknesses: [],
+              pricing: 'Free',
+              marketShare: '',
+            },
+          ],
+          idealCustomerProfile: {
+            demographics: 'Early-stage founders looking for a complementary cofounder.',
+            psychographics: 'Want one workspace instead of five tools.',
+            painPoints: [],
+            buyingBehavior: 'Subscribe when the artefacts and the match live in the same place.',
+            decisionCriteria: [],
+            budget: '$50–500/month',
+          },
+          personas: [
+            {
+              name: 'Alex, first-time founder',
+              role: 'Looking for a complementary cofounder',
+              goals: [],
+              frustrations: [],
+              quote: 'Matching, messaging, and fundraising live in separate products.',
+            },
+          ],
+          trends: [
+            {
+              trend: 'Remote-first team formation',
+              impact: 'positive',
+              timeframe: '2024–2027',
+              confidence: 80,
+            },
+          ],
+          positioning:
+            'For early-stage founders who need a complementary cofounder, CoFounderBay is the workspace that matches people and turns the idea into artefacts. Unlike directories or generic docs, the graph, readiness, and builder sit in one product.',
+          competitiveAdvantage: 'Graph + readiness + builder in the same product.',
+          differentiators: [
+            'Matching and artefacts in one workspace',
+            'Readiness scoring attached to the drafts',
+          ],
+        },
+        tokensUsed: 0,
+        latencyMs: 18,
+        model: 'preview',
+      };
+    }
+    if (documentType === 'pitch_deck') {
+      return {
+        content: PREVIEW_PITCH_GENERATE,
+        tokensUsed: 0,
+        latencyMs: 18,
+        model: 'preview',
+      };
+    }
+    if (documentType === 'application') {
+      const ctx = body.context && typeof body.context === 'object' && !Array.isArray(body.context)
+        ? (body.context as Record<string, unknown>)
+        : {};
+      const programId = typeof ctx.programId === 'string' ? ctx.programId : 'yc';
+      return {
+        content: { answers: harborApplicationDrafts(programId) },
+        tokensUsed: 0,
+        latencyMs: 18,
+        model: 'preview',
+      };
+    }
+    return { content: {}, tokensUsed: 0, latencyMs: 8, model: 'preview' };
+  }
+
+  if (pathname === '/api/builder/ai/generate-application-answer' && method === 'POST') {
+    const ctx = body.context && typeof body.context === 'object' && !Array.isArray(body.context)
+      ? (body.context as Record<string, unknown>)
+      : {};
+    const programId = typeof ctx.programId === 'string' ? ctx.programId : 'yc';
+    const questionId = typeof ctx.questionId === 'string' ? ctx.questionId : '';
+    const drafts = harborApplicationDrafts(programId);
+    const answer =
+      (questionId && drafts[questionId]) ||
+      Object.values(drafts).find((value) => value.trim()) ||
+      'Harbor OS for early-stage founders.';
+    return { answer };
+  }
+
+  const builderSectionMatch = pathname.match(/^\/api\/builder\/documents\/([^/]+)\/sections\/([^/]+)$/);
+  if (builderSectionMatch && (method === 'PATCH' || method === 'PUT')) {
+    const found = previewBuilderDocs.find((d) => d.id === builderSectionMatch[1]);
+    const sectionKey = builderSectionMatch[2];
+    const payload = body.content && typeof body.content === 'object' && !Array.isArray(body.content)
+      ? (body.content as Record<string, unknown>)
+      : {};
+    if (found) {
+      const stamp = new Date(previewNowMs()).toISOString();
+      const nextVersion = found.version + 1;
+      const nextContent = { ...found.content, ...payload, [sectionKey]: payload };
+      const next: PreviewBuilderDoc = {
+        ...found,
+        content: nextContent,
+        version: nextVersion,
+        updatedAt: stamp,
+        status: found.status === 'draft' ? 'in_progress' : found.status,
+      };
+      previewBuilderDocs = previewBuilderDocs.map((d) => (d.id === found.id ? next : d));
+      previewDocVersions = [
+        {
+          id: `preview-ver-${found.id}-${nextVersion}`,
+          documentId: found.id,
+          version: nextVersion,
+          versionLabel: `v${nextVersion}`,
+          changesSummary: `Saved ${sectionKey}.`,
+          createdAt: stamp,
+          changedById: ME_ID,
+          changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+          content: nextContent,
+        },
+        ...previewDocVersions,
+      ];
+      return {
+        id: `preview-sec-${sectionKey}`,
+        sectionKey,
+        sectionTitle: sectionKey,
+        sortOrder: 0,
+        content: payload,
+        isComplete: false,
+        aiGenerated: false,
+      };
+    }
+    return {
+      id: `preview-sec-${sectionKey}`,
+      sectionKey,
+      content: payload,
+      isComplete: false,
+      aiGenerated: false,
+    };
+  }
+
+  const builderVersionsMatch = pathname.match(/^\/api\/builder\/documents\/([^/]+)\/versions$/);
+  if (builderVersionsMatch) {
+    return listPreviewVersions(builderVersionsMatch[1]);
+  }
+
+  const collabVersionsMatch = pathname.match(/^\/api\/collab\/documents\/([^/]+)\/versions$/);
+  if (collabVersionsMatch) {
+    return listPreviewVersions(collabVersionsMatch[1]);
+  }
+
+  const collabBranchesMatch = pathname.match(/^\/api\/collab\/documents\/([^/]+)\/branches/);
+  if (collabBranchesMatch) return [];
+
+  const collabProposalsMatch = pathname.match(/^\/api\/collab\/documents\/([^/]+)\/proposals/);
+  if (collabProposalsMatch) return [];
+
+  if (pathname === '/api/collab/share-links' && method === 'POST') {
+    const token = `preview-${Math.random().toString(36).slice(2, 10)}`;
+    return {
+      id: `preview-share-${Date.now()}`,
+      documentId: typeof body.documentId === 'string' ? body.documentId : undefined,
+      workspaceId: typeof body.workspaceId === 'string' ? body.workspaceId : undefined,
+      token,
+      permissions: body.permissions === 'comment' || body.permissions === 'suggest' ? body.permissions : 'view',
+      label: typeof body.label === 'string' ? body.label : undefined,
+      expiresAt: typeof body.expiresAt === 'string' ? body.expiresAt : undefined,
+      viewCount: 0,
+      isActive: true,
+      createdAt: new Date(previewNowMs()).toISOString(),
+      createdBy: { id: ME_ID, displayName: 'Alex Demo' },
+    };
+  }
+
+  if (pathname === '/api/collab/versions/restore' && method === 'POST') {
+    const documentId = typeof body.documentId === 'string' ? body.documentId : '';
+    const targetVersion = typeof body.targetVersion === 'number' ? body.targetVersion : Number(body.targetVersion);
+    const found = previewBuilderDocs.find((d) => d.id === documentId);
+    const target = previewDocVersions.find((row) => row.documentId === documentId && row.version === targetVersion);
+    if (!found || !target) {
+      return { documentId, previousVersion: 0, restoredFromVersion: targetVersion || 0, newVersion: 0 };
+    }
+    const stamp = new Date(previewNowMs()).toISOString();
+    const previousVersion = found.version;
+    const newVersion = previousVersion + 1;
+    const nextContent = { ...target.content };
+    const next: PreviewBuilderDoc = {
+      ...found,
+      content: nextContent,
+      version: newVersion,
+      updatedAt: stamp,
+    };
+    previewBuilderDocs = previewBuilderDocs.map((d) => (d.id === found.id ? next : d));
+    previewDocVersions = [
+      {
+        id: `preview-ver-${found.id}-${newVersion}`,
+        documentId: found.id,
+        version: newVersion,
+        versionLabel: `v${newVersion}`,
+        changesSummary: `Restored from v${targetVersion}.`,
+        createdAt: stamp,
+        changedById: ME_ID,
+        changedBy: { id: ME_ID, displayName: 'Alex Demo', avatarUrl: null },
+        content: nextContent,
+      },
+      ...previewDocVersions,
+    ];
+    return {
+      documentId: found.id,
+      previousVersion,
+      restoredFromVersion: targetVersion,
+      newVersion,
+    };
+  }
+
   const builderDocMatch = pathname.match(/^\/api\/builder\/documents\/([^/]+)$/);
   if (builderDocMatch) {
+    ensurePreviewApplicationDoc();
     const found = previewBuilderDocs.find((d) => d.id === builderDocMatch[1]);
     if ((method === 'PUT' || method === 'PATCH') && found) {
       const next = { ...found, ...body, updatedAt: new Date(previewNowMs()).toISOString() } as PreviewBuilderDoc;
@@ -3156,15 +4189,18 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname === '/api/milestones/summary') {
+    applyHarborMilestoneSeedIfStale();
     return previewMilestoneSummary();
   }
   if (pathname === '/api/milestones') {
+    applyHarborMilestoneSeedIfStale();
     if (method === 'POST') {
+      const collaboratorId = typeof body.collaboratorId === 'string' ? body.collaboratorId : null;
       const created: PreviewMilestone = {
         id: `preview-ms-${Date.now()}`,
         ownerId: ME_ID,
-        collaboratorId: typeof body.collaboratorId === 'string' ? body.collaboratorId : null,
-        collaborator: null,
+        collaboratorId,
+        collaborator: previewMilestoneCollaborator(collaboratorId),
         title: typeof body.title === 'string' ? body.title : 'Untitled milestone',
         description: typeof body.description === 'string' ? body.description : null,
         status: (body.status as PreviewMilestone['status']) || 'todo',
@@ -3194,24 +4230,45 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
   const milestoneMatch = pathname.match(/^\/api\/milestones\/([^/]+)$/);
   if (milestoneMatch) {
+    applyHarborMilestoneSeedIfStale();
     const found = previewMilestones.find((m) => m.id === milestoneMatch[1]);
     if (method === 'DELETE') {
       previewMilestones = previewMilestones.filter((m) => m.id !== milestoneMatch[1]);
       return { ok: true };
     }
     if ((method === 'PATCH' || method === 'PUT') && found) {
+      const seeded = seedPreviewMilestones().find((s) => s.id === found.id);
+      const nextTitle = typeof body.title === 'string' ? body.title : found.title;
+      const nextDescription = typeof body.description === 'string' ? body.description : found.description;
+      const refuseLegacy =
+        !!seeded &&
+        (PREVIEW_MILESTONE_LEGACY_TITLES.has(nextTitle) ||
+          PREVIEW_MILESTONE_LEGACY_SNIPPETS.some((snippet) => (nextDescription ?? '').includes(snippet)));
+      const status = (typeof body.status === 'string' ? body.status : found.status) as PreviewMilestone['status'];
+      const completing = status === 'completed' && found.status !== 'completed';
+      const collaboratorId =
+        body.collaboratorId === undefined
+          ? found.collaboratorId
+          : typeof body.collaboratorId === 'string'
+            ? body.collaboratorId
+            : null;
       const next: PreviewMilestone = {
         ...found,
         ...body,
         id: found.id,
         ownerId: found.ownerId,
+        title: refuseLegacy ? seeded.title : nextTitle,
+        description: refuseLegacy ? seeded.description : nextDescription,
+        collaboratorId,
+        collaborator: previewMilestoneCollaborator(collaboratorId) ?? (collaboratorId === found.collaboratorId ? found.collaborator : null),
+        status,
         updatedAt: new Date(previewNowMs()).toISOString(),
-        completedAt:
-          body.status === 'completed'
-            ? found.completedAt ?? new Date(previewNowMs()).toISOString()
-            : body.status
-              ? null
-              : found.completedAt,
+        completedAt: completing
+          ? found.completedAt ?? new Date(previewNowMs()).toISOString()
+          : status !== 'completed'
+            ? null
+            : found.completedAt,
+        progress: completing ? 100 : typeof body.progress === 'number' ? body.progress : found.progress,
       };
       previewMilestones = previewMilestones.map((m) => (m.id === found.id ? next : m));
       return next;

@@ -88,7 +88,7 @@ export const APPLICATION_QUESTION_STRINGS: Record<string, BilingualPair> = {
   },
   uni1: {
     en: 'Project/Startup Name',
-    el: 'Όνομα έργου / νεοφυούς',
+    el: 'Όνομα έργου / startup',
   },
   uni2: {
     en: 'Executive Summary (max 300 words)',

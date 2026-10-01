@@ -39,7 +39,7 @@ const CHART_SERIES_COLORS = [
 const PIE_COLORS = [...CHART_SERIES_COLORS];
 const TOOLTIP_STYLE = {
   background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))',
-  borderRadius: 'var(--radius)', fontSize: 12,
+  borderRadius: 'var(--radius)', fontSize: 12.2412,
 };
 
 function Unavailable() {
@@ -81,7 +81,7 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-          <CardTitle className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+          <CardTitle className="flex min-w-0 items-center gap-2 font-semibold">
             <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
           </CardTitle>
           <div className="flex shrink-0 flex-wrap gap-1">
@@ -110,8 +110,8 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} className="text-muted-foreground" />
-              <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+              <XAxis dataKey="date" tick={{ fontSize: 12.2412 }} className="text-muted-foreground" />
+              <YAxis tick={{ fontSize: 12.2412 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name={analyticsEn('series_views')} />
               <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-fg))" strokeWidth={2} fill={`url(#${id}-unique)`} name={analyticsEn('series_unique')} connectNulls={false} />
@@ -143,15 +143,15 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
     <div className="space-y-5">
       {isSample && <SampleNotice />}
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 font-semibold">
           <CfbGlyph name="chart" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement by Type" el="Αλληλεπίδραση ανά τύπο" compact />
         </CardTitle></CardHeader>
         <CardContent>
           {barData.length ? <ResponsiveContainer width="100%" height={180}>
             <BarChart data={barData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} className="text-muted-foreground" />
-              <YAxis width={28} tick={{ fontSize: 11 }} className="text-muted-foreground" />
+              <XAxis dataKey="name" tick={{ fontSize: 12.2412 }} interval={0} className="text-muted-foreground" />
+              <YAxis width={36} tick={{ fontSize: 12.2412 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
             </BarChart>
@@ -162,14 +162,14 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
         </CardContent>
       </Card>
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 font-semibold">
           <CfbGlyph name="compare" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
         </CardTitle></CardHeader>
         <CardContent>
           {pieData.length ? <ResponsiveContainer width="100%" height={180}>
             <RechartsPie><Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} dataKey="value">
               {pieData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-            </Pie><Tooltip contentStyle={TOOLTIP_STYLE} /><Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} /></RechartsPie>
+            </Pie><Tooltip contentStyle={TOOLTIP_STYLE} /><Legend iconSize={8} wrapperStyle={{ fontSize: 12.2412 }} /></RechartsPie>
           </ResponsiveContainer> : <p className="py-8 text-sm text-muted-foreground"><BilingualText en={barData.length ? 'No recorded engagement to distribute in this period.' : 'Engagement distribution unavailable.'} el={barData.length ? 'Δεν υπάρχει καταγεγραμμένη αλληλεπίδραση για κατανομή σε αυτή την περίοδο.' : 'Η κατανομή αλληλεπίδρασης δεν είναι διαθέσιμη.'} /></p>}
         </CardContent>
       </Card>

@@ -7,13 +7,13 @@ import { Badge } from './badge';
 import { Button } from './button';
 
 const enhancedCardVariants = cva(
-  'relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-200',
+  'relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-none transition-colors duration-150',
   {
     variants: {
       variant: {
-        default: 'border-border/60 hover:border-border hover:shadow-md',
-        elevated: 'border-border/60 shadow-lg hover:shadow-xl hover:-translate-y-1',
-        outlined: 'border-2 border-border hover:border-primary/50',
+        default: 'border-border hover:border-foreground/12',
+        elevated: 'border-border',
+        outlined: 'border border-border hover:border-foreground/12',
         ghost: 'border-transparent bg-transparent hover:bg-secondary/50',
         gradient: 'border-transparent bg-gradient-to-br from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10',
         glass: 'border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20',
@@ -51,14 +51,14 @@ export interface EnhancedCardProps
 }
 
 const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
-  ({ className, variant, size, interactive, asChild = false, loading, badge, badgeVariant, actions, header, footer, hover, children, ...props }, ref) => {
+  ({ className, variant, size, interactive, asChild = false, loading, badge, badgeVariant, actions, header, footer, hover: _hover, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'div';
     
     return (
       <Comp
+        data-surface="card"
         className={cn(
           enhancedCardVariants({ variant, size, interactive }),
-          hover && 'hover:shadow-md transition-shadow duration-200',
           loading && 'opacity-50 pointer-events-none',
           className,
         )}

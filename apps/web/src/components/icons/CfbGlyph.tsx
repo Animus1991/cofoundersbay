@@ -41,6 +41,8 @@ export const CFB_GLYPH_NAMES = [
 export type CfbGlyphName = (typeof CFB_GLYPH_NAMES)[number];
 
 const PATH_GLYPH: Record<string, CfbGlyphName> = {
+  '/ai': 'spark',
+  '/ai/capabilities': 'spark',
   '/settings/ai': 'spark',
   '/matches/compare': 'compare',
   '/builder/applications': 'applications',
@@ -77,6 +79,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   learning: 'book',
   marketplace: 'briefcase',
   jobs: 'briefcase',
+  ai: 'spark',
   pitch: 'builder',
   'data-room': 'wallet',
   coaching: 'mentor',
@@ -136,7 +139,7 @@ function GlyphFrame({
       strokeWidth="1.75"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={cn('cfb-glyph', className)}
       aria-hidden="true"
       focusable="false"
     >
@@ -408,8 +411,9 @@ export function CfbGlyphWell({
   const icon = { sm: 'icon-sm', md: 'icon-md', lg: 'icon-lg' }[size];
   return (
     <span
+      data-glyph-well=""
       className={cn(
-        'inline-flex shrink-0 items-center justify-center bg-primary/10 text-primary-accessible',
+        'inline-flex shrink-0 items-center justify-center bg-primary/8 text-primary-accessible',
         box,
         className,
       )}

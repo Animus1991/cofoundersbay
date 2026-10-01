@@ -62,7 +62,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Founder',
     description: 'Building the next big thing',
     icon: Rocket,
-    color: 'bg-blue-500',
+    color: 'bg-primary',
     questions: [
       'What stage is your startup at?',
       'What are you looking for in a co-founder?',
@@ -527,7 +527,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg bg-status-info-bg dark:bg-blue-950">
+          <div className="p-4 rounded-lg bg-status-info-bg">
             <Users className="icon-xl text-status-info mb-2 mx-auto" />
             <h3 className="font-semibold mb-1"><BilingualText en="Smart Matching" el="Έξυπνες αντιστοιχίσεις" compact /></h3>
             <p className="text-sm text-muted-foreground">

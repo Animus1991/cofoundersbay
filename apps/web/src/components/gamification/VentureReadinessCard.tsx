@@ -31,7 +31,7 @@ function scoreTier(score: number): {
 } {
   if (score >= 80) return { labelEn: 'High',     labelEl: 'Υψηλή',    color: STATUS.success.text, ring: 'stroke-status-success', bar: '[&>div]:bg-status-success' };
   if (score >= 55) return { labelEn: 'Growing',  labelEl: 'Αυξανόμενη', color: STATUS.warning.text, ring: 'stroke-status-warning', bar: '[&>div]:bg-status-warning' };
-  if (score >= 30) return { labelEn: 'Early',    labelEl: 'Πρώιμη',   color: STATUS.info.text,    ring: 'stroke-status-info',    bar: '[&>div]:bg-status-info'    };
+  if (score >= 30) return { labelEn: 'Early',    labelEl: 'Πρώιμη',   color: STATUS.accent.text,  ring: 'stroke-status-accent',  bar: '[&>div]:bg-status-accent'  };
   return             { labelEn: 'Building', labelEl: 'Σε δόμηση', color: 'text-muted-foreground', ring: 'stroke-muted-foreground', bar: '[&>div]:bg-muted-foreground' };
 }
 
@@ -157,10 +157,10 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   };
 
   return (
-    <Card className={cn('min-w-0 overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
+    <Card className={cn('min-w-0 overflow-hidden border-primary/20 bg-primary/[0.03]', className)}>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className={cn('flex min-w-0 items-center gap-2', compact ? 'page-section--compact text-sm' : 'text-base', titleClassName)}>
+          <CardTitle className={cn('flex min-w-0 items-center gap-2', compact && 'page-section--compact', titleClassName)}>
             <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
             <BilingualText en="Founder progress score" el="Βαθμός προόδου ιδρυτή" />
           </CardTitle>

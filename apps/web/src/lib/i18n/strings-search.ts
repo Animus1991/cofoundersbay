@@ -119,7 +119,7 @@ export const SEARCH_STRINGS: Record<string, BilingualPair> = {
   },
   browse_jobs_desc: {
     en: 'Startup roles and opportunities',
-    el: 'Ρόλοι και ευκαιρίες σε νεοφυείς επιχειρήσεις',
+    el: 'Ρόλοι και ευκαιρίες σε startups',
   },
   upcoming_events_title: {
     en: 'Upcoming Events',

@@ -1044,10 +1044,18 @@ export default function MatchesPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground">
-                  {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
+                  <BilingualText
+                    en={`${counts.excellent} excellent ${counts.excellent === 1 ? 'match' : 'matches'} ready to connect`}
+                    el={`${counts.excellent} ${counts.excellent === 1 ? 'εξαιρετική αντιστοίχιση έτοιμη' : 'εξαιρετικές αντιστοιχίσεις έτοιμες'} για σύνδεση`}
+                    wrap
+                  />
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Top score: {topScore}% · These profiles are highly compatible — reach out now
+                  <BilingualText
+                    en={`Top score ${topScore}% · These profiles are highly compatible, so reach out now`}
+                    el={`Κορυφαία βαθμολογία ${topScore}% · Αυτά τα προφίλ σάς ταιριάζουν πολύ, στείλτε μήνυμα τώρα`}
+                    wrap
+                  />
                 </p>
               </div>
             </div>
@@ -1117,10 +1125,12 @@ export default function MatchesPage() {
               <div className="flex min-w-0 flex-wrap items-center justify-between gap-2" data-tour="matches-toolbar">
                 <p className="min-w-0 text-xs text-muted-foreground">
                   {filtered.length > 0 && (
-                    <span>
-                      <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
-                      {passedIds.size > 0 && <span className="text-muted-foreground"> · {passedIds.size} passed</span>}
-                    </span>
+                    <BilingualText
+                      en={`${filtered.length} ${filtered.length === 1 ? 'match' : 'matches'}${passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}`}
+                      el={`${filtered.length} ${filtered.length === 1 ? 'αντιστοίχιση' : 'αντιστοιχίσεις'}${passedIds.size > 0 ? ` · ${passedIds.size} απορρίφθηκαν` : ''}`}
+                      compact
+                      wrap
+                    />
                   )}
                 </p>
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -1128,7 +1138,8 @@ export default function MatchesPage() {
                     onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
                     className={cn('flex h-10 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors',
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
-                    title="Select mode">
+                    aria-pressed={selectMode}
+                    title={bilingualAria('Select profiles to compare', 'Επιλογή προφίλ για σύγκριση')}>
                     <CheckSquare className="icon-sm" />
                     <span className="hidden sm:inline"><BilingualText en="Select" el="Επιλογή" compact /></span>
                     {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
@@ -1137,7 +1148,8 @@ export default function MatchesPage() {
                   <button onClick={() => setShowSearch(s => !s)}
                     className={cn('flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
                       showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}
-                    aria-label="Search matches">
+                    aria-pressed={showSearch}
+                    aria-label={bilingualAria('Search matches', 'Αναζήτηση αντιστοιχίσεων')}>
                     <Search className="icon-sm" />
                   </button>
 

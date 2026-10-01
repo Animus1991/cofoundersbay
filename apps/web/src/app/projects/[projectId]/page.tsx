@@ -32,15 +32,21 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   projectEn,
   projectEl,
-  useProjectPrimaryText,
   PROJECT_STAGE_FULL_KEYS,
 } from '@/lib/i18n/strings-projects';
 import { cn } from '@/lib/utils';
-import { usePageControls } from '@/lib/page-controls';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { usePageControls, rowOptions } from '@/lib/page-controls';
 import {
   getDemoProject,
   toggleDemoStar,
   deleteDemoProject,
+  requestJoinDemoProject,
+  applyDemoRole,
+  hasJoinRequest,
+  appliedRolesFor,
+  isOwnedProject,
+  isJoinedProject,
   PROJECT_STATUS_GLYPH,
   type ProjectStatus,
 } from '@/lib/projects-demo';
@@ -57,27 +63,46 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { primary } = useLanguagePreference();
-  const t = useProjectPrimaryText();
-  const { open: openAskAi } = usePopupChat();
+  const { open: openAskAi, ask } = usePopupChat();
   const { success } = useToast();
   const confirm = useConfirm();
   const projectId = String(params?.projectId ?? '');
   const project = useMemo(() => getDemoProject(projectId), [projectId]);
   const [starred, setStarred] = useState(() => getDemoProject(projectId)?.isStarred ?? false);
+  const [joinRequested, setJoinRequested] = useState(() => hasJoinRequest(projectId));
+  const [appliedRoles, setAppliedRoles] = useState(() => appliedRolesFor(projectId));
+  const owned = project ? isOwnedProject(project) : false;
+  const joined = project ? isJoinedProject(project) : false;
 
   function handleShare() {
     if (!project) return;
     const url = `${window.location.origin}/projects/${project.id}`;
-    void navigator.clipboard?.writeText(url);
-    success(t(projectEn('share_done'), projectEl('share_done')), t(projectEn('share_hint'), projectEl('share_hint')));
+    void navigator.clipboard?.writeText(url).catch(() => undefined);
+    success('Link copied', 'Anyone with the link can open this project.');
   }
 
   async function handleDelete() {
     if (!project) return;
     if (await confirm(deleteConfirmCopy({ en: 'project', el: 'έργου' }, project.name))) {
       deleteDemoProject(project.id);
-      success(t(projectEn('deleted'), projectEl('deleted')), project.name);
+      success('Project deleted');
       router.push('/projects');
+    }
+  }
+
+  function handleJoin() {
+    if (!project) return;
+    if (requestJoinDemoProject(project.id)) {
+      setJoinRequested(true);
+      success('Request sent', 'The founder can accept from their inbox.');
+    }
+  }
+
+  function handleApply(roleTitle: string) {
+    if (!project) return;
+    if (applyDemoRole(project.id, roleTitle)) {
+      setAppliedRoles(appliedRolesFor(project.id));
+      success('Application noted', 'The team will see it next to this role.');
     }
   }
 
@@ -90,23 +115,25 @@ export default function ProjectDetailPage() {
     { id: 'star_project', labelEn: 'Star this project', labelEl: 'Αστέρι σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (starred ? 'It is already starred.' : undefined), unavailableEl: missingEl ?? (starred ? 'Έχει ήδη αστέρι.' : undefined), undo: () => ({ control: 'unstar_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
     { id: 'unstar_project', labelEn: 'Unstar this project', labelEl: 'Αφαίρεση αστεριού από το έργο', writes: true, unavailableEn: missingEn ?? (starred ? undefined : 'It is not starred.'), unavailableEl: missingEl ?? (starred ? undefined : 'Δεν έχει αστέρι.'), undo: () => ({ control: 'star_project' }), run: () => { if (project) setStarred(toggleDemoStar(project.id)); } },
     { id: 'share_project', labelEn: 'Copy a link to this project', labelEl: 'Αντιγραφή συνδέσμου του έργου', writes: false, unavailableEn: missingEn, unavailableEl: missingEl, run: handleShare },
+    { id: 'request_join', labelEn: 'Request to join this project', labelEl: 'Αίτημα ένταξης σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (owned ? 'You own this project.' : joined ? "You're on this team." : joinRequested ? 'Request already sent.' : undefined), unavailableEl: missingEl ?? (owned ? 'Αυτό το έργο είναι δικό σας.' : joined ? 'Είστε στην ομάδα.' : joinRequested ? 'Το αίτημα έχει ήδη σταλεί.' : undefined), run: handleJoin },
+    { id: 'apply_role', labelEn: 'Apply to an open role', labelEl: 'Αίτηση σε ανοιχτό ρόλο', writes: true, unavailableEn: missingEn ?? (owned ? 'You own this project.' : !project?.rolesNeeded.length ? 'This project has no open roles.' : project.rolesNeeded.every((role) => appliedRoles.includes(role.title)) ? 'Applications are already noted.' : undefined), unavailableEl: missingEl ?? (owned ? 'Αυτό το έργο είναι δικό σας.' : !project?.rolesNeeded.length ? 'Αυτό το έργο δεν έχει ανοιχτούς ρόλους.' : project.rolesNeeded.every((role) => appliedRoles.includes(role.title)) ? 'Οι αιτήσεις έχουν ήδη καταχωρηθεί.' : undefined), options: rowOptions((project?.rolesNeeded ?? []).filter((role) => !appliedRoles.includes(role.title)), (role) => role.title, (role) => role.title), run: (v) => { if (v) handleApply(v); } },
     { id: 'delete_project', labelEn: 'Delete this project', labelEl: 'Διαγραφή του έργου', writes: true, unavailableEn: missingEn, unavailableEl: missingEl, run: () => void handleDelete() },
   ]);
 
   if (!project) {
     return (
-      <AppShell showHelp>
+      <AppShell showHelp contentClassName="builder-copy overflow-x-clip">
         <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
           <CfbGlyph name="briefcase" className="icon-lg text-muted-foreground/50" />
           <div>
-            <p className="font-medium text-foreground">
+            <p className="page-section font-medium text-foreground">
               <BilingualText en={projectEn('missing_title')} el={projectEl('missing_title')} />
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="type-hold mt-1 text-sm text-muted-foreground">
               <BilingualText en={projectEn('missing_hint')} el={projectEl('missing_hint')} />
             </p>
           </div>
-          <Button className="rounded-xl" asChild>
+          <Button className={BUILDER_BTN} asChild>
             <Link href="/projects">
               <BilingualText en={projectEn('back_projects')} el={projectEl('back_projects')} compact />
             </Link>
@@ -123,9 +150,15 @@ export default function ProjectDetailPage() {
   return (
     <AppShell
       showHelp
+      askAi={
+        current.name.includes('Harbor') || current.id === '1'
+          ? 'Help with this Harbor project from Idea Core, the GTM board, and the $750K seed (Athens Tech Angels, $375K committed).'
+          : 'Help me decide whether to join or start from Builder artefacts.'
+      }
+      contentClassName="builder-copy overflow-x-clip"
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
+          <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
             <CfbGlyph name="spark" className="icon-sm" />
             <BilingualText en={projectEn('ask_ai')} el={projectEl('ask_ai')} compact />
           </Button>
@@ -153,7 +186,11 @@ export default function ProjectDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem onClick={() => openAskAi()}>
+              <DropdownMenuItem onClick={() => ask(
+                current.name.includes('Harbor') || current.id === '1'
+                  ? 'Draft an edit to this Harbor project from Idea Core, the GTM board, and the $750K seed (Athens Tech Angels, $375K committed).'
+                  : 'Draft an edit to this project from Builder artefacts.',
+              )}>
                 <Edit className="icon-sm mr-2" />
                 <BilingualText en={projectEn('edit')} el={projectEl('edit')} compact />
               </DropdownMenuItem>
@@ -187,19 +224,42 @@ export default function ProjectDetailPage() {
           <CfbGlyph name="briefcase" className="mt-2 icon-md shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-semibold text-foreground">{project.name}</h2>
+              <h2 className="page-section font-semibold text-foreground">{project.name}</h2>
               <Badge variant="outline" className={cn('gap-1 rounded-full text-2xs', STATUS_COLOR[project.status])}>
                 <CfbGlyph name={PROJECT_STATUS_GLYPH[project.status]} className="icon-sm" />
                 {stageKey ? <BilingualText en={projectEn(stageKey)} el={projectEl(stageKey)} compact /> : project.status}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="type-hold text-sm text-muted-foreground">
               {project.taglineEl
                 ? <BilingualText en={project.tagline} el={project.taglineEl} wrap />
                 : project.tagline}
             </p>
           </div>
         </div>
+        <p className="type-hold text-sm text-muted-foreground">
+          <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
+          {' · '}
+          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_idea')} el={projectEl('link_idea')} compact />
+          </Link>
+          {' · '}
+          <Link href="/milestones" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_milestones')} el={projectEl('link_milestones')} compact />
+          </Link>
+          {' · '}
+          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_research')} el={projectEl('link_research')} compact />
+          </Link>
+          {' · '}
+          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_fundraising')} el={projectEl('link_fundraising')} compact />
+          </Link>
+          {' · '}
+          <Link href="/matches" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={projectEn('link_matches')} el={projectEl('link_matches')} compact />
+          </Link>
+        </p>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
@@ -214,7 +274,7 @@ export default function ProjectDetailPage() {
               <TabsContent value="overview" className="space-y-6">
                 <Card className="rounded-xl">
                   <CardHeader>
-                    <CardTitle className="text-base"><BilingualText en={projectEn('about')} el={projectEl('about')} compact /></CardTitle>
+                    <CardTitle><BilingualText en={projectEn('about')} el={projectEl('about')} compact /></CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -238,9 +298,10 @@ export default function ProjectDetailPage() {
                   </CardContent>
                 </Card>
 
+                {project.rolesNeeded.length > 0 && (
                 <Card className="rounded-xl">
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-base"><BilingualText en={projectEn('open_roles')} el={projectEl('open_roles')} compact /></CardTitle>
+                    <CardTitle><BilingualText en={projectEn('open_roles')} el={projectEl('open_roles')} compact /></CardTitle>
                     <Badge variant="outline" className="rounded-full">
                       {project.rolesNeeded.length} <BilingualText en={projectEn('positions')} el={projectEl('positions')} compact />
                     </Badge>
@@ -250,25 +311,41 @@ export default function ProjectDetailPage() {
                       <div key={role.title} className="rounded-xl border border-border/60 p-4">
                         <div className="mb-2 flex items-start justify-between gap-3">
                           <div>
-                            <h4 className="font-semibold text-foreground">{role.title}</h4>
-                            {role.description ? <p className="text-sm text-muted-foreground">{role.description}</p> : null}
+                            <h4 className="page-section font-semibold text-foreground">
+                              {role.titleEl ? <BilingualText en={role.title} el={role.titleEl} wrap /> : role.title}
+                            </h4>
+                            {role.description ? (
+                              <p className="type-hold text-sm text-muted-foreground">
+                                {role.descriptionEl
+                                  ? <BilingualText en={role.description} el={role.descriptionEl} wrap />
+                                  : role.description}
+                              </p>
+                            ) : null}
                           </div>
+                          {!owned ? (
                           <Button
                             size="sm"
-                            className="rounded-xl"
-                            onClick={() => success(
-                              t(projectEn('applied'), projectEl('applied')),
-                              t(projectEn('applied_hint'), projectEl('applied_hint')),
-                            )}
+                            className={BUILDER_BTN}
+                            disabled={appliedRoles.includes(role.title)}
+                            onClick={() => handleApply(role.title)}
                           >
-                            <BilingualText en={projectEn('apply')} el={projectEl('apply')} compact />
+                            <BilingualText
+                              en={appliedRoles.includes(role.title) ? projectEn('applied_btn') : projectEn('apply')}
+                              el={appliedRoles.includes(role.title) ? projectEl('applied_btn') : projectEl('apply')}
+                              compact
+                            />
                           </Button>
+                          ) : null}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           {role.commitment ? (
                             <span className="flex items-center gap-1">
                               <CfbGlyph name="briefcase" className="icon-sm" />
-                              {role.commitment}
+                              {role.commitment === 'Full-time'
+                                ? <BilingualText en={projectEn('commit_full')} el={projectEl('commit_full')} compact />
+                                : role.commitment === 'Part-time'
+                                  ? <BilingualText en={projectEn('commit_part')} el={projectEl('commit_part')} compact />
+                                  : role.commitment}
                             </span>
                           ) : null}
                           {role.equity ? (
@@ -282,12 +359,13 @@ export default function ProjectDetailPage() {
                     ))}
                   </CardContent>
                 </Card>
+                )}
               </TabsContent>
 
               <TabsContent value="team" className="space-y-4">
                 <Card className="rounded-xl">
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-base"><BilingualText en={projectEn('team_members')} el={projectEl('team_members')} compact /></CardTitle>
+                    <CardTitle><BilingualText en={projectEn('team_members')} el={projectEl('team_members')} compact /></CardTitle>
                     <span className="text-sm text-muted-foreground">
                       {project.teamSize}/{project.maxTeamSize} <BilingualText en={projectEn('members')} el={projectEl('members')} compact />
                     </span>
@@ -305,10 +383,14 @@ export default function ProjectDetailPage() {
                           <Link href={`/profiles/${member.id}`} className="font-medium text-foreground transition-colors hover:text-primary-accessible">
                             {member.name}
                           </Link>
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
+                          <p className="type-hold text-sm text-muted-foreground">
+                            {member.roleEl
+                              ? <BilingualText en={member.role} el={member.roleEl} compact />
+                              : member.role}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => openAskAi(member.id)} aria-label={bilingualAria(`Message ${member.name}`, `Μήνυμα προς ${member.name}`)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => openAskAi(member.id, 'messages')} aria-label={bilingualAria(`Message ${member.name}`, `Μήνυμα προς ${member.name}`)}>
                             <MessageSquare className="icon-sm" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" asChild aria-label={bilingualAria(`Schedule a call with ${member.name}`, `Προγραμματισμός κλήσης με ${member.name}`)}>
@@ -326,7 +408,7 @@ export default function ProjectDetailPage() {
               <TabsContent value="milestones" className="space-y-4">
                 <Card className="rounded-xl">
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-base"><BilingualText en={projectEn('milestones')} el={projectEl('milestones')} compact /></CardTitle>
+                    <CardTitle><BilingualText en={projectEn('milestones')} el={projectEl('milestones')} compact /></CardTitle>
                     <span className="text-sm text-muted-foreground">
                       {project.progress ?? 0}% <BilingualText en={projectEn('complete_pct')} el={projectEl('complete_pct')} compact />
                     </span>
@@ -352,8 +434,10 @@ export default function ProjectDetailPage() {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between gap-3">
-                              <h4 className={cn('font-medium', milestone.status === 'completed' && 'text-muted-foreground line-through')}>
-                                {milestone.title}
+                              <h4 className={cn('page-section font-medium', milestone.status === 'completed' && 'text-muted-foreground line-through')}>
+                                {milestone.titleEl
+                                  ? <BilingualText en={milestone.title} el={milestone.titleEl} wrap />
+                                  : milestone.title}
                               </h4>
                               <span className="text-sm text-muted-foreground">
                                 {formatShortDate(milestone.date, primary) || '—'}
@@ -370,12 +454,16 @@ export default function ProjectDetailPage() {
               <TabsContent value="updates" className="space-y-4">
                 <Card className="rounded-xl">
                   <CardHeader>
-                    <CardTitle className="text-base"><BilingualText en={projectEn('updates')} el={projectEl('updates')} compact /></CardTitle>
+                    <CardTitle><BilingualText en={projectEn('updates')} el={projectEl('updates')} compact /></CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {project.updates.map((update) => (
                       <div key={update.id} className="border-l-2 border-primary/30 py-2 pl-4">
-                        <p className="text-foreground">{update.content}</p>
+                        <p className="type-hold text-foreground">
+                          {update.contentEl
+                            ? <BilingualText en={update.content} el={update.contentEl} wrap />
+                            : update.content}
+                        </p>
                         <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                           <span>{update.author}</span>
                           <span>•</span>
@@ -392,21 +480,33 @@ export default function ProjectDetailPage() {
           <div className="space-y-4">
             <Card className="rounded-xl">
               <CardContent className="space-y-3 p-4">
-                <Button
-                  className="w-full gap-2 rounded-xl"
-                  onClick={() => success(
-                    t(projectEn('requested'), projectEl('requested')),
-                    t(projectEn('requested_hint'), projectEl('requested_hint')),
-                  )}
-                >
-                  <CfbGlyph name="people" className="icon-sm" />
-                  <BilingualText en={projectEn('request_join')} el={projectEl('request_join')} compact />
-                </Button>
-                <Button variant="outline" className="w-full gap-2 rounded-xl" onClick={() => openAskAi(project.founder.id)}>
+                {owned ? (
+                  <p className="type-hold text-center text-sm text-muted-foreground">
+                    <BilingualText en={projectEn('own_this')} el={projectEl('own_this')} />
+                  </p>
+                ) : joined ? (
+                  <p className="type-hold text-center text-sm text-muted-foreground">
+                    <BilingualText en={projectEn('on_team')} el={projectEl('on_team')} />
+                  </p>
+                ) : (
+                  <Button
+                    className={`w-full gap-2 ${BUILDER_BTN}`}
+                    disabled={joinRequested}
+                    onClick={handleJoin}
+                  >
+                    <CfbGlyph name="people" className="icon-sm" />
+                    <BilingualText
+                      en={joinRequested ? projectEn('requested') : projectEn('request_join')}
+                      el={joinRequested ? projectEl('requested') : projectEl('request_join')}
+                      compact
+                    />
+                  </Button>
+                )}
+                <Button variant="outline" className={`w-full gap-2 ${BUILDER_BTN}`} onClick={() => openAskAi(project.founder.id, 'messages')}>
                   <CfbGlyph name="messages" className="icon-sm" />
                   <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} compact />
                 </Button>
-                <Button variant="outline" className="w-full gap-2 rounded-xl" asChild>
+                <Button variant="outline" className={`w-full gap-2 ${BUILDER_BTN}`} asChild>
                   <Link href="/calendar">
                     <CfbGlyph name="calendar" className="icon-sm" />
                     <BilingualText en={projectEn('schedule_call')} el={projectEl('schedule_call')} compact />
@@ -417,7 +517,7 @@ export default function ProjectDetailPage() {
 
             <Card className="rounded-xl">
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en={projectEn('project_info')} el={projectEl('project_info')} compact /></CardTitle>
+                <CardTitle><BilingualText en={projectEn('project_info')} el={projectEl('project_info')} compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {([
@@ -468,7 +568,7 @@ export default function ProjectDetailPage() {
 
             <Card className="rounded-xl">
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en={projectEn('founder')} el={projectEl('founder')} compact /></CardTitle>
+                <CardTitle><BilingualText en={projectEn('founder')} el={projectEl('founder')} compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <Link href={`/profiles/${project.founder.id}`} className="group flex items-center gap-3">

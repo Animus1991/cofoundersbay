@@ -4,14 +4,16 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
 import { UserMenu } from './UserMenu';
 
-const { push, clearPreviewDemoSession } = vi.hoisted(() => ({
+const { push, clearPreviewDemoSession, setCommandOpen } = vi.hoisted(() => ({
   push: vi.fn(),
   clearPreviewDemoSession: vi.fn(),
+  setCommandOpen: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 vi.mock('@/hooks/useStoredUser', () => ({ useStoredUser: vi.fn() }));
 vi.mock('@/lib/preview-demo', () => ({ clearPreviewDemoSession }));
+vi.mock('./CommandPaletteHost', () => ({ useOpenCommandPalette: () => setCommandOpen }));
 
 const user = {
   displayName: 'Alex Example',
@@ -77,6 +79,7 @@ afterEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.primaryLang;
   delete document.documentElement.dataset.languageDisplay;
+  document.documentElement.lang = 'en';
 });
 
 describe('UserMenu', () => {
@@ -218,5 +221,23 @@ describe('UserMenu', () => {
     const menu = await openMenu();
     expect(within(menu).getByRole('menuitem', { name: 'Το προφίλ μου' }).getAttribute('href')).toBe('/profile');
     expect(within(menu).queryByText('My Profile')).toBeNull();
+  });
+
+  it('keeps command palette, language, and theme in the account menu', async () => {
+    render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
+    const menu = await openMenu();
+    expect(within(menu).getByRole('menuitem', { name: /Command palette|Παλέτα εντολών/ })).toBeTruthy();
+    expect(within(menu).getByRole('menuitem', { name: /Language|Γλώσσα/ })).toBeTruthy();
+    expect(within(menu).getByRole('menuitem', { name: /Theme|Θέμα/ })).toBeTruthy();
+    expect(within(menu).getByText('Παλέτα εντολών').getAttribute('lang')).toBe('el');
+    expect(within(menu).getByText('Γλώσσα').getAttribute('lang')).toBe('el');
+    expect(within(menu).getByText('Θέμα').getAttribute('lang')).toBe('el');
+  });
+
+  it('opens the command palette from the account menu', async () => {
+    render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
+    const menu = await openMenu();
+    fireEvent.click(within(menu).getByRole('menuitem', { name: /Command palette|Παλέτα εντολών/ }));
+    expect(setCommandOpen).toHaveBeenCalledWith(true);
   });
 });

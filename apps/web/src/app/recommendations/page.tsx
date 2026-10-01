@@ -97,7 +97,7 @@ function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]
             <div
               className={cn(
                 'h-full rounded-full transition-all',
-                item.score >= 0.8 ? 'bg-emerald-500' : item.score >= 0.6 ? 'bg-blue-500' : 'bg-amber-400'
+                item.score >= 0.8 ? 'bg-status-success' : item.score >= 0.6 ? 'bg-status-info' : 'bg-status-warning'
               )}
               style={{ width: `${Math.round(item.score * 100)}%` }}
             />
@@ -556,6 +556,7 @@ export default function RecommendationsPage() {
 
   return (
     <AppShell
+      showHelp
       title="For you"
       description="Picks ranked from your profile, skills, and recent activity, recalculated at least hourly."
       descriptionEl="Επιλογές ταξινομημένες βάσει του προφίλ, των δεξιοτήτων και της πρόσφατης δραστηριότητάς σας, με επανυπολογισμό τουλάχιστον κάθε ώρα."

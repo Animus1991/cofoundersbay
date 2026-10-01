@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualInline } from '@/lib/i18n/format';
+import { STATUS } from '@/lib/semantic-colors';
 
 interface Feature {
   id: string;
@@ -87,28 +88,27 @@ const defaultMVPData: MVPData = {
   launchChecklist: []
 };
 
+/** Share of the eight plan parts with anything in them; the stage header and the stored document both use it. */
+export function mvpCompletion(data: MVPData): number {
+  const parts = [
+    Boolean(data.scope),
+    data.features.length > 0,
+    data.userFlows.length > 0,
+    data.teamGaps.length > 0,
+    data.sprints.length > 0,
+    data.risks.length > 0,
+    data.successCriteria.length > 0,
+    data.launchChecklist.length > 0,
+  ];
+  return Math.round((parts.filter(Boolean).length / parts.length) * 100);
+}
+
 export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
   const t = useBuilderPrimaryText();
   const [data, setData] = useState<MVPData>({ ...defaultMVPData, ...initialData });
   const [activeTab, setActiveTab] = useState('scope');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [completionPercentage, setCompletionPercentage] = useState(0);
-
-  useEffect(() => {
-    let completed = 0;
-    let total = 8;
-    
-    if (data.scope) completed++;
-    if (data.features.length > 0) completed++;
-    if (data.userFlows.length > 0) completed++;
-    if (data.teamGaps.length > 0) completed++;
-    if (data.sprints.length > 0) completed++;
-    if (data.risks.length > 0) completed++;
-    if (data.successCriteria.length > 0) completed++;
-    if (data.launchChecklist.length > 0) completed++;
-    
-    setCompletionPercentage((completed / total) * 100);
-  }, [data]);
+  const completionPercentage = mvpCompletion(data);
 
   const generateWithAI = async () => {
     setIsGenerating(true);
@@ -323,16 +323,6 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         }
       />
 
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">
-            <BilingualText en={builderEn('mvp_complete')} el={builderEl('mvp_complete')} compact />
-          </span>
-          <span>{completionPercentage.toFixed(0)}%</span>
-        </div>
-        <Progress value={completionPercentage} className="h-1.5" />
-      </div>
-
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className={BUILDER_SUBTAB_LIST}>
@@ -363,7 +353,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle>
                   <BilingualText en={builderEn('mvp_scope_card')} el={builderEl('mvp_scope_card')} compact />
                 </CardTitle>
               </CardHeader>
@@ -399,7 +389,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle>
                   <BilingualText en={builderEn('mvp_success')} el={builderEl('mvp_success')} compact />
                 </CardTitle>
               </CardHeader>
@@ -451,7 +441,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="features" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">
+              <CardTitle>
                 <BilingualText en={builderEn('mvp_backlog')} el={builderEl('mvp_backlog')} compact />
               </CardTitle>
               <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addFeature}>
@@ -543,7 +533,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className={cn(BUILDER_STAT, 'text-red-600 dark:text-red-400')}>
+                  <div className={cn(BUILDER_STAT, STATUS.danger.text)}>
                     {data.features.filter(f => f.priority === 'must-have').length}
                   </div>
                   <div className={BUILDER_STAT_LABEL}>
@@ -553,7 +543,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className={cn(BUILDER_STAT, 'text-orange-600 dark:text-orange-400')}>
+                  <div className={cn(BUILDER_STAT, STATUS.warning.text)}>
                     {data.features.filter(f => f.priority === 'should-have').length}
                   </div>
                   <div className={BUILDER_STAT_LABEL}>
@@ -563,7 +553,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className={cn(BUILDER_STAT, 'text-yellow-600 dark:text-yellow-400')}>
+                  <div className={cn(BUILDER_STAT, STATUS.info.text)}>
                     {data.features.filter(f => f.priority === 'could-have').length}
                   </div>
                   <div className={BUILDER_STAT_LABEL}>
@@ -589,7 +579,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="sprints" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">
+              <CardTitle>
                 <BilingualText en={builderEn('mvp_sprints')} el={builderEl('mvp_sprints')} compact />
               </CardTitle>
               <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addSprint}>
@@ -684,8 +674,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="team" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CfbGlyph name="people" className="icon-md" />
+              <CardTitle className="flex items-center gap-2">
+                <CfbGlyph name="people" className="icon-sm" />
                 <BilingualText en={builderEn('mvp_gaps')} el={builderEl('mvp_gaps')} compact />
               </CardTitle>
             </CardHeader>
@@ -727,8 +717,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
         <TabsContent value="risks" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <AlertTriangle className="icon-md text-status-warning" />
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="icon-sm text-status-warning" />
                 <BilingualText en={builderEn('mvp_risks')} el={builderEl('mvp_risks')} compact />
               </CardTitle>
             </CardHeader>

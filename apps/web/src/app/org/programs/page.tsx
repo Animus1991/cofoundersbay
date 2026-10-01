@@ -308,7 +308,7 @@ export default function OrgProgramsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Programs"
       titleEl="Προγράμματα"
       description="Create, run, and review accelerator, bootcamp, and incubator programs."

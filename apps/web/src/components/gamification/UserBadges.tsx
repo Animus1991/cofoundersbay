@@ -316,7 +316,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                     
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
-                      {badge.tier === 'platinum' && <Crown className="icon-sm text-cyan-400" />}
+                      {badge.tier === 'platinum' && <Crown className="icon-sm text-primary-accessible" />}
                       {badge.tier === 'gold' && <Sparkles className="icon-sm text-status-warning" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>

@@ -62,11 +62,11 @@ type Deal = {
 
 const PIPELINE_STAGES: { key: PipelineStage; label: string; labelEl: string; color: string }[] = [
   { key: 'discovered', label: 'Discovered', labelEl: 'Εντοπίστηκε', color: 'bg-gray-500' },
-  { key: 'reviewing', label: 'Reviewing', labelEl: 'Υπό εξέταση', color: 'bg-blue-500' },
-  { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-purple-500' },
-  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-amber-500' },
-  { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-orange-500' },
-  { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-green-500' },
+  { key: 'reviewing', label: 'Reviewing', labelEl: 'Υπό εξέταση', color: 'bg-primary' },
+  { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-status-accent' },
+  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-status-warning' },
+  { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-status-warning' },
+  { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-status-success' },
 ];
 
 /** The next stage forward on the board; null at the end or once passed. */
@@ -350,20 +350,20 @@ export default function InvestorPipelinePage() {
 
   if (!isLoading && !showDemoData && deals.length === 0) {
     return (
-      <AppShell title="Investment Pipeline" titleEl="Ροή επενδύσεων" description="Track deals through your investment process" descriptionEl="Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας">
+      <AppShell showHelp title="Investment Pipeline" titleEl="Ροή επενδύσεων" description="Track deals through your investment process" descriptionEl="Παρακολουθήστε τις ευκαιρίες σε κάθε στάδιο της επενδυτικής σας διαδικασίας">
         <EmptyState
           illustration="rocket"
           title="No deals in pipeline"
           description="Start scouting startups to build your investment pipeline."
           askAiPrompt="My investment pipeline is empty. How should I scout startups on CoFounderBay and what to shortlist first?"
-          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" /><BilingualText en="Scout Startups" el="Αναζήτηση νεοφυών" compact /></Link></Button>}
+          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" /><BilingualText en="Scout Startups" el="Αναζήτηση startups" compact /></Link></Button>}
         />
       </AppShell>
     );
   }
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Investment Pipeline"
       titleEl="Ροή επενδύσεων"
       description="Track deals through your investment process"

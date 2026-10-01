@@ -146,7 +146,7 @@ export default function MentorEarningsPage() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-60" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -248,7 +248,7 @@ export default function MentorEarningsPage() {
   ];
 
   return (
-    <AppShell rail={rail}>
+    <AppShell showHelp rail={rail}>
       <div className="space-y-6">
         {showDemoData && (
           <SampleDataNotice

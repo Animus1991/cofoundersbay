@@ -61,7 +61,7 @@ export const PROFILE_STRINGS: Record<string, BilingualPair> = {
 
   // ── Role details section ──
   details_suffix: { en: 'Details', el: 'Λεπτομέρειες' },
-  startup_stage: { en: 'Startup stage', el: 'Στάδιο νεοφυούς επιχείρησης' },
+  startup_stage: { en: 'Startup stage', el: 'Στάδιο startup' },
   commitment: { en: 'Commitment', el: 'Δέσμευση' },
   looking_for: { en: 'Looking for', el: 'Αναζήτηση' },
   industries: { en: 'Industries', el: 'Κλάδοι' },
@@ -71,7 +71,7 @@ export const PROFILE_STRINGS: Record<string, BilingualPair> = {
   rate: { en: 'Rate', el: 'Χρέωση' },
   investment_focus: { en: 'Investment focus', el: 'Επενδυτική εστίαση' },
   investment_stages: { en: 'Investment stages', el: 'Στάδια επένδυσης' },
-  check_size: { en: 'Check size', el: 'Μέγεθος επιταγής' },
+  check_size: { en: 'Check size', el: 'Ύψος επένδυσης' },
   geography: { en: 'Geography', el: 'Γεωγραφία' },
   organization_type: { en: 'Organization type', el: 'Τύπος οργανισμού' },
   programs: { en: 'Programs', el: 'Προγράμματα' },
@@ -101,7 +101,7 @@ export const PROFILE_STRINGS: Record<string, BilingualPair> = {
   showcase_title: { en: 'Showcase your best work', el: 'Προβάλετε την καλύτερή σας δουλειά' },
   showcase_desc: {
     en: 'Add projects, startups, publications, or key achievements to stand out.',
-    el: 'Προσθέστε έργα, νεοφυείς επιχειρήσεις, δημοσιεύσεις ή βασικά επιτεύγματα για να ξεχωρίσετε.',
+    el: 'Προσθέστε έργα, startups, δημοσιεύσεις ή βασικά επιτεύγματα για να ξεχωρίσετε.',
   },
   add_first_item: { en: 'Add First Item', el: 'Προσθήκη πρώτου στοιχείου' },
 

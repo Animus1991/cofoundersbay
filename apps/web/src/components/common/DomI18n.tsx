@@ -36,7 +36,7 @@ export function DomI18n({ children }: { children: ReactNode }) {
     const apply = () => {
       obs.disconnect();
       try {
-        translateDom(root, t, false);
+        translateDom(root, t, false, locale !== 'el');
       } finally {
         obs.observe(root, OBSERVE_OPTIONS);
       }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
@@ -27,11 +28,24 @@ import {
   Eye,
   X,
   Copy,
+  CopyPlus,
+  Plus,
+  Trash2,
   ArrowUp,
   ArrowDown,
   AlertTriangle,
-  CheckCircle2,
+  Check,
+  Info,
+  MoreVertical,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -39,15 +53,18 @@ import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import {
   BUILDER_BTN,
   BUILDER_CARD_TITLE,
-  BUILDER_STAT,
   BuilderAskAiButton,
   BuilderStageHeader,
   useBuilderPrimaryText,
 } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useToast } from '@/components/ui/toast';
+import { pickIdeaCore } from './IdeaCore';
+import { pickBmc } from './BusinessModelCanvas';
+import { pickMarket } from './MarketAnalysis';
 
 interface Slide {
   id: string;
@@ -58,7 +75,7 @@ interface Slide {
   order: number;
 }
 
-interface PitchDeckData {
+export interface PitchDeckData {
   deckType: 'investor' | 'accelerator' | 'cofounder' | 'grant' | 'competition';
   slides: Slide[];
   companyName: string;
@@ -68,15 +85,51 @@ interface PitchDeckData {
 }
 
 interface PitchDeckBuilderProps {
-  onSave?: (data: PitchDeckData) => void;
-  initialData?: Partial<PitchDeckData> | { pitchDeck?: Partial<PitchDeckData> };
+  onSave?: (data: PitchDeckData) => void | Promise<void>;
+  onGenerate?: (data: PitchDeckData) => Promise<Record<string, unknown> | null>;
+  initialData?: unknown;
+  contentRevision?: string;
   /** Dedicated `/builder/pitch-deck` route — AppShell already shows the title. */
   hideTitle?: boolean;
+  /** The AppShell lead already says what the stage lead would; show deck progress there instead. */
+  hideLead?: boolean;
   workspaceName?: string;
-  ideaCore?: Record<string, unknown>;
-  bmc?: Record<string, unknown>;
+  ideaCore?: unknown;
+  bmc?: unknown;
+  market?: unknown;
   askPrompt?: string;
 }
+
+const EMPTY_PITCH: PitchDeckData = {
+  deckType: 'investor',
+  slides: [],
+  companyName: '',
+  tagline: '',
+  askAmount: '',
+  useOfFunds: [],
+};
+
+const PITCH_SLIDE_TYPES = [
+  'cover',
+  'problem',
+  'solution',
+  'market',
+  'product',
+  'traction',
+  'business-model',
+  'competition',
+  'team',
+  'financials',
+  'ask',
+  'closing',
+] as const;
+
+const PITCH_SLIDE_ALIASES: Record<string, (typeof PITCH_SLIDE_TYPES)[number]> = {
+  business_model: 'business-model',
+  businessModel: 'business-model',
+  bmc: 'business-model',
+  close: 'closing',
+};
 
 type SlideTitleKey =
   | 'slide_cover'
@@ -106,18 +159,207 @@ type SlideHintKey =
   | 'hint_slide_ask'
   | 'hint_slide_close';
 
-function unwrapPitchDeck(
-  raw?: Partial<PitchDeckData> | { pitchDeck?: Partial<PitchDeckData> },
-): Partial<PitchDeckData> {
-  if (!raw || typeof raw !== 'object') return {};
-  if (Array.isArray((raw as PitchDeckData).slides)) return raw as Partial<PitchDeckData>;
-  const nested = (raw as { pitchDeck?: Partial<PitchDeckData> }).pitchDeck;
-  if (nested && typeof nested === 'object') return nested;
-  return raw as Partial<PitchDeckData>;
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 function asText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function isBlank(value: string | undefined): boolean {
+  return !value?.trim();
+}
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string');
+}
+
+const DECK_TYPE_VALUES: PitchDeckData['deckType'][] = [
+  'investor',
+  'accelerator',
+  'cofounder',
+  'grant',
+  'competition',
+];
+
+function pickSlide(raw: unknown, index: number): Slide {
+  const rec = asRecord(raw) ?? {};
+  const type = typeof rec.type === 'string' && rec.type.trim() ? rec.type : 'custom';
+  const title = typeof rec.title === 'string' ? rec.title : type;
+  return {
+    id: typeof rec.id === 'string' && rec.id.trim() ? rec.id : `slide-${index}-${type}`,
+    type,
+    title,
+    content: typeof rec.content === 'string' ? rec.content : '',
+    notes: typeof rec.notes === 'string' ? rec.notes : '',
+    order: typeof rec.order === 'number' && Number.isFinite(rec.order) ? rec.order : index,
+  };
+}
+
+function looksLikePitch(record: Record<string, unknown>): boolean {
+  return Boolean(
+    Array.isArray(record.slides)
+      || typeof record.companyName === 'string'
+      || typeof record.tagline === 'string'
+      || typeof record.askAmount === 'string'
+      || typeof record.deckType === 'string'
+      || Array.isArray(record.useOfFunds)
+      || PITCH_SLIDE_TYPES.some((type) => type in record),
+  );
+}
+
+function slidesFromUnknown(value: unknown): Slide[] | undefined {
+  if (Array.isArray(value) && value.length) return value.map(pickSlide);
+  const rec = asRecord(value);
+  if (!rec) return undefined;
+  const fromKeys: Slide[] = [];
+  for (const [index, type] of PITCH_SLIDE_TYPES.entries()) {
+    const aliasKey = Object.keys(PITCH_SLIDE_ALIASES).find(
+      (key) => PITCH_SLIDE_ALIASES[key] === type && rec[key] != null,
+    );
+    const raw = rec[type] ?? (aliasKey ? rec[aliasKey] : undefined);
+    if (raw == null) continue;
+    if (typeof raw === 'string') {
+      if (!raw.trim()) continue;
+      fromKeys.push({
+        id: `slide-${type}`,
+        type,
+        title: type,
+        content: raw,
+        notes: '',
+        order: index,
+      });
+      continue;
+    }
+    fromKeys.push(pickSlide({ ...(asRecord(raw) ?? {}), type }, index));
+  }
+  return fromKeys.length ? fromKeys : undefined;
+}
+
+/** Preview stores the deck flat; a save nests the same fields under `pitchDeck`. */
+export function pickPitchDeck(raw: unknown): Partial<PitchDeckData> {
+  const root = asRecord(raw);
+  if (!root) return {};
+  const nested = asRecord(root.pitchDeck);
+  const source = nested && looksLikePitch(nested) ? nested : root;
+  const next: Partial<PitchDeckData> = {};
+  if (typeof source.companyName === 'string') next.companyName = source.companyName;
+  if (typeof source.tagline === 'string') next.tagline = source.tagline;
+  if (typeof source.askAmount === 'string') next.askAmount = source.askAmount;
+  if (typeof source.deckType === 'string' && DECK_TYPE_VALUES.includes(source.deckType as PitchDeckData['deckType'])) {
+    next.deckType = source.deckType as PitchDeckData['deckType'];
+  }
+  const slides = Array.isArray(source.slides) && source.slides.length
+    ? source.slides.map(pickSlide)
+    : slidesFromUnknown(source);
+  if (slides) next.slides = slides;
+  if (Array.isArray(source.useOfFunds)) next.useOfFunds = stringList(source.useOfFunds);
+  return next;
+}
+
+function hydratePitchDeck(raw: unknown): PitchDeckData {
+  const picked = pickPitchDeck(raw);
+  return {
+    ...EMPTY_PITCH,
+    ...picked,
+    slides: picked.slides ?? [],
+    useOfFunds: picked.useOfFunds ?? [],
+  };
+}
+
+function slideFilled(slide: Slide): boolean {
+  return Boolean(slide.content.trim() || slide.notes.trim());
+}
+
+function mergeSlides(current: Slide[], incoming: Slide[] | undefined): Slide[] {
+  if (!incoming?.length) return current;
+  if (!current.length) return incoming.map((slide, index) => ({ ...slide, order: index }));
+  const next = current.map((slide) => ({ ...slide }));
+  for (const incomingSlide of incoming) {
+    const emptyIdx = next.findIndex((slide) => slide.type === incomingSlide.type && !slide.content.trim());
+    if (emptyIdx >= 0) {
+      const currentSlide = next[emptyIdx];
+      next[emptyIdx] = {
+        ...currentSlide,
+        title: currentSlide.title.trim() ? currentSlide.title : incomingSlide.title,
+        content: incomingSlide.content.trim() ? incomingSlide.content : currentSlide.content,
+        notes: isBlank(currentSlide.notes) && incomingSlide.notes.trim() ? incomingSlide.notes : currentSlide.notes,
+      };
+      continue;
+    }
+    if (!next.some((slide) => slide.type === incomingSlide.type) && slideFilled(incomingSlide)) {
+      next.push({ ...incomingSlide, id: incomingSlide.id || `slide-${Date.now()}-${incomingSlide.type}`, order: next.length });
+    }
+  }
+  return next;
+}
+
+function mergeEmptyOnly(current: PitchDeckData, incoming: Partial<PitchDeckData>): PitchDeckData {
+  return {
+    deckType: current.deckType,
+    companyName: isBlank(current.companyName) && incoming.companyName?.trim() ? incoming.companyName : current.companyName,
+    tagline: isBlank(current.tagline) && incoming.tagline?.trim() ? incoming.tagline : current.tagline,
+    askAmount: isBlank(current.askAmount) && incoming.askAmount?.trim() ? incoming.askAmount : current.askAmount,
+    useOfFunds:
+      current.useOfFunds.some((line) => line.trim())
+        ? current.useOfFunds
+        : (incoming.useOfFunds?.some((line) => line.trim()) ? incoming.useOfFunds : current.useOfFunds),
+    slides: mergeSlides(current.slides, incoming.slides),
+  };
+}
+
+function pitchEquals(a: PitchDeckData, b: PitchDeckData): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function artefactContext(ideaCore: unknown, bmc: unknown, market?: unknown) {
+  const idea = pickIdeaCore(ideaCore);
+  const canvas = pickBmc(bmc);
+  const sizing = pickMarket(market);
+  const tamBits = [
+    sizing.tam?.value && `TAM: ${sizing.tam.value}${sizing.tam.description ? ` — ${sizing.tam.description}` : ''}`,
+    sizing.sam?.value && `SAM: ${sizing.sam.value}${sizing.sam.description ? ` — ${sizing.sam.description}` : ''}`,
+    sizing.som?.value && `SOM: ${sizing.som.value}${sizing.som.description ? ` — ${sizing.som.description}` : ''}`,
+  ].filter(Boolean);
+  return {
+    problem: asText(idea.problemStatement),
+    solution: asText(idea.solution),
+    unique: asText(idea.uniqueValue),
+    audience: asText(idea.targetAudience),
+    market: tamBits.join('\n') || asText(idea.marketSize),
+    proposition: asText(canvas.valuePropositions),
+    advantage: asText(sizing.competitiveAdvantage) || asText(sizing.positioning),
+  };
+}
+
+function assistPrompt(
+  data: PitchDeckData,
+  ideaCore: unknown,
+  bmc: unknown,
+  market: unknown,
+  workspaceName?: string,
+): string {
+  const ctx = artefactContext(ideaCore, bmc, market);
+  const emptyTypes = SLIDE_TEMPLATES
+    .filter((template) => !data.slides.some((slide) => slide.type === template.type && slide.content.trim()))
+    .map((template) => builderEn(template.titleKey));
+  const focus = emptyTypes.length ? emptyTypes.join(', ') : 'the weakest slide';
+  return [
+    'Help me complete the investor pitch deck in Startup Builder. Draft only empty slides and empty fields; keep what I already wrote.',
+    `Empty first: ${focus}.`,
+    `Company: ${data.companyName || workspaceName || '(empty)'}`,
+    `Tagline: ${data.tagline || '(empty)'}`,
+    `Ask: ${data.askAmount || '(empty)'}`,
+    `Problem: ${ctx.problem || '(empty)'}`,
+    `Solution: ${ctx.solution || '(empty)'}`,
+    `Unique value: ${ctx.unique || '(empty)'}`,
+    `BMC value: ${ctx.proposition || '(empty)'}`,
+    `Market: ${ctx.market || '(empty)'}`,
+  ].join('\n');
 }
 
 const SLIDE_TEMPLATES: {
@@ -140,6 +382,15 @@ const SLIDE_TEMPLATES: {
   { type: 'closing', titleKey: 'slide_close', hintKey: 'hint_slide_close', glyph: 'builder' },
 ];
 
+/**
+ * Written slides as a share of a full deck (twelve, or more if added), so two
+ * written slides read 17% rather than 100% of a two-slide deck.
+ */
+export function pitchDeckCompletion(slides: { content: string }[]): number {
+  const filled = slides.filter((slide) => slide.content.trim().length > 0).length;
+  return Math.round((filled / Math.max(slides.length, SLIDE_TEMPLATES.length)) * 100);
+}
+
 const DECK_TYPES: {
   value: PitchDeckData['deckType'];
   labelKey: 'pitch_investor' | 'pitch_accel' | 'pitch_cofounder' | 'pitch_grant' | 'pitch_comp';
@@ -157,58 +408,45 @@ const DECK_TYPES: {
   { value: 'competition', labelKey: 'pitch_comp', hintKey: 'pitch_type_hint_competition' },
 ];
 
-const defaultPitchDeckData: PitchDeckData = {
-  deckType: 'investor',
-  slides: [],
-  companyName: '',
-  tagline: '',
-  askAmount: '',
-  useOfFunds: [],
-};
-
 function snapshotOf(data: PitchDeckData) {
   return JSON.stringify(data);
 }
 
 export function PitchDeckBuilder({
   onSave,
+  onGenerate,
   initialData,
+  contentRevision,
   hideTitle = false,
+  hideLead = false,
   workspaceName,
   ideaCore,
   bmc,
+  market,
   askPrompt,
 }: PitchDeckBuilderProps) {
   const t = useBuilderPrimaryText();
-  const { success } = useToast();
-  const didHydrate = useRef(false);
-  const savedRef = useRef(snapshotOf({ ...defaultPitchDeckData, ...unwrapPitchDeck(initialData) }));
-  const [data, setData] = useState<PitchDeckData>({
-    ...defaultPitchDeckData,
-    ...unwrapPitchDeck(initialData),
-  });
+  const router = useRouter();
+  const { success, error: toastError } = useToast();
+  const savedRef = useRef(snapshotOf(hydratePitchDeck(initialData)));
+  const [data, setData] = useState<PitchDeckData>(() => hydratePitchDeck(initialData));
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
   useEffect(() => {
-    if (didHydrate.current) return;
-    const next = unwrapPitchDeck(initialData);
-    const hasPayload = Boolean(
-      next.slides?.length || next.companyName || next.tagline || next.askAmount || next.useOfFunds?.length,
-    );
-    if (!hasPayload) return;
-    didHydrate.current = true;
-    const merged = { ...defaultPitchDeckData, ...next };
-    setData(merged);
-    savedRef.current = snapshotOf(merged);
-  }, [initialData]);
+    const next = hydratePitchDeck(initialData);
+    setData(next);
+    savedRef.current = snapshotOf(next);
+    setCurrentSlideIndex((index) => Math.min(index, Math.max(0, next.slides.length - 1)));
+    // Reload when the document version changes (save / restore), not on every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentRevision]);
 
   useEffect(() => {
-    const filledSlides = data.slides.filter((s) => s.content.trim().length > 0).length;
-    const totalSlides = Math.max(data.slides.length, 1);
-    setCompletionPercentage((filledSlides / totalSlides) * 100);
+    setCompletionPercentage(pitchDeckCompletion(data.slides));
   }, [data.slides]);
 
   useEffect(() => {
@@ -273,112 +511,21 @@ export function PitchDeckBuilder({
 
   const generateWithAI = async () => {
     setIsGenerating(true);
-    const name = data.companyName || workspaceName || 'Your startup';
-    const problem = asText(ideaCore?.problemStatement) || null;
-    const solution = asText(ideaCore?.solution) || null;
-    const unique = asText(ideaCore?.uniqueValue) || null;
-    const proposition = asText(bmc?.valueProposition) || asText(bmc?.valuePropositions) || null;
-
-    setTimeout(() => {
-      setData((prev) => {
-        const nextSlides = [...prev.slides];
-        SLIDE_TEMPLATES.forEach((template) => {
-          const existingIdx = nextSlides.findIndex((slide) => slide.type === template.type);
-          const content = getGeneratedContent(template.type, {
-            name,
-            problem,
-            solution,
-            unique,
-            proposition,
-          });
-          const notes = getGeneratedNotes(template.type);
-          if (existingIdx === -1) {
-            nextSlides.push({
-              id: `slide-${Date.now()}-${template.type}`,
-              type: template.type,
-              title: builderEn(template.titleKey),
-              content,
-              notes,
-              order: nextSlides.length,
-            });
-          } else if (!nextSlides[existingIdx].content.trim()) {
-            nextSlides[existingIdx] = { ...nextSlides[existingIdx], content, notes };
-          }
-        });
-        return {
-          ...prev,
-          slides: nextSlides,
-          companyName: prev.companyName || name,
-          tagline: prev.tagline || unique || 'Where Great Teams Are Built',
-          askAmount: prev.askAmount || '$500,000',
-          useOfFunds: prev.useOfFunds.length
-            ? prev.useOfFunds
-            : [
-                'Product Development (40%)',
-                'Marketing & Growth (30%)',
-                'Team Expansion (20%)',
-                'Operations (10%)',
-              ],
-        };
-      });
+    try {
+      const incoming = await onGenerate?.(data);
+      if (incoming) {
+        const merged = mergeEmptyOnly(data, pickPitchDeck(incoming));
+        if (pitchEquals(data, merged)) {
+          success('Nothing to change');
+        } else {
+          setData(merged);
+        }
+        return;
+      }
+      router.push(`/ai?q=${encodeURIComponent(askPrompt ?? assistPrompt(data, ideaCore, bmc, market, workspaceName))}`);
+    } finally {
       setIsGenerating(false);
-    }, 3000);
-  };
-
-  const getGeneratedContent = (
-    type: string,
-    ctx: {
-      name: string;
-      problem: string | null;
-      solution: string | null;
-      unique: string | null;
-      proposition: string | null;
-    },
-  ): string => {
-    const contents: Record<string, string> = {
-      cover: `${ctx.name}\n\n${ctx.unique || 'Where Great Teams Are Built'}\n\nAI-Powered Startup Formation & Execution Platform`,
-      problem: ctx.problem
-        ? ctx.problem
-        : '• 90% of startups fail, and 23% fail due to team issues\n• Finding the right co-founder is like finding a needle in a haystack\n• No structured way to validate team compatibility before committing\n• Founders waste months on misaligned partnerships',
-      solution: ctx.solution
-        ? ctx.solution
-        : '• AI-powered co-founder matching based on complementary skills and goals\n• Shared startup workspaces for collaborative execution\n• AI-generated startup documents (BMC, pitch decks, market analysis)\n• Readiness scoring and progress tracking\n• Mentor and accelerator ecosystem integration',
-      market:
-        'TAM: $50B - Global startup ecosystem tools\nSAM: $8B - English-speaking markets\nSOM: $200M - First 3 years focus\n\n• 500M+ aspiring entrepreneurs globally\n• Growing remote work enabling global team formation\n• AI tools adoption accelerating in startup space',
-      product:
-        '• Intelligent Matching Engine - Find complementary co-founders\n• Startup Builder Workspace - Collaborative document creation\n• AI Document Generation - BMC, pitch decks, market analysis\n• Readiness Assessment - Track startup maturity\n• Ecosystem Integration - Mentors, accelerators, universities',
-      traction:
-        '• 1,000+ registered users\n• 150+ successful co-founder matches\n• 50+ startup workspaces created\n• 85% user satisfaction rate\n• 15% month-over-month growth\n• Featured in TechCrunch, Product Hunt',
-      'business-model': ctx.proposition
-        ? ctx.proposition
-        : 'Freemium SaaS Model:\n\n• Free: Basic matching, limited workspace\n• Pro ($49/mo): Full AI generation, unlimited workspaces\n• Enterprise ($999/mo): Organization features, white-label\n• AI Packs: Pay-per-use document generation\n\nTarget: 80% gross margin',
-      competition:
-        'Direct Competitors:\n• Founder2be - Limited features, no AI\n• CoFoundersLab - Outdated UX, no execution tools\n\nOur Advantages:\n• Only platform combining matching + execution\n• AI-native architecture\n• Ecosystem integration (mentors, accelerators)',
-      team: '• CEO - 10+ years startup experience, 2 exits\n• CTO - Ex-Google, AI/ML expertise\n• CPO - Former product lead at Stripe\n• Advisors from Y Combinator, Sequoia',
-      financials:
-        'Projections (Year 1-3):\n\nYear 1: $150K ARR, 500 paid users\nYear 2: $800K ARR, 2,500 paid users\nYear 3: $3M ARR, 10,000 paid users\n\nUnit Economics:\n• CAC: $50 | LTV: $400 | LTV/CAC: 8x\n• Payback: 3 months | Gross Margin: 80%',
-      ask: 'Raising: $500,000 Seed Round\n\nUse of Funds:\n• Product Development (40%) - AI features, mobile app\n• Marketing & Growth (30%) - User acquisition, content\n• Team Expansion (20%) - Engineering, sales\n• Operations (10%) - Infrastructure, legal',
-      closing: `${ctx.name}\n\nBuilding the future of startup team formation\n\nContact: founders@cofounderbay.com\nWebsite: cofounderbay.com\n\nLet's build something great together.`,
-    };
-    return contents[type] || '';
-  };
-
-  const getGeneratedNotes = (type: string): string => {
-    const notes: Record<string, string> = {
-      cover: 'Keep this slide simple and impactful. 5 seconds to capture attention.',
-      problem: 'Make the problem relatable. Use specific data points.',
-      solution: 'Focus on the unique value proposition. Show, don\'t just tell.',
-      market: 'Be realistic with numbers. Investors will verify.',
-      product: 'Consider a live demo if possible. Screenshots are good backup.',
-      traction: 'Lead with your strongest metrics. Be honest about stage.',
-      'business-model': 'Show path to profitability. Unit economics matter.',
-      competition: 'Acknowledge competitors. Show why you win.',
-      team: 'Highlight relevant experience. Show why this team can execute.',
-      financials: 'Be conservative. Show you understand the business.',
-      ask: 'Be specific about use of funds. Show 18-24 month runway.',
-      closing: 'End with a clear call to action. Make it easy to follow up.',
-    };
-    return notes[type] || '';
+    }
   };
 
   const addSlide = (type: string) => {
@@ -460,9 +607,18 @@ export function PitchDeckBuilder({
     setCurrentSlideIndex(toIndex);
   };
 
-  const handleSave = () => {
-    savedRef.current = snapshotOf(data);
-    onSave?.(data);
+  const handleSave = async () => {
+    if (!onSave) return;
+    setIsSaving(true);
+    try {
+      await onSave(data);
+      savedRef.current = snapshotOf(data);
+      success('Saved');
+    } catch {
+      toastError('Could not save');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleExport = () => {
@@ -506,25 +662,24 @@ export function PitchDeckBuilder({
   };
 
   const fillFromArtefacts = () => {
-    const problem = asText(ideaCore?.problemStatement);
-    const solution = asText(ideaCore?.solution);
-    const unique = asText(ideaCore?.uniqueValue);
-    const proposition = asText(bmc?.valueProposition) || asText(bmc?.valuePropositions);
+    const ctx = artefactContext(ideaCore, bmc, market);
     setData((prev) => ({
       ...prev,
       companyName: prev.companyName || workspaceName || prev.companyName,
-      tagline: prev.tagline || unique || prev.tagline,
+      tagline: prev.tagline || ctx.unique || prev.tagline,
       slides: prev.slides.map((slide) => {
         if (slide.content.trim()) return slide;
-        if (slide.type === 'cover' && (prev.companyName || workspaceName || unique)) {
+        if (slide.type === 'cover' && (prev.companyName || workspaceName || ctx.unique)) {
           return {
             ...slide,
-            content: [prev.companyName || workspaceName, unique].filter(Boolean).join('\n\n'),
+            content: [prev.companyName || workspaceName, ctx.unique].filter(Boolean).join('\n\n'),
           };
         }
-        if (slide.type === 'problem' && problem) return { ...slide, content: problem };
-        if (slide.type === 'solution' && solution) return { ...slide, content: solution };
-        if (slide.type === 'business-model' && proposition) return { ...slide, content: proposition };
+        if (slide.type === 'problem' && ctx.problem) return { ...slide, content: ctx.problem };
+        if (slide.type === 'solution' && ctx.solution) return { ...slide, content: ctx.solution };
+        if (slide.type === 'market' && ctx.market) return { ...slide, content: ctx.market };
+        if (slide.type === 'business-model' && ctx.proposition) return { ...slide, content: ctx.proposition };
+        if (slide.type === 'competition' && ctx.advantage) return { ...slide, content: ctx.advantage };
         if (slide.type === 'ask' && prev.askAmount) {
           return {
             ...slide,
@@ -537,12 +692,12 @@ export function PitchDeckBuilder({
     success(t(builderEn('pitch_filled_core'), builderEl('pitch_filled_core')));
   };
 
-  const copilotPrompt =
-    askPrompt ??
-    `Help me build a ${data.deckType} pitch deck for ${data.companyName || workspaceName || 'this startup'} with ${data.slides.length} slides. Draft Cover and Problem from the Idea Core.`;
+  const artefacts = artefactContext(ideaCore, bmc, market);
+  const copilotPrompt = askPrompt ?? assistPrompt(data, ideaCore, bmc, market, workspaceName);
 
   const currentSlide = data.slides[currentSlideIndex];
   const filledCount = data.slides.filter((slide) => slide.content.trim().length > 0).length;
+  const deckSize = Math.max(data.slides.length, SLIDE_TEMPLATES.length);
   const missingTemplates = SLIDE_TEMPLATES.filter(
     (template) => !data.slides.some((slide) => slide.type === template.type),
   );
@@ -553,12 +708,12 @@ export function PitchDeckBuilder({
     ? currentSlide.content.trim().split(/\s+/).filter(Boolean).length
     : 0;
   const canFillFromArtefacts = Boolean(
-    asText(ideaCore?.problemStatement) ||
-      asText(ideaCore?.solution) ||
-      asText(ideaCore?.uniqueValue) ||
-      asText(bmc?.valueProposition) ||
-      asText(bmc?.valuePropositions) ||
-      data.askAmount,
+    artefacts.problem
+      || artefacts.solution
+      || artefacts.unique
+      || artefacts.proposition
+      || artefacts.market
+      || data.askAmount,
   );
 
   const renderSlideTitle = (slide: Slide) => {
@@ -568,6 +723,50 @@ export function PitchDeckBuilder({
     }
     return slide.title;
   };
+
+  /** The editable title, in the reader's language while it is still the template default. */
+  const displayedSlideTitle = (slide: Slide) => {
+    const template = SLIDE_TEMPLATES.find((item) => item.type === slide.type);
+    if (template && slide.title === builderEn(template.titleKey)) {
+      return t(builderEn(template.titleKey), builderEl(template.titleKey));
+    }
+    return slide.title;
+  };
+
+  const slideTitlePair = (slide: Slide) => {
+    const template = SLIDE_TEMPLATES.find((item) => item.type === slide.type);
+    return template && slide.title === builderEn(template.titleKey)
+      ? { en: builderEn(template.titleKey), el: builderEl(template.titleKey) }
+      : { en: slide.title, el: slide.title };
+  };
+
+  // The slide menu's actions over the slides in the deck, through the same handlers. Copy text
+  // stays out: it fills the reader's clipboard, which the assistant has no use for.
+  const numberedSlides = data.slides.map((slide, index) => ({ slide, index }));
+  const slideOptions = (rows: typeof numberedSlides) =>
+    rowOptions(
+      rows,
+      ({ slide }) => slide.id,
+      ({ slide, index }) => `${index + 1}. ${slideTitlePair(slide).en}`,
+      ({ slide, index }) => `${index + 1}. ${slideTitlePair(slide).el}`,
+    );
+  const slideIndex = (id?: string) => data.slides.findIndex((slide) => slide.id === id);
+  usePageControls([
+    { id: 'move_slide_up', labelEn: 'Move slide up', labelEl: 'Μετακίνηση διαφάνειας πάνω', writes: true, options: slideOptions(numberedSlides.slice(1)), undo: (v?: string) => ({ control: 'move_slide_down', value: v }), run: (v?: string) => { const i = slideIndex(v); if (i > 0) moveSlide(i, 'up'); } },
+    { id: 'move_slide_down', labelEn: 'Move slide down', labelEl: 'Μετακίνηση διαφάνειας κάτω', writes: true, options: slideOptions(numberedSlides.slice(0, -1)), undo: (v?: string) => ({ control: 'move_slide_up', value: v }), run: (v?: string) => { const i = slideIndex(v); if (i >= 0 && i < data.slides.length - 1) moveSlide(i, 'down'); } },
+    { id: 'duplicate_slide', labelEn: 'Duplicate slide', labelEl: 'Αντίγραφο διαφάνειας', writes: true, options: slideOptions(numberedSlides), run: (v?: string) => { const i = slideIndex(v); if (i >= 0) duplicateSlide(i); } },
+    { id: 'delete_slide', labelEn: 'Delete slide', labelEl: 'Διαγραφή διαφάνειας', writes: true, options: slideOptions(numberedSlides), run: (v?: string) => { const i = slideIndex(v); if (i >= 0) removeSlide(i); } },
+  ]);
+  usePageList([
+    {
+      id: 'slides',
+      labelEn: 'Slides',
+      labelEl: 'Διαφάνειες',
+      rows: numberedSlides.map(({ slide, index }) =>
+        `${index + 1}. ${slideTitlePair(slide).en} · ${slide.content.trim() ? `${slide.content.trim().split(/\s+/).length} words` : 'empty'}`,
+      ),
+    },
+  ]);
 
   /*
    * What is about the deck, rather than in it.
@@ -585,81 +784,59 @@ export function PitchDeckBuilder({
       labelEn: 'Deck summary',
       labelEl: 'Σύνοψη deck',
       content: (
-        <div className="space-y-3">
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div className="flex flex-col justify-center gap-3">
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      <div className={BUILDER_STAT}>{completionPercentage.toFixed(0)}%</div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        <BilingualText en={builderEn('pitch_complete')} el={builderEl('pitch_complete')} compact />
-                      </p>
-                    </div>
-                    <p className="text-xs tabular-nums text-muted-foreground">
-                      {filledCount}/{Math.max(data.slides.length, SLIDE_TEMPLATES.length)}{' '}
-                      <BilingualText en={builderEn('pitch_filled')} el={builderEl('pitch_filled')} compact />
-                    </p>
-                  </div>
-                  <Progress value={completionPercentage} className="h-1.5" />
-                  <p className="text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={builderEn('pitch_complete_hint')} el={builderEl('pitch_complete_hint')} />
-                  </p>
-                </div>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              <BilingualText en={builderEn('pitch_deck_type')} el={builderEl('pitch_deck_type')} compact />
+            </Label>
+            <Select
+              value={data.deckType}
+              onValueChange={(value) =>
+                setData((prev) => ({ ...prev, deckType: value as PitchDeckData['deckType'] }))
+              }
+            >
+              <SelectTrigger
+                className="h-8 min-h-8 w-full rounded-xl text-xs"
+                aria-label={bilingualAria(builderEn('pitch_deck_type'), builderEl('pitch_deck_type'))}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DECK_TYPES.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {t(builderEn(item.labelKey), builderEl(item.labelKey))}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs leading-snug text-muted-foreground">
+              <BilingualText en={builderEn(activeDeck.hintKey)} el={builderEl(activeDeck.hintKey)} />
+            </p>
+          </div>
 
-                <div className="flex flex-col justify-center gap-2">
-                  <Label className="text-xs text-muted-foreground">
-                    <BilingualText en={builderEn('pitch_deck_type')} el={builderEl('pitch_deck_type')} compact />
-                  </Label>
-                  <Select
-                    value={data.deckType}
-                    onValueChange={(value) =>
-                      setData((prev) => ({ ...prev, deckType: value as PitchDeckData['deckType'] }))
-                    }
-                  >
-                    <SelectTrigger
-                      className="h-8 min-h-8 w-full rounded-xl text-xs"
-                      aria-label={bilingualAria(builderEn('pitch_deck_type'), builderEl('pitch_deck_type'))}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DECK_TYPES.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {t(builderEn(item.labelKey), builderEl(item.labelKey))}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={builderEn(activeDeck.hintKey)} el={builderEl(activeDeck.hintKey)} />
-                  </p>
-                </div>
-
-                <div className="flex flex-col justify-center gap-3 text-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground">
-                      <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
-                    </span>
-                    <span className="min-w-0 truncate font-medium">{data.companyName || '—'}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground">
-                      <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
-                    </span>
-                    <span className="min-w-0 truncate font-medium">{data.askAmount || '—'}</span>
-                  </div>
-                  <Button asChild variant="ghost" size="sm" className={`${BUILDER_BTN} justify-start px-0`}>
-                    <Link href="/readiness">
-                      <CfbGlyph name="award" className="icon-sm mr-1.5" />
-                      <BilingualText en={builderEn('pitch_readiness')} el={builderEl('pitch_readiness')} compact />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <dl className="space-y-2.5 border-t border-border/50 pt-4 text-xs">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+              <dt className="text-muted-foreground">
+                <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
+              </dt>
+              <dd className="min-w-0 break-words font-medium">{data.companyName || '—'}</dd>
+            </div>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+              <dt className="text-muted-foreground">
+                <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
+              </dt>
+              <dd className="min-w-0 break-words font-medium tabular-nums">{data.askAmount || '—'}</dd>
+            </div>
+          </dl>
+          <Button asChild variant="ghost" size="sm" className={`${BUILDER_BTN} h-auto min-h-9 w-full justify-between gap-1.5 whitespace-normal py-1.5 text-left`}>
+            <Link href="/readiness">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <CfbGlyph name="award" className="icon-sm shrink-0" />
+                <BilingualText en={builderEn('pitch_readiness')} el={builderEl('pitch_readiness')} compact wrap />
+              </span>
+              <ChevronRight className="icon-sm shrink-0" />
+            </Link>
+          </Button>
         </div>
       ),
     },
@@ -669,18 +846,12 @@ export function PitchDeckBuilder({
       labelEn: 'Deck details',
       labelEl: 'Στοιχεία deck',
       content: (
-        <div className="space-y-3">
-          <Card className="min-w-0">
-            <CardHeader className="p-3 sm:p-6">
-              <CardTitle className={BUILDER_CARD_TITLE}>
-                <BilingualText en={builderEn('pitch_info')} el={builderEl('pitch_info')} compact />
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
-                <BilingualText en={builderEn('pitch_info_hint')} el={builderEl('pitch_info_hint')} />
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="space-y-4">
+          <p className="text-xs leading-snug text-muted-foreground">
+            <BilingualText en={builderEn('pitch_info_hint')} el={builderEl('pitch_info_hint')} />
+          </p>
+          <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
                 <div className="min-w-0 space-y-1.5">
                   <Label>
                     <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
@@ -758,8 +929,7 @@ export function PitchDeckBuilder({
                   <BilingualText en={builderEn('pitch_add_use')} el={builderEl('pitch_add_use')} compact />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       ),
     },
@@ -776,6 +946,42 @@ export function PitchDeckBuilder({
         titleEl={builderEl('tab_pitch')}
         subtitleEn={builderEn('pitch_lead')}
         subtitleEl={builderEl('pitch_lead')}
+        leading={hideLead ? <></> : undefined}
+        // Completion lives here, beside the editor, and nowhere in the rail.
+        meta={
+          data.slides.length === 0 ? null : (
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 pt-1.5 text-xs text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <Progress
+                  value={completionPercentage}
+                  className="h-1.5 w-24 shrink-0"
+                  aria-label={bilingualAria(builderEn('pitch_complete'), builderEl('pitch_complete'))}
+                />
+                <span className="font-medium tabular-nums text-foreground">{completionPercentage}%</span>
+              </span>
+              <span className="min-w-0 tabular-nums">
+                {filledCount}/{deckSize}{' '}
+                <BilingualText en={builderEn('pitch_slides_written')} el={builderEl('pitch_slides_written')} compact />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full align-middle text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label={bilingualAria(builderEn('pitch_complete_how'), builderEl('pitch_complete_how'))}
+                      >
+                        <Info className="icon-sm" aria-hidden="true" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs leading-snug">
+                      <BilingualText en={builderEn('pitch_complete_hint')} el={builderEl('pitch_complete_hint')} wrap />
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </span>
+            </div>
+          )
+        }
         hideTitle={hideTitle}
         showAskAi={!hideTitle}
         askPrompt={copilotPrompt}
@@ -787,11 +993,12 @@ export function PitchDeckBuilder({
               </span>
             )}
             <Button
+              type="button"
               variant="outline"
               size="sm"
               className={BUILDER_BTN}
-              onClick={generateWithAI}
-              disabled={isGenerating}
+              onClick={() => void generateWithAI()}
+              disabled={isGenerating || isSaving}
             >
               {isGenerating ? (
                 <RefreshCw className="icon-sm mr-1.5 animate-spin" />
@@ -804,12 +1011,22 @@ export function PitchDeckBuilder({
                 compact
               />
             </Button>
-            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={handleExport}>
+            <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={handleExport}>
               <Download className="icon-sm mr-1.5" />
               <BilingualText en={builderEn('pitch_export')} el={builderEl('pitch_export')} compact />
             </Button>
-            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
-              <Save className="icon-sm mr-1.5" />
+            <Button
+              type="button"
+              size="sm"
+              className={BUILDER_BTN}
+              onClick={() => void handleSave()}
+              disabled={isSaving || isGenerating}
+            >
+              {isSaving ? (
+                <RefreshCw className="icon-sm mr-1.5 animate-spin" />
+              ) : (
+                <Save className="icon-sm mr-1.5" />
+              )}
               <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
             </Button>
           </>
@@ -832,10 +1049,11 @@ export function PitchDeckBuilder({
             <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap">
               <AIInsightButton className={`w-full sm:w-auto ${BUILDER_BTN}`} prompt={copilotPrompt} />
               <Button
+                type="button"
                 size="sm"
                 className={`w-full sm:w-auto ${BUILDER_BTN}`}
-                onClick={generateWithAI}
-                disabled={isGenerating}
+                onClick={() => void generateWithAI()}
+                disabled={isGenerating || isSaving}
               >
                 {isGenerating ? (
                   <RefreshCw className="icon-sm mr-1.5 animate-spin" />
@@ -871,63 +1089,69 @@ export function PitchDeckBuilder({
       ) : (
         <>
           {(missingTemplates.length > 0 || emptySlides.length > 0) && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div
+              className={cn(
+                'grid grid-cols-1 gap-4',
+                missingTemplates.length > 0 && emptySlides.length > 0 && 'md:grid-cols-2',
+              )}
+            >
               {missingTemplates.length > 0 && (
-                <Card className={STATUS.danger.border}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2', STATUS.danger.text)}>
-                      <AlertTriangle className="icon-sm" />
+                <Card className="min-w-0 border-status-warning-border/50">
+                  <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+                      <AlertTriangle className={cn('icon-sm shrink-0', STATUS.warning.icon)} aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_missing')} el={builderEl('pitch_missing')} compact />
+                      <span className="font-normal tabular-nums text-muted-foreground">{missingTemplates.length}</span>
                     </CardTitle>
+                    <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={addRemainingSlides}>
+                      <BilingualText en={builderEn('pitch_add_remaining')} el={builderEl('pitch_add_remaining')} compact />
+                    </Button>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {missingTemplates.slice(0, 4).map((template) => (
+                  <CardContent className="flex flex-wrap gap-2">
+                    {missingTemplates.map((template) => (
                       <button
                         key={template.type}
                         type="button"
                         onClick={() => addSlide(template.type)}
-                        className="flex w-full items-start gap-2 rounded-xl p-1.5 text-left text-sm hover:bg-muted/40"
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
+                        aria-label={bilingualAria(`Add ${builderEn(template.titleKey)}`, `Προσθήκη: ${builderEl(template.titleKey)}`)}
                       >
-                        <CfbGlyph name={template.glyph} className="mt-0.5 icon-sm shrink-0" />
-                        <span className="min-w-0">
-                          <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
-                        </span>
+                        <Plus className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
                       </button>
                     ))}
-                    <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addRemainingSlides}>
-                      <BilingualText en={builderEn('pitch_add_remaining')} el={builderEl('pitch_add_remaining')} compact />
-                    </Button>
                   </CardContent>
                 </Card>
               )}
               {emptySlides.length > 0 && (
-                <Card className={STATUS.success.border}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2', STATUS.success.text)}>
-                      <CfbGlyph name="spark" className="icon-sm" />
+                <Card className="min-w-0">
+                  <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
+                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+                      <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_next_write')} el={builderEl('pitch_next_write')} compact />
+                      <span className="font-normal tabular-nums text-muted-foreground">{emptySlides.length}</span>
                     </CardTitle>
+                    {canFillFromArtefacts && (
+                      <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={fillFromArtefacts}>
+                        <BilingualText en={builderEn('pitch_fill_core')} el={builderEl('pitch_fill_core')} compact />
+                      </Button>
+                    )}
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {emptySlides.slice(0, 4).map((slide) => {
+                  <CardContent className="flex flex-wrap gap-2">
+                    {emptySlides.map((slide) => {
                       const index = data.slides.findIndex((item) => item.id === slide.id);
                       return (
                         <button
                           key={slide.id}
                           type="button"
                           onClick={() => setCurrentSlideIndex(index)}
-                          className="flex w-full items-start gap-2 rounded-xl p-1.5 text-left text-sm hover:bg-muted/40"
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
                         >
-                          <CheckCircle2 className="mt-0.5 icon-sm shrink-0 text-status-success" />
+                          <span className="font-mono text-2xs text-muted-foreground">{index + 1}</span>
                           <span className="min-w-0">{renderSlideTitle(slide)}</span>
                         </button>
                       );
                     })}
-                    {canFillFromArtefacts && (
-                      <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={fillFromArtefacts}>
-                        <BilingualText en={builderEn('pitch_fill_core')} el={builderEl('pitch_fill_core')} compact />
-                      </Button>
-                    )}
                   </CardContent>
                 </Card>
               )}
@@ -973,10 +1197,11 @@ export function PitchDeckBuilder({
               <Card className="min-w-0">
                 <CardHeader className="py-3">
                   <CardTitle className="text-sm">
-                    <BilingualText en={builderEn('pitch_add')} el={builderEl('pitch_add')} compact />
+                    <BilingualText en={builderEn('pitch_add')} el={builderEl('pitch_add')} compact wrap />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid max-h-[280px] grid-cols-2 gap-1 overflow-y-auto p-2 sm:grid-cols-1">
+                {/* All twelve types in view: a scroll box inside the page scroll hid half of them. */}
+                <CardContent className="grid grid-cols-2 gap-1 p-2 sm:grid-cols-1">
                   <p className="col-span-2 px-2 pb-1 text-2xs text-muted-foreground sm:col-span-1">
                     <BilingualText en={builderEn('pitch_add_hint')} el={builderEl('pitch_add_hint')} />
                   </p>
@@ -988,19 +1213,23 @@ export function PitchDeckBuilder({
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          'h-auto min-h-10 w-full justify-start gap-2 rounded-xl px-2 py-2',
-                          exists && 'opacity-60',
+                          'h-auto min-h-10 w-full justify-start gap-2 whitespace-normal rounded-xl px-2 py-2 text-left',
+                          exists && 'text-muted-foreground',
                         )}
                         onClick={() => addSlide(template.type)}
                       >
                         <CfbGlyph name={template.glyph} className="icon-sm shrink-0" />
-                        <span className="truncate text-xs">
-                          <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
+                        {/* Wraps: the column is a quarter of the editor, too narrow for both languages on one line. */}
+                        <span className="min-w-0 flex-1 text-xs leading-snug">
+                          <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact wrap />
                         </span>
                         {exists && (
-                          <span className="ml-auto text-2xs text-muted-foreground">
-                            <BilingualText en={builderEn('pitch_in_deck')} el={builderEl('pitch_in_deck')} compact />
-                          </span>
+                          <>
+                            <Check className="icon-sm shrink-0 text-status-success" aria-hidden="true" />
+                            <span className="sr-only">
+                              <BilingualText en={builderEn('pitch_in_deck')} el={builderEl('pitch_in_deck')} compact />
+                            </span>
+                          </>
                         )}
                       </Button>
                     );
@@ -1025,14 +1254,15 @@ export function PitchDeckBuilder({
                         <ChevronLeft className="icon-sm" />
                       </Button>
                       <div className="min-w-0 flex-1">
-                        <CardTitle className="flex items-center gap-2 text-base">
+                        <CardTitle className="flex items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground">
                             {currentSlideIndex + 1}/{data.slides.length}
                           </span>
                           <Input
-                            value={currentSlide.title}
+                            value={displayedSlideTitle(currentSlide)}
                             onChange={(event) => updateSlide('title', event.target.value)}
                             className="h-10 w-full min-w-0 rounded-xl font-semibold"
+                            aria-label={bilingualAria('Slide title', 'Τίτλος διαφάνειας')}
                           />
                         </CardTitle>
                       </div>
@@ -1049,39 +1279,8 @@ export function PitchDeckBuilder({
                         <ChevronRight className="icon-sm" />
                       </Button>
                     </div>
+                    {/* Writing actions stay in view; arranging the deck is a menu away, with delete last. */}
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={BUILDER_BTN}
-                        onClick={() => moveSlide(currentSlideIndex, 'up')}
-                        disabled={currentSlideIndex === 0}
-                        aria-label={bilingualAria(builderEn('pitch_move_up'), builderEl('pitch_move_up'))}
-                      >
-                        <ArrowUp className="icon-sm" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={BUILDER_BTN}
-                        onClick={() => moveSlide(currentSlideIndex, 'down')}
-                        disabled={currentSlideIndex === data.slides.length - 1}
-                        aria-label={bilingualAria(builderEn('pitch_move_down'), builderEl('pitch_move_down'))}
-                      >
-                        <ArrowDown className="icon-sm" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={BUILDER_BTN}
-                        onClick={() => duplicateSlide(currentSlideIndex)}
-                      >
-                        <Copy className="icon-sm mr-1.5" />
-                        <BilingualText en={builderEn('pitch_duplicate')} el={builderEl('pitch_duplicate')} compact />
-                      </Button>
-                      <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={copyCurrentSlide}>
-                        <BilingualText en={builderEn('pitch_copy')} el={builderEl('pitch_copy')} compact />
-                      </Button>
                       <BuilderAskAiButton
                         labelEn={builderEn('pitch_ask_slide')}
                         labelEl={builderEl('pitch_ask_slide')}
@@ -1093,21 +1292,57 @@ export function PitchDeckBuilder({
                         className={BUILDER_BTN}
                         onClick={() => setViewMode(viewMode === 'edit' ? 'preview' : 'edit')}
                       >
-                        <Eye className="icon-sm mr-1.5" />
+                        <Eye className="icon-sm mr-1.5" aria-hidden="true" />
                         <BilingualText
                           en={viewMode === 'edit' ? builderEn('pitch_preview') : builderEn('pitch_edit')}
                           el={viewMode === 'edit' ? builderEl('pitch_preview') : builderEl('pitch_edit')}
                           compact
                         />
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className={BUILDER_BTN}
-                        onClick={() => removeSlide(currentSlideIndex)}
-                      >
-                        <BilingualText en={builderEn('pitch_delete')} el={builderEl('pitch_delete')} compact />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="ml-auto h-9 w-9 shrink-0 rounded-xl text-muted-foreground hover:text-foreground"
+                            aria-label={bilingualAria(builderEn('pitch_slide_actions'), builderEl('pitch_slide_actions'))}
+                          >
+                            <MoreVertical className="icon-sm" aria-hidden="true" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-52">
+                          <DropdownMenuItem
+                            disabled={currentSlideIndex === 0}
+                            onClick={() => moveSlide(currentSlideIndex, 'up')}
+                          >
+                            <ArrowUp className="icon-sm mr-2" aria-hidden="true" />
+                            <BilingualText en={builderEn('pitch_move_up')} el={builderEl('pitch_move_up')} compact />
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={currentSlideIndex === data.slides.length - 1}
+                            onClick={() => moveSlide(currentSlideIndex, 'down')}
+                          >
+                            <ArrowDown className="icon-sm mr-2" aria-hidden="true" />
+                            <BilingualText en={builderEn('pitch_move_down')} el={builderEl('pitch_move_down')} compact />
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => duplicateSlide(currentSlideIndex)}>
+                            <CopyPlus className="icon-sm mr-2" aria-hidden="true" />
+                            <BilingualText en={builderEn('pitch_duplicate')} el={builderEl('pitch_duplicate')} compact />
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => void copyCurrentSlide()}>
+                            <Copy className="icon-sm mr-2" aria-hidden="true" />
+                            <BilingualText en={builderEn('pitch_copy')} el={builderEl('pitch_copy')} compact />
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive-accessible focus:bg-destructive/10 focus:text-destructive-accessible"
+                            onClick={() => removeSlide(currentSlideIndex)}
+                          >
+                            <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+                            <BilingualText en={builderEn('pitch_delete')} el={builderEl('pitch_delete')} compact />
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 p-3 sm:p-6">
@@ -1146,8 +1381,8 @@ export function PitchDeckBuilder({
                         <p className="mb-3 font-mono text-xs text-muted-foreground">
                           {currentSlideIndex + 1}/{data.slides.length}
                         </p>
-                        <h2 className="builder-title mb-4 text-lg font-semibold tracking-tight">
-                          {currentSlide.title}
+                        <h2 className="page-section mb-4 font-semibold tracking-tight">
+                          {displayedSlideTitle(currentSlide)}
                         </h2>
                         {currentSlide.content.trim() ? (
                           <div className="whitespace-pre-wrap text-sm leading-relaxed">{currentSlide.content}</div>

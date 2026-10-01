@@ -39,6 +39,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useHydrated } from '@/components/common/RelativeTime';
+import { useI18n } from '@/components/common/I18nProvider';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -117,7 +118,7 @@ const DEMO_EVENTS: CalendarEvent[] = [
   { id: '1',  title: 'MVP Sprint Review',           titleEl: 'Ανασκόπηση sprint MVP',           type: 'milestone', date: d(2),  priority: 'high',   status: 'in_progress', href: '/milestones' },
   { id: '2',  title: 'Mentor Session — Dr. Sarah Kim', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Kim',    type: 'session',   date: d(4, 14), time: '14:00', endTime: '15:00', participants: ['Dr. Sarah Kim'], href: '/mentor/sessions' },
   { id: '3',  title: 'Pitch Deck Deadline',          titleEl: 'Προθεσμία pitch deck',             type: 'deadline',  date: d(7),  priority: 'high',   href: '/builder/pitch-deck' },
-  { id: '4',  title: 'Startup Meetup Athens',        titleEl: 'Meetup νεοφυών Αθήνα',             type: 'event',     date: d(9, 18), time: '18:00', endTime: '21:00', location: 'Impact Hub Athens', locationEl: 'Impact Hub Αθήνα', href: '/events' },
+  { id: '4',  title: 'Startup Meetup Athens',        titleEl: 'Meetup για startups στην Αθήνα',             type: 'event',     date: d(9, 18), time: '18:00', endTime: '21:00', location: 'Impact Hub Athens', locationEl: 'Impact Hub Αθήνα', href: '/events' },
   { id: '5',  title: 'Team Standup',                 titleEl: 'Standup ομάδας',                   type: 'meeting',   date: d(10, 9, 30), time: '09:30', endTime: '10:00', participants: ['Alex Demo', 'Maria Georgiou', 'Marcus Chen'] },
   { id: '6',  title: 'Seed Round Application',       titleEl: 'Αίτηση Seed round',                type: 'deadline',  date: d(12), priority: 'high',   href: '/fundraising' },
   { id: '7',  title: 'Co-founder Interview',         titleEl: 'Συνέντευξη συνιδρυτή',             type: 'meeting',   date: d(14, 11), time: '11:00', endTime: '11:45', participants: ['Marcus Chen'] },
@@ -285,6 +286,22 @@ function MiniCalendar({
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
   const today = new Date();
+  const { locale, bcp47, t } = useI18n();
+
+  // UTC matches the Date.UTC cells. Only English and Greek pair in one label;
+  // every other locale reads its own date format, since the DOM pass cannot
+  // re-spell a weekday and month written out in English.
+  const dayLabel = (date: Date, hasEvents: boolean) => {
+    const spell = (tag: string) =>
+      date.toLocaleDateString(tag, { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    if (locale !== 'en' && locale !== 'el') {
+      return hasEvents ? t('{label}, has events', { label: spell(bcp47) }) : spell(bcp47);
+    }
+    return bilingualAria(
+      `${spell('en-GB')}${hasEvents ? ', has events' : ''}`,
+      `${spell('el-GR')}${hasEvents ? ', έχει εκδηλώσεις' : ''}`,
+    );
+  };
 
   const eventDates = useMemo(() => {
     const set = new Set<number>();
@@ -325,11 +342,8 @@ function MiniCalendar({
               type="button"
               onClick={() => onSelectDate(date)}
               // A bare "15" told a screen reader nothing about which month or
-              // whether anything happens that day. UTC matches the Date.UTC cells.
-              aria-label={bilingualAria(
-                `${date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${hasEvents ? ', has events' : ''}`,
-                `${date.toLocaleDateString('el-GR', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${hasEvents ? ', έχει εκδηλώσεις' : ''}`,
-              )}
+              // whether anything happens that day.
+              aria-label={dayLabel(date, hasEvents)}
               aria-pressed={isSelected}
               aria-current={isToday ? 'date' : undefined}
               className={cn(

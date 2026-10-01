@@ -66,6 +66,14 @@ const ROUTES = [
   { path: '/admin', name: 'admin overview' },
   { path: '/admin/tenants', name: 'admin tenants' },
   { path: '/tenant/dashboard', name: 'tenant dashboard' },
+  { path: '/mentor/sessions', name: 'mentor sessions' },
+  { path: '/mentor/requests', name: 'mentor requests' },
+  { path: '/mentoring', name: 'find mentors' },
+  { path: '/investor/pipeline', name: 'investor pipeline' },
+  { path: '/investors', name: 'investor directory' },
+  { path: '/org/programs', name: 'org programs' },
+  { path: '/org/cohorts', name: 'org cohorts' },
+  { path: '/org/applications', name: 'org applications' },
 ];
 
 /**

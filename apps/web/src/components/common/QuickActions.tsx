@@ -30,7 +30,7 @@ const defaultActions: QuickAction[] = [
     label: 'Search',
     icon: Search,
     href: '/discover',
-    color: 'bg-blue-500 hover:bg-blue-600',
+    color: 'bg-primary hover:bg-primary/90',
   },
   {
     id: 'post',

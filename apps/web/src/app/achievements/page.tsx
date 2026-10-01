@@ -35,6 +35,24 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const ACHIEVEMENTS_TOUR: TourStep[] = [
+  {
+    target: 'achievements-stats',
+    titleEn: 'Level and XP from one source',
+    titleEl: 'Επίπεδο και XP από μία πηγή',
+    bodyEn: 'When the gamification API is up, XP and level come from there. If it is not, this card sums points on unlocked badges so you never see two different scores.',
+    bodyEl: 'Όταν το API gamification είναι διαθέσιμο, XP και επίπεδο έρχονται από εκεί. Αν όχι, αυτή η κάρτα αθροίζει πόντους ξεκλειδωμένων σημάτων ώστε να μην βλέπετε δύο βαθμολογίες.',
+  },
+  {
+    target: 'achievements-list',
+    titleEn: 'Badges are the same list, sliced',
+    titleEl: 'Τα σήματα είναι η ίδια λίστα, κομμένη',
+    bodyEn: 'All / Unlocked / Locked are filters of this list. The rail filters by category. Locked cards show progress toward that badge only.',
+    bodyEl: 'Όλα / Ξεκλειδωμένα / Κλειδωμένα είναι φίλτρα αυτής της λίστας. Η ράγα φιλτράρει ανά κατηγορία. Οι κλειδωμένες κάρτες δείχνουν πρόοδο μόνο προς εκείνο το σήμα.',
+  },
+];
 
 interface Achievement {
   id: string;
@@ -66,7 +84,7 @@ const TIER_COLORS = {
   bronze: 'text-status-warning',
   silver: 'text-muted-foreground',
   gold: 'text-status-warning',
-  platinum: 'text-cyan-400',
+  platinum: 'text-primary-accessible',
 };
 
 const TIER_BG = {
@@ -640,13 +658,17 @@ export default function AchievementsPage() {
       showHelp
       askAi="What achievements should I work toward next, and which unlocked badges are most useful to show investors?"
     >
+      <FirstRunTour tourId="achievements" steps={ACHIEVEMENTS_TOUR} ready={!isLoading} />
       <div className="space-y-4 pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
         ) : (
           <>
+              <div data-tour="achievements-stats">
+                <UserStatsCard stats={stats} />
+              </div>
               {activeTab === 'all' && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />

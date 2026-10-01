@@ -11,7 +11,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
-import { CfbGlyph, glyphForHref } from '@/components/icons/CfbGlyph';
 import { AIComposer } from '@/components/ai/AIComposer';
 import { CommandPaletteHost } from './CommandPaletteHost';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
@@ -222,29 +221,23 @@ export function AppShell({
                 bilingual titles broke mid-phrase ("Founder dashboard · Πίνακας
                 / ελέγχου ιδρυτή"). Now the bar gives way down to 20rem before
                 the title does; at 1920px nothing changes. */}
-            <div className="flex min-w-0 flex-1 items-start gap-2.5 lg:min-w-[min(100%,42rem)] group-data-[rail=pinned]/shell:lg:min-w-0">
-              <CfbGlyph
-                name={glyphForHref(pathname)}
-                className="mt-1 icon-md shrink-0 text-primary-accessible"
-              />
-              <div className="min-w-0">
-                {pageTitle && (
-                  <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
-                    <BilingualText en={pageTitle} el={pageTitleEl} />
-                  </h1>
-                )}
-                {pageDescription && (
-                  <p className="mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
-                    <BilingualText
-                      en={pageDescription}
-                      el={pageDescriptionEl}
-                      stacked
-                      wrap
-                      secondaryFrom="lg"
-                    />
-                  </p>
-                )}
-              </div>
+            <div className="min-w-0 flex-1 lg:min-w-[min(100%,42rem)] group-data-[rail=pinned]/shell:lg:min-w-0" data-page-header="">
+              {pageTitle && (
+                <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
+                  <BilingualText en={pageTitle} el={pageTitleEl} />
+                </h1>
+              )}
+              {pageDescription && (
+                <p className="page-lead mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
+                  <BilingualText
+                    en={pageDescription}
+                    el={pageDescriptionEl}
+                    stacked
+                    wrap
+                    secondaryFrom="lg"
+                  />
+                </p>
+              )}
             </div>
             {(showHelp || showAskAi) && (
               <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:min-w-[20rem] lg:shrink lg:justify-end group-data-[rail=pinned]/shell:lg:w-full">

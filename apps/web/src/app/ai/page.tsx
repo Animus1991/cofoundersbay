@@ -2,13 +2,14 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CopilotWorkspace } from '@/components/ai/CopilotWorkspace';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { useSession } from '@/hooks/useSession';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 
 function AIPageInner() {
   const searchParams = useSearchParams();
@@ -28,16 +29,16 @@ function AIPageInner() {
 
   if (!hasSession) {
     return (
-      <AppShell askAi={false}>
+      <AppShell askAi={false} showHelp>
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 bg-card px-6 py-16 text-center">
-          <Sparkles className="h-8 w-8 text-violet-500" />
+          <CfbGlyph name="spark" className="icon-lg text-muted-foreground" />
           <p className="max-w-md text-sm text-muted-foreground">
             <BilingualText
-              en="The full-page assistant uses your profile, matches, intros, and messages. Sign in to continue."
-              el="Ο βοηθός πλήρους σελίδας διαβάζει το προφίλ, τις αντιστοιχίσεις, τις συστάσεις και τα μηνύματά σας. Συνδεθείτε για να συνεχίσετε."
+              en="Sign in to let the assistant read this workspace and act on it."
+              el="Συνδεθείτε για να διαβάσει ο βοηθός αυτόν τον χώρο εργασίας και να δράσει πάνω του."
             />
           </p>
-          <Button asChild>
+          <Button asChild className={BUILDER_BTN}>
             <Link href="/login?redirect=/ai">
               <BilingualText en="Sign in" el="Σύνδεση" compact />
             </Link>
@@ -49,22 +50,7 @@ function AIPageInner() {
 
   return (
     <AppShell fullHeight contentClassName="min-h-0 flex flex-col">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-b border-border/60 lg:border-b-0">
-        <div className="border-b border-border/60 px-4 py-2.5">
-          <h1 className="text-base font-semibold tracking-tight">
-            <BilingualText en="AI Assistant" el="Βοηθός AI" compact />
-          </h1>
-          {/* An em dash inside the sentence, not a middot: `BilingualText`
-              joins the two languages with a middot, and a third one inside a
-              half would read as three fragments rather than one line twice. */}
-          <p className="text-xs text-muted-foreground">
-            <BilingualText
-              en="Same tools as the popup — writes wait for your confirm"
-              el="Ίδια εργαλεία με το αναδυόμενο — οι εγγραφές περιμένουν την επιβεβαίωσή σας"
-              compact
-            />
-          </p>
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* A question arriving in ?q= is sent, not just typed in: eleven
             "Ask AI about this" links land here, and each used to leave the
             reader to press send a second time. The address then drops ?q so

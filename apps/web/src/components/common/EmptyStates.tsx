@@ -138,14 +138,14 @@ export function ListEmptyState({
 /** Greek for the list names pages pass as `entity`. */
 const ENTITY_EL: Record<string, string> = {
   applications: 'αιτήσεις',
-  cohorts: 'κοόρτες',
+  cohorts: 'κύκλοι',
   communities: 'κοινότητες',
   events: 'εκδηλώσεις',
   members: 'μέλη',
   mentors: 'μέντορες',
   programs: 'προγράμματα',
   reports: 'αναφορές',
-  startups: 'νεοφυείς',
+  startups: 'startups',
 };
 
 export function NoFilterResults({
@@ -271,7 +271,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
-        <MessageCircle className="icon-xl text-cyan-400" />
+        <MessageCircle className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No conversations" el="Δεν υπάρχουν συνομιλίες" compact /></h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -440,7 +440,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
-        <Users className="icon-xl text-cyan-400" />
+        <Users className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No sessions booked" el="Δεν υπάρχουν κρατήσεις" compact /></h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -477,7 +477,7 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
       icon={Layers}
       tone="primary"
       title={<BilingualText en="No programs yet" el="Δεν υπάρχουν ακόμη προγράμματα" wrap />}
-      description={<BilingualText en="Launch your first accelerator, bootcamp, or incubator program. Track applications, cohorts, and outcomes in one place." el="Ξεκινήστε το πρώτο σας πρόγραμμα επιτάχυνσης, bootcamp ή θερμοκοιτίδας. Παρακολουθήστε αιτήσεις, κοόρτες και αποτελέσματα σε ένα σημείο." wrap />}
+      description={<BilingualText en="Launch your first accelerator, bootcamp, or incubator program. Track applications, cohorts, and outcomes in one place." el="Ξεκινήστε το πρώτο σας πρόγραμμα επιτάχυνσης, bootcamp ή θερμοκοιτίδας. Παρακολουθήστε αιτήσεις, κύκλους και αποτελέσματα σε ένα σημείο." wrap />}
       action={(
         <Button asChild>
           <Link href="/tenant/programs">
@@ -496,8 +496,8 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, acti
     <ListEmptyState
       icon={Users}
       tone="info"
-      title={<BilingualText en="No cohorts yet" el="Δεν υπάρχουν ακόμη κοόρτες" wrap />}
-      description={<BilingualText en="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days." el="Μια κοόρτη ομαδοποιεί νεοφυείς που περνούν μαζί ένα πρόγραμμα. Δημιουργήστε μία για να αναθέσετε μέντορες, να παρακολουθείτε ορόσημα και να οργανώνετε demo days." wrap />}
+      title={<BilingualText en="No cohorts yet" el="Δεν υπάρχουν ακόμη κύκλοι" wrap />}
+      description={<BilingualText en="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days." el="Ένας κύκλος ομαδοποιεί startups που περνούν μαζί ένα πρόγραμμα. Δημιουργήστε έναν για να αναθέσετε μέντορες, να παρακολουθείτε ορόσημα και να οργανώνετε demo days." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Create cohort" el="Δημιουργία κοορτής" compact />
@@ -533,7 +533,7 @@ export function EmptyOrgMembers({ filtersActive, onClearFilters, className, acti
       icon={Users}
       tone="primary"
       title={<BilingualText en="No team members yet" el="Δεν υπάρχουν ακόμη μέλη ομάδας" wrap />}
-      description={<BilingualText en="Invite colleagues to help run programs, review applications, and manage cohorts. Roles control who can do what." el="Προσκαλέστε συνεργάτες να τρέχουν προγράμματα, να αξιολογούν αιτήσεις και να διαχειρίζονται κοόρτες. Οι ρόλοι ορίζουν ποιος κάνει τι." wrap />}
+      description={<BilingualText en="Invite colleagues to help run programs, review applications, and manage cohorts. Roles control who can do what." el="Προσκαλέστε συνεργάτες να τρέχουν προγράμματα, να αξιολογούν αιτήσεις και να διαχειρίζονται κύκλους. Οι ρόλοι ορίζουν ποιος κάνει τι." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <UserPlus className="mr-1.5 icon-sm" /> <BilingualText en="Invite member" el="Πρόσκληση μέλους" compact />
@@ -551,7 +551,7 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
       icon={GraduationCap}
       tone="success"
       title={<BilingualText en="No mentors invited yet" el="Δεν έχουν προσκληθεί ακόμη μέντορες" wrap />}
-      description={<BilingualText en="Mentors are vetted advisors you can assign to startups in your cohorts. Find them in the platform's mentor directory." el="Οι μέντορες είναι ελεγμένοι σύμβουλοι που αναθέτετε σε νεοφυείς των κοορτών σας. Θα τους βρείτε στον κατάλογο μεντόρων της πλατφόρμας." wrap />}
+      description={<BilingualText en="Mentors are vetted advisors you can assign to startups in your cohorts. Find them in the platform's mentor directory." el="Οι μέντορες είναι ελεγμένοι σύμβουλοι που αναθέτετε σε startups των κύκλων σας. Θα τους βρείτε στον κατάλογο μεντόρων της πλατφόρμας." wrap />}
       action={(
         <Button asChild>
           <Link href="/mentoring">
@@ -575,8 +575,8 @@ export function EmptyOrgStartups({ filtersActive, onClearFilters, className, act
     <ListEmptyState
       icon={Rocket}
       tone="info"
-      title={<BilingualText en="No startups in portfolio yet" el="Δεν υπάρχουν ακόμη νεοφυείς στο χαρτοφυλάκιο" wrap />}
-      description={<BilingualText en="Startups accepted into a program appear here." el="Οι νεοφυείς που γίνονται δεκτές σε πρόγραμμα εμφανίζονται εδώ." wrap />}
+      title={<BilingualText en="No startups in portfolio yet" el="Δεν υπάρχουν ακόμη startups στο χαρτοφυλάκιο" wrap />}
+      description={<BilingualText en="Startups accepted into a program appear here." el="Οι startups που γίνονται δεκτές σε πρόγραμμα εμφανίζονται εδώ." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Add startup" el="Προσθήκη startup" compact />
@@ -632,7 +632,7 @@ export function EmptyTenantPrograms({ filtersActive, onClearFilters, className, 
       icon={Award}
       tone="primary"
       title={<BilingualText en="No programs published" el="Δεν έχουν δημοσιευτεί προγράμματα" wrap />}
-      description={<BilingualText en="Workspaces with programs unlock applications, cohorts, and structured mentoring. Publish one to invite startups." el="Οι χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, κοόρτες και δομημένη καθοδήγηση. Δημοσιεύστε ένα για να προσκαλέσετε νεοφυείς." wrap />}
+      description={<BilingualText en="Workspaces with programs unlock applications, cohorts, and structured mentoring. Publish one to invite startups." el="Οι χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, κύκλους και δομημένη καθοδήγηση. Δημοσιεύστε ένα για να προσκαλέσετε startups." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> <BilingualText en="New program" el="Νέο πρόγραμμα" compact />

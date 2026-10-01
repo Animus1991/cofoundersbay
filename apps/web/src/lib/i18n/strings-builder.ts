@@ -4,7 +4,7 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   page_title: { en: 'Startup Builder', el: 'Startup Builder' },
   tagline: {
     en: 'Transform your idea into a validated startup plan with AI assistance.',
-    el: 'Μετατρέψτε την ιδέα σε επικυρωμένο πλάνο νεοφυούς με βοήθεια AI.',
+    el: 'Μετατρέψτε την ιδέα σε επικυρωμένο πλάνο startup με βοήθεια AI.',
   },
   loading: { en: 'Loading workspace…', el: 'Φόρτωση χώρου εργασίας…' },
   dismiss: { en: 'Dismiss', el: 'Απόρριψη' },
@@ -32,7 +32,7 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   collaborators: { en: 'Collaborators', el: 'Συνεργάτες' },
   invite: { en: 'Invite', el: 'Πρόσκληση' },
   new_document: { en: 'New Document', el: 'Νέο έγγραφο' },
-  startup_progress: { en: 'Startup Progress', el: 'Πρόοδος νεοφυούς' },
+  startup_progress: { en: 'Startup Progress', el: 'Πρόοδος startup' },
   overall_completion: { en: 'Overall Completion', el: 'Συνολική ολοκλήρωση' },
   quick_actions: { en: 'Quick Actions', el: 'Γρήγορες ενέργειες' },
   // The badges beside these buttons are document completeness, not the
@@ -75,10 +75,19 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   invite_first: { en: 'Invite First Collaborator', el: 'Πρόσκληση πρώτου συνεργάτη' },
   remove: { en: 'Remove', el: 'Αφαίρεση' },
   workspace_settings: { en: 'Workspace Settings', el: 'Ρυθμίσεις χώρου εργασίας' },
-  startup: { en: 'Startup', el: 'Νεοφυής' },
+  startup: { en: 'Startup', el: 'Εταιρεία' },
   industry: { en: 'Industry', el: 'Κλάδος' },
   stage: { en: 'Stage', el: 'Στάδιο' },
   visibility: { en: 'Visibility', el: 'Ορατότητα' },
+  visibility_private: { en: 'Private', el: 'Ιδιωτικός' },
+  visibility_team: { en: 'Team', el: 'Ομάδα' },
+  visibility_organization: { en: 'Organization', el: 'Οργανισμός' },
+  visibility_public: { en: 'Public', el: 'Δημόσιος' },
+  gaps_and_next: { en: 'Gaps and next steps', el: 'Κενά και επόμενα βήματα' },
+  recent_activity: { en: 'Recent activity', el: 'Πρόσφατη δραστηριότητα' },
+  ready_level_ready: { en: 'Ready', el: 'Έτοιμο' },
+  ready_level_developing: { en: 'Developing', el: 'Σε ανάπτυξη' },
+  ready_level_early: { en: 'Early', el: 'Πρώιμο' },
   reassess: { en: 'Reassess', el: 'Επαναξιολόγηση' },
   overall_readiness: { en: 'Overall Readiness Score', el: 'Συνολική βαθμολογία ετοιμότητας' },
   run_assessment: { en: 'Run Assessment', el: 'Εκτέλεση αξιολόγησης' },
@@ -147,6 +156,63 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   idea_pains: { en: 'Pain Points', el: 'Σημεία πόνου' },
   idea_pain_ph: { en: 'Enter a pain point…', el: 'Εισάγετε σημείο πόνου…' },
   idea_add_pain: { en: '+ Add Pain Point', el: '+ Προσθήκη σημείου πόνου' },
+  idea_assumptions_hint: {
+    en: 'The bets this idea depends on. Add one you can test.',
+    el: 'Οι υποθέσεις στις οποίες στηρίζεται η ιδέα. Προσθέστε μία που μπορείτε να ελέγξετε.',
+  },
+  idea_pains_hint: {
+    en: 'What hurts today — the reason someone would switch.',
+    el: 'Τι πονάει σήμερα — ο λόγος να αλλάξει κάποιος λύση.',
+  },
+  idea_saved: { en: 'Idea Core saved', el: 'Ο πυρήνας ιδέας αποθηκεύτηκε' },
+  idea_save_failed: { en: 'Could not save Idea Core', el: 'Δεν ήταν δυνατή η αποθήκευση του πυρήνα ιδέας' },
+  idea_ai_empty: {
+    en: 'Nothing new to fill — every field already has text. Ask AI to improve a weak line instead.',
+    el: 'Δεν έμεινε κενό πεδίο. Ρωτήστε το AI να βελτιώσει μια αδύναμη γραμμή.',
+  },
+  collab_history: { en: 'History', el: 'Ιστορικό' },
+  collab_history_tip: { en: 'View version history', el: 'Προβολή ιστορικού εκδόσεων' },
+  collab_variants: { en: 'Variants', el: 'Εκδοχές' },
+  collab_variants_tip: { en: 'Draft variants', el: 'Προσχέδια εκδοχών' },
+  collab_proposals: { en: 'Proposals', el: 'Προτάσεις' },
+  collab_proposals_tip: { en: 'Change proposals', el: 'Προτάσεις αλλαγών' },
+  collab_share: { en: 'Share', el: 'Κοινοποίηση' },
+  collab_share_tip: { en: 'Share document externally', el: 'Κοινοποίηση εγγράφου εκτός πλατφόρμας' },
+  collab_share_title: { en: 'Share Document', el: 'Κοινοποίηση εγγράφου' },
+  collab_share_desc: {
+    en: 'Create a shareable link for external stakeholders, mentors, or investors.',
+    el: 'Δημιουργήστε σύνδεσμο για εξωτερικούς συνεργάτες, μέντορες ή επενδυτές.',
+  },
+  collab_share_created: { en: 'Share link created', el: 'Ο σύνδεσμος δημιουργήθηκε' },
+  collab_share_failed: { en: 'Failed to create share link', el: 'Αποτυχία δημιουργίας συνδέσμου' },
+  collab_share_copied: { en: 'Link copied', el: 'Ο σύνδεσμος αντιγράφηκε' },
+  collab_share_label: { en: 'Label (optional)', el: 'Ετικέτα (προαιρετικά)' },
+  collab_share_permission: { en: 'Permission level', el: 'Επίπεδο δικαιωμάτων' },
+  collab_perm_view: { en: 'View', el: 'Προβολή' },
+  collab_perm_comment: { en: 'Comment', el: 'Σχόλιο' },
+  collab_perm_suggest: { en: 'Suggest', el: 'Πρόταση' },
+  collab_expires: { en: 'Expires in', el: 'Λήγει σε' },
+  collab_exp_1: { en: '1 day', el: '1 ημέρα' },
+  collab_exp_7: { en: '7 days', el: '7 ημέρες' },
+  collab_exp_30: { en: '30 days', el: '30 ημέρες' },
+  collab_exp_never: { en: 'Never', el: 'Ποτέ' },
+  collab_done: { en: 'Done', el: 'Τέλος' },
+  collab_cancel: { en: 'Cancel', el: 'Ακύρωση' },
+  collab_generate_link: { en: 'Generate Link', el: 'Δημιουργία συνδέσμου' },
+  hist_restore: { en: 'Restore', el: 'Επαναφορά' },
+  hist_restore_title: { en: 'Restore this version?', el: 'Επαναφορά αυτής της έκδοσης;' },
+  hist_restore_body: {
+    en: 'A backup of the current version is kept first. You can restore again if this is wrong.',
+    el: 'Πρώτα κρατείται αντίγραφο της τρέχουσας έκδοσης. Μπορείτε να επαναφέρετε ξανά αν αυτό είναι λάθος.',
+  },
+  hist_restore_cta: { en: 'Restore Version', el: 'Επαναφορά έκδοσης' },
+  hist_restore_ok: { en: 'Version restored', el: 'Η έκδοση επαναφέρθηκε' },
+  hist_restore_fail: { en: 'Failed to restore version', el: 'Αποτυχία επαναφοράς έκδοσης' },
+  hist_footer: {
+    en: 'Restore is on each previous version — the current one stays as-is.',
+    el: 'Η επαναφορά είναι σε κάθε προηγούμενη έκδοση — η τρέχουσα μένει ως έχει.',
+  },
+  hist_expires_never: { en: 'never', el: 'ποτέ' },
 
   bmc_title: { en: 'Business Model Canvas', el: 'Καμβάς επιχειρηματικού μοντέλου' },
   bmc_sub: { en: 'Map out your business model across 9 key components', el: 'Χαρτογραφήστε το μοντέλο σε 9 βασικά συστατικά' },
@@ -175,6 +241,9 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   bmc_revenue: { en: 'Revenue Streams', el: 'Ροές εσόδων' },
   bmc_revenue_desc: { en: 'How do you earn?', el: 'Πώς κερδίζετε;' },
   bmc_describe: { en: 'Describe this section…', el: 'Περιγράψτε αυτή την ενότητα…' },
+  bmc_conf_high: { en: 'Well defined', el: 'Καλά ορισμένο' },
+  bmc_conf_medium: { en: 'Needs a fuller line', el: 'Χρειάζεται πληρέστερη γραμμή' },
+  bmc_conf_low: { en: 'Still empty', el: 'Ακόμη κενό' },
 
   mkt_title: { en: 'Market Analysis', el: 'Ανάλυση αγοράς' },
   mkt_sub: { en: 'Market sizing, competitive landscape, and positioning', el: 'Μέγεθος αγοράς, ανταγωνισμός και τοποθέτηση' },
@@ -216,7 +285,7 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   mkt_advantage: { en: 'Competitive Advantage', el: 'Ανταγωνιστικό πλεονέκτημα' },
   mkt_diffs: { en: 'Key Differentiators', el: 'Κύριοι διαφοροποιητές' },
   mkt_add_diff: { en: '+ Add Differentiator', el: '+ Προσθήκη διαφοροποιητή' },
-  mkt_ph_value: { en: 'e.g., $50B', el: 'π.χ. $50B' },
+  mkt_ph_value: { en: 'e.g., $4B', el: 'π.χ. $4B' },
   mkt_ph_tam: { en: 'Describe the total market opportunity…', el: 'Περιγράψτε τη συνολική ευκαιρία αγοράς…' },
   mkt_ph_sources: { en: 'Research sources and reports…', el: 'Πηγές έρευνας και αναφορές…' },
   mkt_ph_sam: { en: 'Describe your serviceable market…', el: 'Περιγράψτε την εξυπηρετήσιμη αγορά…' },
@@ -232,6 +301,21 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   mkt_ph_pos: { en: 'For [target customer] who [need], [product] is a [category] that [key benefit]. Unlike [competitors], we [differentiator].', el: 'Για [πελάτη] που [ανάγκη], το [προϊόν] είναι [κατηγορία] που [όφελος]. Σε αντίθεση με [ανταγωνιστές], εμείς [διαφοροποίηση].' },
   mkt_ph_adv: { en: 'What is your sustainable competitive advantage?', el: 'Ποιο είναι το βιώσιμο ανταγωνιστικό πλεονέκτημα;' },
   mkt_ph_diff: { en: 'Enter a key differentiator…', el: 'Εισάγετε έναν διαφοροποιητή…' },
+  mkt_tam: { en: 'TAM (Total Addressable Market)', el: 'TAM (συνολικά προσβάσιμη αγορά)' },
+  mkt_sam: { en: 'SAM (Serviceable Addressable Market)', el: 'SAM (εξυπηρετήσιμη προσβάσιμη αγορά)' },
+  mkt_som: { en: 'SOM (Serviceable Obtainable Market)', el: 'SOM (ρεαλιστικά αποκτήσιμη αγορά)' },
+  mkt_indirect: { en: 'Indirect Competitors', el: 'Έμμεσοι ανταγωνιστές' },
+  mkt_no_indirect: {
+    en: 'No indirect competitors yet. Add one if a substitute already owns the job.',
+    el: 'Δεν υπάρχουν έμμεσοι ανταγωνιστές. Προσθέστε έναν αν ένα υποκατάστατο καλύπτει ήδη την ανάγκη.',
+  },
+  mkt_ph_share: { en: 'e.g., 15%', el: 'π.χ. 15%' },
+  mkt_ph_pricing: { en: 'e.g., Freemium, $99/mo', el: 'π.χ. Freemium, $99/μήνα' },
+  mkt_ph_budget: { en: 'e.g., $50–500/month', el: 'π.χ. $50–500/μήνα' },
+  mkt_ph_demo: { en: 'Age, location, company size, industry…', el: 'Ηλικία, τοποθεσία, μέγεθος εταιρείας, κλάδος…' },
+  mkt_ph_psycho: { en: 'Values, motivations, behaviors…', el: 'Αξίες, κίνητρα, συμπεριφορές…' },
+  mkt_ph_buying: { en: 'How do they make purchasing decisions?', el: 'Πώς παίρνουν αποφάσεις αγοράς;' },
+  mkt_impact: { en: 'Impact', el: 'Επίπτωση' },
 
   mvp_title: { en: 'MVP Planner', el: 'Σχεδιασμός MVP' },
   mvp_sub: { en: 'Define scope, prioritize features, and plan your launch', el: 'Ορίστε εύρος, προτεραιότητες λειτουργιών και λανσάρισμα' },
@@ -366,14 +450,14 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   pitch_ask: { en: 'Funding Ask', el: 'Αίτημα χρηματοδότησης' },
   pitch_company_ph: { en: 'Your company name', el: 'Όνομα εταιρείας' },
   pitch_tagline_ph: { en: 'Your company tagline', el: 'Σλόγκαν εταιρείας' },
-  pitch_ask_ph: { en: 'e.g., $500,000', el: 'π.χ. $500.000' },
+  pitch_ask_ph: { en: 'e.g., $750,000', el: 'π.χ. $750.000' },
   pitch_lead: {
     en: 'Slides stay linked to Builder artefacts — Idea Core, Market, Financials, and the Ask.',
     el: 'Οι διαφάνειες συνδέονται με τα παραδοτέα του Builder — ιδέα, αγορά, οικονομικά και αίτημα.',
   },
   pitch_complete_hint: {
-    en: 'Percent counts slides with content, not the number of outlines. Empty slides stay at 0%.',
-    el: 'Το ποσοστό μετρά διαφάνειες με περιεχόμενο, όχι τον αριθμό τους. Οι κενές μένουν στο 0%.',
+    en: 'Slides with content, out of at least the twelve a full deck needs. Empty outlines count as 0%.',
+    el: 'Διαφάνειες με περιεχόμενο, από τουλάχιστον τις δώδεκα ενός πλήρους deck. Τα κενά περιγράμματα μετρούν 0%.',
   },
   pitch_back: { en: 'Back to Startup Builder', el: 'Πίσω στον Startup Builder' },
   pitch_no_slides_list: { en: 'No slides yet. Generate a deck or add a template.', el: 'Δεν υπάρχουν διαφάνειες. Δημιουργήστε deck ή προσθέστε πρότυπο.' },
@@ -396,12 +480,17 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
     el: 'Οι τύποι που υπάρχουν ήδη παραμένουν ενεργοί — προσθέτουν άλλο αντίγραφο.',
   },
   pitch_filled: { en: 'filled', el: 'συμπληρωμένες' },
-  pitch_missing: { en: 'Missing slides', el: 'Κενές διαφάνειες' },
+  pitch_slides_written: { en: 'slides written', el: 'διαφάνειες γραμμένες' },
+  pitch_complete_how: { en: 'How completion is counted', el: 'Πώς μετριέται η ολοκλήρωση' },
+  pitch_missing: { en: 'Missing slides', el: 'Διαφάνειες που λείπουν' },
   pitch_next_write: { en: 'Write next', el: 'Γράψτε μετά' },
   pitch_add_remaining: { en: 'Add remaining slides', el: 'Προσθήκη υπόλοιπων' },
-  pitch_duplicate: { en: 'Duplicate', el: 'Αντίγραφο' },
-  pitch_copy: { en: 'Copy slide', el: 'Αντιγραφή διαφάνειας' },
-  pitch_copied: { en: 'Slide copied', el: 'Η διαφάνεια αντιγράφηκε' },
+  // Two different acts sit side by side — a second slide, and this slide's
+  // text on the clipboard — so the Greek must not share a verb.
+  pitch_duplicate: { en: 'Duplicate', el: 'Διπλότυπο' },
+  pitch_slide_actions: { en: 'Slide actions', el: 'Ενέργειες διαφάνειας' },
+  pitch_copy: { en: 'Copy text', el: 'Αντιγραφή κειμένου' },
+  pitch_copied: { en: 'Slide text copied', el: 'Το κείμενο της διαφάνειας αντιγράφηκε' },
   pitch_fill_core: { en: 'Fill from Idea Core', el: 'Συμπλήρωση από Πυρήνα ιδέας' },
   pitch_filled_core: { en: 'Empty slides filled from Idea Core and BMC.', el: 'Οι κενές διαφάνειες συμπληρώθηκαν από Πυρήνα ιδέας και BMC.' },
   pitch_unsaved: { en: 'Unsaved', el: 'Μη αποθηκευμένο' },
@@ -483,16 +572,16 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   ready_dim_exec: { en: 'Execution Capability', el: 'Ικανότητα εκτέλεσης' },
 
   app_title: { en: 'Application Generator', el: 'Γεννήτρια αιτήσεων' },
-  app_sub: { en: 'Generate applications for accelerators, grants, and competitions', el: 'Αιτήσεις για επιταχυντές, επιχορηγήσεις και διαγωνισμούς' },
+  app_sub: { en: 'Four templates — YC, Techstars, university, grants. Answers save on the same workspace artefact.', el: 'Τέσσερα πρότυπα — YC, Techstars, πανεπιστήμιο, επιχορηγήσεις. Οι απαντήσεις γράφονται στο ίδιο παραδοτέο.' },
   app_save_all: { en: 'Save All', el: 'Αποθήκευση όλων' },
   app_view: { en: 'View Program', el: 'Προβολή προγράμματος' },
   app_questions: { en: 'questions', el: 'ερωτήσεις' },
   app_answer_ph: { en: 'Enter your answer…', el: 'Εισάγετε την απάντηση…' },
   app_draft: { en: 'Draft', el: 'Πρόχειρο' },
   app_submitted: { en: 'Submitted', el: 'Υποβλήθηκε' },
-  app_yc_desc: { en: 'The most prestigious startup accelerator', el: 'Ο πιο αναγνωρισμένος επιταχυντής νεοφυών' },
+  app_yc_desc: { en: 'The most prestigious startup accelerator', el: 'Ο πιο αναγνωρισμένος επιταχυντής startups' },
   app_ts_desc: { en: 'Global accelerator network', el: 'Παγκόσμιο δίκτυο επιταχυντών' },
-  app_uni_desc: { en: 'Academic startup programs', el: 'Ακαδημαϊκά προγράμματα νεοφυών' },
+  app_uni_desc: { en: 'Academic startup programs', el: 'Ακαδημαϊκά προγράμματα για startups' },
   app_grant_desc: { en: 'Government and foundation grants', el: 'Κρατικές και ιδρυματικές επιχορηγήσεις' },
   app_deadline_rolling: { en: 'Rolling admissions', el: 'Συνεχείς αιτήσεις' },
   app_deadline_varies: { en: 'Varies by program', el: 'Διαφέρει ανά πρόγραμμα' },
@@ -501,9 +590,24 @@ export const BUILDER_STRINGS: Record<string, BilingualPair> = {
   // saved; the body line said both again. It keeps only what the header does
   // not: the assistant can draft answers.
   app_lead: {
-    en: 'Ask AI to draft any answer from your Idea Core, Market and Pitch.',
-    el: 'Ζητήστε από το AI να συντάξει οποιαδήποτε απάντηση από την Ιδέα, την Αγορά και το Pitch σας.',
+    en: 'Ask AI to draft empty answers from Idea Core, Market, and Pitch.',
+    el: 'Ζητήστε από το AI να συντάξει τις κενές απαντήσεις από τον Πυρήνα ιδέας, την Αγορά και το Pitch.',
   },
+  app_ask_plan: {
+    en: 'Ask AI to draft empty answers in this programme',
+    el: 'Ρωτήστε το AI να συντάξει κενές απαντήσεις σε αυτό το πρόγραμμα',
+  },
+  app_ask_hint_harbor: {
+    en: 'Propose YC, Techstars, university, or grant answers from Idea Core, the GTM board, and the $750K seed (Athens Tech Angels, $375K committed), filling only empty fields.',
+    el: 'Προτείνετε απαντήσεις YC, Techstars, πανεπιστημίου ή επιχορήγησης από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα), μόνο στα κενά πεδία.',
+  },
+  app_link_into: { en: 'Carry these drafts into', el: 'Μεταφέρετε αυτά τα πρόχειρα στο' },
+  app_link_idea: { en: 'Idea Core', el: 'Πυρήνας ιδέας' },
+  app_link_pitch: { en: 'Pitch deck', el: 'Pitch deck' },
+  app_link_research: { en: 'Research boards', el: 'Πίνακες έρευνας' },
+  app_link_fundraising: { en: 'Fundraising', el: 'Χρηματοδότηση' },
+  app_link_projects: { en: 'Projects', el: 'Έργα' },
+  app_link_readiness: { en: 'Readiness', el: 'Ετοιμότητα' },
   app_back: { en: 'Back to Startup Builder', el: 'Πίσω στον Startup Builder' },
   loading_apps: { en: 'Loading applications…', el: 'Φόρτωση αιτήσεων…' },
   app_saved: { en: 'Applications saved', el: 'Οι αιτήσεις αποθηκεύτηκαν' },
@@ -663,10 +767,34 @@ export const BUILDER_PREVIEW_HINT_EL: Record<string, string> = {
   'Finish Idea Core problem and unique value': 'Ολοκληρώστε το πρόβλημα και τη μοναδική αξία στο Idea Core',
   'Draft BMC value proposition and channels': 'Γράψτε value proposition και κανάλια στο BMC',
   'Book 5 discovery interviews': 'Κλείστε 5 συνεντεύξεις ανακάλυψης',
+  'Problem, audience, and unique value — sample for preview.': 'Πρόβλημα, κοινό και μοναδική αξία — δείγμα προεπισκόπησης.',
+  'Draft canvas — sample for preview.': 'Πρόχειρος καμβάς — δείγμα προεπισκόπησης.',
+  'Sizing and positioning — sample for preview.': 'Μέγεθος αγοράς και τοποθέτηση — δείγμα προεπισκόπησης.',
+  'Investor deck — sample for preview.': 'Παρουσίαση για επενδυτές — δείγμα προεπισκόπησης.',
+  'YC, Techstars, university, and grant drafts — sample for preview.': 'Προσχέδια για YC, Techstars, πανεπιστήμιο και επιχορηγήσεις — δείγμα προεπισκόπησης.',
 };
 
 export function builderDocLabel(type: string, lang: 'en' | 'el'): string {
   return BUILDER_DOC_TYPES[type]?.label[lang] ?? type;
+}
+
+/** Default titles the product gives documents that are not a type label verbatim. */
+const BUILDER_DEFAULT_TITLE_EL: Record<string, string> = {
+  'Business Model Canvas': 'Επιχειρηματικό μοντέλο',
+  'Program applications': 'Αιτήσεις σε προγράμματα',
+};
+
+/**
+ * Greek for a document title the product wrote, or null for one the founder
+ * wrote. New documents are created with the English type label as their
+ * title, so without this the Greek page shows "Idea Core" beside the
+ * "Πυρήνας ιδέας" tab that opens it.
+ */
+export function builderDocTitleEl(title: string | null | undefined): string | null {
+  if (!title) return null;
+  const byLabel = Object.values(BUILDER_DOC_TYPES).find((doc) => doc.label.en === title);
+  if (byLabel) return byLabel.label.el;
+  return BUILDER_DEFAULT_TITLE_EL[title] ?? null;
 }
 
 /**

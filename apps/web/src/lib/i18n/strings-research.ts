@@ -26,6 +26,7 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
   // Boards are masculine plural in Greek; these four agree with them.
   pinned: { en: 'Pinned', el: 'Καρφιτσωμένοι' },
   all_boards: { en: 'All boards', el: 'Όλοι οι πίνακες' },
+  your_boards: { en: 'Your boards', el: 'Οι πίνακές σας' },
   items: { en: 'items', el: 'στοιχεία' },
   empty_title: { en: 'No research boards yet', el: 'Δεν υπάρχουν πίνακες έρευνας' },
   empty_hint: {
@@ -160,6 +161,9 @@ export const RESEARCH_STRINGS: Record<string, BilingualPair> = {
     el: 'Αρχικοί κόμβοι προς επεξεργασία. Ίδιες διατάξεις με τη Χρήση προτύπου.',
   },
   templates_see_all: { en: 'See all templates', el: 'Όλα τα πρότυπα' },
+  filter_group_show: { en: 'Show', el: 'Εμφάνιση' },
+  filter_group_sort: { en: 'Sort by', el: 'Ταξινόμηση' },
+  filter_group_layout: { en: 'Layout', el: 'Διάταξη' },
   filter_all: { en: 'All', el: 'Όλοι' },
   filter_empty: { en: 'Empty', el: 'Κενοί' },
   filter_archived: { en: 'Archived', el: 'Αρχειοθετημένοι' },

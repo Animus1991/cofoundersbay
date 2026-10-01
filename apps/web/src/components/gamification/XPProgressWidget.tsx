@@ -7,6 +7,8 @@ import { useMyXP, useMyStreak } from '@/hooks/useGamification';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { bilingualAria } from '@/lib/i18n/format';
+import { LEVEL_LABEL_EL, REPUTATION_STRINGS } from '@/lib/i18n/strings-reputation';
 
 export function XPProgressWidget() {
   const { data: xp, isLoading: xpLoading } = useMyXP();
@@ -80,7 +82,9 @@ export function XPProgressWidget() {
                 {xp.level}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-lg font-semibold">{xp.levelLabel}</div>
+                <div className="text-lg font-semibold leading-snug">
+                  <BilingualText en={xp.levelLabel} el={LEVEL_LABEL_EL[xp.level] ?? xp.levelLabel} compact wrap />
+                </div>
                 <div className="text-sm text-muted-foreground">
                   {xp.totalXp.toLocaleString('en-GB')} XP
                 </div>
@@ -89,7 +93,7 @@ export function XPProgressWidget() {
           </div>
 
           <div className="space-y-1">
-            <Progress value={xp.levelProgress} label="Level progress" className="h-2" />
+            <Progress value={xp.levelProgress} label={bilingualAria('Level progress', 'Πρόοδος επιπέδου')} className="h-2" />
             <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
               <span className="min-w-0">
                 <BilingualText en={`Level ${xp.level}`} el={`Επίπεδο ${xp.level}`} compact />
@@ -131,18 +135,21 @@ export function XPProgressWidget() {
         {xp.recentEvents.length > 0 && (
           <div className="min-w-0 space-y-2">
             <div className="min-w-0 text-sm font-medium leading-snug text-muted-foreground">
-              <BilingualText en="Recent activity" el="Πρόσφατη δραστηριότητα" compact wrap />
+              {/* Not "Recent activity": the dashboard's activity feed already carries that name. */}
+              <BilingualText en="Recent XP" el="Πρόσφατοι πόντοι XP" compact wrap />
             </div>
-            <div className="space-y-1">
+            {/* A divided list, not tinted boxes: in the 242px page-tools rail the boxes'
+                padding left the label ~110px, and each language broke over two lines. */}
+            <div className="divide-y divide-border/40">
               {xp.recentEvents.slice(0, 3).map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between rounded-lg bg-muted/50 p-2 text-xs"
+                  className="flex items-center justify-between gap-2 py-1.5 text-xs"
                 >
-                  <span className="min-w-0 truncate pr-2 text-muted-foreground">
-                    {formatEventType(event.eventType)}
+                  <span className="min-w-0 leading-snug text-muted-foreground">
+                    <BilingualText {...eventTypeLabel(event.eventType)} stacked wrap />
                   </span>
-                  <span className="font-medium text-status-warning">
+                  <span className="shrink-0 whitespace-nowrap font-medium tabular-nums text-status-warning">
                     +{event.xpAmount} XP
                   </span>
                 </div>
@@ -155,9 +162,13 @@ export function XPProgressWidget() {
   );
 }
 
-function formatEventType(eventType: string): string {
-  return eventType
+/** The reputation page's names for XP events; an unknown type falls back to its readable enum. */
+function eventTypeLabel(eventType: string): { en: string; el: string } {
+  const known = REPUTATION_STRINGS[`ev_${eventType}`];
+  if (known) return known;
+  const readable = eventType
     .toLowerCase()
     .replace(/_/g, ' ')
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+    .replace(/^\w/, (l) => l.toUpperCase());
+  return { en: readable, el: readable };
 }

@@ -17,7 +17,7 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { translate } from '@/lib/i18n/translate';
 
-const themeConfig = [
+export const THEME_OPTIONS = [
   {
     name: 'dark' as ThemeName,
     label: 'Dark',
@@ -88,7 +88,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     );
   }
 
-  const CurrentIcon = themeConfig.find((t) => t.name === currentTheme)?.icon || Moon;
+  const CurrentIcon = THEME_OPTIONS.find((t) => t.name === currentTheme)?.icon || Moon;
 
   return (
     <DropdownMenu>
@@ -103,7 +103,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {themeConfig.map((theme, idx) => {
+        {THEME_OPTIONS.map((theme, idx) => {
           const isActive = currentTheme === theme.name;
           return (
             <div key={theme.name}>

@@ -23,6 +23,7 @@ import {
   listPrograms,
   respondToMentorRequest,
   assessReadiness,
+  pickReadinessDimensions,
   createEvent,
   createMilestone,
   deleteMilestone,
@@ -166,8 +167,10 @@ async function writeCriterion(
     return { ok: false, error: 'No workspace selected. Create one first, then tick criteria.' };
   }
 
-  const { assessment } = await assessReadiness({ workspaceId });
-  const score = assessment.dimensions.find((entry) => entry.dimension === dimension);
+  const response = await assessReadiness({ workspaceId });
+  const dimensions = pickReadinessDimensions(response);
+  if (!dimensions) return { ok: false, error: 'Readiness assessment is unavailable' };
+  const score = dimensions.find((entry) => entry.dimension === dimension);
   const criterion = score?.criteria?.find((entry) => entry.id === criterionId);
   if (!criterion) return { ok: false, error: 'That criterion is not part of this dimension' };
   if (criterion.completed === completed) {

@@ -154,7 +154,10 @@ export function NotificationsBell({ className }: { className?: string }) {
           className={cn('relative', className)}
           aria-label={
             unread > 0
-              ? bilingualAria(`Notifications (${unread} unread)`, `Ειδοποιήσεις (${unread} μη αναγνωσμένες)`)
+              ? bilingualAria(
+                  `Notifications (${unread} unread)`,
+                  `Ειδοποιήσεις (${unread} ${unread === 1 ? 'μη αναγνωσμένη' : 'μη αναγνωσμένες'})`,
+                )
               : bilingualAria('Notifications', 'Ειδοποιήσεις')
           }
         >
@@ -175,7 +178,7 @@ export function NotificationsBell({ className }: { className?: string }) {
             </span>
             {unread > 0 && (
               <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary-accessible">
-                <BilingualText en={`${unread} new`} el={`${unread} νέες`} compact />
+                <BilingualText en={`${unread} new`} el={`${unread} ${unread === 1 ? 'νέα' : 'νέες'}`} compact />
               </span>
             )}
           </div>

@@ -87,7 +87,9 @@ export function MobileBottomNav() {
         <TabLabel en={tab.label} el={tab.labelEl} />
         {badge > 0 && (
           <span className="sr-only">
-            {bilingualAria(`${badge} unread messages`, `${badge} αδιάβαστα μηνύματα`)}
+            {badge === 1
+              ? bilingualAria('1 unread message', '1 αδιάβαστο μήνυμα')
+              : bilingualAria(`${badge} unread messages`, `${badge} αδιάβαστα μηνύματα`)}
           </span>
         )}
       </OptimizedLink>

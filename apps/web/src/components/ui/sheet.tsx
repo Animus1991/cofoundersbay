@@ -18,7 +18,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={cn(
-      'fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'fixed inset-0 z-[60] bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className
     )}
     {...props}
@@ -28,7 +28,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  'fixed z-[60] gap-4 bg-card/95 backdrop-blur-xl p-6 shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300',
+  'fixed z-[60] gap-4 border-border bg-card p-6 shadow-none transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300',
   {
     variants: {
       side: {
@@ -56,6 +56,7 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      data-surface="overlay"
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >
@@ -64,7 +65,7 @@ const SheetContent = React.forwardRef<
           Their sr-only "Close" is deliberately not carried over: alongside an
           aria-label it would be a second, conflicting accessible name. */}
       <DialogPrimitive.Close
-        className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground opacity-80 transition-colors hover:bg-secondary hover:text-foreground hover:opacity-100 focus-ring disabled:pointer-events-none"
+        className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground opacity-80 transition-colors hover:bg-secondary hover:text-foreground hover:opacity-100 focus-ring disabled:pointer-events-none"
         aria-label={bilingualAria('Close panel', 'Κλείσιμο πλαισίου')}
       >
         <X className="icon-sm" aria-hidden="true" />

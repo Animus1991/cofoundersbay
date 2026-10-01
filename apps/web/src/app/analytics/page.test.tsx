@@ -71,6 +71,11 @@ describe('analytics clarity and controls', () => {
     expect(container.textContent).not.toMatch(/null%|undefined|NaN/);
     expect(container.querySelector('polyline')).toBeNull();
     expect(container.querySelector('.hover-lift')).toBeNull();
+    // Highlights used to restate every tile delta before the numbers; sparks
+    // used to be invented for metrics with no series. Both said "This window".
+    expect(screen.queryByText('This window')).toBeNull();
+    expect(screen.getByText(/Connection requests are not counted yet/)).toBeTruthy();
+    expect(screen.getByText('Network Velocity')).toBeTruthy();
   });
 
   it('announces the selected period and preserves filter and refresh requests', async () => {

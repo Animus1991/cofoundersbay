@@ -134,7 +134,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 <Users className="icon-sm" aria-hidden="true" />
                 {cohort.mentors == null
                   ? <BilingualText en={`${cohort.startups} members`} el={`${cohort.startups} μέλη`} compact />
-                  : <BilingualText en={`${cohort.startups} startups`} el={`${cohort.startups} νεοφυείς`} compact />}
+                  : <BilingualText en={`${cohort.startups} startups`} el={`${cohort.startups} startups`} compact />}
               </span>
               {cohort.mentors != null && (
                 <span className="flex items-center gap-1">
@@ -194,9 +194,9 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
               <UnavailableMenuItem
                 icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
                 en="Edit Cohort"
-                el="Επεξεργασία κοόρτης"
+                el="Επεξεργασία κύκλου"
                 reasonEn="Cohorts are edited by platform administrators for now."
-                reasonEl="Οι κοόρτες επεξεργάζονται προς το παρόν από διαχειριστές πλατφόρμας."
+                reasonEl="Οι κύκλοι επεξεργάζονται προς το παρόν από διαχειριστές της πλατφόρμας."
               />
               <UnavailableMenuItem
                 className="text-destructive-accessible"
@@ -204,7 +204,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 en="Archive"
                 el="Αρχειοθέτηση"
                 reasonEn="Cohorts are archived by platform administrators for now."
-                reasonEl="Οι κοόρτες αρχειοθετούνται προς το παρόν από διαχειριστές πλατφόρμας."
+                reasonEl="Οι κύκλοι αρχειοθετούνται προς το παρόν από διαχειριστές της πλατφόρμας."
               />
             </DropdownMenuContent>
           </DropdownMenu>
@@ -268,7 +268,7 @@ export default function OrgCohortsPage() {
   // cohorts on screen. Editing and archiving stay with platform admins (the
   // row menu says so), so there is no write to offer here.
   usePageControls([
-    choiceControl('status_filter', 'Cohort status', 'Κατάσταση κοόρτης', [
+    choiceControl('status_filter', 'Cohort status', 'Κατάσταση κύκλου', [
       { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
       { value: 'recruiting', en: 'Recruiting', el: 'Δέχεται αιτήσεις' },
       { value: 'active', en: 'Active', el: 'Ενεργές' },
@@ -277,12 +277,12 @@ export default function OrgCohortsPage() {
     {
       id: 'open_cohort',
       labelEn: 'Open a cohort',
-      labelEl: 'Άνοιγμα κοόρτης',
+      labelEl: 'Άνοιγμα κύκλου',
       writes: false,
       options: rowOptions(filteredCohorts, (c) => c.id, (c) => c.name),
       // A sample cohort opens the same sample on its own page.
       unavailableEn: filteredCohorts.length === 0 ? 'No cohort is listed.' : undefined,
-      unavailableEl: filteredCohorts.length === 0 ? 'Δεν εμφανίζεται καμία κοόρτη.' : undefined,
+      unavailableEl: filteredCohorts.length === 0 ? 'Δεν εμφανίζεται κανένας κύκλος.' : undefined,
       run: (id) => { if (id) router.push(`/org/cohorts/${id}`); },
     },
     {
@@ -299,7 +299,7 @@ export default function OrgCohortsPage() {
     {
       id: 'cohorts',
       labelEn: 'Cohorts',
-      labelEl: 'Κοόρτες',
+      labelEl: 'Κύκλοι',
       rows: isLoading ? undefined : filteredCohorts.map((c) =>
         `${c.name} · ${c.program} · ${c.status} · ${c.startups} ${c.mentors == null ? 'members' : 'startups'} · ${c.startDate} – ${c.endDate} · ${c.progress}%`,
       ),
@@ -309,14 +309,14 @@ export default function OrgCohortsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Cohorts"
       description="Manage program cohorts and participants"
-      descriptionEl="Διαχειριστείτε τις κοόρτες και τους συμμετέχοντες των προγραμμάτων"
+      descriptionEl="Διαχειριστείτε τους κύκλους και τους συμμετέχοντες των προγραμμάτων"
       actions={
         // Had no handler; cohorts are created on the platform-admin route.
         <Button className="gap-1.5" disabled title="Cohorts are created by platform administrators for now">
-          <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέα κοόρτη" compact />
+          <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέος κύκλος" compact />
         </Button>
       }
     >
@@ -353,8 +353,8 @@ export default function OrgCohortsPage() {
             { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length, icon: Award, tone: 'accent' as const },
             { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
             totalMentors == null
-              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κοόρτες', value: totalStartups, icon: Rocket, tone: 'info' as const }
-              : { label: 'Total Startups', labelEl: 'Σύνολο νεοφυών', value: totalStartups, icon: Rocket, tone: 'info' as const },
+              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κύκλους', value: totalStartups, icon: Rocket, tone: 'info' as const }
+              : { label: 'Total Startups', labelEl: 'Σύνολο startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
             { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
           ].map(({ label, labelEl, value, icon: Icon, tone }) => (
             <Card key={label}>

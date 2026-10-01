@@ -91,8 +91,8 @@ export function ChatBubble() {
         aria-haspopup="dialog"
         aria-expanded={false}
         className={cn(
-          'pointer-events-auto relative flex items-center justify-center rounded-full shadow-lg transition-transform duration-200',
-          'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105',
+          'pointer-events-auto relative flex items-center justify-center rounded-full shadow-none transition-colors duration-200',
+          'bg-primary text-primary-foreground hover:bg-primary/90',
           'outline-none focus-visible:ring-2 focus-visible:ring-primary-accessible focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           isDragging && 'scale-95 cursor-grabbing',
         )}

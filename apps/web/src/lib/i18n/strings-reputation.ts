@@ -66,7 +66,7 @@ export const REPUTATION_STRINGS: Record<string, BilingualPair> = {
   no_xp_yet_title: { en: 'No XP yet', el: 'Χωρίς πόντους ακόμη' },
   no_xp_yet_desc: {
     en: 'Points arrive as you build: creating and completing Builder artifacts, finishing milestones, giving and applying feedback, and showing up day after day.',
-    el: 'Οι πόντοι έρχονται καθώς χτίζετε: δημιουργώντας και ολοκληρώνοντας τεκμήρια στον Builder, κλείνοντας ορόσημα, δίνοντας και εφαρμόζοντας ανατροφοδότηση, και εμφανιζόμενοι μέρα με τη μέρα.',
+    el: 'Οι πόντοι έρχονται καθώς χτίζετε: δημιουργώντας και ολοκληρώνοντας παραδοτέα στον Builder, κλείνοντας ορόσημα, δίνοντας και εφαρμόζοντας ανατροφοδότηση, και εμφανιζόμενοι μέρα με τη μέρα.',
   },
   streak_title: { en: 'Streak', el: 'Σερί' },
   streak_desc: { en: 'Consecutive days with at least one qualifying action.', el: 'Συνεχόμενες ημέρες με τουλάχιστον μία ενέργεια που μετρά.' },
@@ -95,12 +95,12 @@ export const REPUTATION_STRINGS: Record<string, BilingualPair> = {
   no_history: { en: 'Nothing recorded yet.', el: 'Δεν έχει καταγραφεί τίποτα ακόμη.' },
 
   // ── event types (mirror of EVENT_CONFIG keys in apps/api gamification.types.ts) ──
-  ev_CREATE_ARTIFACT: { en: 'Created an artifact', el: 'Δημιουργία τεκμηρίου' },
-  ev_COMPLETE_ARTIFACT: { en: 'Completed an artifact', el: 'Ολοκλήρωση τεκμηρίου' },
-  ev_IMPROVE_ARTIFACT: { en: 'Improved an artifact', el: 'Βελτίωση τεκμηρίου' },
+  ev_CREATE_ARTIFACT: { en: 'Created an artifact', el: 'Δημιουργία παραδοτέου' },
+  ev_COMPLETE_ARTIFACT: { en: 'Completed an artifact', el: 'Ολοκλήρωση παραδοτέου' },
+  ev_IMPROVE_ARTIFACT: { en: 'Improved an artifact', el: 'Βελτίωση παραδοτέου' },
   ev_CREATE_BOARD: { en: 'Created a research board', el: 'Δημιουργία πίνακα έρευνας' },
   ev_SYNTHESIZE_BOARD: { en: 'Synthesised a board', el: 'Σύνθεση πίνακα' },
-  ev_LINK_ARTIFACTS: { en: 'Linked artifacts', el: 'Σύνδεση τεκμηρίων' },
+  ev_LINK_ARTIFACTS: { en: 'Linked artifacts', el: 'Σύνδεση παραδοτέων' },
   ev_INVITE_COLLABORATOR: { en: 'Invited a collaborator', el: 'Πρόσκληση συνεργάτη' },
   ev_TEAM_CONTRIBUTION: { en: 'Team contribution', el: 'Συνεισφορά ομάδας' },
   ev_HIGH_QUALITY_CONTRIBUTION: { en: 'High-quality contribution', el: 'Συνεισφορά υψηλής ποιότητας' },
@@ -124,7 +124,7 @@ export const REPUTATION_STRINGS: Record<string, BilingualPair> = {
   // ── tips ──
   tips_title: { en: 'How to earn more', el: 'Πώς να κερδίσετε περισσότερα' },
   tip_build_title: { en: 'Build in the Startup Builder', el: 'Χτίστε στο Startup Builder' },
-  tip_build_desc: { en: 'Creating and completing artifacts is the largest source of XP.', el: 'Η δημιουργία και ολοκλήρωση τεκμηρίων είναι η μεγαλύτερη πηγή πόντων.' },
+  tip_build_desc: { en: 'Creating and completing artifacts is the largest source of XP.', el: 'Η δημιουργία και ολοκλήρωση παραδοτέων είναι η μεγαλύτερη πηγή πόντων.' },
   tip_milestone_title: { en: 'Close a milestone', el: 'Κλείστε ένα ορόσημο' },
   tip_milestone_desc: { en: 'Completed milestones pay out once, and count toward validated progress.', el: 'Τα ολοκληρωμένα ορόσημα πληρώνουν μία φορά και μετρούν στην επικυρωμένη πρόοδο.' },
   tip_feedback_title: { en: 'Give and apply feedback', el: 'Δώστε και εφαρμόστε ανατροφοδότηση' },
@@ -141,7 +141,7 @@ export const REPUTATION_STRINGS: Record<string, BilingualPair> = {
 export const LEVEL_LABEL_EL: Record<number, string> = {
   1: 'Σπόρος ιδρυτή',
   2: 'Εξερευνητής ιδέας',
-  3: 'Χτίστης',
+  3: 'Δημιουργός',
   4: 'Επικυρωμένος ιδρυτής',
   5: 'Αναζητητής market fit',
   6: 'Αρχιτέκτονας ανάπτυξης',

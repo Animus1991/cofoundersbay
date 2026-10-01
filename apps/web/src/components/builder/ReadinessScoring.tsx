@@ -18,7 +18,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT } from './BuilderStageChrome';
 import { builderEn, builderEl, BUILDER_PREVIEW_HINT_EL } from '@/lib/i18n/strings-builder';
-import { assessReadiness, updateReadinessCriterion, type ReadinessScore } from '@/lib/api';
+import { assessReadiness, pickReadinessDimensions, updateReadinessCriterion, type ReadinessScore } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 interface ReadinessDimension {
   id: string;
@@ -248,6 +249,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expandedDimension, setExpandedDimension] = useState<string | null>(null);
+  const { error: toastError } = useToast();
 
   const applyDimensions = useCallback((scored: ReadinessScore[]) => {
     const byDimension = new Map(scored.map((d) => [d.dimension, d]));
@@ -284,8 +286,14 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
     if (!workspaceId) return;
     setIsAnalyzing(true);
     try {
-      const { assessment } = await assessReadiness({ workspaceId });
-      applyDimensions(assessment.dimensions);
+      const scored = pickReadinessDimensions(await assessReadiness({ workspaceId }));
+      if (!scored) {
+        toastError('Analysis failed');
+        return;
+      }
+      applyDimensions(scored);
+    } catch {
+      toastError('Analysis failed');
     } finally {
       setIsAnalyzing(false);
     }
@@ -400,7 +408,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                 <BilingualText en={builderEn('full_readiness_report')} el={builderEl('full_readiness_report')} compact />
               </Link>
             </Button>
-            <Button size="sm" className={BUILDER_BTN} onClick={analyzeReadiness} disabled={isAnalyzing}>
+            <Button type="button" size="sm" className={BUILDER_BTN} onClick={() => void analyzeReadiness()} disabled={isAnalyzing}>
               {isAnalyzing ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isAnalyzing ? builderEn('analyzing') : builderEn('ready_analyze')}
@@ -459,8 +467,8 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                 <BilingualText en={builderEn('ready_stage')} el={builderEl('ready_stage')} compact />
               </h3>
               <div className="mb-2 flex items-center gap-2">
-                <CfbGlyph name="flag" className="icon-md text-primary-accessible" />
-                <span className="builder-title text-lg font-semibold tracking-tight">
+                <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
+                <span className="page-section font-semibold tracking-tight">
                   <BilingualText
                     en={STAGE_LABEL[data.readinessLevel]?.en ?? data.readinessLevel}
                     el={STAGE_LABEL[data.readinessLevel]?.el ?? data.readinessLevel}
@@ -496,7 +504,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                 <h3 className="mb-2 text-sm font-medium text-muted-foreground">
                   <BilingualText en={builderEn('ready_dims')} el={builderEl('ready_dims')} compact />
                 </h3>
-                {data.dimensions.slice(0, 4).map(dim => (
+                {data.dimensions.map(dim => (
                   <div key={dim.id} className="flex items-center justify-between text-sm mb-1">
                     <span>
                       <BilingualText
@@ -526,7 +534,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
             <Card className={STATUS.danger.border}>
               <CardHeader className="pb-3">
                 <CardTitle className={cn("flex items-center gap-2", STATUS.danger.text)}>
-                  <XCircle className="icon-md" />
+                  <XCircle className="icon-sm" />
                   <BilingualText en={builderEn('ready_blockers')} el={builderEl('ready_blockers')} compact />
                 </CardTitle>
               </CardHeader>
@@ -549,7 +557,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
             <Card className={STATUS.success.border}>
               <CardHeader className="pb-3">
                 <CardTitle className={cn("flex items-center gap-2", STATUS.success.text)}>
-                  <CfbGlyph name="spark" className="icon-md" />
+                  <CfbGlyph name="spark" className="icon-sm" />
                   <BilingualText en={builderEn('ready_next')} el={builderEl('ready_next')} compact />
                 </CardTitle>
               </CardHeader>
@@ -587,8 +595,8 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <CfbGlyph name={dimension.glyph} className="icon-md" />
+                  <CardTitle className="flex items-center gap-2">
+                    <CfbGlyph name={dimension.glyph} className="icon-sm" />
                     <BilingualText
                       en={DIM_LABEL[dimension.id]?.en ?? dimension.name}
                       el={DIM_LABEL[dimension.id]?.el ?? dimension.name}
@@ -600,7 +608,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                       {dimension.score}%
                     </Badge>
                     <StatusIcon className={cn(
-                      "icon-md",
+                      "icon-sm",
                       readinessClasses(dimension.status).text
                     )} />
                   </div>

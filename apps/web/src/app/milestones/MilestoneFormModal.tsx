@@ -8,6 +8,7 @@ import { useModalA11y } from '@/hooks/useModalA11y';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import {
@@ -143,29 +144,27 @@ export function MilestoneFormModal({
         aria-modal="true"
         aria-labelledby="milestone-modal-title"
         tabIndex={-1}
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl animate-fade-in"
+        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-none animate-fade-in"
+        data-surface="overlay"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
-            <h2 id="milestone-modal-title" className="text-sm font-semibold text-foreground">
-              <BilingualText
-                en={isEdit ? milestoneEn('modal_edit') : milestoneEn('modal_new')}
-                el={isEdit ? milestoneEl('modal_edit') : milestoneEl('modal_new')}
-              />
-            </h2>
-          </div>
+          <h2 id="milestone-modal-title" className="page-section font-semibold text-foreground">
+            <BilingualText
+              en={isEdit ? milestoneEn('modal_edit') : milestoneEn('modal_new')}
+              el={isEdit ? milestoneEl('modal_edit') : milestoneEl('modal_new')}
+            />
+          </h2>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => openAskAi()}
               className="inline-flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10"
             >
-              <CfbGlyph name="spark" className="icon-sm" />
               <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
             </button>
             <button
+              type="button"
               onClick={onClose}
               className="rounded-xl p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label={bilingualAria(commonEn('close'), commonEl('close'))}
@@ -316,7 +315,7 @@ export function MilestoneFormModal({
               onChange={(e) => set('collaboratorId', e.target.value)}
               placeholder={t(milestoneEn('collab_ph'), milestoneEl('collab_ph'))}
             />
-            <p className="text-2xs text-muted-foreground">
+            <p className="type-hold text-2xs text-muted-foreground">
               <BilingualText en={milestoneEn('collab_hint')} el={milestoneEl('collab_hint')} />
             </p>
           </div>
@@ -346,7 +345,7 @@ export function MilestoneFormModal({
               type="submit"
               size="sm"
               disabled={isSubmitting || !form.title.trim()}
-              className="min-w-[100px] rounded-xl"
+              className={`min-w-[100px] ${BUILDER_BTN}`}
             >
               {isSubmitting
                 ? <BilingualText en={milestoneEn('saving')} el={milestoneEl('saving')} compact />

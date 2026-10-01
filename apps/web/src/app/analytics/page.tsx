@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { useQuery } from '@tanstack/react-query';
 import {
   getAnalyticsAchievements,
@@ -76,13 +77,26 @@ function AskAiButton({
   variant?: 'outline' | 'ghost' | 'secondary';
   className?: string;
 }) {
+  const popup = usePopupChatOptional();
+  const buttonClass = cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className);
+  const label = (
+    <>
+      <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
+      <BilingualText en={labelEn ?? analyticsEn('ask_ai')} el={labelEl ?? analyticsEl('ask_ai')} compact wrap />
+    </>
+  );
+  // Asks in place, like the header's Ask AI: /ai?q= would leave the page and its context behind.
+  if (popup && prompt) {
+    return (
+      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => popup.ask(prompt)}>
+        {label}
+      </Button>
+    );
+  }
   const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
   return (
-    <Button asChild variant={variant} size="sm" className={cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className)}>
-      <Link href={href}>
-        <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
-        <BilingualText en={labelEn ?? analyticsEn('ask_ai')} el={labelEl ?? analyticsEl('ask_ai')} compact wrap />
-      </Link>
+    <Button asChild variant={variant} size="sm" className={buttonClass}>
+      <Link href={href}>{label}</Link>
     </Button>
   );
 }
@@ -136,14 +150,16 @@ function MetricCard({
     : metric.label === 'Activity Score' || metric.label === 'Profile Views' ? 'growth'
     : null;
 
+  // `h-full` down the chain, so every card fills its grid row; the Profile
+  // Views card is taller than the rest by its sparkline.
   const body = (
-    <Card className="min-w-0 border-border/60 transition-colors hover:border-border">
+    <Card className="h-full min-w-0 border-border/60 transition-colors hover:border-border">
       <CardContent className="p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(
-              'flex items-center gap-1 text-2xs font-medium tabular-nums',
+              'page-stat-label flex items-center gap-1 font-medium tabular-nums',
               metric.changeType === 'increase'
                 ? TREND.up
                 : metric.changeType === 'decrease'
@@ -151,18 +167,18 @@ function MetricCard({
                 : 'text-muted-foreground',
             )}
           >
-            <ChangeIcon className="icon-sm" />
+            <ChangeIcon className="size-[1.08em] shrink-0" />
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
           </span>
         </div>
-        <h3 className="page-stat mb-1 text-xl font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
-        <p className="page-stat-label text-xs leading-snug text-muted-foreground">
+        <h3 className="page-stat mb-1 font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
+        <p className="page-stat-label leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
         </p>
         {sparkValues && sparkValues.length > 1 && (
           <div className="mt-3">
             <Sparkline values={sparkValues} />
-            <p className="mt-1 text-2xs text-muted-foreground">
+            <p className="page-stat-label mt-1 text-muted-foreground">
               <BilingualText en={analyticsEn('spark_caption')} el={analyticsEl('spark_caption')} wrap />
             </p>
           </div>
@@ -173,14 +189,14 @@ function MetricCard({
 
   if (href) {
     return (
-      <Link href={href} className="min-w-0 rounded-2xl focus-ring">
+      <Link href={href} className="block h-full min-w-0 rounded-2xl focus-ring">
         {body}
       </Link>
     );
   }
   if (tab && onOpenTab) {
     return (
-      <button type="button" className="min-w-0 rounded-2xl text-left focus-ring" onClick={() => onOpenTab(tab)}>
+      <button type="button" className="block h-full min-w-0 rounded-2xl text-left focus-ring" onClick={() => onOpenTab(tab)}>
         {body}
       </button>
     );
@@ -208,11 +224,16 @@ function Sparkline({ values, color = 'hsl(var(--primary))' }: { values: number[]
 function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? null;
   const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? null;
+  // Only stages the API actually counts. Requests and conversations have never
+  // been a field — drawing them at 0% with a dash was a hollow funnel, not a
+  // measurement. Those destinations stay as the next action, not as fake bars.
   const stages = [
     { key: 'views', labelEn: analyticsEn('stage_views'), labelEl: analyticsEl('stage_views'), value: views, bar: 'bg-primary/70', href: '/profile' as const },
-    { key: 'requests', labelEn: analyticsEn('stage_requests'), labelEl: analyticsEl('stage_requests'), value: null, bar: 'bg-status-info', href: '/discover' as const },
     { key: 'accepted', labelEn: analyticsEn('stage_accepted'), labelEl: analyticsEl('stage_accepted'), value: connections, bar: 'bg-status-success', href: '/connections' as const },
-    { key: 'conversations', labelEn: analyticsEn('stage_conversations'), labelEl: analyticsEl('stage_conversations'), value: null, bar: 'bg-status-warning', href: '/messages' as const },
+  ];
+  const untracked = [
+    { key: 'requests', href: '/discover' as const, en: analyticsEn('funnel_untracked_requests'), el: analyticsEl('funnel_untracked_requests') },
+    { key: 'conversations', href: '/messages' as const, en: analyticsEn('funnel_untracked_conversations'), el: analyticsEl('funnel_untracked_conversations') },
   ];
   const maximum = Math.max(1, ...stages.map((stage) => stage.value ?? 0));
   const conversion =
@@ -222,20 +243,20 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   return (
     <Card className="min-w-0">
       <CardHeader className="p-3 sm:p-6">
-        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+        <CardTitle className="flex items-center gap-2 font-semibold">
           <CfbGlyph name="people" className="icon-sm shrink-0 text-primary-accessible" />
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} wrap />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3.5 p-3 pt-0 sm:p-6 sm:pt-0">
-        <p className="text-xs text-muted-foreground">
+        <p className="page-stat-label text-muted-foreground">
           <BilingualText en={analyticsEn('funnel_note')} el={analyticsEl('funnel_note')} />
         </p>
         {stages.map((s) => (
           <Link key={s.key} href={s.href} className="block space-y-1.5 rounded-lg focus-ring">
-            <div className="flex items-center justify-between text-xs">
-              <span className="min-w-0 text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} wrap /></span>
-              <span className="shrink-0 font-semibold text-foreground">{s.value === null ? '—' : s.value.toLocaleString('en-GB')}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="page-stat-label min-w-0 text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} wrap /></span>
+              <span className="shrink-0 text-sm font-semibold tabular-nums">{s.value === null ? '—' : s.value.toLocaleString('en-GB')}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-secondary/40">
               <div className={cn('h-full rounded-full transition-all duration-700', s.bar)} style={{ width: `${(s.value ?? 0) / maximum * 100}%` }} />
@@ -243,53 +264,24 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           </Link>
         ))}
         {conversion !== null && (
-          <p className="pt-1 text-xs font-medium tabular-nums text-foreground">
+          <p className="page-stat-label pt-1 font-medium tabular-nums text-foreground">
             {conversion}%{' '}
             <span className="font-normal text-muted-foreground">
               <BilingualText en={analyticsEn('view_to_connect')} el={analyticsEl('view_to_connect')} wrap />
             </span>
           </p>
         )}
+        <div className="space-y-2 border-t border-border/50 pt-3">
+          {untracked.map((row) => (
+            <Link key={row.key} href={row.href} className="block rounded-lg focus-ring">
+              <p className="page-stat-label text-muted-foreground">
+                <BilingualText en={row.en} el={row.el} wrap />
+              </p>
+            </Link>
+          ))}
+        </div>
       </CardContent>
     </Card>
-  );
-}
-
-function WindowHighlights({ metrics }: { metrics: AnalyticsMetric[] }) {
-  const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? null;
-  const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? null;
-  const conversion =
-    typeof views === 'number' && views > 0 && typeof connections === 'number'
-      ? Math.round((connections / views) * 1000) / 10
-      : null;
-  const movers = metrics.filter((m) => m.change !== null);
-  if (movers.length === 0 && conversion === null) return null;
-  return (
-    <div className="flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-2 rounded-2xl border border-border/60 px-4 py-3 text-xs">
-      <span className="font-medium text-foreground">
-        <BilingualText en={analyticsEn('window_highlights')} el={analyticsEl('window_highlights')} wrap />
-      </span>
-      {movers.map((m) => (
-        <span
-          key={m.label}
-          className={cn(
-            'tabular-nums',
-            m.changeType === 'increase' ? TREND.up : m.changeType === 'decrease' ? TREND.down : 'text-muted-foreground',
-          )}
-        >
-          <BilingualText
-            en={`${m.changeType === 'increase' ? '+' : m.changeType === 'decrease' ? '−' : ''}${Math.abs(m.change ?? 0)}% ${m.label}`}
-            el={`${m.changeType === 'increase' ? '+' : m.changeType === 'decrease' ? '−' : ''}${Math.abs(m.change ?? 0)}% ${m.labelEl}`}
-            wrap
-          />
-        </span>
-      ))}
-      {conversion !== null && (
-        <span className="text-muted-foreground">
-          {conversion}% <BilingualText en={analyticsEn('view_to_connect')} el={analyticsEl('view_to_connect')} wrap />
-        </span>
-      )}
-    </div>
   );
 }
 
@@ -302,59 +294,42 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     glyph: m.glyph,
   }));
   return (
-    /* `h-full` + a flex column: this card shares a grid row with the funnel,
-       which is the taller of the two. The row stretched the cell and the card
-       kept its natural height, leaving 122px of empty page under it. */
-    <Card className="flex h-full min-w-0 flex-col border-primary/20 bg-primary/[0.03]">
+    <Card className="flex min-w-0 flex-col border-primary/20 bg-primary/[0.03]">
       <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
-        {/* The period badge sits under the title, not beside it. Bilingual,
-            "vs prev period · vs προηγ. περίοδο" is about 210px wide; in the
-            340px this card gets at `lg` that left the title 100px and it
-            truncated to "Netw… · Ταχύ…". It is metadata about the numbers
-            below, not a peer of the heading, so it reads correctly on its own
-            line and the title gets the full width. */}
+        {/* The period badge sits under the title: bilingual "vs prev period"
+            is metadata about the rows, not a peer of the heading. */}
         <div className="mb-4 min-w-0">
-          <div className="flex min-w-0 items-center gap-2.5">
+          <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
             <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
-            <span className="min-w-0 text-sm font-semibold">
-              <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact wrap />
-            </span>
-          </div>
-          <Badge variant="secondary" className="mt-1.5 max-w-full text-2xs">
-            <span className="truncate">
+            <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact wrap />
+          </h3>
+          <Badge variant="secondary" className="mt-1.5 max-w-full">
+            <span className="page-stat-label truncate">
               <BilingualText en={analyticsEn('vs_prev')} el={analyticsEl('vs_prev')} compact />
             </span>
           </Badge>
         </div>
-        {/* Two layouts for two shapes of box. Full width on a phone, three
-            across reads fine. In the third of a row this card occupies from
-            `lg`, three columns are about 110px each — too narrow for
-            "Μηνύματα που στάλθηκαν", which is why it needed `wrap` — and they
-            filled a third of the height the row gives us. Stacked, each metric
-            takes a full line, the label stops wrapping, and the three rows
-            divide the height between them, so the card ends where the row
-            ends. */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:flex lg:flex-1 lg:flex-col lg:gap-0 lg:divide-y lg:divide-primary/10">
+        {/* Stacked only: this card now lives in the period rail, where three
+            columns would be ~90px and wrap every Greek label. */}
+        <div className="flex flex-1 flex-col divide-y divide-primary/10">
           {items.map((item) => {
             const href = metricHref(item.label);
             const inner = (
               <>
-              <div className="mx-auto mb-1.5 flex shrink-0 items-center justify-center text-muted-foreground lg:mx-0 lg:mb-0">
-                <CfbGlyph name={item.glyph} className="icon-sm" />
-              </div>
-              <p className={cn('text-xs font-bold tabular-nums lg:order-3 lg:shrink-0',
+              <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground" />
+              <p className="page-stat-label min-w-0 flex-1 leading-snug text-muted-foreground">
+                <BilingualText en={item.label} el={item.labelEl} compact wrap />
+              </p>
+              <p className={cn('page-stat-label shrink-0 font-semibold tabular-nums',
                 item.changeType === 'increase' ? TREND.up
                 : item.changeType === 'decrease' ? TREND.down
                 : TREND.flat
               )}>
                 {item.change === null ? '—' : `${item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}${Math.abs(item.change)}%`}
               </p>
-              <p className="mt-0.5 text-2xs leading-tight text-muted-foreground lg:order-2 lg:mt-0 lg:min-w-0 lg:flex-1 lg:text-xs">
-                <BilingualText en={item.label} el={item.labelEl} compact wrap />
-              </p>
               </>
             );
-            const rowClass = 'min-w-0 text-center lg:flex lg:flex-1 lg:items-center lg:gap-3 lg:text-left';
+            const rowClass = 'flex min-w-0 items-center gap-3 py-2.5 first:pt-0 last:pb-0';
             return href ? (
               <Link key={item.label} href={href} className={cn(rowClass, 'rounded-lg focus-ring')}>
                 {inner}
@@ -375,8 +350,8 @@ function TopContentList({ content }: { content: TopContent[] }) {
   return (
     <Card className="min-w-0">
       <CardHeader className="p-3 sm:p-6">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CfbGlyph name="chart" className="icon-md shrink-0 text-primary-accessible" />
+        <CardTitle className="flex items-center gap-2 font-semibold">
+          <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" />
           <BilingualText en={analyticsEn('top_content')} el={analyticsEl('top_content')} compact />
         </CardTitle>
       </CardHeader>
@@ -435,40 +410,37 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CfbGlyph name="award" className="icon-md text-primary-accessible" />
+        <CardTitle className="flex items-center gap-2 font-semibold">
+          <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
           <BilingualText en={analyticsEn('achievements')} el={analyticsEl('achievements')} wrap />
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {achievements.map((achievement) => (
             <Link
               key={achievement.id}
               href="/achievements"
               className={cn(
-                'relative flex flex-col items-center rounded-2xl border p-4 text-center',
+                'flex items-start gap-3 rounded-2xl border p-3',
                 achievement.unlocked
-                  ? 'border-primary/25 bg-gradient-to-b from-primary/12 via-card to-card shadow-sm'
+                  ? 'border-primary/25 bg-gradient-to-b from-primary/12 via-card to-card'
                   : 'border-border/40 opacity-60',
               )}
             >
+              <CfbGlyph
+                name="award"
+                className={cn('icon-sm mt-0.5 shrink-0', achievement.unlocked ? STATUS.warning.icon : 'text-muted-foreground')}
+              />
+              <div className="min-w-0 flex-1">
               {achievement.unlocked && (
-                <div className="pointer-events-none absolute inset-x-6 top-3 h-10 rounded-full bg-primary/20 blur-xl" aria-hidden="true" />
-              )}
-              <div className={cn(
-                'relative mb-2.5 flex h-12 w-12 items-center justify-center rounded-full ring-2 ring-background',
-                achievement.unlocked ? cn(STATUS.warning.icon, 'bg-gradient-to-b from-primary/20 to-muted/40') : 'bg-muted/40 text-muted-foreground',
-              )}>
-                <CfbGlyph name="award" className="icon-md" />
-              </div>
-              {achievement.unlocked && (
-                <Badge variant="default" className="mb-2 text-xs">
+                <Badge variant="default" className="mb-1.5">
                   <BilingualText en={analyticsEn('unlocked')} el={analyticsEl('unlocked')} compact />
                 </Badge>
               )}
-              <h4 className="relative mb-1.5 text-sm font-semibold leading-snug">{achievement.title}</h4>
-              <p className="relative text-xs text-muted-foreground">{achievement.description}</p>
+              <h4 className="mb-1 text-sm font-semibold leading-snug">{achievement.title}</h4>
+              <p className="page-stat-label text-muted-foreground">{achievement.description}</p>
+              </div>
             </Link>
           ))}
         </div>
@@ -520,6 +492,12 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 /** The windows this page can show. `7d` is the one it opens on. */
 const PERIODS = ['7d', '14d', '30d', '90d'] as const;
 type Period = (typeof PERIODS)[number];
+const PERIOD_LABEL: Record<Period, { en: string; el: string }> = {
+  '7d': { en: '7 days', el: '7 ημέρες' },
+  '14d': { en: '14 days', el: '14 ημέρες' },
+  '30d': { en: '30 days', el: '30 ημέρες' },
+  '90d': { en: '90 days', el: '90 ημέρες' },
+};
 
 function isPeriod(value: string | null): value is Period {
   return value !== null && (PERIODS as readonly string[]).includes(value);
@@ -627,16 +605,6 @@ export default function AnalyticsPage() {
     ? 'Summarize my profile analytics and tell me the next action on Discover, Messages, or my profile.'
     : `Analytics last ${periodLabel}: ${viewsMetric?.value ?? 0} profile views (${viewsMetric?.change ?? 0}%), ${connMetric?.value ?? 0} new connections, ${msgMetric?.value ?? 0} messages sent, ${engMetric?.value ?? 0}% engagement. What should I do next on Discover, Messages, or my profile to grow this?`;
 
-  // Demo sparkline seeds (replaced by real data when available)
-  const demoSparklines: Record<string, number[]> = {
-    'Profile Views': [12, 19, 8, 24, 18, 31, 27],
-    'New Connections': [2, 5, 3, 7, 4, 9, 6],
-    'Messages Sent': [5, 8, 12, 6, 14, 10, 18],
-    'Engagement Rate': [42, 47, 44, 51, 49, 55, 58],
-    'Search Appearances': [30, 25, 40, 35, 48, 42, 55],
-    'Activity Score': [60, 65, 62, 70, 68, 74, 72],
-  };
-
   /*
    * What frames the numbers, rather than being them.
    *
@@ -664,11 +632,10 @@ export default function AnalyticsPage() {
       badge: period,
       content: (
         <div className="space-y-3">
-          <p className="text-xs leading-relaxed text-muted-foreground">
+          <p className="page-stat-label leading-relaxed text-muted-foreground">
             <BilingualText
               en="Every figure on this page is measured over this window."
               el="Κάθε μέγεθος σε αυτή τη σελίδα μετριέται σε αυτό το διάστημα."
-              stacked
               wrap
             />
           </p>
@@ -687,7 +654,7 @@ export default function AnalyticsPage() {
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
-                  {p === '7d' ? <BilingualText en="7 days" el="7 ημέρες" wrap /> : p === '14d' ? <BilingualText en="14 days" el="14 ημέρες" wrap /> : p === '30d' ? <BilingualText en="30 days" el="30 ημέρες" wrap /> : <BilingualText en="90 days" el="90 ημέρες" wrap />}
+                  <BilingualText en={PERIOD_LABEL[p].en} el={PERIOD_LABEL[p].el} wrap />
                 </button>
               ))}
             </div>
@@ -700,6 +667,7 @@ export default function AnalyticsPage() {
               </Button>
             </div>
           </div>
+          {!waiting && !isError && <NetworkVelocity metrics={metrics} />}
         </div>
       ),
     },
@@ -732,35 +700,25 @@ export default function AnalyticsPage() {
       labelEl: 'Πού να πάτε μετά',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-1 min-w-0 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-            <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
-              <Link href="/profile">
-                <CfbGlyph name="profile" className="icon-sm" />
-                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_profile')} el={analyticsEl('open_profile')} wrap /></span>
-                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('build_profile')} el={analyticsEl('build_profile')} wrap /></span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-              <Link href="/discover">
-                <CfbGlyph name="discover" className="icon-sm" />
-                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_discover')} el={analyticsEl('open_discover')} wrap /></span>
-                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('grow_network')} el={analyticsEl('grow_network')} wrap /></span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-              <Link href="/messages">
-                <CfbGlyph name="messages" className="icon-sm" />
-                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_messages')} el={analyticsEl('open_messages')} wrap /></span>
-                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('reply_faster')} el={analyticsEl('reply_faster')} wrap /></span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
-              <Link href="/connections">
-                <CfbGlyph name="people" className="icon-sm" />
-                <span className="text-sm font-medium"><BilingualText en={analyticsEn('open_connections')} el={analyticsEl('open_connections')} wrap /></span>
-                <span className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('grow_network')} el={analyticsEl('grow_network')} wrap /></span>
-              </Link>
-            </Button>
+          {/* Four equal destinations, so none is filled; each hint says what that one is for. */}
+          <div className="grid grid-cols-1 min-w-0 gap-2">
+            {([
+              { href: '/profile', glyph: 'profile', title: 'open_profile', hint: 'build_profile' },
+              { href: '/discover', glyph: 'discover', title: 'open_discover', hint: 'grow_network' },
+              { href: '/messages', glyph: 'messages', title: 'open_messages', hint: 'reply_faster' },
+              { href: '/connections', glyph: 'people', title: 'open_connections', hint: 'follow_up' },
+            ] as const).map((step) => (
+              <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
+                <Link href={step.href}>
+                  <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn(step.title)} el={analyticsEl(step.title)} wrap /></span>
+                    <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn(step.hint)} el={analyticsEl(step.hint)} wrap /></span>
+                  </span>
+                  <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              </Button>
+            ))}
           </div>
         </div>
       ),
@@ -782,15 +740,15 @@ export default function AnalyticsPage() {
             "Επισκόπηση" while its two neighbours fit. From `lg` the strip is
             sized by its own labels instead. */}
         <TabsList className="grid h-auto w-full max-w-md grid-cols-3 lg:inline-grid lg:w-auto lg:max-w-none lg:grid-cols-[repeat(3,auto)]">
-          <TabsTrigger value="overview" className="min-h-10 gap-1 px-2 text-xs leading-tight sm:gap-2 sm:px-3 sm:text-sm">
+          <TabsTrigger value="overview" className="min-h-10 gap-1.5 px-2 leading-tight sm:px-3">
             <CfbGlyph name="chart" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_overview')} el={analyticsEl('tab_overview')} wrap />
           </TabsTrigger>
-          <TabsTrigger value="engagement" className="min-h-10 gap-1 px-2 text-xs leading-tight sm:gap-2 sm:px-3 sm:text-sm">
+          <TabsTrigger value="engagement" className="min-h-10 gap-1.5 px-2 leading-tight sm:px-3">
             <CfbGlyph name="spark" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_engagement')} el={analyticsEl('tab_engagement')} wrap />
           </TabsTrigger>
-          <TabsTrigger value="growth" className="min-h-10 gap-1 px-2 text-xs leading-tight sm:gap-2 sm:px-3 sm:text-sm">
+          <TabsTrigger value="growth" className="min-h-10 gap-1.5 px-2 leading-tight sm:px-3">
             <CfbGlyph name="target" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_growth')} el={analyticsEl('tab_growth')} wrap />
           </TabsTrigger>
@@ -803,7 +761,31 @@ export default function AnalyticsPage() {
             <AnalyticsSkeleton />
           ) : (
             <>
-              <p className="text-xs text-muted-foreground"><BilingualText en={isPreviewDemo() ? 'Demo showcase — sample metrics, not account activity.' : 'Recorded account activity. A dash means unavailable, not zero; trends require a comparable previous period.'} el={isPreviewDemo() ? 'Επίδειξη — ενδεικτικές μετρήσεις, όχι δραστηριότητα λογαριασμού.' : 'Καταγεγραμμένη δραστηριότητα λογαριασμού. Η παύλα σημαίνει μη διαθέσιμο, όχι μηδέν· οι τάσεις απαιτούν συγκρίσιμη προηγούμενη περίοδο.'} /></p>
+              {/* The window is chosen in the rail; the column says which one every figure below is for. */}
+              <p className="page-stat-label flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-muted-foreground">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-0.5 font-medium text-foreground">
+                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <BilingualText en={PERIOD_LABEL[period].en} el={PERIOD_LABEL[period].el} compact />
+                </span>
+                <span className="min-w-0"><BilingualText en={isPreviewDemo() ? 'Demo showcase — sample metrics, not account activity.' : 'Recorded account activity. A dash means unavailable, not zero; trends require a comparable previous period.'} el={isPreviewDemo() ? 'Επίδειξη — ενδεικτικές μετρήσεις, όχι δραστηριότητα λογαριασμού.' : 'Καταγεγραμμένη δραστηριότητα λογαριασμού. Η παύλα σημαίνει μη διαθέσιμο, όχι μηδέν· οι τάσεις απαιτούν συγκρίσιμη προηγούμενη περίοδο.'} /></span>
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+                {metrics.map((metric) => {
+                  const sparkValues = metric.label === 'Profile Views'
+                    ? (profileViews ?? []).map((point) => point.views)
+                    : [];
+                  return (
+                    <MetricCard
+                      key={metric.label}
+                      metric={metric}
+                      sparkValues={sparkValues}
+                      onOpenTab={setTab}
+                    />
+                  );
+                })}
+              </div>
+
               {declining.length > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-status-warning-border/50 bg-status-warning-bg/40 p-4">
                   <div className="min-w-0 space-y-1 text-sm">
@@ -839,60 +821,34 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
               )}
-              {metrics.length > 0 && (
-                <>
-                  <WindowHighlights metrics={metrics} />
-                  <div className="grid grid-cols-1 min-w-0 gap-4 lg:grid-cols-3">
-                    <div className="min-w-0 lg:col-span-1">
-                      <NetworkVelocity metrics={metrics} />
-                    </div>
-                    <div className="min-w-0 lg:col-span-2">
-                      <ProfileFunnel metrics={metrics} />
-                    </div>
-                  </div>
-                </>
-              )}
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => {
-                  const sparkValues = isPreviewDemo() ? demoSparklines[metric.label] ?? []
-                    : metric.label === 'Profile Views' ? (profileViews ?? []).map((point) => point.views) : [];
-                  return (
-                    <MetricCard
-                      key={metric.label}
-                      metric={metric}
-                      sparkValues={sparkValues}
-                      onOpenTab={setTab}
-                    />
-                  );
-                })}
-              </div>
+              {metrics.length > 0 && <ProfileFunnel metrics={metrics} />}
 
-              {weeklySummary && (
+              {weeklySummary && [weeklySummary.mostActiveDay, weeklySummary.peakHour, weeklySummary.avgResponseTime, weeklySummary.totalInteractions].some((value) => value !== null && value !== undefined && value !== '') && (
                 <Card className="min-w-0">
                   <CardHeader className="p-3 sm:p-6">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <CfbGlyph name="calendar" className="icon-md shrink-0 text-primary-accessible" />
+                    <CardTitle className="flex items-center gap-2 font-semibold">
+                      <CfbGlyph name="calendar" className="icon-sm shrink-0 text-primary-accessible" />
                       <BilingualText en={analyticsEn('weekly_summary')} el={analyticsEl('weekly_summary')} compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact wrap /></p>
-                        <p className="text-base font-semibold sm:text-lg">
+                        <p className="page-stat-label leading-snug text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact wrap /></p>
+                        <p className="page-stat font-semibold">
                           {weeklySummary.mostActiveDay
                             ? <BilingualText en={weeklySummary.mostActiveDay} el={WEEKDAY_EL[weeklySummary.mostActiveDay] ?? weeklySummary.mostActiveDay} compact />
                             : '—'}
                         </p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('peak_hour')} el={analyticsEl('peak_hour')} compact wrap /></p>
-                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.peakHour || '—'}</p>
+                        <p className="page-stat-label leading-snug text-muted-foreground"><BilingualText en={analyticsEn('peak_hour')} el={analyticsEl('peak_hour')} compact wrap /></p>
+                        <p className="page-stat font-semibold">{weeklySummary.peakHour || '—'}</p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('avg_response')} el={analyticsEl('avg_response')} compact wrap /></p>
-                        <p className="text-base font-semibold sm:text-lg">
+                        <p className="page-stat-label leading-snug text-muted-foreground"><BilingualText en={analyticsEn('avg_response')} el={analyticsEl('avg_response')} compact wrap /></p>
+                        <p className="page-stat font-semibold">
                           {weeklySummary.avgResponseTime
                             ? (durationEl(weeklySummary.avgResponseTime) !== weeklySummary.avgResponseTime
                               ? <BilingualText en={weeklySummary.avgResponseTime} el={durationEl(weeklySummary.avgResponseTime)} compact />
@@ -901,18 +857,21 @@ export default function AnalyticsPage() {
                         </p>
                       </div>
                       <div className="min-w-0 space-y-1.5">
-                        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn('total_interactions')} el={analyticsEl('total_interactions')} compact wrap /></p>
-                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.totalInteractions ?? '—'}</p>
+                        <p className="page-stat-label leading-snug text-muted-foreground"><BilingualText en={analyticsEn('total_interactions')} el={analyticsEl('total_interactions')} compact wrap /></p>
+                        <p className="page-stat font-semibold">{weeklySummary.totalInteractions ?? '—'}</p>
                       </div>
                     </div>
                     <div className="mt-5 flex flex-wrap gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link href="/calendar"><BilingualText en={analyticsEn('peak_hour')} el={analyticsEl('peak_hour')} compact wrap /></Link>
+                        <Link href="/calendar"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} compact wrap /></Link>
                       </Button>
                       <Button asChild variant="outline" size="sm">
                         <Link href="/messages"><BilingualText en={analyticsEn('reply_faster')} el={analyticsEl('reply_faster')} compact wrap /></Link>
                       </Button>
-                      <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
+                      {/* One Ask AI per tab: the drop alert above already carries it when it shows. */}
+                      {declining.length === 0 && (
+                        <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -969,8 +928,9 @@ export default function AnalyticsPage() {
               )}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
                 {metrics.map((metric) => {
-                  const sparkValues = isPreviewDemo() ? demoSparklines[metric.label] ?? []
-                    : metric.label === 'Profile Views' ? (profileViews ?? []).map((point) => point.views) : [];
+                  const sparkValues = metric.label === 'Profile Views'
+                    ? (profileViews ?? []).map((point) => point.views)
+                    : [];
                   return (
                     <MetricCard
                       key={metric.label}

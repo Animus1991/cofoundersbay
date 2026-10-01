@@ -102,6 +102,7 @@ export function BilingualText({
   }
 
   if (compact) {
+    const separatorClassName = cn('bilingual-separator shrink-0', separatorNarrow);
     return (
       <span
         className={cn(
@@ -112,10 +113,18 @@ export function BilingualText({
       >
         <span lang={resolved.primaryLang} className={cn(wrap ? 'break-words' : 'truncate', primaryClassName)}>
           {resolved.primaryText}
+          {/* Inside the first language's span, so a wrapped pair never leaves the dot on a line of its own. */}
+          {wrap && (
+            <span className={cn(separatorClassName, 'ml-0.5')} aria-hidden="true">
+              ·
+            </span>
+          )}
         </span>
-        <span className={cn('bilingual-separator shrink-0', separatorNarrow)} aria-hidden="true">
-          ·
-        </span>
+        {!wrap && (
+          <span className={separatorClassName} aria-hidden="true">
+            ·
+          </span>
+        )}
         <span
           lang={resolved.secondaryLang ?? undefined}
           className={cn(

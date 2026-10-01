@@ -5671,6 +5671,16 @@ export async function assessReadiness(dto: {
   });
 }
 
+/** Nest returns `{ assessment: { dimensions } }`; older/preview payloads were flat. */
+export function pickReadinessDimensions(response: unknown): ReadinessScore[] | null {
+  if (!response || typeof response !== 'object') return null;
+  const rec = response as { assessment?: { dimensions?: unknown }; dimensions?: unknown };
+  const dimensions = Array.isArray(rec.assessment?.dimensions)
+    ? rec.assessment.dimensions
+    : rec.dimensions;
+  return Array.isArray(dimensions) ? (dimensions as ReadinessScore[]) : null;
+}
+
 /**
  * Archives a workspace. Used by the assistant to take back a workspace it just
  * created — archiving rather than deleting, because that is the product's own

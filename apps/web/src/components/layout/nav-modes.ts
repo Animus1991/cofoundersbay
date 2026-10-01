@@ -123,7 +123,7 @@ export const founderWorkSections: NavSection[] = [
     links: [
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
       { href: '/builder/pitch-deck', label: 'Pitch Deck', icon: Presentation },
-      { href: '/research', label: 'Research Canvas', icon: Grid3X3 },
+      { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
     ],
@@ -373,7 +373,7 @@ export const defaultWorkSections: NavSection[] = [
     section: 'Workspace',
     links: [
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
-      { href: '/research', label: 'Research Canvas', icon: Grid3X3 },
+      { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
     ],

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from 'react';
+import { APP_LOCALES, applyLocale, LOCALE_CHANGE_EVENT, LOCALE_STORAGE_KEY, type AppLocale } from '@/lib/locale';
 
 /** Which language appears first (larger); the other is secondary (smaller). */
 export type PrimaryLanguage = 'en' | 'el';
@@ -25,6 +26,8 @@ type LanguagePreferenceContextValue = {
 type LanguageSnapshot = {
   primary: PrimaryLanguage;
   displayMode: LanguageDisplayMode;
+  /** The app locale. Only English and Greek pair with a second language. */
+  locale: AppLocale;
   mounted: boolean;
 };
 
@@ -46,7 +49,7 @@ type LanguageSnapshot = {
  * always matches, and subscribers re-render to the stored preference
  * immediately afterwards.
  */
-const SERVER_SNAPSHOT: LanguageSnapshot = { primary: 'en', displayMode: 'bilingual', mounted: false };
+const SERVER_SNAPSHOT: LanguageSnapshot = { primary: 'en', displayMode: 'bilingual', locale: 'en', mounted: false };
 
 let snapshot: LanguageSnapshot = SERVER_SNAPSHOT;
 const listeners = new Set<() => void>();
@@ -79,6 +82,45 @@ function persist(key: string, value: string) {
   }
 }
 
+function asLocale(value: string | null | undefined): AppLocale | null {
+  return APP_LOCALES.find((item) => item.value === value)?.value ?? null;
+}
+
+function readStoredLocale(): AppLocale | null {
+  try {
+    return asLocale(localStorage.getItem(LOCALE_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
+/** Spanish, French and the rest read in one language: a Greek line under Spanish is noise. */
+function pairsWithSecondLanguage(locale: AppLocale) {
+  return locale === 'en' || locale === 'el';
+}
+
+/**
+ * The account menu's Language list is the only language control on screen, and
+ * it writes the app locale, not this preference. Left unlinked, a reader whose
+ * stored primary was Greek picked "English" and got the handful of `t()` strings
+ * in English while every `BilingualText` stayed Greek. Greek reads Greek first;
+ * every other locale reads the English source first (the DOM pass translates it).
+ */
+function primaryForLocale(locale: AppLocale): PrimaryLanguage {
+  return locale === 'el' ? 'el' : 'en';
+}
+
+function setPrimaryAndLocale(lang: PrimaryLanguage) {
+  setSnapshot({ primary: lang });
+  persist(PRIMARY_STORAGE_KEY, lang);
+  if ((lang === 'el') === (readStoredLocale() === 'el')) return;
+  try {
+    applyLocale(lang);
+  } catch {
+    /* storage blocked: the in-memory preference above still applies */
+  }
+}
+
 /**
  * Applies the stored preference once the app is interactive, and mirrors the
  * current preference onto <html> (lang + data attributes the stylesheet keys
@@ -90,9 +132,12 @@ export function LanguagePreferenceProvider({ children }: { children: ReactNode }
   useEffect(() => {
     let primary: PrimaryLanguage = 'en';
     let displayMode: LanguageDisplayMode = 'bilingual';
+    const storedLocale = readStoredLocale();
     try {
       const storedPrimary = localStorage.getItem(PRIMARY_STORAGE_KEY);
-      if (storedPrimary === 'en' || storedPrimary === 'el') primary = storedPrimary;
+      if (storedLocale) primary = primaryForLocale(storedLocale);
+      else if (storedPrimary === 'en' || storedPrimary === 'el') primary = storedPrimary;
+      if (primary !== storedPrimary) persist(PRIMARY_STORAGE_KEY, primary);
 
       const storedDisplay = localStorage.getItem(DISPLAY_STORAGE_KEY);
       if (storedDisplay === 'bilingual' || storedDisplay === 'primary-only') {
@@ -103,15 +148,29 @@ export function LanguagePreferenceProvider({ children }: { children: ReactNode }
     }
     // Unconditional on purpose: a fresh provider (tests, remounts) resets a
     // stale module store to what storage actually holds.
-    setSnapshot({ primary, displayMode, mounted: true });
+    setSnapshot({ primary, displayMode, locale: storedLocale ?? primary, mounted: true });
+  }, []);
+
+  useEffect(() => {
+    const onLocale = (event: Event) => {
+      const locale = asLocale((event as CustomEvent<string>).detail);
+      if (!locale) return;
+      const primary = primaryForLocale(locale);
+      const current = getSnapshot();
+      if (locale === current.locale && primary === current.primary) return;
+      setSnapshot({ locale, primary });
+      persist(PRIMARY_STORAGE_KEY, primary);
+    };
+    window.addEventListener(LOCALE_CHANGE_EVENT, onLocale);
+    return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onLocale);
   }, []);
 
   useEffect(() => {
     if (!snap.mounted) return;
-    document.documentElement.lang = snap.primary;
+    document.documentElement.lang = pairsWithSecondLanguage(snap.locale) ? snap.primary : snap.locale;
     document.documentElement.dataset.primaryLang = snap.primary;
     document.documentElement.dataset.languageDisplay = snap.displayMode;
-  }, [snap.mounted, snap.primary, snap.displayMode]);
+  }, [snap.mounted, snap.primary, snap.displayMode, snap.locale]);
 
   return <>{children}</>;
 }
@@ -120,8 +179,7 @@ export function useLanguagePreference(): LanguagePreferenceContextValue {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setPrimary = useCallback((lang: PrimaryLanguage) => {
-    setSnapshot({ primary: lang });
-    persist(PRIMARY_STORAGE_KEY, lang);
+    setPrimaryAndLocale(lang);
   }, []);
 
   const setDisplayMode = useCallback((mode: LanguageDisplayMode) => {
@@ -130,9 +188,7 @@ export function useLanguagePreference(): LanguagePreferenceContextValue {
   }, []);
 
   const togglePrimary = useCallback(() => {
-    const next = getSnapshot().primary === 'en' ? 'el' : 'en';
-    setSnapshot({ primary: next });
-    persist(PRIMARY_STORAGE_KEY, next);
+    setPrimaryAndLocale(getSnapshot().primary === 'en' ? 'el' : 'en');
   }, []);
 
   return {
@@ -141,7 +197,7 @@ export function useLanguagePreference(): LanguagePreferenceContextValue {
     togglePrimary,
     displayMode: snap.displayMode,
     setDisplayMode,
-    showSecondary: snap.displayMode === 'bilingual',
+    showSecondary: snap.displayMode === 'bilingual' && pairsWithSecondLanguage(snap.locale),
     mounted: snap.mounted,
   };
 }

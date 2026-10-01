@@ -526,10 +526,14 @@ export function SearchFilters({
       {resultCount !== undefined && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {resultCount} {resultCount === 1 ? 'result' : 'results'} found
+            <BilingualText
+              en={`${resultCount} ${resultCount === 1 ? 'result' : 'results'} found`}
+              el={`${resultCount} ${resultCount === 1 ? 'αποτέλεσμα' : 'αποτελέσματα'}`}
+              compact
+            />
           </span>
           <select
-            aria-label="Sort results"
+            aria-label={bilingualAria('Sort results', 'Ταξινόμηση αποτελεσμάτων')}
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
             className="h-8 rounded-xl border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"

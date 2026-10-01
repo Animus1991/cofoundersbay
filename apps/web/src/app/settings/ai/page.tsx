@@ -458,7 +458,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="icon-md text-blue-500" />
+                <MessageSquare className="icon-md text-primary-accessible" />
                 <BilingualText en="Response Style" el="Ύφος απάντησης" compact />
               </CardTitle>
               <CardDescription>

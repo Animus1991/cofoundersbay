@@ -342,7 +342,7 @@ export default function OrgStartupsPage() {
   ]);
 
   return (
-    <AppShell
+    <AppShell showHelp
       title="Portfolio Startups"
       description="Startups currently in your programs and graduates. Track readiness, milestones, and program assignment."
       descriptionEl="Νεοφυείς που συμμετέχουν στα προγράμματά σας και απόφοιτοι. Παρακολουθήστε ετοιμότητα, ορόσημα και ανάθεση προγράμματος."
@@ -395,8 +395,8 @@ export default function OrgStartupsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              aria-label={bilingualInline("Search startups", "Αναζήτηση νεοφυών")}
-              placeholder={bilingualInline("Search startups…", "Αναζήτηση νεοφυών…")}
+              aria-label={bilingualInline("Search startups", "Αναζήτηση startups")}
+              placeholder={bilingualInline("Search startups…", "Αναζήτηση startups…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -432,7 +432,7 @@ export default function OrgStartupsPage() {
           <p className="text-sm text-muted-foreground">
             <BilingualText
               en={`${filteredStartups.length} startup${filteredStartups.length !== 1 ? 's' : ''}`}
-              el={`${filteredStartups.length} ${filteredStartups.length !== 1 ? 'νεοφυείς' : 'νεοφυής'}`}
+              el={`${filteredStartups.length} ${filteredStartups.length !== 1 ? 'startups' : 'startup'}`}
               compact
             />
           </p>

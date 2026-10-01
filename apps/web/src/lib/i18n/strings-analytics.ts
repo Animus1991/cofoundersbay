@@ -16,8 +16,16 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   network_velocity: { en: 'Network Velocity', el: 'Ταχύτητα δικτύου' },
   profile_funnel: { en: 'Profile Funnel', el: 'Χωνί προφίλ' },
   funnel_note: {
-    en: 'Recorded counts, not attributed conversion rates. A dash means this metric is unavailable.',
-    el: 'Καταγεγραμμένα πλήθη, όχι τεκμηριωμένα ποσοστά μετατροπής. Η παύλα δηλώνει μη διαθέσιμη μέτρηση.',
+    en: 'Recorded counts, not attributed conversion rates.',
+    el: 'Καταγεγραμμένα πλήθη, όχι τεκμηριωμένα ποσοστά μετατροπής.',
+  },
+  funnel_untracked_requests: {
+    en: 'Connection requests are not counted yet — open Discover to send some.',
+    el: 'Τα αιτήματα σύνδεσης δεν μετρώνται ακόμη — ανοίξτε την Εξερεύνηση για να στείλετε.',
+  },
+  funnel_untracked_conversations: {
+    en: 'Conversations started are not counted yet — open Messages to reply.',
+    el: 'Οι συνομιλίες που ξεκίνησαν δεν μετρώνται ακόμη — ανοίξτε τα Μηνύματα για να απαντήσετε.',
   },
   stage_views: { en: 'Profile Views', el: 'Προβολές προφίλ' },
   stage_requests: { en: 'Connection Requests', el: 'Αιτήματα σύνδεσης' },
@@ -60,6 +68,8 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   declining_prefix: { en: 'Down this window', el: 'Πτώση σε αυτό το διάστημα' },
   build_profile: { en: 'Build your profile', el: 'Χτίστε το προφίλ σας' },
   grow_network: { en: 'Grow your network', el: 'Αναπτύξτε το δίκτυό σας' },
+  follow_up: { en: 'Follow up with people you know', el: 'Συνεχίστε με όσους ήδη γνωρίζετε' },
+  plan_peak_hour: { en: 'Plan around your peak hour', el: 'Προγραμματίστε στην ώρα αιχμής' },
   reply_faster: { en: 'Reply in Messages', el: 'Απαντήστε στα Μηνύματα' },
   window_highlights: { en: 'This window', el: 'Αυτό το διάστημα' },
   export_csv: { en: 'CSV', el: 'CSV' },

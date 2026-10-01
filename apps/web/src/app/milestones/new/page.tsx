@@ -18,6 +18,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria } from '@/lib/i18n/format';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { qk } from '@/lib/query-keys';
 import {
   milestoneEn,
@@ -65,11 +66,11 @@ export default function NewMilestonePage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('milestones') });
-      success(t(milestoneEn('created'), milestoneEl('created')), t(milestoneEn('created_hint'), milestoneEl('created_hint')));
+      success('Milestone created', 'Added to your tracker.');
       router.push('/milestones');
     },
-    onError: (err) => {
-      showError(t(milestoneEn('fail_create'), milestoneEl('fail_create')), err instanceof Error ? err.message : t(milestoneEn('try_again'), milestoneEl('try_again')));
+    onError: () => {
+      showError('Failed to create milestone', 'Please try again');
     },
   });
 
@@ -78,13 +79,14 @@ export default function NewMilestonePage() {
   return (
     <AppShell
       showHelp
+      askAi="Propose the next Harbor milestone from Idea Core, the GTM board, or the $750K seed (Athens Tech Angels, $375K committed)."
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
+          <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
             <CfbGlyph name="spark" className="icon-sm" />
             <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
           </Button>
-          <Button variant="ghost" size="sm" className="gap-2 rounded-xl" aria-label={bilingualAria(milestoneEn('back'), milestoneEl('back'))} asChild>
+          <Button variant="ghost" size="sm" className={`gap-2 ${BUILDER_BTN}`} aria-label={bilingualAria(milestoneEn('back'), milestoneEl('back'))} asChild>
             <Link href="/milestones">
               <ArrowLeft className="icon-sm" />
               <BilingualText en={milestoneEn('back')} el={milestoneEl('back')} compact />
@@ -92,9 +94,10 @@ export default function NewMilestonePage() {
           </Button>
         </div>
       }
+      contentClassName="builder-copy overflow-x-clip"
     >
       <div className="max-w-2xl space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="type-hold text-sm text-muted-foreground">
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>
         <Card className="rounded-xl">
@@ -105,7 +108,7 @@ export default function NewMilestonePage() {
                 <CardTitle>
                   <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="type-hold">
                   {collaboratorId
                     ? <BilingualText en={milestoneEn('create_shared')} el={milestoneEl('create_shared')} />
                     : <BilingualText en={milestoneEn('create_solo')} el={milestoneEl('create_solo')} />}
@@ -230,7 +233,7 @@ export default function NewMilestonePage() {
                     <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />
                   </Link>
                 </Button>
-                <Button type="submit" className="rounded-xl" disabled={!canSubmit}>
+                <Button type="submit" className={BUILDER_BTN} disabled={!canSubmit}>
                   {mutation.isPending
                     ? <BilingualText en={milestoneEn('creating')} el={milestoneEl('creating')} compact />
                     : <BilingualText en={milestoneEn('create')} el={milestoneEl('create')} compact />}

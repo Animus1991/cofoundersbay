@@ -18,8 +18,9 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       collisionPadding={12}
+      data-surface="overlay"
       className={cn(
-        'z-[70] min-w-[180px] max-h-[min(70dvh,calc(100svh_-_4.5rem))] max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border/60 bg-popover p-1 text-popover-foreground shadow-glow-sm backdrop-blur',
+        'z-[70] min-w-[180px] max-h-[min(70dvh,calc(100svh_-_4.5rem))] max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-none',
         className,
       )}
       {...props}
@@ -35,7 +36,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex min-h-11 cursor-pointer select-none items-center rounded-lg px-2 py-2.5 text-sm outline-none transition-colors focus:bg-secondary/60 sm:min-h-0 sm:py-1.5',
+      'relative flex min-h-11 cursor-pointer select-none items-center rounded px-2 py-2.5 text-sm outline-none transition-colors focus:bg-secondary data-[disabled]:pointer-events-none data-[disabled]:opacity-50 sm:min-h-0 sm:py-1.5',
       className,
     )}
     {...props}
@@ -67,6 +68,38 @@ const DropdownMenuLabel = React.forwardRef<
 ));
 DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
 
+const DropdownMenuSubTrigger = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger>
+>(({ className, children, ...props }, ref) => (
+  <DropdownMenuPrimitive.SubTrigger
+    ref={ref}
+    className={cn(
+      'relative flex min-h-11 cursor-pointer select-none items-center rounded px-2 py-2.5 text-sm outline-none transition-colors focus:bg-secondary data-[state=open]:bg-secondary sm:min-h-0 sm:py-1.5',
+      className,
+    )}
+    {...props}
+  >
+    {children}
+  </DropdownMenuPrimitive.SubTrigger>
+));
+DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
+
+const DropdownMenuSubContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
+>(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.SubContent
+    ref={ref}
+    className={cn(
+      'z-[70] min-w-[180px] max-h-[min(70dvh,calc(100svh_-_4.5rem))] overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-none',
+      className,
+    )}
+    {...props}
+  />
+));
+DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
+
 export {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -77,5 +110,7 @@ export {
   DropdownMenuGroup,
   DropdownMenuPortal,
   DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
 };

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, ArrowRight, Check, Sparkles, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -217,20 +217,19 @@ export function FirstRunTour({ tourId, steps, ready = true }: FirstRunTourProps)
         tabIndex={-1}
         data-testid="first-run-tour-step"
         style={popoverStyle}
+        data-surface="overlay"
         className={cn(
-          'absolute rounded-2xl border border-primary/25 bg-background p-4 text-sm shadow-2xl outline-none',
+          'absolute rounded-2xl border border-border bg-background p-4 text-sm shadow-none outline-none',
           'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-200',
           !popoverStyle && 'inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] sm:inset-x-auto',
         )}
       >
         <div className="mb-2 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible">
-              <Sparkles className="icon-sm" aria-hidden="true" />
-            </span>
-            <p id={titleId} className="font-semibold leading-tight text-foreground">
-              <BilingualText en={step.titleEn} el={step.titleEl} />
-            </p>
+          <div className="flex min-w-0 items-start gap-2">
+            {/* One language per line: in a 340px card a run-together pair breaks mid-phrase. */}
+            <h3 id={titleId} className="page-section min-w-0 pt-1 font-semibold leading-tight text-foreground">
+              <BilingualText en={step.titleEn} el={step.titleEl} stacked wrap secondaryClassName="mt-0.5" />
+            </h3>
           </div>
           <button
             type="button"
@@ -242,9 +241,9 @@ export function FirstRunTour({ tourId, steps, ready = true }: FirstRunTourProps)
             <X className="icon-sm" aria-hidden="true" />
           </button>
         </div>
-        <p id={bodyId} className="pl-9 leading-relaxed text-muted-foreground">{body}</p>
+        <p id={bodyId} className="text-sm leading-relaxed text-muted-foreground">{body}</p>
 
-        <div className="mt-4 flex items-center justify-between gap-3 pl-9">
+        <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5" aria-label={`${index + 1} / ${available.length}`}>
             {available.map((s, i) => (
               <span
@@ -261,32 +260,25 @@ export function FirstRunTour({ tourId, steps, ready = true }: FirstRunTourProps)
           <div className="flex items-center gap-1.5">
             {index > 0 && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-8 gap-1 px-2 text-xs"
+                className="h-8 px-2 text-xs"
                 onClick={() => setIndex((i) => i - 1)}
                 data-testid="first-run-tour-back"
               >
-                <ArrowLeft className="icon-sm" aria-hidden="true" />
                 <BilingualText en="Back" el="Πίσω" compact />
               </Button>
             )}
             <Button
               size="sm"
-              className="h-8 gap-1 px-3 text-xs"
+              className="h-8 px-3 text-xs"
               onClick={() => (last ? finish('completed') : setIndex((i) => i + 1))}
               data-testid="first-run-tour-next"
             >
               {last ? (
-                <>
-                  <Check className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Got it" el="Κατάλαβα" compact />
-                </>
+                <BilingualText en="Got it" el="Κατάλαβα" compact />
               ) : (
-                <>
-                  <BilingualText en="Next" el="Επόμενο" compact />
-                  <ArrowRight className="icon-sm" aria-hidden="true" />
-                </>
+                <BilingualText en="Next" el="Επόμενο" compact />
               )}
             </Button>
           </div>

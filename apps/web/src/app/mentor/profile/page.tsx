@@ -105,7 +105,7 @@ export default function MentorProfilePage() {
 
   if (!mounted) {
     return (
-      <AppShell>
+      <AppShell showHelp>
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-48 w-full" />
@@ -115,7 +115,7 @@ export default function MentorProfilePage() {
   }
 
   return (
-    <AppShell
+    <AppShell showHelp
       actions={
         <>
           <Button onClick={handleSave} disabled={isSaving}>

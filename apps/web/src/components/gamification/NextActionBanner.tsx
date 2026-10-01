@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { X, ArrowRight } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
 
@@ -24,9 +23,6 @@ export interface NextAction {
   vars?: Record<string, string | number>;
   /** One of: 'primary' | 'amber' | 'emerald' | 'violet' */
   accent?: 'primary' | 'amber' | 'emerald' | 'violet';
-  /** Identity-reinforcing micro-copy shown after CTA */
-  identitySignal?: string;
-  identitySignalEl?: string;
 }
 
 const STORAGE_PREFIX = 'cfb_nab_dismissed_v1_';
@@ -50,30 +46,26 @@ function interpolate(template: string, vars?: Record<string, string | number>): 
 
 /* ── Color maps ──────────────────────────────────────────────────────────── */
 
-const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string; cta: string }> = {
+const ACCENT_CLASSES: Record<string, { border: string; bg: string; cta: string }> = {
   primary: {
-    border: 'border-primary/30',
+    border: 'border-primary/15',
     bg:     'bg-primary/5',
-    icon:   'text-primary-accessible',
-    cta:    'text-primary-accessible hover:bg-primary/10',
+    cta:    'text-primary-accessible hover:bg-primary/8',
   },
   amber: {
-    border: 'border-status-warning-border',
-    bg:     'bg-status-warning-bg',
-    icon:   'text-status-warning',
-    cta:    'text-status-warning hover:bg-status-warning-bg',
+    border: 'border-border',
+    bg:     'bg-card',
+    cta:    'text-foreground hover:bg-secondary/70',
   },
   emerald: {
-    border: 'border-status-success-border',
-    bg:     'bg-status-success-bg',
-    icon:   'text-status-success',
-    cta:    'text-status-success hover:bg-status-success-bg',
+    border: 'border-border',
+    bg:     'bg-card',
+    cta:    'text-foreground hover:bg-secondary/70',
   },
   violet: {
-    border: 'border-status-accent-border',
-    bg:     'bg-status-accent-bg',
-    icon:   'text-status-accent',
-    cta:    'text-status-accent hover:bg-status-accent-bg',
+    border: 'border-primary/15',
+    bg:     'bg-primary/5',
+    cta:    'text-primary-accessible hover:bg-primary/8',
   },
 };
 
@@ -111,8 +103,6 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
   const descriptionEl = action.descriptionEl ? interpolate(action.descriptionEl, action.vars) : undefined;
   const cta = interpolate(action.cta, action.vars);
   const ctaEl = action.ctaEl ? interpolate(action.ctaEl, action.vars) : undefined;
-  const identitySignal = action.identitySignal ? interpolate(action.identitySignal, action.vars) : undefined;
-  const identitySignalEl = action.identitySignalEl ? interpolate(action.identitySignalEl, action.vars) : undefined;
 
   return (
     <div
@@ -134,43 +124,33 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
       </button>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex min-w-0 flex-1 gap-3">
-          <CfbGlyph name="spark" className={cn('icon-sm mt-0.5 shrink-0', ac.icon)} />
-          <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold leading-snug text-foreground">
               <BilingualText en={label} el={labelEl} />
             </p>
             <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
               <BilingualText en={description} el={descriptionEl} />
             </p>
-            {identitySignal && (
-              <p className={cn('mt-1 text-xs italic opacity-70', ac.icon)}>
-                <BilingualText en={identitySignal} el={identitySignalEl} />
-              </p>
-            )}
             <Button
               asChild
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className={cn('mt-2.5 inline-flex h-9 gap-1.5 px-3 text-xs font-semibold sm:hidden', ac.cta)}
+              className={cn('mt-2.5 sm:hidden', ac.cta)}
             >
               <Link href={action.href}>
                 <BilingualText en={cta} el={ctaEl} compact />
-                <ArrowRight className="icon-sm" />
               </Link>
             </Button>
           </div>
-        </div>
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <Button
             asChild
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className={cn('h-9 gap-1.5 px-3 text-xs font-semibold', ac.cta)}
+            className={ac.cta}
           >
             <Link href={action.href}>
               <BilingualText en={cta} el={ctaEl} compact />
-              <ArrowRight className="icon-sm" />
             </Link>
           </Button>
           <button
@@ -215,8 +195,6 @@ export function deriveNextAction(opts: {
       cta: 'Review now',
       ctaEl: 'Έλεγχος τώρα',
       accent: 'amber',
-      identitySignal: 'Responsive founders build stronger networks.',
-      identitySignalEl: 'Οι ιδρυτές που απαντούν χτίζουν ισχυρότερα δίκτυα.',
     };
   }
 
@@ -232,8 +210,6 @@ export function deriveNextAction(opts: {
       cta: 'Complete profile',
       ctaEl: 'Ολοκλήρωση προφίλ',
       accent: 'primary',
-      identitySignal: 'Your profile is your startup\'s first impression.',
-      identitySignalEl: 'Το προφίλ είναι η πρώτη εντύπωση του startup σας.',
     };
   }
 
@@ -249,8 +225,6 @@ export function deriveNextAction(opts: {
       cta: 'Create board',
       ctaEl: 'Δημιουργία πίνακα',
       accent: 'violet',
-      identitySignal: 'Evidence-first founders de-risk faster.',
-      identitySignalEl: 'Οι ιδρυτές με τεκμήρια μειώνουν τον κίνδυνο γρηγορότερα.',
     };
   }
 
@@ -266,8 +240,6 @@ export function deriveNextAction(opts: {
       cta: 'Open Builder',
       ctaEl: 'Άνοιγμα Builder',
       accent: 'emerald',
-      identitySignal: 'Artifacts make your thinking fundable.',
-      identitySignalEl: 'Τα παραδοτέα κάνουν τη σκέψη σας χρηματοδοτήσιμη.',
     };
   }
 
@@ -283,8 +255,6 @@ export function deriveNextAction(opts: {
       cta: 'Discover people',
       ctaEl: 'Ανακάλυψη ανθρώπων',
       accent: 'primary',
-      identitySignal: 'Most successful startups are built by teams, not solo founders.',
-      identitySignalEl: 'Τα περισσότερα επιτυχημένα startup χτίζονται από ομάδες, όχι από έναν μόνο ιδρυτή.',
     };
   }
 

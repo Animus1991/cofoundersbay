@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
-import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
+import { PitchDeckBuilder, pitchDeckCompletion, type PitchDeckData } from '@/components/builder/PitchDeckBuilder';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
-import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { CollabToolbar } from '@/components/builder/CollabToolbar';
+import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
@@ -26,8 +27,10 @@ function PitchDeckPageContent() {
     updateDocument,
     createDocument,
     selectDocument,
+    generateContent,
     clearError,
   } = useBuilder();
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   useEffect(() => {
     loadWorkspaces(true);
@@ -48,37 +51,32 @@ function PitchDeckPageContent() {
 
   const ideaCore = documents.find((d) => d.type === 'idea_core')?.content ?? {};
   const bmc = documents.find((d) => d.type === 'business_model_canvas')?.content ?? {};
+  const market = documents.find((d) => d.type === 'market_analysis')?.content ?? {};
   const workspaceName = workspace?.startupName || workspace?.name || '';
+  const contentRevision = `${pitchDocument?.id ?? ''}:${pitchDocument?.version ?? 0}:${pitchDocument?.updatedAt ?? ''}`;
 
-  const handleSave = async (data: {
-    companyName?: string;
-    tagline?: string;
-    askAmount?: string;
-    slides?: unknown[];
-    deckType?: string;
-  }) => {
-    try {
-      let doc = documents.find((d) => d.type === 'pitch_deck');
-      if (!doc) {
-        doc = await createDocument(
-          'pitch_deck',
-          data.companyName ? `${data.companyName} Pitch Deck` : 'Pitch Deck',
-        );
-      }
-      await updateDocumentSection(doc.id, 'pitchDeck', data as Record<string, any>);
-      const slides = Array.isArray(data.slides) ? data.slides : [];
-      const filled = slides.filter(
-        (s) => typeof s === 'object' && s && 'content' in s && String((s as { content?: string }).content || '').trim(),
-      ).length;
-      await updateDocument(doc.id, {
-        completionPercent: slides.length ? Math.round((filled / slides.length) * 100) : 0,
-      });
-    } catch {
-      // BuilderContext already surfaces the error banner.
+  const handleSave = async (data: PitchDeckData) => {
+    let doc = documents.find((d) => d.type === 'pitch_deck');
+    if (!doc) {
+      doc = await createDocument(
+        'pitch_deck',
+        data.companyName ? `${data.companyName} Pitch Deck` : 'Pitch Deck',
+      );
     }
+    await updateDocumentSection(doc.id, 'pitchDeck', { ...data } as unknown as Record<string, unknown>);
+    const slides = Array.isArray(data.slides) ? data.slides : [];
+    await updateDocument(doc.id, { completionPercent: pitchDeckCompletion(slides) });
   };
 
-  const askPrompt = `Build an investor pitch deck for ${workspaceName || 'this startup'}. Idea Core: ${ideaCore.problemStatement || ideaCore.solution || 'not filled yet'}. Value proposition: ${bmc.valueProposition || bmc.valuePropositions || 'not filled yet'}. Recommend 10 slides and draft Cover + Problem.`;
+  const handleGenerate = async (data: PitchDeckData) => {
+    try {
+      const result = await generateContent('pitch_deck', 'pitchDeck', { current: data });
+      return result.content ?? null;
+    } catch {
+      clearError();
+      return null;
+    }
+  };
 
   if (isLoadingWorkspaces) {
     return (
@@ -94,8 +92,12 @@ function PitchDeckPageContent() {
   }
 
   return (
-    <AppShell showHelp contentClassName="overflow-x-clip" askAi={askPrompt}>
-      <div className="builder-type min-w-0 space-y-6 overflow-x-clip">
+    <AppShell
+      showHelp
+      contentClassName="builder-copy overflow-x-clip"
+      askAi={`Help me complete the investor pitch deck for ${workspaceName || 'this startup'}. Draft only empty slides and empty fields; keep the company name and the ask if they are already written.`}
+    >
+      <div className="builder-type builder-copy min-w-0 space-y-6 overflow-x-clip">
         {error && (
           <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
             <div className="flex min-w-0 items-start gap-3">
@@ -108,33 +110,58 @@ function PitchDeckPageContent() {
           </div>
         )}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-start gap-3">
-            <Button variant="ghost" size="sm" className={`h-8 gap-1.5 ${BUILDER_BTN} text-muted-foreground`} aria-label={bilingualAria(builderEn('pitch_back'), builderEl('pitch_back'))} asChild>
-              <Link href="/builder">
-                <ArrowLeft className="icon-sm" />
-                <CfbGlyph name="builder" className="icon-sm" />
-                <BilingualText en={builderEn('pitch_back')} el={builderEl('pitch_back')} compact />
-              </Link>
-            </Button>
-            <p className="max-w-2xl text-sm leading-snug text-muted-foreground">
-              <BilingualText en={builderEn('pitch_lead')} el={builderEl('pitch_lead')} />
-              {workspaceName ? ` · ${workspaceName}` : ''}
-            </p>
-          </div>
-          <AIInsightButton className={`h-8 w-full sm:w-auto ${BUILDER_BTN}`} prompt={askPrompt} />
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 gap-1.5 ${BUILDER_BTN} text-muted-foreground`}
+            aria-label={bilingualAria(builderEn('pitch_back'), builderEl('pitch_back'))}
+            asChild
+          >
+            <Link href="/builder">
+              <ArrowLeft className="icon-sm" />
+              <CfbGlyph name="builder" className="icon-sm" />
+              <BilingualText en={builderEn('pitch_back')} el={builderEl('pitch_back')} compact />
+            </Link>
+          </Button>
+          {pitchDocument && workspace && (
+            <CollabToolbar
+              documentId={pitchDocument.id}
+              workspaceId={workspace.id}
+              documentTitle={pitchDocument.title}
+              onHistoryClick={() => setShowVersionHistory(true)}
+            />
+          )}
         </div>
 
         <PitchDeckBuilder
+          key={pitchDocument?.id ?? 'pitch-deck'}
           hideTitle
+          hideLead
           onSave={handleSave}
+          onGenerate={handleGenerate}
           initialData={rawContent}
+          contentRevision={contentRevision}
           workspaceName={workspaceName}
           ideaCore={ideaCore}
           bmc={bmc}
-          askPrompt={askPrompt}
+          market={market}
         />
       </div>
+
+      {pitchDocument && (
+        <VersionHistoryDrawer
+          open={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          documentId={pitchDocument.id}
+          documentTitle={pitchDocument.title}
+          currentVersion={pitchDocument.version}
+          onRestored={() => {
+            setShowVersionHistory(false);
+            void selectDocument(pitchDocument.id);
+          }}
+        />
+      )}
     </AppShell>
   );
 }

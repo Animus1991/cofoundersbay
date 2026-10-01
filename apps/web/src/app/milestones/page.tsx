@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import {
-  Plus, CheckCircle2, Clock,
+  Plus, CheckCircle2, Clock, ArrowRight,
   Edit2, Trash2,
   RefreshCw, MoreVertical,
   Search, LayoutGrid, LayoutList, X,
@@ -24,12 +25,15 @@ import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { useToast } from '@/components/ui/toast';
 import {
   milestoneEn,
   milestoneEl,
   useMilestonePrimaryText,
   MILESTONE_CATEGORY_KEYS,
   MILESTONE_STATUS_ONE_KEYS,
+  PREVIEW_MILESTONE_EL,
 } from '@/lib/i18n/strings-milestones';
 import {
   listMilestones,
@@ -45,9 +49,10 @@ import { MilestoneFormModal } from './MilestoneFormModal';
 import { qk } from '@/lib/query-keys';
 
 // ── Status config ────────────────────────────────────────────────────────────
+// Not the calendar glyph for "in progress": the due date beside it already uses it.
 const STATUS_CONFIG: Record<MilestoneStatus, { statusKey: 'status_todo' | 'status_in_progress' | 'status_blocked' | 'status_completed' | 'status_cancelled'; glyph: CfbGlyphName; tone: StatusTone }> = {
   todo:        { statusKey: 'status_todo',        glyph: 'flag',     tone: 'neutral' },
-  in_progress: { statusKey: 'status_in_progress', glyph: 'calendar', tone: 'info' },
+  in_progress: { statusKey: 'status_in_progress', glyph: 'target',   tone: 'info' },
   blocked:     { statusKey: 'status_blocked',     glyph: 'shield',   tone: 'warning' },
   completed:   { statusKey: 'status_completed',   glyph: 'award',    tone: 'success' },
   cancelled:   { statusKey: 'status_cancelled',   glyph: 'more',     tone: 'neutral' },
@@ -69,27 +74,6 @@ const PRIORITY_DOT: Record<StatusTone, string> = {
 };
 
 const CATEGORY_ORDER = ['all', 'product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
-
-/**
- * Greek for the twelve preview milestones (`PREVIEW_MILESTONES` in
- * `lib/preview-api.ts`). Real milestones are user data and render as typed;
- * the demo ones were the only English block left on a Greek-primary page.
- * Keyed by the exact English title, same pattern as the Builder preview hints.
- */
-const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?: string }> = {
-  'Launch beta to first 20 users': { title: 'Κυκλοφορία beta στους πρώτους 20 χρήστες', description: 'Πρόσκληση από τη λίστα αναμονής, μέτρηση ένταξης, συλλογή ποιοτικών σχολίων.' },
-  'Hire first engineer': { title: 'Πρόσληψη πρώτου μηχανικού', description: 'Φύλλο αξιολόγησης, τρεις φιναλίστ, πρόταση σε αναμονή.' },
-  'File trademark': { title: 'Κατοχύρωση εμπορικού σήματος' },
-  'Close seed round': { title: 'Κλείσιμο γύρου seed', description: 'Ελήφθη φύλλο όρων, ενημερωμένο data room, 8 ραντεβού κλεισμένα.' },
-  'Ship onboarding checklist': { title: 'Παράδοση λίστας ένταξης', description: 'Ο ιδρυτής ολοκληρώνει τη ρύθμιση χωρίς κλήση.' },
-  'Sign university MoU': { title: 'Υπογραφή μνημονίου με πανεπιστήμιο', description: 'Πιλοτικός κύκλος 12 ομάδων.' },
-  'Publish landing page': { title: 'Δημοσίευση σελίδας προορισμού' },
-  'First mentor office hours': { title: 'Πρώτες ώρες γραφείου με μέντορα' },
-  'BMC v1 in Builder': { title: 'Καμβάς μοντέλου v1 στον Builder' },
-  'Pitch deck outline': { title: 'Δομή pitch deck' },
-  'Readiness score above 40': { title: 'Βαθμός ετοιμότητας πάνω από 40' },
-  'Intro call with first accelerator': { title: 'Γνωριμία με τον πρώτο επιταχυντή' },
-};
 
 function formatMilestoneDate(iso: string | null, lang: 'en' | 'el'): string {
   if (!iso) return '—';
@@ -142,6 +126,14 @@ function MilestoneCard({
 }) {
   const { primary } = useLanguagePreference();
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
   const status = STATUS_CONFIG[item.status];
   const statusColors = STATUS[status.tone];
   const priority = PRIORITY_CONFIG[item.priority];
@@ -158,8 +150,9 @@ function MilestoneCard({
         // with it: muted text measured 4.35:1 at 0.75 on the card and 4.38:1 at
         // 0.80 on this row's own success tint -- both under AA, and the exact
         // value needed depends on whichever surface the row happens to sit on.
-        // Completion is already carried by the success border and the struck-out
-        // title, so the row recedes without taking its own legibility with it.
+        // Completion is carried by the success border, the chip and the muted
+        // title. No strike-through: it cuts through Greek accents and reads as
+        // deleted, and a finished milestone is an achievement, not a removal.
         item.status === 'completed' ? cn('border', STATUS.success.border) : 'border-border/60',
         overdue && cn('border', STATUS.danger.border),
       )}
@@ -184,18 +177,24 @@ function MilestoneCard({
             <div className="flex items-start justify-between gap-2">
               <h3
                 className={cn(
-                  'text-sm font-medium leading-snug',
-                  item.status === 'completed' ? 'line-through text-muted-foreground' : 'text-foreground',
+                  'page-section font-semibold leading-snug',
+                  item.status === 'completed' ? 'text-muted-foreground' : 'text-foreground',
                 )}
               >
                 {previewEl ? <BilingualText en={item.title} el={previewEl.title} wrap /> : item.title}
               </h3>
               {/* Actions */}
               <div className="relative shrink-0">
+                {/* Hover reveals it; a touch screen has no hover, so it stays visible there. */}
                 <button
+                  type="button"
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="rounded-xl p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-within:opacity-100"
+                  className={cn(
+                    'rounded-xl p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100',
+                    menuOpen && 'opacity-100',
+                  )}
                   aria-label={bilingualAria(milestoneEn('more'), milestoneEl('more'))}
+                  aria-expanded={menuOpen}
                 >
                   <MoreVertical className="icon-sm" />
                 </button>
@@ -204,6 +203,7 @@ function MilestoneCard({
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                     <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-border/60 bg-popover shadow-lg">
                       <button
+                        type="button"
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                         onClick={() => { setMenuOpen(false); onEdit(item); }}
                       >
@@ -212,6 +212,7 @@ function MilestoneCard({
                       </button>
                       {item.status !== 'completed' && (
                         <button
+                          type="button"
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'completed'); }}
                         >
@@ -221,6 +222,7 @@ function MilestoneCard({
                       )}
                       {item.status === 'completed' && (
                         <button
+                          type="button"
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'in_progress'); }}
                         >
@@ -230,6 +232,7 @@ function MilestoneCard({
                       )}
                       <div className="my-1 border-t border-border/40" />
                       <button
+                        type="button"
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive-accessible hover:bg-destructive/10"
                         onClick={() => { setMenuOpen(false); onDelete(item.id); }}
                       >
@@ -243,33 +246,15 @@ function MilestoneCard({
             </div>
 
             {item.description && (
-              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+              <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">
                 {previewEl?.description
                   ? <BilingualText en={item.description} el={previewEl.description} wrap />
                   : item.description}
               </p>
             )}
 
-            {/* Progress bar */}
-            {item.status !== 'cancelled' && (
-              <div className="mt-3 flex items-center gap-2">
-                <div className="h-1.5 flex-1 rounded-full bg-muted">
-                  <div
-                    className={cn(
-                      'h-1.5 rounded-full transition-all',
-                      item.status === 'completed' ? 'bg-status-success' : 'bg-primary',
-                    )}
-                    style={{ width: `${item.progress}%` }}
-                  />
-                </div>
-                <span className="min-w-[2.5rem] text-right text-2xs tabular-nums text-muted-foreground">
-                  {item.progress}%
-                </span>
-              </div>
-            )}
-
-            {/* Meta row */}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            {/* Meta row; progress sits at its end instead of a full-width bar of its own. */}
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
               <Badge
                 variant="outline"
                 className={cn('h-5 gap-1 rounded-full px-2 text-2xs font-medium border', statusColors.chip)}
@@ -314,6 +299,30 @@ function MilestoneCard({
                   {item.collaborator.displayName}
                 </div>
               )}
+
+              {item.status !== 'cancelled' && (
+                <div className="ml-auto flex items-center gap-2">
+                  <div
+                    className="h-1 w-16 overflow-hidden rounded-full bg-muted sm:w-20"
+                    role="progressbar"
+                    aria-valuenow={item.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={bilingualAria(milestoneEn('progress_aria'), milestoneEl('progress_aria'))}
+                  >
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all',
+                        item.status === 'completed' ? 'bg-status-success' : 'bg-primary',
+                      )}
+                      style={{ width: `${item.progress}%` }}
+                    />
+                  </div>
+                  <span className="min-w-[2.25rem] text-right text-2xs tabular-nums text-muted-foreground">
+                    {item.progress}%
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -326,29 +335,52 @@ function MilestoneCard({
 function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; total?: number; overdue?: number; dueSoon?: number; completionRate?: number } | undefined }) {
   const counts = summary?.counts;
   if (!summary || !counts || typeof counts !== 'object') return null;
-  const stats: { labelKey: 'stat_total' | 'stat_in_progress' | 'stat_completed' | 'stat_overdue' | 'stat_rate'; value: string | number; glyph: CfbGlyphName; tone: StatusTone | 'neutral' }[] = [
-    { labelKey: 'stat_total', value: summary.total ?? 0, glyph: 'flag', tone: 'neutral' },
-    { labelKey: 'stat_in_progress', value: counts.in_progress ?? 0, glyph: 'calendar', tone: 'info' },
-    { labelKey: 'stat_completed', value: counts.completed ?? 0, glyph: 'award', tone: 'success' },
-    { labelKey: 'stat_overdue', value: summary.overdue ?? 0, glyph: 'target', tone: 'danger' },
-    { labelKey: 'stat_rate', value: `${summary.completionRate ?? 0}%`, glyph: 'chart', tone: 'accent' },
+  const overdue = summary.overdue ?? 0;
+  const rate = Math.max(0, Math.min(100, summary.completionRate ?? 0));
+  // Overdue is only red when something is: a red "0" reads as an alarm.
+  const stats: { labelKey: 'stat_total' | 'stat_in_progress' | 'stat_completed' | 'stat_overdue'; value: number; tone: StatusTone }[] = [
+    { labelKey: 'stat_total', value: summary.total ?? 0, tone: 'neutral' },
+    { labelKey: 'stat_in_progress', value: counts.in_progress ?? 0, tone: 'info' },
+    { labelKey: 'stat_completed', value: counts.completed ?? 0, tone: 'success' },
+    { labelKey: 'stat_overdue', value: overdue, tone: overdue > 0 ? 'danger' : 'neutral' },
   ];
 
+  // One row per figure: at rail width a 2×2 tile left ~80px per label, and
+  // "Ολοκληρωμένα" alone is wider than that.
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-      {stats.map((s) => {
-        const colors = s.tone === 'neutral' ? { icon: 'text-foreground' } : STATUS[s.tone];
-        return (
-        <div key={s.labelKey} className="rounded-xl border border-border/60 bg-card/70 px-4 py-3 text-center">
-          <span className={cn('mx-auto mb-1 inline-flex', colors.icon)}>
-            <CfbGlyph name={s.glyph} className="icon-sm" />
-          </span>
-          <p className={cn('page-stat text-xl font-semibold tabular-nums', colors.icon)}>{s.value}</p>
-          <p className="page-stat-label text-2xs leading-snug text-muted-foreground">
-            <BilingualText en={milestoneEn(s.labelKey)} el={milestoneEl(s.labelKey)} compact wrap />
+    <div className="rounded-xl border border-border/60 bg-card/80 px-3 py-2.5">
+      <dl className="space-y-1">
+        {stats.map((s) => (
+          <div key={s.labelKey} className="flex items-baseline justify-between gap-3">
+            <dt className="min-w-0 text-muted-foreground">
+              <span className="page-stat-label leading-snug">
+                <BilingualText en={milestoneEn(s.labelKey)} el={milestoneEl(s.labelKey)} compact wrap />
+              </span>
+            </dt>
+            <dd className={cn('page-stat shrink-0 font-semibold tabular-nums', s.tone === 'neutral' ? 'text-foreground' : STATUS[s.tone].text)}>
+              {s.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <div className="mt-2.5 border-t border-border/50 pt-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="page-stat-label font-medium text-foreground">
+            <BilingualText en={milestoneEn('stat_rate')} el={milestoneEl('stat_rate')} compact wrap />
           </p>
+          <span className="page-stat font-semibold tabular-nums text-foreground">{rate}%</span>
         </div>
-      );})}
+        <div
+          className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={rate}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={bilingualAria(milestoneEn('stat_rate'), milestoneEl('stat_rate'))}
+        >
+          <div className="h-full rounded-full bg-status-success transition-all" style={{ width: `${rate}%` }} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -356,9 +388,9 @@ function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; t
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MilestonesPage() {
   const qc = useQueryClient();
-  const { primary } = useLanguagePreference();
   const t = useMilestonePrimaryText();
-  const { open: openAskAi } = usePopupChat();
+  const { ask: askAssistant } = usePopupChat();
+  const { success, error: showError } = useToast();
   const { isAuthenticated, isChecking } = useAuthenticatedSession();
   const confirm = useConfirm();
   const [statusFilter, setStatusFilter] = useState<MilestoneStatus | 'all'>('all');
@@ -388,6 +420,13 @@ export default function MilestonesPage() {
     enabled: mounted && isAuthenticated && !isChecking,
   });
 
+  const { data: unfilteredData } = useQuery({
+    queryKey: qk('milestones', 'all', 'all'),
+    queryFn: () => listMilestones({ limit: 100 }),
+    staleTime: 30_000,
+    enabled: mounted && isAuthenticated && !isChecking,
+  });
+
   const { data: summaryData } = useQuery({
     queryKey: qk('milestones', 'summary'),
     queryFn: getMilestoneSummary,
@@ -400,24 +439,42 @@ export default function MilestonesPage() {
   const allMilestones = data?.milestones ?? [];
   const milestones = allMilestones.filter((m) => {
     if (categoryFilter !== 'all' && m.category !== categoryFilter) return false;
-    if (searchQuery && !m.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    const previewEl = PREVIEW_MILESTONE_EL[m.title];
+    return (
+      m.title.toLowerCase().includes(q) ||
+      (m.description ?? '').toLowerCase().includes(q) ||
+      (previewEl?.title ?? '').toLowerCase().includes(q) ||
+      (previewEl?.description ?? '').toLowerCase().includes(q)
+    );
   });
 
   const createMut = useMutation({
     mutationFn: createMilestone,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk('milestones') });
+      success(t(milestoneEn('created'), milestoneEl('created')), t(milestoneEn('created_hint'), milestoneEl('created_hint')));
       setCreateOpen(false);
+    },
+    onError: () => {
+      showError(t(milestoneEn('fail_create'), milestoneEl('fail_create')), t(milestoneEn('try_again'), milestoneEl('try_again')));
     },
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateMilestone>[1] }) =>
       updateMilestone(id, data),
-    onSuccess: () => {
+    onSuccess: (_row, variables) => {
       qc.invalidateQueries({ queryKey: qk('milestones') });
       setEditTarget(null);
+      const keys = Object.keys(variables.data);
+      if (variables.data.status === 'completed') success(t(milestoneEn('toast_completed'), milestoneEl('toast_completed')));
+      else if (variables.data.status === 'in_progress' && keys.length === 1) success(t(milestoneEn('toast_reopened'), milestoneEl('toast_reopened')));
+      else success(t(milestoneEn('toast_updated'), milestoneEl('toast_updated')));
+    },
+    onError: () => {
+      showError(t(milestoneEn('fail_update'), milestoneEl('fail_update')), t(milestoneEn('try_again'), milestoneEl('try_again')));
     },
   });
 
@@ -429,6 +486,12 @@ export default function MilestonesPage() {
         ...old,
         milestones: (old?.milestones ?? []).filter((m) => m.id !== id),
       }));
+    },
+    onSuccess: () => {
+      success(t(milestoneEn('toast_deleted'), milestoneEl('toast_deleted')));
+    },
+    onError: () => {
+      showError(t(milestoneEn('fail_delete'), milestoneEl('fail_delete')), t(milestoneEn('try_again'), milestoneEl('try_again')));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: qk('milestones') }),
   });
@@ -538,12 +601,12 @@ export default function MilestonesPage() {
       labelEl: 'Σύνοψη',
       content: (
         <div className="space-y-3">
-          {/* Summary strip */}
           {waiting ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
+            <div className="space-y-2 rounded-xl border border-border/60 bg-card/80 px-3 py-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-5 w-full rounded-md" />
               ))}
+              <Skeleton className="mt-3 h-9 w-full rounded-md" />
             </div>
           ) : (
             <SummaryBar summary={summaryData} />
@@ -564,29 +627,32 @@ export default function MilestonesPage() {
           (priorityFilter !== 'all' ? 1 : 0) || null,
       content: (
         <div className="space-y-4">
-          {/* Search + Category filter */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-48">
-              <Search className="icon-sm absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={t(milestoneEn('search_ph'), milestoneEl('search_ph'))}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 rounded-xl pl-8 text-sm"
-                aria-label={bilingualAria(milestoneEn('search_ph'), milestoneEl('search_ph'))}
-              />
-              {searchQuery && (
-                <button aria-label="Clear search" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="icon-sm" />
-                </button>
-              )}
-            </div>
+          <div className="relative w-full min-w-0">
+            <Search className="icon-sm absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t(milestoneEn('search_ph'), milestoneEl('search_ph'))}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 rounded-xl pl-8 pr-8 text-sm"
+              aria-label={bilingualAria(milestoneEn('search_ph'), milestoneEl('search_ph'))}
+            />
+            {searchQuery && (
+              <button type="button" aria-label={bilingualAria(milestoneEn('clear_search'), milestoneEl('clear_search'))} onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="icon-sm" />
+              </button>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <p className="type-caption font-medium text-muted-foreground">
+              <BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact />
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORY_ORDER.map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setCategoryFilter(cat)}
+                  aria-pressed={categoryFilter === cat}
                   className={cn(
                     'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                     categoryFilter === cat
@@ -601,90 +667,146 @@ export default function MilestonesPage() {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-border/50 bg-secondary/30 px-3 py-1.5">
-              {/* The glyph is the only thing next to this control, and a glyph
-                  is not a label: axe reported `select-name (critical)` and a
-                  screen reader announced a combo box with no subject. */}
-              <CfbGlyph name="sliders" className="icon-sm text-muted-foreground" aria-hidden="true" />
-              <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
-                aria-label={primary === 'el' ? 'Φίλτρο προτεραιότητας' : 'Filter by priority'}
-                className="tap-target-y cursor-pointer bg-transparent text-xs text-foreground outline-none"
-              >
-                {[
-                  { value: 'all' as const, key: 'pri_all' as const },
-                  { value: 'high' as const, key: 'pri_high' as const },
-                  { value: 'medium' as const, key: 'pri_medium' as const },
-                  { value: 'low' as const, key: 'pri_low' as const },
-                ].map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {primary === 'el' ? milestoneEl(opt.key) : milestoneEn(opt.key)}
-                  </option>
-                ))}
-              </select>
+          <div className="space-y-1.5">
+            <p className="type-caption font-medium text-muted-foreground">
+              <BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact />
+            </p>
+            {/* Chips like Category above: a native option can only show one language. */}
+            <div className="flex flex-wrap gap-1.5">
+              {([
+                { value: 'all', key: 'all' },
+                { value: 'high', key: 'pri_high' },
+                { value: 'medium', key: 'pri_medium' },
+                { value: 'low', key: 'pri_low' },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setPriorityFilter(opt.value)}
+                  aria-pressed={priorityFilter === opt.value}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
+                    priorityFilter === opt.value
+                      ? 'border-primary/40 bg-primary/10 text-primary-accessible'
+                      : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {opt.value !== 'all' && (
+                    <span
+                      className={cn('h-1.5 w-1.5 rounded-full', PRIORITY_DOT[PRIORITY_CONFIG[opt.value].tone])}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <BilingualText en={milestoneEn(opt.key)} el={milestoneEl(opt.key)} compact />
+                </button>
+              ))}
             </div>
-            <div className="flex items-center gap-0.5 rounded-xl border border-border/50 bg-secondary/30 p-0.5">
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-                aria-label={bilingualAria(milestoneEn('view_list'), milestoneEl('view_list'))}
-              ><LayoutList className="icon-sm" /></button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-                aria-label={bilingualAria(milestoneEn('view_grid'), milestoneEl('view_grid'))}
-              ><LayoutGrid className="icon-sm" /></button>
+          </div>
+          <div className="space-y-1.5">
+            <p className="type-caption font-medium text-muted-foreground">
+              <BilingualText en={milestoneEn('layout')} el={milestoneEl('layout')} compact />
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5 rounded-xl border border-border/50 bg-secondary/30 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                  aria-label={bilingualAria(milestoneEn('view_list'), milestoneEl('view_list'))}
+                  aria-pressed={viewMode === 'list'}
+                ><LayoutList className="icon-sm" /></button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                  aria-label={bilingualAria(milestoneEn('view_grid'), milestoneEl('view_grid'))}
+                  aria-pressed={viewMode === 'grid'}
+                ><LayoutGrid className="icon-sm" /></button>
+              </div>
+              <Button type="button" variant="ghost" size="icon" className={`ml-auto h-8 w-8 ${BUILDER_BTN}`} onClick={() => refetch()} aria-label={bilingualAria(milestoneEn('refresh'), milestoneEl('refresh'))}>
+                <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => refetch()} aria-label={bilingualAria(milestoneEn('refresh'), milestoneEl('refresh'))}>
-              <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
-            </Button>
           </div>
         </div>
       ),
     },
   ];
+  const harborLive = (unfilteredData?.milestones ?? allMilestones).some(
+    (m) => m.title.includes('$750K') || m.id === 'ms-4',
+  );
+  const askAi = harborLive
+    ? 'Propose the next three Harbor milestones from Idea Core, the GTM board, the $750K seed (Athens Tech Angels, $375K committed), and anything overdue.'
+    : 'Help me pick the next milestone from Builder, the pitch deck, and what is already overdue.';
+
   return (
     <AppShell
       rail={rail}
       showHelp
-      askAi="Help me pick the next milestone from Builder, the pitch deck, and what is already overdue."
+      askAi={askAi}
+      contentClassName="builder-copy overflow-x-clip"
       actions={
-        <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => setCreateOpen(true)}>
+        <Button type="button" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setCreateOpen(true)}>
           <Plus className="icon-sm" /> <BilingualText en={milestoneEn('new_milestone')} el={milestoneEl('new_milestone')} compact />
         </Button>
       }
     >
       <div className="space-y-4">
+        {/* The card is the prompt: it sends askAi rather than opening an empty chat. */}
         <button
           type="button"
-          onClick={() => openAskAi()}
-          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
+          onClick={() => askAssistant(askAi)}
+          className="group flex w-full items-center gap-3 rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
         >
-          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+            <CfbGlyph name="spark" className="icon-sm" />
+          </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-foreground">
+            <span className="type-kicker block font-medium text-foreground">
               <BilingualText en={milestoneEn('ask_ai_plan')} el={milestoneEl('ask_ai_plan')} stacked />
             </span>
-            <span className="block text-2xs text-muted-foreground">
-              <BilingualText en={milestoneEn('ask_ai_hint')} el={milestoneEl('ask_ai_hint')} />
+            <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+              <BilingualText
+                en={milestoneEn(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
+                el={milestoneEl(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
+              />
             </span>
           </span>
+          <ArrowRight className="icon-sm shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary-accessible" aria-hidden="true" />
         </button>
-
-
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en={milestoneEn('link_into')} el={milestoneEl('link_into')} compact />
+          {' '}
+          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={milestoneEn('link_idea')} el={milestoneEl('link_idea')} compact />
+          </Link>
+          {' · '}
+          <Link href="/builder?tab=pitch-deck" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={milestoneEn('link_pitch')} el={milestoneEl('link_pitch')} compact />
+          </Link>
+          {' · '}
+          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={milestoneEn('link_research')} el={milestoneEl('link_research')} compact />
+          </Link>
+          {' · '}
+          <Link href="/readiness" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={milestoneEn('link_readiness')} el={milestoneEl('link_readiness')} compact />
+          </Link>
+          {' · '}
+          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={milestoneEn('link_fundraising')} el={milestoneEl('link_fundraising')} compact />
+          </Link>
+        </p>
 
         {/* Status tabs. The priority select and the view toggle shared this
             row and made it wrap; they are in the rail now. */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Status tabs */}
           <div className="flex flex-wrap gap-1.5">
             {statusTabs.map((tab) => (
               <button
                 key={tab.value}
+                type="button"
+                aria-pressed={statusFilter === tab.value}
                 onClick={() => setStatusFilter(tab.value)}
                 className={cn(
                     'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
@@ -705,8 +827,6 @@ export default function MilestonesPage() {
               </button>
             ))}
           </div>
-
-          {/* Priority + View + Refresh */}
         </div>
 
         {/* List */}
@@ -714,7 +834,7 @@ export default function MilestonesPage() {
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
             <CfbGlyph name="target" className="icon-lg text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground"><BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} /></p>
-            <Button variant="secondary" size="sm" className="rounded-xl" onClick={() => refetch()}>
+            <Button variant="secondary" size="sm" className={BUILDER_BTN} type="button" onClick={() => refetch()}>
               <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
             </Button>
           </div>
@@ -726,12 +846,12 @@ export default function MilestonesPage() {
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
             <CfbGlyph name="flag" className="icon-lg text-muted-foreground/50" />
             <div>
-              <p className="font-medium text-foreground">
+              <p className="page-section font-medium text-foreground">
                 {showFilteredEmpty
                   ? <BilingualText en={milestoneEn('empty_filter_title')} el={milestoneEl('empty_filter_title')} />
                   : <BilingualText en={milestoneEn('empty_title')} el={milestoneEl('empty_title')} />}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="type-hold mt-1 text-sm text-muted-foreground">
                 {showFilteredEmpty
                   ? <BilingualText en={milestoneEn('empty_filter_hint')} el={milestoneEl('empty_filter_hint')} />
                   : <BilingualText en={milestoneEn('empty_hint')} el={milestoneEl('empty_hint')} />}
@@ -739,9 +859,10 @@ export default function MilestonesPage() {
             </div>
             {showFilteredEmpty ? (
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
-                className="gap-1.5 rounded-xl"
+                className={`gap-1.5 ${BUILDER_BTN}`}
                 onClick={() => {
                   setStatusFilter('all');
                   setPriorityFilter('all');
@@ -752,7 +873,7 @@ export default function MilestonesPage() {
                 <BilingualText en={milestoneEn('clear_filters')} el={milestoneEl('clear_filters')} compact />
               </Button>
             ) : (
-              <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => setCreateOpen(true)}>
+              <Button type="button" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => setCreateOpen(true)}>
                 <Plus className="icon-sm" /> <BilingualText en={milestoneEn('empty_cta')} el={milestoneEl('empty_cta')} compact />
               </Button>
             )}

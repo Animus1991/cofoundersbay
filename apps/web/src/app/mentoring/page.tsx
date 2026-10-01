@@ -115,7 +115,7 @@ function hitToMentor(hit: SearchHit): Mentor {
 }
 
 const AVAIL_CONFIG = {
-  available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-emerald-500' },
+  available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-status-success' },
   busy:      { en: 'Busy',      el: 'Απασχολημένος', color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-red-500'     },
   limited:   { en: 'Limited',   el: 'Περιορισμένη', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-amber-500'   },
 } as const;
@@ -869,7 +869,7 @@ export default function MentoringPage() {
   ];
 
   return (
-    <AppShell rail={rail}>
+    <AppShell showHelp rail={rail}>
       <div className="pb-10">
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
         <TabsList>

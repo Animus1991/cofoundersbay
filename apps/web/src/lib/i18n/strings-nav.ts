@@ -66,9 +66,9 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/admin/tenants': 'Μισθωτές',
   '/admin/users': 'Χρήστες',
   '/analytics': 'Αναλυτικά',
-  '/builder': 'Δόμηση νεοφυούς',
+  '/builder': 'Startup Builder',
   '/builder/applications': 'Αιτήσεις',
-  '/builder/pitch-deck': 'Παρουσίαση επενδυτών',
+  '/builder/pitch-deck': 'Pitch deck',
   '/calendar': 'Ημερολόγιο',
   '/coaching': 'Καθοδήγηση',
   '/compare': 'Σύγκριση προφίλ',
@@ -87,7 +87,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/groups': 'Κοινότητες',
   '/help': 'Βοήθεια και υποστήριξη',
   '/investor/analytics': 'Αναλυτικά deals',
-  '/investor/pipeline': 'Αγωγός επενδύσεων',
+  '/investor/pipeline': 'Pipeline συμφωνιών',
   '/investor/portfolio': 'Χαρτοφυλάκιο',
   '/investor/scouting': 'Αναζήτηση startups',
   '/investor/watchlist': 'Λίστα παρακολούθησης',
@@ -180,7 +180,7 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
   '/builder/pitch-deck':
     'Περιεχόμενο slides συνδεδεμένο με τον builder',
   '/builder/applications':
-    'Τέσσερα πρότυπα αιτήσεων στο ίδιο παραδοτέο με τον Builder',
+    'Πρότυπα YC, Techstars, πανεπιστημίων και επιχορηγήσεων σε ένα σημείο',
   '/research':
     'Οπτικοί πίνακες έρευνας και στρατηγικής',
   '/milestones':
@@ -189,6 +189,8 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
     'Παράλληλα έργα και πρωτοβουλίες startup',
   '/fundraising':
     'Pipeline επενδυτών και data room',
+  '/ai':
+    'Βοηθός Harbor — αντιστοιχίσεις, πίνακας GTM, γύρος $750K. Οι εγγραφές περιμένουν επιβεβαίωση',
   '/messages':
     'Άμεσα μηνύματα και αιτήματα εισαγωγής',
   '/calendar':

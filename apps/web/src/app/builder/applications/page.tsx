@@ -1,19 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
+import { CollabToolbar } from '@/components/builder/CollabToolbar';
+import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { usePopupChat } from '@/contexts/PopupChatContext';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import type { ApplicationTemplate } from '@/components/builder/application-model';
+
+const HARBOR_ASK =
+  "Draft empty YC, Techstars, university, or grant answers from Idea Core, the GTM board, and Harbor's $750K seed (Athens Tech Angels, $375K committed). Fill only empty fields.";
 
 function ApplicationsPageContent() {
   const {
+    workspace,
     isLoadingWorkspaces,
     documents,
     activeDocument,
@@ -22,8 +31,11 @@ function ApplicationsPageContent() {
     updateDocumentSection,
     createDocument,
     selectDocument,
+    generateContent,
     clearError,
   } = useBuilder();
+  const { ask } = usePopupChat();
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   useEffect(() => {
     loadWorkspaces(true);
@@ -41,16 +53,25 @@ function ApplicationsPageContent() {
     (activeDocument?.type === 'application' ? activeDocument.content : undefined) ??
     applicationDocument?.content ??
     {};
+  const contentRevision = `${applicationDocument?.id ?? ''}:${applicationDocument?.version ?? 0}:${applicationDocument?.updatedAt ?? ''}`;
+  const harborLive = documents.some((d) => d.type === 'idea_core' || d.type === 'pitch_deck' || d.type === 'application');
+  const askAi = harborLive ? HARBOR_ASK : 'Draft empty accelerator or grant answers from Builder artefacts. Fill only empty fields.';
 
   const handleSave = async (data: unknown) => {
+    let doc = documents.find((d) => d.type === 'application');
+    if (!doc) {
+      doc = await createDocument('application', 'Program applications');
+    }
+    await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, unknown>);
+  };
+
+  const handleGenerate = async (app: ApplicationTemplate) => {
     try {
-      let doc = documents.find((d) => d.type === 'application');
-      if (!doc) {
-        doc = await createDocument('application', 'Program applications');
-      }
-      await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, any>);
+      const result = await generateContent('application', 'applications', { programId: app.id, current: app });
+      return result.content ?? null;
     } catch {
-      // BuilderContext already surfaces the error banner.
+      clearError();
+      return null;
     }
   };
 
@@ -68,39 +89,119 @@ function ApplicationsPageContent() {
   }
 
   return (
-    <AppShell showHelp askAi="Draft YC, Techstars, university, or grant answers from Idea Core, Market, and Pitch.">
-      <div className="builder-type space-y-6">
+    <AppShell
+      showHelp
+      askAi={askAi}
+      contentClassName="builder-copy overflow-x-clip"
+    >
+      <div className="builder-type builder-copy min-w-0 space-y-6 overflow-x-clip">
         {error && (
-          <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
-            <AlertCircle className="icon-md text-destructive-accessible" />
-            <p className="text-sm text-destructive-accessible">{error}</p>
-            <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
+          <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-start gap-3">
+              <AlertCircle className="icon-md shrink-0 text-destructive-accessible" />
+              <p className="text-sm text-destructive-accessible">{error}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={clearError} className="sm:ml-auto">
               <BilingualText en={builderEn('dismiss')} el={builderEl('dismiss')} compact />
             </Button>
           </div>
         )}
 
-        <div className="flex flex-wrap items-start gap-3">
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-muted-foreground" aria-label={bilingualAria(builderEn('app_back'), builderEl('app_back'))} asChild>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 gap-1.5 ${BUILDER_BTN} text-muted-foreground`}
+            aria-label={bilingualAria(builderEn('app_back'), builderEl('app_back'))}
+            asChild
+          >
             <Link href="/builder">
               <ArrowLeft className="icon-sm" />
               <CfbGlyph name="builder" className="icon-sm" />
               <BilingualText en={builderEn('app_back')} el={builderEl('app_back')} compact />
             </Link>
           </Button>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            <BilingualText en={builderEn('app_lead')} el={builderEl('app_lead')} />
-          </p>
+          {applicationDocument && workspace && (
+            <CollabToolbar
+              documentId={applicationDocument.id}
+              workspaceId={workspace.id}
+              documentTitle={applicationDocument.title}
+              onHistoryClick={() => setShowVersionHistory(true)}
+            />
+          )}
         </div>
 
+        <button
+          type="button"
+          onClick={() => ask(askAi)}
+          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
+        >
+          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
+          <span className="min-w-0 flex-1">
+            <span className="type-kicker block font-medium text-foreground">
+              <BilingualText en={builderEn('app_ask_plan')} el={builderEl('app_ask_plan')} stacked />
+            </span>
+            <span className="type-hold mt-0.5 block text-sm text-muted-foreground">
+              <BilingualText
+                en={builderEn(harborLive ? 'app_ask_hint_harbor' : 'app_lead')}
+                el={builderEl(harborLive ? 'app_ask_hint_harbor' : 'app_lead')}
+              />
+            </span>
+          </span>
+        </button>
+        <p className="type-hold text-sm text-muted-foreground">
+          <BilingualText en={builderEn('app_link_into')} el={builderEl('app_link_into')} compact />
+          {' · '}
+          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={builderEn('app_link_idea')} el={builderEl('app_link_idea')} compact />
+          </Link>
+          {' · '}
+          <Link href="/builder/pitch-deck" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={builderEn('app_link_pitch')} el={builderEl('app_link_pitch')} compact />
+          </Link>
+          {' · '}
+          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={builderEn('app_link_research')} el={builderEl('app_link_research')} compact />
+          </Link>
+          {' · '}
+          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={builderEn('app_link_fundraising')} el={builderEl('app_link_fundraising')} compact />
+          </Link>
+          {' · '}
+          <Link href="/projects" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={builderEn('app_link_projects')} el={builderEl('app_link_projects')} compact />
+          </Link>
+          {' · '}
+          <Link href="/readiness" className="text-foreground underline-offset-4 hover:underline">
+            <BilingualText en={builderEn('app_link_readiness')} el={builderEl('app_link_readiness')} compact />
+          </Link>
+        </p>
+
         <ApplicationGenerator
+          key={applicationDocument?.id ?? 'applications'}
           hideTitle
           pageRail
           onSave={handleSave}
+          onGenerate={handleGenerate}
           initialData={rawContent}
+          contentRevision={contentRevision}
           workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})}
         />
       </div>
+
+      {applicationDocument && (
+        <VersionHistoryDrawer
+          open={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          documentId={applicationDocument.id}
+          documentTitle={applicationDocument.title}
+          currentVersion={applicationDocument.version}
+          onRestored={() => {
+            setShowVersionHistory(false);
+            void selectDocument(applicationDocument.id);
+          }}
+        />
+      )}
     </AppShell>
   );
 }

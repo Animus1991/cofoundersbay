@@ -4,7 +4,6 @@ import { FormEvent, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { ArrowRight } from 'lucide-react';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
@@ -46,11 +45,10 @@ export function AIComposer({
     <form
       onSubmit={submit}
       className={cn(
-        'flex min-h-10 min-w-0 w-full items-center gap-2 rounded-xl border border-border/60 bg-background px-3 py-1.5',
+        'flex min-h-10 min-w-0 w-full items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5',
         className,
       )}
     >
-      <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
@@ -64,7 +62,7 @@ export function AIComposer({
       <button
         type="submit"
         aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
-        className="shrink-0 rounded-xl p-1 text-primary-accessible outline-none hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-0"
+        className="shrink-0 rounded-md p-1 text-muted-foreground outline-none hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-0"
       >
         <ArrowRight className="icon-sm" aria-hidden="true" />
       </button>
