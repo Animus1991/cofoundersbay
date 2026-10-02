@@ -135,7 +135,11 @@ export function useChartTheme(): ChartTheme {
     // must not change meaning between themes).
     series: [
       readToken('--primary', (isDark ? CHART_SERIES_DARK : CHART_SERIES_LIGHT)[0]),
-      ...(isDark ? CHART_SERIES_DARK : CHART_SERIES_LIGHT).slice(1),
+      // Slots 2-6 are per-theme categorical tones (--chart-2..6); dark themes
+      // do not declare them, so they fall back to the fixed dark set.
+      ...[2, 3, 4, 5, 6].map((n) =>
+        readToken(`--chart-${n}`, (isDark ? CHART_SERIES_DARK : CHART_SERIES_LIGHT)[n - 1]),
+      ),
     ],
     // Status colours follow the theme's lively marks, so a "good" bar in a
     // chart matches a "good" ring and dot on the same page.

@@ -2786,13 +2786,16 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     // A co-founder search rewards complement, not similarity: the skills axis
     // reads what they bring that the viewer does not.
     const complement = pct(theirSkills.length - shared.length, Math.max(theirSkills.length, 1));
+    // Six categorical axes -> the six chart slots. These strings resolve in
+    // the DOM (FactorRow paints them as inline `background`), so they follow
+    // the active theme instead of a fixed Tailwind palette.
     const axes = [
-      { key: 'role', label: 'Role Complementarity', score: target.role === ME_PROFILE.profile.role ? 45 : 88, color: '#4ADE80' },
-      { key: 'skills', label: 'Skills & Expertise', score: complement, color: '#22D3EE' },
-      { key: 'semantic', label: 'Vision & Goals', score: target.matchScore ?? 50, color: '#F472B6' },
-      { key: 'industry', label: 'Industry Alignment', score: target.industries.includes('SaaS') ? 82 : 40, color: '#FB923C' },
-      { key: 'location', label: 'Location Fit', score: sameCity ? 100 : sameCountry ? 70 : 35, color: '#A78BFA' },
-      { key: 'behavioral', label: 'Platform Activity', score: target.lastSeenSecondsAgo == null ? 30 : 85, color: '#34D399' },
+      { key: 'role', label: 'Role Complementarity', score: target.role === ME_PROFILE.profile.role ? 45 : 88, color: 'hsl(var(--primary))' },
+      { key: 'skills', label: 'Skills & Expertise', score: complement, color: 'hsl(var(--chart-2))' },
+      { key: 'semantic', label: 'Vision & Goals', score: target.matchScore ?? 50, color: 'hsl(var(--chart-4))' },
+      { key: 'industry', label: 'Industry Alignment', score: target.industries.includes('SaaS') ? 82 : 40, color: 'hsl(var(--chart-3))' },
+      { key: 'location', label: 'Location Fit', score: sameCity ? 100 : sameCountry ? 70 : 35, color: 'hsl(var(--chart-5))' },
+      { key: 'behavioral', label: 'Platform Activity', score: target.lastSeenSecondsAgo == null ? 30 : 85, color: 'hsl(var(--chart-6))' },
     ];
     return {
       overall: {

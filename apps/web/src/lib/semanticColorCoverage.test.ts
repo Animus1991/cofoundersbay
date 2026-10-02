@@ -56,6 +56,42 @@ const RAW_PALETTE =
 /** Neutral ramps are still legitimate for hairlines/overlays; only hues are guarded. */
 const ALLOWED = /-(?:slate|gray|zinc|neutral|stone)-/;
 
+/**
+ * A quoted hex literal in a theme-aware component has the same defect as a raw
+ * palette shade: it ignores the active theme entirely (`#4ade80` in the Mint
+ * theme was a green that belonged to no palette). Only quoted strings are
+ * matched, so `#333333` inside a comment does not count.
+ *
+ * The allowlist is places where a hex is the *point*, not a styling shortcut:
+ * colour pickers (tenant/org branding forms), third-party brand marks
+ * (Google/LinkedIn logos, share targets), the theme switcher's swatch previews,
+ * the favicon and meta theme-color, presence cursors, and the canvas
+ * user-content palettes (sticky notes, shape fills, node templates — colours a
+ * user picked for their data, not chrome). Files inside `research/` and
+ * `canvas/` hold those content palettes almost exclusively.
+ */
+const HEX_LITERAL = /["'`]#[0-9a-fA-F]{3,8}\b/g;
+
+const HEX_GUARDED_DIRS = ['src/app', 'src/components', 'src/lib', 'src/hooks'];
+const HEX_ALLOWLIST_DIRS = [
+  'src/components/research/', 'src/components/canvas/', 'src/app/research/', 'src/lib/canvas/', 'src/lib/demo/',
+];
+const HEX_ALLOWLIST_FILES = [
+  'src/app/icon.tsx',                    // favicon mark
+  'src/app/layout.tsx',                  // meta theme-color, evaluated before hydration
+  'src/app/settings/page.tsx',           // Google/LinkedIn sign-in logos
+  'src/app/admin/tenants/page.tsx',      // tenant branding pickers
+  'src/app/org/settings/page.tsx',       // org branding pickers
+  'src/app/tenant/branding/page.tsx',    // org branding pickers
+  'src/components/theme/ThemeSwitcher.tsx', // swatches preview each theme's own colours
+  'src/components/ui/share-modal.tsx',   // X/LinkedIn/Facebook brand colours
+  'src/pages/_error.tsx',                // legacy fallback, no theme context
+  'src/hooks/useResearchCollaboration.ts', // presence cursors: one hue per user
+  'src/lib/themes.ts',                   // theme identifiers and their own palettes
+  'src/lib/chart-theme.ts',              // the chart palette definitions themselves
+  'src/lib/preview-api.ts',              // demo content: sticky-note colours a user would pick
+];
+
 function walk(dir: string): string[] {
   const out: string[] = [];
   for (const name of readdirSync(dir)) {
@@ -83,6 +119,24 @@ describe('semantic colour coverage', () => {
             if (ALLOWED.test(match)) continue;
             offenders.push(`${file.replace(/\\/g, '/')}: ${match}`);
           }
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('keeps quoted hex literals out of theme-aware UI', () => {
+    const offenders: string[] = [];
+
+    for (const dir of HEX_GUARDED_DIRS) {
+      for (const file of walk(dir)) {
+        const unixPath = file.split('\\').join('/');
+        if (/\.test\.(tsx?|ts)$/.test(unixPath)) continue;
+        if (HEX_ALLOWLIST_FILES.some((n) => unixPath.endsWith(n.replace(/^src\//, '')))) continue;
+        if (HEX_ALLOWLIST_DIRS.some((d) => unixPath.includes(d.replace(/^src\//, '')))) continue;
+        for (const match of readFileSync(file, 'utf8').match(HEX_LITERAL) ?? []) {
+          offenders.push(`${unixPath}: ${match}`);
         }
       }
     }

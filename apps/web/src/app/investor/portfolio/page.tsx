@@ -58,10 +58,10 @@ const PORTFOLIO_VALUE_HISTORY = [
 ];
 
 const SECTOR_DISTRIBUTION = [
-  { name: 'FoodTech', value: 50, color: '#f97316' },
-  { name: 'Cybersecurity', value: 100, color: '#6366f1' },
-  { name: 'Enterprise', value: 75, color: '#0ea5e9' },
-  { name: 'Logistics', value: 50, color: '#22c55e' },
+  { name: 'FoodTech', value: 50, color: 'hsl(var(--chart-3))' },
+  { name: 'Cybersecurity', value: 100, color: 'hsl(var(--chart-5))' },
+  { name: 'Enterprise', value: 75, color: 'hsl(var(--chart-2))' },
+  { name: 'Logistics', value: 50, color: 'hsl(var(--chart-6))' },
 ];
 
 type Investment = {
@@ -119,7 +119,10 @@ function toInvestment(deal: InvestorDeal): Investment {
   };
 }
 
-const SECTOR_COLOURS = ['#6366f1', '#0ea5e9', '#22c55e', '#f97316', '#a855f7', '#eab308'];
+const SECTOR_COLOURS = [
+  'hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--chart-6))',
+];
 
 /**
  * Invested capital over time, then what it is worth now - in thousands of

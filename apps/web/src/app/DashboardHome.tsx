@@ -94,7 +94,13 @@ function ActionItem({
 
 function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
-  const tierColor = score >= 80 ? '#4ADE80' : score >= 65 ? '#22D3EE' : score >= 45 ? '#FB923C' : '#94A3B8';
+  const tierColor = score >= 80
+    ? 'hsl(var(--status-success-mark))'
+    : score >= 65
+      ? 'hsl(var(--status-info-mark))'
+      : score >= 45
+        ? 'hsl(var(--status-warning-mark))'
+        : 'hsl(var(--status-neutral-mark))';
 
   return (
     <Link

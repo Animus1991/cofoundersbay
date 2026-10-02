@@ -19,8 +19,8 @@ export function ApplicationsTrendChart({ data }: { data: ApplicationsDatum[] }) 
             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="accFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#4ade80" stopOpacity={0.25} />
-            <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
+            <stop offset="5%" stopColor="hsl(var(--status-success-mark))" stopOpacity={0.25} />
+            <stop offset="95%" stopColor="hsl(var(--status-success-mark))" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -28,7 +28,7 @@ export function ApplicationsTrendChart({ data }: { data: ApplicationsDatum[] }) 
         <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
         <Area type="monotone" dataKey="applications" stroke="hsl(var(--primary))" fill="url(#appFill)" strokeWidth={2} name="Applications" />
-        <Area type="monotone" dataKey="accepted" stroke="#4ade80" fill="url(#accFill)" strokeWidth={2} name="Accepted" />
+        <Area type="monotone" dataKey="accepted" stroke="hsl(var(--status-success-mark))" fill="url(#accFill)" strokeWidth={2} name="Accepted" />
       </AreaChart>
     </ResponsiveContainer>
   );

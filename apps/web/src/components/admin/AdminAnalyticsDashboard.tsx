@@ -23,12 +23,19 @@ import { BilingualText } from '@/components/common/BilingualText';
  * than drawing from the categorical palette in lib/chart-theme.
  */
 const RARITY_COLORS: Record<string, string> = {
-  common: '#6b7280',
-  uncommon: '#22c55e',
-  rare: '#3b82f6',
-  epic: '#a855f7',
-  legendary: '#f59e0b',
+  common: '--status-neutral',
+  uncommon: '--status-success',
+  rare: '--status-info',
+  epic: '--status-accent',
+  legendary: '--status-warning',
 };
+
+const rarityText = (rarity: string) =>
+  `hsl(var(${RARITY_COLORS[rarity] ?? '--status-neutral'}-fg))`;
+const rarityTint = (rarity: string) =>
+  `hsl(var(${RARITY_COLORS[rarity] ?? '--status-neutral'}-mark) / 0.13)`;
+const rarityMark = (rarity: string) =>
+  RARITY_COLORS[rarity] ? `hsl(var(${RARITY_COLORS[rarity]}-mark))` : undefined;
 
 function StatCard({
   icon: Icon,
@@ -226,10 +233,7 @@ export function AdminAnalyticsDashboard() {
                   {topBadges.map((b, i) => (
                     <Cell
                       key={b.badgeId}
-                      fill={
-                        RARITY_COLORS[b.rarity] ??
-                        theme.series[i % theme.series.length]
-                      }
+                      fill={rarityMark(b.rarity) ?? theme.series[i % theme.series.length]}
                     />
                   ))}
                 </Pie>
@@ -269,8 +273,8 @@ export function AdminAnalyticsDashboard() {
                         <span
                           className="text-xs px-1.5 py-0.5 rounded"
                           style={{
-                            background: `${RARITY_COLORS[b.rarity] ?? '#6b7280'}22`,
-                            color: RARITY_COLORS[b.rarity] ?? '#6b7280',
+                            background: rarityTint(b.rarity),
+                            color: rarityText(b.rarity),
                           }}
                         >
                           {b.rarity}
