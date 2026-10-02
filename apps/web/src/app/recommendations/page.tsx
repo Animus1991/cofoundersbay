@@ -151,7 +151,7 @@ function BreakdownModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
               <div className="flex flex-wrap gap-1.5">
                 {reasons.map((r, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
+                  <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/15">{r}</span>
                 ))}
               </div>
             </div>
@@ -612,7 +612,7 @@ export default function RecommendationsPage() {
       <div className="space-y-5">
         {/* Weekly digest section */}
         {!digestLoading && weeklyRecs.length > 0 && (
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+          <Card className="border-primary/15 bg-primary/[0.03]">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="icon-sm text-primary-accessible" />

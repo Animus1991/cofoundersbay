@@ -658,7 +658,7 @@ export function DashboardHome() {
 
             {/* Milestone Summary */}
             {milestoneSummary?.counts && milestoneSummary.total > 0 && (
-              <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+              <Card className="border-primary/15 bg-primary/[0.03]">
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">

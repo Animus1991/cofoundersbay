@@ -462,7 +462,7 @@ export default function TenantSSOPage() {
             </div>
 
             {showNewProvider && (
-              <Card className="border-primary/30 bg-muted/10">
+              <Card className="border-primary/15 bg-primary/[0.03]">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm"><BilingualText en="New identity provider" el="Νέος πάροχος ταυτότητας" compact /></CardTitle>
                 </CardHeader>

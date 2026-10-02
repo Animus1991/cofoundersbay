@@ -15,7 +15,7 @@ const enhancedCardVariants = cva(
         elevated: 'border-border',
         outlined: 'border border-border hover:border-foreground/12',
         ghost: 'border-transparent bg-transparent hover:bg-secondary/50',
-        gradient: 'border-transparent bg-gradient-to-br from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10',
+        gradient: 'border-transparent bg-primary/[0.03] hover:bg-primary/[0.05]',
         glass: 'border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20',
       },
       size: {
@@ -194,7 +194,7 @@ export const ProfileCard = React.forwardRef<
     >
       <div className="flex items-start gap-4">
         <div className="relative">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-semibold">
+          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
             {initialsOf(profile.name).toUpperCase()}
           </div>
           {profile.verified && (
@@ -348,7 +348,7 @@ export const ActivityCard = React.forwardRef<
     >
       <div className="flex items-start gap-3">
         {user && (
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
             {initialsOf(user.name).toUpperCase()}
           </div>
         )}

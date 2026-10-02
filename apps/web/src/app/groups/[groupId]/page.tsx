@@ -423,7 +423,7 @@ export default function GroupDetailPage() {
               style={{ backgroundImage: `url(${group.coverImageUrl})` }}
             />
           ) : (
-            <div className="h-32 w-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" />
+            <div className="h-32 w-full bg-primary/[0.06]" />
           )}
 
           <div className="px-6 pb-5 -mt-8 relative">
@@ -431,7 +431,7 @@ export default function GroupDetailPage() {
                 being pushed off the card's right edge. */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex min-w-0 items-end gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-primary/10">
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (
@@ -633,7 +633,7 @@ export default function GroupDetailPage() {
                     <button
                       type="button"
                       onClick={() => setActiveSection('members')}
-                      className="text-xs text-primary-accessible hover:underline focus-ring rounded"
+                      className="text-xs text-primary-accessible hover:underline focus-ring rounded-md"
                     >
                       <BilingualText en={`View all ${group.memberCount} members →`} el={`Όλα τα ${group.memberCount} μέλη →`} compact />
                     </button>

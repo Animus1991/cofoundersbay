@@ -287,7 +287,7 @@ function InvestorCard({
                   aria-pressed={saved}
                   type="button"
                   onClick={onToggleSave}
-                  className="tap-target rounded p-1 transition-colors hover:bg-muted"
+                  className="tap-target rounded-md p-1 transition-colors hover:bg-muted"
                 >
                   <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
                 </button>

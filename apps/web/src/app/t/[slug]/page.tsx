@@ -183,7 +183,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
 
       {/* CTA band */}
       <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="bg-primary/5 border-primary/15">
           <CardContent className="pt-8 pb-8">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
             <h2 className="text-2xl font-bold mb-2">

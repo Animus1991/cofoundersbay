@@ -35,7 +35,6 @@
   "/dashboard/mentor": "an overview that links to /mentor/*, where the mentee and session controls live",
   "/dashboard/provider": "an overview that links to /provider/*, where the service and inquiry controls live",
   "/tenant/dashboard": "an overview that links to the /tenant/* pages that act",
-  "/profile": "the reader's own profile; get_profile reads it and update_profile edits it",
   "/profile/edit": "a form: update_profile proposes the fields and the person saves",
   "/milestones/new": "a form: create_milestone proposes it and the person confirms",
   "/events/create": "a form: create_event proposes it and the person confirms",

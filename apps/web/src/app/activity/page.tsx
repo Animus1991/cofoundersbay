@@ -391,7 +391,7 @@ export default function ActivityPage() {
               );
             })}
           </div>
-          <Card className="border-border bg-gradient-to-br from-primary/5 to-accent/5">
+          <Card className="border-border bg-primary/[0.03]">
             <CardContent className="p-4 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <BarChart3 className="icon-md text-primary-accessible" />

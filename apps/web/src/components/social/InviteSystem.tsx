@@ -104,7 +104,7 @@ export function InviteSystem() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+      <Card className="bg-primary/[0.03]">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/20">

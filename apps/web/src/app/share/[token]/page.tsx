@@ -446,7 +446,7 @@ export default function SharePage() {
 
             {/* CTA for authenticated actions */}
             {(linkInfo?.permissions === 'comment' || linkInfo?.permissions === 'suggest') && (
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/15 bg-primary/5">
                 <CardContent className="p-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-medium"><BilingualText en="Want to leave feedback?" el="Θέλετε να αφήσετε σχόλιο;" compact /></p>

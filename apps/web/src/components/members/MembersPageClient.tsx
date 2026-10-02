@@ -589,7 +589,7 @@ export function MembersPageClient() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {featuredMembers.map((member) => (
-                <div key={member.userId} className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.02] p-3">
+                <div key={member.userId} className="flex items-center gap-3 rounded-xl border border-primary/15 bg-primary/[0.03] p-3">
                   <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
                     <Avatar className="h-10 w-10 ring-1 ring-primary/30">
                       <AvatarImage src={member.avatarUrl ?? undefined} />

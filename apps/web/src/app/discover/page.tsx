@@ -395,7 +395,7 @@ export default function DiscoverPage() {
 
           {/* Featured strip when no query */}
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
-            <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-status-accent-bg/30 p-4">
+            <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
               <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
                 <BadgeCheck className="icon-sm shrink-0 text-primary-accessible" />
                 <span className="text-sm font-semibold text-foreground">

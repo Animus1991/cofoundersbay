@@ -427,7 +427,7 @@ export function LandingHome() {
         </div>
         <div className="relative mx-auto w-full px-6 py-24 text-center sm:px-8 lg:px-12 xl:px-16">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-4 py-1.5 text-sm text-primary-accessible">
               <Sparkles className="icon-sm" />
               <BilingualText en="The startup ecosystem, connected" el="Το οικοσύστημα startups, συνδεδεμένο" compact />
             </span>
@@ -637,7 +637,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Platform Statistics ────────────────────────────────────────────── */}
-      <section className="border-t border-border bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section className="border-t border-border bg-primary/[0.03] px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="By the numbers" el="Σε αριθμούς" compact /></Badge>

@@ -139,7 +139,7 @@ export default function DataExportPage() {
           <BilingualText en="Back to Settings" el="Επιστροφή στις ρυθμίσεις" compact />
         </Link>
 
-        <Card className="border-primary/20 bg-primary/5 shadow-sm">
+        <Card className="border-primary/15 bg-primary/5">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
               <Shield className="icon-md mt-0.5 shrink-0 text-primary-accessible" aria-hidden="true" />

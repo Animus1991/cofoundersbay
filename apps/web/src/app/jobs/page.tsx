@@ -73,7 +73,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
   return (
     <Card className={cn(
       'card-interactive hover-lift group transition-all duration-200',
-      featured && 'border-primary/30 bg-gradient-to-br from-primary/[0.03] to-accent/[0.02]'
+      featured && 'border-primary/15 bg-primary/[0.03]'
     )}>
       <CardContent className="p-5">
         <div className="flex items-start gap-4">

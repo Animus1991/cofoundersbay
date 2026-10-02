@@ -218,7 +218,7 @@ function contentOf<T>(slide: SlideBase): T {
 function CoverSlide({ slide }: { slide: SlideBase }) {
   const c = contentOf<CoverContent>(slide);
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-gradient-to-br from-primary/10 via-background to-primary/5">
+    <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-primary/[0.04]">
       <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible font-medium">
         {c.stage} • Raising {c.raising}
       </div>

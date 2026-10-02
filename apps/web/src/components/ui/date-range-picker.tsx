@@ -200,7 +200,7 @@ export function DateRangePicker({
                   key={p.label}
                   type="button"
                   onClick={() => handlePreset(p)}
-                  className="text-xs px-2 py-1.5 rounded text-left hover:bg-accent whitespace-nowrap transition-colors"
+                  className="text-xs px-2 py-1.5 rounded-md text-left hover:bg-accent whitespace-nowrap transition-colors"
                 >
                   {p.label}
                 </button>
@@ -212,11 +212,11 @@ export function DateRangePicker({
           <div className="flex flex-col sm:flex-row">
             <div>
               <div className="flex items-center justify-between px-3 pt-3 pb-1">
-                <button aria-label="Previous month" type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent">
+                <button aria-label="Previous month" type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded-md hover:bg-accent">
                   <ChevronLeft className="icon-sm" />
                 </button>
                 <span className="text-sm font-medium">{format(leftMonth, 'MMMM yyyy')}</span>
-                <button aria-label="Next month" type="button" onClick={() => setLeftMonth(addMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent sm:invisible">
+                <button aria-label="Next month" type="button" onClick={() => setLeftMonth(addMonths(leftMonth, 1))} className="p-1 rounded-md hover:bg-accent sm:invisible">
                   <ChevronRight className="icon-sm" />
                 </button>
               </div>
@@ -232,11 +232,11 @@ export function DateRangePicker({
             </div>
             <div className="hidden sm:block border-l border-border">
               <div className="flex items-center justify-between px-3 pt-3 pb-1">
-                <button aria-label="Previous month" type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent invisible">
+                <button aria-label="Previous month" type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded-md hover:bg-accent invisible">
                   <ChevronLeft className="icon-sm" />
                 </button>
                 <span className="text-sm font-medium">{format(rightMonth, 'MMMM yyyy')}</span>
-                <button aria-label="Next month" type="button" onClick={() => setLeftMonth(addMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent">
+                <button aria-label="Next month" type="button" onClick={() => setLeftMonth(addMonths(leftMonth, 1))} className="p-1 rounded-md hover:bg-accent">
                   <ChevronRight className="icon-sm" />
                 </button>
               </div>

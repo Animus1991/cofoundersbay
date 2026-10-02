@@ -180,7 +180,7 @@ function ProfileCardInner({
     return (
       <Card className={cn('group relative overflow-hidden', className)}>
         {/* Featured gradient border */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-primary/[0.04] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
         
         {profile.matchScore && (
           <div className="absolute top-3 right-3 z-10">

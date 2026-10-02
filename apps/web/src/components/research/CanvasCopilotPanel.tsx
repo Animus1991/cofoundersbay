@@ -371,7 +371,7 @@ export function CanvasCopilotPanel({
           <span className="text-sm font-semibold truncate">Canvas Copilot</span>
           <span className="text-2xs px-1.5 py-0.5 rounded-full bg-status-accent/10 text-status-accent font-medium">BETA</span>
         </div>
-        <button aria-label="Close" onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
+        <button aria-label="Close" onClick={onClose} className="p-1 rounded-md hover:bg-muted transition-colors shrink-0">
           <X className="icon-sm text-muted-foreground" />
         </button>
       </div>
@@ -658,7 +658,7 @@ export function CanvasCopilotPanel({
                   <button
                     onClick={() => importMutation.mutate(doc.id)}
                     disabled={importMutation.isPending}
-                    className="shrink-0 text-2xs px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
+                    className="shrink-0 text-2xs px-2 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
                   >
                     {importMutation.isPending && importMutation.variables === doc.id
                       ? <Loader2 className="w-2.5 h-2.5 animate-spin" aria-hidden="true" />

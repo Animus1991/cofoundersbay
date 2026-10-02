@@ -37,14 +37,18 @@ import {
   BadgeCheck,
   Calendar,
   MessageSquare,
-  Link as LinkIcon,
   User,
   Settings as SettingsIcon,
 } from 'lucide-react';
-import { getMeProfile, getDashboardActivity } from '@/lib/api';
+import { getMeProfile, getDashboardActivity, listConnectionRequests, getEndorsementsForUser } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
+import { usePageControls, usePageList } from '@/lib/page-controls';
+import { useMyBadges } from '@/hooks/useGamification';
+import { formatDate } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -80,7 +84,7 @@ const COMPLETION_LABEL: Record<string, { en: string; el: string }> = {
   links: { en: 'Social links', el: 'Σύνδεσμοι' },
 };
 
-function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> }) {
+function completionOf(profile: NonNullable<ProfileData>) {
   const fields = calculateProfileCompletion(profile as unknown as Record<string, unknown>);
   const items = fields.map((f) => ({
     done: f.completed,
@@ -89,16 +93,25 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
   }));
   const total = fields.reduce((sum, f) => sum + f.weight, 0);
   const pct = total ? Math.round((fields.filter((f) => f.completed).reduce((sum, f) => sum + f.weight, 0) / total) * 100) : 0;
-  if (pct === 100) return null;
+  return { items, pct, missing: items.filter((i) => !i.done).length };
+}
+
+/*
+ * Rail panels. These were four cards in a hand-built 320px column beside the
+ * profile; the rail now owns that column, so each panel is its content only -
+ * the rail section supplies the heading, and a card inside the rail would be a
+ * frame inside a frame.
+ */
+function ProfileCompletionPanel({ profile }: { profile: NonNullable<ProfileData> }) {
+  const { items, pct } = completionOf(profile);
 
   return (
-    <Card className="animate-fade-in">
-      <CardContent className="p-5 space-y-3">
+    <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-foreground">
-            <BilingualText en={profileEn('profile_completion')} el={profileEl('profile_completion')} />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={profileEn('profile_completion')} el={profileEl('profile_completion')} compact wrap />
           </p>
-          <span className="text-sm font-bold text-primary-accessible">{pct}%</span>
+          <span className="text-sm font-semibold tabular-nums text-foreground">{pct}%</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
@@ -110,33 +123,38 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
           {items.map((item) => (
             <div
               key={item.labelEn}
+              /* Done reads as quiet text with a tick; what is missing carries
+                 the only emphasis, because it is the only part asking for
+                 something. A lilac chip on every finished item made the
+                 completed half the loudest thing in the panel. */
               className={`flex items-start gap-1.5 rounded-lg px-2.5 py-1.5 text-xs leading-snug ${
                 item.done
-                  ? 'bg-primary/10 text-primary-accessible'
-                  : 'bg-secondary/60 text-muted-foreground'
+                  ? 'text-muted-foreground'
+                  : 'bg-secondary/70 text-foreground'
               }`}
             >
               {item.done
-                ? <CheckCircle className="mt-0.5 icon-sm shrink-0" />
-                : <AlertCircle className="mt-0.5 icon-sm shrink-0" />}
+                ? <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
+                : <AlertCircle className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />}
               {/* `wrap`: two chips per row in a 320px rail leaves about 100px of
                   text, and "Display name · Εμφανιζόμενο όνομα" is 130px. */}
               <BilingualText en={item.labelEn} el={item.labelEl} compact wrap />
             </div>
           ))}
         </div>
-        <Button size="sm" variant="secondary" className="w-full gap-2 mt-1" asChild>
-          <Link href="/profile/edit">
-            <Edit className="icon-sm" />
-            <BilingualText en={profileEn('complete_profile')} el={profileEl('complete_profile')} />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+        {pct < 100 && (
+          <Button size="sm" variant="secondary" className="w-full gap-2 mt-1" asChild>
+            <Link href="/profile/edit">
+              <Edit className="icon-sm" />
+              <BilingualText en={profileEn('complete_profile')} el={profileEl('complete_profile')} />
+            </Link>
+          </Button>
+        )}
+    </div>
   );
 }
 
-function VerificationCard({ email }: { email?: string | null }) {
+function VerificationPanel({ email }: { email?: string | null }) {
   const items = [
     { labelEn: profileEn('email_verified'), labelEl: profileEl('email_verified'), verified: !!email, icon: Mail },
     { labelEn: profileEn('linkedin_connected'), labelEl: profileEl('linkedin_connected'), verified: false, icon: Linkedin },
@@ -144,13 +162,7 @@ function VerificationCard({ email }: { email?: string | null }) {
     { labelEn: profileEn('identity_verified'), labelEl: profileEl('identity_verified'), verified: false, icon: Shield },
   ];
   return (
-    <Card className="animate-fade-in">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          <BilingualText en={profileEn('verification')} el={profileEl('verification')} />
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2 pt-0">
+      <div className="space-y-2.5">
         {items.map(({ labelEn, labelEl, verified, icon: Icon }) => (
           /* The status sits under the label, not beside it. On one line, in a
              320px rail, the label yielded (`min-w-0`) to a `shrink-0` status
@@ -159,8 +171,8 @@ function VerificationCard({ email }: { email?: string | null }) {
              left 17px to render 119px of text, losing 86% of itself. Stacked,
              both read in full at any width this card ever takes. */
           <div key={labelEn} className="flex items-start gap-2.5 text-xs">
-            <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
-              <Icon className={`icon-sm ${verified ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
+            <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${verified ? 'bg-status-success-bg' : 'bg-secondary/60'}`}>
+              <Icon className={`icon-sm ${verified ? 'text-status-success' : 'text-muted-foreground'}`} />
             </div>
             <div className="min-w-0 flex-1">
               <span className={`block leading-snug ${verified ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -175,11 +187,10 @@ function VerificationCard({ email }: { email?: string | null }) {
                 </span>
               )}
             </div>
-            {verified && <CheckCircle className="mt-0.5 shrink-0 icon-sm text-primary-accessible" />}
+            {verified && <CheckCircle className="mt-0.5 shrink-0 icon-sm text-status-success" />}
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
   );
 }
 
@@ -345,6 +356,30 @@ export default function ProfilePage() {
   }, [meData, error, router]);
 
   const profile = meData?.profile ?? null;
+  const meId = profile?.userId;
+
+  /*
+   * The activity tiles printed a literal '0' for all four figures, for every
+   * account, whatever it had done. Each now reads the endpoint the page that
+   * owns the figure reads (same cache keys, so a write there updates this),
+   * and shows a dash while it has nothing - never an invented zero. Posts has
+   * no per-author count endpoint, so it says so instead of guessing.
+   */
+  const { data: acceptedConnections } = useQuery({
+    queryKey: qk('connections', 'accepted', 'for-endorsements'),
+    queryFn: () => listConnectionRequests({ type: 'accepted', limit: 50 }),
+    enabled: !!meId,
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+  const { data: receivedEndorsements } = useQuery({
+    queryKey: qk('endorsements', 'received', meId),
+    queryFn: () => getEndorsementsForUser(meId!, { includeUnapproved: true }),
+    enabled: !!meId,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: badges } = useMyBadges();
 
   const handleShare = () => {
     if (!profile) return;
@@ -353,6 +388,45 @@ export default function ProfilePage() {
       success(bilingualInline(profileEn('link_copied'), profileEl('link_copied')), bilingualInline(profileEn('link_copied_desc'), profileEl('link_copied_desc')))
     );
   };
+
+  const completion = profile ? completionOf(profile) : null;
+
+  usePageControls([
+    {
+      id: 'copy_profile_link',
+      labelEn: profileEn('copy_link'),
+      labelEl: profileEl('copy_link'),
+      writes: false,
+      run: handleShare,
+      ...(profile ? {} : { unavailableEn: 'The profile has not loaded yet', unavailableEl: 'Το προφίλ δεν έχει φορτώσει ακόμη' }),
+    },
+    { id: 'edit_profile', labelEn: profileEn('edit_profile'), labelEl: profileEl('edit_profile'), writes: false, run: () => router.push('/profile/edit') },
+    { id: 'open_settings', labelEn: 'Open account settings', labelEl: 'Άνοιγμα ρυθμίσεων λογαριασμού', writes: false, run: () => router.push('/settings') },
+    { id: 'open_reputation', labelEn: profileEn('view_reputation'), labelEl: profileEl('view_reputation'), writes: false, run: () => router.push('/reputation') },
+    ...(profile?.skills && profile.skills.length > 6
+      ? [{ id: 'toggle_all_skills', labelEn: 'Show all skills', labelEl: 'Εμφάνιση όλων των δεξιοτήτων', writes: false, run: () => setShowAllSkills((v: boolean) => !v) }]
+      : []),
+  ]);
+  // What the page shows, so "what is my profile missing?" is answered from
+  // the same list the rail draws rather than from a guess.
+  usePageList([
+    {
+      id: 'skills',
+      labelEn: 'Skills',
+      labelEl: 'Δεξιότητες',
+      rows: profile ? (profile.skills ?? []).map((s) => [s.skillName, s.level].filter(Boolean).join(' · ')) : undefined,
+      total: profile?.skills?.length,
+      sample: isPreviewDemo(),
+    },
+    {
+      id: 'missing',
+      labelEn: 'Missing from the profile',
+      labelEl: 'Λείπουν από το προφίλ',
+      rows: completion ? completion.items.filter((i) => !i.done).map((i) => i.labelEn) : undefined,
+      total: completion?.missing,
+      sample: isPreviewDemo(),
+    },
+  ]);
 
   if (isLoading)
     return (
@@ -401,9 +475,69 @@ export default function ProfilePage() {
   }
 
   const rolePayload = (profile.rolePayload ?? {}) as Record<string, unknown>;
+  const dash = '—';
+  // `/gamification/users/me/badges` answers with earned badges only.
+  const earnedBadges = badges?.length;
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'completion',
+      glyph: 'chart',
+      labelEn: 'Profile strength',
+      labelEl: 'Πληρότητα προφίλ',
+      badge: completion && completion.missing > 0 ? completion.missing : null,
+      content: <ProfileCompletionPanel profile={profile} />,
+    },
+    {
+      id: 'activity',
+      glyph: 'people',
+      labelEn: profileEn('activity_reputation'),
+      labelEl: profileEl('activity_reputation'),
+      content: (
+        <div className="space-y-4">
+          <RailStats
+            items={[
+              { key: 'connections', label: profileEn('connections'), labelEl: profileEl('connections'), value: acceptedConnections ? acceptedConnections.connections?.length ?? 0 : dash, icon: Users },
+              { key: 'endorsements', label: profileEn('endorsements'), labelEl: profileEl('endorsements'), value: receivedEndorsements ? receivedEndorsements.endorsements?.length ?? 0 : dash, icon: Star },
+              { key: 'achievements', label: profileEn('achievements'), labelEl: profileEl('achievements'), value: earnedBadges ?? dash, icon: Award },
+              { key: 'posts', label: profileEn('posts'), labelEl: profileEl('posts'), value: dash, icon: MessageSquare },
+            ]}
+          />
+          <div>
+            <p className="px-0.5 pb-2 text-xs font-medium text-muted-foreground">
+              <BilingualText en={profileEn('activity_graph')} el={profileEl('activity_graph')} compact />
+            </p>
+            <div className="-mx-1 overflow-hidden">
+              <ContributionGraph weeks={18} colorScheme="primary" size="sm" showDays={false} data={activityByDay} />
+            </div>
+          </div>
+          <RailAction icon={Award} en={profileEn('view_reputation')} el={profileEl('view_reputation')} onClick={() => router.push('/reputation')} />
+        </div>
+      ),
+    },
+    {
+      id: 'verification',
+      glyph: 'shield',
+      labelEn: profileEn('verification'),
+      labelEl: profileEl('verification'),
+      content: <VerificationPanel email={profile.email} />,
+    },
+    {
+      id: 'account',
+      glyph: 'sliders',
+      labelEn: 'Account',
+      labelEl: 'Λογαριασμός',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={SettingsIcon} en={profileEn('settings')} el={profileEl('settings')} onClick={() => router.push('/settings')} />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <AppShell
+      rail={rail}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
@@ -426,13 +560,14 @@ export default function ProfilePage() {
         {/* Cover Photo & Basic Identity Header */}
         <div className="relative rounded-2xl overflow-hidden border bg-card shadow-sm animate-fade-in">
           {/* Cover Photo */}
-          <div className="h-28 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary w-full relative sm:h-48 md:h-64">
-            <div className="absolute inset-0 bg-grid-white/10" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(var(--primary-rgb), 0.1) 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-          </div>
+          {/* The cover was 256px of empty band at md — a quarter of the
+              viewport before the reader met a name. It holds no image, so it
+              only needs to be tall enough for the avatar to overlap it. */}
+          <div className="h-24 bg-primary/[0.05] w-full relative sm:h-28 md:h-32" />
           
           <div className="px-6 sm:px-8 pb-6 md:pb-8 relative">
             <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-16 md:-mt-20">
-              <div className="relative inline-block">
+              <div className="relative inline-block self-start">
                 <Avatar className="h-32 w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
                   <AvatarImage src={profile.avatarUrl ?? undefined} />
                   <AvatarFallback className="bg-primary/10 text-primary-accessible text-4xl font-bold">
@@ -489,24 +624,32 @@ export default function ProfilePage() {
                       {profile.languages.join(', ')}
                     </div>
                   ) : null}
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="icon-sm" aria-hidden="true" />
-                    Joined {new Date().getFullYear()}
-                  </div>
+                  {/* It printed the current year for everyone ("Joined 2026"
+                      on a 2024 account); the profile carries its own date. */}
+                  {profile.createdAt && (
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="icon-sm" aria-hidden="true" />
+                      <BilingualText
+                        en={`Joined ${formatDate(profile.createdAt, 'en', { month: 'short', year: 'numeric' })}`}
+                        el={`Μέλος από ${formatDate(profile.createdAt, 'el', { month: 'short', year: 'numeric' })}`}
+                        compact
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          {/* Main content column.
-              A flex column from `lg` so the last card can take the slack: the
-              sidebar runs 315px longer than this column, which left a void down
-              the middle of the page. The card that absorbs it is the portfolio
-              one, whose content is an empty state — the one kind of content
-              that is *better* with room around it than cramped. */}
-          <div className="space-y-6 lg:flex lg:flex-col">
+        {/* One reading column. Completion, activity, verification and the
+            settings link lived in a hand-built 320px column beside this one,
+            which repeated the header's Edit Profile and Share (as "Copy
+            Link") and ran 315px longer than the profile it sat next to. They
+            are the page rail's sections now: one place for what supports the
+            profile, and the profile itself gets the width. */}
+        <div className="grid grid-cols-1 gap-6">
+          <div className="space-y-6">
             {/* Bio */}
             <Card className="animate-fade-in stagger-1 shadow-sm border-border">
               <CardHeader className="pb-3 border-b border-border">
@@ -695,7 +838,7 @@ export default function ProfilePage() {
 
           {/* No content placeholder */}
           {!profile.bio && Object.keys(rolePayload).length === 0 && (
-            <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
+            <Card className="animate-fade-in bg-primary/5 border-primary/15">
               <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
                   <Activity className="icon-xl text-primary-accessible" />
@@ -717,102 +860,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           )}
-        </div>
-
-        {/* Right sidebar column */}
-        <div className="space-y-6">
-          {/* Action Card */}
-          <Card className="shadow-sm border-border sticky top-6">
-            <CardContent className="p-5 space-y-4">
-              <Button className="w-full gap-2 font-medium" asChild>
-                <Link href="/profile/edit" className="block w-full">
-                  <Edit className="icon-sm" />
-                  <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
-                </Link>
-              </Button>
-              {/* Stacked: two bilingual labels side by side ran out of their
-                  buttons in this column. */}
-              <div className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={handleShare}>
-                  <LinkIcon className="icon-sm" />
-                  <BilingualText en={profileEn('copy_link')} el={profileEl('copy_link')} compact />
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2" asChild>
-                  <Link href="/settings" className="block w-full">
-                    <SettingsIcon className="icon-sm" />
-                    <BilingualText en={profileEn('settings')} el={profileEl('settings')} compact />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Profile completion meter */}
-          <ProfileCompletionCard profile={profile} />
-
-          {/* Verification status */}
-          <VerificationCard email={profile.email} />
-
-          {/* Reputation / Stats mini-card */}
-          <Card className="animate-fade-in shadow-sm border-border">
-            <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                <BilingualText en={profileEn('activity_reputation')} el={profileEl('activity_reputation')} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 grid grid-cols-2 gap-3">
-              {[
-                { icon: Users, labelEn: profileEn('connections'), labelEl: profileEl('connections'), value: '0', color: 'text-primary-accessible', bg: 'bg-primary/10' },
-                { icon: Star, labelEn: profileEn('endorsements'), labelEl: profileEl('endorsements'), value: '0', color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-                { icon: MessageSquare, labelEn: profileEn('posts'), labelEl: profileEl('posts'), value: '0', color: 'text-primary-accessible', bg: 'bg-primary/10' },
-                { icon: Award, labelEn: profileEn('achievements'), labelEl: profileEl('achievements'), value: '0', color: 'text-status-success', bg: 'bg-status-success-bg' },
-              ].map(({ icon: Icon, labelEn, labelEl, value, color, bg }) => (
-                <div key={labelEn} className="flex min-w-0 flex-col items-center rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
-                  <div className={`p-2 rounded-full ${bg} mb-2`}>
-                    <Icon className={`icon-sm ${color}`} />
-                  </div>
-                  <span className="text-lg font-bold text-foreground leading-none">{value}</span>
-                  {/* max-w-full + min-w-0: `items-center` sizes this child to its own
-                      content, so a bilingual uppercase label with wide tracking
-                      could exceed the ~128px tile -- it went 5px past the card
-                      once the web-view type scale grew. Bounded here so it wraps
-                      inside the tile instead — and `wrap` is what actually makes
-                      it wrap: a `compact` label truncates by default, so
-                      "Endorsements" was rendering as "ENDO…" in 56px. */}
-                  <span className="mt-1 min-w-0 max-w-full text-center text-2xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
-                    <BilingualText en={labelEn} el={labelEl} compact wrap />
-                  </span>
-                </div>
-              ))}
-              <div className="col-span-2 mt-2">
-                <Button variant="secondary" className="w-full text-xs h-8" asChild>
-                  <Link href="/reputation">
-                    <BilingualText en={profileEn('view_reputation')} el={profileEl('view_reputation')} />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Contribution Graph */}
-          <Card className="animate-fade-in shadow-sm border-border">
-            <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                <BilingualText en={profileEn('activity_graph')} el={profileEl('activity_graph')} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 overflow-hidden">
-              <div className="-mx-2 scale-95 transform origin-left">
-                <ContributionGraph
-                  weeks={18}
-                  colorScheme="primary"
-                  size="sm"
-                  showDays={false}
-                  data={activityByDay}
-                />
-              </div>
-            </CardContent>
-          </Card>
         </div>
         </div>
       </div>

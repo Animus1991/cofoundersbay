@@ -258,7 +258,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     glyph: m.glyph,
   }));
   return (
-    <Card className="flex min-w-0 flex-col border-primary/20 bg-primary/[0.03]">
+    <Card className="flex min-w-0 flex-col border-primary/15 bg-primary/[0.03]">
       <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
         {/* The period badge sits under the title: bilingual "vs prev period"
             is metadata about the rows, not a peer of the heading. */}
@@ -388,7 +388,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
               className={cn(
                 'flex items-start gap-3 rounded-2xl border p-3',
                 achievement.unlocked
-                  ? 'border-primary/25 bg-gradient-to-b from-primary/12 via-card to-card'
+                  ? 'border-primary/30 bg-primary/[0.04]'
                   : 'border-border opacity-60',
               )}
             >

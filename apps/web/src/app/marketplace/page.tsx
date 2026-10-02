@@ -145,7 +145,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
   return (
     <Card className={cn(
       'group flex flex-col transition-all hover:shadow-md hover:border-primary/20',
-      featured && 'border-primary/30 bg-primary/[0.02]',
+      featured && 'border-primary/15 bg-primary/[0.03]',
       !provider.isAvailable && 'surface-inactive',
     )}>
       <CardContent className="flex flex-1 flex-col gap-4 p-5">
@@ -179,7 +179,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
               neither), kept with our icon-size and contrast-safe tokens. */}
           <button
             onClick={() => setSaved(!saved)}
-            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center rounded hover:bg-muted transition-colors"
+            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center rounded-md hover:bg-muted transition-colors"
             aria-label={saved ? 'Remove bookmark' : 'Save provider'}
           >
             <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
@@ -457,7 +457,7 @@ export default function MarketplacePage() {
           />
         )}
         {/* Banner CTA for providers */}
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+        <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact /></p>

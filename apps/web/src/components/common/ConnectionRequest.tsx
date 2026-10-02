@@ -174,7 +174,7 @@ export function ConnectionRequestDialog({
         )}
 
         {/* Tips */}
-        <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground">
+        <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground mb-1">Tips for a great intro:</p>
           <ul className="space-y-1 list-disc list-inside">
             <li>Mention specific interests or skills you share</li>

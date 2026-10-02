@@ -174,7 +174,7 @@ export function FlowDiagramNode({
             <div className="relative">
               <button
                 onMouseDown={(e) => { e.stopPropagation(); setShowPalette((v) => !v); }}
-                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible text-2xs font-medium transition-colors"
+                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary-accessible text-2xs font-medium transition-colors"
                 title="Add node"
               >
                 <Plus className="icon-sm" />
@@ -186,7 +186,7 @@ export function FlowDiagramNode({
                     <button
                       key={`${p.type}-${p.label}`}
                       onMouseDown={(e) => { e.stopPropagation(); addNode(p.type, p.label); }}
-                      className="w-full flex items-center gap-1.5 px-2 py-1 rounded hover:bg-secondary text-left text-2xs transition-colors"
+                      className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-secondary text-left text-2xs transition-colors"
                     >
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
                       {p.label}
@@ -198,7 +198,7 @@ export function FlowDiagramNode({
 
             <button
               onMouseDown={(e) => { e.stopPropagation(); deleteSelected(); }}
-              className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
+              className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
               title="Delete selected"
             >
               <Trash2 className="icon-sm" />
@@ -208,7 +208,7 @@ export function FlowDiagramNode({
         {!readOnly && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); onDelete?.(); }}
-            className="w-5 h-5 ml-0.5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-accessible transition-colors"
+            className="w-5 h-5 ml-0.5 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-accessible transition-colors"
             title="Delete node"
           >
             ✕

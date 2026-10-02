@@ -259,7 +259,7 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
         aria-expanded={isOpen}
         onClick={onToggle}
         className={cn(
-          'flex w-full items-center justify-between py-4 text-left transition-colors focus-ring rounded',
+          'flex w-full items-center justify-between py-4 text-left transition-colors focus-ring rounded-md',
           isOpen ? 'text-primary-accessible' : 'hover:text-primary-accessible text-foreground',
         )}
       >
@@ -372,7 +372,7 @@ export default function HelpPage() {
       <div className="space-y-6 pb-10">
 
         {/* Search Hero */}
-        <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
+        <div className="rounded-xl border border-border bg-primary/[0.03] p-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
@@ -511,7 +511,7 @@ export default function HelpPage() {
         )}
 
         {/* Contact Support */}
-        <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
+        <Card className="shadow-sm border-primary/15 bg-primary/[0.03]">
           <CardContent className="p-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Mail className="icon-lg text-primary-accessible" />

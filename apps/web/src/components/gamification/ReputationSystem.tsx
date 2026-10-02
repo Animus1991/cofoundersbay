@@ -176,7 +176,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
   return (
     <div className="space-y-6">
       {/* Current Level Card */}
-      <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+      <Card className="border-primary/15 bg-primary/[0.03]">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

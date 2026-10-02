@@ -1049,7 +1049,7 @@ export default function MatchesPage() {
 
         {/* ── Insights banner (excellent matches) ── */}
         {hasToken && !isLoading && counts.excellent > 0 && (
-          <div className={cn('flex flex-col gap-3 rounded-xl border bg-gradient-to-r from-status-success-bg/50 via-card to-transparent p-4 animate-in fade-in slide-in-from-top-1 duration-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4', STATUS.success.border)}>
+          <div className={cn('flex flex-col gap-3 rounded-xl border bg-status-success-bg/40 p-4 animate-in fade-in slide-in-from-top-1 duration-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4', STATUS.success.border)}>
             <div className="flex min-w-0 items-start gap-3 sm:items-center">
               <div className={cn('shrink-0 rounded-lg p-2', STATUS.success.bg)}>
                 <Award className={cn('icon-md', STATUS.success.icon)} />

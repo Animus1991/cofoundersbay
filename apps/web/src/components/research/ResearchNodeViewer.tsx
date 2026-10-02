@@ -440,7 +440,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             {canDownload && (
               <button
                 onClick={handleDownload}
-                className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 title="Download"
               >
                 <Download className="icon-sm" />
@@ -523,7 +523,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                     }
                     setShowLinkInput(false);
                   }}
-                  className="h-5 px-2 rounded bg-primary text-primary-foreground text-2xs font-medium hover:bg-primary/90"
+                  className="h-5 px-2 rounded-md bg-primary text-primary-foreground text-2xs font-medium hover:bg-primary/90"
                 >
                   Link
                 </button>
@@ -679,7 +679,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               <div className="flex items-center gap-2">
                 <button aria-label="Zoom out"
                   onClick={() => setImgZoom((z) => Math.max(0.2, z - 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <ZoomOut className="icon-sm" />
                 </button>
@@ -688,13 +688,13 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 </span>
                 <button aria-label="Zoom in"
                   onClick={() => setImgZoom((z) => Math.min(4, z + 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <ZoomIn className="icon-sm" />
                 </button>
                 <button aria-label="Reset zoom"
                   onClick={() => setImgZoom(1)}
-                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <Maximize2 className="icon-sm" />
                 </button>

@@ -302,7 +302,7 @@ export default function PublicProfilePage() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {lookingFor.map((role) => (
-                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary-accessible">
+                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/15 text-primary-accessible">
                         {role}
                       </Badge>
                     ))}

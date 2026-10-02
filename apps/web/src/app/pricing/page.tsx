@@ -207,7 +207,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-background">
       <LandingNav />
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent pt-[52px]">
+      <div className="border-b border-border bg-primary/[0.03] pt-[52px]">
         <div className="mx-auto max-w-7xl px-6 py-16 text-center">
           <Badge variant="secondary" className="mb-4">
             <Crown className="mr-1.5 icon-sm" />
@@ -435,7 +435,7 @@ export default function PricingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="border-t border-border bg-gradient-to-t from-primary/5 to-transparent">
+      <div className="border-t border-border bg-primary/[0.03]">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <h2 className="font-display text-3xl font-bold text-foreground">
             <BilingualText en="Ready to accelerate your startup journey?" el="Έτοιμοι να επιταχύνετε τη διαδρομή της startup σας;" wrap />

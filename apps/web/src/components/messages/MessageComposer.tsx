@@ -125,7 +125,7 @@ export function MessageComposer({
               <button
                 key={emoji}
                 onClick={() => insertEmoji(emoji)}
-                className="text-2xl hover:bg-secondary rounded p-1 transition-colors"
+                className="text-2xl hover:bg-secondary rounded-md p-1 transition-colors"
               >
                 {emoji}
               </button>

@@ -550,7 +550,7 @@ function BookingCard({
                         : <BilingualText en="Summarise with AI" el="Περίληψη με AI" compact />}
                     </Button>
                     {aiSummary && (
-                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                      <div className="rounded-lg border border-primary/15 bg-primary/5 p-3 space-y-2">
                         <div className="flex items-center gap-1.5">
                           <Sparkles className="icon-sm text-primary-accessible" />
                           <span className="text-xs font-semibold text-primary-accessible"><BilingualText en="AI summary" el="Περίληψη AI" compact /></span>

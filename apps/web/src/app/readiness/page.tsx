@@ -372,7 +372,7 @@ function ScoreEmblem({
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[184px] w-[184px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/25 bg-gradient-to-b from-primary/20 via-card to-card shadow-[inset_0_1px_0_hsl(var(--primary)/0.25)]"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[184px] w-[184px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 bg-primary/[0.04] shadow-[inset_0_1px_0_hsl(var(--primary)/0.25)]"
           aria-hidden="true"
         />
         <svg
@@ -1066,7 +1066,7 @@ export default function ReadinessPage() {
       labelEn: 'AI plan',
       labelEl: 'Πλάνο AI',
       content: <div className="space-y-3">
-        <Card className="border-primary/20 bg-primary/[0.03]">
+        <Card className="border-primary/15 bg-primary/[0.03]">
         <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2">
@@ -1243,7 +1243,7 @@ export default function ReadinessPage() {
         {/* One card now: the two audience readouts moved to the rail, so the
             gauge no longer shares a row with two restatements of itself. */}
         <div className="grid grid-cols-1 min-w-0 gap-5">
-          <Card className="min-w-0 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent lg:col-span-1">
+          <Card className="min-w-0 overflow-hidden border-primary/15 bg-primary/[0.03] lg:col-span-1">
             <CardContent className="flex h-full flex-col items-center gap-5 p-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
               <ScoreEmblem
                 score={overallScore}

@@ -304,7 +304,7 @@ export default function ReputationPage() {
         ) : (
           <>
             {/* Level card */}
-            <Card className="border-border bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm">
+            <Card className="border-border bg-primary/[0.03]">
               <CardContent className="p-4 md:p-6">
                 {loading || !xp.data ? (
                   <div className="flex flex-col items-center gap-6 md:flex-row" aria-busy="true">

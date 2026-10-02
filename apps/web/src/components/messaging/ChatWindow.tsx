@@ -781,7 +781,7 @@ export function ChatWindow({
             ))}
           </div>
         )}
-        <div className="flex items-end gap-1 rounded-[1.35rem] border border-border bg-muted/40 p-1.5 shadow-[inset_0_1px_0_hsl(var(--background))]">
+        <div className="flex items-end gap-1 rounded-3xl border border-border bg-muted/40 p-1.5 shadow-[inset_0_1px_0_hsl(var(--background))]">
           <input
             ref={fileInputRef}
             type="file"
@@ -826,7 +826,7 @@ export function ChatWindow({
                   <button
                     key={e}
                     type="button"
-                    className="flex h-8 w-8 items-center justify-center rounded hover:bg-secondary/80 text-base transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-secondary/80 text-base transition-colors"
                     onClick={() => {
                       setInputValue((v) => v + e);
                       textareaRef.current?.focus();
@@ -885,7 +885,7 @@ export function NoChatSelected({
       <div className="relative flex max-w-md flex-col items-center gap-5">
         <div className="relative">
           <div className="absolute -inset-6 rounded-full bg-primary/15 blur-2xl" />
-          <div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-primary/20 via-background to-accent/20 shadow-[0_18px_40px_-24px_hsl(var(--primary)/0.8)] ring-1 ring-primary/20">
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/[0.06]">
             <CfbGlyph name="messages" className="h-10 w-10 text-primary-accessible" />
           </div>
         </div>

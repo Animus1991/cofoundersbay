@@ -224,7 +224,7 @@ export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEd
       type="button"
       title={title}
       onMouseDown={(e) => { e.preventDefault(); exec(cmd, val); }}
-      className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+      className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
     >
       {children}
     </button>
@@ -259,7 +259,7 @@ export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEd
             aria-label={bilingualAria("Insert link", "Εισαγωγή συνδέσμου")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={insertLink}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
           >
             <Link2 className="icon-sm" />
           </button>
@@ -426,7 +426,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               />
               <button aria-label="Add tag"
                 onClick={addTag}
-                className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md bg-primary/10 hover:bg-primary/20 text-primary-accessible transition-colors"
               >
                 <Plus className="icon-sm" />
               </button>

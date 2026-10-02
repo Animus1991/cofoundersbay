@@ -136,7 +136,7 @@ export function PdfAnnotationViewer({
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
             title="Previous page"
           >
             <ChevronLeft className="icon-sm" />
@@ -160,7 +160,7 @@ export function PdfAnnotationViewer({
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={totalPages !== null && currentPage >= totalPages}
-            className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
             title="Next page"
           >
             <ChevronRight className="icon-sm" />
@@ -171,7 +171,7 @@ export function PdfAnnotationViewer({
         <div className="flex items-center gap-1.5">
           <button
             onClick={handleZoomOut}
-            className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
           >
             <Minus className="icon-sm" />
@@ -181,14 +181,14 @@ export function PdfAnnotationViewer({
           </span>
           <button
             onClick={handleZoomIn}
-            className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
           >
             <Plus className="icon-sm" />
           </button>
           <button
             onClick={handleZoomReset}
-            className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset zoom"
           >
             <Maximize2 className="icon-sm" />
@@ -331,7 +331,7 @@ export function PdfAnnotationViewer({
                       </div>
                       <button aria-label="Remove annotation"
                         onClick={() => removeAnnotation(a.id)}
-                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive-accessible transition-colors"
+                        className="w-4 h-4 flex items-center justify-center rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive-accessible transition-colors"
                       >
                         <X className="w-2.5 h-2.5" aria-hidden="true" />
                       </button>

@@ -159,7 +159,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
               {!readOnly && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
-                  className="mt-1 px-2 py-0.5 bg-secondary rounded text-2xs text-foreground hover:bg-secondary/80"
+                  className="mt-1 px-2 py-0.5 bg-secondary rounded-md text-2xs text-foreground hover:bg-secondary/80"
                 >
                   Edit Code
                 </button>
@@ -186,7 +186,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
               {!readOnly && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
-                  className="px-2 py-1 bg-primary/10 text-primary-accessible rounded text-2xs hover:bg-primary/20"
+                  className="px-2 py-1 bg-primary/10 text-primary-accessible rounded-md text-2xs hover:bg-primary/20"
                 >
                   Write Mermaid code
                 </button>

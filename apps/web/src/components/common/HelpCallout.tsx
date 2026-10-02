@@ -64,7 +64,7 @@ export function HelpCallout({
       aria-expanded={open}
       aria-label={bilingualAria(title, titleEl)}
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
+        'inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
         compact && 'h-11 w-11 justify-center p-0 md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',
       )}
     >
@@ -89,7 +89,7 @@ export function HelpCallout({
           <div
             role="note"
             aria-label={bilingualAria(title, titleEl)}
-            className="absolute right-0 top-full z-50 mt-2 w-[min(28rem,calc(100vw-2rem))] rounded-2xl border border-primary/20 bg-background p-4 text-sm leading-relaxed shadow-lg"
+            className="absolute right-0 top-full z-50 mt-2 w-[min(28rem,calc(100vw-2rem))] rounded-2xl border border-border bg-background p-4 text-sm leading-relaxed shadow-lg"
           >
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 font-semibold text-primary-accessible">

@@ -86,19 +86,21 @@ const config: Config = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
       },
-      // One token, one scale, in cursor.com's proportions: the card corner is
-      // --radius (12px, globals.css) and everything inside steps down from it,
-      // so an inner corner never bulges past its container. Outlined buttons
-      // sit at 8px; only avatars, dots, switches and progress tracks are fully
-      // round.
+      // One token, one scale: the card corner is --radius (14px, globals.css)
+      // and everything inside steps down from it, so an inner corner never
+      // bulges past its container. Raised one notch from 12/8: at 8px a 32px
+      // button read as a cut rectangle beside 12px cards; 10px reads as the
+      // same family, softer, still clearly not a pill. Marks stay at 6px —
+      // a checkbox at 10px stops looking like a checkbox. Only avatars, dots,
+      // switches and progress tracks are fully round.
       borderRadius: {
-        sm: 'calc(var(--radius) - 6px)',       //  6px  marks, kbd
-        DEFAULT: 'calc(var(--radius) - 6px)',  //  6px  checkbox, tiny inline marks
-        md: 'calc(var(--radius) - 4px)',       //  8px  buttons, fields, chips, badges
-        lg: 'calc(var(--radius) - 4px)',       //  8px  menu items, tab triggers, rows
-        xl: 'calc(var(--radius) - 2px)',       // 10px  tiles inside a card, menus
-        '2xl': 'var(--radius)',                // 12px  cards, dialogs, sheets
-        '3xl': 'calc(var(--radius) + 2px)',    // 14px  large marketing blocks
+        sm: 'calc(var(--radius) - 8px)',       //  6px  marks, kbd
+        DEFAULT: 'calc(var(--radius) - 8px)',  //  6px  checkbox, tiny inline marks
+        md: 'calc(var(--radius) - 4px)',       // 10px  buttons, fields, chips, badges
+        lg: 'calc(var(--radius) - 4px)',       // 10px  menu items, tab triggers, rows
+        xl: 'calc(var(--radius) - 2px)',       // 12px  tiles inside a card, menus
+        '2xl': 'var(--radius)',                // 14px  cards, dialogs, sheets
+        '3xl': 'calc(var(--radius) + 4px)',    // 18px  large marketing blocks, composer
       },
       keyframes: {
         'fade-in': {

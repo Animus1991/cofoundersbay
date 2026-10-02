@@ -165,7 +165,7 @@ function LoginPageContent() {
 
             {/* SSO Discovery Banner */}
             {ssoDiscovery?.ssoAvailable && ssoDiscovery.provider && (
-              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+              <div className="rounded-lg border border-primary/15 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-primary-accessible">
                     SSO

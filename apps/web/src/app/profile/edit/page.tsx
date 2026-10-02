@@ -754,7 +754,7 @@ export default function ProfileEditPage() {
 
                   {/* AI Suggestions panel */}
                   {showAISuggestions && aiSuggestions && (
-                    <div className="rounded-xl border border-primary/30 bg-gradient-to-r from-primary/5 to-transparent p-5 space-y-4 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-5 space-y-4 animate-in fade-in slide-in-from-top-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
@@ -893,7 +893,7 @@ export default function ProfileEditPage() {
             {/* Role Details */}
             <TabsContent value="role" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Role Selector */}
-              <Card className="shadow-sm border-primary/20 bg-primary/5">
+              <Card className="border-primary/15 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Briefcase className="icon-md text-primary-accessible" />

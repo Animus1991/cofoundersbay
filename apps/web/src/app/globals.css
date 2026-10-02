@@ -93,9 +93,10 @@ html {
     --input:            232 7% 90.5%;  /* ~1.22 on card — fields only */
     --ring:             248 39% 56%;
     /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
-       sm/DEFAULT 6 · md/lg 8 · xl 10 · 2xl 12 · 3xl 14.
-       cursor.com: cards ~12px, outlined buttons ~6–8px, both circular arcs. */
-    --radius:           12px;
+       sm/DEFAULT 6 · md/lg 10 · xl 12 · 2xl 14 · 3xl 18.
+       Softer than cursor.com (cards ~12, buttons ~8) by one notch, same
+       proportions: inner corners still step down from the container. */
+    --radius:           14px;
 
     /* Typography scale — Cursor.com steps, then +2% on the UI/copy half
        (2xs–base; two requested +1% passes). Display steps (lg+) stay. */
@@ -442,7 +443,12 @@ html {
     --status-info-fg:        217 29% 36.2%;
     --status-info-bg:        217 10% 95%;
     --status-info-border:    217 5% 86% ;
-    --status-accent-fg:      248 31% 54%;
+    /* Was 248 31% 54%: 28.5 chroma, the one status tone left inside the
+       brand band — a lilac chip beside a lilac button read as a second
+       primary. Levelled to the status band like the other five, and it
+       clears AA by a margin now instead of by 0.11 (4.61 -> 5.64 on its
+       own tint, 6.09 on a card). */
+    --status-accent-fg:      248 22.8% 46%;
     --status-accent-bg:      248 13.5% 96.3%;
     --status-accent-border:  248 6.5% 89.2%;
     --status-neutral-fg:     232 6% 45%;
@@ -2667,7 +2673,7 @@ h3.page-section.page-section--compact,
    frames inside a card fade toward nothing. Outlined buttons share the
    card's edge (never a field's --input, never a second shadow). Decorative
    glyphs beside copy disappear; chrome (nav, dialogs, icon-only controls)
-   keeps its icons. Corners stay the 12px / 8px ladder from --radius.
+   keeps its icons. Corners stay the 14px / 10px ladder from --radius.
 
    Selectors use [class~="border"] rather than .border: Tailwind's CSS
    pipeline treats the `.border` utility as the `*` preflight and the

@@ -204,7 +204,7 @@ export default function UserBillingPage() {
     >
       <div className="space-y-6 pb-10">
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
               <p className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -259,7 +259,7 @@ export default function UserBillingPage() {
           </Card>
 
           {(sub?.plan?.name === 'free' || !sub) && (
-            <Card className="border-primary/20 bg-primary/[0.04] shadow-none">
+            <Card className="border-primary/15 bg-primary/[0.03]">
               <CardHeader className="pb-2">
                 <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
                   <BilingualText en="Upgrade available" el="Διαθέσιμη αναβάθμιση" />

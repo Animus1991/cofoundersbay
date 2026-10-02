@@ -29,7 +29,11 @@ export function RailStats({ items }: { items: RailStat[] }) {
   return (
     <dl className="space-y-2">
       {items.map(({ key, label, labelEl, value, icon: Icon, tone }) => (
-        <div key={key} className={cn('relative flex min-w-0 flex-col rounded-lg border border-border p-3', Icon && 'pl-[3.75rem]')}>
+        /* Padding per side, not `p-3` + `pl-[3.75rem]`: globals.css restates
+           `.p-3` in px after the utilities, so the shorthand won and the
+           left inset fell back to 12px - the icon sat on top of the first
+           letters of every label ("Con|nections") on every railed page. */
+        <div key={key} className={cn('relative flex min-w-0 flex-col rounded-lg border border-border py-3 pr-3', Icon ? 'pl-[3.75rem]' : 'pl-3')}>
           <dt className="order-2 mt-1 text-xs leading-snug text-muted-foreground">
             {Icon ? (
               <span className={cn('absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg', tone ?? 'bg-muted text-muted-foreground')} aria-hidden="true">

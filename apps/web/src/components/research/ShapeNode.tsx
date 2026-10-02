@@ -279,7 +279,7 @@ export function ShapeNode({
           {/* Color palette */}
           <div className="relative">
             <button
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground"
+              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground"
               title="Change color"
               onClick={() => setShowPalette((v) => !v)}
             >
@@ -311,7 +311,7 @@ export function ShapeNode({
 
           {/* Delete */}
           <button
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
             title="Delete shape"
             onClick={onDelete}
           >

@@ -115,7 +115,7 @@ export function BadgesWidget() {
                   `${nameEl ?? badge.name}, ${rarityEl}`,
                 )}
                 className={cn(
-                  'relative flex flex-col items-center overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-b from-primary/20 via-card to-card p-3 text-center shadow-sm transition-colors hover:border-primary/55',
+                  'relative flex flex-col items-center overflow-hidden rounded-2xl border border-primary/15 bg-primary/[0.04] p-3 text-center transition-colors hover:border-primary/30',
                   !badge.seenAt && 'ring-1 ring-primary/50 shadow-[0_0_36px_-8px_hsl(var(--primary)/0.85)]',
                 )}
               >
