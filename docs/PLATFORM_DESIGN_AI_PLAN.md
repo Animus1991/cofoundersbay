@@ -1180,3 +1180,50 @@ Guards: `decorativeIcons.test.ts` (nested `:has`, ετικέτα χωρίς `.sr
 ### 28.8 Τι δεν αποδεικνύουν
 
 Το σύνολο αξιολόγησης του κύματος F το έγραψα εγώ· 100% εκεί είναι ένδειξη, όχι απόδειξη, για το πώς γράφουν πραγματικοί άνθρωποι. Το `AuditLog` (καταγραφή ενεργειών του assistant) υπάρχει μόνο στο `schema.prisma` — χρειάζεται `prisma db push` για να αποθηκεύεται. Η ρύθμιση ρόλων είναι καθρέφτης των guards των endpoints για το μοντέλο, όχι εξουσιοδότηση. Οι μετρήσεις τρέχουν ως `platform_admin` σε demo mode, σε δύο πλάτη. Lint δεν αναφέρεται (`next lint` χωρίς flat config).
+
+## 29. Επτάφασο πέρασμα καθαρότητας (2026-10-03) — θέμα, τύπος, αναπνοή, ροή, καταστάσεις, αφή, πιστοποίηση
+
+Μετρήσεις πρώτα, αλλαγή μετά. Κάθε φάση commit χωριστά· οι φρουροί (typecheck 0, tests, sweep 142, αντίθεση 0) έτρεξαν σε κάθε βήμα.
+
+### 29.1 Φάση 1 — Χρώμα (`f5148e6c`)
+
+Κατηγοριοποίηση κάθε hex εκτός tokens: νόμιμα (λογότυπα τρίτων, branding pickers, theme swatches, presence cursors, sticky notes, `_error` fallback) μένουν· σεμαντικά παίρνουν οικογένεια status (`--status-*-mark`) ή το νέο `--chart-2..6`. Νέα tokens `--chart-2..6` ανά θέμα για αρμονικούς κατηγορικούς τόνους (ίδια φωτεινότητα με τα marks, ≥35° απόσταση απόχρωσης από το accent). `preview-api` breakdown, `DashboardHome` tier colors, `AdminAnalyticsDashboard` rarity, `OrgAnalyticsCharts`, `investor/portfolio` sectors πάνε σε tokens. Φρουρός: quoted-hex στο `semanticColorCoverage.test.ts` με allowlist — 3/3 tests. `border-primary` (328): όλα επιλεγμένα/ενεργά, τίποτα διακοσμητικό — κρατήθηκαν.
+
+### 29.2 Φάση 2 — Τυπογραφία (`fe46b9ef`)
+
+Διόρθωση υπόθεσης: `text-2xs` έχει floor 12.24px (`max()`), όχι 10–11px — η κλίμακα ήταν ήδη Cursor-επιπέδου. Arbitrary `text-[9-11px]` (κάτω από το floor) → `text-2xs`. Τελευταίο `font-bold` σε εφαρμογής-heading (`referrals`) → `font-semibold`. Τα `font-extrabold` στα match-score μένουν (data display). Το δίγλωσσο δεύτερο επίπεδο ήταν ήδη συστηματικό (0.85em, floor 12px, inherit σε γεμιστά κουμπιά). Πολιτική στο `AGENTS.md`.
+
+### 29.3 Φάση 3 — Αναπνοή και ανύψωση (`dde276da`)
+
+Οι σκιές ήταν ήδη tokenized (`sm/md` = `none`, μόνο `lg+` σε overlays) — οι 335 κλήσεις `shadow-sm` αδρανείς. Πραγματικά ευρήματα:
+- **`hover:shadow-*` σε ~50 entity cards** → `hover:border-primary/30` + `transition-colors`, η σύμβαση της πλατφόρμας (shadow-md δεν αποδίδει, shadow-lg σήκωνε κάρτα ενάντια στο flat contract).
+- **`p-0`/`px-0`/`pt-0` σε μέρη κάρτας έχαναν δύο φορές**: source order στο `@layer utilities`, μετά το unlayered `[data-theme="minimal"]` block. ~30 call sites ζητούσαν flush tables/media και έπαιρναν 28px padding παντού. Unlayered explicit-zero rules στο τέλος του sheet (0,2,0) — επαληθεύτηκε στον browser: `p-0` αποδίδει 0px, header→content seam ~18px.
+- `CardContent`/`CardFooter` έχασαν το νεκρό `pt-0`· verify-email έχασε `shadow-lg`· investor pipeline, learning, onboarding πήραν το border affordance.
+
+### 29.4 Φάση 4 — Τοποθέτηση (`53755db5`)
+
+`rail-candidates.mjs`: 51 σελίδες με rail, **0 υποψήφιες** με 3+ control families χωρίς rail, 1 απορριφθείσα τεκμηριωμένα (`/org/settings`) — το rail gap-fill ήταν ήδη πλήρες. Ανομοιομορφία: το πρώτο stack κάτω από `AppShell` ανάμεικτο (`space-y-4` ×2, `space-y-5` ×10, `space-y-6` ×27). Όλα page-level → `space-y-6`· το ένα Tabs wrapper κρατά `space-y-4` (tab bar κοντά στο panel του).
+
+### 29.5 Φάση 5 — Καταστάσεις (`a7e007ea`)
+
+25 στοιχεία με `disabled:opacity-*` χωρίς `disabled:cursor-not-allowed` — το fade έλεγε «σβηστό» αλλά ο κέρσορας «κλικάρισμα». Και τα δύο τώρα. `Button`/`TabsTrigger` εξαιρούνται σκόπιμα (`pointer-events-none`). Focus: ο unlayered `focus-visible` κανόνας καλύπτει ήδη κάθε `a/button/[role=button]/[tabindex]`. Empty states: `EmptyStates.tsx` η ενιαία σύμβαση.
+
+### 29.6 Φάση 6 — Αφή και κίνηση (`24b6902f`)
+
+Το phone floor (44px κάτω από 640px) κάλυπτε `h-8/9/10`, όχι `h-7` (28px) — τα canvas toolbars και panel controls. Τώρα και `h-7`/`w-7`/`min-h-7`. Επαλήθευση στα 390px: ελάχιστο 43.5px. `prefers-reduced-motion` υπήρχε ήδη (δύο media queries). Test `phoneTouchFloor` ενημερώθηκε.
+
+### 29.7 Πύλες — τελική πιστοποίηση
+
+| πύλη | αποτέλεσμα |
+|---|---|
+| `check-theme-contrast.py` | **0 αποτυχίες** <4.5:1, όλα τα θέματα |
+| `tsc` web | **0 σφάλματα** |
+| vitest web | **760/760** (95 αρχεία) |
+| sweep 142 routes @1440 | **0 σφάλματα, 0 xScroll, 0 ανώνυμα, 0 dead bands, 0 κενά εικονίδια** |
+| screenshots | 4 φωτεινά θέματα στο `/readiness` + `/settings/notifications` + `/matches` — accent, rings, radar, «Co» θεματικά |
+| hex guard | 3/3 — νέα literals μόνο στο allowlist |
+| `phoneTouchFloor` | h-7/8/9/10 → 44px κάτω από 640px |
+
+### 29.8 Τι δεν αποδεικνύουν
+
+Οι έλεγχοι αντίθεσης μετρούν ζεύγη tokens, όχι κάθε κατάσταση κειμένου σε κάθε επιφάνεια. Το sweep τρέχει ως `platform_admin` σε demo mode στα 1440px — δεν είναι authorization test. Τα 390px μετρήθηκαν δειγματοληπτικά, όχι σε κάθε route. `space-y-6` ως section rhythm είναι σύμβαση πλειοψηφίας, όχι φρουρός — νέα σελίδα μπορεί να ξεφύγει χωρίς lint. Οι «νόμιμες» hex περιοχές (canvas, branding) αξιολογήθηκαν ανά περίπτωση· το allowlist είναι η τεκμηρίωση, όχι απόδειξη ορθότητας.
