@@ -29,7 +29,6 @@
   "/org/[slug]": "an organisation's public page, read without an account",
   "/ai": "the assistant itself: the workspace the conversation runs in",
   "/ai/capabilities": "generated from the action declarations the assistant uses; reading it changes nothing",
-  "/research/[boardId]": "the canvas: board work is the canvas_command capability, not page controls",
   "/dashboard/founder": "an overview that links to the pages that act; its figures come from the entity reads (milestones, messages, connections, events)",
   "/dashboard/incubator": "an overview that links to /org/* and /tenant/*, where the controls live",
   "/dashboard/investor": "an overview that links to the pipeline, watchlist and portfolio, where the deal commands live",

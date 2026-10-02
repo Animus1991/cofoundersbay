@@ -265,12 +265,17 @@ function BuilderPageContent() {
       labelEl: 'Συνδεδεμένες σελίδες',
       content: (
         <div className="grid grid-cols-1 min-w-0 gap-2">
+          {/* Only pages that are not already a stage in the strip above.
+              Pitch deck, applications and readiness were listed here under the
+              same names as their tabs, and they render the very same
+              components - PitchDeckBuilder, ApplicationGenerator,
+              ReadinessScoring - so the rail read as a copy of the strip, which
+              is the one thing it must not be. Nothing became unreachable: each
+              is a tab here and keeps its own sidebar entry. */}
           {([
-            { href: '/builder/pitch-deck', en: builderEn('app_link_pitch'), el: builderEl('app_link_pitch') },
-            { href: '/builder/applications', en: builderEn('tab_applications'), el: builderEl('tab_applications') },
             { href: '/research', en: builderEn('app_link_research'), el: builderEl('app_link_research') },
             { href: '/milestones', en: 'Milestones', el: 'Ορόσημα' },
-            { href: '/readiness', en: builderEn('app_link_readiness'), el: builderEl('app_link_readiness') },
+            { href: '/projects', en: builderEn('app_link_projects'), el: builderEl('app_link_projects') },
             { href: '/fundraising', en: builderEn('app_link_fundraising'), el: builderEl('app_link_fundraising') },
           ] as const).map((step) => (
             <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">

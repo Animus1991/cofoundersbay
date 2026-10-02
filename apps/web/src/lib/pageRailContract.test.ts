@@ -114,6 +114,14 @@ function withoutControlRegistrations(source: string): string {
  * became bilingual they arrive as `en=` props like every control's, so they
  * are dropped before labels are compared. The state check below does not
  * read labels, so a real second binding is still caught there.
+ *
+ * Applied to both sides, which it was not at first. A rail section's card
+ * carries a <CardTitle> naming what is in it, and /dashboard/founder names
+ * that card after the thing it lists - "Top matches", "Milestones" - which is
+ * also what the column's metric tile for the same subject is called. One is a
+ * heading, the other a tile: stripping headings from the column but not from
+ * the rail reported the pair as a duplicated control. A heading is a heading
+ * wherever it sits, so the same text is dropped from both before comparing.
  */
 function withoutNonControlText(source: string): string {
   return source
@@ -197,6 +205,28 @@ const SHARED_TEXT_ALLOWLIST = new Set<string>([
   // Events tab shows the same words only inside the empty state — recovery
   // copy, not a second shortcut.
   'key:browse_events',
+  // /dashboard/founder: both of these are sentences, in both places. The rail's
+  // milestone card closes with a footnote line - "all complete", or "add your
+  // first one" when there is nothing yet - and the column's milestones metric
+  // tile carries the same sentence as its caption under the count. Neither is a
+  // button; the control for milestones is the tile and the card's Manage link,
+  // which are named differently and appear once each.
+  'key:milestones_all_complete',
+  'key:add_first_milestone',
+  // /messages: the rail's Shortcuts owns the standing destinations; the column
+  // names them only inside the "no pending intro requests" empty state, which
+  // renders only when there is nothing to answer - recovery copy, not a second
+  // pair of shortcuts. (That empty state exists in both panes of the two-pane
+  // layout; the list pane's copy is md:hidden so only one pair is ever drawn.)
+  'key:find_people',
+  'key:browse_matches',
+  // /readiness: the two tracks the whole page scores. In the column they are
+  // the progression chart's series names and the swatches in its legend; in the
+  // rail they label the two figures on each history entry ("Accelerator 72% ·
+  // Investor 65%"). An axis name, not a control - and naming the same track
+  // differently in the two places would make the page contradict itself.
+  'key:accelerator',
+  'key:investor',
 ]);
 
 const pages = RAIL_ROOTS.flatMap(walk)
@@ -270,7 +300,7 @@ describe('page rail contract', () => {
     const offenders: string[] = [];
     for (const page of pages) {
       const { rail, page: rest } = splitRail(page.source);
-      const inRail = controlLabels(rail);
+      const inRail = controlLabels(withoutNonControlText(rail));
       const inPage = controlLabels(withoutNonControlText(withoutControlRegistrations(rest)));
       for (const label of inRail) {
         if (inPage.has(label) && !SHARED_TEXT_ALLOWLIST.has(label)) {

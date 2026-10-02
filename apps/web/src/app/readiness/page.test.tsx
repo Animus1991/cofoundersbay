@@ -78,10 +78,15 @@ describe('live readiness and explicit showcase isolation', () => {
     await screen.findByRole('button', { name: /Real criterion/ });
     expect(screen.queryByText('Target market defined')).toBeNull();
     expect(screen.queryByText('Co-founder identified')).toBeNull();
-    expect(screen.getByText('Readiness history is not available yet.')).toBeTruthy();
+    // History is no longer a tab on this page: it is the rail's "Score history"
+    // section, and the column keeps a control that opens it. In live mode that
+    // section states the gap rather than drawing a trend, which is the thing
+    // this test is actually for - the chart and the weekly points exist only
+    // for the demo showcase.
+    expect(screen.getByRole('button', { name: /History/ })).toBeTruthy();
+    const history = screen.getByRole('region', { name: 'Score history' });
+    expect(history.textContent).toContain('Historical assessments are not available.');
     expect(screen.queryByText(/\+\d+\s*pts/)).toBeNull();
-    fireEvent.mouseDown(screen.getByRole('tab', { name: /History/i }), { button: 0, ctrlKey: false });
-    await screen.findByRole('tabpanel');
     expect(screen.queryByText('W1')).toBeNull();
   });
 

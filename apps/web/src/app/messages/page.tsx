@@ -1050,7 +1050,12 @@ export default function MessagesPage() {
                     <p className="max-w-[16rem] text-xs text-muted-foreground">
                       <BilingualText en={messagesEn('intro_empty_hint')} el={messagesEl('intro_empty_hint')} />
                     </p>
-                    <div className="flex flex-wrap justify-center gap-2">
+                    {/* Below md only: the detail pane beside this one shows the
+                        same two links, and above md both panes are on screen,
+                        so the pair was drawn twice. The detail pane is hidden
+                        below md until a request is tapped, which cannot happen
+                        with an empty list - so the recovery lives here there. */}
+                    <div className="flex flex-wrap justify-center gap-2 md:hidden">
                       <Link
                         href="/matches"
                         className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible hover:bg-primary/20"
