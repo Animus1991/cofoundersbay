@@ -632,7 +632,7 @@ export default function CalendarPage() {
                 <CardContent>
                   <div className="space-y-2">
                     {upcomingEvents.map((e) => (
-                      <div key={e.id} className="flex items-center gap-3 text-sm">
+                      <div key={e.id} className="flex min-w-0 items-center gap-3 overflow-hidden text-sm">
                         <span className="w-[4.5rem] shrink-0 tabular-nums text-xs text-muted-foreground">
                           {formatUpcomingDate(e.date, primary)}
                         </span>

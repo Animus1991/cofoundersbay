@@ -920,7 +920,7 @@ export default function MessagesPage() {
                       line cut it by a third ("Draft a reply, summarise this thread,
                       or s…"). Two lines still bound the button's height. */}
                   <span className="block line-clamp-2 text-2xs text-muted-foreground">
-                    <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} compact />
+                    <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} compact wrap />
                   </span>
                 </span>
               </button>

@@ -128,7 +128,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
                 aria-label={title}
                 aria-pressed={isActive}
                 className={cn(
-                  'w-8 h-8 flex items-center justify-center rounded-md transition-all duration-100 shrink-0',
+                  'flex h-11 w-11 items-center justify-center rounded-md transition-all duration-100 shrink-0 sm:h-8 sm:w-8',
                   'hover:bg-secondary active:scale-95 touch-manipulation',
                   isActive
                     ? 'bg-primary/15 ring-1 ring-primary/50 text-primary-accessible'
@@ -153,7 +153,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
             aria-label="Shape Library"
             aria-pressed={!!libraryOpen}
             className={cn(
-              'w-8 h-8 flex items-center justify-center rounded-md transition-all duration-100 shrink-0',
+              'flex h-11 w-11 items-center justify-center rounded-md transition-all duration-100 shrink-0 sm:h-8 sm:w-8',
               'hover:bg-secondary active:scale-95 touch-manipulation',
               libraryOpen ? 'bg-status-accent/15 ring-1 ring-status-accent/50 text-status-accent' : 'text-muted-foreground',
             )}

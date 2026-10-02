@@ -1558,6 +1558,37 @@ html {
     .bilingual-separator--inline {
       display: none !important;
     }
+
+    /* The canvas inspector is a 220px column from `sm` up. On a phone that
+       column covers the notes, so it stays closed until the layers button
+       opens it. The attribute is present at every width; this query is the
+       only place it takes effect. */
+    [data-phone-inspector='closed'] {
+      display: none;
+    }
+
+    /* The stacked second line uses the caption step (12.24px). "Εξερεύνηση"
+       is 71.5px at that size and does not fit a five-column tab at 375px.
+       11px is the floor, and it measures 64px. */
+    [data-mobile-tabs] .bilingual-secondary {
+      font-size: 11px;
+      line-height: 1.15;
+    }
+
+    /* Call sites pin h-8 / h-9 / h-10 (32 / 36 / 40px) for the desktop ladder.
+       Those utilities are not breakpoint-scoped, so a phone inherited them and
+       the 44px touch height on Button never applied. Restore the floor here
+       only. From 640px the utilities mean what they say again. Square controls
+       grow on both axes; a full-width button only grows in height. */
+    :is(button, a, [role='tab'], [role='button']):is(.h-8, .h-9, .h-10, .min-h-8, .min-h-9, .min-h-10) {
+      height: auto;
+      min-height: 44px;
+    }
+    :is(button, a, [role='button']):is(.w-8, .w-9),
+    :is(button, a, [role='button']).h-10.w-10 {
+      width: 44px;
+      min-width: 44px;
+    }
   }
 
   /* A control paints its own foreground; the page's muted token is not readable

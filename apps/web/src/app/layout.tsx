@@ -81,6 +81,7 @@ import { LocaleSync } from '@/components/common/LocaleSync';
 import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
 import { I18nProvider } from '@/components/common/I18nProvider';
 import { DomI18n } from '@/components/common/DomI18n';
+import { PhonePlaceholderFit } from '@/components/layout/PhonePlaceholderFit';
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 
 export const metadata: Metadata = {
@@ -163,6 +164,7 @@ export default function RootLayout({
                                   <RoleTheme>
                                     <PreviewSessionGuard />
                                     <DomI18n>
+                                    <PhonePlaceholderFit />
                                       {/* Above both the page and the floating
                                           assistant, because the page writes
                                           what is on screen and the assistant
