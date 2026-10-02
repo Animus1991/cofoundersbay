@@ -484,7 +484,7 @@ export default function GroupsPage() {
         />
       )}
 
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-5">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <TabsList>
             <TabsTrigger value="discover"><BilingualText en="Discover" el="Ανακάλυψη" compact /></TabsTrigger>
@@ -500,7 +500,7 @@ export default function GroupsPage() {
 
         </div>
 
-        <TabsContent value={activeTab} className="space-y-5 mt-0">
+        <TabsContent value={activeTab} className="space-y-6 mt-0">
           {/* Search & Filters (discover only) */}
           {activeTab === 'discover' && (
             <div className="space-y-3">

@@ -436,7 +436,7 @@ export default function ConnectionsPage() {
       showHelp
       rail={rail}
     >
-      <div className="space-y-5 pb-10">
+      <div className="space-y-6 pb-10">
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">

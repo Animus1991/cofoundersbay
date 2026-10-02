@@ -609,7 +609,7 @@ export default function RecommendationsPage() {
         </Button>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Weekly digest section */}
         {!digestLoading && weeklyRecs.length > 0 && (
           <Card className="border-primary/15 bg-primary/[0.03]">

@@ -599,7 +599,7 @@ export default function EndorsementsPage() {
 
   return (
     <AppShell rail={rail}>
-      <div className="space-y-4 pb-10">
+      <div className="space-y-6 pb-10">
         {showDemoData && (
           <SampleDataNotice
             surface="Endorsements"

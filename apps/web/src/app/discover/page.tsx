@@ -349,7 +349,7 @@ export default function DiscoverPage() {
       contentClassName="overflow-x-clip"
       rail={rail}
     >
-      <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
+      <div className="min-w-0 space-y-6 overflow-x-clip pb-10">
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }}>

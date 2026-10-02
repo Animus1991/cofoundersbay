@@ -422,7 +422,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
 
 function AnalyticsSkeleton() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="min-w-0">
@@ -706,7 +706,7 @@ export default function AnalyticsPage() {
       askAi={askPrompt}
       contentClassName="overflow-x-clip"
     >
-      <div className="min-w-0 space-y-5 overflow-x-clip">
+      <div className="min-w-0 space-y-6 overflow-x-clip">
 
       <Tabs value={activeTab} onValueChange={(v) => { if (isTab(v)) setTab(v); }}>
         {/* Three equal columns capped at `max-w-md` is right on a phone, where
@@ -729,7 +729,7 @@ export default function AnalyticsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-5 space-y-5">
+        <TabsContent value="overview" className="mt-5 space-y-6">
           {isError ? (
             <ErrorState onRetry={() => void refetch()} />
           ) : waiting ? (
@@ -834,7 +834,7 @@ export default function AnalyticsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="engagement" className="mt-5 space-y-5">
+        <TabsContent value="engagement" className="mt-5 space-y-6">
           {isError ? (
             <ErrorState onRetry={() => void refetch()} />
           ) : waiting ? (
@@ -855,7 +855,7 @@ export default function AnalyticsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="growth" className="mt-5 space-y-5">
+        <TabsContent value="growth" className="mt-5 space-y-6">
           {isError ? (
             <ErrorState onRetry={() => void refetch()} />
           ) : waiting ? (

@@ -744,7 +744,7 @@ export default function OpportunitiesPage() {
           </Button>
         }
       >
-        <div className="space-y-5 pb-10">
+        <div className="space-y-6 pb-10">
         {/* Tabs */}
         {/* Wraps rather than scrolls: four bilingual labels are wider than the
             column, and a scrolled strip hid the fourth (Proposals). */}

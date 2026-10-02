@@ -475,7 +475,7 @@ export default function ActivityPage() {
       askAi="Summarise my recent network activity and tell me what to act on first: intros, unread notifications, or upcoming events."
     >
       <FirstRunTour tourId="activity" steps={ACTIVITY_TOUR} ready={!activityLoading} />
-      <div className="space-y-5">
+      <div className="space-y-6">
           <div>
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }}>
               <div className="mb-3 flex items-center justify-between gap-3" data-tour="activity-tabs">

@@ -561,7 +561,7 @@ export default function InvestorsPage() {
 
   return (
     <AppShell showHelp rail={rail}>
-      <div className="space-y-5 pb-10">
+      <div className="space-y-6 pb-10">
         {showDemoData && (
           <SampleDataNotice
             surface="Investors"

@@ -661,7 +661,7 @@ export default function AchievementsPage() {
       askAi="What achievements should I work toward next, and which unlocked badges are most useful to show investors?"
     >
       <FirstRunTour tourId="achievements" steps={ACHIEVEMENTS_TOUR} ready={!isLoading} />
-      <div className="space-y-4 pb-10">
+      <div className="space-y-6 pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
         ) : (

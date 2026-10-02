@@ -404,7 +404,7 @@ export default function JobsPage() {
         </Button>
       }
     >
-      <div className="space-y-5 pb-10">
+      <div className="space-y-6 pb-10">
       {/* Search + filters */}
       <div className="space-y-3">
         <div className="relative">

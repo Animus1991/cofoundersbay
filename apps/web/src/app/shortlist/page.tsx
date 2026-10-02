@@ -554,7 +554,7 @@ export default function ShortlistPage() {
       description={shortlistEn('page_description')}
       descriptionEl={shortlistEl('page_description')}
     >
-      <div className="space-y-5 pb-10">
+      <div className="space-y-6 pb-10">
 
         {/* Toolbar */}
         <div className="space-y-3">
