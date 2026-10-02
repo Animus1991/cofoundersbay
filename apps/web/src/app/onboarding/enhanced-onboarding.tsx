@@ -406,7 +406,7 @@ export default function EnhancedOnboardingPage() {
                 <Sparkles className="icon-lg text-primary-accessible" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold"><BilingualText en="CoFounderBay Onboarding" el="Ένταξη στο CoFounderBay" compact /></h1>
+                <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold"><BilingualText en="CoFounderBay Onboarding" el="Ένταξη στο CoFounderBay" compact /></h1>
                 <p className="text-muted-foreground"><BilingualText en="Let's build your profile together" el="Ας φτιάξουμε μαζί το προφίλ σας" wrap /></p>
               </div>
             </div>

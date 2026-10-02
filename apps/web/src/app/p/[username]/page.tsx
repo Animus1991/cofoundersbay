@@ -205,7 +205,7 @@ export default function PublicProfilePage() {
                   <div className="flex-1 space-y-3">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground">
+                        <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">
                           {firstName} {lastName}
                         </h1>
                         {isVerified && (

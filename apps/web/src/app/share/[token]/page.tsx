@@ -367,7 +367,7 @@ export default function SharePage() {
                       {document.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-bold">{document.title}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-semibold">{document.title}</h1>
                   {document.description && (
                     <p className="text-muted-foreground mt-1">{document.description}</p>
                   )}

@@ -132,7 +132,7 @@ export default function RegisterPage() {
               ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <LogoIcon size={72} />}
           </div>
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-semibold text-white">
             {branding?.heroTitle || (activeTenant ? (
               <BilingualText
                 en={`Join ${activeTenant.displayName ?? activeTenant.name}`}
@@ -177,7 +177,7 @@ export default function RegisterPage() {
               : <Logo size="sm" />}
           </Link>
 
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
             <BilingualText en="Create your account" el="Δημιουργήστε λογαριασμό" wrap />
           </h1>
           <p className="mt-2 text-muted-foreground">

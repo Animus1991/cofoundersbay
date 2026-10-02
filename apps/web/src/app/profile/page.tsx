@@ -582,7 +582,7 @@ export default function ProfilePage() {
               <div className="flex-1 space-y-3 pt-2 md:pt-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
+                    <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
                       {profile.displayName}
                     </h2>
                     {profile.headline ? (

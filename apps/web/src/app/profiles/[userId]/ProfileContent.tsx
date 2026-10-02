@@ -307,7 +307,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               </Avatar>
 
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
+                <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
                 {profile.headline && (
                   <p className="text-sm text-muted-foreground">{profile.headline}</p>
                 )}

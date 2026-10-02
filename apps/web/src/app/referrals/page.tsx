@@ -227,7 +227,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
             <CurrentIcon className={cn('icon-xl', currentTier.color)} />
           </div>
           <div>
-            <h3 className={cn('text-xl font-bold leading-snug', currentTier.color)}>
+            <h3 className={cn('text-xl font-semibold leading-snug', currentTier.color)}>
               <BilingualText en={referralsEn(currentTier.key)} el={referralsEl(currentTier.key)} compact />
             </h3>
             <p className="text-sm leading-snug text-muted-foreground">

@@ -18,7 +18,7 @@ const PRIMARY_TABS = [
   { icon: User, label: 'Profile', labelEl: 'Προφίλ', path: '/profile', match: ['/profile'] },
 ] as const;
 
-const tabClasses = 'relative flex min-h-[3.25rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[11px] font-medium leading-[1.15] tracking-tight focus-ring';
+const tabClasses = 'relative flex min-h-[3.25rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-2xs font-medium leading-[1.15] tracking-tight focus-ring';
 
 function TabLabel({ en, el }: { en: string; el: string }) {
   // 11px is the product floor, and it is the size at which "Εξερεύνηση" fits a
@@ -31,9 +31,9 @@ function TabLabel({ en, el }: { en: string; el: string }) {
       el={el}
       stacked
       keepSecondaryOnMobile
-      className="w-full text-center text-[11px] leading-[1.15] tracking-tight"
+      className="w-full text-center text-2xs leading-[1.15] tracking-tight"
       primaryClassName="truncate"
-      secondaryClassName="truncate text-[11px] leading-[1.15]"
+      secondaryClassName="truncate text-2xs leading-[1.15]"
     />
   );
 }

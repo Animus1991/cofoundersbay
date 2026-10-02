@@ -6,7 +6,7 @@ import type { CopilotCitation } from '@/lib/copilot-types';
 
 export function CitationChip({ citation }: { citation: CopilotCitation }) {
   const className = cn(
-    'inline-flex items-center rounded-full border-0 bg-status-accent-bg px-2 py-0.5 text-[11px] font-medium text-status-accent',
+    'inline-flex items-center rounded-full border-0 bg-status-accent-bg px-2 py-0.5 text-2xs font-medium text-status-accent',
     'dark:bg-status-accent-mark dark:text-status-accent',
   );
 

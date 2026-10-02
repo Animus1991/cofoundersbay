@@ -163,7 +163,7 @@ export default function TermsPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <FileText className="h-7 w-7 text-primary-accessible" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
+          <h1 className="text-3xl sm:text-4xl font-semibold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
           <p className="text-muted-foreground">
             <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
           </p>

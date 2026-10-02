@@ -178,7 +178,7 @@ export function SmartRecommendations() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <h2 className="text-3xl font-semibold tracking-tight flex items-center gap-2">
             <Sparkles className="icon-xl text-primary-accessible" />
             <BilingualText en="Smart Recommendations" el="Έξυπνες προτάσεις" compact />
           </h2>

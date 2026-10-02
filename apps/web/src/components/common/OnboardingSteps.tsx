@@ -163,7 +163,7 @@ export function OnboardingStepHeader({ steps }: { steps: Step[] }) {
 
   return (
     <div className="text-center mb-8 animate-fade-in">
-      <h2 className="text-2xl font-bold text-foreground mb-2">{step.title}</h2>
+      <h2 className="text-2xl font-semibold text-foreground mb-2">{step.title}</h2>
       {step.description && (
         <p className="text-muted-foreground max-w-md mx-auto">{step.description}</p>
       )}

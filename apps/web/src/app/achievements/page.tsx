@@ -376,7 +376,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('current_level')} el={achievementsEl('current_level')} compact /></p>
-                <h2 className="text-xl font-bold">Level {stats.level}</h2>
+                <h2 className="text-xl font-semibold">Level {stats.level}</h2>
               </div>
             </div>
 

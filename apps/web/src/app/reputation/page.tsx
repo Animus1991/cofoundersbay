@@ -323,7 +323,7 @@ export default function ReputationPage() {
                       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                         <BilingualText en={`${reputationEn('level')} ${xp.data.level}`} el={`${reputationEl('level')} ${xp.data.level}`} compact />
                       </p>
-                      <h2 className="mt-0.5 text-xl font-bold tracking-tight md:text-2xl">
+                      <h2 className="mt-0.5 text-xl font-semibold tracking-tight md:text-2xl">
                         <BilingualText en={xp.data.levelLabel} el={levelEl} />
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground tabular-nums">

@@ -60,7 +60,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
 
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground">{org.name}</h1>
+                <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">{org.name}</h1>
                 {org.tagline && (
                   <p className="text-base text-muted-foreground mt-1">{org.tagline}</p>
                 )}

@@ -439,7 +439,7 @@ export default function GroupDetailPage() {
                   )}
                 </div>
                 <div className="min-w-0 pb-1">
-                  <h2 className="font-display text-xl sm:text-2xl xl:text-3xl font-bold">{group.name}</h2>
+                  <h2 className="font-display text-xl sm:text-2xl xl:text-3xl font-semibold">{group.name}</h2>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}

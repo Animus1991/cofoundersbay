@@ -1022,7 +1022,7 @@ function TenantPreview({
           className="p-8 text-center relative"
           style={branding.heroImageUrl ? { backgroundImage: `url(${branding.heroImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: `linear-gradient(135deg, ${branding.primaryColor}22, ${branding.secondaryColor}22)` }}
         >
-          <h1 className="text-2xl font-bold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
+          <h1 className="text-2xl font-semibold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
           <p className="text-muted-foreground max-w-md mx-auto">{branding.heroSubtitle || 'Connect with founders, mentors, and investors in our ecosystem.'}</p>
           <div className="mt-6 flex justify-center gap-3">
             <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: branding.primaryColor }}>

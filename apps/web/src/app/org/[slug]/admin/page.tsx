@@ -566,7 +566,7 @@ export default function OrgAdminPage() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <h1 className="break-words text-2xl sm:text-3xl font-bold text-foreground">{org.name}</h1>
+              <h1 className="break-words text-2xl sm:text-3xl font-semibold text-foreground">{org.name}</h1>
               <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact /></p>
             </div>
           </div>

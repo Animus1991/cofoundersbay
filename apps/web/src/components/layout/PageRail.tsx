@@ -180,7 +180,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
               <SlidersHorizontal className="icon-md" aria-hidden="true" />
               {totalBadge > 0 && (
                 <span
-                  className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-[10px] font-semibold leading-[1.1rem] text-primary-foreground"
+                  className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-[1.1rem] text-primary-foreground"
                   aria-hidden="true"
                 >
                   {totalBadge}
@@ -217,7 +217,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                         <BilingualText en={section.labelEn} el={section.labelEl} compact />
                       </span>
                       {badge != null && (
-                        <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-5 text-primary-foreground">{badge}</span>
+                        <span className="rounded-full bg-primary px-1.5 text-2xs font-semibold leading-5 text-primary-foreground">{badge}</span>
                       )}
                       <ChevronDown className={cn('icon-sm shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-180')} aria-hidden="true" />
                     </button>
@@ -404,7 +404,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                       <CfbGlyph name={section.glyph} className="icon-md" />
                       {badge != null && (
                         <span
-                          className="absolute -right-0.5 -top-0.5 min-w-[1rem] rounded-full bg-primary px-1 text-center text-[10px] font-semibold leading-4 text-primary-foreground"
+                          className="absolute -right-0.5 -top-0.5 min-w-[1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-4 text-primary-foreground"
                           aria-hidden="true"
                         >
                           {badge}

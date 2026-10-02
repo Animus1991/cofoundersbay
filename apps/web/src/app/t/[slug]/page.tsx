@@ -100,7 +100,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           {tenant.logoUrl && (
             <img src={tenant.logoUrl} alt={tenant.name} className="mx-auto mb-6 h-16 w-auto rounded-xl shadow-lg" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           )}
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-4 drop-shadow">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl mb-4 drop-shadow">
             {b?.heroTitle || tenantName}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-white/80 mb-8 drop-shadow-sm">
@@ -150,7 +150,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
                 <Building2 className="icon-md text-primary-accessible" />
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-3">About {tenantName}</h2>
+                <h2 className="text-xl font-semibold mb-3">About {tenantName}</h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                   {b?.aboutText || tenant.aboutText}
                 </p>
@@ -186,7 +186,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
         <Card className="bg-primary/5 border-primary/15">
           <CardContent className="pt-8 pb-8">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-2xl font-semibold mb-2">
               {b?.dashboardWelcomeText || `Ready to join ${tenantName}?`}
             </h2>
             <p className="text-muted-foreground mb-6">
@@ -311,7 +311,7 @@ export default function TenantPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
         <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground"><BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact /></h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-foreground"><BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact /></h1>
         <p className="text-muted-foreground max-w-sm"><BilingualText en="The ecosystem you&apos;re looking for doesn&apos;t exist or is not active." el="Το οικοσύστημα που ψάχνετε δεν υπάρχει ή δεν είναι ενεργό." wrap /></p>
         <Button variant="outline" asChild>
           <Link href="/"><BilingualText en="Back to CoFounderBay" el="Επιστροφή στο CoFounderBay" compact /></Link>

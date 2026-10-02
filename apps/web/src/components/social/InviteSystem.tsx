@@ -111,7 +111,7 @@ export function InviteSystem() {
               <Gift className="icon-lg text-primary-accessible" />
             </div>
             <div>
-              <h2 className="text-xl font-bold"><BilingualText en="Invite Friends & Earn Rewards" el="Προσκαλέστε φίλους & κερδίστε ανταμοιβές" compact /></h2>
+              <h2 className="text-xl font-semibold"><BilingualText en="Invite Friends & Earn Rewards" el="Προσκαλέστε φίλους & κερδίστε ανταμοιβές" compact /></h2>
               <p className="text-sm text-muted-foreground">
                 <BilingualText en="Get premium features when your friends join" el="Αποκτήστε premium δυνατότητες όταν εγγράφονται οι φίλοι σας" wrap />
               </p>

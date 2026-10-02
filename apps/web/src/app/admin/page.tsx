@@ -854,7 +854,7 @@ export default function AdminPage() {
         <TabsList className="lg:sticky lg:top-24 lg:flex lg:w-full lg:flex-col lg:items-stretch lg:gap-0.5 lg:overflow-visible lg:p-1.5">
           {ADMIN_TAB_GROUPS.map((group) => (
             <Fragment key={group.en}>
-              <span aria-hidden="true" className="hidden px-3 pb-1 pt-3 text-[11px] font-medium text-muted-foreground/80 first:pt-1.5 lg:block">
+              <span aria-hidden="true" className="hidden px-3 pb-1 pt-3 text-2xs font-medium text-muted-foreground/80 first:pt-1.5 lg:block">
                 <BilingualText en={group.en} el={group.el} compact />
               </span>
               {group.tabs.map(({ value, en, el, icon: Icon }) => (

@@ -25,7 +25,7 @@ export function CanvasRulers({
         {xTicks.map((v) => (
           <span
             key={`x-${v}`}
-            className="absolute top-0 text-[9px] tabular-nums text-muted-foreground/70"
+            className="absolute top-0 text-2xs tabular-nums text-muted-foreground/70"
             style={{ left: pan.x + v * zoom }}
           >
             {v}
@@ -36,7 +36,7 @@ export function CanvasRulers({
         {yTicks.map((v) => (
           <span
             key={`y-${v}`}
-            className="absolute left-0.5 text-[9px] tabular-nums text-muted-foreground/70"
+            className="absolute left-0.5 text-2xs tabular-nums text-muted-foreground/70"
             style={{ top: pan.y + v * zoom }}
           >
             {v}

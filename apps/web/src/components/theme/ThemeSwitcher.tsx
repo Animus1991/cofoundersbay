@@ -151,8 +151,8 @@ export function ThemeSwitcher({ className }: { className?: string }) {
                     en={theme.description}
                     el={translate('el', theme.description)}
                     stacked
-                    primaryClassName="text-[11px] leading-tight text-muted-foreground"
-                    secondaryClassName="text-[11px] leading-tight text-muted-foreground"
+                    primaryClassName="text-2xs leading-tight text-muted-foreground"
+                    secondaryClassName="text-2xs leading-tight text-muted-foreground"
                   />
                 </div>
                 {isActive && <Check className="ml-auto icon-sm text-primary-accessible shrink-0" />}

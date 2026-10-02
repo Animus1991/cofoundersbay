@@ -376,7 +376,7 @@ export default function HelpPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-1"><BilingualText en="How can we help you?" el="Πώς μπορούμε να βοηθήσουμε;" compact /></h2>
+          <h2 className="text-xl font-semibold text-foreground mb-1"><BilingualText en="How can we help you?" el="Πώς μπορούμε να βοηθήσουμε;" compact /></h2>
           <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Search our knowledge base or browse topics below" el="Αναζητήστε στη βάση γνώσεων ή δείτε τα θέματα παρακάτω" wrap /></p>
           <div className="mx-auto max-w-lg relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />

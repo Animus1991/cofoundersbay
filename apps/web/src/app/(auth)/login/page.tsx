@@ -117,7 +117,7 @@ function LoginPageContent() {
             )}
           </Link>
 
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
             {activeTenant ? (
               <BilingualText
                 en={`Welcome to ${activeTenant.displayName ?? activeTenant.name}`}
@@ -264,7 +264,7 @@ function LoginPageContent() {
               <LogoIcon size={86} />
             )}
           </div>
-          <h2 className="font-display text-3xl font-bold text-white">
+          <h2 className="font-display text-3xl font-semibold text-white">
             {branding?.heroTitle ?? <BilingualText en="Your next co-founder is waiting" el="Ο επόμενος συνιδρυτής σας σας περιμένει" wrap stacked secondaryClassName="text-white/70" />}
           </h2>
           <p className="mt-4 text-white/65 text-base leading-relaxed">

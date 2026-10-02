@@ -113,7 +113,7 @@ export default function ApiStatusPage() {
   return (
     <div className="container mx-auto p-8">
       <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2"><BilingualText en="API Status Check" el="Έλεγχος κατάστασης API" compact /></h1>
+        <h1 className="text-3xl sm:text-4xl font-semibold mb-2"><BilingualText en="API Status Check" el="Έλεγχος κατάστασης API" compact /></h1>
         <p className="text-muted-foreground">
           <BilingualText en="Check the status of all API endpoints to diagnose 404 errors" el="Ελέγξτε όλα τα endpoints του API για διάγνωση σφαλμάτων 404" wrap />
         </p>

@@ -173,7 +173,7 @@ export default function TestOnboardingPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2"><BilingualText en="Production Readiness Tests" el="Έλεγχοι ετοιμότητας παραγωγής" compact /></h1>
+          <h1 className="text-3xl sm:text-4xl font-semibold mb-2"><BilingualText en="Production Readiness Tests" el="Έλεγχοι ετοιμότητας παραγωγής" compact /></h1>
           <p className="text-muted-foreground">
             <BilingualText en="Test all critical components before going to production" el="Ελέγξτε όλα τα κρίσιμα στοιχεία πριν από την παραγωγή" wrap />
           </p>

@@ -223,7 +223,7 @@ function CoverSlide({ slide }: { slide: SlideBase }) {
         {c.stage} • Raising {c.raising}
       </div>
       {/* 48px fixed left roughly six characters per line on a 320px screen. */}
-      <h1 className="text-3xl font-bold text-foreground mb-4 sm:text-4xl lg:text-5xl">{slide.title}</h1>
+      <h1 className="text-3xl font-semibold text-foreground mb-4 sm:text-4xl lg:text-5xl">{slide.title}</h1>
       <p className="text-xl text-muted-foreground max-w-2xl">{c.tagline}</p>
       <p className="text-sm text-muted-foreground mt-8">Founded {c.founded}</p>
     </div>
@@ -238,7 +238,7 @@ function ProblemSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-danger-bg ">
           <Target className="icon-lg text-status-danger" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <p className="text-2xl font-semibold text-foreground mb-8">{c.headline}</p>
       <div className="space-y-4 mb-10">
@@ -269,7 +269,7 @@ function SolutionSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-success-bg ">
           <Lightbulb className="icon-lg text-status-success" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <p className="text-2xl font-semibold text-foreground mb-8">{c.headline}</p>
       <div className="space-y-4">
@@ -292,7 +292,7 @@ function TractionSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-info-bg ">
           <TrendingUp className="icon-lg text-status-info" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="grid grid-cols-2 gap-6">
         {c.metrics.map((m, i) => (
@@ -315,7 +315,7 @@ function MarketSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-accent-bg ">
           <Globe className="icon-lg text-status-accent" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="flex items-end gap-6 justify-center">
         {[
@@ -343,7 +343,7 @@ function BusinessModelSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-warning-bg ">
           <DollarSign className="icon-lg text-status-warning" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="space-y-5">
         {c.streams.map((stream, i) => (
@@ -371,7 +371,7 @@ function TeamSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-success-bg ">
           <Users className="icon-lg text-status-success" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="grid grid-cols-3 gap-6">
         {c.members.map((member, i) => (
@@ -399,7 +399,7 @@ function AskSlide({ slide }: { slide: SlideBase }) {
         <div className="p-2 rounded-lg bg-status-accent-bg ">
           <BarChart2 className="icon-lg text-status-accent" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="flex items-center gap-8 mb-8">
         <div>
@@ -431,7 +431,7 @@ function AskSlide({ slide }: { slide: SlideBase }) {
 function GenericSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
-      <h2 className="text-3xl font-bold mb-6">{slide.title}</h2>
+      <h2 className="text-3xl font-semibold mb-6">{slide.title}</h2>
       <pre className="text-muted-foreground text-sm whitespace-pre-wrap">
         {JSON.stringify(slide.content, null, 2)}
       </pre>

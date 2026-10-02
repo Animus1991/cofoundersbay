@@ -124,7 +124,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
-            <p className="text-4xl font-extrabold tabular-nums text-primary-accessible">{score}%</p>
+            <p className="text-4xl font-bold tabular-nums text-primary-accessible">{score}%</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
             </p>
@@ -430,7 +430,7 @@ function MatchPreviewPanel({
                 {hit.displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <h3 className="mt-3 text-lg font-bold text-foreground">{hit.displayName}</h3>
+            <h3 className="mt-3 text-lg font-semibold text-foreground">{hit.displayName}</h3>
             <RoleBadge role={hit.role} size="sm" showIcon className="mt-1" />
             {hit.headline && (
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-3">{hit.headline}</p>
@@ -440,7 +440,7 @@ function MatchPreviewPanel({
           {/* Score */}
           <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
             <div className="text-center">
-              <p className={cn('text-2xl font-extrabold tabular-nums', colors.icon)}>{score}%</p>
+              <p className={cn('text-2xl font-bold tabular-nums', colors.icon)}>{score}%</p>
               <p className={cn('text-2xs font-bold tracking-wider uppercase mt-0.5', colors.icon)}>
                 {tier.charAt(0).toUpperCase() + tier.slice(1)}
               </p>
@@ -1037,7 +1037,7 @@ export default function MatchesPage() {
                   </div>
                   <div className="min-w-0">
                     <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
-                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
+                    <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
                       <BilingualText en={labelEn} el={labelEl} compact wrap />
                     </p>
                   </div>
