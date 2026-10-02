@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder' | 'minimal';
+export type ThemeName = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot';
 
 export interface ThemeColors {
   background: string;
@@ -88,7 +88,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '199 89% 36%',
   },
   alliance: {
-    // Alliance WordPress theme inspired colors — amber primary uses dark foreground (WCAG AA)
+    // "Cyan" — legacy inline fallback only; globals.css owns the live tokens.
     background: '195 26% 96%', // #eef6f7
     foreground: '220 100% 3%', // #000724
     card: '0 0% 100%', // #ffffff
@@ -132,7 +132,7 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '262 83% 58%',
   },
   minimal: {
-    // Warm paper, near-monochrome, one teal-ink accent (Claude 803ddb2)
+    // "Mint" — legacy inline fallback only; globals.css owns the live tokens.
     background: '40 20% 98%',
     foreground: '30 8% 12%',
     card: '0 0% 100%',
@@ -152,6 +152,28 @@ export const themes: Record<ThemeName, ThemeColors> = {
     border: '36 12% 88%',
     input: '36 10% 55%',
     ring: '190 48% 32%',
+  },
+  apricot: {
+    // "Apricot" — legacy inline fallback only; globals.css owns the live tokens.
+    background: '30 12% 96.6%',
+    foreground: '24 10% 13%',
+    card: '30 22% 99.3%',
+    cardForeground: '24 10% 13%',
+    popover: '0 0% 100%',
+    popoverForeground: '24 10% 13%',
+    primary: '24 33.5% 44.75%',
+    primaryForeground: '0 0% 100%',
+    secondary: '30 10% 94.4%',
+    secondaryForeground: '24 10% 18%',
+    muted: '30 10% 94%',
+    mutedForeground: '26 6% 40%',
+    accent: '30 14% 93%',
+    accentForeground: '24 10% 13%',
+    destructive: '350 30% 42.6%',
+    destructiveForeground: '0 0% 100%',
+    border: '30 10% 93.6%',
+    input: '30 10% 92%',
+    ring: '24 24.7% 42.5%',
   },
 };
 
@@ -188,6 +210,10 @@ export function applyTheme(themeName: ThemeName) {
     case 'cofounder':
       root.classList.add('dark');
       root.setAttribute('data-theme', 'cofounder');
+      break;
+    case 'apricot':
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'apricot');
       break;
     case 'minimal':
       // Light-first: the `light` class supplies the base, and data-theme

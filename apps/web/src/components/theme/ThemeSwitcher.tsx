@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -28,9 +28,9 @@ export const THEME_OPTIONS = [
   {
     name: 'light' as ThemeName,
     label: 'Light',
-    description: 'Classic light theme',
+    description: 'Soft lilac on cool grey',
     icon: Sun,
-    swatch: ['#f8fafc', '#6756dc', '#e2e8f0'],
+    swatch: ['#f6f6f7', '#bbaefb', '#6e659a'],
   },
   {
     name: 'system' as ThemeName,
@@ -41,10 +41,10 @@ export const THEME_OPTIONS = [
   },
   {
     name: 'alliance' as ThemeName,
-    label: 'Alliance',
-    description: 'Professional & clean',
+    label: 'Cyan',
+    description: 'Soft sky blue, cool and clear',
     icon: Palette,
-    swatch: ['#eef6f7', '#e8940a', '#fafdfd'],
+    swatch: ['#f2f6f7', '#91bddd', '#527187'],
   },
   {
     name: 'cofounder' as ThemeName,
@@ -55,10 +55,17 @@ export const THEME_OPTIONS = [
   },
   {
     name: 'minimal' as ThemeName,
-    label: 'Minimal',
-    description: 'Warm paper, quiet chrome',
+    label: 'Mint',
+    description: 'Warm cream with a soft mint',
     icon: Minus,
-    swatch: ['#faf8f5', '#237a86', '#e8e4dc'],
+    swatch: ['#f7f5f0', '#7ac6aa', '#427864'],
+  },
+  {
+    name: 'apricot' as ThemeName,
+    label: 'Apricot',
+    description: 'Warm neutral with a soft apricot',
+    icon: Sunrise,
+    swatch: ['#f7f6f5', '#ddaf90', '#876752'],
   },
 ];
 

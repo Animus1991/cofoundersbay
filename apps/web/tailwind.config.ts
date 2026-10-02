@@ -32,6 +32,9 @@ const config: Config = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
           accessible: 'hsl(var(--primary-accessible))',
+          // The filled button: pastel with a dark ink label of its own hue.
+          soft: 'hsl(var(--primary-soft))',
+          'soft-foreground': 'hsl(var(--primary-soft-foreground))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

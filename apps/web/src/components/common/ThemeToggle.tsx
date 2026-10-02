@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Monitor, Minus } from 'lucide-react';
+import { Moon, Sun, Monitor, Minus, Palette, Sunrise } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,7 +17,9 @@ export function ThemeToggle() {
     light: Sun,
     dark: Moon,
     system: Monitor,
+    alliance: Palette,
     minimal: Minus,
+    apricot: Sunrise,
   };
 
   const CurrentIcon = icons[theme] || Moon;
@@ -42,9 +44,18 @@ export function ThemeToggle() {
           <Monitor className="icon-sm" />
           System
         </DropdownMenuItem>
+        {/* The four light accents: one tone, four hues. */}
+        <DropdownMenuItem onClick={() => setTheme('alliance')} className="gap-2">
+          <Palette className="icon-sm" />
+          Cyan
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('minimal')} className="gap-2">
           <Minus className="icon-sm" />
-          Minimal
+          Mint
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('apricot')} className="gap-2">
+          <Sunrise className="icon-sm" />
+          Apricot
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

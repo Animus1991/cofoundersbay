@@ -11,9 +11,9 @@ const enhancedCardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-border hover:border-foreground/12',
+        default: 'border-border hover:border-foreground/15',
         elevated: 'border-border',
-        outlined: 'border border-border hover:border-foreground/12',
+        outlined: 'border border-border hover:border-foreground/15',
         ghost: 'border-transparent bg-transparent hover:bg-secondary/50',
         gradient: 'border-transparent bg-primary/[0.03] hover:bg-primary/[0.05]',
         glass: 'border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20',

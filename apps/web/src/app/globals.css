@@ -48,7 +48,7 @@ html {
        theme below holds the same three ratios:
          card on page   1.05-1.09
          --border       1.14-1.19 on its card (cursor.com 1.15-1.18)
-         --input        1.25-1.37 on its card, the one edge a control needs */
+         --input        1.17-1.19 on its card — a field edge as quiet as a card's */
     --background:       232 7% 96.6%;
     --foreground:       232 10% 21%;
     --card:             232 12% 99.4%;
@@ -56,13 +56,25 @@ html {
     --popover:          0 0% 100%;
     --popover-foreground: 232 10% 21%;
 
-    /* Primary: a true lilac, not electric indigo. Hue 248 sits next to
-       the page grey (232); sat 66% keeps it colourful without the 88%
-       shout that was pulling the eye off the words. Contrast on white
-       stays ≥5:1. */
-    --primary:          248 39% 56%;
+    /* One tone recipe, four hues (lilac here; cyan, mint and apricot in the
+       named themes). Every accent theme carries chroma 30 and the same
+       relative luminance as the reference buttons (0.49: Cursor #7bafe9,
+       Windsurf #34e8bb, Windsurf #f09f6d), so no theme is louder than
+       another — only the hue changes. Read from the reference pixels, then solved for contrast:
+       .probes/sample_pixels.mjs, .probes/tone_solver2.cjs.
+
+       --primary        the mid tone: tints (/5 /10), bars, rings, small solid
+                        marks with a white label (4.6:1)
+       --primary-soft   the filled button: a pastel with a dark ink label of
+                        its own hue (9.6:1) — Cursor's "Upgrade" chip and
+                        Windsurf's "Download" button, not a saturated block
+                        with white text shouting from every page header
+       --primary-accessible  link and emphasis text, >=5:1 on a card */
+    --primary:          250 45.9% 59%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 248 30% 50%;
+    --primary-accessible: 250 40.7% 55%;
+    --primary-soft:     250 74% 82.6%;
+    --primary-soft-foreground: 250 30% 9.5%;
 
     /* Secondary / muted sit a couple of points off the card, not a new colour. */
     --secondary:        232 7% 95.4%;
@@ -71,10 +83,13 @@ html {
     --muted:            232 7% 94.8%;
     --muted-foreground: 232 6% 45%;  /* ~5.2 on card — helper, not a second shout */
 
-    /* Accent follows primary. A second hue (magenta, cyan) was pulling the
-       eye off the words the way cursor.com never does. */
-    --accent:           248 39% 56%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent is the hover surface (shadcn's meaning: every `hover:bg-accent`
+       row, menu item and toolbar button). It followed primary, so hovering a
+       list row painted it solid lilac — the loudest thing on the page for as
+       long as the pointer rested there. A quiet step off the card instead,
+       as on cursor.com and windsurf.com. */
+    --accent:           232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
 
     --destructive:      4 32.5% 40%;
     --destructive-foreground: 0 0% 100%;
@@ -89,9 +104,13 @@ html {
        band, so `/60` and `/40` fade toward nothing, which is what an inner
        divider should do. A control's own boundary is `--input`, kept firmer
        than a card edge because it is the only thing that marks the field. */
-    --border:           232 7% 93.6%;  /* ~1.12 on card — a hairline, not a frame */
-    --input:            232 7% 90.5%;  /* ~1.22 on card — fields only */
-    --ring:             248 39% 56%;
+    --border:           232 5% 93.6%;  /* 1.14 on card — a hairline, not a frame */
+    /* Fields share the card's whisper (1.19, was 1.22-3.14 by theme). The
+       field is found by its fill, label and placeholder; focus is the strong
+       signal: a 2px --ring outline (globals "Shared keyboard indicator") and
+       the edge taking --ring while typing. */
+    --input:            232 5% 92%;
+    --ring:             250 40.7% 55%; /* the link tone: 4.9:1 on the page */
     /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
        sm/DEFAULT 6 · md/lg 10 · xl 12 · 2xl 14 · 3xl 18.
        Softer than cursor.com (cards ~12, buttons ~8) by one notch, same
@@ -168,13 +187,13 @@ html {
     --secondary-foreground: 232 10% 93%;
     --muted: 232 16% 13%;
     --muted-foreground: 232 8% 62%;
-    --accent: 248 47% 76.6%;
-    --accent-foreground: 248 32% 12%;
+    --accent: 232 14% 15.5%;           /* hover surface, not a lilac fill */
+    --accent-foreground: 220 10% 93%;
     --destructive: 4 23.5% 47%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 4 30% 70%;
     --border: 232 12% 13.6%;           /* ~1.12 on card */
-    --input: 232 12% 16.8%;            /* ~1.22 on card */
+    --input: 232 12% 15%;              /* ~1.16 on card */
     --ring: 248 47% 76.6%;
     color-scheme: dark;
   }
@@ -196,44 +215,40 @@ html {
     --secondary-foreground: 210 12% 94%;
     --muted: 215 20% 22%;
     --muted-foreground: 215 10% 68%;
-    --accent: 199 36% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 215 20% 23.6%;           /* hover surface */
+    --accent-foreground: 210 20% 98%;
     --destructive: 2 23.5% 46.8%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 30% 70%;
     --border: 215 16% 22.8%;           /* ~1.12 on card */
-    --input: 215 16% 25.8%;            /* ~1.22 on card */
+    --input: 215 16% 24.4%;            /* ~1.16 on card */
     --ring: 199 36% 40%;
     --gradient-hero: linear-gradient(hsl(215 26% 13%), hsl(215 26% 13%));
     color-scheme: dark;
   }
 
-  /* ── Alliance theme: warm cream & amber ──
-     Amber primary uses dark foreground — white on amber fails WCAG AA (~2.2:1). */
+  /* ── "Cyan" (id: alliance) — Cursor's soft sky blue on a cool page.
+     Neutral-cool surfaces; the accent lives in the accent-lock block below. ── */
   [data-theme="alliance"] {
     --shadow-color: 200 40% 18%;
     --shadow-strength: 1;
-    --background: 195 26% 96%;
+    --background: 210 8% 96.4%;
     --foreground: 220 100% 3%;
-    --card: 195 30% 99.2%;
+    --card: 210 12% 99.4%;
     --card-foreground: 220 100% 3%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 100% 3%;
-    --primary: 34 40% 41%;
-    --primary-foreground: 0 0% 100%;
-    --primary-accessible: 34 36% 34%;
-    --secondary: 200 16% 93.6%;
+    --secondary: 210 8% 94.6%;
     --secondary-foreground: 220 100% 3%;
-    --muted: 190 22% 94%;
+    --muted: 210 8% 94.2%;
     --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
-    --accent: 34 40% 41%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 10% 94%;             /* hover surface */
+    --accent-foreground: 220 15% 10%;
     --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 33.5% 38.8%;
-    --border: 200 12% 93.4%;           /* ~1.12 on card */
-    --input: 200 12% 90.4%;            /* ~1.22 on card */
-    --ring: 34 40% 41%;
+    --border: 210 8% 93.4%;            /* ~1.13 on card */
+    --input: 210 8% 91.8%;             /* ~1.18 on card */
     --gradient-hero: linear-gradient(hsl(205 20% 13%), hsl(205 20% 13%));
     color-scheme: light;
   }
@@ -255,166 +270,198 @@ html {
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 9.8%;
     --muted-foreground: 240 5% 64%;
-    --accent: 258 28% 54%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 6% 11.6%;            /* hover surface */
+    --accent-foreground: 0 0% 98%;
     --destructive: 2 23% 48%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 25% 64%;
     --border: 240 6% 10.8%;            /* ~1.12 on card */
-    --input: 240 6% 13.6%;             /* ~1.22 on card */
+    --input: 240 6% 12.2%;             /* ~1.15 on card */
     --ring: 258 28% 54%;
     --gradient-hero: linear-gradient(hsl(240 7% 6.8%), hsl(240 7% 6.8%));
     color-scheme: dark;
   }
 
-  /* ── "minimal" ────────────────────────────────────────────────────────────
-     A light-first, near-monochrome palette on warm paper, with one calm accent
-     spent only on the primary action and the focus ring. Every semantic pair is
-     solved above 5.5:1 (body reaches 15.8), and `--input` is dark enough to
-     clear the 3:1 that WCAG 1.4.11 asks of a control boundary — a hairline that
-     cannot be seen is not minimal, it is missing.
-
-     `--accent` is deliberately a quiet tint rather than a brand colour, which is
-     what made `accent-foreground` fail in every other theme: here the pair is
-     near-black on a warm tint at 14:1.
-
-     The component rules that give this theme its character live further down,
-     all scoped to [data-theme="minimal"], so no other theme is touched. ──── */
-  [data-theme="minimal"] {
-    --shadow-color: 30 18% 22%;
-    --shadow-strength: 0.8;
-    --background:        40 14% 96.6%;
-    --foreground:        30 8% 12%;
-    --card:              40 20% 99.3%;
-    --card-foreground:   30 8% 12%;
-    --popover:           0 0% 100%;
-    --popover-foreground: 30 8% 12%;
-
-    --primary:           190 48% 26%;   /* white on it: 8.00 */
-    --primary-foreground: 0 0% 100%;
-    --primary-emphasis:  190 48% 24%;   /* link text — 8.82 on card */
-
-    --secondary:         40 14% 94.2%;
-    --secondary-foreground: 30 8% 16%;
-    --muted:             40 14% 93.8%;
-    --muted-foreground:  30 6% 37%;     /* 5.61 on muted, 6.29 on card */
-
-    --accent:            40 16% 93%;
-    --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
-
-    --destructive:       6 33.5% 38.8%;  /* white on it: 7.03 */
-    --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 6 60% 36%;  /* 7.83 on card */
-
-    --border:            36 10% 91.8%;  /* 1.17 on card */
-    --input:             36 10% 55%;    /* 3.14 on card — a visible field edge */
-    --ring:              190 48% 32%;   /* 5.75 on page */
-
-    color-scheme: light;
-  }
-
-  /* ── "minimal" ────────────────────────────────────────────────────────────
-     Light-first, near-monochrome on warm paper, one teal-ink accent.
+  /* ── "Mint" (id: minimal) ─────────────────────────────────────────────────
+     Windsurf's cream page and soft mint, on the same tone recipe as the
+     other accent themes. This block used to appear twice, verbatim; the
+     first copy was dead (the second always won) and is gone.
+     Light-first, near-monochrome on warm paper, one mint accent.
      Scoped to [data-theme="minimal"] so alliance/cofounder/system are untouched.
      Token names on this line: --primary-accessible / --destructive-accessible
      (Claude 803ddb2 used --primary-emphasis / --destructive-emphasis). ──── */
   [data-theme="minimal"] {
-    --background:        40 14% 96.6%;
-    --foreground:        30 8% 12%;
-    --card:              40 20% 99.3%;
+    --background:        40 57.1% 91.8%; /* Windsurf page #f6eede */
+    --foreground:        30 8% 11%;
+    --card:              37 57.1% 94.5%; /* Windsurf card #f9f3e9 */
     --card-foreground:   30 8% 12%;
     --popover:           0 0% 100%;
     --popover-foreground: 30 8% 12%;
 
-    --primary:           190 48% 26%;   /* white on it: 8.00 */
-    --primary-foreground: 0 0% 100%;
-    --primary-accessible:  190 48% 24%; /* link text — 8.82 on card */
-
-    --secondary:         40 14% 94.2%;
+    --secondary:         40 38% 89.4%;
     --secondary-foreground: 30 8% 16%;
-    --muted:             40 14% 93.8%;
-    --muted-foreground:  30 6% 37%;     /* 5.61 on muted, 6.29 on card */
+    --muted:             40 34% 88.8%;
+    --muted-foreground:  30 8% 33%;
 
-    --accent:            40 16% 93%;
+    --accent:            43 24.1% 82.9%;
     --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
 
     --destructive:       6 33.5% 38.8%;  /* white on it: 7.03 */
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 6 33.5% 38.8%; /* 6.92 on card */
 
-    --border:            36 10% 91.8%;  /* 1.17 on card */
-    --input:             36 10% 55%;    /* 3.14 on card — a visible field edge */
-    --ring:              190 48% 32%;   /* 5.75 on page */
+    --border:            38 30% 87.6%;  /* ~1.15 on card */
+    --input:             38 28% 86.2%;  /* ~1.19 on card — was 3.14, a drawn box */
 
     color-scheme: light;
   }
 
+  /* ── "Apricot" (id: apricot) — a soft orange on a warm neutral page, same
+     tone recipe. Destructive leans rose (350) so a delete never reads as
+     the brand. ── */
+  [data-theme="apricot"] {
+    --shadow-color: 24 30% 18%;
+    --shadow-strength: 1;
+    --background: 30 25% 95.5%;
+    --foreground: 24 10% 12%;
+    --card: 30 30% 98.4%;
+    --card-foreground: 24 10% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 10% 13%;
+    --secondary: 30 18% 93%;
+    --secondary-foreground: 24 10% 17%;
+    --muted: 30 18% 92.6%;
+    --muted-foreground: 26 8% 38%;
+    --accent: 30 22% 92.6%;            /* hover surface */
+    --accent-foreground: 24 10% 12%;
+    --destructive: 350 30% 42.6%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 350 33% 38.8%;
+    --border: 30 16% 92.6%;            /* ~1.13 on card */
+    --input: 30 16% 91%;               /* ~1.18 on card */
+    --gradient-hero: linear-gradient(hsl(24 14% 13%), hsl(24 14% 13%));
+    color-scheme: light;
+  }
+
   .role-founder {
-    --primary: 248 39% 56%;
+    --primary: 250 45.9% 59%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 248 30% 50%;
-    --accent: 248 39% 56%;
-    --accent-foreground: 0 0% 100%;
-    --ring: 248 39% 56%;
+    --primary-accessible: 250 40.7% 55%;
+    --primary-soft: 250 74% 82.6%;
+    --primary-soft-foreground: 250 30% 9.5%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 250 40.7% 55%;
   }
   html.dark.role-founder {
     --primary: 248 47% 76.6%;
     --primary-accessible: 248 50% 82%;
-    --accent: 248 47% 76.6%;
+    --accent: 232 14% 15.5%;
     --ring: 248 47% 76.6%;
     --primary-foreground: 248 32% 12%;
-    --accent-foreground: 248 32% 12%;
+    --accent-foreground: 220 10% 93%;
   }
 
   .role-mentor {
-    --primary: 190 40.5% 37%;
+    --primary: 190 45.9% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 190 46% 32.6%;
-    --accent: 190 40.5% 37%;
-    --accent-foreground: 0 0% 100%;
-    --ring: 190 40.5% 37%;
+    --primary-accessible: 190 40.7% 36.5%;
+    --primary-soft: 190 74% 58.7%;
+    --primary-soft-foreground: 190 30% 9.5%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 190 40.7% 36.5%;
   }
   html.dark.role-mentor {
     --primary: 190 28.5% 61.4%;
     --primary-accessible: 190 37.5% 76%;
-    --accent: 190 28.5% 61.4%;
+    --accent: 232 14% 15.5%;
     --ring: 190 28.5% 61.4%;
     --primary-foreground: 190 30% 10%;
-    --accent-foreground: 190 30% 10%;
+    --accent-foreground: 220 10% 93%;
   }
 
   .role-investor {
-    --primary: 32 39.5% 38%;
+    --primary: 32 45.9% 41%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 32 46% 32.6%;
-    --accent: 32 39.5% 38%;
-    --accent-foreground: 0 0% 100%;
-    --ring: 32 39.5% 38%;
+    --primary-accessible: 32 40.7% 39.25%;
+    --primary-soft: 32 74% 67%;
+    --primary-soft-foreground: 32 30% 9.5%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 32 40.7% 39.25%;
   }
   html.dark.role-investor {
     --primary: 32 28.5% 61.4%;
     --primary-accessible: 32 30% 70%;
-    --accent: 32 28.5% 61.4%;
+    --accent: 232 14% 15.5%;
     --ring: 32 28.5% 61.4%;
     --primary-foreground: 32 30% 10%;
-    --accent-foreground: 32 30% 10%;
+    --accent-foreground: 220 10% 93%;
   }
 
   .role-org {
-    --primary: 258 30% 50%;
+    --primary: 262 45.9% 57.75%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 258 37.5% 40%;
-    --accent: 258 30% 50%;
-    --accent-foreground: 0 0% 100%;
-    --ring: 258 30% 50%;
+    --primary-accessible: 262 40.7% 54.5%;
+    --primary-soft: 262 74% 81.8%;
+    --primary-soft-foreground: 262 30% 9.5%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 262 40.7% 54.5%;
   }
   html.dark.role-org {
     --primary: 258 35.5% 69%;
     --primary-accessible: 258 37.5% 76%;
-    --accent: 258 35.5% 69%;
+    --accent: 232 14% 15.5%;
     --ring: 258 35.5% 69%;
     --primary-foreground: 258 28% 12%;
-    --accent-foreground: 258 28% 12%;
+    --accent-foreground: 220 10% 93%;
+  }
+
+  /* ── Accent locks ──
+     A chosen accent theme outranks the role palette: `html[data-theme]`
+     (0,1,1) beats `.role-*` (0,1,0). Before this the role class quietly
+     replaced every named theme's primary, so picking a theme changed the
+     page and not the accent. The default light/dark themes keep the role
+     hues. Values from .probes/tone_solver.cjs. */
+  html[data-theme="alliance"] {
+    --primary: 212 44.3% 48.25%;
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 212 39.3% 45.5%;
+    --primary-soft: 212 71.4% 69.8%;           /* Cursor "Upgrade" #7bafe9 */
+    --primary-soft-foreground: 0 0% 9.4%;      /* its label, #181818 */
+    --accent: 210 10% 94%;
+    --accent-foreground: 220 15% 10%;
+    --ring: 212 39.3% 45.5%;
+  }
+  html[data-theme="minimal"] {
+    --primary: 165 49.4% 34.25%;
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 165 43.8% 31.5%;
+    --primary-soft: 165 79.6% 55.7%;           /* Windsurf "Download" #34e8bb */
+    --primary-soft-foreground: 168 18.5% 5.3%; /* its label, #0b100f */
+    --accent: 43 24.1% 82.9%;                  /* Windsurf active nav #ded8c9 */
+    --accent-foreground: 30 8% 11%;
+    --ring: 165 43.8% 31.5%;
+  }
+  html[data-theme="apricot"] {
+    --primary: 23 50.5% 44%;
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible: 23 44.8% 41.5%;
+    --primary-soft: 23 81.4% 68.4%;            /* Windsurf quota bar #f09f6d */
+    --primary-soft-foreground: 20 30% 9%;
+    --accent: 30 22% 92.6%;
+    --accent-foreground: 24 10% 12%;
+    --ring: 23 44.8% 41.5%;
+  }
+  /* Dark surfaces already fill with a pastel and a dark label, so the soft
+     fill is the primary itself there. */
+  html.dark,
+  html[data-theme="cofounder"],
+  html[data-theme="system"] {
+    --primary-soft: var(--primary);
+    --primary-soft-foreground: var(--primary-foreground);
   }
 
   /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)
@@ -426,34 +473,90 @@ html {
        carries ~30 chroma, every status tone ~21, the page itself ~5. A
        chip tells you what a thing is; it is not competing to be read
        first, which is why cursor.com's deltas never shout either. */
-    --status-success-fg:     145 35% 30%;
-    --status-success-bg:     145 10% 95%  ;
-    --status-success-border: 145 5% 86% ;
-    /* Bronze, not yellow-gold: hue 32 sits with charcoal and grey. It
-       carries the same chroma as the other five tones now — an amber
-       that reads lighter than a red told people the red mattered more,
-       when both are only labels. */
-    --status-warning-fg:     32 27.5% 38.2%;
-    --status-warning-bg:     32 12.5% 96%;
-    --status-warning-border: 32 5.5% 87.3%;
-    --status-danger-fg:      4 25% 42%;
-    --status-danger-bg:      4 13.5% 96.3%;
-    --status-danger-border:  4 5% 86% ;
-    /* Helper blue — extra colour only (e.g. readiness “Good”). */
-    --status-info-fg:        217 29% 36.2%;
-    --status-info-bg:        217 10% 95%;
-    --status-info-border:    217 5% 86% ;
-    /* Was 248 31% 54%: 28.5 chroma, the one status tone left inside the
-       brand band — a lilac chip beside a lilac button read as a second
-       primary. Levelled to the status band like the other five, and it
-       clears AA by a margin now instead of by 0.11 (4.61 -> 5.64 on its
-       own tint, 6.09 on a card). */
-    --status-accent-fg:      248 22.8% 46%;
-    --status-accent-bg:      248 13.5% 96.3%;
-    --status-accent-border:  248 6.5% 89.2%;
-    --status-neutral-fg:     232 6% 45%;
-    --status-neutral-bg:     232 6% 95%  ;
-    --status-neutral-border: 232 4.5% 90%;
+    --status-success-fg: 158 30.4% 34.5%;   /* 5.04 on tint, 5.44 on card */
+    --status-success-bg: 158 11.4% 95.6%;
+    --status-success-border: 158 6% 90.6%;
+    --status-warning-fg: 36 27.8% 37.75%;   /* 5.01 on tint, 5.43 on card */
+    --status-warning-bg: 36 11.4% 95.6%;
+    --status-warning-border: 36 6% 90.6%;
+    --status-danger-fg:  4 23.5% 44.75%;   /* 5.04 on tint, 5.50 on card */
+    --status-danger-bg:  4 11.4% 95.6%;
+    --status-danger-border: 4 6% 90.6%;
+    --status-info-fg:    212 24.7% 42.5%;   /* 5.01 on tint, 5.46 on card */
+    --status-info-bg:    212 11.4% 95.6%;
+    --status-info-border: 212 6% 90.6%;
+    --status-accent-fg:  250 21.6% 48.5%;   /* 5.02 on tint, 5.50 on card */
+    --status-accent-bg:  250 11.4% 95.6%;
+    --status-accent-border: 250 6% 90.6%;
+    --status-neutral-fg:     232 6% 40%;
+    --status-neutral-bg:     232 6% 95.0%;
+    --status-neutral-border: 232 4.5% 91.0%;
+  }
+
+  /* Each accent theme moves the one status hue that would collide with its
+     own accent (mint pushes success to leaf green, apricot pushes warning
+     to ochre and danger to rose, cyan pushes info to blue) and tints
+     `status-accent` with its own hue. Same band: fg chroma 21, >=5:1 on
+     its tint and on the card (.probes/status_solver.cjs). */
+  html[data-theme="alliance"] {
+    --status-success-fg: 158 30.4% 34.5%;   /* 5.04 on tint, 5.45 on card */
+    --status-success-bg: 158 11.4% 95.6%;
+    --status-success-border: 158 6% 90.6%;
+    --status-warning-fg: 36 27.8% 37.75%;   /* 5.01 on tint, 5.43 on card */
+    --status-warning-bg: 36 11.4% 95.6%;
+    --status-warning-border: 36 6% 90.6%;
+    --status-danger-fg:  4 23.5% 44.75%;   /* 5.04 on tint, 5.51 on card */
+    --status-danger-bg:  4 11.4% 95.6%;
+    --status-danger-border: 4 6% 90.6%;
+    --status-info-fg:    232 22.2% 47.25%;   /* 5.04 on tint, 5.52 on card */
+    --status-info-bg:    232 11.4% 95.6%;
+    --status-info-border: 232 6% 90.6%;
+    --status-accent-fg:  212 24.7% 42.5%;   /* 5.01 on tint, 5.47 on card */
+    --status-accent-bg:  212 11.4% 95.6%;
+    --status-accent-border: 212 6% 90.6%;
+    --status-neutral-fg:     210 6% 40%;
+    --status-neutral-bg:     210 6% 95.0%;
+    --status-neutral-border: 210 4.5% 91.0%;
+  }
+  html[data-theme="minimal"] {
+    --status-success-fg: 135 32.6% 32.25%;   /* 5.03 on tint, 5.52 on card */
+    --status-success-bg: 135 17% 90.6%;
+    --status-success-border: 135 6% 85.6%;
+    --status-warning-fg: 36 30.2% 34.75%;   /* 5.05 on tint, 5.58 on card */
+    --status-warning-bg: 36 17% 90.6%;
+    --status-warning-border: 36 6% 85.6%;
+    --status-danger-fg:  4 25.3% 41.5%;   /* 5.01 on tint, 5.71 on card */
+    --status-danger-bg:  4 17% 90.6%;
+    --status-danger-border: 4 6% 85.6%;
+    --status-info-fg:    212 26.8% 39.25%;   /* 5.04 on tint, 5.67 on card */
+    --status-info-bg:    212 17% 90.6%;
+    --status-info-border: 212 6% 85.6%;
+    --status-accent-fg:  165 33.1% 31.75%;   /* 5.02 on tint, 5.50 on card */
+    --status-accent-bg:  165 17% 90.6%;
+    --status-accent-border: 165 6% 85.6%;
+    --status-neutral-fg:     38 6% 40%;
+    --status-neutral-bg:     38 6% 90.0%;
+    --status-neutral-border: 38 4.5% 86.0%;
+  }
+  html[data-theme="apricot"] {
+    --status-success-fg: 158 30.9% 34%;   /* 5.02 on tint, 5.44 on card */
+    --status-success-bg: 158 9.3% 94.6%;
+    --status-success-border: 158 6% 89.6%;
+    --status-warning-fg: 46 30.2% 34.75%;   /* 5.01 on tint, 5.43 on card */
+    --status-warning-bg: 46 9.3% 94.6%;
+    --status-warning-border: 46 6% 89.6%;
+    --status-danger-fg:  350 23.5% 44.75%;   /* 5.04 on tint, 5.53 on card */
+    --status-danger-bg:  350 9.3% 94.6%;
+    --status-danger-border: 350 6% 89.6%;
+    --status-info-fg:    212 25.1% 41.75%;   /* 5.04 on tint, 5.51 on card */
+    --status-info-bg:    212 9.3% 94.6%;
+    --status-info-border: 212 6% 89.6%;
+    --status-accent-fg:  23 26.3% 40%;   /* 5.04 on tint, 5.49 on card */
+    --status-accent-bg:  23 9.3% 94.6%;
+    --status-accent-border: 23 6% 89.6%;
+    --status-neutral-fg:     30 6% 40%;
+    --status-neutral-bg:     30 6% 94.0%;
+    --status-neutral-border: 30 4.5% 90.0%;
   }
 
   .dark,
@@ -1088,7 +1191,7 @@ html {
   
   /* A field's edge is `--input`, the one boundary firmer than a card's. */
   .input-clean {
-    @apply border-input hover:border-foreground/20;
+    @apply border-input hover:border-foreground/15;
   }
   
   /* Text improvements */
@@ -1629,6 +1732,8 @@ html {
      that colour too". */
   .text-primary-foreground .bilingual-secondary,
   .text-primary-foreground .bilingual-separator,
+  .text-primary-soft-foreground .bilingual-secondary,
+  .text-primary-soft-foreground .bilingual-separator,
   .text-secondary-foreground .bilingual-secondary,
   .text-secondary-foreground .bilingual-separator,
   .text-destructive-foreground .bilingual-secondary,
@@ -1651,6 +1756,7 @@ html {
      `text-foreground` rather than a `*-foreground` pair. Size still carries
      the hierarchy the muted colour was providing. */
   .text-primary-foreground .text-muted-foreground,
+  .text-primary-soft-foreground .text-muted-foreground,
   .text-secondary-foreground .text-muted-foreground,
   .text-destructive-foreground .text-muted-foreground,
   .text-accent-foreground .text-muted-foreground {
@@ -2772,8 +2878,11 @@ a[class~="inline-flex"][class~="border-border"]:hover {
   border-color: hsl(var(--foreground) / 0.12);
 }
 button.bg-primary,
+button.bg-primary-soft,
 button.bg-destructive,
 [data-slot="button"].bg-primary,
+[data-slot="button"].bg-primary-soft,
+a[class~="inline-flex"].bg-primary-soft,
 [data-slot="button"].bg-destructive,
 a[class~="inline-flex"].bg-primary,
 a[class~="inline-flex"].bg-destructive {
@@ -2844,4 +2953,17 @@ a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.lucide
 }
 #main-content [role="progressbar"] > * {
   background-color: hsl(var(--foreground) / 0.22);
+}
+
+/* ── Fields: a whisper at rest, the accent while typing ──────────────────
+   --input sits at the card's own hairline (~1.18), so a field at rest is
+   found by its fill, label and placeholder, as on windsurf.com. While it has
+   focus the edge takes the theme's link tone (>=4.6:1 on the page), on top
+   of the 2px keyboard outline, so the field being typed into is never in
+   doubt. Pointer focus gets the edge alone: no frame inside a frame. */
+input[class~="border-input"]:focus,
+textarea[class~="border-input"]:focus,
+[role="combobox"][class~="border-input"]:focus,
+[role="combobox"][class~="border-input"][data-state="open"] {
+  border-color: hsl(var(--ring));
 }
