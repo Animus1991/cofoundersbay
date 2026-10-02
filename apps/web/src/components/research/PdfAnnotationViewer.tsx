@@ -136,7 +136,7 @@ export function PdfAnnotationViewer({
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Previous page"
           >
             <ChevronLeft className="icon-sm" />
@@ -160,7 +160,7 @@ export function PdfAnnotationViewer({
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={totalPages !== null && currentPage >= totalPages}
-            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30"
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Next page"
           >
             <ChevronRight className="icon-sm" />

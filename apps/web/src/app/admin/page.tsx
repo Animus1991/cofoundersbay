@@ -819,7 +819,7 @@ export default function AdminPage() {
             type="button"
             onClick={exportAuditLogCSV}
             disabled={!auditData?.logs?.length}
-            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:opacity-50"
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="icon-sm shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1"><BilingualText en="Export audit log (CSV)" el="Εξαγωγή αρχείου ελέγχου (CSV)" compact wrap /></span>

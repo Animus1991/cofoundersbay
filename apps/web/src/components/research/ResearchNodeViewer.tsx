@@ -432,7 +432,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? 'Saving…' : 'Save'}
               </button>

@@ -301,7 +301,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
           <button
             onClick={() => void submit()}
             disabled={loading}
-            className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating…' : 'Create'}
           </button>
@@ -427,7 +427,7 @@ function ConfigEditor() {
                 <button
                   disabled={saving === cfg.key}
                   onClick={() => void save(cfg)}
-                  className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-status-accent-bg text-status-accent rounded-lg hover:bg-status-accent-bg disabled:opacity-50"
+                  className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-status-accent-bg text-status-accent rounded-lg hover:bg-status-accent-bg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="icon-sm" />
                   {saving === cfg.key ? 'Saving…' : 'Save'}

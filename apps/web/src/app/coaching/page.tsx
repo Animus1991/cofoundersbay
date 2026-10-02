@@ -376,7 +376,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
                       type="button"
                       disabled={rate.isPending}
                       onClick={() => rate.mutate(score)}
-                      className="rounded-sm p-0.5 text-muted-foreground transition-colors hover:text-status-warning focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50"
+                      className="rounded-sm p-0.5 text-muted-foreground transition-colors hover:text-status-warning focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={bilingualAria(`${score} of 5`, `${score} από 5`)}
                     >
                       <Star className="icon-sm" aria-hidden="true" />

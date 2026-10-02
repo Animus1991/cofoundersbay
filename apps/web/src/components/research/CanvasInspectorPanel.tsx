@@ -277,7 +277,7 @@ export function CanvasInspectorPanel({
                 disabled={idle}
                 title={bilingualAria(row.en, row.el)}
                 onClick={() => onDocFormat(row.format)}
-                className="h-7 min-w-7 rounded-lg px-1.5 text-2xs font-semibold text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-40"
+                className="h-7 min-w-7 rounded-lg px-1.5 text-2xs font-semibold text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {row.mark}
               </button>

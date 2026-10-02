@@ -249,7 +249,7 @@ export function BoardSummaryPanel({
                   <button
                     onClick={() => analyzeMutation.mutate()}
                     disabled={analyzeMutation.isPending}
-                    className="h-6 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground text-2xs font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
+                    className="h-6 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground text-2xs font-medium transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <RefreshCw className={cn('icon-sm', analyzeMutation.isPending && 'animate-spin')} />
                     Regenerate

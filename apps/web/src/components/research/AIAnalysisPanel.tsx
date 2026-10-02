@@ -654,7 +654,7 @@ export function AIAnalysisPanel({
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } }}
                   placeholder={bilingualInline("Ask about your research…", "Ρωτήστε για την έρευνά σας…")}
                   disabled={loading}
-                  className="flex-1 bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors disabled:opacity-50"
+                  className="flex-1 bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   type="button"

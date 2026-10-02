@@ -161,7 +161,7 @@ export function RichTextEditor({
                 disabled={disabled}
                 onMouseDown={(e) => { e.preventDefault(); exec(btn.command, btn.arg); }}
                 className={cn(
-                  'p-1.5 rounded-md hover:bg-accent transition-colors disabled:opacity-40',
+                  'p-1.5 rounded-md hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
                   isActive(btn.command) && 'bg-accent text-accent-foreground',
                 )}
               >
@@ -176,7 +176,7 @@ export function RichTextEditor({
           title="Insert Link"
           disabled={disabled}
           onMouseDown={(e) => { e.preventDefault(); openLinkDialog(); }}
-          className="p-1.5 rounded-md hover:bg-accent transition-colors disabled:opacity-40"
+          className="p-1.5 rounded-md hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Link2 className="icon-sm" />
         </button>
