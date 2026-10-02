@@ -214,7 +214,7 @@ function PostCard({
     <Card
       id={`post-${post.id}`}
       tabIndex={-1}
-      className="overflow-hidden shadow-sm border-border hover:shadow-md transition-shadow scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
+      className="overflow-hidden shadow-sm border-border hover:border-primary/30 transition-colors scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
     >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">

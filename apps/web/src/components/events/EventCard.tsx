@@ -115,7 +115,7 @@ export function EventCard({
 
   if (variant === 'compact') {
     return (
-      <Card className={cn('group hover:shadow-md transition-shadow', className)}>
+      <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
         <CardContent className="p-4">
           <div className="flex gap-4">
             {/* Date box */}
@@ -308,7 +308,7 @@ export function EventCard({
 
   // Default variant
   return (
-    <Card className={cn('group hover:shadow-md transition-shadow', className)}>
+    <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
       <CardContent className="pt-5">
         <div className="flex gap-4">
           {/* Date box */}

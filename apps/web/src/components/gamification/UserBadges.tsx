@@ -292,7 +292,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                 <Card 
                   key={badge.id} 
                   className={cn(
-                    'relative overflow-hidden transition-all hover:shadow-lg',
+                    'relative overflow-hidden transition-all hover:border-primary/30',
                     badge.earned && 'border-primary/50',
                     !badge.earned && 'opacity-75'
                   )}

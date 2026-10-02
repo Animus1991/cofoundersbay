@@ -254,7 +254,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
   useEffect(() => setAlertsEnabled(startup.alertsEnabled), [startup.alertsEnabled]);
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/20">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 rounded-lg shrink-0">

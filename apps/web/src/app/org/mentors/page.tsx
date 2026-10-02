@@ -95,7 +95,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
   const statusColors = STATUS[MENTOR_STATUS_TONE[mentor.status]];
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Link href={`/p/${mentor.userId}`}>

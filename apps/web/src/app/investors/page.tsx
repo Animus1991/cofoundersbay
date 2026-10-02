@@ -231,7 +231,7 @@ function InvestorCard({
   ].filter(Boolean) as { key: string; icon: typeof Briefcase; en: string; el: string }[];
 
   return (
-    <Card className="group transition-all hover:border-primary/20 hover:shadow-md">
+    <Card className="group transition-all hover:border-primary/30">
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <Avatar className="h-11 w-11 shrink-0 rounded-lg">

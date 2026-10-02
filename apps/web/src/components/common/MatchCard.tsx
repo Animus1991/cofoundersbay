@@ -151,7 +151,7 @@ function MatchCardInner({
     <Card
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
-        'hover:shadow-lg',
+        'hover:border-primary/30',
         isSelected && 'ring-2 ring-primary ring-offset-1',
         onClick && 'cursor-pointer',
         className

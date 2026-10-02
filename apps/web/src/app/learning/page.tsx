@@ -271,7 +271,7 @@ function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (c
     <button
       type="button"
       onClick={() => onSelect(path.category)}
-      className={cn('relative rounded-xl border p-4 text-left transition-all hover:shadow-md', path.color)}
+      className={cn('relative rounded-xl border p-4 text-left transition-all hover:border-primary/30', path.color)}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-background/60')}>

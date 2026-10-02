@@ -193,7 +193,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
   const fillColor = fill >= 90 ? STATUS.danger.icon : fill >= 70 ? STATUS.warning.icon : STATUS.success.icon;
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/20">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">

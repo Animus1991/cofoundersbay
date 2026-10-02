@@ -227,7 +227,7 @@ export function SmartRecommendations() {
       {/* Recommendations Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {filteredRecommendations.map((rec) => (
-          <Card key={rec.id} className="relative overflow-hidden hover:shadow-lg transition-shadow">
+          <Card key={rec.id} className="relative overflow-hidden hover:border-primary/30 transition-colors">
             {/* Match Score Badge */}
             <div className="absolute top-4 right-4 z-10">
               <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary-accessible border-primary/20">

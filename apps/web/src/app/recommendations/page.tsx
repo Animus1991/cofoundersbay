@@ -289,7 +289,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
       explanation={explanation}
       reasons={reasons}
     />
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:border-primary/30 transition-colors">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>

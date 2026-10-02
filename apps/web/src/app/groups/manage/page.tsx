@@ -85,7 +85,7 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
   const PrivacyIcon = privacyCfg.icon;
 
   return (
-    <Card className={cn('transition-all hover:shadow-md hover:border-primary/20', !group.isActive && 'surface-inactive')}>
+    <Card className={cn('transition-all hover:border-primary/30', !group.isActive && 'surface-inactive')}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">

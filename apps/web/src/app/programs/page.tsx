@@ -235,7 +235,7 @@ function ProgramCard({
   const isFull = spotsLeft !== null && spotsLeft <= 0;
 
   return (
-    <Card className={cn('transition-all hover:shadow-md hover:border-primary/30 group', isEnrolled && 'border-primary/40 bg-primary/2')}>
+    <Card className={cn('transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40 bg-primary/2')}>
       <CardContent className="p-5">
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border">

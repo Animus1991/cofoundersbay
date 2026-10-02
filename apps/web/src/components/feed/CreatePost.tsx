@@ -98,7 +98,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
       {/* Collapsed view */}
       <Card
         className={cn(
-          'cursor-pointer transition-shadow hover:shadow-md',
+          'cursor-pointer transition-colors hover:border-primary/30',
           isExpanded && 'hidden'
         )}
         onClick={() => setIsExpanded(true)}

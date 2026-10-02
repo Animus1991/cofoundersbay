@@ -282,7 +282,7 @@ function MatchListRow({
   const initials = hit.displayName.slice(0, 2).toUpperCase();
 
   return (
-    <Card className="shadow-sm border-border hover:shadow-md transition-all group">
+    <Card className="shadow-sm border-border hover:border-primary/30 transition-all group">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Score ring + avatar */}

@@ -136,7 +136,7 @@ type MemberActions = {
 
 function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberActions) {
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">

@@ -599,7 +599,7 @@ function RoleStep({ selectedRole, onSelect }: { selectedRole: string; onSelect: 
                 key={key}
                 onClick={() => onSelect(key)}
                 className={cn(
-                  'p-6 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md',
+                  'p-6 rounded-lg border-2 cursor-pointer transition-colors hover:border-primary/30',
                   selectedRole === key
                     ? 'border-primary bg-primary/5'
                     : 'border-border hover:border-primary/50'

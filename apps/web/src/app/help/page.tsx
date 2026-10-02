@@ -542,7 +542,7 @@ export default function HelpPage() {
         {/* Quick Links */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link href="/terms" className="group">
-            <Card className="h-full shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h3>
@@ -551,7 +551,7 @@ export default function HelpPage() {
             </Card>
           </Link>
           <Link href="/privacy" className="group">
-            <Card className="h-full shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h3>
@@ -560,7 +560,7 @@ export default function HelpPage() {
             </Card>
           </Link>
           <Link href="/settings" className="group">
-            <Card className="h-full shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Account Settings" el="Ρυθμίσεις λογαριασμού" compact /></h3>

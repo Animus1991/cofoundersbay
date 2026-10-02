@@ -168,7 +168,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
             { icon: Sparkles, title: 'AI Matching', desc: 'Smart compatibility scoring for better teams' },
             { icon: Shield, title: 'Trusted Network', desc: 'Verified profiles and moderated community' },
           ].map((f) => (
-            <Card key={f.title} className="text-center border-border hover:shadow-md transition-shadow">
+            <Card key={f.title} className="text-center border-border hover:border-primary/30 transition-colors">
               <CardContent className="pt-6 pb-6">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                   <f.icon className="h-6 w-6 text-primary-accessible" />

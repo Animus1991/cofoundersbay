@@ -119,7 +119,7 @@ function ProgramCard({ program }: { program: Program }) {
   const statusColors = STATUS[ORG_PROGRAM_STATUS_TONE[program.status]];
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">

@@ -133,7 +133,7 @@ function BadgeCard({ badge, primary }: { badge: Badge; primary: 'en' | 'el' }) {
   const rarityLabel = REPUTATION_STRINGS[`rarity_${rarity}` as Key] ?? { en: badge.rarity, el: badge.rarity };
   const isNew = !badge.seenAt;
   return (
-    <Card className={cn('relative overflow-hidden transition-shadow hover:shadow-md', isNew && 'ring-1 ring-primary/40')}>
+    <Card className={cn('relative overflow-hidden transition-colors hover:border-primary/30', isNew && 'ring-1 ring-primary/40')}>
       <CardContent className="flex gap-3 p-4">
         <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', RARITY_TONE[rarity] ?? RARITY_TONE.common)}>
           <Trophy className="icon-md" aria-hidden />

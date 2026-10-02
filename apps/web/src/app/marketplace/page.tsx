@@ -144,7 +144,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
   return (
     <Card className={cn(
-      'group flex flex-col transition-all hover:shadow-md hover:border-primary/20',
+      'group flex flex-col transition-all hover:border-primary/30',
       featured && 'border-primary/15 bg-primary/[0.03]',
       !provider.isAvailable && 'surface-inactive',
     )}>

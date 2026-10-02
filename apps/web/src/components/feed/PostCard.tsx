@@ -124,7 +124,7 @@ export function PostCard({
   };
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:border-primary/30 transition-colors">
       <CardContent className="pt-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">

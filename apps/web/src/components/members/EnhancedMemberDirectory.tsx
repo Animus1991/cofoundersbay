@@ -326,7 +326,7 @@ export function EnhancedMemberDirectory() {
         viewMode === 'grid' ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
       )}>
         {filteredMembers.map((member) => (
-          <Card key={member.id} className="hover:shadow-lg transition-shadow">
+          <Card key={member.id} className="hover:border-primary/30 transition-colors">
             <CardContent className="pt-6">
               <div className={cn(
                 "flex gap-4",

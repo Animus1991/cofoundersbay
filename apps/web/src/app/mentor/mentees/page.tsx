@@ -56,7 +56,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
     year: 'numeric' });
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Link href={`/p/${relationship.menteeId}`}>

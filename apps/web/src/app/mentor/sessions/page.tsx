@@ -69,7 +69,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
   });
 
   return (
-    <Card className="transition-all hover:shadow-md">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-3 sm:gap-4">
           <div className="flex min-w-[3.5rem] flex-col items-center justify-center self-start rounded-lg bg-primary/5 p-2">

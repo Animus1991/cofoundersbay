@@ -43,14 +43,17 @@ CardDescription.displayName = 'CardDescription';
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('card-comfortable pt-0', className)} {...props} />
+    /* No pt-0 here: call-site utilities lose to .card-comfortable in source
+       order, so a lone content would still render its top padding anyway and
+       the header→body seam is owned by the sibling rule in globals.css. */
+    <div ref={ref} className={cn('card-comfortable', className)} {...props} />
   ),
 );
 CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center card-comfortable pt-0', className)} {...props} />
+    <div ref={ref} className={cn('flex items-center card-comfortable', className)} {...props} />
   ),
 );
 CardFooter.displayName = 'CardFooter';

@@ -128,7 +128,7 @@ export function ActivityFeed() {
         const Icon = config.icon;
 
         return (
-          <Card key={activity.id} className="hover:shadow-lg transition-shadow">
+          <Card key={activity.id} className="hover:border-primary/30 transition-colors">
             <CardContent className="p-6">
               <div className="flex gap-4">
                 <Avatar className="h-12 w-12">

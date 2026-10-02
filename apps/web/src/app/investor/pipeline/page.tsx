@@ -84,7 +84,7 @@ type DealActions = {
 function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
   const next = nextStage(deal.pipelineStage);
   return (
-    <div className="p-3 rounded-lg border bg-card hover:shadow-md transition-all cursor-pointer group">
+    <div className="p-3 rounded-lg border bg-card hover:border-primary/30 transition-colors cursor-pointer group">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 rounded-lg">
           <AvatarImage src={deal.logoUrl} />

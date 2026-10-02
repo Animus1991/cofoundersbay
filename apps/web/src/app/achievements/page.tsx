@@ -273,7 +273,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     <Card
       className={cn(
         'transition-all shadow-sm border-border',
-        achievement.unlocked && 'hover:shadow-md'
+        achievement.unlocked && 'hover:border-primary/30'
       )}
     >
       <CardContent className="p-5">

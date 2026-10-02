@@ -118,7 +118,7 @@ const COHORT_STATUS_TONE: Record<Cohort['status'], StatusTone> = {
 function CohortCard({ cohort }: { cohort: Cohort }) {
   const statusColors = STATUS[COHORT_STATUS_TONE[cohort.status]];
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">

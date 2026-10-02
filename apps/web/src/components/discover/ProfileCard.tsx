@@ -141,7 +141,7 @@ function ProfileCardInner({
 
   if (variant === 'compact') {
     return (
-      <Card className={cn('group hover:shadow-md transition-shadow', className)}>
+      <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <Link href={`/profiles/${profile.userId}`}>
@@ -367,7 +367,7 @@ function ProfileCardInner({
 
   // Default variant
   return (
-    <Card className={cn('group hover:shadow-md transition-all hover:-translate-y-0.5', className)}>
+    <Card className={cn('group hover:border-primary/30 transition-all hover:-translate-y-0.5', className)}>
       <CardContent className="pt-5">
         {/* Header */}
         <div className="flex items-start gap-3">

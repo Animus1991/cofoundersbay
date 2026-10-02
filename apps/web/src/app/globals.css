@@ -1880,6 +1880,10 @@ html {
     .card-comfortable.card-header { padding-bottom: calc(16px * var(--chrome-y)); }
   }
 
+  /* (The header→body seam and the explicit-zero overrides live unlayered at
+     the bottom of this file — unlayered rules always beat layered ones, and
+     the [data-theme="minimal"] block below is unlayered too.) */
+
   /* ── The same padding, in the pixels it claims ──
      `p-6` is 24px everywhere but the desktop app, where the 82% root renders
      it 19.68px — so the roomier desktop rhythm this comment describes was the
@@ -3015,3 +3019,18 @@ textarea[class~="border-input"]:focus,
 [role="combobox"][class~="border-input"][data-state="open"] {
   border-color: hsl(var(--ring));
 }
+
+/* ── Explicit zeros win ─────────────────────────────────────────────────
+   `p-0`/`px-0`/`pt-0` on a card part used to lose twice: `.card-comfortable`
+   is emitted after Tailwind's utilities in the same layer, and the
+   [data-theme="minimal"] block above is unlayered, so ~30 call sites that
+   asked for a flush table or a full-bleed video got 24–28px of padding on
+   every side anyway. A zero is an explicit decision — "this content reaches
+   the edge" — not a density preference, so unlike the `pb-*` seam it must
+   beat the standard in every theme. Unlayered, at the end of the sheet, at
+   (0,2,0) so it also settles against the rail's tighter padding. */
+.card-comfortable.p-0, .card-compact.p-0 { padding: 0; }
+.card-comfortable.px-0, .card-compact.px-0 { padding-left: 0; padding-right: 0; }
+.card-comfortable.py-0, .card-compact.py-0 { padding-top: 0; padding-bottom: 0; }
+.card-comfortable.pt-0, .card-compact.pt-0 { padding-top: 0; }
+.card-comfortable.pb-0, .card-compact.pb-0 { padding-bottom: 0; }

@@ -76,7 +76,7 @@ function InquiryCard({
   const StatusIcon = config.icon;
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-3 sm:gap-4">
           <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">

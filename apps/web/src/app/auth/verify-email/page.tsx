@@ -105,7 +105,7 @@ export default function VerifyEmailPage() {
           </Link>
         </div>
 
-        <Card className="border-border shadow-lg">
+        <Card className="border-border">
           {status === 'loading' && (
             <>
               <CardHeader className="text-center pb-2">
