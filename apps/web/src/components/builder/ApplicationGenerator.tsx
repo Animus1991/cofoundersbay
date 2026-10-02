@@ -409,11 +409,17 @@ export function ApplicationGenerator({
                           size="sm"
                           className={BUILDER_BTN}
                           onClick={() => copyToClipboard(question.answer, question.id)}
+                          aria-label={copiedId === question.id
+                            ? bilingualAria('Answer copied', 'Η απάντηση αντιγράφηκε')
+                            : bilingualAria('Copy this answer', 'Αντιγραφή απάντησης')}
+                          title={copiedId === question.id
+                            ? bilingualAria('Answer copied', 'Η απάντηση αντιγράφηκε')
+                            : bilingualAria('Copy this answer', 'Αντιγραφή απάντησης')}
                         >
                           {copiedId === question.id ? (
-                            <CheckCircle2 className="icon-sm text-status-success" />
+                            <CheckCircle2 className="icon-sm text-status-success" aria-hidden="true" />
                           ) : (
-                            <Copy className="icon-sm" />
+                            <Copy className="icon-sm" aria-hidden="true" />
                           )}
                         </Button>
                       )}
