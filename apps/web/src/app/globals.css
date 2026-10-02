@@ -424,7 +424,7 @@ html {
      page and not the accent. The default light/dark themes keep the role
      hues. Values from .probes/tone_solver.cjs. */
   html[data-theme="alliance"] {
-    --primary: 212 71.4% 69.8%;           /* Cursor "Upgrade" #7bafe9 */
+    --primary: 212 71.4% 72.5%;           /* Cursor "Upgrade" #7bafe9, a touch lighter */
     --primary-foreground: 0 0% 9.4%;      /* its label, #181818 */
     --primary-mid: 212 44.3% 48.25%;          /* tints only (/5../40) */
     --primary-accessible: 212 39.3% 45.5%;
@@ -433,7 +433,7 @@ html {
     --ring: 212 39.3% 45.5%;
   }
   html[data-theme="minimal"] {
-    --primary: 165 79.6% 55.7%;           /* Windsurf "Download" #34e8bb */
+    --primary: 165 79.6% 52.7%;           /* Windsurf "Download" #34e8bb, a touch deeper */
     --primary-foreground: 168 18.5% 5.3%; /* its label, #0b100f */
     --primary-mid: 165 49.4% 34.25%;          /* tints only (/5../40) */
     --primary-accessible: 165 43.8% 31.5%;
@@ -442,7 +442,7 @@ html {
     --ring: 165 43.8% 31.5%;
   }
   html[data-theme="apricot"] {
-    --primary: 23 81.4% 68.4%;            /* Windsurf quota bar #f09f6d */
+    --primary: 23 81.4% 65.2%;            /* Windsurf quota bar #f09f6d, a touch deeper */
     --primary-foreground: 20 30% 9%;
     --primary-mid: 23 50.5% 44%;              /* tints only (/5../40) */
     --primary-accessible: 23 44.8% 41.5%;
