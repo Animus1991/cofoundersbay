@@ -60,6 +60,7 @@ import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
 import { currentRailSections, openCurrentRailSection } from '@/components/layout/PageRailContext';
 import { runPageControl } from '@/lib/page-controls';
+import { FORM_DRAFT_ROUTES, stashFormDraft, type FormDraftId } from '@/lib/form-draft';
 
 /**
  * The web app's half of the capability contract.
@@ -592,7 +593,34 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     await respondToMentorRequest(requestId, { accept: decision === 'accept' });
     return { ok: true, href: '/mentor/requests' };
   },
+
+  // ── Wave D: forms as proposals ───────────────────────────────────────────
+  // Each stashes the fields for its form and opens it; the form fills itself
+  // and the person submits. Nothing here calls a write endpoint.
+  draft_milestone: async (payload) => openDraft('milestone', payload, ['title', 'description', 'dueDate', 'category', 'priority', 'notes'], 'title'),
+  draft_event: async (payload) => openDraft('event', payload, ['title', 'description', 'type', 'startAt', 'endAt', 'location', 'isOnline'], 'title'),
+  draft_project: async (payload) => openDraft('project', payload, ['name', 'tagline', 'description', 'industry', 'location', 'website'], 'name'),
+  draft_profile: async (payload) => openDraft('profile', payload, ['headline', 'bio', 'displayName', 'location', 'websiteUrl', 'linkedinUrl'], null),
 };
+
+/** Copies the declared fields (and only those) into a draft and opens its form. */
+async function openDraft(
+  id: FormDraftId,
+  payload: Record<string, unknown>,
+  keys: readonly string[],
+  required: string | null,
+): Promise<ActionOutcome> {
+  const fields: Record<string, string | boolean> = {};
+  for (const key of keys) {
+    const value = payload?.[key];
+    if (typeof value === 'string' && value.trim()) fields[key] = value.trim();
+    else if (typeof value === 'boolean') fields[key] = value;
+  }
+  if (required && !fields[required]) return { ok: false, error: `Missing ${required}` };
+  if (Object.keys(fields).length === 0) return { ok: false, error: 'Nothing to fill in' };
+  stashFormDraft(id, fields);
+  return { ok: true, href: FORM_DRAFT_ROUTES[id] };
+}
 
 /**
  * A group by id, or by exact name. Leaving looks only at the groups the

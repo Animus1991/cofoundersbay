@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectionsForMode, type SidebarMode } from './nav-modes';
@@ -43,7 +43,51 @@ export function SideNav() {
   // Between `sm` and `lg` the aside is a fixed 68px rail, so it renders its
   // collapsed contents regardless of the stored preference; the preference
   // still governs from `lg` up, where the 240px drawer fits.
-  const showLabels = expanded && !isRail;
+  const pinnedLabels = expanded && !isRail;
+
+  /*
+   * Hover peek, the same gesture the page rail on the right answers to. A
+   * collapsed sidebar (or the tablet rail) widens to the full drawer while a
+   * mouse rests on it, over the page rather than pushing it, and folds back
+   * when the pointer leaves, on Escape, or on navigation. The edge button
+   * still pins it open for good. Touch and pen taps do not peek: on a tablet
+   * a tap is a choice, and a drawer opening under the finger would steal it.
+   */
+  const [peeking, setPeeking] = useState(false);
+  const peekTimer = useRef<number | null>(null);
+  const clearPeekTimer = useCallback(() => {
+    if (peekTimer.current !== null) {
+      window.clearTimeout(peekTimer.current);
+      peekTimer.current = null;
+    }
+  }, []);
+  const startPeek = useCallback((event: React.PointerEvent) => {
+    if (pinnedLabels || event.pointerType !== 'mouse') return;
+    clearPeekTimer();
+    // A short intent delay, so sweeping the pointer across to the page does
+    // not flash the drawer open.
+    peekTimer.current = window.setTimeout(() => setPeeking(true), 180);
+  }, [pinnedLabels, clearPeekTimer]);
+  const endPeek = useCallback(() => {
+    clearPeekTimer();
+    peekTimer.current = window.setTimeout(() => setPeeking(false), 140);
+  }, [clearPeekTimer]);
+  useEffect(() => clearPeekTimer, [clearPeekTimer]);
+  useEffect(() => {
+    if (pinnedLabels) setPeeking(false);
+  }, [pinnedLabels]);
+  useEffect(() => {
+    setPeeking(false);
+  }, [pathname]);
+  useEffect(() => {
+    if (!peeking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPeeking(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [peeking]);
+  const showLabels = pinnedLabels || peeking;
 
   useEffect(() => {
     setMounted(true);
@@ -112,8 +156,14 @@ export function SideNav() {
           'max-sm:pointer-events-none max-sm:invisible',
           'w-[4.25rem]',
           expanded ? 'lg:w-[15rem]' : 'lg:w-[4.25rem]',
+          // Peeking floats the full drawer over the page; the page keeps its
+          // margin, so nothing underneath moves.
+          peeking && 'w-[15rem] shadow-xl lg:w-[15rem]',
         )}
+        onPointerEnter={startPeek}
+        onPointerLeave={endPeek}
         data-rail={rail ? 'true' : undefined}
+        data-peek={peeking ? 'true' : undefined}
         aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
       >
         {/* ── Logo header ── */}
@@ -304,14 +354,16 @@ export function SideNav() {
             type="button"
             data-sidebar-edge-toggle=""
             onClick={toggle}
-            aria-expanded={showLabels}
+            // The pinned state, not the peek: while peeking, this button is
+            // what keeps the drawer open after the pointer leaves.
+            aria-expanded={pinnedLabels}
             aria-label={bilingualAria(
-              showLabels ? commonEn('collapse_sidebar') : commonEn('expand_sidebar'),
-              showLabels ? commonEl('collapse_sidebar') : commonEl('expand_sidebar'),
+              pinnedLabels ? commonEn('collapse_sidebar') : commonEn('expand_sidebar'),
+              pinnedLabels ? commonEl('collapse_sidebar') : commonEl('expand_sidebar'),
             )}
             className="absolute right-0 top-1/2 z-50 flex h-6 w-6 min-w-[24px] -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
           >
-            {showLabels ? (
+            {pinnedLabels ? (
               <ChevronLeft className="h-3.5 w-3.5" aria-hidden />
             ) : (
               <ChevronRight className="h-3.5 w-3.5" aria-hidden />

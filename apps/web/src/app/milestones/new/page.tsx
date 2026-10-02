@@ -1,5 +1,7 @@
 'use client';
 
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -52,6 +54,17 @@ export default function NewMilestonePage() {
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
 
+  // A draft the assistant proposed (draft_milestone): the fields arrive filled
+  // and the person still presses Create.
+  const draft = useFormDraft('milestone', (f) => {
+    if (typeof f.title === 'string') setTitle(f.title);
+    if (typeof f.description === 'string') setDescription(f.description);
+    if (typeof f.notes === 'string') setNotes(f.notes);
+    if (typeof f.dueDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f.dueDate)) setDueDate(f.dueDate);
+    if (typeof f.category === 'string' && (CATEGORIES as readonly string[]).includes(f.category)) setCategory(f.category);
+    if (f.priority === 'low' || f.priority === 'medium' || f.priority === 'high') setPriority(f.priority);
+  });
+
   const mutation = useMutation({
     mutationFn: () =>
       createMilestone({
@@ -100,6 +113,7 @@ export default function NewMilestonePage() {
         <p className="type-hold text-sm text-muted-foreground">
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>
+        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
         <Card className="rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-3">

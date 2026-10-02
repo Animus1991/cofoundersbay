@@ -1,5 +1,7 @@
 'use client';
 
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -39,6 +41,7 @@ const EVENT_TYPES = [
 ] as const;
 
 type EventType = (typeof EVENT_TYPES)[number]['value'];
+const EVENT_TYPE_VALUES: readonly string[] = EVENT_TYPES.map((t) => t.value);
 
 /** "Thu 24 Oct, 18:30 – 21:00", from the two datetime-local values as typed. */
 function whenText(startAt: string, endAt: string): string | null {
@@ -96,6 +99,25 @@ export default function CreateEventPage() {
 
   const set = (key: keyof typeof form, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  // A draft the assistant proposed (draft_event). Only known fields, each in
+  // the type the input holds; the person still presses Create.
+  const draft = useFormDraft('event', (f) => {
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of ['title', 'description', 'location', 'meetingUrl', 'capacity'] as const) {
+        if (typeof f[key] === 'string') next[key] = f[key] as string;
+      }
+      for (const key of ['startAt', 'endAt'] as const) {
+        // datetime-local wants "YYYY-MM-DDTHH:mm"; anything else is left empty.
+        const value = f[key];
+        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) next[key] = value.slice(0, 16);
+      }
+      if (typeof f.type === 'string' && EVENT_TYPE_VALUES.includes(f.type)) next.type = f.type as EventType;
+      if (typeof f.isOnline === 'boolean') next.isOnline = f.isOnline;
+      return next;
+    });
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +178,7 @@ export default function CreateEventPage() {
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
         <form onSubmit={handleSubmit} className="min-w-0 space-y-6">
+          <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
           <FormSection icon={Calendar} title="Basic information" titleEl="Βασικά στοιχεία">
             <FormField htmlFor="event-title" required label={<BilingualText en="Event title" el="Τίτλος εκδήλωσης" compact />}>
               <Input

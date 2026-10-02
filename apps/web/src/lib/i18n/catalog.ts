@@ -722,6 +722,7 @@ const el: Record<string, string> = {
   'consulting': 'συμβουλευτική',
   'coaching': 'coaching',
   'other': 'άλλο',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': 'Πείτε μου το όνομα και θα το ετοιμάσω — βάλτε το σε εισαγωγικά αν έχει πολλές λέξεις.',
 };
 
 const es: Record<string, string> = {
@@ -1187,6 +1188,7 @@ const es: Record<string, string> = {
   'consulting': 'consultoría',
   'coaching': 'coaching',
   'other': 'otro',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': 'Dime el nombre y lo preparo; ponlo entre comillas si tiene varias palabras.',
 };
 
 const fr: Record<string, string> = {
@@ -1632,6 +1634,7 @@ const fr: Record<string, string> = {
   'consulting': 'conseil',
   'coaching': 'coaching',
   'other': 'autre',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': 'Donnez-moi le nom et je le prépare — entre guillemets s’il compte plusieurs mots.',
 };
 
 const de: Record<string, string> = {
@@ -2077,6 +2080,7 @@ const de: Record<string, string> = {
   'consulting': 'Beratung',
   'coaching': 'Coaching',
   'other': 'Sonstiges',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': 'Nennen Sie den Namen, dann bereite ich es vor – in Anführungszeichen, wenn er aus mehreren Wörtern besteht.',
 };
 
 const it: Record<string, string> = {
@@ -2512,6 +2516,7 @@ const it: Record<string, string> = {
   'consulting': 'consulenza',
   'coaching': 'coaching',
   'other': 'altro',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': 'Dimmi il nome e lo preparo: mettilo tra virgolette se ha più parole.',
 };
 
 const pt: Record<string, string> = {
@@ -2944,6 +2949,7 @@ const pt: Record<string, string> = {
   'consulting': 'consultoria',
   'coaching': 'coaching',
   'other': 'outro',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': 'Diga-me o nome e eu preparo — entre aspas se tiver várias palavras.',
 };
 
 const zh: Record<string, string> = {
@@ -3396,6 +3402,7 @@ const zh: Record<string, string> = {
   'consulting': '咨询',
   'coaching': '教练',
   'other': '其他',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': '告诉我名称，我来准备——如果有多个词，请加上引号。',
 };
 
 const ja: Record<string, string> = {
@@ -3848,6 +3855,7 @@ const ja: Record<string, string> = {
   'consulting': 'コンサルティング',
   'coaching': 'コーチング',
   'other': 'その他',
+  'Name it and I will prepare it — put the name in quotes if it has several words.': '名前を教えてください。準備します。複数の単語なら引用符で囲んでください。',
 };
 
 export const CATALOG: Record<Exclude<AppLocale, 'en'>, Record<string, string>> = {

@@ -277,7 +277,11 @@ function describeGraph(graph: CopilotGraph, t: Translator): string {
  * presentable here without a second place to edit.
  */
 /** Writes the rule planner proposes whose card is built from the declaration alone. */
-const WAVE_C_WRITES = new Set<string>(['join_group', 'leave_group', 'apply_to_program', 'send_invite', 'respond_to_mentor_request']);
+const WAVE_C_WRITES = new Set<string>([
+  'join_group', 'leave_group', 'apply_to_program', 'send_invite', 'respond_to_mentor_request',
+  // Wave D drafts open a filled form; their card is built the same way.
+  'draft_milestone', 'draft_event', 'draft_project', 'draft_profile',
+]);
 
 export function actionsFromToolCalls(
   proposals: readonly AIToolCallProposal[],
@@ -879,7 +883,16 @@ export async function runCopilotTurn(
     // Wave C writes: the declaration's own bilingual label and description,
     // with the thing it acts on named so two cards are never ambiguous.
     if (WAVE_C_WRITES.has(tool.name)) {
-      const target = tool.args?.groupName || tool.args?.programTitle || tool.args?.email || tool.args?.requesterName || '';
+      const target =
+        tool.args?.groupName || tool.args?.programTitle || tool.args?.email || tool.args?.requesterName ||
+        tool.args?.title || tool.args?.name || tool.args?.headline || tool.args?.bio || '';
+      // A card with nothing to act on would only fail once confirmed; asking
+      // first is the shorter path. Answering a request carries its decision
+      // even without a name, and the executor asks if two people match.
+      if (!target && tool.name !== 'respond_to_mentor_request') {
+        sections.push(t('Name it and I will prepare it — put the name in quotes if it has several words.'));
+        continue;
+      }
       actions.push(
         ...actionsFromToolCalls([{ name: tool.name, args: tool.args ?? {}, writes: true, droppedArgs: [] }], replyLocale).map((action) =>
           target ? { ...action, title: `${action.title}: ${target}` } : action,

@@ -770,7 +770,34 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     const requesterName = detectRequesterName(rawMessage);
     add('respond_to_mentor_request', { decision: declineVerb ? 'decline' : 'accept', ...(requesterName ? { requesterName } : {}) });
   }
+  // Wave D drafts: "draft a milestone …", «ετοίμασε εκδήλωση …». A draft only
+  // opens a filled form, so it never competes with a write; it replaces the
+  // read of its own area, as the writes above do.
+  const draftVerb = includesAny(message, ['draft', 'prepare', 'fill in', 'fill out', 'ετοίμασε', 'ετοιμασε', 'πρόχειρ', 'προχειρ', 'συμπλήρωσε', 'συμπληρωσε']);
+  const quoted = detectQuotedName(rawMessage);
+  const draftKind = !draftVerb
+    ? null
+    : includesAny(message, ['milestone', 'ορόσημ', 'οροσημ'])
+      ? 'draft_milestone'
+      : includesAny(message, ['event', 'meetup', 'webinar', 'workshop', 'εκδήλωσ', 'εκδηλωσ'])
+        ? 'draft_event'
+        : includesAny(message, ['project', 'πρότζεκτ', 'προτζεκτ', 'έργο ', 'εργο '])
+          ? 'draft_project'
+          : includesAny(message, ['headline', 'bio', 'my profile', 'τίτλο μου', 'τιτλο μου', 'βιογραφικ', 'προφίλ μου', 'προφιλ μου'])
+            ? 'draft_profile'
+            : null;
+  if (draftKind === 'draft_milestone') add('draft_milestone', quoted ? { title: quoted } : {});
+  if (draftKind === 'draft_event') add('draft_event', quoted ? { title: quoted } : {});
+  if (draftKind === 'draft_project') add('draft_project', quoted ? { name: quoted } : {});
+  if (draftKind === 'draft_profile') {
+    const field = includesAny(message, ['bio', 'βιογραφικ']) ? 'bio' : 'headline';
+    add('draft_profile', quoted ? { [field]: quoted } : {});
+  }
+
   const replacedReads = new Set<string>([
+    ...(draftKind === 'draft_milestone' ? ['get_milestones'] : []),
+    ...(draftKind === 'draft_event' ? ['get_events'] : []),
+    ...(draftKind === 'draft_profile' ? ['get_profile'] : []),
     ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
     ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
     ...(wantsInvite ? ['get_invites'] : []),

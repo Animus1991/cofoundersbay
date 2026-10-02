@@ -1557,6 +1557,128 @@ export const ACTION_DECLARATIONS = [
     },
     confirmLabel: { en: 'Send answer', el: 'Αποστολή απάντησης' },
   },
+  // ── Wave D: forms as proposals. The assistant fills, the person submits ──
+  {
+    id: 'draft_milestone',
+    kind: 'mutation',
+    label: { en: 'Draft a milestone', el: 'Πρόχειρο ορόσημο' },
+    description: {
+      en: 'Open the new-milestone form with fields filled in for the user to review and create. Saves nothing; use create_milestone only when the user asks for it to be saved directly.',
+      el: 'Ανοίγει τη φόρμα νέου ορόσημου με συμπληρωμένα πεδία για να τα ελέγξει και να το δημιουργήσει ο χρήστης. Δεν αποθηκεύει τίποτα.',
+    },
+    params: [
+      { name: 'title', type: 'string', required: true, description: { en: 'Short title of the milestone.', el: 'Σύντομος τίτλος του ορόσημου.' } },
+      { name: 'description', type: 'string', required: false, description: { en: 'What done looks like.', el: 'Πώς φαίνεται η ολοκλήρωση.' } },
+      { name: 'dueDate', type: 'string', required: false, description: { en: 'Due date as YYYY-MM-DD.', el: 'Προθεσμία ως ΕΕΕΕ-ΜΜ-ΗΗ.' } },
+      { name: 'category', type: 'string', required: false, enumValues: ['product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'], description: { en: 'Area of the work.', el: 'Περιοχή της δουλειάς.' } },
+      { name: 'priority', type: 'string', required: false, enumValues: ['low', 'medium', 'high'], description: { en: 'How urgent it is.', el: 'Πόσο επείγει.' } },
+      { name: 'notes', type: 'string', required: false, description: { en: 'Private notes.', el: 'Ιδιωτικές σημειώσεις.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the fields wait in the form until the person
+      // presses its own submit button, and leaving the page discards them.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The form opens with these fields filled; you review them and submit, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Η φόρμα ανοίγει με αυτά τα πεδία συμπληρωμένα· τα ελέγχετε και υποβάλλετε, ή φεύγετε από τη σελίδα και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled form', el: 'Άνοιγμα συμπληρωμένης φόρμας' },
+  },
+  {
+    id: 'draft_event',
+    kind: 'mutation',
+    label: { en: 'Draft an event', el: 'Πρόχειρη εκδήλωση' },
+    description: {
+      en: 'Open the create-event form with fields filled in for the user to review and publish. Saves nothing; use create_event only when the user asks for it to be published directly.',
+      el: 'Ανοίγει τη φόρμα δημιουργίας εκδήλωσης με συμπληρωμένα πεδία για να τα ελέγξει και να τη δημοσιεύσει ο χρήστης. Δεν αποθηκεύει τίποτα.',
+    },
+    params: [
+      { name: 'title', type: 'string', required: true, description: { en: 'Event title.', el: 'Τίτλος εκδήλωσης.' } },
+      { name: 'description', type: 'string', required: false, description: { en: 'What happens and who it is for.', el: 'Τι γίνεται και για ποιους είναι.' } },
+      { name: 'type', type: 'string', required: false, enumValues: ['meetup', 'webinar', 'workshop', 'demo_day', 'networking', 'other'], description: { en: 'Kind of event.', el: 'Είδος εκδήλωσης.' } },
+      { name: 'startAt', type: 'string', required: false, description: { en: 'Start as local date and time, YYYY-MM-DDTHH:mm.', el: 'Έναρξη σε τοπική ώρα, ΕΕΕΕ-ΜΜ-ΗΗTΩΩ:λλ.' } },
+      { name: 'endAt', type: 'string', required: false, description: { en: 'End as local date and time, YYYY-MM-DDTHH:mm.', el: 'Λήξη σε τοπική ώρα, ΕΕΕΕ-ΜΜ-ΗΗTΩΩ:λλ.' } },
+      { name: 'location', type: 'string', required: false, description: { en: 'Venue or city.', el: 'Χώρος ή πόλη.' } },
+      { name: 'isOnline', type: 'boolean', required: false, description: { en: 'True for an online event.', el: 'Αληθές για διαδικτυακή εκδήλωση.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the fields wait in the form until the person
+      // presses its own submit button, and leaving the page discards them.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The form opens with these fields filled; you review them and submit, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Η φόρμα ανοίγει με αυτά τα πεδία συμπληρωμένα· τα ελέγχετε και υποβάλλετε, ή φεύγετε από τη σελίδα και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled form', el: 'Άνοιγμα συμπληρωμένης φόρμας' },
+  },
+  {
+    id: 'draft_project',
+    kind: 'mutation',
+    label: { en: 'Draft a project', el: 'Πρόχειρο project' },
+    description: {
+      en: 'Open the new-project form with its basics filled in for the user to review, complete and create. Saves nothing.',
+      el: 'Ανοίγει τη φόρμα νέου project με τα βασικά συμπληρωμένα, για να τα ελέγξει, να τα ολοκληρώσει και να το δημιουργήσει ο χρήστης. Δεν αποθηκεύει τίποτα.',
+    },
+    params: [
+      { name: 'name', type: 'string', required: true, description: { en: 'Project name.', el: 'Όνομα project.' } },
+      { name: 'tagline', type: 'string', required: false, description: { en: 'One-line pitch.', el: 'Μονογραμμική περιγραφή.' } },
+      { name: 'description', type: 'string', required: false, description: { en: 'What the project is.', el: 'Τι είναι το project.' } },
+      { name: 'industry', type: 'string', required: false, description: { en: 'Industry, as the form lists them.', el: 'Κλάδος, όπως τον έχει η φόρμα.' } },
+      { name: 'location', type: 'string', required: false, description: { en: 'Where the team is.', el: 'Πού βρίσκεται η ομάδα.' } },
+      { name: 'website', type: 'string', required: false, description: { en: 'Website address.', el: 'Διεύθυνση ιστότοπου.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the fields wait in the form until the person
+      // presses its own submit button, and leaving the page discards them.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The form opens with these fields filled; you review them and submit, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Η φόρμα ανοίγει με αυτά τα πεδία συμπληρωμένα· τα ελέγχετε και υποβάλλετε, ή φεύγετε από τη σελίδα και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled form', el: 'Άνοιγμα συμπληρωμένης φόρμας' },
+  },
+  {
+    id: 'draft_profile',
+    kind: 'mutation',
+    label: { en: 'Draft profile changes', el: 'Πρόχειρες αλλαγές προφίλ' },
+    description: {
+      en: 'Open the profile editor with some fields rewritten for the user to review and save. Saves nothing; use update_profile only when the user asks for the change to be saved directly.',
+      el: 'Ανοίγει την επεξεργασία προφίλ με ορισμένα πεδία ξαναγραμμένα, για να τα ελέγξει και να τα αποθηκεύσει ο χρήστης. Δεν αποθηκεύει τίποτα.',
+    },
+    params: [
+      { name: 'headline', type: 'string', required: false, description: { en: 'Profile headline.', el: 'Τίτλος προφίλ.' } },
+      { name: 'bio', type: 'string', required: false, description: { en: 'Profile bio.', el: 'Βιογραφικό προφίλ.' } },
+      { name: 'displayName', type: 'string', required: false, description: { en: 'Name shown to others.', el: 'Όνομα που βλέπουν οι άλλοι.' } },
+      { name: 'location', type: 'string', required: false, description: { en: 'City or region.', el: 'Πόλη ή περιοχή.' } },
+      { name: 'websiteUrl', type: 'string', required: false, description: { en: 'Personal or company website.', el: 'Προσωπικός ή εταιρικός ιστότοπος.' } },
+      { name: 'linkedinUrl', type: 'string', required: false, description: { en: 'LinkedIn address.', el: 'Διεύθυνση LinkedIn.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the fields wait in the form until the person
+      // presses its own submit button, and leaving the page discards them.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The form opens with these fields filled; you review them and submit, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Η φόρμα ανοίγει με αυτά τα πεδία συμπληρωμένα· τα ελέγχετε και υποβάλλετε, ή φεύγετε από τη σελίδα και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled form', el: 'Άνοιγμα συμπληρωμένης φόρμας' },
+  },
   {
     id: 'canvas_command',
     kind: 'mutation',

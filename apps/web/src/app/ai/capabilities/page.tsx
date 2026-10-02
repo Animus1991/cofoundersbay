@@ -78,6 +78,10 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   send_invite: { en: 'Invite maria@example.com to CoFounderBay', el: 'Προσκάλεσε τη maria@example.com στο CoFounderBay' },
   write_endorsement: { en: 'Endorse Elena for product strategy', el: 'Γράψε προσυπογραφή για την Elena στη στρατηγική προϊόντος' },
   respond_to_mentor_request: { en: 'Accept Sofia’s mentoring request', el: 'Αποδέξου το αίτημα mentoring της Σοφίας' },
+  draft_milestone: { en: 'Draft a milestone “Close the pre-seed round”', el: 'Ετοίμασε ορόσημο «Κλείσιμο pre-seed γύρου»' },
+  draft_event: { en: 'Draft an event “Founder breakfast”', el: 'Ετοίμασε εκδήλωση «Πρωινό ιδρυτών»' },
+  draft_project: { en: 'Draft a project “Helios”', el: 'Ετοίμασε project «Ήλιος»' },
+  draft_profile: { en: 'Draft my headline “Founder at Harbor”', el: 'Ετοίμασε τον τίτλο μου «Founder at Harbor»' },
 };
 
 function reversalLabel(spec: ActionDeclaration): { en: string; el: string } | null {

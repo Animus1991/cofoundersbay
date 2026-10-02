@@ -1,5 +1,7 @@
 'use client';
 
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -87,6 +89,20 @@ export default function CreateProjectPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState('');
 
+  // A draft the assistant proposed (draft_project): the basics arrive filled,
+  // and the person still walks the steps and presses Create.
+  const draft = useFormDraft('project', (f) => {
+    if (typeof f.name === 'string') setName(f.name);
+    if (typeof f.tagline === 'string') setTagline(f.tagline);
+    if (typeof f.description === 'string') setDescription(f.description);
+    if (typeof f.location === 'string') setLocation(f.location);
+    if (typeof f.website === 'string') setWebsite(f.website);
+    if (typeof f.industry === 'string') {
+      const match = INDUSTRIES.find((ind) => ind.toLowerCase() === (f.industry as string).toLowerCase());
+      if (match) setIndustry(match);
+    }
+  });
+
   const addRole = (role: string) => {
     if (role && !rolesNeeded.includes(role)) {
       setRolesNeeded([...rolesNeeded, role]);
@@ -171,6 +187,7 @@ export default function CreateProjectPage() {
           </Button>
           <CfbGlyph name="briefcase" className="icon-md text-muted-foreground" />
         </div>
+        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
         <p className="type-hold text-sm text-muted-foreground">
           <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
           {' · '}

@@ -256,7 +256,7 @@ describe('action registry coverage', () => {
     // This used to be a pair of tool ids inside CopilotWorkspace.
     const navigates = listActions().filter((spec) => spec.navigatesOnSuccess).map((s) => s.id).sort();
     expect(navigates).toEqual(
-      ['analytics_set_period', 'apply_to_program', 'canvas_command', 'create_event', 'create_milestone', 'join_group', 'leave_group', 'navigate', 'readiness_tick_criterion', 'rsvp_event', 'send_invite', 'start_or_send_message', 'update_profile', 'workspace_create'],
+      ['analytics_set_period', 'apply_to_program', 'canvas_command', 'create_event', 'create_milestone', 'draft_event', 'draft_milestone', 'draft_profile', 'draft_project', 'join_group', 'leave_group', 'navigate', 'readiness_tick_criterion', 'rsvp_event', 'send_invite', 'start_or_send_message', 'update_profile', 'workspace_create'],
     );
 
     // Saving to a shortlist reports where the result can be seen without

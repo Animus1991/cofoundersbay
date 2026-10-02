@@ -1,5 +1,8 @@
 'use client';
 
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
+
 import { useState, useEffect, useId, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -409,6 +412,19 @@ export default function ProfileEditPage() {
     setFormInitialized(true);
   }, [meData, formInitialized]);
 
+  // A draft the assistant proposed (draft_profile), applied once the saved
+  // profile has loaded so it lands on top of it rather than under it. The
+  // person still presses Save.
+  const draft = useFormDraft('profile', (f) => {
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of ['displayName', 'headline', 'bio', 'location', 'websiteUrl', 'linkedinUrl', 'githubUrl', 'twitterUrl'] as const) {
+        if (typeof f[key] === 'string') next[key] = f[key] as string;
+      }
+      return next;
+    });
+  }, formInitialized);
+
   // Update form field
   const updateField = <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -561,6 +577,7 @@ export default function ProfileEditPage() {
       <div className="grid grid-cols-1 gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
+          <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto hide-scrollbar">
               <TabsTrigger 
