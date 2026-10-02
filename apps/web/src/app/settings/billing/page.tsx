@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Download, FileText, Loader2,
+  Check, Download, FileText, Loader2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -20,10 +20,11 @@ import {
   getBillingSubscription, getUserInvoices, createBillingPortal,
   getBillingContact, upsertBillingContact, type BillingInvoice, type BillingContact,
 } from '@/lib/api';
-import { formatCents } from '@/lib/billing';
+import { formatCents, PLAN_FEATURE_LABELS, PLAN_HIGHLIGHTS, type PlanFeatureKey } from '@/lib/billing';
 import { HairlineMeter } from '@/components/ui/hairline-meter';
 import { SettingsRow } from '@/components/ui/settings-row';
 import { cn } from '@/lib/utils';
+import { StatusText } from '@/components/common/StatusText';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
@@ -37,8 +38,22 @@ function InvoiceStatusBadge({ status }: { status: string }) {
   };
   return (
     <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-gray-500/10 text-muted-foreground')}>
-      {status}
+      <StatusText value={status} />
     </Badge>
+  );
+}
+
+/** What a plan includes: one quiet list, shared with /pricing through PLAN_HIGHLIGHTS. */
+function PlanHighlights({ items }: { items: { en: string; el: string }[] }) {
+  return (
+    <ul className="space-y-1.5 border-t border-border/50 pt-3 text-sm text-muted-foreground">
+      {items.map((item) => (
+        <li key={item.en} className="flex items-start gap-2">
+          <Check className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
+          <span className="min-w-0"><BilingualText en={item.en} el={item.el} wrap /></span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -205,12 +220,18 @@ export default function UserBillingPage() {
               ) : sub ? (
                 <>
                   <div>
-                    <p className="text-lg font-semibold">{sub.plan?.displayName ?? 'Unknown Plan'}</p>
+                    <p className="text-lg font-semibold">{sub.plan?.displayName ?? <BilingualText en="Unknown plan" el="Άγνωστο πλάνο" compact />}</p>
                     <p className="text-sm text-muted-foreground">
                       {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
-                      /{sub.billingCycle === 'annual' ? 'year' : 'mo'}
+                      {sub.billingCycle === 'annual'
+                        ? <BilingualText en="/year" el="/έτος" compact />
+                        : <BilingualText en="/mo" el="/μήνα" compact />}
                       {sub.currentPeriodEnd && (
-                        <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</>
+                        <> · <BilingualText
+                          en={`Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`}
+                          el={`Ανανεώνεται ${new Date(sub.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`}
+                          compact
+                        /></>
                       )}
                     </p>
                   </div>
@@ -220,14 +241,19 @@ export default function UserBillingPage() {
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? 'Opening…' : 'Adjust plan'}
+                    {portalLoading
+                      ? <BilingualText en="Opening…" el="Άνοιγμα…" compact />
+                      : <BilingualText en="Adjust plan" el="Προσαρμογή πλάνου" compact />}
                   </button>
                 </>
               ) : (
-                <div>
-                  <p className="text-lg font-semibold"><BilingualText en="Free" el="Δωρεάν" compact /></p>
-                  <p className="text-sm text-muted-foreground">$0/mo</p>
-                </div>
+                <>
+                  <div>
+                    <p className="text-lg font-semibold"><BilingualText en="Free" el="Δωρεάν" compact /></p>
+                    <p className="text-sm text-muted-foreground">$0<BilingualText en="/mo" el="/μήνα" compact /></p>
+                  </div>
+                  <PlanHighlights items={PLAN_HIGHLIGHTS.free} />
+                </>
               )}
             </CardContent>
           </Card>
@@ -246,6 +272,8 @@ export default function UserBillingPage() {
                     <BilingualText en="Unlock more usage on matching, messages, and mentor booking." el="Περισσότερη χρήση σε αντιστοιχίσεις, μηνύματα και κρατήσεις μεντόρων." wrap />
                   </p>
                 </div>
+                {/* "Everything in Free" is the first line; the card already says it is an upgrade. */}
+                <PlanHighlights items={PLAN_HIGHLIGHTS.pro.slice(1)} />
                 <Button size="sm" asChild>
                   <Link href="/pricing"><BilingualText en="Upgrade" el="Αναβάθμιση" compact /></Link>
                 </Button>
@@ -256,12 +284,20 @@ export default function UserBillingPage() {
 
         {sub?.cancelAtPeriodEnd && (
           <p className="text-sm text-status-warning">
-            Subscription cancels on {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.
+            <BilingualText
+              en={`Subscription cancels on ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.`}
+              el={`Η συνδρομή λήγει στις ${new Date(sub.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}.`}
+              wrap
+            />
           </p>
         )}
         {sub?.status === 'trialing' && sub.trialEnd && (
           <p className="text-sm text-status-info">
-            Free trial ends {new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.
+            <BilingualText
+              en={`Free trial ends ${new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.`}
+              el={`Η δωρεάν δοκιμή λήγει στις ${new Date(sub.trialEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}.`}
+              wrap
+            />
           </p>
         )}
         {sub?.status === 'past_due' && (
@@ -276,15 +312,18 @@ export default function UserBillingPage() {
             <CardContent className="space-y-4">
               {Object.entries(sub.plan.features as Record<string, unknown>)
                 .filter(([, v]) => Boolean(v))
-                .map(([k, v]) => (
-                  <HairlineMeter
-                    key={k}
-                    label={k.replace(/([A-Z])/g, ' $1').trim()}
-                    caption={typeof v === 'string' ? String(v) : undefined}
-                    percent={v === true || v === 'Unlimited' ? 0 : 0}
-                    trailing={v === true ? 'Included' : typeof v === 'string' ? String(v) : undefined}
-                  />
-                ))}
+                .map(([k, v]) => {
+                  const known = PLAN_FEATURE_LABELS[k as PlanFeatureKey];
+                  return (
+                    <HairlineMeter
+                      key={k}
+                      label={known ? <BilingualText en={known.en} el={known.el} compact /> : k.replace(/([A-Z])/g, ' $1').trim()}
+                      caption={typeof v === 'string' ? String(v) : undefined}
+                      percent={v === true || v === 'Unlimited' ? 0 : 0}
+                      trailing={v === true ? <BilingualText en="Included" el="Περιλαμβάνεται" compact /> : typeof v === 'string' ? String(v) : undefined}
+                    />
+                  );
+                })}
             </CardContent>
           </Card>
         )}
@@ -292,8 +331,8 @@ export default function UserBillingPage() {
         <Card className="border-border/50 shadow-none">
           <CardContent className="pt-2">
             <SettingsRow
-              label="Payment method"
-              helper="Opens the Stripe billing portal."
+              label={<BilingualText en="Payment method" el="Τρόπος πληρωμής" compact />}
+              helper={<BilingualText en="Opens the Stripe billing portal." el="Ανοίγει την πύλη χρεώσεων του Stripe." wrap />}
             >
               <button
                 type="button"
@@ -301,7 +340,9 @@ export default function UserBillingPage() {
                 onClick={() => openPortal(undefined)}
                 disabled={portalLoading}
               >
-                {portalLoading ? 'Opening…' : 'Manage'}
+                {portalLoading
+                  ? <BilingualText en="Opening…" el="Άνοιγμα…" compact />
+                  : <BilingualText en="Manage" el="Διαχείριση" compact />}
               </button>
             </SettingsRow>
           </CardContent>
@@ -316,7 +357,11 @@ export default function UserBillingPage() {
                 <CardDescription className="text-xs mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
-                {showContactForm ? 'Cancel' : (contactData as { billingContact?: BillingContact | null })?.billingContact ? 'Edit' : 'Add'}
+                {showContactForm
+                  ? <BilingualText en="Cancel" el="Ακύρωση" compact />
+                  : (contactData as { billingContact?: BillingContact | null })?.billingContact
+                    ? <BilingualText en="Edit" el="Επεξεργασία" compact />
+                    : <BilingualText en="Add" el="Προσθήκη" compact />}
               </Button>
             </div>
           </CardHeader>
@@ -330,7 +375,7 @@ export default function UserBillingPage() {
                 {bc.addressLine1 && (
                   <p>{bc.addressLine1}, {bc.city} {bc.postalCode}, {bc.country}</p>
                 )}
-                {bc.vatId && <p>VAT: {bc.vatId}</p>}
+                {bc.vatId && <p><BilingualText en="VAT" el="ΑΦΜ" compact />: {bc.vatId}</p>}
                 </>); })()}
               </div>
             ) : !showContactForm ? (
@@ -339,9 +384,9 @@ export default function UserBillingPage() {
 
             {showContactForm && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-name" className="text-xs">Full name *</Label>
+                    <Label htmlFor="billing-contact-name" className="text-xs"><BilingualText en="Full name" el="Ονοματεπώνυμο" compact /> *</Label>
                     <Input
                       id="billing-contact-name"
                       placeholder="Jane Doe"
@@ -377,7 +422,7 @@ export default function UserBillingPage() {
                       onChange={e => setContactForm(p => ({ ...p, vatId: e.target.value }))}
                     />
                   </div>
-                  <div className="col-span-2 space-y-1.5">
+                  <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="billing-contact-address" className="text-xs"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
                     <Input
                       id="billing-contact-address"
@@ -412,7 +457,7 @@ export default function UserBillingPage() {
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
                     {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
-                    Save contact
+                    <BilingualText en="Save contact" el="Αποθήκευση στοιχείων" compact />
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>

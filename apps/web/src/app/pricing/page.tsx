@@ -27,14 +27,16 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { listBillingPlans, createBillingCheckout, type BillingPlanItem } from '@/lib/api';
-import { formatCents, annualSavingsPct } from '@/lib/billing';
+import { formatCents, annualSavingsPct, PLAN_HIGHLIGHTS } from '@/lib/billing';
 import { useSession } from '@/hooks/useSession';
 import { LandingNav } from '@/components/layout/LandingNav';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type PlanFeature = {
   name: string;
+  nameEl: string;
   free: boolean | string;
   pro: boolean | string;
   team: boolean | string;
@@ -42,22 +44,22 @@ type PlanFeature = {
 };
 
 const FEATURES: PlanFeature[] = [
-  { name: 'Profile & Discovery', free: true, pro: true, team: true, enterprise: true },
-  { name: 'Basic Matching', free: true, pro: true, team: true, enterprise: true },
-  { name: 'Direct Messages', free: '50/month', pro: 'Unlimited', team: 'Unlimited', enterprise: 'Unlimited' },
-  { name: 'Connection Requests', free: '10/month', pro: 'Unlimited', team: 'Unlimited', enterprise: 'Unlimited' },
-  { name: 'Event Access', free: true, pro: true, team: true, enterprise: true },
-  { name: 'Advanced Matching Filters', free: false, pro: true, team: true, enterprise: true },
-  { name: 'Priority in Discovery', free: false, pro: true, team: true, enterprise: true },
-  { name: 'Mentor Booking', free: false, pro: true, team: true, enterprise: true },
-  { name: 'Analytics Dashboard', free: false, pro: 'Basic', team: 'Advanced', enterprise: 'Custom' },
-  { name: 'Team Members', free: false, pro: false, team: 'Up to 25', enterprise: 'Unlimited' },
-  { name: 'Organization Branding', free: false, pro: false, team: true, enterprise: true },
-  { name: 'Custom Domain', free: false, pro: false, team: false, enterprise: true },
-  { name: 'SSO Integration', free: false, pro: false, team: false, enterprise: true },
-  { name: 'API Access', free: false, pro: false, team: false, enterprise: true },
-  { name: 'Dedicated Support', free: false, pro: false, team: 'Email', enterprise: '24/7 Priority' },
-  { name: 'Custom Onboarding', free: false, pro: false, team: false, enterprise: true },
+  { name: 'Profile & Discovery', nameEl: 'Προφίλ και αναζήτηση', free: true, pro: true, team: true, enterprise: true },
+  { name: 'Basic Matching', nameEl: 'Βασική αντιστοίχιση', free: true, pro: true, team: true, enterprise: true },
+  { name: 'Direct Messages', nameEl: 'Άμεσα μηνύματα', free: '50/month', pro: 'Unlimited', team: 'Unlimited', enterprise: 'Unlimited' },
+  { name: 'Connection Requests', nameEl: 'Αιτήματα σύνδεσης', free: '10/month', pro: 'Unlimited', team: 'Unlimited', enterprise: 'Unlimited' },
+  { name: 'Event Access', nameEl: 'Πρόσβαση σε εκδηλώσεις', free: true, pro: true, team: true, enterprise: true },
+  { name: 'Advanced Matching Filters', nameEl: 'Προηγμένα φίλτρα αντιστοίχισης', free: false, pro: true, team: true, enterprise: true },
+  { name: 'Priority in Discovery', nameEl: 'Προτεραιότητα στην αναζήτηση', free: false, pro: true, team: true, enterprise: true },
+  { name: 'Mentor Booking', nameEl: 'Κρατήσεις μεντόρων', free: false, pro: true, team: true, enterprise: true },
+  { name: 'Analytics Dashboard', nameEl: 'Πίνακας στατιστικών', free: false, pro: 'Basic', team: 'Advanced', enterprise: 'Custom' },
+  { name: 'Team Members', nameEl: 'Μέλη ομάδας', free: false, pro: false, team: 'Up to 25', enterprise: 'Unlimited' },
+  { name: 'Organization Branding', nameEl: 'Επωνυμία οργανισμού', free: false, pro: false, team: true, enterprise: true },
+  { name: 'Custom Domain', nameEl: 'Δικό σας domain', free: false, pro: false, team: false, enterprise: true },
+  { name: 'SSO Integration', nameEl: 'Ενσωμάτωση SSO', free: false, pro: false, team: false, enterprise: true },
+  { name: 'API Access', nameEl: 'Πρόσβαση στο API', free: false, pro: false, team: false, enterprise: true },
+  { name: 'Dedicated Support', nameEl: 'Αποκλειστική υποστήριξη', free: false, pro: false, team: 'Email', enterprise: '24/7 Priority' },
+  { name: 'Custom Onboarding', nameEl: 'Εξατομικευμένη ένταξη', free: false, pro: false, team: false, enterprise: true },
 ];
 
 const PLANS = [
@@ -66,6 +68,7 @@ const PLANS = [
     apiName: 'free',
     name: 'Free',
     description: 'Perfect for getting started',
+    descriptionEl: 'Ιδανικό για να ξεκινήσετε',
     priceMonthly: 0,
     priceAnnual: 0,
     icon: Zap,
@@ -73,19 +76,15 @@ const PLANS = [
     bgColor: 'bg-slate-500/10',
     popular: false,
     cta: 'Get Started',
-    features: [
-      'Basic profile & discovery',
-      '50 messages per month',
-      '10 connection requests',
-      'Access to public events',
-      'Community support',
-    ],
+    ctaEl: 'Ξεκινήστε',
+    features: PLAN_HIGHLIGHTS.free,
   },
   {
     id: 'pro',
     apiName: 'premium',
     name: 'Pro',
     description: 'For serious founders & mentors',
+    descriptionEl: 'Για ιδρυτές και μέντορες που το εννοούν',
     priceMonthly: 19,
     priceAnnual: 159,
     icon: Sparkles,
@@ -93,21 +92,15 @@ const PLANS = [
     bgColor: 'bg-primary/10',
     popular: true,
     cta: 'Start Free Trial',
-    features: [
-      'Everything in Free',
-      'Unlimited messages',
-      'Unlimited connections',
-      'Advanced matching filters',
-      'Priority in discovery',
-      'Mentor booking',
-      'Basic analytics',
-    ],
+    ctaEl: 'Δωρεάν δοκιμή',
+    features: PLAN_HIGHLIGHTS.pro,
   },
   {
     id: 'team',
     apiName: 'team',
     name: 'Team',
     description: 'For accelerators & organizations',
+    descriptionEl: 'Για επιταχυντές και οργανισμούς',
     priceMonthly: 99,
     priceAnnual: 899,
     icon: Users,
@@ -115,20 +108,15 @@ const PLANS = [
     bgColor: 'bg-status-accent-bg',
     popular: false,
     cta: 'Start Free Trial',
-    features: [
-      'Everything in Pro',
-      'Up to 25 team members',
-      'Organization branding',
-      'Advanced analytics',
-      'Program management',
-      'Email support',
-    ],
+    ctaEl: 'Δωρεάν δοκιμή',
+    features: PLAN_HIGHLIGHTS.team,
   },
   {
     id: 'enterprise',
     apiName: 'enterprise',
     name: 'Enterprise',
     description: 'For large institutions',
+    descriptionEl: 'Για μεγάλους φορείς',
     priceMonthly: null,
     priceAnnual: null,
     icon: Building2,
@@ -136,27 +124,42 @@ const PLANS = [
     bgColor: 'bg-status-warning-bg',
     popular: false,
     cta: 'Contact Sales',
-    features: [
-      'Everything in Team',
-      'Unlimited seats',
-      'Custom domain',
-      'SSO integration',
-      'API access',
-      '24/7 priority support',
-      'Custom onboarding',
-      'SLA guarantee',
-    ],
+    ctaEl: 'Επικοινωνία με πωλήσεις',
+    features: PLAN_HIGHLIGHTS.enterprise,
   },
 ];
 
+const VALUE_EL: Record<string, string> = {
+  '50/month': '50/μήνα',
+  '10/month': '10/μήνα',
+  Unlimited: 'Απεριόριστα',
+  Basic: 'Βασικό',
+  Advanced: 'Προηγμένο',
+  Custom: 'Κατά περίπτωση',
+  'Up to 25': 'Έως 25',
+  Email: 'Email',
+  '24/7 Priority': 'Προτεραιότητα 24/7',
+};
+
+/** `relative`: the sr-only name must not escape the table's horizontal scroller. */
 function FeatureCheck({ value }: { value: boolean | string }) {
   if (value === true) {
-    return <Check className="icon-sm text-status-success" />;
+    return (
+      <span className="relative inline-flex">
+        <Check className="icon-sm text-status-success" aria-hidden="true" />
+        <span className="sr-only">{bilingualAria('Included', 'Περιλαμβάνεται')}</span>
+      </span>
+    );
   }
   if (value === false) {
-    return <X className="icon-sm text-muted-foreground/40" />;
+    return (
+      <span className="relative inline-flex">
+        <X className="icon-sm text-muted-foreground/40" aria-hidden="true" />
+        <span className="sr-only">{bilingualAria('Not included', 'Δεν περιλαμβάνεται')}</span>
+      </span>
+    );
   }
-  return <span className="text-xs font-medium text-foreground">{value}</span>;
+  return <span className="text-xs font-medium text-foreground"><BilingualText en={value} el={VALUE_EL[value] ?? value} compact /></span>;
 }
 
 export default function PricingPage() {
@@ -241,7 +244,10 @@ export default function PricingPage() {
             </button>
             {annual && (
               <span className="ml-2 pr-2 text-xs text-status-success">
-                Save up to {Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)))}%
+                {(() => {
+                  const most = Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)));
+                  return <BilingualText en={`Save up to ${most}%`} el={`Έως ${most}% έκπτωση`} compact />;
+                })()}
               </span>
             )}
           </div>
@@ -277,7 +283,7 @@ export default function PricingPage() {
                     <Icon className={cn('icon-md', plan.color)} />
                   </div>
                   <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
+                  <CardDescription><BilingualText en={plan.description} el={plan.descriptionEl} wrap /></CardDescription>
                 </CardHeader>
 
                 <CardContent className="flex flex-1 flex-col">
@@ -292,19 +298,19 @@ export default function PricingPage() {
                       </div>
                     )}
                     {!isEnterprise && !isFree && annual && savings > 0 && (
-                      <p className="mt-1 text-xs text-status-success font-medium">{savings}% off vs monthly</p>
+                      <p className="mt-1 text-xs text-status-success font-medium"><BilingualText en={`${savings}% off vs monthly`} el={`${savings}% φθηνότερα από το μηνιαίο`} compact /></p>
                     )}
                     {!isEnterprise && !isFree && !annual && (
-                      <p className="mt-1 text-xs text-muted-foreground">Save {savings}% with annual billing</p>
+                      <p className="mt-1 text-xs text-muted-foreground"><BilingualText en={`Save ${savings}% with annual billing`} el={`Εξοικονόμηση ${savings}% με ετήσια χρέωση`} compact /></p>
                     )}
                   </div>
 
                   {/* Features */}
                   <ul className="mb-6 flex-1 space-y-2.5">
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 icon-sm shrink-0 text-status-success" />
-                        <span className="text-muted-foreground">{feature}</span>
+                      <li key={feature.en} className="flex items-start gap-2 text-sm">
+                        <Check className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
+                        <span className="text-muted-foreground"><BilingualText en={feature.en} el={feature.el} wrap /></span>
                       </li>
                     ))}
                   </ul>
@@ -316,7 +322,9 @@ export default function PricingPage() {
                     disabled={checkoutLoading === plan.id}
                     onClick={() => handleCheckout(plan)}
                   >
-                    {checkoutLoading === plan.id ? 'Redirecting…' : plan.cta}
+                    {checkoutLoading === plan.id
+                      ? <BilingualText en="Redirecting…" el="Ανακατεύθυνση…" compact />
+                      : <BilingualText en={plan.cta} el={plan.ctaEl} compact />}
                     {checkoutLoading !== plan.id && <ArrowRight className="icon-sm" />}
                   </Button>
                 </CardContent>
@@ -356,7 +364,7 @@ export default function PricingPage() {
               <tbody>
                 {FEATURES.map((feature, i) => (
                   <tr key={feature.name} className={cn('border-b border-border/40', i % 2 === 0 && 'bg-card/50')}>
-                    <td className="py-3 text-sm text-muted-foreground">{feature.name}</td>
+                    <td className="py-3 text-sm text-muted-foreground"><BilingualText en={feature.name} el={feature.nameEl} wrap /></td>
                     <td className="py-3 text-center">
                       <div className="flex justify-center">
                         <FeatureCheck value={feature.free} />

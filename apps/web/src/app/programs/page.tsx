@@ -240,8 +240,9 @@ function ProgramCard({
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border/60">
             <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible">
-              <TypeIcon className="icon-lg" />
+            {/* Stands in for the organisation's logo: an avatar, not decoration. */}
+            <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+              <TypeIcon className="icon-lg" aria-hidden="true" />
             </AvatarFallback>
           </Avatar>
 

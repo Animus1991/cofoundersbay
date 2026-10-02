@@ -278,14 +278,16 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     >
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
+          {/* The badge is the achievement, not decoration beside it. */}
           <div
+            data-keep-icon
             className={cn(
               'relative p-3 rounded-xl shrink-0',
               TIER_BG[achievement.tier],
               achievement.unlocked ? 'ring-2 ring-primary/20' : ''
             )}
           >
-            <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} />
+            <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} aria-hidden="true" />
             {achievement.unlocked && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
                 <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
@@ -774,8 +776,8 @@ export default function AchievementsPage() {
                           const Icon = a.icon;
                           return (
                             <div key={a.id} className="flex items-center gap-2.5">
-                              <div className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
-                                <Icon className={cn('icon-sm', TIER_COLORS[a.tier])} />
+                              <div data-keep-icon className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
+                                <Icon className={cn('icon-sm', TIER_COLORS[a.tier])} aria-hidden="true" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{a.title}</p>

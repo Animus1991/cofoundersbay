@@ -8,6 +8,7 @@ import { LegalText } from '@/components/common/LegalText';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const LAST_UPDATED = 'March 20, 2026';
+const LAST_UPDATED_EL = '20 Μαρτίου 2026';
 
 const sections = [
   {
@@ -163,7 +164,13 @@ export default function TermsPage() {
             <FileText className="h-7 w-7 text-primary-accessible" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
-          <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
+          <p className="text-muted-foreground">
+            <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
+          </p>
+          {/* Legal text is not machine-translated: a paraphrase could promise something the policy does not. */}
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+            <BilingualText en="These terms are written in English; the English text is the version that applies." el="Οι παρακάτω όροι είναι γραμμένοι στα Αγγλικά· ισχύει το αγγλικό κείμενο." keepSecondaryOnMobile wrap />
+          </p>
         </div>
       </section>
 

@@ -55,6 +55,10 @@ export function SideNav() {
    */
   const [peeking, setPeeking] = useState(false);
   const peekTimer = useRef<number | null>(null);
+  // Closing the drawer under a resting pointer (Escape, a link chosen from
+  // it) reflows the sidebar, and the browser answers with a fresh
+  // pointerenter that would reopen it at once. Held until the pointer leaves.
+  const peekHeld = useRef(false);
   const clearPeekTimer = useCallback(() => {
     if (peekTimer.current !== null) {
       window.clearTimeout(peekTimer.current);
@@ -62,31 +66,39 @@ export function SideNav() {
     }
   }, []);
   const startPeek = useCallback((event: React.PointerEvent) => {
-    if (pinnedLabels || event.pointerType !== 'mouse') return;
+    if (pinnedLabels || event.pointerType !== 'mouse' || peekHeld.current) return;
     clearPeekTimer();
     // A short intent delay, so sweeping the pointer across to the page does
     // not flash the drawer open.
     peekTimer.current = window.setTimeout(() => setPeeking(true), 180);
   }, [pinnedLabels, clearPeekTimer]);
   const endPeek = useCallback(() => {
+    peekHeld.current = false;
     clearPeekTimer();
     peekTimer.current = window.setTimeout(() => setPeeking(false), 140);
+  }, [clearPeekTimer]);
+  const peekingRef = useRef(false);
+  peekingRef.current = peeking;
+  const closePeek = useCallback(() => {
+    clearPeekTimer();
+    if (peekingRef.current) peekHeld.current = true;
+    setPeeking(false);
   }, [clearPeekTimer]);
   useEffect(() => clearPeekTimer, [clearPeekTimer]);
   useEffect(() => {
     if (pinnedLabels) setPeeking(false);
   }, [pinnedLabels]);
   useEffect(() => {
-    setPeeking(false);
-  }, [pathname]);
+    closePeek();
+  }, [pathname, closePeek]);
   useEffect(() => {
     if (!peeking) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setPeeking(false);
+      if (e.key === 'Escape') closePeek();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [peeking]);
+  }, [peeking, closePeek]);
   const showLabels = pinnedLabels || peeking;
 
   useEffect(() => {

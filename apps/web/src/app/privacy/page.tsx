@@ -8,6 +8,7 @@ import { LegalText } from '@/components/common/LegalText';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const LAST_UPDATED = 'March 20, 2026';
+const LAST_UPDATED_EL = '20 Μαρτίου 2026';
 
 const sections = [
   {
@@ -241,7 +242,13 @@ export default function PrivacyPage() {
             <Shield className="h-7 w-7 text-primary-accessible" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
-          <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
+          <p className="text-muted-foreground">
+            <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
+          </p>
+          {/* Legal text is not machine-translated: a paraphrase could promise something the policy does not. */}
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+            <BilingualText en="The policy below is written in English; the English text is the version that applies." el="Η παρακάτω πολιτική είναι γραμμένη στα Αγγλικά· ισχύει το αγγλικό κείμενο." keepSecondaryOnMobile wrap />
+          </p>
         </div>
       </section>
 
@@ -251,18 +258,18 @@ export default function PrivacyPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Privacy at a Glance" el="Το απόρρητο με μια ματιά" compact /></h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Database, label: 'Data Collection', desc: 'We collect only what we need' },
-              { icon: Lock, label: 'Security', desc: 'Your data is encrypted' },
-              { icon: UserCheck, label: 'Your Rights', desc: 'Access, correct, delete' },
-              { icon: Trash2, label: 'No Selling', desc: 'We never sell your data' },
+              { icon: Database, label: 'Data Collection', labelEl: 'Συλλογή δεδομένων', desc: 'We collect only what we need', descEl: 'Συλλέγουμε μόνο ό,τι χρειαζόμαστε' },
+              { icon: Lock, label: 'Security', labelEl: 'Ασφάλεια', desc: 'Your data is encrypted', descEl: 'Τα δεδομένα σας κρυπτογραφούνται' },
+              { icon: UserCheck, label: 'Your Rights', labelEl: 'Τα δικαιώματά σας', desc: 'Access, correct, delete', descEl: 'Πρόσβαση, διόρθωση, διαγραφή' },
+              { icon: Trash2, label: 'No Selling', labelEl: 'Καμία πώληση', desc: 'We never sell your data', descEl: 'Δεν πουλάμε ποτέ τα δεδομένα σας' },
             ].map((item) => (
               <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border/60 bg-card p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  <p className="text-sm font-medium text-foreground"><BilingualText en={item.label} el={item.labelEl} compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={item.desc} el={item.descEl} wrap /></p>
                 </div>
               </div>
             ))}

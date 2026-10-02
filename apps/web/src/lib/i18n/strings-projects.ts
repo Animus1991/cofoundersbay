@@ -189,6 +189,19 @@ export const PROJECT_STRINGS: Record<string, BilingualPair> = {
   own_this: { en: 'You own this project', el: 'Αυτό το έργο είναι δικό σας' },
   on_team: { en: "You're on this team", el: 'Είστε στην ομάδα' },
   applied_btn: { en: 'Application noted', el: 'Η αίτηση καταχωρήθηκε' },
+  preview: { en: 'Preview', el: 'Προεπισκόπηση' },
+  untitled: { en: 'Untitled project', el: 'Έργο χωρίς όνομα' },
+  no_tagline: { en: 'Add a one-line tagline', el: 'Προσθέστε ένα σλόγκαν μιας γραμμής' },
+  before_publish: { en: 'Before you publish', el: 'Πριν τη δημοσίευση' },
+  check_name: { en: 'A name', el: 'Όνομα' },
+  check_tagline: { en: 'A tagline', el: 'Σλόγκαν' },
+  check_desc: { en: 'What it is and who it is for', el: 'Τι είναι και για ποιον' },
+  check_industry: { en: 'An industry', el: 'Κλάδος' },
+  check_roles: { en: 'At least one open role', el: 'Τουλάχιστον ένας ανοιχτός ρόλος' },
+  check_tags: { en: 'Tags people search by', el: 'Ετικέτες αναζήτησης' },
+  required_group: { en: 'Required', el: 'Υποχρεωτικά' },
+  recommended_group: { en: 'Recommended', el: 'Προτεινόμενα' },
+  roles_open: { en: 'open roles', el: 'ανοιχτοί ρόλοι' },
 };
 
 export const PROJECT_COMMON_ROLES: BilingualPair[] = [

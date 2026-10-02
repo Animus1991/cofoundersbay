@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, ArrowRight, Check, Plus, X,
+  ArrowLeft, ArrowRight, Check, CheckCircle2, Circle, Plus, X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -160,6 +160,15 @@ export default function CreateProjectPage() {
   };
 
   const stageKey = PROJECT_STAGE_FULL_KEYS[status];
+  // What the listing still lacks, in the order the steps ask for it.
+  const checklist: { key: 'check_name' | 'check_tagline' | 'check_desc' | 'check_industry' | 'check_roles' | 'check_tags'; done: boolean; required: boolean }[] = [
+    { key: 'check_name', done: Boolean(name.trim()), required: true },
+    { key: 'check_tagline', done: Boolean(tagline.trim()), required: true },
+    { key: 'check_desc', done: Boolean(description.trim()), required: true },
+    { key: 'check_industry', done: Boolean(industry), required: true },
+    { key: 'check_roles', done: rolesNeeded.length > 0, required: false },
+    { key: 'check_tags', done: tags.length > 0, required: false },
+  ];
 
   return (
     <AppShell
@@ -173,7 +182,8 @@ export default function CreateProjectPage() {
         </Button>
       }
     >
-      <div className="max-w-2xl space-y-5">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
+      <div className="min-w-0 space-y-5">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -449,7 +459,8 @@ export default function CreateProjectPage() {
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-xl border border-border p-4">
+              {/* The preview beside the form carries this summary on wide screens. */}
+              <div className="space-y-4 rounded-xl border border-border p-4 lg:hidden">
                 <h3 className="page-section font-semibold text-foreground">
                   <BilingualText en={projectEn('review')} el={projectEl('review')} compact />
                 </h3>
@@ -499,6 +510,89 @@ export default function CreateProjectPage() {
             </Button>
           )}
         </div>
+      </div>
+
+        {/* How the listing will read, and what it still lacks. */}
+        <aside aria-label={t(projectEn('preview'), projectEl('preview'))} className="hidden min-w-0 space-y-4 lg:sticky lg:top-24 lg:block">
+          <Card className="rounded-xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                <BilingualText en={projectEn('preview')} el={projectEl('preview')} />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap gap-1.5">
+                <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary-accessible">
+                  {stageKey ? <BilingualText en={projectEn(stageKey)} el={projectEl(stageKey)} compact /> : status}
+                </Badge>
+                {industry ? <Badge variant="outline" size="sm">{industry}</Badge> : null}
+              </div>
+              <p className={cn('text-lg font-semibold leading-snug break-words', !name.trim() && 'text-muted-foreground')}>
+                {name.trim() || <BilingualText en={projectEn('untitled')} el={projectEl('untitled')} />}
+              </p>
+              <p className={cn('text-sm leading-relaxed break-words', tagline.trim() ? 'text-foreground' : 'text-muted-foreground')}>
+                {tagline.trim() || <BilingualText en={projectEn('no_tagline')} el={projectEl('no_tagline')} wrap />}
+              </p>
+              {description.trim() ? (
+                <p className="line-clamp-4 border-t border-border/60 pt-3 text-sm leading-relaxed text-muted-foreground">{description.trim()}</p>
+              ) : null}
+              <dl className="space-y-1.5 border-t border-border/60 pt-3 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="min-w-0 text-muted-foreground"><BilingualText en={projectEn('review_team')} el={projectEl('review_team')} wrap /></dt>
+                  <dd className="shrink-0 font-medium tabular-nums">{maxTeamSize} {t(projectEn('n_members'), projectEl('n_members'))}</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="min-w-0 text-muted-foreground"><BilingualText en={projectEn('review_roles')} el={projectEl('review_roles')} wrap /></dt>
+                  <dd className="shrink-0 font-medium tabular-nums">{rolesNeeded.length}</dd>
+                </div>
+              </dl>
+              {rolesNeeded.length > 0 ? (
+                <ul className="flex flex-wrap gap-1.5" aria-label={t(projectEn('roles_open'), projectEl('roles_open'))}>
+                  {rolesNeeded.map((role) => (
+                    <li key={role}><Badge variant="outline" size="sm">{role}</Badge></li>
+                  ))}
+                </ul>
+              ) : null}
+              {tags.length > 0 ? (
+                <p className="text-xs text-muted-foreground">{tags.map((tag) => `#${tag}`).join(' ')}</p>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                <BilingualText en={projectEn('before_publish')} el={projectEl('before_publish')} />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {([true, false] as const).map((required) => (
+                <div key={String(required)} className="space-y-2">
+                  <p className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {required
+                      ? <BilingualText en={projectEn('required_group')} el={projectEl('required_group')} compact />
+                      : <BilingualText en={projectEn('recommended_group')} el={projectEl('recommended_group')} compact />}
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    {checklist.filter((item) => item.required === required).map((item) => (
+                      <li key={item.key} className="flex items-start gap-2">
+                        {item.done ? (
+                          <CheckCircle2 className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
+                        ) : (
+                          <Circle className="mt-0.5 icon-sm shrink-0 text-muted-foreground/60" aria-hidden="true" />
+                        )}
+                        <span className={cn('min-w-0', item.done ? 'text-foreground' : 'text-muted-foreground')}>
+                          <BilingualText en={projectEn(item.key)} el={projectEl(item.key)} wrap />
+                          <span className="sr-only">{item.done ? bilingualAria(' (done)', ' (ολοκληρώθηκε)') : bilingualAria(' (to do)', ' (εκκρεμεί)')}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </aside>
       </div>
     </AppShell>
   );

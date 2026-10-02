@@ -24,6 +24,7 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Download,
   Eye,
   X,
@@ -43,6 +44,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -1192,50 +1194,53 @@ export function PitchDeckBuilder({
                     </button>
                   ))}
                 </CardContent>
+                {/* Every type, one click away, without a twelve-row column under the list. */}
+                <div className="border-t border-border/60 p-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-auto min-h-10 w-full justify-between gap-2 rounded-xl px-2 text-left">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <Plus className="icon-sm shrink-0" aria-hidden="true" />
+                          <span className="min-w-0 text-xs leading-snug">
+                            <BilingualText en={builderEn('pitch_add')} el={builderEl('pitch_add')} compact wrap />
+                          </span>
+                        </span>
+                        <ChevronDown className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-72 max-w-[calc(100vw-2rem)]">
+                      <DropdownMenuLabel className="text-2xs font-normal leading-snug text-muted-foreground">
+                        <BilingualText en={builderEn('pitch_add_hint')} el={builderEl('pitch_add_hint')} wrap />
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {SLIDE_TEMPLATES.map((template) => {
+                        const exists = data.slides.some((slide) => slide.type === template.type);
+                        return (
+                          <DropdownMenuItem
+                            key={template.type}
+                            onClick={() => addSlide(template.type)}
+                            className={cn('gap-2', exists && 'text-muted-foreground')}
+                          >
+                            <CfbGlyph name={template.glyph} className="icon-sm shrink-0" />
+                            <span className="min-w-0 flex-1 text-xs leading-snug">
+                              <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact wrap />
+                            </span>
+                            {exists && (
+                              <>
+                                <Check className="icon-sm shrink-0 text-status-success" aria-hidden="true" />
+                                <span className="sr-only">
+                                  <BilingualText en={builderEn('pitch_in_deck')} el={builderEl('pitch_in_deck')} compact />
+                                </span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </Card>
 
-              <Card className="min-w-0">
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm">
-                    <BilingualText en={builderEn('pitch_add')} el={builderEl('pitch_add')} compact wrap />
-                  </CardTitle>
-                </CardHeader>
-                {/* All twelve types in view: a scroll box inside the page scroll hid half of them. */}
-                <CardContent className="grid grid-cols-2 gap-1 p-2 sm:grid-cols-1">
-                  <p className="col-span-2 px-2 pb-1 text-2xs text-muted-foreground sm:col-span-1">
-                    <BilingualText en={builderEn('pitch_add_hint')} el={builderEl('pitch_add_hint')} />
-                  </p>
-                  {SLIDE_TEMPLATES.map((template) => {
-                    const exists = data.slides.some((slide) => slide.type === template.type);
-                    return (
-                      <Button
-                        key={template.type}
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          'h-auto min-h-10 w-full justify-start gap-2 whitespace-normal rounded-xl px-2 py-2 text-left',
-                          exists && 'text-muted-foreground',
-                        )}
-                        onClick={() => addSlide(template.type)}
-                      >
-                        <CfbGlyph name={template.glyph} className="icon-sm shrink-0" />
-                        {/* Wraps: the column is a quarter of the editor, too narrow for both languages on one line. */}
-                        <span className="min-w-0 flex-1 text-xs leading-snug">
-                          <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact wrap />
-                        </span>
-                        {exists && (
-                          <>
-                            <Check className="icon-sm shrink-0 text-status-success" aria-hidden="true" />
-                            <span className="sr-only">
-                              <BilingualText en={builderEn('pitch_in_deck')} el={builderEl('pitch_in_deck')} compact />
-                            </span>
-                          </>
-                        )}
-                      </Button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
             </div>
 
             <div className="order-1 min-w-0 lg:order-2 lg:col-span-3">
