@@ -3565,15 +3565,25 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       validationScore: 35,
       artifactCompleteness: 61,
     };
-    const detail: Record<string, string> = {
-      problemClarity: 'Problem statement written and reviewed',
-      solutionClarity: 'Solution outline drafted',
-      marketUnderstanding: 'TAM sized, competitors not yet mapped',
-      productDefinition: 'PRD started, MVP scope open',
-      teamCompleteness: 'Founder only — no technical cofounder yet',
-      executionReadiness: '2 of 4 milestones on track',
-      validationScore: 'No expert review requested yet',
-      artifactCompleteness: 'Documents averaging 61% complete',
+    // Signals, not prose. The service answers with the raw facts behind each
+    // dimension and leaves the sentence to the web (lib/readiness-evidence.ts);
+    // this used to answer with eight hand-written English sentences instead,
+    // which is why the showcase read "Problem statement written and reviewed"
+    // while the live product read "idea_core at 50%". A preview that writes
+    // better copy than the product is not a preview of the product.
+    //
+    // Every figure below matches what the Harbor workspace shows elsewhere:
+    // five documents averaging 61%, a solo founder, four reviews with two
+    // approved, eight feedback rounds at 63% applied.
+    const signals: Record<string, Record<string, string | number | boolean>> = {
+      problemClarity:      { docType: 'idea_core', completion: 50, approved: false },
+      solutionClarity:     { docType: '', completion: 0, inferred: true },
+      marketUnderstanding: { docType: 'market_analysis', completion: 0 },
+      productDefinition:   { docType: 'mvp_plan', completion: 55 },
+      teamCompleteness:    { memberCount: 1, collaborators: 0 },
+      executionReadiness:  { completedReviews: 2, totalReviews: 4, approvalRate: 0.5 },
+      validationScore:     { feedbackCount: 8, appliedRate: 0.63 },
+      artifactCompleteness: { docCount: 5, avgCompletion: 61, approvedDocs: 0 },
     };
     const weight = 1 / Object.keys(dimensions).length;
     return {
@@ -3588,8 +3598,10 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
             score,
             weight,
             weightedContribution: Math.round(score * weight * 100) / 100,
-            detail: detail[k] ?? '',
-            signals: {},
+            // Kept only as the fallback the web uses for a dimension whose
+            // signals are missing; the sentence comes from the signals.
+            detail: '',
+            signals: signals[k] ?? {},
           },
         ]),
       ),

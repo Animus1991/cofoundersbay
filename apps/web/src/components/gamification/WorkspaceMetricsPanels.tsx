@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { readinessEvidence } from '@/lib/readiness-evidence';
 import { qk } from '@/lib/query-keys';
 import {
   Target,
@@ -142,6 +143,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         {dims.map(({ key, label, labelEl, icon: Icon }) => {
           const score   = data.dimensions?.[key] ?? 0;
           const detail  = data.dimensionBreakdown?.[key];
+          const evidence = readinessEvidence(key, detail?.signals, detail?.detail);
           return (
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between gap-2">
@@ -157,11 +159,6 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {detail?.detail && (
-                    <span className="text-2xs text-muted-foreground hidden sm:block max-w-[140px] truncate">
-                      {detail.detail}
-                    </span>
-                  )}
                   <Badge
                     variant={scoreBadgeVariant(score)}
                     className="text-2xs px-1.5 py-0 h-4 tabular-nums"
@@ -176,6 +173,21 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
                   style={{ width: `${score}%` }}
                 />
               </div>
+              {/* The evidence, on its own line.
+                  It used to sit on the title row at `max-w-[140px] truncate`,
+                  right-aligned against the badge. The sentences it carries are
+                  180-240px, so a 1440px measurement found all eight clipped —
+                  "Founder only — no technical cofounde…" — and the one text on
+                  the panel that answers "why is my score this" was the only one
+                  nobody could finish reading. The row has no room to give: the
+                  badge owns the right edge. A line of its own costs eight rows
+                  of height and makes the reading order what the reader expects:
+                  what it is, what it scored, how far along, and then why. */}
+              {evidence && (
+                <p className="text-2xs leading-snug text-muted-foreground">
+                  <BilingualText en={evidence.en} el={evidence.el} stacked wrap />
+                </p>
+              )}
             </div>
           );
         })}
