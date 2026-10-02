@@ -142,7 +142,20 @@ export type ActionDeclaration = {
    */
   auditSubject?: { param: string; entityType: string };
   confirmLabel?: BilingualCopy;
+  /**
+   * The platform roles (`User.role`) allowed to use this capability. Absent
+   * means every signed-in user.
+   *
+   * Mirrors the endpoint's own guard and nothing more: a capability gets
+   * `roles` only when its controller carries `@Roles(...)`. Stricter here
+   * would hide something the API permits; looser would offer the model a call
+   * the API will refuse. The endpoint stays the authority either way.
+   */
+  roles?: readonly PlatformRole[];
 };
+
+/** `User.role` in the Prisma schema. */
+export type PlatformRole = 'founder' | 'mentor' | 'investor' | 'org' | 'admin' | 'super_admin';
 
 /** An entry in the catalogue handed to a model that supports function calling. */
 export type ToolCatalogEntry = {

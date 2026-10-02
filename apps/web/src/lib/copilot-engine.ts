@@ -1,3 +1,4 @@
+import { canUseAction } from '@cofounderbay/shared';
 import {
   getMeProfile,
   getNotificationUnreadCount,
@@ -354,6 +355,18 @@ export function replyLocaleFor(userMessage: string, locale?: string): string | u
   return locale;
 }
 
+/**
+ * The page context carries the role facet (`platform_admin`,
+ * `existing_founder`…); the declarations speak in `User.role`. Only the admin
+ * distinction matters to any declaration today, so every other known facet
+ * reads as a non-admin role, and no facet at all stays unknown.
+ */
+function platformRoleOf(facet: string | null | undefined): string | null | undefined {
+  if (facet === undefined || facet === null || facet === '') return undefined;
+  if (facet === 'platform_admin' || facet === 'admin' || facet === 'super_admin') return 'admin';
+  return 'member';
+}
+
 export async function runCopilotTurn(
   userMessage: string,
   pageContext?: PageContextPacket,
@@ -362,10 +375,20 @@ export async function runCopilotTurn(
   const replyLocale = replyLocaleFor(userMessage, pageContext?.locale);
   const t = translatorFor(replyLocale);
   let planned = options?.tools ? [...options.tools] : planCopilotTools(userMessage);
-  let usedTools = planned.map((t) => t.name);
   const citations: CopilotCitation[] = [];
   const actions: CopilotAction[] = [];
   const sections: string[] = [];
+
+  // Role gating, as a courtesy ahead of the endpoint's own guard: a capability
+  // declared for administrators is not run for a reader whose role is known
+  // and is not one. An unknown role goes through, and the endpoint decides.
+  const platformRole = platformRoleOf(pageContext?.role);
+  const refused = platformRole === undefined ? [] : planned.filter((tool) => !canUseAction(tool.name, platformRole));
+  if (refused.length) {
+    planned = planned.filter((tool) => !refused.includes(tool));
+    sections.push(t('That is only available to platform administrators.'));
+  }
+  let usedTools = planned.map((t) => t.name);
 
   let graph: CopilotGraph | null = null;
   let people: SearchHit[] = [];

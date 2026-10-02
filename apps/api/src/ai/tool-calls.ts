@@ -1,4 +1,5 @@
 import {
+  canUseAction,
   getActionDeclaration,
   isDeclaredAction,
   type ActionParam,
@@ -21,7 +22,10 @@ import {
  *     a *proposal*. `writes` is carried through precisely so a caller cannot
  *     treat a mutation as though it were a read.
  *   - It is not an authorisation check. Each endpoint keeps its own guards;
- *     this only stops a capability being conjured that was never declared.
+ *     this only stops a capability being conjured that was never declared,
+ *     and one the caller's role was never offered (a declaration's `roles`
+ *     mirrors its endpoint's `@Roles`, so this refuses early what the
+ *     endpoint would refuse anyway).
  */
 
 export type AcceptedToolCall = {
@@ -116,7 +120,7 @@ function validateParam(
 }
 
 /** Reviews one call. Exported so a caller can check a single proposal. */
-export function reviewToolCall(raw: RawToolCall): 
+export function reviewToolCall(raw: RawToolCall, role?: string | null): 
   | { ok: true; call: AcceptedToolCall }
   | { ok: false; rejection: RejectedToolCall } {
   const name = readName(raw);
@@ -133,6 +137,12 @@ export function reviewToolCall(raw: RawToolCall):
     // isDeclaredAction is the same source, so this is unreachable; kept because
     // returning a rejection is safer than asserting non-null on a model path.
     return { ok: false, rejection: { name, reason: `"${name}" has no declaration` } };
+  }
+
+  // `undefined` means the caller did not say (a check of the shape alone);
+  // a known role, or `null` for none, is held to the declaration's `roles`.
+  if (role !== undefined && !canUseAction(name, role)) {
+    return { ok: false, rejection: { name, reason: `"${name}" is not available to this role` } };
   }
 
   const supplied = readArgs(raw);
@@ -162,7 +172,7 @@ export function reviewToolCall(raw: RawToolCall):
  * shape the caller assumed (`1a309c6`, "stop a malformed AI-agents response
  * from crashing every page").
  */
-export function reviewToolCalls(raw: unknown): ToolCallReview {
+export function reviewToolCalls(raw: unknown, role?: string | null): ToolCallReview {
   if (!Array.isArray(raw)) return { accepted: [], rejected: [] };
 
   const accepted: AcceptedToolCall[] = [];
@@ -173,7 +183,7 @@ export function reviewToolCalls(raw: unknown): ToolCallReview {
       rejected.push({ name: '', reason: 'tool call is not an object' });
       continue;
     }
-    const result = reviewToolCall(entry as RawToolCall);
+    const result = reviewToolCall(entry as RawToolCall, role);
     if (result.ok) accepted.push(result.call);
     else rejected.push(result.rejection);
   }

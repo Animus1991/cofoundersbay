@@ -178,3 +178,40 @@ describe('reviewing a batch of tool calls', () => {
     expect(review.accepted.find((c) => c.name === 'search_people')?.writes).toBe(false);
   });
 });
+
+describe('role gating (Wave E)', () => {
+  // AdminController is @Roles('admin', 'super_admin'); the two platform reads
+  // that call it declare the same roles, and nothing else declares any.
+  it('declares roles only where the endpoint has them', () => {
+    const limited = listActionIds().filter((id) => toToolCatalog('founder').every((tool) => tool.function.name !== id));
+    expect(limited.sort()).toEqual(['get_moderation_queue', 'get_platform_stats']);
+  });
+
+  it('offers admin reads to an admin and not to a founder', () => {
+    const forAdmin = toToolCatalog('admin').map((tool) => tool.function.name);
+    expect(forAdmin).toContain('get_platform_stats');
+    expect(toToolCatalog('super_admin').map((tool) => tool.function.name)).toContain('get_moderation_queue');
+    expect(toToolCatalog(null).map((tool) => tool.function.name)).not.toContain('get_platform_stats');
+    // No role argument: the full catalogue, for documentation.
+    expect(toToolCatalog().length).toBe(listActionIds().length);
+  });
+
+  it('rejects a role-limited call from a caller without the role, with a reason', () => {
+    const call = { function: { name: 'get_moderation_queue', arguments: {} } };
+    const refused = reviewToolCall(call, 'founder');
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.rejection.reason).toMatch(/not available to this role/);
+    expect(reviewToolCall(call, 'admin').ok).toBe(true);
+    // Shape-only review (no role given) is unchanged.
+    expect(reviewToolCall(call).ok).toBe(true);
+  });
+
+  it('keeps every other capability open to every role', () => {
+    const review = reviewToolCalls([
+      { function: { name: 'get_events', arguments: {} } },
+      { function: { name: 'get_platform_stats', arguments: {} } },
+    ], 'investor');
+    expect(review.accepted.map((c) => c.name)).toEqual(['get_events']);
+    expect(review.rejected.map((r) => r.name)).toEqual(['get_platform_stats']);
+  });
+});

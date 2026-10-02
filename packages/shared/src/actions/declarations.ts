@@ -449,6 +449,8 @@ export const ACTION_DECLARATIONS = [
     },
     params: [],
     writes: false,
+    // AdminController is @Roles('admin', 'super_admin').
+    roles: ['admin', 'super_admin'],
   },
   {
     id: 'get_moderation_queue',
@@ -460,6 +462,8 @@ export const ACTION_DECLARATIONS = [
     },
     params: [],
     writes: false,
+    // AdminController is @Roles('admin', 'super_admin').
+    roles: ['admin', 'super_admin'],
   },
   {
     id: 'navigate',
@@ -1869,14 +1873,29 @@ export function isDeclaredAction(id: string): id is DeclaredActionId {
  * Both apps call this, so the tools a model is offered and the tools the
  * server will accept are the same list by construction rather than by review.
  */
-export function toToolCatalog(): ToolCatalogEntry[] {
+/**
+ * Whether a user with this platform role may use the capability. An unknown
+ * role (a caller without one) is refused only for role-limited capabilities.
+ */
+export function canUseAction(id: string, role: string | null | undefined): boolean {
+  const declaration = getActionDeclaration(id);
+  if (!declaration) return false;
+  if (!declaration.roles || declaration.roles.length === 0) return true;
+  return Boolean(role) && (declaration.roles as readonly string[]).includes(role as string);
+}
+
+export function toToolCatalog(role?: string | null): ToolCatalogEntry[] {
   // Widened on purpose. `as const` is there so ids and reversal kinds stay
   // literal for the apps, but it also narrows `params` to exactly the fields
   // the current entries happen to use — and none of them use `enumValues`
   // yet, so reading it off the literal type does not compile.
   const declarations: readonly ActionDeclaration[] = ACTION_DECLARATIONS;
 
-  return declarations.map((action) => ({
+  // A model is offered only what its caller may use. Without a role (a
+  // catalogue requested for documentation), every capability is listed.
+  const offered = role === undefined ? declarations : declarations.filter((action) => canUseAction(action.id, role));
+
+  return offered.map((action) => ({
     type: 'function' as const,
     function: {
       name: action.id,

@@ -60,8 +60,10 @@ export class AIController {
    * confirmation the user gives it.
    */
   @Get('tools')
-  getTools() {
-    return { tools: toToolCatalog() };
+  getTools(@CurrentUser() user: { id: string; role?: string | null }) {
+    // Only what this caller may use: an admin-only read is not offered to a
+    // founder's model, and would be refused by the endpoint if it were.
+    return { tools: toToolCatalog(user?.role ?? null) };
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -112,7 +114,7 @@ export class AIController {
   @Post('chat')
   @UseGuards(AIRateLimitGuard)
   async chat(
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user: { id: string; role?: string | null },
     @Body() dto: ChatRequestDto,
   ) {
     const agent = getAgent(dto.agentId || 'general');
@@ -144,7 +146,7 @@ export class AIController {
         model: dto.model,
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
-        tools: dto.enableTools ? toToolCatalog() : undefined,
+        tools: dto.enableTools ? toToolCatalog(user?.role ?? null) : undefined,
         onToolCalls: (calls) => {
           toolCalls = calls;
         },
@@ -166,7 +168,7 @@ export class AIController {
 
       // Same contract as the streaming path: validated proposals, never
       // executed here, and the rejections are reported rather than swallowed.
-      const review = reviewToolCalls(toolCalls);
+      const review = reviewToolCalls(toolCalls, user?.role ?? null);
 
       return {
         message: response,
@@ -205,7 +207,7 @@ export class AIController {
   @Post('chat/stream')
   @UseGuards(AIRateLimitGuard)
   async chatStream(
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user: { id: string; role?: string | null },
     @Body() dto: ChatRequestDto,
     @Res() res: Response,
   ) {
@@ -252,7 +254,7 @@ export class AIController {
         model: dto.model,
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
-        tools: dto.enableTools ? toToolCatalog() : undefined,
+        tools: dto.enableTools ? toToolCatalog(user?.role ?? null) : undefined,
         onToolCalls: (calls) => {
           toolCalls = calls;
         },
@@ -284,7 +286,7 @@ export class AIController {
       // `rejected` travels too rather than being dropped silently: a model that
       // keeps inventing capabilities is something the client can surface and a
       // reader of the logs can act on.
-      const review = reviewToolCalls(toolCalls);
+      const review = reviewToolCalls(toolCalls, user?.role ?? null);
       res.write(
         `data: ${JSON.stringify({
           done: true,
