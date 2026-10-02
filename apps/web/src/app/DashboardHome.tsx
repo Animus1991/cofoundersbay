@@ -721,7 +721,7 @@ export function DashboardHome() {
                       <Link key={m.id} href="/milestones"
                         className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 transition-colors hover:bg-secondary"
                       >
-                        <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-status-danger' : m.priority === 'medium' ? 'bg-status-warning' : 'bg-muted-foreground')} />
+                        <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-status-danger-mark' : m.priority === 'medium' ? 'bg-status-warning-mark' : 'bg-muted-foreground')} />
                         <span className="flex-1 truncate text-xs text-foreground">{m.title}</span>
                         {m.dueDate && (
                           <span className="shrink-0 text-2xs text-muted-foreground">

@@ -54,7 +54,7 @@ export function DashboardMembers({ members = defaultMembers, className }: Dashbo
                   </Avatar>
                   {m.isOnline !== false && (
                     <span
-                      className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-status-success ring-2 ring-card"
+                      className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-status-success-mark ring-2 ring-card"
                       aria-label="Online"
                     />
                   )}

@@ -192,7 +192,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   // measurement. Those destinations stay as the next action, not as fake bars.
   const stages = [
     { key: 'views', labelEn: analyticsEn('stage_views'), labelEl: analyticsEl('stage_views'), value: views, bar: 'bg-primary/70', href: '/profile' as const },
-    { key: 'accepted', labelEn: analyticsEn('stage_accepted'), labelEl: analyticsEl('stage_accepted'), value: connections, bar: 'bg-status-success', href: '/connections' as const },
+    { key: 'accepted', labelEn: analyticsEn('stage_accepted'), labelEl: analyticsEl('stage_accepted'), value: connections, bar: 'bg-status-success-mark', href: '/connections' as const },
   ];
   const untracked = [
     { key: 'requests', href: '/discover' as const, en: analyticsEn('funnel_untracked_requests'), el: analyticsEl('funnel_untracked_requests') },

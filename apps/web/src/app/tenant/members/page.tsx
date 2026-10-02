@@ -112,7 +112,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 function EngagementBar({ score }: { score: number }) {
-  const color = score >= 70 ? 'bg-status-success' : score >= 40 ? 'bg-status-warning' : 'bg-status-danger';
+  const color = score >= 70 ? 'bg-status-success-mark' : score >= 40 ? 'bg-status-warning-mark' : 'bg-status-danger-mark';
   return (
     <div className="space-y-0.5">
       <div className="flex justify-between text-2xs text-muted-foreground">
@@ -145,7 +145,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
               <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
             </Avatar>
             {member.isOnline && (
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-status-success border-2 border-background" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-status-success-mark border-2 border-background" />
             )}
           </div>
           <div className="flex-1 min-w-0 space-y-2">

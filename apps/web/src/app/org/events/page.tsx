@@ -200,7 +200,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold">{event.title}</h3>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                {event.status === 'ongoing' && <span className={cn('mr-1 inline-block h-1.5 w-1.5 rounded-full animate-pulse bg-status-success')} />}
+                {event.status === 'ongoing' && <span className={cn('mr-1 inline-block h-1.5 w-1.5 rounded-full animate-pulse bg-status-success-mark')} />}
                 <BilingualText en={statusCfg.label} el={statusCfg.labelEl} compact />
               </Badge>
             </div>

@@ -77,8 +77,8 @@ export function ScoreHistoryChartInner({
           formatter={(val: number, name: string) => [`${val}%`, name]}
         />
         <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} name={overallName} />
-        <Line type="monotone" dataKey="accel" stroke="hsl(var(--status-accent-fg))" strokeWidth={2} dot={{ r: 2.5 }} name={acceleratorName} strokeDasharray="4 2" />
-        <Line type="monotone" dataKey="invest" stroke="hsl(var(--status-success-fg))" strokeWidth={2} dot={{ r: 2.5 }} name={investorName} strokeDasharray="4 2" />
+        <Line type="monotone" dataKey="accel" stroke="hsl(var(--status-accent-mark))" strokeWidth={2} dot={{ r: 2.5 }} name={acceleratorName} strokeDasharray="4 2" />
+        <Line type="monotone" dataKey="invest" stroke="hsl(var(--status-success-mark))" strokeWidth={2} dot={{ r: 2.5 }} name={investorName} strokeDasharray="4 2" />
       </LineChart>
     </ResponsiveContainer>
   );

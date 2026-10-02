@@ -198,7 +198,7 @@ export const ProfileCard = React.forwardRef<
             {initialsOf(profile.name).toUpperCase()}
           </div>
           {profile.verified && (
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-status-success rounded-full flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-status-success-mark rounded-full flex items-center justify-center">
               <div className="h-2 w-2 bg-white rounded-full" />
             </div>
           )}

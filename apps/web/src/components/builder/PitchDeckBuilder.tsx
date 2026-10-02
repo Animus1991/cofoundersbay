@@ -1188,7 +1188,7 @@ export function PitchDeckBuilder({
                       <div
                         className={cn(
                           'h-2 w-2 shrink-0 rounded-full',
-                          slide.content.trim() ? 'bg-status-success' : 'bg-muted-foreground/30',
+                          slide.content.trim() ? 'bg-status-success-mark' : 'bg-muted-foreground/30',
                         )}
                       />
                     </button>

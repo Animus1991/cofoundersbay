@@ -330,5 +330,67 @@ textarea[class~="border-input"]:focus,
   border-color: hsl(var(--ring));
 }
 `;
+// ── One accent everywhere ───────────────────────────────────────────────
+// The lively tone is --primary itself, so every solid accent (pills, rings,
+// avatars, badges, charts, buttons) shows the same colour. The deeper tone
+// survives as --primary-mid, used only for faint tints (Tailwind maps /5../40
+// to it) so a 10% wash of a pastel does not vanish into the card.
+let swapped = 0;
+css = css.replace(
+  /(\s*)--primary:\s+([^;]+);\n\s*--primary-foreground:\s+0 0% 100%;\n\s*--primary-accessible:\s+([^;]+);\n\s*--primary-soft:\s+([^;]+);([^\n]*)\n\s*--primary-soft-foreground:\s+([^;]+);([^\n]*)/g,
+  (_, ws, mid, text, fill, fillNote, ink, inkNote) => {
+    swapped++;
+    const i = ws.replace(/^\n/, '');
+    return `${ws}--primary: ${fill};${fillNote}\n${i}--primary-foreground: ${ink};${inkNote}\n${i}--primary-mid: ${mid};${' '.repeat(Math.max(1, 26 - mid.length))}/* tints only (/5../40) */\n${i}--primary-accessible: ${text};`;
+  },
+);
+if (swapped < 8) throw new Error('primary groups swapped: ' + swapped);
+rep(`  html.dark,
+  html[data-theme="cofounder"],
+  html[data-theme="system"] {
+    --primary-soft: var(--primary);
+    --primary-soft-foreground: var(--primary-foreground);
+  }`, `  html.dark,
+  html[data-theme="cofounder"],
+  html[data-theme="system"] {
+    --primary-mid: var(--primary);
+  }`);
+rep(`  /* Dark surfaces already fill with a pastel and a dark label, so the soft
+     fill is the primary itself there. */`, `  /* Dark surfaces already fill with a pastel and a dark label; their tints
+     come from that same tone. */`);
+rep(`       --primary        the mid tone: tints (/5 /10), bars, rings, small solid
+                        marks with a white label (4.6:1)
+       --primary-soft   the filled button: a pastel with a dark ink label of
+                        its own hue (9.6:1) — Cursor's "Upgrade" chip and
+                        Windsurf's "Download" button, not a saturated block
+                        with white text shouting from every page header
+       --primary-accessible  link and emphasis text, >=5:1 on a card */`,
+`       --primary        the accent wherever it is solid: buttons, active pills,
+                        rings, bars, avatars, badges, chart series. A lively
+                        fill with a near-black ink label of its own hue
+                        (--primary-foreground, 9.6:1) - Cursor's "Upgrade",
+                        Windsurf's "Download"
+       --primary-mid    the deeper tone, only for faint tints (/5../40), which
+                        a pastel cannot carry
+       --primary-accessible  link and emphasis text, >=5:1 on a card
+       --ink            the label on any lively status mark */`);
+css = css.split('\n').filter((l) => !/primary-soft/.test(l)).join('\n');
+css = css.replace(/hsl\(var\(--primary\) \//g, 'hsl(var(--primary-mid) /');
+rep(`    --primary-accessible: 250 40.7% 55%;\n`, `    --primary-accessible: 250 40.7% 55%;\n    --ink:              232 20% 10%;\n`);
+rep(`  .dark,
+  [data-theme="cofounder"],
+  [data-theme="system"] {
+`, `  .dark,
+  [data-theme="cofounder"],
+  [data-theme="system"] {
+    /* Dark text tones are already light pastels; they are the marks too. */
+    --status-success-mark: var(--status-success-fg);
+    --status-warning-mark: var(--status-warning-fg);
+    --status-danger-mark:  var(--status-danger-fg);
+    --status-info-mark:    var(--status-info-fg);
+    --status-accent-mark:  var(--status-accent-fg);
+    --status-neutral-mark: var(--status-neutral-fg);
+`);
+
 fs.writeFileSync(FILE, css);
 console.log('ok');

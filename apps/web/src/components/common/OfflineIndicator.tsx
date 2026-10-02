@@ -99,27 +99,27 @@ export function OfflineBanner() {
   // must not cover the sticky header there. Real offline still shows.
   const variant = !isOnline
     ? ({
-        tone: 'bg-status-warning text-status-warning',
+        tone: 'bg-status-warning-mark text-status-warning',
         icon: <WifiOff className="icon-sm shrink-0" aria-hidden="true" />,
         text: "You're offline. Some features may be unavailable.",
-        action: { label: 'Retry', hover: 'hover:bg-status-warning', text: 'text-status-warning' },
+        action: { label: 'Retry', hover: 'hover:bg-status-warning-mark', text: 'text-status-warning' },
         dismiss: false,
       } as const)
     : !isApiOnline && !previewDemo && !dismissed
       ? ({
           // orange-700, not -600: white on -600 is 3.56:1, below AA for body text.
-          tone: 'bg-status-warning text-white',
+          tone: 'bg-status-warning-mark text-ink',
           icon: <ServerCrash className="icon-sm shrink-0" aria-hidden="true" />,
           text:
             process.env.NODE_ENV === 'development'
               ? 'API server is unavailable — pages will reload automatically when it recovers. Run: pnpm dev:stack (starts API on :3001 + web on :3000)'
               : 'API server is unavailable — pages will reload automatically when it recovers.',
-          action: { label: 'Reload', hover: 'hover:bg-status-warning', text: 'text-white' },
+          action: { label: 'Reload', hover: 'hover:bg-status-warning-mark', text: 'text-ink' },
           dismiss: true,
         } as const)
       : showReconnected
         ? ({
-            tone: 'bg-status-success text-status-success',
+            tone: 'bg-status-success-mark text-status-success',
             icon: <Wifi className="icon-sm shrink-0" aria-hidden="true" />,
             text: 'Back online!',
             action: null,
@@ -164,7 +164,7 @@ export function OfflineBanner() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 text-white hover:bg-status-warning"
+                className="h-7 text-ink hover:bg-status-warning-mark"
                 onClick={() => setDismissed(true)}
                 aria-label="Dismiss"
               >

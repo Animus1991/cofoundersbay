@@ -7,12 +7,12 @@ import type { CopilotCitation } from '@/lib/copilot-types';
 export function CitationChip({ citation }: { citation: CopilotCitation }) {
   const className = cn(
     'inline-flex items-center rounded-full border-0 bg-status-accent-bg px-2 py-0.5 text-[11px] font-medium text-status-accent',
-    'dark:bg-status-accent dark:text-status-accent',
+    'dark:bg-status-accent-mark dark:text-status-accent',
   );
 
   if (citation.href) {
     return (
-      <Link href={citation.href} className={cn(className, 'hover:bg-status-accent-bg dark:hover:bg-status-accent')}>
+      <Link href={citation.href} className={cn(className, 'hover:bg-status-accent-bg dark:hover:bg-status-accent-mark')}>
         {citation.label}
       </Link>
     );

@@ -29,13 +29,26 @@ const config: Config = {
           foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
+          // One accent, two jobs. Solid uses (`bg-primary`, `border-primary`,
+          // `fill-primary`, a /50+ wash) get the lively tone - Cursor's
+          // #7bafe9, Windsurf's #34e8bb - with a dark ink label. A faint tint
+          // (`/5`…`/40`) is mixed from the deeper mid tone instead, because a
+          // 10% wash of a pastel is indistinguishable from the card and every
+          // selected row, active nav item and highlight would vanish.
+          // A colour function is supported at runtime by Tailwind 3.4 (it is
+          // called with the opacity, `var(--tw-bg-opacity)` for a solid use) but
+          // is missing from its config types, hence the cast.
+          DEFAULT: (({ opacityValue }: { opacityValue?: string }) => {
+            if (opacityValue === undefined) return 'hsl(var(--primary))';
+            const alpha = Number(opacityValue);
+            if (Number.isNaN(alpha) || alpha >= 0.5) return `hsl(var(--primary) / ${opacityValue})`;
+            return `hsl(var(--primary-mid) / ${opacityValue})`;
+          }) as unknown as string,
           foreground: 'hsl(var(--primary-foreground))',
           accessible: 'hsl(var(--primary-accessible))',
-          // The filled button: pastel with a dark ink label of its own hue.
-          soft: 'hsl(var(--primary-soft))',
-          'soft-foreground': 'hsl(var(--primary-soft-foreground))',
         },
+        /** Dark ink for a label on any lively mark (status chips, dots with text). */
+        ink: 'hsl(var(--ink))',
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
@@ -58,31 +71,37 @@ const config: Config = {
             DEFAULT: 'hsl(var(--status-success-fg) / <alpha-value>)',
             bg: 'hsl(var(--status-success-bg) / <alpha-value>)',
             border: 'hsl(var(--status-success-border) / <alpha-value>)',
+            mark: 'hsl(var(--status-success-mark) / <alpha-value>)',
           },
           warning: {
             DEFAULT: 'hsl(var(--status-warning-fg) / <alpha-value>)',
             bg: 'hsl(var(--status-warning-bg) / <alpha-value>)',
             border: 'hsl(var(--status-warning-border) / <alpha-value>)',
+            mark: 'hsl(var(--status-warning-mark) / <alpha-value>)',
           },
           danger: {
             DEFAULT: 'hsl(var(--status-danger-fg) / <alpha-value>)',
             bg: 'hsl(var(--status-danger-bg) / <alpha-value>)',
             border: 'hsl(var(--status-danger-border) / <alpha-value>)',
+            mark: 'hsl(var(--status-danger-mark) / <alpha-value>)',
           },
           info: {
             DEFAULT: 'hsl(var(--status-info-fg) / <alpha-value>)',
             bg: 'hsl(var(--status-info-bg) / <alpha-value>)',
             border: 'hsl(var(--status-info-border) / <alpha-value>)',
+            mark: 'hsl(var(--status-info-mark) / <alpha-value>)',
           },
           accent: {
             DEFAULT: 'hsl(var(--status-accent-fg) / <alpha-value>)',
             bg: 'hsl(var(--status-accent-bg) / <alpha-value>)',
             border: 'hsl(var(--status-accent-border) / <alpha-value>)',
+            mark: 'hsl(var(--status-accent-mark) / <alpha-value>)',
           },
           neutral: {
             DEFAULT: 'hsl(var(--status-neutral-fg) / <alpha-value>)',
             bg: 'hsl(var(--status-neutral-bg) / <alpha-value>)',
             border: 'hsl(var(--status-neutral-border) / <alpha-value>)',
+            mark: 'hsl(var(--status-neutral-mark) / <alpha-value>)',
           },
         },
         border: 'hsl(var(--border))',

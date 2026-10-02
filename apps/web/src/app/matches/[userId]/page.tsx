@@ -89,10 +89,10 @@ function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
         {[0, 25, 50, 75, 100].map((pct) => (
           <line key={pct} x1={PAD.left} y1={yAt(pct)} x2={W - PAD.right} y2={yAt(pct)} stroke="hsl(var(--border))" strokeWidth={1} />
         ))}
-        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-fg))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-fg))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        {source.map((v, i) => <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-success-fg))" />)}
-        {target.map((v, i) => <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-info-fg))" />)}
+        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        {source.map((v, i) => <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-success-mark))" />)}
+        {target.map((v, i) => <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-info-mark))" />)}
         {axes.map((axis, i) => (
           <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="hsl(var(--muted-foreground))">
             {axis}
@@ -100,8 +100,8 @@ function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
         ))}
       </svg>
       <figcaption className="mt-3 flex justify-center gap-6 text-xs text-muted-foreground">
-        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-success" aria-hidden="true" />You</span>
-        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-info" aria-hidden="true" />Match</span>
+        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-success-mark" aria-hidden="true" />You</span>
+        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-info-mark" aria-hidden="true" />Match</span>
       </figcaption>
     </figure>
   );

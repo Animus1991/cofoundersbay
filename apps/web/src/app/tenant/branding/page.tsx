@@ -240,7 +240,7 @@ export default function TenantBrandingPage() {
       actions={(
         <>
           {branding?.isBrandingActive ? (
-            <Badge variant="default" className="gap-1.5 bg-status-success hover:bg-status-success">
+            <Badge variant="default" className="gap-1.5 bg-status-success-mark hover:bg-status-success-mark">
               <CheckCircle2 className="icon-sm" />
               <BilingualText en="Published" el="Δημοσιευμένο" compact />
             </Badge>
@@ -863,7 +863,7 @@ export default function TenantBrandingPage() {
                     {!branding?.isBrandingActive && (
                       <Button
                         variant="default"
-                        className="flex-1 bg-status-success hover:bg-status-success"
+                        className="flex-1 bg-status-success-mark hover:bg-status-success-mark"
                         onClick={() => { saveMutation.mutate(form); publishMutation.mutate(); }}
                         disabled={saveMutation.isPending || publishMutation.isPending}
                       >

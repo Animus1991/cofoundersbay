@@ -37,28 +37,28 @@ const defaultActions: QuickAction[] = [
     label: 'New Post',
     icon: Edit,
     href: '/feed/new',
-    color: 'bg-status-accent hover:bg-status-accent',
+    color: 'bg-status-accent-mark hover:bg-status-accent-mark',
   },
   {
     id: 'message',
     label: 'Messages',
     icon: MessageCircle,
     href: '/messages',
-    color: 'bg-status-success hover:bg-status-success',
+    color: 'bg-status-success-mark hover:bg-status-success-mark',
   },
   {
     id: 'matches',
     label: 'Matches',
     icon: Users,
     href: '/matches',
-    color: 'bg-status-accent hover:bg-status-accent',
+    color: 'bg-status-accent-mark hover:bg-status-accent-mark',
   },
   {
     id: 'events',
     label: 'Events',
     icon: Calendar,
     href: '/events',
-    color: 'bg-status-warning hover:bg-status-warning',
+    color: 'bg-status-warning-mark hover:bg-status-warning-mark',
   },
 ];
 
@@ -104,7 +104,7 @@ export function QuickActions({
               {/* Icon button */}
               <button aria-label={action.label}
                 className={cn(
-                  'h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-white transition-transform hover:scale-110',
+                  'h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-ink transition-transform hover:scale-110',
                   action.color
                 )}
               >

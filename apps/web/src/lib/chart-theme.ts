@@ -129,8 +129,23 @@ export function useChartTheme(): ChartTheme {
 
   return {
     isDark,
-    series: isDark ? CHART_SERIES_DARK : CHART_SERIES_LIGHT,
-    status: isDark ? CHART_STATUS_DARK : CHART_STATUS_LIGHT,
+    // Slot 1 is the theme's own accent, not a fixed lilac: in the Mint theme
+    // every chart's lead series was #6756dc beside mint buttons. The other
+    // slots stay the muted categorical set (they encode "which series", and
+    // must not change meaning between themes).
+    series: [
+      readToken('--primary', (isDark ? CHART_SERIES_DARK : CHART_SERIES_LIGHT)[0]),
+      ...(isDark ? CHART_SERIES_DARK : CHART_SERIES_LIGHT).slice(1),
+    ],
+    // Status colours follow the theme's lively marks, so a "good" bar in a
+    // chart matches a "good" ring and dot on the same page.
+    status: {
+      ...(isDark ? CHART_STATUS_DARK : CHART_STATUS_LIGHT),
+      good: readToken('--status-success-mark', (isDark ? CHART_STATUS_DARK : CHART_STATUS_LIGHT).good),
+      warning: readToken('--status-warning-mark', (isDark ? CHART_STATUS_DARK : CHART_STATUS_LIGHT).warning),
+      critical: readToken('--status-danger-mark', (isDark ? CHART_STATUS_DARK : CHART_STATUS_LIGHT).critical),
+      neutral: readToken('--status-neutral-mark', (isDark ? CHART_STATUS_DARK : CHART_STATUS_LIGHT).neutral),
+    },
     grid: border,
     axis,
     surface,

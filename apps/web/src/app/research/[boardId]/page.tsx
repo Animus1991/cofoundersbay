@@ -2758,7 +2758,7 @@ export default function ResearchBoardPage() {
         {/* Connection mode indicator */}
         {connectionStart && (
           <div className="absolute top-3 left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 pointer-events-none">
-            <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-status-success text-white text-xs font-medium shadow-lg backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-status-success-mark text-ink text-xs font-medium shadow-lg backdrop-blur-sm">
               <GitBranch className="icon-sm" />
               Click a node to connect · Press Esc to cancel
             </div>

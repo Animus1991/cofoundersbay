@@ -342,7 +342,7 @@ export function AIAnalysisPanel({
                                 <ConfidenceBadge confidence={s.confidence} />
                                 <div className={cn(
                                   'w-4 h-4 rounded flex items-center justify-center border transition-colors',
-                                  isAccepted ? 'bg-status-accent border-status-accent' : 'border-border'
+                                  isAccepted ? 'bg-status-accent-mark border-status-accent' : 'border-border'
                                 )}>
                                   {isAccepted && <Check className="w-2.5 h-2.5 text-white" aria-hidden="true" />}
                                 </div>
@@ -431,7 +431,7 @@ export function AIAnalysisPanel({
                         )}
                       >
                         <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-status-success" />
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-status-success-mark" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1">
                               <p className="text-2xs font-bold uppercase tracking-wide text-status-success">{c.connType}</p>
@@ -439,7 +439,7 @@ export function AIAnalysisPanel({
                                 <ConfidenceBadge confidence={c.confidence} />
                                 <div className={cn(
                                   'w-4 h-4 rounded flex items-center justify-center border transition-colors',
-                                  isAccepted ? 'bg-status-success border-status-success' : 'border-border'
+                                  isAccepted ? 'bg-status-success-mark border-status-success' : 'border-border'
                                 )}>
                                   {isAccepted && <Check className="w-2.5 h-2.5 text-white" aria-hidden="true" />}
                                 </div>

@@ -29,11 +29,16 @@ for (const [name, t] of Object.entries(THEMES)) {
     css += `    --status-${tone}-fg:${' '.repeat(Math.max(1, 8 - tone.length))}${f(fg)};   /* ${cr(fg, bg).toFixed(2)} on tint, ${cr(fg, t.card).toFixed(2)} on card */\n`;
     css += `    --status-${tone}-bg:${' '.repeat(Math.max(1, 8 - tone.length))}${f(bg)};\n`;
     css += `    --status-${tone}-border:${' '.repeat(Math.max(1, 4 - tone.length))}${f(border)};\n`;
+    // The mark: rings, bars, dots, chart series. Lively like the accent
+    // (S 62), at relative luminance 0.36 - a step under the accent's 0.49,
+    // so the theme colour stays the brightest thing on the page.
+    let mark; for (let ml = 30; ml < 90; ml += 0.25) { mark = [h, 62, +ml.toFixed(2)]; if (lum(hsl2rgb(...mark)) >= 0.36) break; }
+    css += `    --status-${tone}-mark:${' '.repeat(Math.max(1, 6 - tone.length))}${f(mark)};   /* ${cr(mark, t.card).toFixed(2)} on card, ink ${cr([232, 20, 10], mark).toFixed(2)} */\n`;
   }
   const n = t.neutral;
   // The neutral chip sits on the same tint step as the other tones, so on a
   // cream card it is darker than the card, not a white patch on it.
-  css += `    --status-neutral-fg:     ${n} 6% 40%;\n    --status-neutral-bg:     ${n} 6% ${(t.tintL - 0.6).toFixed(1)}%;\n    --status-neutral-border: ${n} 4.5% ${(t.tintL - 4.6).toFixed(1)}%;\n`;
+  css += `    --status-neutral-fg:     ${n} 6% 40%;\n    --status-neutral-bg:     ${n} 6% ${(t.tintL - 0.6).toFixed(1)}%;\n    --status-neutral-border: ${n} 4.5% ${(t.tintL - 4.6).toFixed(1)}%;\n    --status-neutral-mark:   ${n} 8% 66%;\n`;
 }
 console.log(css);
 require('fs').writeFileSync(__dirname + '/status_solver.css', css);

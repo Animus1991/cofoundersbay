@@ -184,7 +184,7 @@ function MermaidGenTab({
       <button
         onClick={() => genMutation.mutate()}
         disabled={!mermaidPrompt.trim() || genMutation.isPending}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-status-accent hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-status-accent-mark hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-ink text-xs font-medium transition-colors"
       >
         {genMutation.isPending
           ? <><Loader2 className="icon-sm animate-spin" /> Generating…</>
@@ -206,7 +206,7 @@ function MermaidGenTab({
           </pre>
           <button
             onClick={() => onAddToCanvas(generatedCode)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-status-success hover:bg-status-success/90 text-white text-xs font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-status-success-mark hover:bg-status-success/90 text-ink text-xs font-medium transition-colors"
           >
             <Plus className="icon-sm" />
             Add to Canvas
@@ -510,7 +510,7 @@ export function CanvasCopilotPanel({
                 onClick={sendMessage}
                 disabled={!input.trim() || chatMutation.isPending}
                 aria-label={bilingualAria('Send message', 'Αποστολή μηνύματος')}
-                className="p-2 rounded-lg bg-status-accent hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+                className="p-2 rounded-lg bg-status-accent-mark hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
               >
                 {chatMutation.isPending
                   ? <Loader2 className="icon-sm text-white animate-spin" />
@@ -622,7 +622,7 @@ export function CanvasCopilotPanel({
           <button
             onClick={() => exportMutation.mutate()}
             disabled={!targetWorkspaceId.trim() || exportMutation.isPending}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-status-accent hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-status-accent-mark hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-ink text-xs font-medium transition-colors"
           >
             {exportMutation.isPending
               ? <><Loader2 className="icon-sm animate-spin" /> Exporting…</>
@@ -658,7 +658,7 @@ export function CanvasCopilotPanel({
                   <button
                     onClick={() => importMutation.mutate(doc.id)}
                     disabled={importMutation.isPending}
-                    className="shrink-0 text-2xs px-2 py-1 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
+                    className="shrink-0 text-2xs px-2 py-1 rounded-md border border-primary/40 text-primary-accessible hover:bg-primary/10 transition-colors disabled:opacity-40"
                   >
                     {importMutation.isPending && importMutation.variables === doc.id
                       ? <Loader2 className="w-2.5 h-2.5 animate-spin" aria-hidden="true" />

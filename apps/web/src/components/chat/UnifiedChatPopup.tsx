@@ -124,7 +124,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
           </AvatarFallback>
         </Avatar>
         {conv.isOnline && (
-          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-status-success ring-2 ring-background" />
+          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-status-success-mark ring-2 ring-background" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -572,7 +572,7 @@ export function UnifiedChatPopup() {
               <BilingualText en={messagesEn('popup_title')} el={messagesEl('popup_title')} compact />
             </span>
             {totalMsgUnread > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-primary-foreground">
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
               </span>
             )}
@@ -583,7 +583,7 @@ export function UnifiedChatPopup() {
             className="rounded-full p-1 hover:bg-white/20 transition-colors"
             aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
           >
-            <X className="icon-sm text-white/80" />
+            <X className="icon-sm text-primary-foreground/80" />
           </button>
         </div>
       </div>
@@ -628,7 +628,7 @@ export function UnifiedChatPopup() {
             onClick={() => selectTab('messages')}
             className={cn(
               'flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all',
-              activeTab === 'messages' ? 'bg-white text-primary shadow-sm' : 'text-white/85 hover:bg-white/10 hover:text-white',
+              activeTab === 'messages' ? 'bg-white text-primary-accessible shadow-sm' : 'text-primary-foreground/75 hover:bg-white/20 hover:text-primary-foreground',
             )}
           >
             <MessageSquare className="icon-sm shrink-0" />
@@ -636,7 +636,7 @@ export function UnifiedChatPopup() {
             {totalMsgUnread > 0 && (
               <span className={cn(
                 'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs font-bold',
-                activeTab === 'messages' ? 'bg-primary text-primary-foreground' : 'bg-status-danger text-white',
+                activeTab === 'messages' ? 'bg-primary text-primary-foreground' : 'bg-status-danger-mark text-ink',
               )}>
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
               </span>
@@ -649,7 +649,7 @@ export function UnifiedChatPopup() {
             onClick={() => selectTab('ai')}
             className={cn(
               'flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-all',
-              activeTab === 'ai' ? 'bg-white text-primary shadow-sm' : 'text-white/85 hover:bg-white/10 hover:text-white',
+              activeTab === 'ai' ? 'bg-white text-primary-accessible shadow-sm' : 'text-primary-foreground/75 hover:bg-white/20 hover:text-primary-foreground',
             )}
           >
             <Bot className="icon-sm shrink-0" />
@@ -665,7 +665,7 @@ export function UnifiedChatPopup() {
           aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
           title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
         >
-          <ChevronDown className="icon-sm text-white" />
+          <ChevronDown className="icon-sm text-primary-foreground" />
         </button>
         <button
           type="button"
@@ -675,7 +675,7 @@ export function UnifiedChatPopup() {
           aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
           title={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
         >
-          <X className="icon-sm text-white" />
+          <X className="icon-sm text-primary-foreground" />
         </button>
       </div>
 
@@ -718,7 +718,7 @@ export function UnifiedChatPopup() {
                       </AvatarFallback>
                     </Avatar>
                     {selected.isOnline && (
-                      <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-status-success ring-1 ring-background" />
+                      <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-status-success-mark ring-1 ring-background" />
                     )}
                   </div>
                   <div className="min-w-0">

@@ -1310,7 +1310,7 @@ export default function ResearchCanvas() {
               {connectionStart && connectionStart !== node.id && (
                 <button
                   onClick={(e) => { e.stopPropagation(); completeConnection(node.id); }}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-status-success text-white flex items-center justify-center shadow-md animate-pulse"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-status-success-mark text-ink flex items-center justify-center shadow-md animate-pulse"
                   title="Complete connection"
                 >
                   <Check className="icon-sm" />

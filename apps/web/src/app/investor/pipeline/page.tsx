@@ -63,10 +63,10 @@ type Deal = {
 const PIPELINE_STAGES: { key: PipelineStage; label: string; labelEl: string; color: string }[] = [
   { key: 'discovered', label: 'Discovered', labelEl: 'Εντοπίστηκε', color: 'bg-muted' },
   { key: 'reviewing', label: 'Reviewing', labelEl: 'Υπό εξέταση', color: 'bg-primary' },
-  { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-status-accent' },
-  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-status-warning' },
-  { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-status-warning' },
-  { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-status-success' },
+  { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-status-accent-mark' },
+  { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-status-warning-mark' },
+  { key: 'negotiating', label: 'Negotiating', labelEl: 'Διαπραγμάτευση', color: 'bg-status-warning-mark' },
+  { key: 'invested', label: 'Invested', labelEl: 'Επένδυση', color: 'bg-status-success-mark' },
 ];
 
 /** The next stage forward on the board; null at the end or once passed. */

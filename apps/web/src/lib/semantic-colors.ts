@@ -124,10 +124,10 @@ export function readinessClasses(status: ReadinessStatus): StatusChipClasses {
 
 /** Solid fill for meters/progress bars, keyed by the same ladder. */
 export const READINESS_FILL: Record<ReadinessStatus, string> = {
-  excellent: 'bg-status-success',
-  good: 'bg-status-info',
-  'needs-work': 'bg-status-warning',
-  critical: 'bg-status-danger',
+  excellent: 'bg-status-success-mark',
+  good: 'bg-status-info-mark',
+  'needs-work': 'bg-status-warning-mark',
+  critical: 'bg-status-danger-mark',
 };
 
 /**
@@ -138,10 +138,10 @@ export const READINESS_FILL: Record<ReadinessStatus, string> = {
  * generated and the bar would silently render unpainted.
  */
 export const READINESS_BAR: Record<ReadinessStatus, string> = {
-  excellent: '[&>div]:bg-status-success',
-  good: '[&>div]:bg-status-info',
-  'needs-work': '[&>div]:bg-status-warning',
-  critical: '[&>div]:bg-status-danger',
+  excellent: '[&>div]:bg-status-success-mark',
+  good: '[&>div]:bg-status-info-mark',
+  'needs-work': '[&>div]:bg-status-warning-mark',
+  critical: '[&>div]:bg-status-danger-mark',
 };
 
 /**

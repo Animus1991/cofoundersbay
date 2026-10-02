@@ -56,10 +56,10 @@ const MATCH_TIER_TONE: Record<MatchTier, StatusTone> = {
 };
 
 const TIER_STROKE: Record<MatchTier, string> = {
-  excellent: 'hsl(var(--status-success-fg))',
-  strong: 'hsl(var(--status-info-fg))',
-  good: 'hsl(var(--status-warning-fg))',
-  potential: 'hsl(var(--status-danger-fg))',
+  excellent: 'hsl(var(--status-success-mark))',
+  strong: 'hsl(var(--status-info-mark))',
+  good: 'hsl(var(--status-warning-mark))',
+  potential: 'hsl(var(--status-danger-mark))',
 };
 
 function tierGlow(stroke: string) {

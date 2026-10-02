@@ -64,9 +64,9 @@ const ROLE_RING_COLORS: Record<string, string> = {
 
 function ProfileCompletenessBar({ score }: { score: number }) {
   const getColor = () => {
-    if (score >= 80) return 'bg-status-success';
-    if (score >= 50) return 'bg-status-warning';
-    return 'bg-status-danger';
+    if (score >= 80) return 'bg-status-success-mark';
+    if (score >= 50) return 'bg-status-warning-mark';
+    return 'bg-status-danger-mark';
   };
   
   return (
@@ -380,7 +380,7 @@ function ProfileCardInner({
                 </AvatarFallback>
               </Avatar>
               {profile.isVerified && (
-                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-status-success flex items-center justify-center ring-2 ring-card">
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-status-success-mark flex items-center justify-center ring-2 ring-card">
                   <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>

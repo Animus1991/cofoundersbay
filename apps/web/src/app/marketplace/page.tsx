@@ -211,7 +211,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           <div className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact /></div>
           <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
           <div className="flex items-center gap-1">
-            <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-status-success' : 'bg-muted')} />
+            <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-status-success-mark' : 'bg-muted')} />
             {provider.isAvailable
               ? <BilingualText en="Available" el="Διαθέσιμος" compact />
               : <BilingualText en="Fully booked" el="Πλήρης" compact />}

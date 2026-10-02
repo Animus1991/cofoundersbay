@@ -44,7 +44,7 @@ export function ProgramEngagementChart({ data }: { data: ProgramEngagementDatum[
         <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
         <Bar dataKey="applications" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Applications" />
-        <Bar dataKey="enrolled" fill="hsl(var(--status-success-fg))" radius={[4, 4, 0, 0]} name="Enrolled" />
+        <Bar dataKey="enrolled" fill="hsl(var(--status-success-mark))" radius={[4, 4, 0, 0]} name="Enrolled" />
       </BarChart>
     </ResponsiveContainer>
   );

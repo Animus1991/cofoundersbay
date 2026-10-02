@@ -126,8 +126,8 @@ export function ProfileCompleteness({
   };
 
   const getProgressColor = (pct: number) => {
-    if (pct >= 80) return 'bg-status-success';
-    if (pct >= 50) return 'bg-status-warning';
+    if (pct >= 80) return 'bg-status-success-mark';
+    if (pct >= 50) return 'bg-status-warning-mark';
     return 'bg-destructive';
   };
 

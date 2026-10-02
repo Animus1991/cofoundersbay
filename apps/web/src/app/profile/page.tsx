@@ -599,7 +599,7 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3 shrink-0">
                     <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
                     <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-status-success-bg text-status-success hover:bg-status-success-bg border-status-success-border">
-                      <div className="w-2 h-2 rounded-full bg-status-success animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-full bg-status-success-mark animate-pulse"></div>
                       <BilingualText en={profileEn('open_to_work')} el={profileEl('open_to_work')} />
                     </Badge>
                   </div>

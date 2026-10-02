@@ -264,7 +264,7 @@ export default function MatchComparePage() {
                         <td key={people[i].userId} className="p-4 align-middle">
                           <div className="flex items-center gap-3">
                             <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-                              <span className={cn('block h-full rounded-full', lead === i ? 'bg-status-success' : 'bg-primary/60')} style={{ width: `${value ?? 0}%` }} />
+                              <span className={cn('block h-full rounded-full', lead === i ? 'bg-status-success-mark' : 'bg-primary/60')} style={{ width: `${value ?? 0}%` }} />
                             </span>
                             <span className={cn('w-10 text-right tabular-nums', lead === i ? 'font-semibold text-status-success' : 'text-muted-foreground')}>
                               {value == null ? '—' : `${value}%`}

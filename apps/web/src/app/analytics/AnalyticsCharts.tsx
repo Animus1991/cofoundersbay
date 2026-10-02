@@ -33,8 +33,8 @@ const DEMO_BAR_DATA = [
 ];
 
 const CHART_SERIES_COLORS = [
-  'hsl(var(--primary))', 'hsl(var(--status-info-fg))', 'hsl(var(--status-success-fg))',
-  'hsl(var(--status-warning-fg))', 'hsl(var(--status-danger-fg))',
+  'hsl(var(--primary))', 'hsl(var(--status-info-mark))', 'hsl(var(--status-success-mark))',
+  'hsl(var(--status-warning-mark))', 'hsl(var(--status-danger-mark))',
 ] as const;
 const PIE_COLORS = [...CHART_SERIES_COLORS];
 const TOOLTIP_STYLE = {
@@ -105,8 +105,8 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
                   <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id={`${id}-unique`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--status-info-fg))" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="hsl(var(--status-info-fg))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(var(--status-info-mark))" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="hsl(var(--status-info-mark))" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
@@ -114,7 +114,7 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
               <YAxis tick={{ fontSize: 12.2412 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name={analyticsEn('series_views')} />
-              <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-fg))" strokeWidth={2} fill={`url(#${id}-unique)`} name={analyticsEn('series_unique')} connectNulls={false} />
+              <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-mark))" strokeWidth={2} fill={`url(#${id}-unique)`} name={analyticsEn('series_unique')} connectNulls={false} />
             </AreaChart>
           </ResponsiveContainer>
           <details className="mt-3 text-xs text-muted-foreground">

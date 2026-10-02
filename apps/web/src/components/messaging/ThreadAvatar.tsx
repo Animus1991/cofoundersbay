@@ -53,7 +53,7 @@ export function ThreadAvatar({
       {online && (
         <span
           className={cn(
-            'absolute bottom-0 right-0 rounded-full bg-status-success ring-2 ring-background',
+            'absolute bottom-0 right-0 rounded-full bg-status-success-mark ring-2 ring-background',
             ring,
           )}
         />

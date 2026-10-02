@@ -187,10 +187,10 @@ function scoreColors(level: ScoreLevel): StatusChipClasses {
 }
 
 const SCORE_STROKE: Record<ScoreLevel, string> = {
-  excellent: 'hsl(var(--status-success-fg))',
-  good: 'hsl(var(--status-info-fg))',
-  'needs-work': 'hsl(var(--status-warning-fg))',
-  critical: 'hsl(var(--status-danger-fg))',
+  excellent: 'hsl(var(--status-success-mark))',
+  good: 'hsl(var(--status-info-mark))',
+  'needs-work': 'hsl(var(--status-warning-mark))',
+  critical: 'hsl(var(--status-danger-mark))',
 };
 
 function readinessSignalText(pct: number): string {
@@ -722,8 +722,8 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
         />
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-primary" /><BilingualText en={readinessEn('overall')} el={readinessEl('overall')} compact /></span>
-          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-accent" /><BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact /></span>
-          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-success" /><BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact /></span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-accent-mark" /><BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact /></span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-success-mark" /><BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact /></span>
         </div>
       </CardContent>
     </Card>
@@ -1381,13 +1381,13 @@ export default function ReadinessPage() {
                         </div>
                         <div className="relative h-2 rounded-full bg-muted/50">
                           <div className="absolute inset-y-0 left-0 rounded-full bg-status-accent/60" style={{ width: `${pct}%` }} />
-                          <div className="absolute inset-y-0 w-0.5 rounded-full bg-status-accent" style={{ left: '65%' }} title={readinessEn('target_65')} />
+                          <div className="absolute inset-y-0 w-0.5 rounded-full bg-status-accent-mark" style={{ left: '65%' }} title={readinessEn('target_65')} />
                         </div>
                       </div>
                     );
                   })}
                   <p className="pt-1 text-xs text-muted-foreground">
-                    <span className="mr-1 inline-block h-3 w-0.5 align-middle bg-status-accent" />
+                    <span className="mr-1 inline-block h-3 w-0.5 align-middle bg-status-accent-mark" />
                     <BilingualText en={readinessEn('accel_threshold_line')} el={readinessEl('accel_threshold_line')} compact />
                   </p>
                 </CardContent>
@@ -1411,13 +1411,13 @@ export default function ReadinessPage() {
                         </div>
                         <div className="relative h-2 rounded-full bg-muted/50">
                           <div className="absolute inset-y-0 left-0 rounded-full bg-status-success/60" style={{ width: `${pct}%` }} />
-                          <div className="absolute inset-y-0 w-0.5 rounded-full bg-status-success" style={{ left: '70%' }} title={readinessEn('target_70')} />
+                          <div className="absolute inset-y-0 w-0.5 rounded-full bg-status-success-mark" style={{ left: '70%' }} title={readinessEn('target_70')} />
                         </div>
                       </div>
                     );
                   })}
                   <p className="pt-1 text-xs text-muted-foreground">
-                    <span className="mr-1 inline-block h-3 w-0.5 align-middle bg-status-success" />
+                    <span className="mr-1 inline-block h-3 w-0.5 align-middle bg-status-success-mark" />
                     <BilingualText en={readinessEn('investor_threshold_line')} el={readinessEl('investor_threshold_line')} compact />
                   </p>
                 </CardContent>

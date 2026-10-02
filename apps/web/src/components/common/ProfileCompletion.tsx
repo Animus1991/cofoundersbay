@@ -42,9 +42,9 @@ export function ProfileCompletionRing({
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const strokeColor =
-    percentage >= 80 ? 'hsl(var(--status-success-fg))' :
-    percentage >= 50 ? 'hsl(var(--status-warning-fg))' :
-    'hsl(var(--status-danger-fg))';
+    percentage >= 80 ? 'hsl(var(--status-success-mark))' :
+    percentage >= 50 ? 'hsl(var(--status-warning-mark))' :
+    'hsl(var(--status-danger-mark))';
 
   const textColorClass =
     percentage >= 80 ? STATUS.success.text :

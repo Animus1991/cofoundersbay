@@ -225,13 +225,13 @@ const RARITY_EL: Record<string, string> = {
 function rarityRing(rarity: string): string {
   switch (rarity) {
     case 'legendary':
-      return 'hsl(var(--status-warning-fg))';
+      return 'hsl(var(--status-warning-mark))';
     case 'epic':
-      return 'hsl(var(--status-accent-fg))';
+      return 'hsl(var(--status-accent-mark))';
     case 'rare':
-      return 'hsl(var(--status-info-fg))';
+      return 'hsl(var(--status-info-mark))';
     case 'uncommon':
-      return 'hsl(var(--status-success-fg))';
+      return 'hsl(var(--status-success-mark))';
     default:
       return 'hsl(var(--primary))';
   }

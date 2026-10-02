@@ -87,7 +87,7 @@ export function LanguageSwitcher({ className, iconOnly = false }: { className?: 
                 {lang.short}
               </span>
               <span className="flex-1 text-sm font-medium">{lang.label}</span>
-              {isActive && <Check className="h-3.5 w-3.5 shrink-0 text-primary" />}
+              {isActive && <Check className="h-3.5 w-3.5 shrink-0 text-primary-accessible" />}
             </DropdownMenuItem>
           );
         })}

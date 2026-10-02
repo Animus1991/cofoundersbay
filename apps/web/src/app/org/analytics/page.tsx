@@ -75,9 +75,9 @@ const DAY = 86_400_000;
 
 const SERIES_COLORS = [
   'hsl(var(--primary))',
-  'hsl(var(--status-info-fg))',
-  'hsl(var(--status-success-fg))',
-  'hsl(var(--status-warning-fg))',
+  'hsl(var(--status-info-mark))',
+  'hsl(var(--status-success-mark))',
+  'hsl(var(--status-warning-mark))',
 ] as const;
 
 function monthKey(d: Date): string {
@@ -214,10 +214,10 @@ export default function OrgAnalyticsPage() {
   }));
 
   const funnel = [
-    { label: 'Applications', labelEl: 'Αιτήσεις', value: participants.length, bar: 'bg-status-neutral' },
-    { label: 'Decided', labelEl: 'Με απόφαση', value: decided.length, bar: 'bg-status-warning' },
-    { label: 'Accepted', labelEl: 'Εγκρίθηκαν', value: accepted.length, bar: 'bg-status-info' },
-    { label: 'Graduated', labelEl: 'Αποφοίτησαν', value: graduated.length, bar: 'bg-status-success' },
+    { label: 'Applications', labelEl: 'Αιτήσεις', value: participants.length, bar: 'bg-status-neutral-mark' },
+    { label: 'Decided', labelEl: 'Με απόφαση', value: decided.length, bar: 'bg-status-warning-mark' },
+    { label: 'Accepted', labelEl: 'Εγκρίθηκαν', value: accepted.length, bar: 'bg-status-info-mark' },
+    { label: 'Graduated', labelEl: 'Αποφοίτησαν', value: graduated.length, bar: 'bg-status-success-mark' },
   ];
 
   const periodLabel = PERIODS.find((p) => p.value === period)?.en.toLowerCase() ?? '';

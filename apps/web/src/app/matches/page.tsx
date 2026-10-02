@@ -221,17 +221,17 @@ const MATCH_TIER_TONE: Record<MatchTier, StatusTone> = {
 };
 
 const TIER_STROKE: Record<MatchTier, string> = {
-  excellent: 'hsl(var(--status-success-fg))',
-  strong: 'hsl(var(--status-info-fg))',
-  good: 'hsl(var(--status-warning-fg))',
-  potential: 'hsl(var(--status-danger-fg))',
+  excellent: 'hsl(var(--status-success-mark))',
+  strong: 'hsl(var(--status-info-mark))',
+  good: 'hsl(var(--status-warning-mark))',
+  potential: 'hsl(var(--status-danger-mark))',
 };
 
 const TIER_DOT: Record<MatchTier, string> = {
-  excellent: 'bg-status-success',
-  strong: 'bg-status-info',
-  good: 'bg-status-warning',
-  potential: 'bg-status-danger',
+  excellent: 'bg-status-success-mark',
+  strong: 'bg-status-info-mark',
+  good: 'bg-status-warning-mark',
+  potential: 'bg-status-danger-mark',
 };
 
 function tierStyle(tier: MatchTier) {

@@ -98,9 +98,9 @@ function timeAgo(iso: string): string {
 
 function typeColor(type: string) {
   switch (type) {
-    case 'suggestion': return 'bg-status-accent';
-    case 'question':   return 'bg-status-info';
-    case 'resolved':   return 'bg-status-success';
+    case 'suggestion': return 'bg-status-accent-mark';
+    case 'question':   return 'bg-status-info-mark';
+    case 'resolved':   return 'bg-status-success-mark';
     default:           return 'bg-primary';
   }
 }
@@ -121,7 +121,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
   const [submittingReply, setSubmittingReply] = useState(false);
 
   const replies = comment.replies ?? [];
-  const pinBg = comment.resolved ? 'bg-status-success' : typeColor(comment.commentType);
+  const pinBg = comment.resolved ? 'bg-status-success-mark' : typeColor(comment.commentType);
 
   const handleReply = async () => {
     if (!replyBody.trim()) return;
@@ -148,8 +148,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
         title={comment.body}
       >
         {comment.resolved
-          ? <CheckCircle2 className="icon-sm text-white" />
-          : <MessageSquare className="icon-sm text-white" />
+          ? <CheckCircle2 className="icon-sm text-ink" />
+          : <MessageSquare className="icon-sm text-ink" />
         }
       </button>
 

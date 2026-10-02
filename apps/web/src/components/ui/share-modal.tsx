@@ -165,7 +165,7 @@ export function ShareModal({
                 variant={copied ? 'default' : 'outline'}
                 size="sm"
                 onClick={handleCopy}
-                className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-status-success hover:bg-status-success border-status-success-border')}
+                className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-status-success-mark hover:bg-status-success-mark border-status-success-border')}
               >
                 {copied ? <Check className="icon-sm" /> : <Link2 className="icon-sm" />}
                 {copied ? <BilingualText en="Copied!" el="Αντιγράφηκε!" /> : <BilingualText en="Copy" el="Αντιγραφή" />}

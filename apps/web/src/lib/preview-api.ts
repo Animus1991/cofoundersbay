@@ -2724,11 +2724,11 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return {
       overall: { score, confidence: Math.min(99, score + 4) },
       breakdown: [
-        { key: 'skills', label: 'Skills', score: Math.min(100, score + 5), color: 'hsl(var(--status-success-fg))' },
-        { key: 'stage', label: 'Stage', score: Math.max(0, score - 7), color: 'hsl(var(--status-info-fg))' },
-        { key: 'industry', label: 'Industry', score: Math.min(100, score + 2), color: 'hsl(var(--status-accent-fg))' },
-        { key: 'location', label: 'Location', score: Math.max(0, score - 18), color: 'hsl(var(--status-warning-fg))' },
-        { key: 'values', label: 'Values', score: Math.max(0, score - 3), color: 'hsl(var(--status-success-fg))' },
+        { key: 'skills', label: 'Skills', score: Math.min(100, score + 5), color: 'hsl(var(--status-success-mark))' },
+        { key: 'stage', label: 'Stage', score: Math.max(0, score - 7), color: 'hsl(var(--status-info-mark))' },
+        { key: 'industry', label: 'Industry', score: Math.min(100, score + 2), color: 'hsl(var(--status-accent-mark))' },
+        { key: 'location', label: 'Location', score: Math.max(0, score - 18), color: 'hsl(var(--status-warning-mark))' },
+        { key: 'values', label: 'Values', score: Math.max(0, score - 3), color: 'hsl(var(--status-success-mark))' },
       ],
       badges: ['Complementary skills', 'Same stage'],
       sharedStrengths: [

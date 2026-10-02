@@ -1030,8 +1030,8 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     <div
                       className={cn(
                         'h-3 w-3 shrink-0 rounded-full',
-                        trend.impact === 'positive' ? 'bg-status-success' :
-                          trend.impact === 'negative' ? 'bg-status-danger' : 'bg-status-warning',
+                        trend.impact === 'positive' ? 'bg-status-success-mark' :
+                          trend.impact === 'negative' ? 'bg-status-danger-mark' : 'bg-status-warning-mark',
                       )}
                     />
                     <div className="flex-1">

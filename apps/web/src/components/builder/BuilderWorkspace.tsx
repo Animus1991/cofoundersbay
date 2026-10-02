@@ -145,9 +145,9 @@ function docStatus(doc: BuilderDocument): 'not-started' | 'in-progress' | 'revie
 
 function statusColor(s: string) {
   switch (s) {
-    case 'completed': return 'bg-status-success';
-    case 'in-progress': return 'bg-status-warning';
-    case 'reviewed': return 'bg-status-info';
+    case 'completed': return 'bg-status-success-mark';
+    case 'in-progress': return 'bg-status-warning-mark';
+    case 'reviewed': return 'bg-status-info-mark';
     default: return 'bg-muted-foreground/30';
   }
 }

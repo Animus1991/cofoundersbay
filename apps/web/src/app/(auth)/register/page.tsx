@@ -20,9 +20,9 @@ import { bilingualInline } from '@/lib/i18n/format';
  * ignored tenant branding entirely.
  */
 const PASSWORD_STRENGTH = {
-  weak: { filled: 1, bar: 'bg-status-danger', text: 'text-status-danger', en: 'Weak', el: 'Αδύναμος' },
-  medium: { filled: 2, bar: 'bg-status-warning', text: 'text-status-warning', en: 'Medium', el: 'Μέτριος' },
-  strong: { filled: 3, bar: 'bg-status-success', text: 'text-status-success', en: 'Strong', el: 'Ισχυρός' },
+  weak: { filled: 1, bar: 'bg-status-danger-mark', text: 'text-status-danger', en: 'Weak', el: 'Αδύναμος' },
+  medium: { filled: 2, bar: 'bg-status-warning-mark', text: 'text-status-warning', en: 'Medium', el: 'Μέτριος' },
+  strong: { filled: 3, bar: 'bg-status-success-mark', text: 'text-status-success', en: 'Strong', el: 'Ισχυρός' },
 } as const;
 
 const ROLES = [

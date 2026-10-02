@@ -59,10 +59,10 @@ function scoreColor(score: number): string {
 }
 
 function scoreBarColor(score: number): string {
-  if (score >= 75) return 'bg-status-success';
-  if (score >= 50) return 'bg-status-warning';
-  if (score >= 25) return 'bg-status-warning';
-  return 'bg-status-danger';
+  if (score >= 75) return 'bg-status-success-mark';
+  if (score >= 50) return 'bg-status-warning-mark';
+  if (score >= 25) return 'bg-status-warning-mark';
+  return 'bg-status-danger-mark';
 }
 
 function scoreBadgeVariant(score: number): 'default' | 'secondary' | 'outline' {

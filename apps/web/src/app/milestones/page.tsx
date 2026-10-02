@@ -64,11 +64,11 @@ const PRIORITY_CONFIG: Record<MilestonePriority, { priKey: 'pri_low' | 'pri_medi
 };
 
 const PRIORITY_DOT: Record<StatusTone, string> = {
-  success: 'bg-status-success',
-  warning: 'bg-status-warning',
-  danger: 'bg-status-danger',
-  info: 'bg-status-info',
-  accent: 'bg-status-accent',
+  success: 'bg-status-success-mark',
+  warning: 'bg-status-warning-mark',
+  danger: 'bg-status-danger-mark',
+  info: 'bg-status-info-mark',
+  accent: 'bg-status-accent-mark',
   neutral: 'bg-muted-foreground',
 };
 
@@ -312,7 +312,7 @@ function MilestoneCard({
                     <div
                       className={cn(
                         'h-full rounded-full transition-all',
-                        item.status === 'completed' ? 'bg-status-success' : 'bg-primary',
+                        item.status === 'completed' ? 'bg-status-success-mark' : 'bg-primary',
                       )}
                       style={{ width: `${item.progress}%` }}
                     />
@@ -377,7 +377,7 @@ function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; t
           aria-valuemax={100}
           aria-label={bilingualAria(milestoneEn('stat_rate'), milestoneEl('stat_rate'))}
         >
-          <div className="h-full rounded-full bg-status-success transition-all" style={{ width: `${rate}%` }} />
+          <div className="h-full rounded-full bg-status-success-mark transition-all" style={{ width: `${rate}%` }} />
         </div>
       </div>
     </div>

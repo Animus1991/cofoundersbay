@@ -107,7 +107,7 @@ export function ChatBubble() {
         {unreadMessages > 0 && (
           <span
             aria-hidden="true"
-            className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-status-danger px-1 text-xs font-bold leading-none text-white shadow-sm"
+            className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-status-danger-mark px-1 text-xs font-bold leading-none text-ink shadow-sm"
           >
             {unreadMessages > 99 ? '99+' : unreadMessages}
           </span>

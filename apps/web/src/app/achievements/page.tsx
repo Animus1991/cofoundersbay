@@ -289,7 +289,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
           >
             <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} aria-hidden="true" />
             {achievement.unlocked && (
-              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-status-success flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-status-success-mark flex items-center justify-center">
                 <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
               </div>
             )}

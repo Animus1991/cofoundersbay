@@ -96,13 +96,13 @@ function ReviewDecisionDialog({
       title: 'Approve Proposal',
       desc: 'Confirm you approve the changes in this proposal.',
       buttonLabel: 'Approve',
-      buttonClass: 'bg-status-success hover:bg-status-success',
+      buttonClass: 'bg-status-success-mark hover:bg-status-success-mark',
     },
     changes_requested: {
       title: 'Request Changes',
       desc: 'Let the author know what needs to be revised.',
       buttonLabel: 'Request Changes',
-      buttonClass: 'bg-status-warning hover:bg-status-warning',
+      buttonClass: 'bg-status-warning-mark hover:bg-status-warning-mark',
     },
     closed: {
       title: 'Close Proposal',

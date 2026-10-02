@@ -1196,8 +1196,8 @@ export default function ProfileEditPage() {
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-1000",
-                      completionPercentage >= 80 ? "bg-status-success" :
-                      completionPercentage >= 50 ? "bg-primary" : "bg-status-warning"
+                      completionPercentage >= 80 ? "bg-status-success-mark" :
+                      completionPercentage >= 50 ? "bg-primary" : "bg-status-warning-mark"
                     )}
                     style={{ width: `${completionPercentage}%` }}
                   />

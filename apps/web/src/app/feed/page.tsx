@@ -68,7 +68,7 @@ type FeedComment = {
 };
 
 const POST_TYPE_CONFIG: Record<PostType, { icon: typeof Rocket; color: string; label: string }> = {
-  update: { icon: Sparkles, color: 'text-primary', label: 'Update' },
+  update: { icon: Sparkles, color: 'text-primary-accessible', label: 'Update' },
   milestone: { icon: Target, color: 'text-status-success', label: 'Milestone' },
   question: { icon: MessageCircle, color: 'text-status-warning', label: 'Question' },
   announcement: { icon: TrendingUp, color: 'text-status-accent', label: 'Announcement' },

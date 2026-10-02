@@ -24,7 +24,7 @@ const buttonVariants = cva(
         // white text pulling the eye from every page header. Hover deepens
         // toward the mid tone instead of fading out.
         default:
-          'bg-primary-soft text-primary-soft-foreground hover:bg-[color-mix(in_hsl,hsl(var(--primary-soft))_82%,hsl(var(--primary)))]',
+          'bg-primary text-primary-foreground hover:bg-[color-mix(in_hsl,hsl(var(--primary))_82%,hsl(var(--primary-mid)))]',
         // A fill or an edge, never both. The outline is the same hairline as a
         // card (cursor.com "Adjust Plan"): never --input, which is a field edge.
         secondary:

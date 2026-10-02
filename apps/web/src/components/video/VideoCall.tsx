@@ -190,7 +190,7 @@ export function VideoCall({ className }: VideoCallProps) {
             <div className="space-y-2">
               {participants.map((participant) => (
                 <div key={participant.id} className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-status-success"></div>
+                  <div className="w-2 h-2 rounded-full bg-status-success-mark"></div>
                   <span className="font-medium">{participant.userName}</span>
                   <div className="flex gap-1 ml-auto">
                     {participant.audio && <Mic className="icon-sm text-status-success" />}

@@ -147,7 +147,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </Avatar>
               {isOnline && (
                 <span className="absolute bottom-3 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                  <span className="h-2.5 w-2.5 rounded-full bg-status-success ring-1 ring-background" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-status-success-mark ring-1 ring-background" />
                 </span>
               )}
             </Link>
@@ -196,7 +196,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               )}
               {isOnline && (
                 <span className="flex items-center gap-1 text-status-success">
-                  <span className="h-1.5 w-1.5 rounded-full bg-status-success" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-status-success-mark" />
                   <BilingualText en="Online" el="Σε σύνδεση" compact />
                 </span>
               )}
@@ -210,7 +210,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </div>
               <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-status-success' : completeness >= 50 ? 'bg-status-warning' : 'bg-primary/60')}
+                  className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-status-success-mark' : completeness >= 50 ? 'bg-status-warning-mark' : 'bg-primary/60')}
                   style={{ width: `${completeness}%` }}
                 />
               </div>
@@ -244,7 +244,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             </Avatar>
             {isOnline && (
               <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                <span className="h-2.5 w-2.5 rounded-full bg-status-success ring-1 ring-background" />
+                <span className="h-2.5 w-2.5 rounded-full bg-status-success-mark ring-1 ring-background" />
               </span>
             )}
           </Link>

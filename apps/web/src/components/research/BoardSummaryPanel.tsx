@@ -278,7 +278,7 @@ export function BoardSummaryPanel({
                     <div className="space-y-1">
                       {analysis.themes.map((theme, i) => (
                         <div key={i} className="flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-status-info/5 border border-status-info/20">
-                          <div className="w-1.5 h-1.5 rounded-full bg-status-info mt-1.5 shrink-0" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-status-info-mark mt-1.5 shrink-0" />
                           <span className="text-2xs text-foreground leading-snug">{theme}</span>
                         </div>
                       ))}
@@ -383,7 +383,7 @@ export function BoardSummaryPanel({
                 </div>
                 <div className="h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-status-success transition-all"
+                    className="h-full rounded-full bg-status-success-mark transition-all"
                     style={{ width: `${stats.nodeCount > 0 ? (stats.withContent / stats.nodeCount) * 100 : 0}%` }}
                   />
                 </div>
@@ -400,7 +400,7 @@ export function BoardSummaryPanel({
                 </div>
                 <div className="h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-status-warning transition-all"
+                    className="h-full rounded-full bg-status-warning-mark transition-all"
                     style={{ width: `${stats.nodeCount > 0 ? (stats.withTags / stats.nodeCount) * 100 : 0}%` }}
                   />
                 </div>

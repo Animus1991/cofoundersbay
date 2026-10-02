@@ -338,7 +338,7 @@ export function EnhancedMemberDirectory() {
                     <AvatarFallback>{member.name[0]}</AvatarFallback>
                   </Avatar>
                   {member.online && (
-                    <span className="absolute bottom-0 right-0 h-4 w-4 bg-status-success rounded-full border-2 border-background" />
+                    <span className="absolute bottom-0 right-0 h-4 w-4 bg-status-success-mark rounded-full border-2 border-background" />
                   )}
                   {member.verified && (
                     <span className="absolute -top-1 -right-1 h-6 w-6 bg-primary rounded-full flex items-center justify-center">

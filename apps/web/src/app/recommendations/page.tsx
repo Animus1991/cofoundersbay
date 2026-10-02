@@ -100,7 +100,7 @@ function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]
             <div
               className={cn(
                 'h-full rounded-full transition-all',
-                item.score >= 0.8 ? 'bg-status-success' : item.score >= 0.6 ? 'bg-status-info' : 'bg-status-warning'
+                item.score >= 0.8 ? 'bg-status-success-mark' : item.score >= 0.6 ? 'bg-status-info-mark' : 'bg-status-warning-mark'
               )}
               style={{ width: `${Math.round(item.score * 100)}%` }}
             />
@@ -383,7 +383,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   <Button aria-label="Save match"
                     size="icon"
                     variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-primary"
+                    className="h-7 w-7 text-muted-foreground hover:text-primary-accessible"
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >

@@ -46,10 +46,10 @@ const MOCK_WEEKLY_VIEWS = [
 
 const MOCK_CONVERSIONS = [
   { stage: 'Profile Views', count: 342, pct: 100, color: 'bg-primary' },
-  { stage: 'Inquiry Sent', count: 27, pct: 7.9, color: 'bg-status-accent' },
-  { stage: 'Response Given', count: 25, pct: 7.3, color: 'bg-status-info' },
-  { stage: 'Project Started', count: 18, pct: 5.3, color: 'bg-status-success' },
-  { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-status-success' },
+  { stage: 'Inquiry Sent', count: 27, pct: 7.9, color: 'bg-status-accent-mark' },
+  { stage: 'Response Given', count: 25, pct: 7.3, color: 'bg-status-info-mark' },
+  { stage: 'Project Started', count: 18, pct: 5.3, color: 'bg-status-success-mark' },
+  { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-status-success-mark' },
 ];
 
 const MOCK_TRAFFIC_SOURCES = [

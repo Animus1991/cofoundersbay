@@ -637,11 +637,11 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                         <div className={cn(
                           "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5",
                           criterion.completed 
-                            ? "bg-status-success border-status-success" 
+                            ? "bg-status-success-mark border-status-success" 
                             : "border-border"
                         )}>
                           {criterion.completed && (
-                            <CheckCircle2 className="icon-sm text-white" />
+                            <CheckCircle2 className="icon-sm text-ink" />
                           )}
                         </div>
                         <div className="flex-1">

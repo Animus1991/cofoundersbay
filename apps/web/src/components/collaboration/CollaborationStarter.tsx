@@ -155,7 +155,7 @@ export function CollaborationStarter({
                   </AvatarFallback>
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}
                 </Avatar>
-                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-status-success text-white">
+                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-status-success-mark text-ink">
                   <Handshake className="icon-sm" />
                 </span>
               </div>

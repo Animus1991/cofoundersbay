@@ -30,14 +30,14 @@ import { bilingualInline } from '@/lib/i18n/format';
 
 const STATE_LABELS: Record<string, { label: string; color: string }> = {
   newly_onboarded:    { label: 'New Onboard',      color: 'bg-primary' },
-  profile_incomplete: { label: 'Profile Incomplete', color: 'bg-status-warning' },
-  exploring:          { label: 'Exploring',         color: 'bg-status-info' },
-  matching_focused:   { label: 'Matching',          color: 'bg-status-accent' },
-  artifact_building:  { label: 'Building',          color: 'bg-status-success' },
-  stuck:              { label: 'Stuck',             color: 'bg-status-danger' },
-  feedback_processing:{ label: 'Feedback',          color: 'bg-status-warning' },
-  high_momentum:      { label: 'High Momentum',     color: 'bg-status-success' },
-  review_ready:       { label: 'Review Ready',      color: 'bg-status-success' },
+  profile_incomplete: { label: 'Profile Incomplete', color: 'bg-status-warning-mark' },
+  exploring:          { label: 'Exploring',         color: 'bg-status-info-mark' },
+  matching_focused:   { label: 'Matching',          color: 'bg-status-accent-mark' },
+  artifact_building:  { label: 'Building',          color: 'bg-status-success-mark' },
+  stuck:              { label: 'Stuck',             color: 'bg-status-danger-mark' },
+  feedback_processing:{ label: 'Feedback',          color: 'bg-status-warning-mark' },
+  high_momentum:      { label: 'High Momentum',     color: 'bg-status-success-mark' },
+  review_ready:       { label: 'Review Ready',      color: 'bg-status-success-mark' },
   readiness_plateaued:{ label: 'Plateaued',         color: 'bg-muted' },
 };
 
@@ -49,7 +49,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
         <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', color)}>
-          <Icon className="icon-md text-white" />
+          <Icon className="icon-md text-ink" />
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{title}</p>
@@ -77,9 +77,9 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <KPICard title="Total Shown" value={stats.totalShown} icon={Target} color="bg-primary" />
-        <KPICard title="Dismissed" value={stats.totalDismissed} sub={`${stats.dismissalRate}%`} icon={XCircle} color="bg-status-danger" />
-        <KPICard title="Converted" value={stats.totalConverted} sub={`${stats.conversionRate}%`} icon={CheckCircle} color="bg-status-success" />
-        <KPICard title="Conv. Rate" value={`${stats.conversionRate}%`} icon={TrendingUp} color="bg-status-accent" />
+        <KPICard title="Dismissed" value={stats.totalDismissed} sub={`${stats.dismissalRate}%`} icon={XCircle} color="bg-status-danger-mark" />
+        <KPICard title="Converted" value={stats.totalConverted} sub={`${stats.conversionRate}%`} icon={CheckCircle} color="bg-status-success-mark" />
+        <KPICard title="Conv. Rate" value={`${stats.conversionRate}%`} icon={TrendingUp} color="bg-status-accent-mark" />
       </div>
 
       {chartData.length > 0 && (
@@ -174,8 +174,8 @@ function UserClassifyTab() {
                 <div key={log.id} className="flex items-center gap-3 px-4 py-2 text-xs">
                   <span className="font-mono text-muted-foreground">{log.nudgeKey}</span>
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>
-                  {log.converted && <Badge className="bg-status-success text-xs text-white">converted</Badge>}
-                  {log.dismissed && <Badge className="bg-status-danger text-xs text-white">dismissed</Badge>}
+                  {log.converted && <Badge className="bg-status-success-mark text-xs text-ink">converted</Badge>}
+                  {log.dismissed && <Badge className="bg-status-danger-mark text-xs text-ink">dismissed</Badge>}
                   <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                 </div>
               ))}

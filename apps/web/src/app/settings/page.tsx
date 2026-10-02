@@ -116,7 +116,7 @@ function LanguageCard() {
     <Card id="language" className="scroll-mt-16 shadow-sm border-border">
       <CardHeader className="border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Globe className="h-5 w-5 text-primary" />
+          <Globe className="h-5 w-5 text-primary-accessible" />
           {t('Language')}
         </CardTitle>
         <CardDescription>

@@ -73,7 +73,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Mentor',
     description: 'Guiding the next generation',
     icon: GraduationCap,
-    color: 'bg-status-success',
+    color: 'bg-status-success-mark',
     questions: [
       'What areas do you specialize in?',
       'What\'s your mentoring style?',
@@ -84,7 +84,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Investor',
     description: 'Fueling innovation and growth',
     icon: Briefcase,
-    color: 'bg-status-accent',
+    color: 'bg-status-accent-mark',
     questions: [
       'What\'s your investment focus?',
       'What stages do you invest in?',
@@ -95,7 +95,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Organization',
     description: 'Supporting the ecosystem',
     icon: Building2,
-    color: 'bg-status-warning',
+    color: 'bg-status-warning-mark',
     questions: [
       'What type of organization are you?',
       'What programs do you offer?',
@@ -534,14 +534,14 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
               <BilingualText en="AI-powered connections based on skills and goals" el="Συνδέσεις με AI βάσει δεξιοτήτων και στόχων" wrap />
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-status-success-bg dark:bg-status-success">
+          <div className="p-4 rounded-lg bg-status-success-bg dark:bg-status-success-mark">
             <Shield className="icon-xl text-status-success mb-2 mx-auto" />
             <h3 className="font-semibold mb-1"><BilingualText en="Verified Profiles" el="Επαληθευμένα προφίλ" compact /></h3>
             <p className="text-sm text-muted-foreground">
               <BilingualText en="Trust and quality through verification system" el="Εμπιστοσύνη και ποιότητα μέσω επαλήθευσης" wrap />
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-status-accent">
+          <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-status-accent-mark">
             <Zap className="icon-xl text-status-accent mb-2 mx-auto" />
             <h3 className="font-semibold mb-1"><BilingualText en="Real-time Chat" el="Συνομιλία σε πραγματικό χρόνο" compact /></h3>
             <p className="text-sm text-muted-foreground">
@@ -607,7 +607,7 @@ function RoleStep({ selectedRole, onSelect }: { selectedRole: string; onSelect: 
               >
                 <div className="flex items-center gap-4">
                   <div className={cn('p-3 rounded-lg', role.color)}>
-                    <Icon className="icon-lg text-white" />
+                    <Icon className="icon-lg text-ink" />
                   </div>
                   <div>
                     <h3 className="font-semibold">{role.title}</h3>
@@ -965,7 +965,7 @@ function ReviewStep({
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className={cn('p-3 rounded-lg', selectedRole?.color)}>
-              <RoleIcon className="icon-lg text-white" />
+              <RoleIcon className="icon-lg text-ink" />
             </div>
             <div>
               <h3 className="font-semibold text-lg">{data.displayName}</h3>

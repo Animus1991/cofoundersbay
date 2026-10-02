@@ -171,9 +171,9 @@ function getConfidenceLevel(content: string): Confidence {
 function getConfidenceColor(level: Confidence): string {
   switch (level) {
     case 'high':
-      return 'bg-status-success';
+      return 'bg-status-success-mark';
     case 'medium':
-      return 'bg-status-warning';
+      return 'bg-status-warning-mark';
     default:
       return 'bg-muted-foreground/30';
   }
