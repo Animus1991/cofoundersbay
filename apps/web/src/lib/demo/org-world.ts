@@ -44,7 +44,7 @@ export const ORG = {
   type: 'accelerator',
   country: 'GR',
   timezone: 'Europe/Athens',
-  primaryColor: '#2563eb',
+  primaryColor: '#6756dc',
   /** Days ago. */
   founded: 900,
 } as const;

@@ -31,7 +31,7 @@ function scoreTier(score: number): {
 } {
   if (score >= 80) return { labelEn: 'High',     labelEl: 'Υψηλή',    color: STATUS.success.text, ring: 'stroke-status-success', bar: '[&>div]:bg-status-success' };
   if (score >= 55) return { labelEn: 'Growing',  labelEl: 'Αυξανόμενη', color: STATUS.warning.text, ring: 'stroke-status-warning', bar: '[&>div]:bg-status-warning' };
-  if (score >= 30) return { labelEn: 'Early',    labelEl: 'Πρώιμη',   color: STATUS.accent.text,  ring: 'stroke-status-accent',  bar: '[&>div]:bg-status-accent'  };
+  if (score >= 30) return { labelEn: 'Early',    labelEl: 'Πρώιμη',   color: 'text-foreground',   ring: 'stroke-primary',        bar: '[&>div]:bg-primary'        };
   return             { labelEn: 'Building', labelEl: 'Σε δόμηση', color: 'text-muted-foreground', ring: 'stroke-muted-foreground', bar: '[&>div]:bg-muted-foreground' };
 }
 

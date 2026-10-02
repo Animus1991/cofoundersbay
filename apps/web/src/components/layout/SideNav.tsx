@@ -194,7 +194,7 @@ export function SideNav() {
                         'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
                         showLabels ? 'gap-2 px-2 py-1.5' : cn(railSlot, 'justify-center p-0'),
                         active
-                          ? 'bg-primary/8 text-primary-accessible font-medium'
+                          ? 'bg-primary/8 text-foreground font-medium'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                       )}
                     >
@@ -213,7 +213,7 @@ export function SideNav() {
                           fallback={FallbackIcon}
                           className={cn(
                             chromeIcon,
-                            active ? 'text-primary-accessible' : 'text-muted-foreground/70 group-hover:text-foreground',
+                            active ? 'text-foreground' : 'text-muted-foreground/70 group-hover:text-foreground',
                           )}
                         />
                         {badge > 0 && !showLabels && (

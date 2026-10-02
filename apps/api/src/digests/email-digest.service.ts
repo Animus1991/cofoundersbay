@@ -407,16 +407,16 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
+          .header { background: #6756dc; color: white; padding: 20px; text-align: center; }
           .content { padding: 20px 0; }
           .section { margin-bottom: 30px; }
-          .section-title { color: #2563eb; font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+          .section-title { color: #6756dc; font-size: 18px; font-weight: bold; margin-bottom: 10px; }
           .item { border-left: 3px solid #e5e7eb; padding-left: 15px; margin-bottom: 15px; }
           .item-title { font-weight: bold; margin-bottom: 5px; }
           .item-description { color: #666; font-size: 14px; margin-bottom: 5px; }
           .item-time { color: #999; font-size: 12px; }
           .footer { border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center; color: #666; font-size: 12px; }
-          .btn { display: inline-block; background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+          .btn { display: inline-block; background: #6756dc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
         </style>
       </head>
       <body>

@@ -533,7 +533,7 @@ function TenantEditor({
 
   const [branding, setBranding] = useState({
     primaryColor: b?.primaryColor ?? '#8b5cf6',
-    secondaryColor: b?.secondaryColor ?? '#6366f1',
+    secondaryColor: b?.secondaryColor ?? '#6756dc',
     accentColor: b?.accentColor ?? '#f59e0b',
     backgroundStyle: b?.backgroundStyle ?? 'flat',
     headingFont: b?.headingFont ?? 'Inter',

@@ -51,7 +51,7 @@ function ColorField({
         <div className="relative">
           <input
             type="color"
-            value={value || '#6366f1'}
+            value={value || '#6756dc'}
             onChange={(e) => onChange(e.target.value)}
             className="sr-only"
             id={`color-${label}`}
@@ -59,14 +59,14 @@ function ColorField({
           <label
             htmlFor={`color-${label}`}
             className="block w-10 h-10 rounded-lg border-2 border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
-            style={{ backgroundColor: value || '#6366f1' }}
+            style={{ backgroundColor: value || '#6756dc' }}
           />
         </div>
         <Input
           aria-label={`${label} hex code`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="#6366f1"
+          placeholder="#6756dc"
           className="flex-1 font-mono text-sm"
           maxLength={7}
         />
@@ -92,7 +92,7 @@ const BG_STYLES = [
 type FormState = Omit<TenantBranding, 'id' | 'tenantId' | 'publishedAt' | 'updatedAt' | 'isBrandingActive'>;
 
 const DEFAULT_FORM: FormState = {
-  primaryColor: '#6366f1',
+  primaryColor: '#6756dc',
   secondaryColor: '#8b5cf6',
   accentColor: '#22d3ee',
   backgroundStyle: 'gradient',
@@ -311,7 +311,7 @@ export default function TenantBrandingPage() {
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
                     <ColorField
                       label="Primary Color"
-                      value={form.primaryColor ?? '#6366f1'}
+                      value={form.primaryColor ?? '#6756dc'}
                       onChange={(v) => setField('primaryColor', v)}
                       description="Buttons, links, accents"
                     />
@@ -371,7 +371,7 @@ export default function TenantBrandingPage() {
                       </Button>
                     </div>
                     <div className="flex gap-2 mt-2">
-                      <div className="h-6 w-16 rounded" style={{ backgroundColor: form.primaryColor ?? '#6366f1' }} />
+                      <div className="h-6 w-16 rounded" style={{ backgroundColor: form.primaryColor ?? '#6756dc' }} />
                       <div className="h-6 w-16 rounded" style={{ backgroundColor: form.secondaryColor ?? '#8b5cf6' }} />
                       <div className="h-6 w-16 rounded" style={{ backgroundColor: form.accentColor ?? '#22d3ee' }} />
                     </div>

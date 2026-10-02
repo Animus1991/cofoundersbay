@@ -47,7 +47,7 @@ export class VerificationService {
         html: `
           <h2>Welcome to CoFounderBay!</h2>
           <p>Click the link below to verify your email address:</p>
-          <p><a href="${verifyUrl}" style="padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">Verify Email</a></p>
+          <p><a href="${verifyUrl}" style="padding:12px 24px;background:#6756dc;color:#fff;text-decoration:none;border-radius:6px;">Verify Email</a></p>
           <p>Or copy this URL: ${verifyUrl}</p>
           <p>This link expires in 24 hours.</p>
         `,

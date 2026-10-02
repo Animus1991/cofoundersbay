@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 export type FeedPostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
 const TYPES: { type: FeedPostType; icon: typeof Sparkles; color: string; en: string; el: string }[] = [
-  { type: 'update', icon: Sparkles, color: 'text-status-info', en: 'Update', el: 'Ενημέρωση' },
+  { type: 'update', icon: Sparkles, color: 'text-primary', en: 'Update', el: 'Ενημέρωση' },
   { type: 'milestone', icon: Target, color: 'text-status-success', en: 'Milestone', el: 'Ορόσημο' },
   { type: 'question', icon: MessageCircle, color: 'text-status-warning', en: 'Question', el: 'Ερώτηση' },
   { type: 'announcement', icon: TrendingUp, color: 'text-status-accent', en: 'Announcement', el: 'Ανακοίνωση' },

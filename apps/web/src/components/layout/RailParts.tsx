@@ -89,7 +89,7 @@ export function RailOptions<V extends string>({
             onClick={() => onChange(v)}
             className={cn(
               'tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors',
-              on ? 'bg-primary/10 font-medium text-primary-accessible' : 'text-foreground hover:bg-muted/70',
+              on ? 'bg-primary/10 font-medium text-foreground' : 'text-foreground hover:bg-muted/70',
             )}
           >
             {Icon ? <Icon className={cn('icon-sm shrink-0', on ? '' : 'text-muted-foreground')} aria-hidden="true" /> : null}

@@ -278,7 +278,7 @@ function AttentionChips({
 
 function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
-  const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? STATUS.info.icon : STATUS.warning.icon;
+  const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary' : STATUS.warning.icon;
   return (
     <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3.5 transition-colors hover:border-border hover:bg-muted/30">
       <Avatar className="h-10 w-10 shrink-0">

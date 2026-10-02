@@ -136,7 +136,7 @@ let previewGtmMeta: {
   description: 'Harbor GTM notes aligned with Idea Core and the $750K seed.',
   visibility: 'private',
   tags: ['gtm'],
-  color: '#6366f1',
+  color: '#6756dc',
   icon: 'sparkles',
   isPinned: true,
   isArchived: false,

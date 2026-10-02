@@ -103,7 +103,7 @@ export default function AllianceThemePage() {
               className={cn(
                 'flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                  ? 'bg-primary text-primary-foreground'
                   : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >

@@ -658,7 +658,7 @@ export function CanvasCopilotPanel({
                   <button
                     onClick={() => importMutation.mutate(doc.id)}
                     disabled={importMutation.isPending}
-                    className="shrink-0 text-2xs px-2 py-1 rounded border border-status-info/40 text-status-info hover:bg-status-info/10 transition-colors disabled:opacity-40"
+                    className="shrink-0 text-2xs px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
                   >
                     {importMutation.isPending && importMutation.variables === doc.id
                       ? <Loader2 className="w-2.5 h-2.5 animate-spin" aria-hidden="true" />

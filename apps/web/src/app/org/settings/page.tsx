@@ -100,7 +100,7 @@ export default function OrgSettingsPage() {
   const [orgType, setOrgType] = useState('accelerator');
   const [country, setCountry] = useState('');
   const [timezone, setTimezone] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('#6366f1');
+  const [primaryColor, setPrimaryColor] = useState('#6756dc');
   /* Access policies persist under `settings.policies` on the organisation. */
   const [policies, setPolicies] = useState<Record<string, boolean>>({
     publicProfile: true,

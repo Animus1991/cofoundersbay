@@ -70,7 +70,7 @@ export function MobileBottomNav() {
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           tabClasses,
-          isActive ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+          isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
         )}
       >
         <span className="relative">
@@ -110,7 +110,7 @@ export function MobileBottomNav() {
         aria-haspopup="dialog"
         aria-expanded={mobileNavOpen}
         aria-controls={mobileNavOpen ? mobileNavId : undefined}
-        className={cn(tabClasses, mobileNavOpen ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground')}
+        className={cn(tabClasses, mobileNavOpen ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground')}
       >
         <CfbGlyph name="more" className="icon-md" />
         <TabLabel en="More" el="Μενού" />

@@ -344,7 +344,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   className={cn(
                     'mb-1 flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-ring',
                     pinned
-                      ? 'bg-primary/10 text-primary-accessible'
+                      ? 'bg-primary/10 text-foreground'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   )}
                   aria-pressed={pinned}
@@ -385,7 +385,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                       className={cn(
                         'relative flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-ring',
                         isActive
-                          ? 'bg-primary/10 text-primary-accessible'
+                          ? 'bg-primary/10 text-foreground'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                       )}
                       aria-expanded={isActive}

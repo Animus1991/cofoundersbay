@@ -23,21 +23,21 @@ import { useEffect, useState } from 'react';
  */
 
 export const CHART_SERIES_LIGHT = [
-  '#4957f3', // 1 brand lilac (235 88% 62%)
-  '#d47a48', // 2 orange, a few points less bright
-  '#2a9f73', // 3 green, original aqua slightly less bright
-  '#d9a014', // 4 gold
-  '#d07098', // 5 rose
-  '#3a8a3a', // 6 green helper
+  '#6756dc', // 1 brand lilac (248 66% 60%)
+  '#a88868', // 2 muted clay — sits with grey, does not shout
+  '#4d8a6a', // 3 muted green
+  '#8b6e55', // 4 dusty bronze (32 24% 43%) — helper, not a second brand
+  '#a07a8c', // 5 muted rose
+  '#5a7a5a', // 6 quiet green helper
 ] as const;
 
 export const CHART_SERIES_DARK = [
-  '#8b93f8',
-  '#d47a48',
-  '#2a9f73',
-  '#d9a014',
-  '#d07098',
-  '#4a9a4a',
+  '#a89ae8',
+  '#b89878',
+  '#6a9a80',
+  '#b49a7a',
+  '#b0909c',
+  '#6a8a6a',
 ] as const;
 
 /**
@@ -45,19 +45,19 @@ export const CHART_SERIES_DARK = [
  * and are never reused as "series 7". They always ship with a text label.
  */
 export const CHART_STATUS_LIGHT = {
-  good: '#2a9f73',
-  warning: '#d9a014',
-  serious: '#d47a48',
-  critical: '#d05050',
-  neutral: '#64748b',
+  good: '#4d8a6a',
+  warning: '#8b6e55',
+  serious: '#a88868',
+  critical: '#9d6a6a',
+  neutral: '#6c6e7a',
 } as const;
 
 export const CHART_STATUS_DARK = {
-  good: '#2a9f73',
-  warning: '#d9a014',
-  serious: '#d47a48',
-  critical: '#d66767',
-  neutral: '#94a3b8',
+  good: '#6a9a80',
+  warning: '#b49a7a',
+  serious: '#b89878',
+  critical: '#b08080',
+  neutral: '#9a9ba6',
 } as const;
 
 export type ChartTheme = {

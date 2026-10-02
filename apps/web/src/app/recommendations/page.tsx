@@ -380,7 +380,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   <Button aria-label="Save match"
                     size="icon"
                     variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-status-info"
+                    className="h-7 w-7 text-muted-foreground hover:text-primary"
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >

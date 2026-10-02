@@ -306,7 +306,7 @@ function ssoProvider(iso: Iso) {
     oidcClientId: 'aegean-lab.apps.googleusercontent.example',
     oidcScopes: 'openid email profile',
     loginButtonText: 'Sign in with Aegean Venture Lab',
-    loginButtonColor: '#2563eb',
+    loginButtonColor: '#6756dc',
     logoUrl: null,
     createdAt: iso(-121, 10),
     updatedAt: iso(-30, 10),

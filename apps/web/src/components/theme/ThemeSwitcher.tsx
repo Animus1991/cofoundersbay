@@ -30,7 +30,7 @@ export const THEME_OPTIONS = [
     label: 'Light',
     description: 'Classic light theme',
     icon: Sun,
-    swatch: ['#f8fafc', '#6366f1', '#e2e8f0'],
+    swatch: ['#f8fafc', '#6756dc', '#e2e8f0'],
   },
   {
     name: 'system' as ThemeName,

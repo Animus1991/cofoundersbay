@@ -49,35 +49,36 @@ html {
          card on page   1.05-1.09
          --border       1.14-1.19 on its card (cursor.com 1.15-1.18)
          --input        1.25-1.37 on its card, the one edge a control needs */
-    --background:       220 8% 96.4%;
-    --foreground:       220 12% 20%;
-    --card:             220 16% 99.4%;
-    --card-foreground:  220 12% 20%;
+    --background:       232 7% 96.6%;
+    --foreground:       232 10% 21%;
+    --card:             232 12% 99.4%;
+    --card-foreground:  232 10% 21%;
     --popover:          0 0% 100%;
-    --popover-foreground: 220 12% 20%;
+    --popover-foreground: 232 10% 21%;
 
-    /* Primary: the profile-funnel bar. Restored to the exact token that
-       painted it — `235 88% 62%` at `bg-primary/70`. Same hue everywhere;
-       filled buttons use the solid (white still ≥4.5:1). */
-    --primary:          235 88% 62%;
+    /* Primary: a true lilac, not electric indigo. Hue 248 sits next to
+       the page grey (232); sat 66% keeps it colourful without the 88%
+       shout that was pulling the eye off the words. Contrast on white
+       stays ≥5:1. */
+    --primary:          248 66% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 235 72% 50%;
+    --primary-accessible: 248 66% 60%;
 
     /* Secondary / muted sit a couple of points off the card, not a new colour. */
-    --secondary:        220 8% 95.4%;
-    --secondary-foreground: 220 10% 24%;
+    --secondary:        232 7% 95.4%;
+    --secondary-foreground: 232 8% 24%;
 
-    --muted:            220 8% 94.6%;
-    --muted-foreground: 220 6% 45%;  /* ~5.2 on card — helper, not a second shout */
+    --muted:            232 7% 94.8%;
+    --muted-foreground: 232 6% 45%;  /* ~5.2 on card — helper, not a second shout */
 
     /* Accent follows primary. A second hue (magenta, cyan) was pulling the
        eye off the words the way cursor.com never does. */
-    --accent:           235 88% 62%;
+    --accent:           248 66% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 68% 46%;
+    --destructive:      4 42% 44%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 64% 40%;
+    --destructive-accessible: 4 40% 40%;
 
     /* Borders: a hairline, spent sparingly.
        cursor.com draws its card edge at 1.15:1 and its button edge at 1.18:1,
@@ -88,9 +89,9 @@ html {
        band, so `/60` and `/40` fade toward nothing, which is what an inner
        divider should do. A control's own boundary is `--input`, kept firmer
        than a card edge because it is the only thing that marks the field. */
-    --border:           220 8% 93.6%;  /* ~1.12 on card — a hairline, not a frame */
-    --input:            220 8% 90.5%;  /* ~1.22 on card — fields only */
-    --ring:             235 88% 62%;
+    --border:           232 7% 93.6%;  /* ~1.12 on card — a hairline, not a frame */
+    --input:            232 7% 90.5%;  /* ~1.22 on card — fields only */
+    --ring:             248 66% 60%;
     /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
        sm/DEFAULT 6 · md/lg 8 · xl 10 · 2xl 12 · 3xl 14.
        cursor.com: cards ~12px, outlined buttons ~6–8px, both circular arcs. */
@@ -111,7 +112,7 @@ html {
     /* Gradients. The hero is one flat dark tone carrying white type; a
        surface that shifts hue across its width pulls the eye off the words. */
     --gradient-hero:    linear-gradient(hsl(222 26% 10%), hsl(222 26% 10%));
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(242 70% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(252 52% 72%));
     --gradient-card:    linear-gradient(hsl(var(--card)), hsl(var(--card)));
 
     /* ── Shadows ──────────────────────────────────────────────────────────
@@ -123,7 +124,7 @@ html {
        rather than haze. `--shadow-strength` scales it for the dark themes,
        where the same opacity would not register. Both are read by the
        box-shadow ladder in tailwind.config.ts, so every theme declares them. */
-    --shadow-color:     220 40% 18%;
+    --shadow-color:     232 28% 18%;
     --shadow-strength:  1;
 
     --shadow-glow:      none;
@@ -159,21 +160,21 @@ html {
     --card-foreground: 220 10% 93%;
     --popover: 222 20% 11.4%;
     --popover-foreground: 220 10% 93%;
-    --primary: 235 80% 72%;
+    --primary: 248 58% 74%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 235 88% 80%;
-    --secondary: 222 16% 13.8%;
-    --secondary-foreground: 220 10% 93%;
-    --muted: 222 16% 13%;
-    --muted-foreground: 220 8% 62%;
-    --accent: 235 80% 72%;
+    --primary-accessible: 248 62% 80%;
+    --secondary: 232 16% 13.8%;
+    --secondary-foreground: 232 10% 93%;
+    --muted: 232 16% 13%;
+    --muted-foreground: 232 8% 62%;
+    --accent: 248 58% 74%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 52%;
+    --destructive: 4 36% 58%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 58% 70%;
-    --border: 222 12% 13.6%;           /* ~1.12 on card */
-    --input: 222 12% 16.8%;            /* ~1.22 on card */
-    --ring: 235 80% 72%;
+    --destructive-accessible: 4 32% 70%;
+    --border: 232 12% 13.6%;           /* ~1.12 on card */
+    --input: 232 12% 16.8%;            /* ~1.22 on card */
+    --ring: 248 58% 74%;
     color-scheme: dark;
   }
 
@@ -348,18 +349,18 @@ html {
   }
 
   .role-founder {
-    --primary: 235 88% 62%;
+    --primary: 248 66% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 235 72% 50%;
-    --accent: 235 88% 62%;
+    --primary-accessible: 248 66% 60%;
+    --accent: 248 66% 60%;
     --accent-foreground: 0 0% 100%;
-    --ring: 235 88% 62%;
+    --ring: 248 66% 60%;
   }
   html.dark.role-founder {
-    --primary: 235 80% 72%;
-    --primary-accessible: 235 88% 80%;
-    --accent: 235 80% 72%;
-    --ring: 235 80% 72%;
+    --primary: 248 58% 74%;
+    --primary-accessible: 248 62% 80%;
+    --accent: 248 58% 74%;
+    --ring: 248 58% 74%;
   }
 
   .role-mentor {
@@ -412,49 +413,53 @@ html {
   :root,
   [data-theme="alliance"],
   [data-theme="minimal"] {
-    /* Original hues; lightness only a few points milder than HEAD. */
-    --status-success-fg:     142 64% 34%;
-    --status-success-bg:     142 50% 95%;
-    --status-success-border: 142 40% 82%;
-    --status-warning-fg:     32 88% 38%;
-    --status-warning-bg:     38 80% 95.5%;
-    --status-warning-border: 38 70% 82%;
-    --status-danger-fg:      0 68% 44%;
-    --status-danger-bg:      0 70% 96%;
-    --status-danger-border:  0 55% 84%;
+    /* Helpers sit with the grey page and the lilac brand — same hues,
+       much less chroma, so a status chip does not out-shout the content
+       the way cursor.com never lets a spending delta do. */
+    --status-success-fg:     145 32% 36%;
+    --status-success-bg:     145 14% 95.8%;
+    --status-success-border: 145 10% 88%;
+    /* Bronze, not yellow-gold: hue 32 sits with charcoal/grey, sat 24%
+       stays well under the lilac's 66% so it flags without competing. */
+    --status-warning-fg:     32 24% 43%;
+    --status-warning-bg:     32 10% 96.4%;
+    --status-warning-border: 32 8% 88.5%;
+    --status-danger-fg:      4 38% 44%;
+    --status-danger-bg:      4 14% 96.5%;
+    --status-danger-border:  4 12% 88%;
     /* Helper blue — extra colour only (e.g. readiness “Good”). */
-    --status-info-fg:        217 72% 42%;
-    --status-info-bg:        217 70% 96%;
-    --status-info-border:    217 50% 84%;
-    --status-accent-fg:      235 72% 50%;
-    --status-accent-bg:      235 40% 96.5%;
-    --status-accent-border:  235 28% 90%;
-    --status-neutral-fg:     220 8% 44%;
-    --status-neutral-bg:     220 8% 95.6%;
-    --status-neutral-border: 220 8% 92%;
+    --status-info-fg:        217 28% 42%;
+    --status-info-bg:        217 12% 96%;
+    --status-info-border:    217 10% 88%;
+    --status-accent-fg:      248 66% 60%;
+    --status-accent-bg:      248 22% 96.5%;
+    --status-accent-border:  248 16% 90%;
+    --status-neutral-fg:     232 6% 45%;
+    --status-neutral-bg:     232 7% 95.6%;
+    --status-neutral-border: 232 7% 92%;
   }
 
   .dark,
   [data-theme="cofounder"],
   [data-theme="system"] {
-    --status-success-fg:     142 50% 56%;
-    --status-success-bg:     142 32% 14%;
-    --status-success-border: 142 28% 26%;
-    --status-warning-fg:     38 80% 56%;
-    --status-warning-bg:     38 50% 14%;
-    --status-warning-border: 38 42% 26%;
-    --status-danger-fg:      0 68% 60%;
-    --status-danger-bg:      0 40% 14%;
-    --status-danger-border:  0 36% 28%;
-    --status-info-fg:        217 70% 64%;
-    --status-info-bg:        217 45% 14%;
-    --status-info-border:    217 40% 28%;
-    --status-accent-fg:      235 70% 78%;
-    --status-accent-bg:      235 28% 14%;
-    --status-accent-border:  235 22% 20%;
-    --status-neutral-fg:     220 8% 64%;
-    --status-neutral-bg:     222 12% 12.2%;
-    --status-neutral-border: 222 12% 15.4%;
+    --status-success-fg:     145 26% 58%;
+    --status-success-bg:     145 12% 13%;
+    --status-success-border: 145 10% 22%;
+    --status-warning-fg:     32 20% 66%;
+    --status-warning-bg:     32 8% 13%;
+    --status-warning-border: 32 8% 22%;
+    --status-danger-fg:      4 32% 64%;
+    --status-danger-bg:      4 12% 13%;
+    --status-danger-border:  4 10% 22%;
+    --status-info-fg:        217 24% 66%;
+    --status-info-bg:        217 12% 13%;
+    --status-info-border:    217 10% 22%;
+    --status-accent-fg:      248 58% 74%;
+    --status-accent-bg:      248 20% 14%;
+    --status-accent-border:  248 16% 20%;
+    --status-neutral-fg:     232 6% 64%;
+    --status-neutral-bg:     232 12% 12.2%;
+    --status-neutral-border: 232 12% 15.4%;
   }
 
   * {
@@ -662,7 +667,7 @@ html {
 
   /* Role-specific gradients */
   .gradient-founder {
-    background: linear-gradient(135deg, hsl(235 88% 66%), hsl(292 84% 66%));
+    background: linear-gradient(135deg, hsl(248 66% 60%), hsl(252 52% 72%));
   }
 
   .gradient-mentor {
@@ -679,7 +684,7 @@ html {
 
   /* Glow effects per role */
   .role-founder .glow-role {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(168, 85, 247, 0.15);
+    box-shadow: 0 0 20px rgba(103, 86, 220, 0.22), 0 0 40px rgba(103, 86, 220, 0.1);
   }
 
   .role-mentor .glow-role {
@@ -1556,7 +1561,7 @@ html {
   }
 
   /* A control paints its own foreground; the page's muted token is not readable
-     on it. Measured on the primary fill: #94a3b8 on #4957f3 is 2.07:1, and axe
+     on it. Measured on the primary fill: #94a3b8 on #6756dc is 2.07:1, and axe
      flagged it on /discover, /profile, /connections, /projects, /milestones,
      /fundraising and /readiness -- every filled button with a bilingual label
      had an unreadable second line. Inheriting keeps whatever the control chose
